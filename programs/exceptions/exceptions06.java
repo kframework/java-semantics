@@ -1,0 +1,23 @@
+public class Main {
+
+  int x;
+
+  int f(int y) {
+    int t = 1;
+    try {
+      print(t," ");
+      print(8," ");
+    } catch(int p) {
+      print(p+10);  // not reachable
+    }
+    for (int i = 1; i<=y; ++i)
+      t = t*i;
+    return t;
+  }
+
+  void main(string[] args) {
+    x = 5;
+    print(f(x),"\n");
+  }
+}
+// 1 8 120
