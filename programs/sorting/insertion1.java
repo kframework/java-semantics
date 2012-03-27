@@ -1,6 +1,6 @@
 // This program should execute correctly
 
-public class Main {
+public class main {
 	int[] x;
 
 	void init(int n) {

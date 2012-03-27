@@ -1,4 +1,4 @@
-public class Main {
+public class main {
   void main(string[] args) {
     int e = 100;
     try {

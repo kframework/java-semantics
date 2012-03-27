@@ -1,0 +1,100 @@
+'CompilationUnit(
+  'None(
+    .List{K}
+  ) ,,
+  'ListWrap(
+    .List{K}
+  ) ,,
+  'ListWrap(
+    'ClassDec(
+      'ClassDecHead(
+        'ListWrap(
+          'Public(
+            .List{K}
+          )
+        ) ,,
+        # #id("main")(.List{K}) ,,
+        'None(
+          .List{K}
+        ) ,,
+        'None(
+          .List{K}
+        ) ,,
+        'None(
+          .List{K}
+        )
+      ) ,,
+      'ClassBody(
+        'ListWrap(
+          'MethodDec(
+            'MethodDecHead(
+              'ListWrap(
+                .List{K}
+              ) ,,
+              'None(
+                .List{K}
+              ) ,,
+              'Void(
+                .List{K}
+              ) ,,
+              # #id("main")(.List{K}) ,,
+              'ListWrap(
+                .List{K}
+              ) ,,
+              'None(
+                .List{K}
+              )
+            ) ,,
+            'Block(
+              'ListWrap(
+                'ExprStm(
+                  'NewInstance(
+                    'None(
+                      .List{K}
+                    ) ,,
+                    'ClassOrInterfaceType(
+                      'TypeName(
+                        # #id("main")(.List{K})
+                      ) ,,
+                      'None(
+                        .List{K}
+                      )
+                    ) ,,
+                    'ListWrap(
+                      .List{K}
+                    ) ,,
+                    'None(
+                      .List{K}
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+)
+
+'ExprStm(
+  'NewInstance(
+    'None(
+      .List{K}
+    ) ,,
+    'ClassOrInterfaceType(
+      'TypeName(
+        # #id("main")(.List{K})
+      ) ,,
+      'None(
+        .List{K}
+      )
+    ) ,,
+    'ListWrap(
+      .List{K}
+    ) ,,
+    'None(
+      .List{K}
+    )
+  )
+)

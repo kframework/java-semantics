@@ -1,4 +1,4 @@
-public class Main {
+public class main {
 
 	public static void main(string[] args) {
 		int[] v = new int[1];

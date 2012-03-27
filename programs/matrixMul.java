@@ -1,6 +1,6 @@
 //Multiplication of two matrixes. In this program the general form of array creation expression is tested.
 
-public class Main {
+public class main {
 
   int[][] matrixMul(int[][] m1, int[][] m2, int n, int m, int p) {
     int[][] rez = new int[n][p];
