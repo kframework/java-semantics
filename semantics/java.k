@@ -16,9 +16,9 @@ the desired evaluation strategies of the various language constructs .  */
                 | "rtString"
                 | "void"
                 | "arrayOf" Type
-                    [:prec(1) latex "{#1}\texttt{\char91\char93}":]
+                    [prec(1) latex "{#1}\texttt{\char91\char93}"]
                 | "function" "from" List{KResult} "to" Type
-                    [:prec(1) latex "({#1}\ \texttt{->}\ {#2})":]
+                    [prec(1) latex "({#1}\ \texttt{->}\ {#2})"]
   syntax Types ::= List{Type,","}
 
 //@ \subsection{Declarations}
@@ -28,27 +28,27 @@ the desired evaluation strategies of the various language constructs .  */
 //@ \subsection{Expressions}
 
   syntax Exp ::= #Int | #Bool | #String | #Id
-               | "++" Exp              [:prec(0):]
-               | Exp "+" Exp           [:strict prec(33) gather(E e):]
-               | Exp "-" Exp           [:strict prec(33) gather(E e):]
-               | Exp "*" Exp           [:strict prec(31) gather(E e):]
-               | Exp "/" Exp           [:strict prec(31) gather(E e):]
-               | Exp "%" Exp           [:strict prec(31) gather(E e):]
-               | "-" Exp               [:strict:]
-               | Exp "<" Exp           [:strict prec(37):]
-               | Exp "<=" Exp          [:strict prec(37):]
-               | Exp ">" Exp           [:strict prec(37):]
-               | Exp ">=" Exp          [:strict prec(37):]
-               | Exp "==" Exp          [:strict prec(37):]
-               | Exp "!=" Exp          [:strict prec(37):]
-               | Exp "and" Exp         [:strict prec(55) gather(E e):]
-               | Exp "or" Exp          [:strict prec(59) gather(E e):]
-               | "not" Exp             [:strict prec(53):]
-               | Exp "[" Exps "]"      [:strict prec(1):]
-               | "sizeOf" "(" Exp ")"  [:strict:]
+               | "++" Exp              [prec(0)]
+               | Exp "+" Exp           [strict prec(33) gather(E e)]
+               | Exp "-" Exp           [strict prec(33) gather(E e)]
+               | Exp "*" Exp           [strict prec(31) gather(E e)]
+               | Exp "/" Exp           [strict prec(31) gather(E e)]
+               | Exp "%" Exp           [strict prec(31) gather(E e)]
+               | "-" Exp               [strict]
+               | Exp "<" Exp           [strict prec(37)]
+               | Exp "<=" Exp          [strict prec(37)]
+               | Exp ">" Exp           [strict prec(37)]
+               | Exp ">=" Exp          [strict prec(37)]
+               | Exp "==" Exp          [strict prec(37)]
+               | Exp "!=" Exp          [strict prec(37)]
+               | Exp "and" Exp         [strict prec(55) gather(E e)]
+               | Exp "or" Exp          [strict prec(59) gather(E e)]
+               | "not" Exp             [strict prec(53)]
+               | Exp "[" Exps "]"      [strict prec(1)]
+               | "sizeOf" "(" Exp ")"  [strict]
                | "read" "(" ")"
-               | Exp "=" Exp           [:strict(2) prec(40) gather (e E):]
-               | Exp ":" Type          [:prec(10):]
+               | Exp "=" Exp           [strict(2) prec(40) gather (e E)]
+               | Exp ":" Type          [prec(10)]
                                        // allowed only for declarations
   syntax Exps ::= List{Exp,","}
 
@@ -56,22 +56,22 @@ the desired evaluation strategies of the various language constructs .  */
 
   syntax Stmt ::= "{" "}"
                 | "{" Stmts "}"
-                | Exp ";"                               [:strict prec(45):]
-                | "if" Exp "then" Stmt "else" Stmt      [:strict(1) prec(90):]
-                | "if" Exp "then" Stmt                  [:prec(89):]
-                | "while" Exp "do" Stmt                 [:prec(90):]
-                | "for" #Id "=" Exp "to" Exp "do" Stmt  [:prec(90):]
-                | "return" Exp ";"                      [:strict:]
+                | Exp ";"                               [strict prec(45)]
+                | "if" Exp "then" Stmt "else" Stmt      [strict(1) prec(90)]
+                | "if" Exp "then" Stmt                  [prec(89)]
+                | "while" Exp "do" Stmt                 [prec(90)]
+                | "for" #Id "=" Exp "to" Exp "do" Stmt  [prec(90)]
+                | "return" Exp ";"                      [strict]
                 | "return" ";"
-                | "print" "(" Exps ")" ";"              [:strict:]
-                | "throw" Exp ";"                       [:strict:]
-                | "spawn" Stmt                          [:prec(90):]
-                | "acquire" Exp ";"                     [:strict:]
-                | "release" Exp ";"                     [:strict:]
-                | "rendezvous" Exp ";"                  [:strict:]
+                | "print" "(" Exps ")" ";"              [strict]
+                | "throw" Exp ";"                       [strict]
+                | "spawn" Stmt                          [prec(90)]
+                | "acquire" Exp ";"                     [strict]
+                | "release" Exp ";"                     [strict]
+                | "rendezvous" Exp ";"                  [strict]
 
   syntax Stmts ::= Decl | Stmt
-                 | Stmts Stmts                      [:prec(100) gather(e E):]
+                 | Stmts Stmts                      [prec(100) gather(e E)]
 
 /*@ \subsection{KOOL Additional Syntax}
 The KOOL syntactic extensions below are almost identical to their
@@ -98,16 +98,16 @@ form \textit{\#Id:Type}. */
   syntax Decl ::= "class" #Id "{" Stmts "}"
                 | "class" #Id "extends" #Id "{" Stmts "}"
 
-  syntax Exp ::= Exp "(" Exps ")"      [:strict(2) prec(2):]
+  syntax Exp ::= Exp "(" Exps ")"      [strict(2) prec(2)]
 
-  syntax Exp ::= "new" #Id "(" Exps ")" [:strict(2) prec(1):]
+  syntax Exp ::= "new" #Id "(" Exps ")" [strict(2) prec(1)]
                | "this"
                | "super"
-               | Exp "." #Id            [:prec(1):]
-               | Exp "instanceOf" #Id   [:prec(0) strict(1):]
-               | "cast" Exp "to" #Id    [:prec(0) strict(1):]
+               | Exp "." #Id            [prec(1)]
+               | Exp "instanceOf" #Id   [prec(0) strict(1)]
+               | "cast" Exp "to" #Id    [prec(0) strict(1)]
 
-  syntax Stmt ::= "try" Stmt "catch" "(" Exp ")" Stmt   [:prec(90):]
+  syntax Stmt ::= "try" Stmt "catch" "(" Exp ")" Stmt   [prec(90)]
 
 end module
 
@@ -298,7 +298,7 @@ to a location.
 
 In Java-Simple we'll support only int and boolean types for variables*/
 
-  syntax Val ::= "undefined" "(" Type ")" [:latex("\bot_{#1}"):]
+  syntax Val ::= "undefined" "(" Type ")" [latex("\bot_{#1}")]
 
   context 'LocalVarDec(HOLE,,_)
   rule <k> 'LocalVarDec(T:Type,,'ListWrap('VarDec(X:#Id))) => . ...</k>
@@ -383,42 +383,9 @@ When done with the first pass, call \texttt{main()}. */
           )
         )
        </k>
-       <env> . </env>  [:structural:]
+       <env> . </env>  [structural]
 
-//@ \subsection{Expressions and statements}
-
-  rule 'ExprName(X) => X
-
-  rule <k> 'Method('MethodName(X)) => X ...</k>
-       <env> Env </env>
-    when X in keys(Env)
-      orBool X ==Bool read orBool X ==Bool print [structural]
-
-  //todo maybe this rule should generate something like the rule below
-  rule <k>
-    'Method('MethodName(X)) =>
-    'Method(
-      'This(.List{K}),,
-      'None(.List{K}),,
-      X
-    )
-    ...</k>
-       <env> Env </env>
-    when notBool(X in keys(Env))
-      andBool notBool (X ==Bool read orBool X ==Bool print) [structural]
-
-    context 'Method('MethodName(HOLE,,_:K))
-    context 'ExprName(HOLE,,_:K)
-    rule 'AmbName(X) => X
-
-  rule [lookup]: <k> X => V:Val ...</k>
-       <env>...X|->L...</env>
-       <store>...L|->V...</store> [:transition:]
-
-  context 'PreIncr(HOLE => lvalue(HOLE))
-
-  rule <k> 'PreIncr(loc(L)) => I:#Int +Int 1 ...</k>
-       <store>... L |-> (I => I +Int 1) ...</store> [:transition:]
+//@ \subsection{Operators}
 
   context 'Plus(HOLE,,_)
   context 'Plus(_:KResult,,HOLE)
@@ -491,62 +458,24 @@ When done with the first pass, call \texttt{main()}. */
 
   rule sizeOf(arrayRef(_,_:#Int,N)) => N
 
-/*@\subsection{Method invocation}
-The method lookup is the same as in untyped KOOL.
-The method closure application and return are slightly different,
-since we need to check that the type of the returned value is an
-instance of the claimed return type of the method.  The first group of
-rules below are identical to those in untyped KOOL. */
+  context 'PreIncr(HOLE => lvalue(HOLE))
 
-  //context HOLE._(_)
-  context 'Method(HOLE,, _:K,, _:#Id)
+  rule <k> 'PreIncr(loc(L)) => I:#Int +Int 1 ...</k>
+       <store>... L |-> (I => I +Int 1) ...</store> [transition]
 
-  //todo investigate which of two rules is really needed
-  //objClos.X(_) => lookupMember(objClos,X)(_)
-  rule <k> 'Method(
-    objectClosure(Obj <envStack> EStack </envStack>),, _:K,, X) =>
-    lookupMember(<envStack> EStack </envStack>, X)
-    ...</k> [structural]
+/*@ \subsubsection{Assignment}
+Typed KOOL allows to assign subtype instance values to supertype lvalues. */
 
-  //objClos.X(_) => lookupMember(objClos,X)(_)
-  rule <k> 'Method('MethodName(
-    objectClosure(Obj <envStack> EStack </envStack>),, X)) =>
-    lookupMember(<envStack> EStack </envStack>, X)
-    ...</k> [structural]
+  //assignment is seqstrict according to JLS
+  context 'Assign((HOLE => lvalue(HOLE)),,_)
+  context 'Assign(_:KResult,,HOLE)
 
-  // super.X(_) => lookupMember(... , )(_)
-  rule <k> 'SuperMethod(_,, X)
-        => lookupMember(<envStack> EStack </envStack>, X) ...</k>
-       <crntClass> Class:#Id </crntClass>
-       <envStack>... ListItem(Class :: _) EStack </envStack>
-    [structural]
+  rule <k> 'Assign(loc(L),,V) => subtype typeOf(V), typeOf(K) ~> true?
+           ~> unsafeCast(V,typeOf(K:K)) ...</k>
+       <store>... L |-> (K => unsafeCast(V, typeOf(K))) ...</store> [transition]
 
-/*@ Closure application needs to also set a new return type in the
-\textsf{return} cell, in order for the values returned by its body to
-be checked against the return type of the method.  To do this correctly,
-we also need to stack the current status of the \textsf{return} cell
-and then pop it when the method returns. */
-
-  context 'Invoke(HOLE,,  _)
-  context 'Invoke(_,,'ListWrap(_:List{K},,HOLE,,_:List{K}))
-
-  rule [methodInvocation]: <k>
-  'Invoke(methodClosure(Class, OL:#Int, 'ListWrap(Params), S, function from _ to T),,
-          'ListWrap(ParamValues:List{KResult})) ~> K
-         => bindto Params, ParamValues ~> S ~> 'Return('None(.List{K}))
-       </k>
-       <control> C:Bag
-         <stack> . => ListItem(("return",0,0,K, Env,
-            C <crntObj> Obj2 </crntObj>
-              <return> T2 </return>)) ...</stack>
-         <crntObj> Obj2:Bag => <crntClass>Class</crntClass> Obj </crntObj>
-         <return> T2:Type => T </return>
-       </control>
-       <env> Env => . </env>
-       <store>... OL |-> objectClosure(<crntClass>_:#Id</crntClass>Obj:Bag)
-       ...</store>
-
-/*@ At method return, we have to check that the type of the returned
+/*@\subsection{Return} At method return, we have to check that the type
+of the returned
 value is a subtype of the expected return type.  Moreover, if that is
 the case, then we also upcast the returned value to one of the
 expected type. */
@@ -575,19 +504,13 @@ expected type. */
         <stack> ListItem((LayerType,_,_,_,_,_:Bag)) => . ...</stack>
 	 when LayerType =/=Bool "return" andBool LayerType =/=Bool "finally"
 
-  syntax #Id ::= "read"
-
-  rule <k> read => readMethodVal ...</k>
-  rule <k> 'Invoke(readMethodVal,, 'ListWrap(.List{K})) => I ...</k>
-       <in> ListItem(I) => . ...</in> [:transition:]
-
-  rule 'Block('ListWrap(.List{K})) => . [:structural:]
+  rule 'Block('ListWrap(.List{K})) => . [structural]
 
   rule <k> 'Block('ListWrap(Ss:List{K})) => 'ListWrap(Ss)~>env(Env) ...</k>
-       <env> Env </env> [:structural:]
+       <env> Env </env> [structural]
 
-  rule 'ListWrap(S1:K) => S1                          [:structural:]
-  rule [sequenceOfStatements]: 'ListWrap(S1,,Ss) => S1 ~> 'ListWrap(Ss)            [:structural:]
+  rule 'ListWrap(S1:K) => S1                          [structural]
+  rule [sequenceOfStatements]: 'ListWrap(S1,,Ss) => S1 ~> 'ListWrap(Ss)            [structural]
 
   context 'ExprStm(HOLE)
   rule 'ExprStm(V) => .
@@ -598,25 +521,31 @@ expected type. */
 
   rule <k> 'While(E:K,,S:K) => 'If(E,,
              'Block('ListWrap(S,,'While(E,,S))),,
-             'Block('ListWrap(.List{K}))) ...</k> [:structural:]
+             'Block('ListWrap(.List{K}))) ...</k> [structural]
 
-//@ We only allow printing integers and strings
+  syntax #Id ::= "read"
+
+  rule <k> read => readMethodVal ...</k>
+  rule <k> 'Invoke(readMethodVal,, 'ListWrap(.List{K})) => I ...</k>
+       <in> ListItem(I) => . ...</in> [transition]
+
+//@ For integers and strings, print their value. For classes, print class type.
   syntax #Id ::= "print"
 
   rule <k> print => printMethodVal ...</k>
 
   rule <k> 'Invoke(printMethodVal,, 'ListWrap(V,,Vals:List{KResult} => Vals)) ...</k>
        <out>... .=>ListItem(V)</out>
-    when typeOf(V) ==Bool int orBool typeOf(V) ==Bool rtString  [:transition:]
+    when typeOf(V) ==Bool int orBool typeOf(V) ==Bool rtString  [transition]
 
   rule <k> 'Invoke(printMethodVal,, 'ListWrap((V => typeOf(V)),,Vals:List{KResult})) ...</k>
-    when typeOf(V) =/=Bool int andBool typeOf(V) =/=Bool rtString  [:transition:]
+    when typeOf(V) =/=Bool int andBool typeOf(V) =/=Bool rtString  [transition]
 
   rule <k> 'Invoke(printMethodVal,, 'ListWrap((class Class => Id2String(Class)),,
       Vals:List{KResult})) ...</k>
-    [:transition:]
+    [transition]
 
-  rule 'Invoke(printMethodVal,,'ListWrap(.List{K})) => nothing  [:structural:]
+  rule 'Invoke(printMethodVal,,'ListWrap(.List{K})) => nothing  [structural]
 
 /*@ \subsubsection{Typed exceptions}
 Exceptions are propagated now until a catch that can bind them is
@@ -688,19 +617,9 @@ Both should be threated separately when a throw statement is encountered.*/
 
 //@ \subsection{Auxiliary operations}
 
-//@ \texttt{lvalue}
-  syntax Exp ::= "lvalue" "(" K ")"
-  syntax Val ::= "loc" "(" #Int ")"
-  rule <k> lvalue('ExprName(X)) => loc(L) ...</k>
-       <env>... X|->L ...</env>  [:structural:]
-
-  context lvalue('ArrayAccess(HOLE,,_))
-  context lvalue('ArrayAccess(_:KResult,,HOLE))
-  rule <k> lvalue(lookup(L)) => loc(L) ...</k>  [:structural:]
-
 //@ \texttt{lookup}
   syntax K ::= "lookup" "(" #Int ")"
-  rule <k> lookup(L) => V ...</k> <store>... L |-> V ...</store> [:transition:]
+  rule <k> lookup(L) => V ...</k> <store>... L |-> V ...</store> [transition]
 
 //@ \texttt{bindto} also checks the well-formedness of the function parameters
 
@@ -713,12 +632,12 @@ Both should be threated separately when a throw statement is encountered.*/
        <env> Env => Env[L/X] </env>
        <store>... . => L |-> undefined(T) ...</store>
        <nextLoc> L => L +Int 1 </nextLoc>
-  rule <k> bindto .List{K},.List{K} => . ...</k>  [:structural:]
+  rule <k> bindto .List{K},.List{K} => . ...</k>  [structural]
 
 //@ \texttt{env}
   syntax K ::= "env" "(" Map ")"
-  rule <k> env(Env) => . ...</k> <env> _ => Env </env> [:structural:]
-  rule (env(_) => .) ~> env(_) [:structural:]
+  rule <k> env(Env) => . ...</k> <env> _ => Env </env> [structural]
+  rule (env(_) => .) ~> env(_) [structural]
 
 //@ \texttt{typeOf}
   declare typeOf :  K -> Type
@@ -750,8 +669,8 @@ the RHSes of the rules below, so we have to do it manually.  */
 //@ Sequences of locations
 
   syntax List{K} ::= #Int ".." #Int
-  define N1:#Int..N2:#Int => .List{K}              when N1  >Int N2 [:structural:]
-  define N1:#Int..N2:#Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2 [:structural:]
+  define N1:#Int..N2:#Int => .List{K}              when N1  >Int N2 [structural]
+  define N1:#Int..N2:#Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2 [structural]
 
 /*@ \subsection{Changes to SIMPLE Semantics}
 We extend/change the semantics of several SIMPLE constructs in order
@@ -793,17 +712,6 @@ computation to continue only if a prefix guard evaluates to true.  */
 
   syntax K ::= "true?"
   rule true ~> true? => .  [structural]
-
-/*@ \subsubsection{Assignment}
-Typed KOOL allows to assign subtype instance values to supertype lvalues. */
-
-  //assignment is seqstrict according to JLS
-  context 'Assign((HOLE => lvalue(HOLE)),,_)
-  context 'Assign(_:KResult,,HOLE)
-
-  rule <k> 'Assign(loc(L),,V) => subtype typeOf(V), typeOf(K) ~> true?
-           ~> unsafeCast(V,typeOf(K:K)) ...</k>
-       <store>... L |-> (K => unsafeCast(V, typeOf(K))) ...</store> [:transition:]
 
 /*@ \subsection{Class declaration}
 Like in untyped KOOL. */
@@ -885,58 +793,24 @@ those in untyped KOOL. */
         => create(BaseClass:#Id) ~> setCrntClass(Class) ~> S ~> addEnvLayer ...</k>
        <className> Class </className>
        <extends> BaseClass </extends>
-       <declarations> S </declarations>  [:structural:]
-  rule <k> create(object) => . ...</k>    [:structural:]
+       <declarations> S </declarations>  [structural]
+  rule <k> create(object) => . ...</k>    [structural]
 
   syntax K ::= "setCrntClass" "(" #Id ")"
   rule <k> setCrntClass(Class) => . ...</k>
-       <crntClass> _ => Class </crntClass>  [:structural:]
+       <crntClass> _ => Class </crntClass>  [structural]
 
   syntax K ::= "addEnvLayer"
   rule <k> addEnvLayer => . ...</k>
        <env> Env => . </env>
        <crntClass> Class </crntClass>
        <envStack> . => ListItem(Class::<env>Env</env>) ...</envStack>
-    [:structural:]
+    [structural]
 
   syntax K ::= storeObj
   rule <k> storeObj => . ...</k>
        <crntObj> Obj (<location> L </location> => .) </crntObj>
        <store>... . => L |-> objectClosure(Obj) ...</store>
-
-/*@ \subsection{Self reference}
-Like in untyped KOOL. */
-
-  rule <k> 'This(.List{K}) => objectClosure(Obj) ...</k>
-       <crntObj> Obj </crntObj>
-
-/*@ \subsection{Object member access}
-Like in untyped KOOL. */
-
-  rule <k> X => 'Field('This(.List{K}),, X)
-    ...</k> <env> Env </env>
-    when notBool(X in keys(Env))  [:structural:]
-
-  //kast for HOLE._
-  context 'Field(HOLE,, _)
-
-  //todo check which of two rules below is really needed
-  //o.x
-  rule <k> 'Field(objectClosure(<crntClass> Class </crntClass>
-                   <envStack>... ListItem(Class :: EnvC:BagItem) EStack:List </envStack>),,X)
-        => lookupMember(<envStack>ListItem(Class :: EnvC) EStack</envStack>, X)
-       ...</k>  [:structural:]
-
-  //o.x
-  rule <k> 'ExprName(objectClosure(<crntClass> Class </crntClass>
-                   <envStack>... ListItem(Class :: EnvC:BagItem) EStack:List </envStack>),,X)
-        => lookupMember(<envStack>ListItem(Class :: EnvC) EStack</envStack>, X)
-       ...</k>  [:structural:]
-
-  rule <k>'SuperField(X) => lookupMember(<envStack>EStack</envStack>, X) ...</k>
-       <crntClass> Class:#Id </crntClass>
-       <envStack>... ListItem(Class :: EnvC) EStack </envStack>
-    [:structural:]
 
 /*@ \subsection{Instance Of}
 Like in untyped KOOL. */
@@ -948,7 +822,7 @@ Like in untyped KOOL. */
 
   rule 'InstanceOf( objectClosure((_ <envStack> ListItem(Class1:#Id::_)
                        => . ...</envStack>)),, class Class2:#Id)
-    when Class1 =/=Bool Class2  [:structural:]
+    when Class1 =/=Bool Class2  [structural]
 
   rule 'InstanceOf( objectClosure((_ <envStack> .List </envStack>)),, class Class)
     => false
@@ -965,22 +839,105 @@ can indeed be cast to the claimed type. */
              ~> objectClosure(<crntClass> Class </crntClass> Obj) ...</k>
     [structural]
 
-/*@ \subsection{Objects as lvalues}
+//@ \subsection{Names}
+  rule 'AmbName(Ks) => 'ExprName(Ks) [structural anywhere]
+  rule 'Field(Ks) => 'ExprName(Ks)   [structural anywhere]
+
+  rule <k> 'ExprName(X) => X ...</k>
+       <env> Env </env>
+    when X in keys(Env) [structural]
+
+  rule <k>  'ExprName(X) =>
+            'ExprName(
+              'This(.List{K}),,
+              X
+            )
+       ...</k>
+       <env> Env </env>
+    when notBool(X in keys(Env)) [structural]
+
+  context 'ExprName(HOLE,,_:K)
+
+  rule [lookup]: <k> X => V:Val ...</k>
+       <env>... X|->L ...</env>
+       <store>... L|->V ...</store> [transition]
+
+/*@ \subsection{Self reference}
 Like in untyped KOOL. */
 
-  rule <k> lvalue('ExprName(X) => 'Field('This(.List{K}),, X) )
-    ...</k> <env> Env </env>
-    when notBool(X in keys(Env))  [:structural:]
+  rule <k> 'This(.List{K}) => objectClosure(Obj) ...</k>
+       <crntObj> Obj </crntObj>
 
-  context lvalue('Field(HOLE,,_:#Id) )
+/*@ \subsection{Object member access} */
 
-  rule <k> lvalue('Field(objectClosure(<crntClass> Class </crntClass>
-                           <envStack>...
-                             ListItem(Class :: EnvC) EStack
-                           </envStack>),, X)
-        => lookupMember(<envStack>ListItem(Class :: EnvC:BagItem) EStack:List
-                        </envStack>, X))
-       ...</k>  [:structural:]
+  //o.x
+  rule <k> 'ExprName(objectClosure(<crntClass> Class </crntClass>
+                   <envStack>... ListItem(Class :: EnvC:BagItem) EStack:List </envStack>),,X)
+        => lookupMember(<envStack>ListItem(Class :: EnvC) EStack</envStack>, X)
+       ...</k>  [structural]
+
+  rule <k>'SuperField(X) => lookupMember(<envStack>EStack</envStack>, X) ...</k>
+       <crntClass> Class:#Id </crntClass>
+       <envStack>... ListItem(Class :: EnvC) EStack </envStack>
+    [structural]
+
+/*@\subsection{Method invocation}
+The method lookup is the same as in untyped KOOL.
+The method closure application and return are slightly different,
+since we need to check that the type of the returned value is an
+instance of the claimed return type of the method.  The first group of
+rules below are identical to those in untyped KOOL. */
+
+  rule 'Method('MethodName(Ks)) => 'MethodName(Ks)
+  rule 'Method(K,, _:K,, X) => 'MethodName(K,, X)
+
+  rule <k> 'MethodName(X) => 'MethodName('This(.List{K}),, X) ...</k>
+       <env> Env </env>
+    when notBool (X ==Bool read orBool X ==Bool print) [structural]
+
+  rule <k> 'MethodName(X) => X ...</k>
+       <env> Env </env>
+    when X ==Bool read orBool X ==Bool print [structural]
+
+  context 'MethodName(HOLE,,_:K)
+
+  //objClos.X(_) => lookupMember(objClos,X)(_)
+  rule <k> 'MethodName(
+    objectClosure(Obj <envStack> EStack </envStack>),, X) =>
+    lookupMember(<envStack> EStack </envStack>, X)
+    ...</k> [structural]
+
+  // super.X(_) => lookupMember(... , )(_)
+  rule <k> 'SuperMethod(_,, X)
+        => lookupMember(<envStack> EStack </envStack>, X) ...</k>
+       <crntClass> Class:#Id </crntClass>
+       <envStack>... ListItem(Class :: _) EStack </envStack>
+    [structural]
+
+/*@ Closure application needs to also set a new return type in the
+\textsf{return} cell, in order for the values returned by its body to
+be checked against the return type of the method.  To do this correctly,
+we also need to stack the current status of the \textsf{return} cell
+and then pop it when the method returns. */
+
+  context 'Invoke(HOLE,, _)
+  context 'Invoke(_:KResult ,,'ListWrap(_:List{K},,HOLE,,_:List{K}))
+
+  rule [methodInvocation]: <k>
+  'Invoke(methodClosure(Class, OL:#Int, 'ListWrap(Params), S, function from _ to T),,
+          'ListWrap(ParamValues:List{KResult})) ~> K
+         => bindto Params, ParamValues ~> S ~> 'Return('None(.List{K}))
+       </k>
+       <control> C:Bag
+         <stack> . => ListItem(("return",0,0,K, Env,
+            C <crntObj> Obj2 </crntObj>
+              <return> T2 </return>)) ...</stack>
+         <crntObj> Obj2:Bag => <crntClass>Class</crntClass> Obj </crntObj>
+         <return> T2:Type => T </return>
+       </control>
+       <env> Env => . </env>
+       <store>... OL |-> objectClosure(<crntClass>_:#Id</crntClass>Obj:Bag)
+       ...</store>
 
 /*@ \subsection{Lookup member}
 Like in untyped KOOL. */
@@ -988,9 +945,39 @@ Like in untyped KOOL. */
   syntax K ::= #Id "::" Bag
   declare lookupMember : BagItem #Id -> K
   define lookupMember(<envStack> ListItem(_:#Id :: <env>...X|->L...</env>)
-                    ...</envStack>,X) => lookup(L)
+                    ...</envStack>, X) => lookup(L)
   define lookupMember(<envStack> ListItem(_:#Id :: <env> Env </env>)
                             => . ...</envStack>, X)
     when notBool(X in keys(Env))
+
+//@ \texttt{lvalue}
+  syntax Exp ::= "lvalue" "(" K ")"
+  syntax Val ::= "loc" "(" #Int ")"
+
+  context lvalue('ArrayAccess(HOLE,,_))
+  context lvalue('ArrayAccess(_:KResult,,HOLE))
+  rule <k> lvalue(lookup(L)) => loc(L) ...</k>  [structural]
+
+  rule <k> lvalue('ExprName(X)) => loc(L) ...</k>
+       <env>... X|->L ...</env>  [structural]
+
+  rule <k> lvalue('ExprName(X) => 'ExprName('This(.List{K}),, X) )
+    ...</k> <env> Env </env>
+    when notBool(X in keys(Env))  [structural]
+
+  context lvalue('ExprName(HOLE,, _:#Id) )
+
+  rule <k> lvalue('ExprName(objectClosure(<crntClass> Class </crntClass>
+                           <envStack>...
+                             ListItem(Class :: EnvC) EStack
+                           </envStack>),, X)
+        => lookupMember(<envStack>ListItem(Class :: EnvC:BagItem) EStack:List
+                        </envStack>, X))
+       ...</k>  [structural]
+
+  rule <k> lvalue('SuperField(X) => lookupMember(<envStack>EStack</envStack>, X)) ...</k>
+       <crntClass> Class:#Id </crntClass>
+       <envStack>... ListItem(Class :: EnvC) EStack </envStack>
+    [structural]
 
 end module

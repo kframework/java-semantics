@@ -6,8 +6,9 @@
 // declaration and an assignment statement.
 
 class main {
-  var a:int = 3;
-  method main() {
+  int a = 3;
+
+  void main(string[] args) {
     print("a = ", a, "\n");
   }
 }
