@@ -9,9 +9,9 @@ public class main {
     return x;
 	}
 
-	void printAll(int[] x, int n) {
+	void printAll(int[] x) {
     string s = "";
-		for (int i = 0, xi; i<n; ++i) {
+		for (int i = 0, xi; i<x.length; ++i) {
       xi = x[i];
       s = s + " " + xi;
 		}
@@ -22,7 +22,7 @@ public class main {
 		int n=30;
     int[] x = init(n);
 		print("The original sequence is");
-		printAll(x, n);
+		printAll(x);
 		print("\n", "Sorting the array using insertion sort ... ");
 		for (int i = 0; i<n; ++i) {
 			int j = i - 1, v = x[i];
@@ -33,7 +33,7 @@ public class main {
 			x[j+1] = v;
 		}
 		print("Done!", "\n", "The sorted sequence is");
-		printAll(x, n);
+		printAll(x);
 		print("\n");
 	}
 }

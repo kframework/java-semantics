@@ -2,13 +2,13 @@
 
 public class main {
 
-  int[][] matrixMul(int[][] m1, int[][] m2, int n, int m, int p) {
-    int[][] rez = new int[n][p];
+  int[][] matrixMul(int[][] m1, int[][] m2) {
+    int[][] rez = new int[m1.length][m2[0].length];
     int s;
-    for(int i=0; i<n; ++i) {
-      for(int k=0; k<p; ++k) {
+    for(int i=0; i<m1.length; ++i) {
+      for(int k=0; k<m2[0].length; ++k) {
         s=0;
-        for(int j=0; j<m; ++j) {
+        for(int j=0; j<m2.length; ++j) {
           s = s + m1[i][j]*m2[j][k];
         }
         rez[i][k] = s;
@@ -17,9 +17,9 @@ public class main {
     return rez;
   }
 
-  void matrixPrint(int[][] m1, int n, int m) {
-    for(int i=0; i<n; ++i) {
-      for(int j=0; j<m; ++j) {
+  void matrixPrint(int[][] m1) {
+    for(int i=0; i<m1.length; ++i) {
+      for(int j=0; j<m1[i].length; ++j) {
         print(m1[i][j]," ");
       }
       print("\n");
@@ -36,7 +36,7 @@ public class main {
       }
     }
     print("M1=","\n");
-    matrixPrint(m1,n,m);
+    matrixPrint(m1);
     m2 = new int[m][p];
     for(int i=0; i<m; ++i) {
       for(int j=0; j<p; ++j) {
@@ -44,9 +44,9 @@ public class main {
       }
     }
     print("M2=","\n");
-    matrixPrint(m2,m,p);
-    int[][] rez = matrixMul(m1, m2, n, m, p);
+    matrixPrint(m2);
+    int[][] rez = matrixMul(m1, m2);
     print("M1 * M2 = ","\n");
-    matrixPrint(rez,n,p);
+    matrixPrint(rez);
   }
 }

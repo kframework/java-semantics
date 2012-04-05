@@ -1,13 +1,6 @@
-module JAVA-SYNTAX
+module JAVA
 
-/*@ \section{Syntax}
-The syntax of typed SIMPLE extends that of untyped SIMPLE with support
-for declaring types to variables and functions.  The syntax below is identical
-to that of the static semantics of typed SIMPLE.  However, the \K
-strictness attributes are like those of the untyped SIMPLE, to capture
-the desired evaluation strategies of the various language constructs .  */
-
-  syntax #Id ::= "main"
+  syntax #Id ::= "main" | "object"
 
 //@ \subsection{Types}
 
@@ -19,104 +12,11 @@ the desired evaluation strategies of the various language constructs .  */
                     [prec(1) latex "{#1}\texttt{\char91\char93}"]
                 | "function" "from" List{KResult} "to" Type
                     [prec(1) latex "({#1}\ \texttt{->}\ {#2})"]
-  syntax Types ::= List{Type,","}
+                | "class" #Id
 
-//@ \subsection{Declarations}
+//@ \section{Unused Labels}
 
-  syntax Decl ::= "var" Exps ";"
-
-//@ \subsection{Expressions}
-
-  syntax Exp ::= #Int | #Bool | #String | #Id
-               | "++" Exp              [prec(0)]
-               | Exp "+" Exp           [strict prec(33) gather(E e)]
-               | Exp "-" Exp           [strict prec(33) gather(E e)]
-               | Exp "*" Exp           [strict prec(31) gather(E e)]
-               | Exp "/" Exp           [strict prec(31) gather(E e)]
-               | Exp "%" Exp           [strict prec(31) gather(E e)]
-               | "-" Exp               [strict]
-               | Exp "<" Exp           [strict prec(37)]
-               | Exp "<=" Exp          [strict prec(37)]
-               | Exp ">" Exp           [strict prec(37)]
-               | Exp ">=" Exp          [strict prec(37)]
-               | Exp "==" Exp          [strict prec(37)]
-               | Exp "!=" Exp          [strict prec(37)]
-               | Exp "and" Exp         [strict prec(55) gather(E e)]
-               | Exp "or" Exp          [strict prec(59) gather(E e)]
-               | "not" Exp             [strict prec(53)]
-               | Exp "[" Exps "]"      [strict prec(1)]
-               | "sizeOf" "(" Exp ")"  [strict]
-               | "read" "(" ")"
-               | Exp "=" Exp           [strict(2) prec(40) gather (e E)]
-               | Exp ":" Type          [prec(10)]
-                                       // allowed only for declarations
-  syntax Exps ::= List{Exp,","}
-
-//@ \subsection{Statements}
-
-  syntax Stmt ::= "{" "}"
-                | "{" Stmts "}"
-                | Exp ";"                               [strict prec(45)]
-                | "if" Exp "then" Stmt "else" Stmt      [strict(1) prec(90)]
-                | "if" Exp "then" Stmt                  [prec(89)]
-                | "while" Exp "do" Stmt                 [prec(90)]
-                | "for" #Id "=" Exp "to" Exp "do" Stmt  [prec(90)]
-                | "return" Exp ";"                      [strict]
-                | "return" ";"
-                | "print" "(" Exps ")" ";"              [strict]
-                | "throw" Exp ";"                       [strict]
-                | "spawn" Stmt                          [prec(90)]
-                | "acquire" Exp ";"                     [strict]
-                | "release" Exp ";"                     [strict]
-                | "rendezvous" Exp ";"                  [strict]
-
-  syntax Stmts ::= Decl | Stmt
-                 | Stmts Stmts                      [prec(100) gather(e E)]
-
-/*@ \subsection{KOOL Additional Syntax}
-The KOOL syntactic extensions below are almost identical to their
-untyped variants in untyped KOOL.  The only difference is that we add
-a new type construct for class types and that now methods take typed
-arguments (we achieved this the same way as in typed SIMPLE) and can
-also have an explicit return type.  As a convenience to the
-programmer, a macro adds an explicit type \texttt{void} whenever a
-return type is not provided (e.g., one may not want to write a return
-type for constructors in KOOL typed programs).  The syntax of typed
-exceptions differs from that of typed SIMPLE in that the variable
-bound by \texttt{catch} is now expected to be typed (we use
-\textit{Exp}, but we only give semantics for the case when it has the
-form \textit{\#Id:Type}. */
-
-  syntax #Id ::= "object"
-
-  syntax Type ::= "class" #Id [prec 1]
-
-  syntax Decl ::= "method" #Id "(" Exps ")" ":" Type Stmt
-                | "method" #Id "(" Exps ")" Stmt
-  macro method X:#Id (Es:Exps) S:Stmt = method X(Es) : void S
-
-  syntax Decl ::= "class" #Id "{" Stmts "}"
-                | "class" #Id "extends" #Id "{" Stmts "}"
-
-  syntax Exp ::= Exp "(" Exps ")"      [strict(2) prec(2)]
-
-  syntax Exp ::= "new" #Id "(" Exps ")" [strict(2) prec(1)]
-               | "this"
-               | "super"
-               | Exp "." #Id            [prec(1)]
-               | Exp "instanceOf" #Id   [prec(0) strict(1)]
-               | "cast" Exp "to" #Id    [prec(0) strict(1)]
-
-  syntax Stmt ::= "try" Stmt "catch" "(" Exp ")" Stmt   [prec(90)]
-
-end module
-
-module JAVA
-  imports JAVA-SYNTAX
-
-//@ \section{Unused labels}
-
-  syntax KLabel ::= 'ClassDecHead | 'Public | 'Static
+  syntax KLabel ::= 'Public | 'Static
 
 //@ \section{Semantics}
 
@@ -387,79 +287,66 @@ When done with the first pass, call \texttt{main()}. */
 
 //@ \subsection{Operators}
 
-  context 'Plus(HOLE,,_)
-  context 'Plus(_:KResult,,HOLE)
+  syntax KLabel ::= 'Plus [seqstrict]
   rule 'Plus(I1:#Int,,I2:#Int) => I1 +Int I2
   rule 'Plus(Str1:#String,,Str2:#String) => Str1 +String Str2
   rule 'Plus(Str1,,I) => Str1 +String Int2String(I)
 
-  context 'Minus(HOLE,,_)
-  context 'Minus(_:KResult,,HOLE)
+  syntax KLabel ::= 'Minus [seqstrict]
   rule 'Minus(I1,,I2) => _-Int_(I1,I2)
 
-  context 'Mul(HOLE,,_)
-  context 'Mul(_:KResult,,HOLE)
+  syntax KLabel ::= 'Mul [seqstrict]
   rule 'Mul(I1,,I2) => I1 *Int I2
 
-  context 'Div(HOLE,,_)
-  context 'Div(_:KResult,,HOLE)
+  syntax KLabel ::= 'Div [seqstrict]
   rule 'Div(I1,,I2) => I1 /Int I2 when I2 =/=Bool 0
 
-  context 'Remain(HOLE,,_)
-  context 'Remain(_:KResult,,HOLE)
+  syntax KLabel ::= 'Remain [seqstrict]
   rule 'Remain(I1,,I2) => I1 %Int I2 when I2 =/=Bool 0
 
-  context 'Minus(HOLE)
-  rule 'Minus(I) => -Int I
+  rule 'Minus(I) => 0 -Int I
 
-  context 'Lt(HOLE,,_)
-  context 'Lt(_:KResult,,HOLE)
+  syntax KLabel ::= 'Lt [seqstrict]
   rule 'Lt(I1,,I2) => I1 <Int I2
 
-  context 'LtEq(HOLE,,_)
-  context 'LtEq(_:KResult,,HOLE)
+  syntax KLabel ::= 'LtEq [seqstrict]
   rule 'LtEq(I1,,I2) => I1 <=Int I2
 
-  context 'Gt(HOLE,,_)
-  context 'Gt(_:KResult,,HOLE)
+  syntax KLabel ::= 'Gt [seqstrict]
   rule 'Gt(I1,,I2) => I1 >Int I2
 
-  context 'GtEq(HOLE,,_)
-  context 'GtEq(_:KResult,,HOLE)
+  syntax KLabel ::= 'GtEq [seqstrict]
   rule 'GtEq(I1,,I2) => I1 >=Int I2
 
-  context 'Eq(HOLE,,_)
-  context 'Eq(_:KResult,,HOLE)
+  syntax KLabel ::= 'Eq [seqstrict]
   rule 'Eq(V1:Val,,V2:Val) => V1 ==Bool V2
 
-  context 'NotEq(HOLE,,_)
-  context 'NotEq(_:KResult,,HOLE)
+  syntax KLabel ::= 'NotEq [seqstrict]
   rule 'NotEq(V1,,V2) => V1 =/=Bool V2
 
-  context 'LazyAnd(HOLE,,_)
+  syntax KLabel ::= 'LazyAnd [strict(1)]
   rule 'LazyAnd(true,,K) => K
   rule 'LazyAnd(false,,_) => false
 
-  context 'LazyOr(HOLE,,_)
+  syntax KLabel ::= 'LazyOr [strict(1)]
   rule 'LazyOr(true,,_) => true
   rule 'LazyOr(false,,K) => K
 
-  context 'Not(HOLE)
+  syntax KLabel ::= 'Not [seqstrict]
   rule 'Not(B:#Bool) => notBool(B)
 
 //@ Check array bounds, as part of the dynamic typing policy.
 
-  context 'ArrayAccess(HOLE,,_)
-  context 'ArrayAccess(_:KResult,,HOLE)
-
+  syntax KLabel ::= 'ArrayAccess [seqstrict]
   rule [arrayLookup]:
       'ArrayAccess(arrayRef(_,L,M:#Int),, N:#Int) => lookup(L +Int N)
     when N >=Int 0 andBool N <Int M   [structural anywhere]
 
-  rule sizeOf(arrayRef(_,_:#Int,N)) => N
+//length of the array, as defined in JDK
+  syntax #Id ::= "length"
+  rule 'ExprName(arrayRef(_,_:#Int,N),, length) => N
 
   context 'PreIncr(HOLE => lvalue(HOLE))
-
   rule <k> 'PreIncr(loc(L)) => I:#Int +Int 1 ...</k>
        <store>... L |-> (I => I +Int 1) ...</store> [transition]
 
@@ -512,10 +399,10 @@ expected type. */
   rule 'ListWrap(S1:K) => S1                          [structural]
   rule [sequenceOfStatements]: 'ListWrap(S1,,Ss) => S1 ~> 'ListWrap(Ss)            [structural]
 
-  context 'ExprStm(HOLE)
+  syntax KLabel ::= 'ExprStm [strict]
   rule 'ExprStm(V) => .
 
-  context 'If(HOLE,, _,, _)
+  syntax KLabel ::= 'If [strict(1)]
   rule 'If(true,, S,, _) => S
   rule 'If(false,, _,, S) => S
 
@@ -582,7 +469,7 @@ Both should be threated separately when a throw statement is encountered.*/
 
 /*@ \subsubsection{throw statement}*/
 
-  context 'Throw(HOLE)
+  syntax KLabel ::= 'Throw [strict]
   rule <k> 'Throw(V) ~> _:K
           =>  'If( (subtype typeOf(V), T),, 'Block('ListWrap('LocalVarDecStm('LocalVarDec( 'ListWrap(.List{K}) ,,
               T,, 'ListWrap('VarDec(X ,, V)))),, CatchS)),, 'Throw(V)) ~> K
@@ -656,11 +543,6 @@ Both should be threated separately when a throw statement is encountered.*/
 
   define typeOf('Param(_:K,,K,,_)) => K
 
-  declare types : Exps ->  Types
-  define types(.Exps) => void,.Types
-  define types(X : T,.Exps) => T,.Types
-  define types(X : T, EE:Exp, EEs:Exps) => T, types(EE,EEs)
-
 /*@ Recall that lists of the form "a,b,c" are a syntactic convenience,
 which eventually are translated into cons-lists "(a,(b,(c,.)))".
 Unfortunately, the current K tool is not able to cons-listify
@@ -669,8 +551,8 @@ the RHSes of the rules below, so we have to do it manually.  */
 //@ Sequences of locations
 
   syntax List{K} ::= #Int ".." #Int
-  define N1:#Int..N2:#Int => .List{K}              when N1  >Int N2 [structural]
-  define N1:#Int..N2:#Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2 [structural]
+  define N1:#Int..N2:#Int => .List{K}              when N1  >Int N2
+  define N1:#Int..N2:#Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2
 
 /*@ \subsection{Changes to SIMPLE Semantics}
 We extend/change the semantics of several SIMPLE constructs in order
@@ -815,8 +697,7 @@ those in untyped KOOL. */
 /*@ \subsection{Instance Of}
 Like in untyped KOOL. */
 
-  context 'InstanceOf(HOLE,,_)
-  context 'InstanceOf(_:KResult,,HOLE)
+  syntax KLabel ::= 'InstanceOf [seqstrict]
 
   rule 'InstanceOf( objectClosure((_ <envStack>ListItem(Class::_)...</envStack>)),, class Class) => true
 
@@ -831,8 +712,7 @@ Like in untyped KOOL. */
 Unlike in untyped KOOL, in typed KOOL we actually check that the object
 can indeed be cast to the claimed type. */
 
-  context 'CastRef(HOLE,,_)
-  context 'CastRef(_:KResult,,HOLE)
+  syntax KLabel ::= 'CastRef [seqstrict]
 
   rule <k> 'CastRef(class Class,, objectClosure((<crntClass> _:K </crntClass> Obj)) )
         => 'InstanceOf( objectClosure(Obj),, class Class) ~> true?
@@ -840,6 +720,7 @@ can indeed be cast to the claimed type. */
     [structural]
 
 //@ \subsection{Names}
+
   rule 'AmbName(Ks) => 'ExprName(Ks) [structural anywhere]
   rule 'Field(Ks) => 'ExprName(Ks)   [structural anywhere]
 
@@ -856,11 +737,11 @@ can indeed be cast to the claimed type. */
        <env> Env </env>
     when notBool(X in keys(Env)) [structural]
 
-  context 'ExprName(HOLE,,_:K)
-
   rule [lookup]: <k> X => V:Val ...</k>
        <env>... X|->L ...</env>
        <store>... L|->V ...</store> [transition]
+
+  context 'ExprName(HOLE,,_:K)
 
 /*@ \subsection{Self reference}
 Like in untyped KOOL. */
