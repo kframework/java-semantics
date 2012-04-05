@@ -287,53 +287,96 @@ When done with the first pass, call \texttt{main()}. */
 
 //@ \subsection{Operators}
 
-  syntax KLabel ::= 'Plus [seqstrict]
-  rule 'Plus(I1:#Int,,I2:#Int) => I1 +Int I2
-  rule 'Plus(Str1:#String,,Str2:#String) => Str1 +String Str2
-  rule 'Plus(Str1,,I) => Str1 +String Int2String(I)
+  syntax KLabel ::=
+                  //Infix operators
+                    /* ||  */ 'LazyOr      [strict(1)]
+                  | /* &&  */ 'LazyAnd     [strict(1)]
+                  | /* |   */ 'Or          [seqstrict]
+                  | /* ^   */ 'ExcOr       [seqstrict]
+                  | /* &   */ 'And         [seqstrict]
+                  | /* ==  */ 'Eq          [seqstrict]
+                  | /* !=  */ 'NotEq       [seqstrict]
+                  | /* <   */ 'Lt          [seqstrict]
+                  | /* >   */ 'Gt          [seqstrict]
+                  | /* <=  */ 'LtEq        [seqstrict]
+                  | /* >=  */ 'GtEq        [seqstrict]
+                  | /* <<  */ 'LeftShift   [seqstrict]
+                  | /* >>  */ 'RightShift  [seqstrict]
+                  | /* >>> */ 'URightShift [seqstrict]
+                  | /* +   */ 'Plus        [seqstrict]
+                  | /* -   */ 'Minus       [seqstrict]
+                  | /* *   */ 'Mul         [seqstrict]
+                  | /* /   */ 'Div         [seqstrict]
+                  | /* %   */ 'Remain      [seqstrict]
 
-  syntax KLabel ::= 'Minus [seqstrict]
-  rule 'Minus(I1,,I2) => _-Int_(I1,I2)
+                  //Prefix operators
+                  | /* ++  */ 'PreIncr
+                  | /* --  */ 'PreDecr
+                  | /* !   */ 'Not         [strict]
+                  | /* ~   */ 'Complement  [strict]
+                  | /* +   */ 'Plus        [strict]
+                  | /* -   */ 'Minus       [strict]
 
-  syntax KLabel ::= 'Mul [seqstrict]
-  rule 'Mul(I1,,I2) => I1 *Int I2
+                  //Postfix operators
+                  | /* ++  */ 'PostIncr
+                  | /* --  */ 'PostDecr
 
-  syntax KLabel ::= 'Div [seqstrict]
-  rule 'Div(I1,,I2) => I1 /Int I2 when I2 =/=Bool 0
+  rule /* true  || _ */ 'LazyOr(true,,_) => true
+  rule /* false || K */ 'LazyOr(false,,K) => K
+  rule /* true  && K */ 'LazyAnd(true,,K) => K
+  rule /* false && _ */ 'LazyAnd(false,,_) => false
 
-  syntax KLabel ::= 'Remain [seqstrict]
-  rule 'Remain(I1,,I2) => I1 %Int I2 when I2 =/=Bool 0
+  rule /* I1 | I2 */ 'Or(I1,,I2) => I1 |Int I2
+  rule /* B1 | B2 */ 'Or(B1:#Bool,,B2:#Bool) => B1 orBool B2
+  rule /* I1 ^ I2 */ 'ExcOr(I1,,I2) => I1 xorInt I2
+  rule /* B1 ^ B2 */ 'ExcOr(B1,,B2) => B1 xorBool B2
+  rule /* I1 & I2 */ 'And(I1,,I2) => I1 &Int I2
+  rule /* B1 & B2 */ 'And(B1,,B2) => B1 andBool B2
 
-  rule 'Minus(I) => 0 -Int I
+  rule /* V1 == V2 */ 'Eq(V1:Val,,V2:Val) => V1 ==Bool V2
+  rule /* V1 != V2 */ 'NotEq(V1,,V2) => V1 =/=Bool V2
+  rule /* I1 <  I2 */ 'Lt(I1,,I2) => I1 <Int I2
+  rule /* I1 >  I2 */ 'Gt(I1,,I2) => I1 >Int I2
+  rule /* I1 <= I2 */ 'LtEq(I1,,I2) => I1 <=Int I2
+  rule /* I1 >= I2 */ 'GtEq(I1,,I2) => I1 >=Int I2
 
-  syntax KLabel ::= 'Lt [seqstrict]
-  rule 'Lt(I1,,I2) => I1 <Int I2
+  rule /* I1 <<  NN */ 'LeftShift(I1,,NN:#Nat) => I1 <<Int NN //todo investigate what happens if N < 0
+  rule /* I1 >>  NN */ 'RightShift(I1,,NN) => I1 >>Int NN
+  rule /* I1 >>> NN */ 'URightShift(I1,,NN) => I1 >>Int NN //todo implement distinction with >>
 
-  syntax KLabel ::= 'LtEq [seqstrict]
-  rule 'LtEq(I1,,I2) => I1 <=Int I2
+  rule /* I1 + I2     */ 'Plus(I1:#Int,,I2:#Int) => I1 +Int I2
+  rule /* Str1 + Str2 */ 'Plus(Str1:#String,,Str2:#String) => Str1 +String Str2
+  rule /* Str1 + I    */ 'Plus(Str1,,I) => Str1 +String Int2String(I)
 
-  syntax KLabel ::= 'Gt [seqstrict]
-  rule 'Gt(I1,,I2) => I1 >Int I2
+  rule /* I1 - I2    */ 'Minus(I1,,I2) => _-Int_(I1,I2)
+  rule /* I1 * I2    */ 'Mul(I1,,I2) => I1 *Int I2
+  rule /* I1 / I2    */ 'Div(I1,,I2) => I1 /Int I2 when I2 =/=Bool 0 //todo ArithmeticException
+  rule /* I1 % I2    */ 'Remain(I1,,I2) => I1 %Int I2 when I2 =/=Bool 0 //todo ArithmeticException
 
-  syntax KLabel ::= 'GtEq [seqstrict]
-  rule 'GtEq(I1,,I2) => I1 >=Int I2
+  // ++E
+  context 'PreIncr(HOLE => lvalue(HOLE))
+  rule /* ++loc(L) => loc(L) = lookup(L) + 1 */
+    'PreIncr(loc(L)) => 'Assign(loc(L),, 'Plus(lookup(L),,1))
 
-  syntax KLabel ::= 'Eq [seqstrict]
-  rule 'Eq(V1:Val,,V2:Val) => V1 ==Bool V2
+  // --E
+  context 'PreDecr(HOLE => lvalue(HOLE))
+  rule /* --loc(L) => loc(L) = lookup(L) - 1 */
+    'PreDecr(loc(L)) => 'Assign(loc(L),, 'Minus(lookup(L),,1))
 
-  syntax KLabel ::= 'NotEq [seqstrict]
-  rule 'NotEq(V1,,V2) => V1 =/=Bool V2
+  rule /* ! B    */ 'Not(B:#Bool) => notBool(B)
+  rule /* ~ I    */ 'Complement(I:#Int) => ~Int I
+  rule /* + I    */ 'Plus(I) => I
+  rule /* - I    */ 'Minus(I) => 0 -Int I
 
-  syntax KLabel ::= 'LazyAnd [strict(1)]
-  rule 'LazyAnd(true,,K) => K
-  rule 'LazyAnd(false,,_) => false
+  // E++
+  context 'PostIncr(HOLE => lvalue(HOLE))
+  rule /* loc(L)++ => (loc(L) = lookup(L) + 1) - 1 */
+    'PostIncr(loc(L)) => 'Minus( 'Assign(loc(L),, 'Plus(lookup(L),,1)),, 1)
 
-  syntax KLabel ::= 'LazyOr [strict(1)]
-  rule 'LazyOr(true,,_) => true
-  rule 'LazyOr(false,,K) => K
-
-  syntax KLabel ::= 'Not [seqstrict]
-  rule 'Not(B:#Bool) => notBool(B)
+  // E--
+  context 'PostDecr(HOLE => lvalue(HOLE))
+  rule /* loc(L)-- => (loc(L) = lookup(L) - 1) + 1 */
+    'PostDecr(loc(L)) => 'Plus( 'Assign(loc(L),, 'Minus(lookup(L),,1)),, 1)
 
 //@ Check array bounds, as part of the dynamic typing policy.
 
@@ -345,10 +388,6 @@ When done with the first pass, call \texttt{main()}. */
 //length of the array, as defined in JDK
   syntax #Id ::= "length"
   rule 'ExprName(arrayRef(_,_:#Int,N),, length) => N
-
-  context 'PreIncr(HOLE => lvalue(HOLE))
-  rule <k> 'PreIncr(loc(L)) => I:#Int +Int 1 ...</k>
-       <store>... L |-> (I => I +Int 1) ...</store> [transition]
 
 /*@ \subsubsection{Assignment}
 Typed KOOL allows to assign subtype instance values to supertype lvalues. */

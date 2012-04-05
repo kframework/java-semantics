@@ -1,9 +1,38 @@
-class main {
+public class main {
+	public static void main(string[] args) {
+		int i = 0;
 
-  void main(string[] args) {
-    int a = 2, b=3;
-    int c = -a;
+		//Infix operators
+		true || false;
+		true && false;
+		1 | 2;
+		1 ^ 2;
+		1 & 2;
+		1 == 2;
+		1 != 2;
+		1 < 2;
+		1 > 2;
+		1 <= 2;
+		1 >= 2;
+		1 << 2;
+		1 >> 2;
+		1 >>> 2;
+		1 + 2;
+		1 - 2;
+		1 * 2;
+		1 / 2;
+		1 % 2;
 
-    print("-a = ", c, "\n");
-  }
+		//Prefix operators
+		++ i;
+		-- i;
+		! true;
+		~ 1;
+		+ 1;
+		- 1;
+
+		//Postfix operators
+		i ++;
+		i --;
+	}
 }
