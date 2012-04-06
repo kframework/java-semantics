@@ -7,6 +7,7 @@ module JAVA
   syntax Type ::= "int"
                 | "bool"
                 | "rtString"
+                | "rtType"
                 | "void"
                 | "arrayOf" Type
                     [prec(1) latex "{#1}\texttt{\char91\char93}"]
@@ -150,11 +151,6 @@ function body encounters an explicit \texttt{return} statement. */
 
 //@ \subsection{Types}
 //@Here we rewrite java type ast into simple types
-
-  //workaround to declare String of type #Id.
-  //don't work.
-  //op String : -> #Id
-  //eq String =  #id ("String")
 
   syntax #Id ::= "string"
 
@@ -321,6 +317,9 @@ When done with the first pass, call \texttt{main()}. */
                   | /* ++  */ 'PostIncr
                   | /* --  */ 'PostDecr
 
+                  //Ternary operators
+                  | /* ? : */ 'Cond
+
   rule /* true  || _ */ 'LazyOr(true,,_) => true
   rule /* false || K */ 'LazyOr(false,,K) => K
   rule /* true  && K */ 'LazyAnd(true,,K) => K
@@ -340,13 +339,15 @@ When done with the first pass, call \texttt{main()}. */
   rule /* I1 <= I2 */ 'LtEq(I1,,I2) => I1 <=Int I2
   rule /* I1 >= I2 */ 'GtEq(I1,,I2) => I1 >=Int I2
 
-  rule /* I1 <<  NN */ 'LeftShift(I1,,NN:#Nat) => I1 <<Int NN //todo investigate what happens if N < 0
-  rule /* I1 >>  NN */ 'RightShift(I1,,NN) => I1 >>Int NN
-  rule /* I1 >>> NN */ 'URightShift(I1,,NN) => I1 >>Int NN //todo implement distinction with >>
+  rule /* I1 <<  I2 */ 'LeftShift(I1,,I2) => I1 <<Int (I2 &Int 31) //JLS 15.19
+  rule /* I1 >>  I2 */ 'RightShift(I1,,I2) => I1 >>Int (I2 &Int 31)
+  rule /* I1 >>> I2 */ 'URightShift(I1,,I2) => 'Cond(I2 >=Int 0,, 'RightShift(I1,,I2),,
+      'Plus('RightShift(I1,,I2),, 'LeftShift(2,,'Complement(I2))))
 
   rule /* I1 + I2     */ 'Plus(I1:#Int,,I2:#Int) => I1 +Int I2
-  rule /* Str1 + Str2 */ 'Plus(Str1:#String,,Str2:#String) => Str1 +String Str2
-  rule /* Str1 + I    */ 'Plus(Str1,,I) => Str1 +String Int2String(I)
+  rule /* Str + KR    */ 'Plus(Str:#String,,KR:KResult) => Str +String toString(KR)
+  rule /* KR + Str    */ 'Plus(KR,,Str) => toString(KR) +String Str
+      when typeOf(KR) =/=Bool rtString
 
   rule /* I1 - I2    */ 'Minus(I1,,I2) => _-Int_(I1,I2)
   rule /* I1 * I2    */ 'Mul(I1,,I2) => I1 *Int I2
@@ -378,27 +379,89 @@ When done with the first pass, call \texttt{main()}. */
   rule /* loc(L)-- => (loc(L) = lookup(L) - 1) + 1 */
     'PostDecr(loc(L)) => 'Plus( 'Assign(loc(L),, 'Minus(lookup(L),,1)),, 1)
 
-//@ Check array bounds, as part of the dynamic typing policy.
+  //semantically if and ?: are equivalent
+  rule 'Cond(Ks) => 'If(Ks)
 
-  syntax KLabel ::= 'ArrayAccess [seqstrict]
-  rule [arrayLookup]:
-      'ArrayAccess(arrayRef(_,L,M:#Int),, N:#Int) => lookup(L +Int N)
-    when N >=Int 0 andBool N <Int M   [structural anywhere]
+/*@ \subsubsection{Assignment operators}
+Typed KOOL allows to assign subtype instance values to supertype lvalues.
+Assignment operators are seqstrict according to JLS. */
 
-//length of the array, as defined in JDK
-  syntax #Id ::= "length"
-  rule 'ExprName(arrayRef(_,_:#Int,N),, length) => N
+  syntax KLabel ::=
+                  | /* =    */ 'Assign
+                  | /* +=   */ 'AssignPlus
+                  | /* -=   */ 'AssignMinus
+                  | /* *=   */ 'AssignMul
+                  | /* /=   */ 'AssignDiv
+                  | /* &=   */ 'AssignAnd
+                  | /* |=   */ 'AssignOr
+                  | /* ^=   */ 'AssignExcOr
+                  | /* %=   */ 'AssignRemain
+                  | /* <<=  */ 'AssignLeftShift
+                  | /* >>=  */ 'AssignRightShift
+                  | /* >>>= */ 'AssignURightShift
 
-/*@ \subsubsection{Assignment}
-Typed KOOL allows to assign subtype instance values to supertype lvalues. */
-
-  //assignment is seqstrict according to JLS
   context 'Assign((HOLE => lvalue(HOLE)),,_)
   context 'Assign(_:KResult,,HOLE)
 
   rule <k> 'Assign(loc(L),,V) => subtype typeOf(V), typeOf(K) ~> true?
            ~> unsafeCast(V,typeOf(K:K)) ...</k>
        <store>... L |-> (K => unsafeCast(V, typeOf(K))) ...</store> [transition]
+
+  /* loc(L) += E => loc(L) = lookup(L) + E */
+  context 'AssignPlus((HOLE => lvalue(HOLE)),,_)
+  rule 'AssignPlus(loc(L),,E) => 'Assign(loc(L),, 'Plus(lookup(L),, E))
+
+  /* loc(L) -= E => loc(L) = lookup(L) - E */
+  context 'AssignMinus((HOLE => lvalue(HOLE)),,_)
+  rule 'AssignMinus(loc(L),,E) => 'Assign(loc(L),, 'Minus(lookup(L),, E))
+
+  /* loc(L) *= E => loc(L) = lookup(L) * E */
+  context 'AssignMul((HOLE => lvalue(HOLE)),,_)
+  rule 'AssignMul(loc(L),,E) => 'Assign(loc(L),, 'Mul(lookup(L),, E))
+
+  /* loc(L) /= E => loc(L) = lookup(L) / E */
+  context 'AssignDiv((HOLE => lvalue(HOLE)),,_)
+  rule 'AssignDiv(loc(L),,E) => 'Assign(loc(L),, 'Div(lookup(L),, E))
+
+  /* loc(L) &= E => loc(L) = lookup(L) & E */
+  context 'AssignAnd((HOLE => lvalue(HOLE)),,_)
+  rule 'AssignAnd(loc(L),,E) => 'Assign(loc(L),, 'And(lookup(L),, E))
+
+  /* loc(L) |= E => loc(L) = lookup(L) | E */
+  context 'AssignOr((HOLE => lvalue(HOLE)),,_)
+  rule 'AssignOr(loc(L),,E) => 'Assign(loc(L),, 'Or(lookup(L),, E))
+
+  /* loc(L) ^= E => loc(L) = lookup(L) ^ E */
+  context 'AssignExcOr((HOLE => lvalue(HOLE)),,_)
+  rule 'AssignExcOr(loc(L),,E) => 'Assign(loc(L),, 'ExcOr(lookup(L),, E))
+
+  /* loc(L) %= E => loc(L) = lookup(L) % E */
+  context 'AssignRemain((HOLE => lvalue(HOLE)),,_)
+  rule 'AssignRemain(loc(L),,E) => 'Assign(loc(L),, 'Remain(lookup(L),, E))
+
+  /* loc(L) <<= E => loc(L) = lookup(L) << E */
+  context 'AssignLeftShift((HOLE => lvalue(HOLE)),,_)
+  rule 'AssignLeftShift(loc(L),,E) => 'Assign(loc(L),, 'LeftShift(lookup(L),, E))
+
+  /* loc(L) >>= E => loc(L) = lookup(L) >> E */
+  context 'AssignRightShift((HOLE => lvalue(HOLE)),,_)
+  rule 'AssignRightShift(loc(L),,E) => 'Assign(loc(L),, 'RightShift(lookup(L),, E))
+
+  /* loc(L) >>>= E => loc(L) = lookup(L) >>> E */
+  context 'AssignURightShift((HOLE => lvalue(HOLE)),,_)
+  rule 'AssignURightShift(loc(L),,E) => 'Assign(loc(L),, 'URightShift(lookup(L),, E))
+
+/*@ \subsubsection{Array access}
+Check array bounds, as part of the dynamic typing policy. */
+
+  syntax KLabel ::= 'ArrayAccess [seqstrict]
+  rule [arrayLookup]:
+      'ArrayAccess(arrayRef(_,L,M:#Int),, N:#Int) => lookup(L +Int N)
+    when N >=Int 0 andBool N <Int M   [structural anywhere]
+
+//Array length, as defined in JDK
+  syntax #Id ::= "length"
+  rule 'ExprName(arrayRef(_,_:#Int,N),, length) => N
 
 /*@\subsection{Return} At method return, we have to check that the type
 of the returned
@@ -460,18 +523,20 @@ expected type. */
 
   rule <k> print => printMethodVal ...</k>
 
-  rule <k> 'Invoke(printMethodVal,, 'ListWrap(V,,Vals:List{KResult} => Vals)) ...</k>
-       <out>... .=>ListItem(V)</out>
-    when typeOf(V) ==Bool int orBool typeOf(V) ==Bool rtString  [transition]
-
-  rule <k> 'Invoke(printMethodVal,, 'ListWrap((V => typeOf(V)),,Vals:List{KResult})) ...</k>
-    when typeOf(V) =/=Bool int andBool typeOf(V) =/=Bool rtString  [transition]
-
-  rule <k> 'Invoke(printMethodVal,, 'ListWrap((class Class => Id2String(Class)),,
-      Vals:List{KResult})) ...</k>
-    [transition]
+  rule <k> 'Invoke(printMethodVal,, 'ListWrap(KR,,KRs:List{KResult} => KRs)) ...</k>
+       <out>... .=>ListItem(toString(KR))</out> [transition]
 
   rule 'Invoke(printMethodVal,,'ListWrap(.List{K})) => nothing  [structural]
+
+/*@ \subsubsection{toString}
+Converts various result types to string type, mainly for printing.*/
+
+  declare toString :  KResult -> #String
+  define toString(Str) => Str
+  define toString(I) => Int2String(I)
+  define toString(true) => "true"
+  define toString(false) => "false"
+  define toString(class Class) => Id2String(Class)
 
 /*@ \subsubsection{Typed exceptions}
 Exceptions are propagated now until a catch that can bind them is
@@ -570,6 +635,7 @@ Both should be threated separately when a throw statement is encountered.*/
   define typeOf(I) => int
   define typeOf(B) => bool
   define typeOf(_:#String) => rtString
+  define typeOf(_:Type)  => rtType
 
   define typeOf(arrayRef(T,_:#Int,_:#Int)) => T
 
@@ -679,7 +745,7 @@ those in untyped KOOL. */
         ClassName
       ),, _:K),,
       'ListWrap(
-        Vals
+        Vals:KResult
       ),,
       _:K
     ) ~> K

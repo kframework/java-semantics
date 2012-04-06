@@ -1,6 +1,6 @@
 public class main {
 	public static void main(string[] args) {
-		int i = 0;
+		int a = 0, i = 1;
 
 		//Infix operators
 		true || false;
@@ -34,5 +34,24 @@ public class main {
 		//Postfix operators
 		i ++;
 		i --;
+
+    //Ternary operator
+    4 > 2 ? 4 : 2;
+
+		//Assignment operators
+		a = i;
+		a += i;
+		a -= i;
+		a *= i;
+		a /= i;
+		a &= i;
+		a |= i;
+		a ^= i;
+		a %= i;
+		a <<= i;
+		a >>= i;
+		a >>>= i;
+
+    print("Done!");
 	}
 }
