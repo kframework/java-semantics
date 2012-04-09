@@ -48,5 +48,6 @@ public class main {
     int[][] rez = matrixMul(m1, m2);
     print("M1 * M2 = ","\n");
     matrixPrint(rez);
+    print("Done!", "\n");
   }
 }

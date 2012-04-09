@@ -31,8 +31,9 @@ public class main {
 			}
 			x[j+1] = v;
 		}
-		print("Done!", "\n", "The sorted sequence is");
+		print("Sort completed.", "\n", "The sorted sequence is");
 		printAll(n);
 		print("\n");
+    print("Done!","\n");
 	}
 }

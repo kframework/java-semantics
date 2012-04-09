@@ -1,0 +1,36 @@
+List of implemented features:
+
+1. Migrated kool semantics to java syntax.
+2. Java array allocation.
+3. Array length.
+4. Complete for.
+5. Complete try/catch/finally/throw.
+6. All integer and boolean operators, including bitwise ops and bit shift.
+  Including unsigned left shift operator >>>. The only difference from java
+  is that here integers have unlimited values, thus no overflow can occur.
+  Also ternary operator ?:
+7. All composite assignment operators.
+8. do statement
+9. Constructors, simplified semantcs. Constructors are just replaced
+with methods with same name and return type void.
+10. break statement with and without labels.
+11. continue statement with and without labels.
+
+
+Limitations:
+1. Id's refered in semantics cannot start with capital letters. This
+should be resolved in K, otherwise we would need workarounds to deal
+with java class names.
+
+2. K syntax limitation:
+A production cannot have a non-terminal of sort List{K} and another
+non-terminal of sort some List, surrounded by terminals.
+
+Solution: make the sort "some list" to have a non-terminal on just one side.
+Should be reported as a bug.
+
+Non-related to java semantics:
+1. Investigated various java language test suites over the net.
+  So far, the most adequate for this project is jacks/tests/runtime/jls,
+  part of mauve.
+
