@@ -630,6 +630,35 @@ Both should be threated separately when a throw statement is encountered.*/
        ...</stack> C:Bag </control>
        <env> Env </env>
 
+//@ \subsection{Switch statement}
+
+syntax K ::= "switchImpl" Val "," List{K}
+
+context 'Switch(HOLE,,_)
+
+rule [SwitchToSwitchImpl]:
+    'Switch(V,, 'SwitchBlock('ListWrap(Ks),,_)) => switchImpl V, Ks
+
+context switchImpl _, ( 'SwitchGroup('ListWrap('Case(HOLE)),,_),, _:List{K} )
+
+rule [SwitchCaseNotMatch]:
+    switchImpl V, (( 'SwitchGroup('ListWrap('Case(V2:Val)),,_) => .List{K} ),,_)
+when V =/=Bool V2
+
+rule [SwitchEmptyDiscard]:
+    switchImpl _, .List{K} => .
+
+/*@Once case of first switch group matches, the whole switch is replaced
+by it's block. The execution rules for switch will discard switch-related
+constructs and will execute the statements. */
+
+rule [SwitchCaseMatch]:
+    ( switchImpl V, ('SwitchGroup('ListWrap('Case(V)),,S),,Ks) )
+    =>   'ListWrap( 'SwitchGroup('ListWrap('Case(V)),,S),,Ks )
+
+rule [SwitchGroupExec]:
+    'SwitchGroup(_:K,, S) => S
+
 //@ \subsection{Auxiliary operations}
 
 //@ \texttt{env}

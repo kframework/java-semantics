@@ -1,0 +1,16 @@
+Test plan for switch statement.
+
+1. Multiple swtch groups. One case for group.
+2. Multiple switch groups. Multiple cases for group. Multiple trailing cases.
+3. All as previous + default case. Default case is not the last one, so there is
+  a switch group after default and some trailing cases too. Default is in the same group
+  with another case, second after that case.
+4. All as previous + break.
+5. Interaction with loops. One loop inside a switch group, one loop enclosing
+  the switch. 3 breaks:
+    - break in the inner loop
+    - break in switch
+    - break in outer loop after switch
+6. Interaction with continue. Switch in loop. Statement continue in switch.
+7. Interaction with break with label.
+  Switch in labeled block. Break with label in switch.
