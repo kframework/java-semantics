@@ -61,9 +61,6 @@ function body encounters an explicit \texttt{return} statement. */
                 | "void"
                 | "arrayOf" Type
                     [prec(1) latex "{#1}\texttt{\char91\char93}"]
-                | "function" "from" List{KResult} "to" Type
-                    [prec(1) latex "({#1}\ \texttt{->}\ {#2})"]
-                | "class" #Id
 
 /*@ \subsection{Values and results}
 These are similar to those of untyped SIMPLE, except that the array
@@ -81,12 +78,12 @@ typed SIMPLE), but only to parse programs ``enough'' to give them
 semantics.  In other words, the \K syntax is the ``syntax of the
 semantics''.  */
 
-  syntax Val ::= #Int | #Bool | #String
-               | "arrayRef" "(" Type "," #Int "," #Int ")"
-               | "printMethodVal"
-               | "readMethodVal"
-  syntax Val ::= "undefined" "(" Type ")" [latex("\bot_{#1}")]
-  syntax Val ::= "nothing"
+syntax Val ::= #Int | #Bool | #String
+             | "arrayRef" "(" Type "," #Int "," #Int ")"
+             | "printMethodVal"
+             | "readMethodVal"
+syntax Val ::= "undefined" "(" Type ")" [latex("\bot_{#1}")]
+syntax Val ::= "nothing"
 
   syntax KResult ::= Val | Type
 
@@ -105,6 +102,5 @@ Converts various result types to string type, mainly for printing.*/
   define toString(I:#Int) => Int2String(I)
   define toString(true) => "true"
   define toString(false) => "false"
-  define toString(class Class:#Id) => Id2String(Class)
 
 end module

@@ -3,7 +3,14 @@ module JAVA-CLASSES
     imports JAVA-EXPRESSIONS
     imports JAVA-STATEMENTS
 
- syntax #Id ::= "string"
+syntax #Id ::= "string"
+
+syntax Type ::= "function" "from" List{KResult} "to" Type
+                  [prec(1) latex "({#1}\ \texttt{->}\ {#2})"]
+              | "class" #Id
+
+syntax Val ::= "objectClosure" "(" Bag ")"
+              | "methodClosure" "(" #Id "," #Int "," K "," K "," Type ")"
 
 //@ \subsection{Unused Labels}
   syntax KLabel ::= 'Public | 'Static | 'AssertStm
@@ -11,9 +18,6 @@ module JAVA-CLASSES
 /*@ \subsection{Object and method closures}
 The only change to untyped KOOL's values is that closures are now typed
 (their last argument holds their type). */
-
-syntax Val ::= "objectClosure" "(" Bag ")"
-              | "methodClosure" "(" #Id "," #Int "," K "," K "," Type ")"
 
 //@ \subsection{Type labels}
 //@Here we rewrite java type ast into simple types
@@ -169,6 +173,9 @@ When done with the first pass, call \texttt{main()}. */
   define typeOf(methodClosure(_:#Id,_:#Int,_,_,T)) => T
 
   define typeOf('Param(_:K,,K,,_)) => K
+
+  define toString(class Class:#Id) => Id2String(Class)
+  define toString(objectClosure(Bag:Bag)) => toString(typeOf(objectClosure(Bag)))
 
 /*@ Recall that lists of the form "a,b,c" are a syntactic convenience,
 which eventually are translated into cons-lists "(a,(b,(c,.)))".
