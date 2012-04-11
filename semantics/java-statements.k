@@ -133,6 +133,29 @@ rule [IfFalse]:
 rule [IfThenDesugar]:
     'If(E:K,,S1:K) => 'If(E:K,,S1:K,,'Block('ListWrap(.List{K})))
 
+//@ \section{Assert statement}
+
+syntax #Id ::= assertionError
+
+context 'AssertStm(HOLE,,_:List{K})
+
+rule [AssertStmTrueDiscard]:
+    'AssertStm(true,,_:List{K}) => .
+
+rule [AssertStmOneArgDesugar]:
+    'AssertStm(false) => 'AssertStm(false,,"")
+        [structural]
+
+context 'AssertStm(false,,HOLE)
+
+rule [AssertStm]:
+    'AssertStm(false,, V) => 'Throw('NewInstance(
+      'None(.List{K}),,
+      'ClassOrInterfaceType( 'TypeName(assertionError),, 'None(.List{K}) ),,
+      'ListWrap( toString(V) ),,
+      'None(.List{K})
+    ))
+
 //@ \section{Switch statement}
 
 syntax K ::= "switchImpl"
