@@ -16,6 +16,7 @@ with methods with same name and return type void.
 10. break statement with and without labels.
 11. continue statement with and without labels.
 12. switch statement
+13. empty statement.
 
 Limitations:
 1. Id's refered in semantics cannot start with capital letters. This
