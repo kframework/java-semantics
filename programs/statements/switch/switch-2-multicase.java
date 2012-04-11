@@ -4,11 +4,13 @@ class main {
 	static void howMany(int k) {
     print(k,": ");
 		switch (k) {
-			case 1 + 0: print("1 ");
-      case 2:
-			case 3: print("2-3 ");
-			case 4:
-      case 5:
+			case 1+0:
+        print("1 ");
+      case 2+0:
+			case 3+0:
+        print("2-3 ");
+			case 4+0:
+      case 5+0:
 		}
     print("\n");
 	}

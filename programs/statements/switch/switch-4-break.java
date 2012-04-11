@@ -1,8 +1,6 @@
 /*
-All as previous + default case. Default case is not the first one,
-  not the last one, so there is a switch group after default and some
-  trailing cases too. Default is in the same group with another cases,
-  having one case before and one case after.
+  As in previous test for switch + break statement.
+  All switch features are exposed in this test.
 */
 
 class main {
@@ -11,6 +9,7 @@ class main {
 		switch (k) {
 			case 1:
         print("1 ");
+        break;
       case 2:
 			default:
       case 3:
@@ -38,7 +37,7 @@ class main {
 }
 
 /*
-1: 1 2-default-3 4-5
+1: 1
 2: 2-default-3 4-5
 3: 2-default-3 4-5
 4: 4-5
