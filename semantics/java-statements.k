@@ -95,7 +95,7 @@ context 'LocalVarDec(HOLE,,_)
 rule [LocalVarDec]:
     <k> 'LocalVarDec(T:Type,,'ListWrap('VarDec(X:#Id))) => . ...</k>
     <env> Env:Map => Env[L:#Int/X] </env>
-    <store>... . => L |-> undefined(T) ...</store>
+    <store>... . => L |-> undefined(T) ofType T ...</store>
     <nextLoc> L => L +Int 1 </nextLoc>
 
 //@ \section{Empty statement} JLS $14.6
@@ -118,7 +118,7 @@ rule [Labeled]:
 context 'ExprStm(HOLE)
 
 rule [ExprStm]:
-    'ExprStm(V:Val) => .
+    'ExprStm(KR:KResult) => .
 
 //@ \section{If statement}
 
@@ -149,7 +149,7 @@ rule [AssertStmOneArgDesugar]:
 context 'AssertStm(false,,HOLE)
 
 rule [AssertStm]:
-    'AssertStm(false,, V) => 'Throw('NewInstance(
+    'AssertStm(false,, V:Val) => 'Throw('NewInstance(
       'None(.List{K}),,
       'ClassOrInterfaceType( 'TypeName(assertionError),, 'None(.List{K}) ),,
       'ListWrap( toString(V) ),,
@@ -493,8 +493,8 @@ rule [ReturnNothingDesugar]:
 
 rule [Return]:
     <k>
-      'Return('Some(V)) ~> _
-      => subtype typeOf(V), T ~> true? ~> unsafeCast(V, T) ~> K:K
+      'Return('Some(KR)) ~> _
+      => subtype typeOf(KR), T ~> true? ~> unsafeCast(KR, T) ~> K:K
     </k>
    <control>
      <stack> ListItem((return,_,_,K,Env,C)) => . ...</stack>

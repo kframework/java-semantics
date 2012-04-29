@@ -47,7 +47,7 @@ module JAVA-EXPRESSIONS
                   | /* ? : */ 'Cond
 
   rule /* true  || _ */ 'LazyOr(true,,_) => true
-  rule /* false || K */ 'LazyOr(false,,K) => K
+  rule /* false || K */ 'LazyOr(false,,K:K) => K
   rule /* true  && K */ 'LazyAnd(true,,K) => K
   rule /* false && _ */ 'LazyAnd(false,,_) => false
 
@@ -129,9 +129,14 @@ Assignment operators are seqstrict according to JLS. */
   context 'Assign((HOLE => lvalue(HOLE)),,_)
   context 'Assign(_:KResult,,HOLE)
 
-  rule <k> 'Assign(loc(L),,V) => subtype typeOf(V), typeOf(K) ~> true?
-           ~> unsafeCast(V,typeOf(K:K)) ...</k>
-       <store>... L |-> (K => unsafeCast(V, typeOf(K))) ...</store> [transition]
+  rule <k> 'Assign(loc(L),,V) => subtype typeOf(V), T:Type ~> true?
+           ~> unsafeCast(V,T) ...</k>
+       <store>... L |-> (_ => unsafeCast(V, T)) ofType T ...</store> [transition]
+
+  //todo check whether unsafeCast in <store> is needed
+  rule <k> 'Assign(loc(L),,V ofType T1:Type) => subtype T1, T2 ~> true?
+           ~> unsafeCast(V ofType T1,T2) ...</k>
+       <store>... L |-> (_ => V) ofType T2:Type ...</store> [transition]
 
   /* loc(L) += E => loc(L) = lookup(L) + E */
   context 'AssignPlus((HOLE => lvalue(HOLE)),,_)
@@ -179,18 +184,42 @@ Assignment operators are seqstrict according to JLS. */
 
 /*@ \subsubsection{lookup} */
   syntax K ::= "lookup" "(" #Int ")"
-  rule <k> lookup(L) => V:Val ...</k> <store>... L |-> V ...</store> [transition]
+  rule <k> lookup(L) => V:Val ofType T ...</k>
+       <store>... L |-> V ofType T ...</store> [transition]
 
 /*@ \subsubsection{Array access}
 Check array bounds, as part of the dynamic typing policy. */
 
-  syntax KLabel ::= 'ArrayAccess [seqstrict]
-  rule [arrayLookup]:
-      'ArrayAccess(arrayRef(_,L,M:#Int),, N:#Int) => lookup(L +Int N)
-    when N >=Int 0 andBool N <Int M   [structural anywhere]
+syntax KLabel ::= 'ArrayAccess [seqstrict]
+
+rule [arrayAccess]:
+    <k> 'ArrayAccess(ref OL:#Int ofType _,, N:#Int) => lookup(L +Int N) ...</k>
+    <store>... OL |-> arrayObject(_,L,M:#Int) ...</store>
+when N >=Int 0 andBool N <Int M   [structural anywhere]
+
+//required because [anywhere] on previous rule don't work
+rule [lvalueArrayAccess]:
+    <k> lvalue( 'ArrayAccess(ref OL:#Int ofType _,, N:#Int) => lookup(L +Int N) ) ...</k>
+    <store>... OL |-> arrayObject(_,L,M:#Int) ...</store>
+when N >=Int 0 andBool N <Int M   [structural]
 
 //Array length, as defined in JDK
-  syntax #Id ::= "length"
-  rule 'ExprName(arrayRef(_,_:#Int,N),, length) => N
+syntax #Id ::= "length"
+
+rule [arrayLength]:
+    <k> 'ExprName(ref OL ofType _,, length) => N ...</k>
+    <store>... OL |-> arrayObject(_,_:#Int,N) ...</store>
+
+//todo temporary rule, TypedVal erasure
+rule
+    V ofType T => V
+when      getKLabel(V) =/=Bool 'methodObject`(_`,_`,_`,_`)
+  andBool getKLabel(V) =/=Bool 'ref_
+    [structural]
+
+//todo temporary rule
+declare valueOf : KResult -> Val
+define valueOf(V) => V
+define valueOf(V ofType T) => V
 
 end module
