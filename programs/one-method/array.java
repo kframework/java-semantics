@@ -7,4 +7,3 @@ public class main {
 		print("v[0]=", v[0], "\n");
 	}
 }
-// v[0]=1

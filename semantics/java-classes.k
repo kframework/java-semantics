@@ -9,18 +9,8 @@ syntax Type ::= "function" "from" List{KResult} "to" Type
                   [prec(1) latex "({#1}\ \texttt{->}\ {#2})"]
               | "class" #Id
 
-syntax Val ::= "classObject" "(" Bag ")"
-                  //Bag content:
-                  //  <crntClass> - object class
-                  //  <envStack>  - object members environment,
-                  //                sliced on layers by inheritance
-
-              | "methodObject" "("
-                  #Id ","     //F - method name
-                  #Int ","    //OL - object location in store
-                  K ","       //'ListWrap(Params) - params declaration
-                  K           //S - method body
-                ")"
+syntax Val ::= "objectClosure" "(" Bag ")"
+              | "methodClosure" "(" #Id "," #Int "," K "," K "," Type ")"
 
 //@ \subsection{Unused Labels}
   syntax KLabel ::= 'Public | 'Static | 'AssertStm
@@ -70,28 +60,18 @@ and assign the right type ($T$) to the allocated array locations. */
   syntax K ::= "newArrayImpl" "(" Type "," K "," K ")"
   rule [multiDimArrayAlloc]: newArrayImpl(T, 'ListWrap(Dims:List{K},,Dim1K:K,,Dim2K:K), InitExp) => newArrayImpl(arrayOf T, 'ListWrap(Dims,,Dim1K), newArrayImpl(T, 'ListWrap(Dim2K), InitExp)) [structural]
 
-context newArrayImpl(_:KResult, 'ListWrap('Dim(HOLE)), _)
-
-rule [arrayAlloc]:
-    <k>
-      newArrayImpl(T, 'ListWrap('Dim(NI:#Int)), InitExp:K)
-        => evalAndStore(LI +Int 1 .. LI +Int NI, InitExp) ~> ref LI ofType arrayOf T
-      ...
-    </k>
-    <store>
-      ...
-      ( . => LI |-> arrayObject( arrayOf T, LI +Int 1, NI) )
-      ( . => LI +Int 1 .. LI +Int NI |-> (undefined(T) ofType T) )
-      ...
-    </store>
-    <nextLoc> LI:#Int => LI +Int NI +Int 1 </nextLoc>
+  context newArrayImpl(_:KResult, 'ListWrap('Dim(HOLE)), _)
+  rule [arrayAlloc]: <k> newArrayImpl(T, 'ListWrap('Dim(NI:#Int)), InitExp:K)
+          => evalAndStore((LI .. LI +Int _-Int_(NI,1)),InitExp) ~> arrayRef( arrayOf T, LI, NI) ...</k>
+       <store>... . => LI .. LI +Int _-Int_(NI,1) |-> undefined(void) ...</store>
+       <nextLoc> LI:#Int => LI +Int NI </nextLoc>
 
   syntax K ::= "evalAndStore" "(" List{K}  "," K ")"
   rule evalAndStore((I1:#Int,,I2:#Int,,Ks:List{K}),InitExp) => evalAndStore(I1,InitExp) ~> evalAndStore((I2,,Ks),InitExp)
     [structural]
   context evalAndStore(_:KResult, HOLE)
-  rule <k> evalAndStore(L:#Int,KR) =>. ...</k>
-       <store>... L |->(_ => valueOf(KR)) ofType _:Type ...</store>
+  rule <k> evalAndStore(L:#Int,V) =>. ...</k>
+       <store>... L |->(_=>V) ...</store>
   rule evalAndStore(.List{K}, _) => . [structural]
 
 /*@ \subsection{Method declaration}
@@ -116,7 +96,7 @@ the only difference is the addition of the types.  */
        <location> OL:#Int </location>
        <env> Env => Env[L/Name] </env>
        <store>...
-         .  => L |-> methodObject(Class, OL, 'ListWrap(Params), S) ofType MethodType
+         .  => L |-> methodClosure(Class, OL, 'ListWrap(Params), S, MethodType)
        ...</store>
        <nextLoc> L => L +Int 1 </nextLoc>
 
@@ -166,21 +146,16 @@ When done with the first pass, call \texttt{main()}. */
 
 //@ \texttt{bindto} also checks the well-formedness of the function parameters
 
-syntax K ::= "bindto" List{K} "," List{KResult}
+  syntax K ::= "bindto" List{K} "," List{KResult}
 
-context bindto('Param(_:K,,HOLE,,_),, _:List{K}), _:List{K}
+  context bindto('Param(_:K,,HOLE,,_),, _:List{K}), _:List{K}
 
-rule [bindto]:
-    <k>
-      ( . => 'ExprStm('Assign('ExprName(X),,KR)) )
-      ~> bindto ('Param(_,,T,,X),, Params => Params), (KR:KResult,, ParamValues => ParamValues)
-      ...
-    </k>
-    <env> Env:Map => Env[L/X] </env>
-    <store>... . => L |-> undefined(T) ofType T ...</store>
-    <nextLoc> L => L +Int 1 </nextLoc>
-
-rule <k> bindto .List{K},.List{K} => . ...</k>  [structural]
+  rule <k> (. => 'ExprStm('Assign('ExprName(X),,V))) ~> bindto('Param(_,,T,,X),, Params => Params),
+        (V,,ParamValues => ParamValues) ...</k>
+       <env> Env:Map => Env[L/X] </env>
+       <store>... . => L |-> undefined(T) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
+  rule <k> bindto .List{K},.List{K} => . ...</k>  [structural]
 
 //@ \texttt{typeOf definition}
   define typeOf(_:#Int) => int
@@ -188,17 +163,19 @@ rule <k> bindto .List{K},.List{K} => . ...</k>  [structural]
   define typeOf(_:#String) => rtString
   define typeOf(_:Type)  => rtType
 
+  define typeOf(arrayRef(T,_:#Int,_:#Int)) => T
+
   define typeOf(undefined(T)) => T
   define typeOf(nothing) => void
 
-  define typeOf(classObject(_ <envStack> ListItem((Class,_)) ...</envStack>))
+  define typeOf(objectClosure(_ <envStack> ListItem((Class,_)) ...</envStack>))
     => class Class
+  define typeOf(methodClosure(_:#Id,_:#Int,_,_,T)) => T
 
   define typeOf('Param(_:K,,K,,_)) => K
-  define typeOf(V ofType T) => T
 
   define toString(class Class:#Id) => Id2String(Class)
-  define toString(classObject(Bag:Bag)) => toString(typeOf(classObject(Bag)))
+  define toString(objectClosure(Bag:Bag)) => toString(typeOf(objectClosure(Bag)))
 
 /*@ Recall that lists of the form "a,b,c" are a syntactic convenience,
 which eventually are translated into cons-lists "(a,(b,(c,.)))".
@@ -238,9 +215,8 @@ Performs unsafe casting.  One should only use it in combination with
 the subtype relation above.  */
 
   define unsafeCast(V,T) => V when typeOf(V) ==Bool T
-  define unsafeCast(classObject(<crntClass>_:K </crntClass> Obj), class Class)
-    => classObject(<crntClass> Class </crntClass> Obj)
-  define unsafeCast(ref OL ofType T, T) => ref OL ofType T
+  define unsafeCast(objectClosure(<crntClass>_:K </crntClass> Obj), class Class)
+    => objectClosure(<crntClass> Class </crntClass> Obj)
 
 /*@ \subsection{Class declaration}
 Like in untyped KOOL. */
@@ -336,33 +312,23 @@ those in untyped KOOL. */
        <envStack> . => ListItem((Class, <env>Env</env>)) ...</envStack>
     [structural]
 
-syntax K ::= storeObj
-
-rule [storeObj]:
-    <k> storeObj => . ...</k>
-    <crntObj>
-      Obj
-      <crntClass> Class </crntClass>
-      (<location> L </location> => .)
-    </crntObj>
-    <store>
-      ...
-      . => L |-> classObject(Obj <crntClass> Class </crntClass>) ofType class Class
-      ...
-    </store>
+  syntax K ::= storeObj
+  rule <k> storeObj => . ...</k>
+       <crntObj> Obj (<location> L </location> => .) </crntObj>
+       <store>... . => L |-> objectClosure(Obj) ...</store>
 
 /*@ \subsection{Instance Of}
 Like in untyped KOOL. */
 
   syntax KLabel ::= 'InstanceOf [seqstrict]
 
-  rule 'InstanceOf( classObject((_ <envStack>ListItem((Class, _))...</envStack>)),, class Class) => true
+  rule 'InstanceOf( objectClosure((_ <envStack>ListItem((Class, _))...</envStack>)),, class Class) => true
 
-  rule 'InstanceOf( classObject((_ <envStack> ListItem((Class1:#Id, _))
+  rule 'InstanceOf( objectClosure((_ <envStack> ListItem((Class1:#Id, _))
                        => . ...</envStack>)),, class Class2:#Id)
     when Class1 =/=Bool Class2  [structural]
 
-  rule 'InstanceOf( classObject((_ <envStack> .List </envStack>)),, class Class)
+  rule 'InstanceOf( objectClosure((_ <envStack> .List </envStack>)),, class Class)
     => false
 
 /*@ \subsection{Cast}
@@ -371,9 +337,9 @@ can indeed be cast to the claimed type. */
 
   syntax KLabel ::= 'CastRef [seqstrict]
 
-  rule <k> 'CastRef(class Class,, classObject((<crntClass> _:K </crntClass> Obj)) )
-        => 'InstanceOf( classObject(Obj),, class Class) ~> true?
-             ~> classObject(<crntClass> Class </crntClass> Obj) ...</k>
+  rule <k> 'CastRef(class Class,, objectClosure((<crntClass> _:K </crntClass> Obj)) )
+        => 'InstanceOf( objectClosure(Obj),, class Class) ~> true?
+             ~> objectClosure(<crntClass> Class </crntClass> Obj) ...</k>
     [structural]
 
 //@ \subsection{Names}
@@ -394,22 +360,22 @@ can indeed be cast to the claimed type. */
        <env> Env </env>
     when notBool(X in keys(Env)) [structural]
 
-  rule [lookup]: <k> X => V:Val ofType T ...</k>
+  rule [lookup]: <k> X => V:Val ...</k>
        <env>... X|->L ...</env>
-       <store>... L|->V ofType T ...</store> [transition]
+       <store>... L|->V ...</store> [transition]
 
   context 'ExprName(HOLE,,_:K)
 
 /*@ \subsection{Self reference}
 Like in untyped KOOL. */
 
-  rule <k> 'This(.List{K}) => classObject(Obj) ...</k>
+  rule <k> 'This(.List{K}) => objectClosure(Obj) ...</k>
        <crntObj> Obj </crntObj>
 
 /*@ \subsection{Object member access} */
 
   //o.x
-  rule <k> 'ExprName(classObject(<crntClass> Class </crntClass>
+  rule <k> 'ExprName(objectClosure(<crntClass> Class </crntClass>
                    <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>),,X)
         => lookupMember(<envStack>ListItem((Class, EnvC)) EStack</envStack>, X)
        ...</k>  [structural]
@@ -441,7 +407,7 @@ rules below are identical to those in untyped KOOL. */
 
   //objClos.X(_) => lookupMember(objClos,X)(_)
   rule <k> 'MethodName(
-    classObject(Obj <envStack> EStack </envStack>),, X) =>
+    objectClosure(Obj <envStack> EStack </envStack>),, X) =>
     lookupMember(<envStack> EStack </envStack>, X)
     ...</k> [structural]
 
@@ -462,7 +428,7 @@ and then pop it when the method returns. */
   context 'Invoke(_:KResult ,,'ListWrap(_:List{K},,HOLE,,_:List{K}))
 
   rule [methodInvocation]: <k>
-  'Invoke(methodObject(Class, OL:#Int, 'ListWrap(Params), S) ofType function from _ to T,,
+  'Invoke(methodClosure(Class, OL:#Int, 'ListWrap(Params), S, function from _ to T),,
           'ListWrap(ParamValues:List{KResult})) ~> K
          => bindto Params, ParamValues ~> S ~> 'Return('None(.List{K}))
        </k>
@@ -474,8 +440,7 @@ and then pop it when the method returns. */
          <return> T2:Type => T </return>
        </control>
        <env> Env => . </env>
-       <store>...
-        OL |-> classObject(<crntClass>_:#Id</crntClass>Obj:Bag) ofType _
+       <store>... OL |-> objectClosure(<crntClass>_:#Id</crntClass>Obj:Bag)
        ...</store>
 
 /*@ \subsection{Lookup member}
@@ -504,7 +469,7 @@ Like in untyped KOOL. */
 
   context lvalue('ExprName(HOLE,, _:#Id) )
 
-  rule <k> lvalue('ExprName(classObject(<crntClass> Class </crntClass>
+  rule <k> lvalue('ExprName(objectClosure(<crntClass> Class </crntClass>
                            <envStack>...
                              ListItem((Class, EnvC)) EStack
                            </envStack>),, X)
