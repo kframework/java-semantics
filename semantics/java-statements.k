@@ -1,6 +1,5 @@
 module JAVA-STATEMENTS
     imports JAVA-CORE
-    imports JAVA-EXPRESSIONS
 
 //@ \section{Program stack}
 
