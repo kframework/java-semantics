@@ -39,3 +39,5 @@ Postponed features:
 2. After NPE will be implemented, all seqstrict constructs should be reviewed.
   Some of them should throw NPE immediatley after first argument evaluates to null,
   thus second argument should not be evaluated.
+
+Rolling back first version of value-type pairs implementation.
