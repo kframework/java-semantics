@@ -94,7 +94,7 @@ context 'LocalVarDec(HOLE,,_)
 rule [LocalVarDec]:
     <k> 'LocalVarDec(T:Type,,'ListWrap('VarDec(X:#Id))) => . ...</k>
     <env> Env:Map => Env[L:#Int/X] </env>
-    <store>... . => L |-> undefined(T) ...</store>
+    <store>... . => L |-> undefined(T) :: T ...</store>
     <nextLoc> L => L +Int 1 </nextLoc>
 
 //@ \section{Empty statement} JLS $14.6
@@ -117,17 +117,17 @@ rule [Labeled]:
 context 'ExprStm(HOLE)
 
 rule [ExprStm]:
-    'ExprStm(V:Val) => .
+    'ExprStm(_:TypedVal) => .
 
 //@ \section{If statement}
 
 context 'If(HOLE,,_,,_)
 
 rule [IfTrue]:
-    'If(true,, S,, _) => S
+    'If(true::bool,, S,, _) => S
 
 rule [IfFalse]:
-    'If(false,, _,, S) => S
+    'If(false::bool,, _,, S) => S
 
 rule [IfThenDesugar]:
     'If(E:K,,S1:K) => 'If(E:K,,S1:K,,'Block('ListWrap(.List{K})))
@@ -139,35 +139,35 @@ syntax #Id ::= assertionError
 context 'AssertStm(HOLE,,_:List{K})
 
 rule [AssertStmTrueDiscard]:
-    'AssertStm(true,,_:List{K}) => .
+    'AssertStm(true::bool,, _:List{K}) => .
 
 rule [AssertStmOneArgDesugar]:
-    'AssertStm(false) => 'AssertStm(false,,"")
+    'AssertStm(false::bool) => 'AssertStm(false::bool,,"")
         [structural]
 
-context 'AssertStm(false,,HOLE)
+context 'AssertStm(false::bool,, HOLE)
 
 rule [AssertStm]:
-    'AssertStm(false,, V) => 'Throw('NewInstance(
+    'AssertStm(false::bool,, TV:TypedVal) => 'Throw('NewInstance(
       'None(.List{K}),,
       'ClassOrInterfaceType( 'TypeName(assertionError),, 'None(.List{K}) ),,
-      'ListWrap( toString(V) ),,
+      'ListWrap( toString(TV) ),,
       'None(.List{K})
     ))
 
 //@ \section{Switch statement}
 
 syntax K ::= "switchImpl"
-                Val ","      //V - switch param
-                List{K} ","  //switch body - list of 'SwitchGroup labels
-                K            //DefaultStm - default block, if any
+                TypedVal "," // TV - switch param
+                List{K} ","  // switch body - list of 'SwitchGroup labels
+                K            // DefaultStm - default block, if any
 
 context 'Switch(HOLE,,_)
 
 rule [Switch]:
     <k>
-      ( 'Switch(V,, 'SwitchBlock('ListWrap(Ks),, TrailingLabels:K))
-        => switchImpl V, (Ks,, 'SwitchGroup(TrailingLabels,, .K)), .K )
+      ( 'Switch(TV,, 'SwitchBlock('ListWrap(Ks),, TrailingLabels:K))
+        => switchImpl TV, (Ks,, 'SwitchGroup(TrailingLabels,, .K)), .K )
       ~> K
     </k>
     <control>
@@ -179,9 +179,13 @@ rule [Switch]:
 context switchImpl _,
           ( 'SwitchGroup('ListWrap('Case(HOLE),,_:List{K}),,_),, _:List{K} ), _
 
+//the type associated to V and V2 is not important for match, only the value.
+//JLS3 $14.11, page 377: Every case constant expression associated with
+//a switch statement must be assignable (§5.2) to the type of the switch Expression.
+
 rule [SwitchCaseNotMatch]:
-    switchImpl V, ( 'SwitchGroup('ListWrap(
-        ( 'Case(V2:Val) => .List{K} ),,
+    switchImpl V:RawVal :: _, ( 'SwitchGroup('ListWrap(
+        ( 'Case(V2:RawVal :: _) => .List{K} ),,
         _:List{K} ),,_),, _), _
 when
     V =/=Bool V2
@@ -191,11 +195,11 @@ by it's block. The execution rules for switch will discard switch-related
 constructs and will execute the statements. */
 
 rule [SwitchCaseMatch]:
-    ( switchImpl V, ('SwitchGroup('ListWrap('Case(V),,_:List{K}),,S),,Ks), _ )
+    ( switchImpl V :: _, ('SwitchGroup('ListWrap('Case(V :: _),,_:List{K}),,S),,Ks), _ )
     => 'ListWrap(S,,Ks)
 
 rule [SwitchDefaultSave]:
-    switchImpl V, (
+    switchImpl TV, (
       'SwitchGroup('ListWrap(
           ( 'Default(_) => .List{K} ),,
           _:List{K}),, S),, Ks
@@ -203,7 +207,7 @@ rule [SwitchDefaultSave]:
     ( _:K => 'ListWrap(S,, Ks) )
 
 rule [SwitchGroupDiscard]:
-    switchImpl V, (
+    switchImpl TV, (
         ( 'SwitchGroup('ListWrap( .List{K} ),,_) => .List{K} ),,
     _), _
 
@@ -223,9 +227,9 @@ rule [While]:
         [structural]
 
 syntax K ::= "loopImpl" "("
-                K ","  //E - test expression
-                K ","  //S - loop body
-                K      //UpdClause - present for For, empty for other loops.
+                K ","  // E - test expression
+                K ","  // S - loop body
+                K      // UpdClause - present for For, empty for other loops.
              ")"
 
 rule [loopImpl]:
@@ -236,8 +240,8 @@ rule [loopImpl]:
         [structural]
 
 syntax K ::= "saveLoop" "("
-                K "," //LoopStm - the whole while / do / for statement
-                K     //K - rest of computation
+                K "," // LoopStm - the whole while / do / for statement
+                K     // K - rest of computation
              ")"
 
 rule [saveLoop]:
@@ -487,13 +491,13 @@ expected type. */
 context 'Return('Some(HOLE))
 
 rule [ReturnNothingDesugar]:
-    'Return('None(.List{K}) => 'Some(nothing))
+    'Return('None(.List{K}) => 'Some(nothing :: void))
         [structural]
 
 rule [Return]:
     <k>
-      'Return('Some(V)) ~> _
-      => subtype typeOf(V), T ~> true? ~> unsafeCast(V, T) ~> K:K
+      'Return('Some(TV)) ~> _
+      => subtype typeOf(TV), T ~> true? ~> unsafeCast(TV, T) ~> K:K
     </k>
    <control>
      <stack> ListItem((return,_,_,K,Env,C)) => . ...</stack>
@@ -502,7 +506,7 @@ rule [Return]:
    <env> _ => Env </env>
 
 rule [ReturnInTryFinally]:
-    <k> (. => FinallyS) ~> 'Return('Some(V)) ...</k>
+    <k> (. => FinallyS) ~> 'Return('Some(TV)) ...</k>
     <control>
       <stack> ListItem((finally,_,FinallyS,_,Env,C)) => . ...</stack>
       (_ => C)
@@ -510,7 +514,7 @@ rule [ReturnInTryFinally]:
     <env> _ => Env </env>
 
 rule [ReturnPassThrough]:
-    <k> 'Return('Some(V)) ...</k>
+    <k> 'Return('Some(TV)) ...</k>
     <stack> ListItem((LayerType,_,_,_,_,_:Bag)) => . ...</stack>
 when
             LayerType =/=Bool return
@@ -524,19 +528,19 @@ context 'Throw(HOLE)
 
 rule [Throw]:
     <k>
-      'Throw(V) ~> _:K
+      'Throw(TV) ~> _:K
       =>  'If(
-            (subtype typeOf(V), T),,
+            (subtype typeOf(TV), T),,
             'Block('ListWrap('LocalVarDecStm('LocalVarDec(
-                'ListWrap(.List{K}),, T,, 'ListWrap('VarDec(X,, V)))),,
+                'ListWrap(.List{K}),, T,, 'ListWrap('VarDec(X,, TV)))),,
                 CatchS)),,
-            'Throw(V)
+            'Throw(TV)
           )
           ~> K
     </k>
     <control>
       <stack>
-        ListItem((catch, 'Param(_:K,, T,, X:#Id) ,CatchS,K,Env,C)) => .
+        ListItem((catch, 'Param(_:K,, T,, X:#Id), CatchS, K, Env, C)) => .
         ...
       </stack>
       (_ => C)
@@ -544,7 +548,7 @@ rule [Throw]:
     <env> _ => Env </env>
 
 rule [ThrowInTryFinally]:
-    <k> (. => FinallyS) ~> 'Throw(_:Val) ...</k>
+    <k> (. => FinallyS) ~> 'Throw(_:TypedVal) ...</k>
     <control>
       <stack> ListItem((finally,_,FinallyS,_,Env,C)) => . ...</stack>
       (_ => C)
@@ -552,7 +556,7 @@ rule [ThrowInTryFinally]:
     <env> _ => Env </env>
 
 rule [ThrowPassThrough]:
-    <k> 'Throw(_:Val) ...</k>
+    <k> 'Throw(_:TypedVal) ...</k>
     <stack> ListItem((LayerType:#Id,_,_,_,_,_:Bag)) => . ...</stack>
 when
             LayerType =/=Bool catch
@@ -560,9 +564,9 @@ when
 
 rule [ThrowCausesThreadTermination]:
     <k>
-      'Throw(V) ~> _:K
+      'Throw(TV) ~> _:K
       => 'ExprStm('Invoke(printMethodVal,,
-          'ListWrap("Thread terminated with exception: ",,V,,"\n")))
+          'ListWrap("Thread terminated with exception: ",,TV,,"\n")))
     </k>
     <stack> .List </stack>
 
@@ -590,7 +594,7 @@ rule [TryCatch]:
       ~> K
     </k>
     <control>
-      <stack> . => ListItem((catch,CatchParam,CatchS,K,Env,C)) ...</stack>
+      <stack> . => ListItem((catch, CatchParam, CatchS, K, Env, C)) ...</stack>
       C:Bag
     </control>
     <env> Env </env>
@@ -604,7 +608,7 @@ rule [TryFinally]:
       ~> K
     </k>
     <control>
-      <stack> . => ListItem((finally,.K,FinallyS,.K,Env,C)) ...</stack>
+      <stack> . => ListItem((finally, .K, FinallyS, .K, Env, C)) ...</stack>
       C:Bag
     </control>
     <env> Env </env>

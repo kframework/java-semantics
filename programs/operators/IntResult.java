@@ -79,5 +79,6 @@ public class main {
     v[i++] = 4 > 2 ? 4 : 2;
 
     printAll(vs,v);
+    print("Done!", "\n");
 	}
 }

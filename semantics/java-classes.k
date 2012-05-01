@@ -10,14 +10,14 @@ syntax Type ::= "function" "from" List{KResult} "to" Type
                   [prec(1) latex "({#1}\ \texttt{->}\ {#2})"]
               | "class" #Id
 
-syntax Val ::= "objectClosure" "(" Bag ")"
-              | "methodClosure" "("
-                  #Id ","   // F - method name
-                  #Int ","  // OL - object location
-                  K ","     // 'ListWrap(Params) - params
-                  K ","     // S - method body
-                  Type      // MethodType
-                ")"
+syntax RawVal ::= "objectClosure" "(" Bag ")"
+                | "methodClosure" "("
+                    #Id ","   // F - method name
+                    #Int ","  // OL - object location
+                    K ","     // 'ListWrap(Params) - params
+                    K ","     // S - method body
+                    Type      // MethodType
+                  ")"
 
 //@ \subsection{Unused Labels}
 syntax KLabel ::= 'Public | 'Static
@@ -63,7 +63,7 @@ rule [storeMethod]:
     <env> Env => Env[L:#Int/Name] </env>
     <store>
       ...
-      .  => L |-> methodClosure(Class, OL, 'ListWrap(Params), S, MethodType)
+      .  => L |-> methodClosure(Class, OL, 'ListWrap(Params), S, MethodType) :: MethodType
       ...
     </store>
     <nextLoc> L => L +Int 1 </nextLoc>
@@ -88,7 +88,7 @@ rule [execute]:
           ),,
           'ListWrap('NewArray(
               'TypeName(string),,
-              'ListWrap('Dim(0)),,
+              'ListWrap('Dim(0 :: int)),,
               'ListWrap(.List{K}))),,
           'None(.List{K})
         )
@@ -101,7 +101,7 @@ syntax #Id ::= "read"
 rule <k> read => readMethodVal ...</k>
 
 rule [InvokeRead]:
-    <k> 'Invoke(readMethodVal,, 'ListWrap(.List{K})) => I:#Int ...</k>
+    <k> 'Invoke(readMethodVal,, 'ListWrap(.List{K})) => I:#Int :: int ...</k>
     <in> ListItem(I) => . ...</in>
         [transition]
 
@@ -110,10 +110,19 @@ syntax #Id ::= "print"
 
 rule <k> print => printMethodVal ...</k>
 
-rule <k> 'Invoke(printMethodVal,, 'ListWrap(KR:KResult,,KRs:List{KResult} => KRs)) ...</k>
-     <out>... .=>ListItem(toString(KR))</out> [transition]
+rule 'Invoke(printMethodVal,, 'ListWrap((KR:KResult => toString(KR)),, _:List{KResult}))
+when typeOf(KR) =/=Bool rtString
 
-rule 'Invoke(printMethodVal,,'ListWrap(.List{K})) => nothing  [structural]
+rule [print]:
+    <k>
+      'Invoke(printMethodVal,,
+          'ListWrap( (Str:#String :: rtString => .List{K}),, _:List{KResult}))
+      ...
+    </k>
+    <out>... .=>ListItem(Str)</out>
+        [transition]
+
+rule 'Invoke(printMethodVal,,'ListWrap(.List{K})) => nothing::void  [structural]
 
 //@ \subsection{Auxiliary operations}
 
@@ -124,28 +133,26 @@ syntax K ::= "bindto" List{K} "," List{KResult}
 context bindto('Param(_:K,,HOLE,,_),, _:List{K}), _:List{K}
 
 rule [bindto]:
-    <k> (. => 'ExprStm('Assign('ExprName(X),,V))) ~> bindto('Param(_,,T:Type,,X),, Params => Params),
-      (V,,ParamValues => ParamValues)
+    <k>
+      (. => 'ExprStm('Assign('ExprName(X),,TV:TypedVal)))
+      ~> bindto( ('Param(_,,T:Type,,X) => .List{K}),, _:List{K} ),
+          ( (TV => .List{K}),, _:List{K} )
       ...
     </k>
     <env> Env:Map => Env[L/X] </env>
-    <store>... . => L |-> undefined(T) ...</store>
+    <store>... . => L |-> undefined(T) :: T ...</store>
     <nextLoc> L => L +Int 1 </nextLoc>
 
 rule [bindtoEmpty]:
     <k> bindto .List{K},.List{K} => . ...</k>
         [structural]
 
-//@ \texttt{typeOf definition}
-
-define typeOf(objectClosure(_ <envStack> ListItem((Class,_)) ...</envStack>))
-  => class Class
-define typeOf(methodClosure(_:#Id,_:#Int,_,_,T)) => T
+//@ \texttt{typeOf and toString}
 
 define typeOf('Param(_:K,,K,,_)) => K
 
-define toString(class Class:#Id) => Id2String(Class)
-define toString(objectClosure(Bag:Bag)) => toString(typeOf(objectClosure(Bag)))
+define toString(class Class:#Id) => Id2String(Class) :: rtString
+define toString(objectClosure(Bag:Bag) :: T) => toString(typeOf(objectClosure(Bag) :: T))
 
 /*@ Recall that lists of the form "a,b,c" are a syntactic convenience,
 which eventually are translated into cons-lists "(a,(b,(c,.)))".
@@ -160,15 +167,6 @@ get more from the existing SIMPLE constructs. */
 /*@ \subsubsection{Subtyping constraints}
 The subclass relation introduces a subtyping relation. */
 
-rule [subtypeTrue]:
-    subtype T,T => true
-        [structural]
-
-rule [subtypeList]:
-    subtype(T1:Type,,T2:Type,,Ts:List{KResult}), (Tp1:Type,,Tp2:Type,,Tps:List{KResult})
-    => subtype T1,Tp1 ~> true? ~> subtype (T2,,Ts),(Tp2,,Tps)
-        [structural]
-
 rule [subtypeRed]:
     <k> subtype class Class1, class Class
       => subtype class Class2, class Class ...</k>
@@ -177,40 +175,34 @@ when Class1 =/=Bool Class
         [structural]
 
 rule [subtypeFalse]:
-    subtype class object, class Class => false
+    subtype class object, class Class => false :: bool
 when Class =/=Bool object
-
-rule [subtypeEmpty]:
-    subtype .List{K}, .List{K} => true
-        [structural]
 
 /*@ \subsubsection{Unsafe Casting}
 Performs unsafe casting.  One should only use it in combination with
 the subtype relation above.  */
 
-define unsafeCast(V,T) => V when typeOf(V) ==Bool T
-define unsafeCast(objectClosure(<crntClass>_:K </crntClass> Obj), class Class)
-  => objectClosure(<crntClass> Class </crntClass> Obj)
+define unsafeCast(objectClosure(<crntClass>_:K </crntClass> Obj) :: _, class Class)
+  => objectClosure(<crntClass> Class </crntClass> Obj) :: class Class
 
 /*@ \subsection{Class declaration}
 Like in untyped KOOL. */
 
 rule [ClassDecWithoutExtendsDesugar]:
-  'ClassDec('ClassDecHead(_:K,, ClassName:#Id,,
-      _:K,,
-      ('None(_) => 'Some('SuperDec('ClassType('TypeName(
-              object ),, 'None(.List{K}))))  ),,
-      _:K),, _:K
-  )
+    'ClassDec('ClassDecHead(_:K,, ClassName:#Id,,
+        _:K,,
+        ( 'None(_)
+          => 'Some('SuperDec('ClassType('TypeName(object),, 'None(.List{K}))))
+        ),,
+        _:K),, _:K
+    )
         [structural]
 
 rule [ClassDec]:
     <k>
-      'ClassDec('ClassDecHead(_:K,, ClassName:#Id,,
-          _:K,,
-          'Some('SuperDec('ClassType('TypeName(
-                  BaseClassName:#Id
-                ),, _:K))),, _:K),,
+      'ClassDec('ClassDecHead(_:K,, ClassName:#Id,, _:K,,
+          'Some('SuperDec('ClassType('TypeName( BaseClassName:#Id ),, _:K))),,
+          _:K),,
         'ClassBody( S )
       ) => .
       ...
@@ -283,7 +275,7 @@ rule [create]:
     <declarations> S </declarations>
         [structural]
 
-rule [createDiscard]:
+rule [createObjectDiscard]:
     <k> create(object) => . ...</k>
         [structural]
 
@@ -307,8 +299,16 @@ syntax K ::= "storeObj"
 
 rule [storeObj]:
     <k> storeObj => . ...</k>
-    <crntObj> Obj (<location> L </location> => .) </crntObj>
-    <store>... . => L |-> objectClosure(Obj) ...</store>
+    <crntObj>
+      Obj
+      <crntClass> Class </crntClass>
+      (<location> L </location> => .)
+    </crntObj>
+    <store>
+      ...
+      . => L |-> objectClosure(Obj <crntClass> Class </crntClass>) :: class Class
+      ...
+    </store>
 
 /*@ \subsection{Instance Of}
 Like in untyped KOOL. */
@@ -317,24 +317,24 @@ syntax KLabel ::= 'InstanceOf [seqstrict]
 
 rule [InstanceOfTrue]:
     'InstanceOf(
-      objectClosure((_ <envStack>ListItem((Class, _))...</envStack>)),,
+      objectClosure((_ <envStack>ListItem((Class, _))...</envStack>))::_,,
       class Class
-    ) => true
+    ) => true :: bool
 
 rule [InstanceOfRed]:
     'InstanceOf(
       objectClosure(
         ( _ <envStack> ListItem((Class1:#Id, _)) => . ...</envStack> )
-      ),,
+      )::_,,
       class Class2:#Id
     )
 when Class1 =/=Bool Class2  [structural]
 
 rule [InstanceOfFalse]:
     'InstanceOf(
-      objectClosure((_ <envStack> .List </envStack>)),,
+      objectClosure((_ <envStack> .List </envStack>))::_,,
       class Class
-    ) => false
+    ) => false :: bool
 
 /*@ \subsection{Cast}
 Unlike in untyped KOOL, in typed KOOL we actually check that the object
@@ -344,9 +344,9 @@ syntax KLabel ::= 'CastRef [seqstrict]
 
 rule [CastRef]:
     <k>
-      'CastRef(class Class,, objectClosure((<crntClass> _:K </crntClass> Obj)) )
-      => 'InstanceOf( objectClosure(Obj),, class Class) ~> true?
-          ~> objectClosure(<crntClass> Class </crntClass> Obj)
+      'CastRef(class Class,, objectClosure((<crntClass> _:K </crntClass> Obj))::T )
+      => 'InstanceOf( objectClosure(Obj)::T,, class Class) ~> true?
+          ~> objectClosure(<crntClass> Class </crntClass> Obj):: class Class
       ...
     </k>
         [structural]
@@ -371,20 +371,18 @@ rule [ExprNameMember]:
 when notBool(X in keys(Env))
         [structural]
 
-rule [lookupVarName]:
-    <k> X => V:Val ...</k>
-    <env>... X|->L ...</env>
-    <store>... L|->V ...</store>
-        [transition]
-
 context 'ExprName(HOLE,,_:K)
 
 /*@ \subsection{Self reference}
 Like in untyped KOOL. */
 
 rule [This]:
-    <k> 'This(.List{K}) => objectClosure(Obj) ...</k>
-    <crntObj> Obj </crntObj>
+    <k>
+      'This(.List{K})
+      => objectClosure(Obj <crntClass> Class </crntClass>) :: class Class
+      ...
+    </k>
+    <crntObj> Obj <crntClass> Class </crntClass> </crntObj>
 
 /*@ \subsection{Object member access} */
 
@@ -392,7 +390,7 @@ rule [This]:
 rule [ExprNameQualified]:
     <k>
       'ExprName(objectClosure(<crntClass> Class </crntClass>
-          <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>),,X)
+          <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>)::_ ,,X)
       => lookupMember(<envStack>ListItem((Class, EnvC)) EStack</envStack>, X)
       ...
     </k>
@@ -431,7 +429,7 @@ context 'MethodName(HOLE,,_:K)
 //objClos.X(_) => lookupMember(objClos,X)(_)
 rule [MethodNameQualified]:
     <k>
-      'MethodName(objectClosure(Obj <envStack> EStack </envStack>),, X)
+      'MethodName(objectClosure(Obj <envStack> EStack </envStack>)::_,, X)
       => lookupMember(<envStack> EStack </envStack>, X)
       ...
     </k>
@@ -458,7 +456,7 @@ context 'Invoke(_:KResult ,,'ListWrap(_:List{K},,HOLE,,_:List{K}))
 
 rule [Invoke]:
     <k>
-      'Invoke(methodClosure(Class, OL:#Int, 'ListWrap(Params), S, function from _ to T),,
+      'Invoke(methodClosure(Class, OL:#Int, 'ListWrap(Params), S, function from _ to T)::_,,
           'ListWrap(ParamValues:List{KResult})) ~> K
        => bindto Params, ParamValues ~> S ~> 'Return('None(.List{K}))
     </k>
@@ -475,29 +473,51 @@ rule [Invoke]:
     <env> Env => . </env>
     <store>
       ...
-      OL |-> objectClosure(<crntClass>_:#Id</crntClass>Obj:Bag)
+      OL |-> objectClosure(<crntClass>_:#Id</crntClass>Obj:Bag) :: _
       ...
     </store>
 
 /*@ \subsection{Lookup member}
 Like in untyped KOOL. */
 
+//typed version of lookup
+syntax K ::= "typedLookup" "(" #Int ")"
+
+rule [typedLookup]:
+    <k> typedLookup(L) => lookup(L)::T ...</k>
+    <store>... L |-> _::T ...</store>
+
+rule [lvalueTypedLookup]:
+    <k> lvalue( typedLookup(L) => lookup(L)::T ) ...</k>
+    <store>... L |-> _::T ...</store>
+
 syntax K ::= "(" #Id "," Bag ")"
+
+//lookup member result is always typed
 declare lookupMember : BagItem #Id -> K
 
-define lookupMember(<envStack> ListItem((_:#Id, <env>...X|->L...</env>))
-                  ...</envStack>, X) => lookup(L)
+//todo this definition should fail the test sketched in log.txt
+define lookupMember(
+    <envStack>
+      ListItem((_:#Id, <env>... X|->L ...</env>))
+      ...
+    </envStack>,
+    X
+  ) => typedLookup(L)
 
-define lookupMember(<envStack>
-            ListItem((_:#Id, <env> Env </env>)) => .
-            ...</envStack>, X
-       )
+define lookupMember(
+    <envStack>
+      ListItem((_:#Id, <env> Env </env>)) => .
+      ...
+    </envStack>,
+    X
+  )
 when notBool(X in keys(Env))
 
 //@ \texttt{lvalue}
 
 rule [lvalueExprNameMember]:
-    <k> lvalue('ExprName(X) => 'ExprName('This(.List{K}),, X) ) ...</k>
+    <k> lvalue( 'ExprName(X) => 'ExprName('This(.List{K}),, X) ) ...</k>
     <env> Env </env>
 when notBool(X in keys(Env))  [structural]
 
@@ -506,10 +526,17 @@ context lvalue('ExprName(HOLE,, _:#Id) )
 rule [lvalueExprNameQualified]:
     <k>
       lvalue(
-        'ExprName(objectClosure(<crntClass> Class </crntClass>
-            <envStack>... ListItem((Class, EnvC)) EStack </envStack>),, X)
-        => lookupMember(<envStack>ListItem((Class, EnvC:BagItem)) EStack:List
-                        </envStack>, X)
+        'ExprName(
+          objectClosure(
+            <crntClass> Class </crntClass>
+            <envStack>... ListItem((Class, EnvC:BagItem)) EStack </envStack>
+          ) :: class Class,,
+          X
+        )
+        => lookupMember(
+            <envStack> ListItem((Class, EnvC)) EStack:List </envStack>,
+            X
+          )
       )
       ...
     </k>

@@ -77,43 +77,56 @@ typed SIMPLE), but only to parse programs ``enough'' to give them
 semantics.  In other words, the \K syntax is the ``syntax of the
 semantics''.  */
 
-syntax Val ::= #Int | #Bool | #String
-             | "printMethodVal"
-             | "readMethodVal"
-             | "undefined" "(" Type ")" [latex("\bot_{#1}")]
-             | "nothing"
+syntax RawVal ::= #Int | #Bool | #String
+                | "undefined" "(" Type ")" [latex("\bot_{#1}")]
+                | "nothing"
 
-syntax KResult ::= Val | Type
+syntax TypedVal ::= RawVal "::" Type
+
+syntax KResult ::= TypedVal | Type
+                | "printMethodVal"
+                | "readMethodVal"
 
 /*@ \subsubsection{Generic guard}
 A generic computational guard (should be builtin): it allows the
 computation to continue only if a prefix guard evaluates to true.  */
 
 syntax K ::= "true?"
-rule true ~> true? => .  [structural]
+rule true::bool ~> true? => .  [structural]
 
-/*@ \subsubsection{toString}
-Converts various result types to string type, mainly for printing.*/
+/*@ \section{auxiliaty constructs} */
 
-declare toString :  KResult -> #String
-define toString(Str:#String) => Str
-define toString(I:#Int) => Int2String(I)
-define toString(true) => "true"
-define toString(false) => "false"
+
+/*toString - Converts various result types to string type, mainly for printing.*/
+
+declare toString :  KResult -> TypedVal
+define toString(Str:#String::_) => Str :: rtString
+define toString(I:#Int::_) => Int2String(I) :: rtString
+define toString(true::_) => "true" :: rtString
+define toString(false::_) => "false" :: rtString
 
 //@ \texttt{typeOf definition}
 
 declare typeOf :  K -> Type
-define typeOf(_:#Int) => int
-define typeOf(_:#Bool) => bool
-define typeOf(_:#String) => rtString
-define typeOf(_:Type)  => rtType
-
-define typeOf(undefined(T:Type)) => T
-define typeOf(nothing) => void
+define typeOf(_ :: T:Type) => T
 
 syntax K ::= "subtype" List{KResult} "," List{KResult}
-declare unsafeCast : Val Type -> Val
+
+rule [subtypeTrue]:
+    subtype T,T => true :: bool
+        [structural]
+
+rule [subtypeList]:
+    subtype(T1:Type,,T2:Type,,Ts:List{KResult}), (Tp1:Type,,Tp2:Type,,Tps:List{KResult})
+    => subtype T1,Tp1 ~> true? ~> subtype (T2,,Ts),(Tp2,,Tps)
+        [structural]
+
+rule [subtypeEmpty]:
+    subtype .List{K}, .List{K} => true :: bool
+        [structural]
+
+declare unsafeCast : TypedVal Type -> TypedVal
+define unsafeCast(V:RawVal :: T, T) => V :: T
 
 //@ \subsection{Type labels}
 //@Here we rewrite java type ast into simple types

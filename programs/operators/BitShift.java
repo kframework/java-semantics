@@ -12,17 +12,17 @@ public class main {
     string[] vs = new string[nrOps];
     int i=0;
 
-		vs[i++] = "4 << 1       ";
-		vs[i++] = "4 << -1      ";
-		vs[i++] = "-4 << 1      ";
-		vs[i++] = "-4 << -1     ";
-		vs[i++] = "4 >> 1       ";
-		vs[i++] = "4 >> -1      ";
-		vs[i++] = "-4 >> 1      ";
-		vs[i++] = "-4 >> -1     ";
-		vs[i++] = "4 >>> 1      ";
-		vs[i++] = "4 >>> -1     ";
-		vs[i++] = "-4 >> 1      ";
+		vs[i++] = " 4 <<   1    ";
+		vs[i++] = " 4 <<  -1    ";
+		vs[i++] = "-4 <<   1    ";
+		vs[i++] = "-4 <<  -1    ";
+		vs[i++] = " 4  >>  1    ";
+		vs[i++] = " 4  >> -1    ";
+		vs[i++] = "-4  >>  1    ";
+		vs[i++] = "-4  >> -1    ";
+		vs[i++] = " 4 >>>  1    ";
+		vs[i++] = " 4 >>> -1    ";
+		vs[i++] = "-4 >>>  1    ";
 		vs[i++] = "-4 >>> -1    ";
 
     return vs;
@@ -33,19 +33,20 @@ public class main {
     string[] vs = initVS();
     int i=0;
 
-		v[i++] = 4 << 1;
-		v[i++] = 4 << -1;//different from java due to overflow
-		v[i++] = -4 << 1;
-		v[i++] = -4 << -1;//different from java due to overflow
-		v[i++] = 4 >> 1;
-		v[i++] = 4 >> -1;
-		v[i++] = -4 >> 1;
-		v[i++] = -4 >> -1;
-		v[i++] = 4 >>> 1;
-		v[i++] = 4 >>> -1;
-		v[i++] = -4 >> 1;
+		v[i++] =  4 <<   1;
+		v[i++] =  4 <<  -1;//different from java due to overflow
+		v[i++] = -4 <<   1;
+		v[i++] = -4 <<  -1;//different from java due to overflow
+		v[i++] =  4  >>  1;
+		v[i++] =  4  >> -1;
+		v[i++] = -4  >>  1;
+		v[i++] = -4  >> -1;
+		v[i++] =  4 >>>  1;
+		v[i++] =  4 >>> -1;
+		v[i++] = -4 >>>  1;
 		v[i++] = -4 >>> -1;
 
     printAll(vs,v);
+    print("Done!", "\n");
 	}
 }

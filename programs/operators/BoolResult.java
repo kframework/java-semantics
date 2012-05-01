@@ -61,5 +61,6 @@ public class main {
 		vb[i++] = ! true;
 
     printAllB(vs,vb);
+    print("Done!", "\n");
 	}
 }

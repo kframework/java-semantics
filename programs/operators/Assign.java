@@ -51,5 +51,6 @@ public class main {
 		v[i++] >>>= 2;
 
     printAll(vs,v);
+    print("Done!", "\n");
 	}
 }

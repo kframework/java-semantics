@@ -5,5 +5,9 @@ public class main {
 		v[0] = 1;
 		v[0];
 		print("v[0]=", v[0], "\n");
+    print("Done!", "\n");
 	}
 }
+
+// v[0]=1
+// Done!

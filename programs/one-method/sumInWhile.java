@@ -2,8 +2,7 @@ public class main {
 
 	public static void main(string[] args) {
 		int n,s,i;
-		print("n=");
-		n=read();
+    n=4;
 		s=0;
 		i=1;
 		while(i<=n) {
@@ -11,5 +10,9 @@ public class main {
 			i = i + 1;
 		}
 		print("sum 1..", n, "=", s, "\n");
+    print("Done!", "\n");
 	}
 }
+
+// sum 1..4=10
+// Done!

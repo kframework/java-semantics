@@ -52,6 +52,6 @@ public class main {
 		a >>= i;
 		a >>>= i;
 
-    print("Done!");
+    print("Done!", "\n");
 	}
 }
