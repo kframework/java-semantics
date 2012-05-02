@@ -142,7 +142,7 @@ rule [AssertStmTrueDiscard]:
     'AssertStm(true::bool,, _:List{K}) => .
 
 rule [AssertStmOneArgDesugar]:
-    'AssertStm(false::bool) => 'AssertStm(false::bool,,"")
+    'AssertStm(false::bool) => 'AssertStm(false::bool,, ""::rtString)
         [structural]
 
 context 'AssertStm(false::bool,, HOLE)
@@ -316,7 +316,7 @@ rule [ForFirstArgV2Red]:
 
 rule [ForSecondArgRed]:
     'For(_:K,,(
-      'None(.List{K}) => 'Some(true)
+      'None(.List{K}) => 'Some(true::bool)
     ),,_:List{K})
         [structural]
 
@@ -566,7 +566,7 @@ rule [ThrowCausesThreadTermination]:
     <k>
       'Throw(TV) ~> _:K
       => 'ExprStm('Invoke(printMethodVal,,
-          'ListWrap("Thread terminated with exception: ",,TV,,"\n")))
+          'ListWrap("Thread terminated with exception: "::rtString,, TV,, "\n"::rtString)))
     </k>
     <stack> .List </stack>
 
