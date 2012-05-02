@@ -1,4 +1,4 @@
-public class Main {
+public class main {
   int factorial(int y) {
     if (y == 1) {
       return 1;
@@ -11,5 +11,6 @@ public class Main {
     print("Input a natural numer: ");
     int n = read();
     print("Factorial of ",n," is: ",factorial(n),"\n");
+    print("Done!"+"\n");
   }
 }

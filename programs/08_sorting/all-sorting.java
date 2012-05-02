@@ -1,4 +1,4 @@
-public class Main {
+public class main {
 
   int[] init(int n) {
     int[] x = new int[n];
@@ -115,5 +115,6 @@ public class Main {
     heapSort(x,n);
     print("Done!"+"\n"+"The resulting array is:");
     printArray(x,n);
+    print("Done!","\n");
   }
 }

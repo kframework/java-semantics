@@ -3,7 +3,7 @@
 // each elements, then it prints the entire array sorted
 
 
-public class Main {
+public class main {
   int[] v = new int[30];
 
   void siftDown(int root, int bottom) {
@@ -58,6 +58,6 @@ public class Main {
     for (int y = 0; y<x; ++y) {
       print("Element ", y, " = ", v[y],"\n");
     }
-    print("Done","\n");
+    print("Done!","\n");
   }
 }

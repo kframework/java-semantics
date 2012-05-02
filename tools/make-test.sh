@@ -9,18 +9,26 @@ if [ $# -ne 1 ]; then
 fi
 
 prog=$1
+
 outdir=`dirname $prog`
 outdir="$outdir/tests"
-# echo $outdir
+newfilename=`basename $prog`
+
+in_file="$outdir/$newfilename.in"
+
+krun_command="krun --parser=\"java -cp JavaParser.jar ro.uaic.info.fmse.parser.Main\" --output-mode=none --no-color $prog "
+if [ -f $in_file ]
+then
+  krun_command="$krun_command < $in_file > out.tmp"
+else
+  krun_command="$krun_command > out.tmp"
+fi
 
 mkdir -p $outdir
-krun --parser="java -cp JavaParser.jar ro.uaic.info.fmse.parser.Main" \
-  --output-mode=none --no-color "$prog" > out.tmp
-newfilename=`basename $prog`
+eval $krun_command
 newfile="$outdir/$newfilename.out"
 # echo $newfile
 # echo $out
 mv out.tmp $newfile
 cat $newfile
-
 

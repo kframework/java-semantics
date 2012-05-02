@@ -8,7 +8,7 @@
 // do not want to enforce any particular such value, which is why the
 // latter gets stuck.
 
-public class Main {
+public class main {
   void collatz(int n) {
     int s=0;
     print("Testing Collatz' conjecture for n = ",n," ... ");
@@ -27,6 +27,7 @@ public class Main {
     int m = read();
     for (int i = 1; i<=m; ++i)
       collatz(i);
-    print("Done.  It appears to hold."+"\n");
+    print("It appears to hold."+"\n");
+    print("Done!"+"\n");
   }
 }

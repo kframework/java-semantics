@@ -1,0 +1,18 @@
+Size of the array to sort = Type 5 numbers: Finished reading the 5 numbers
+The original unsorted array is:
+8 3 2 7 5 
+Reversing the array ... Done!
+The reversed array is:
+5 7 2 3 8 
+Sorting the array using insertion sort ... Done!
+The resulting array is:
+2 3 5 7 8 
+Reversing the array ... Done!
+Sorting the array using bubble sort ... Done!
+The resulting array is:
+2 3 5 7 8 
+Reversing the array ... Done!
+Sorting the array using heap sort ... Done!
+The resulting array is:
+2 3 5 7 8 
+Done!
