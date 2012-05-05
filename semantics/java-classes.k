@@ -4,16 +4,14 @@ module JAVA-CLASSES
     imports JAVA-STATEMENTS
     imports JAVA-ARRAYS
 
-syntax #Id ::= "string"
-
 syntax Type ::= "function" "from" List{KResult} "to" Type
                   [prec(1) latex "({#1}\ \texttt{->}\ {#2})"]
-              | "class" #Id
+              | "class" Id
 
 syntax RawVal ::= "objectClosure" "(" Bag ")"
                 | "methodClosure" "("
-                    #Id ","   // F - method name
-                    #Int ","  // OL - object location
+                    Id ","   // F - method name
+                    Int ","  // OL - object location
                     K ","     // 'ListWrap(Params) - params
                     K ","     // S - method body
                     Type      // MethodType
@@ -30,8 +28,13 @@ The only change to untyped KOOL's values is that closures are now typed
 //@Here we rewrite java type ast into simple types
 
 rule 'ClassOrInterfaceType('TypeName(K),,_) => 'TypeName(K) [structural]
-rule 'TypeName(X:#Id) => class X  [structural]
-rule class string => rtString  [structural]
+rule 'TypeName(X:Id) => class X  [structural]
+
+rule
+    class X => rtString
+when
+    Id2String(X) ==String "string"
+        [structural]
 
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
@@ -43,7 +46,7 @@ context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _:List{K}),, _)
 
 rule [MethodDec]:
     'MethodDec(
-      'MethodDecHead(_,, _,, ReturnType:Type,, Name:#Id,, 'ListWrap(Params:List{K}),, _),,
+      'MethodDecHead(_,, _,, ReturnType:Type,, Name:Id,, 'ListWrap(Params:List{K}),, _),,
       S:K
     )
     => storeMethod(Name, 'ListWrap(Params), S, function from Params to ReturnType)
@@ -54,13 +57,13 @@ rule [ConstrDec]:
     'ConstrDec('ConstrDecHead(K1:K,, K2:K,, Ks),, 'ConstrBody(_,,S))
     => 'MethodDec('MethodDecHead(K1,,K2,,void,,Ks),, S)
 
-syntax K ::= "storeMethod" "(" #Id "," K "," K "," Type ")"
+syntax K ::= "storeMethod" "(" Id "," K "," K "," Type ")"
 
 rule [storeMethod]:
     <k> storeMethod(Name, 'ListWrap(Params), S, MethodType:Type) =>. ...</k>
-    <crntClass> Class:#Id </crntClass>
-    <location> OL:#Int </location>
-    <env> Env => Env[L:#Int/Name] </env>
+    <crntClass> Class:Id </crntClass>
+    <location> OL:Int </location>
+    <env> Env => Env[L:Int/Name] </env>
     <store>
       ...
       .  => L |-> methodClosure(Class, OL, 'ListWrap(Params), S, MethodType) :: MethodType
@@ -83,11 +86,11 @@ rule [execute]:
         'NewInstance(
           'None(.List{K}),,
           'ClassOrInterfaceType(
-            'TypeName(main),,
+            'TypeName( String2Id("main") ),,
             'None(.List{K})
           ),,
           'ListWrap('NewArray(
-              'TypeName(string),,
+              'TypeName( String2Id("string") ),,
               'ListWrap('Dim(0 :: int)),,
               'ListWrap(.List{K}))),,
           'None(.List{K})
@@ -96,27 +99,29 @@ rule [execute]:
     </k>
     <env> . </env>  [structural]
 
-syntax #Id ::= "read"
-
-rule <k> read => readMethodVal ...</k>
+rule
+    <k> X => readMethodVal ...</k>
+when Id2String(X) ==String "read"
 
 rule [InvokeRead]:
-    <k> 'Invoke(readMethodVal,, 'ListWrap(.List{K})) => I:#Int :: int ...</k>
+    <k> 'Invoke(readMethodVal,, 'ListWrap(.List{K})) => I:Int :: int ...</k>
     <in> ListItem(I) => . ...</in>
         [transition]
 
 //@ For integers and strings, print their value. For classes, print class type.
-syntax #Id ::= "print"
 
-rule <k> print => printMethodVal ...</k>
+rule
+    <k> X => printMethodVal ...</k>
+when
+    Id2String(X) ==String "print"
 
 rule 'Invoke(printMethodVal,, 'ListWrap((KR:KResult => toString(KR)),, _:List{KResult}))
-when typeOf(KR) =/=Bool rtString
+when typeOf(KR) =/=K rtString
 
 rule [print]:
     <k>
       'Invoke(printMethodVal,,
-          'ListWrap( (Str:#String :: rtString => .List{K}),, _:List{KResult}))
+          'ListWrap( (Str:String :: rtString => .List{K}),, _:List{KResult}))
       ...
     </k>
     <out>... .=>ListItem(Str)</out>
@@ -151,7 +156,7 @@ rule [bindtoEmpty]:
 
 define typeOf('Param(_:K,,K,,_)) => K
 
-define toString(class Class:#Id) => Id2String(Class) :: rtString
+define toString(class Class) => Id2String(Class) :: rtString
 define toString(objectClosure(Bag:Bag) :: T) => toString(typeOf(objectClosure(Bag) :: T))
 
 /*@ Recall that lists of the form "a,b,c" are a syntactic convenience,
@@ -171,12 +176,14 @@ rule [subtypeRed]:
     <k> subtype class Class1, class Class
       => subtype class Class2, class Class ...</k>
     <className> Class1 </className> <extends> Class2 </extends>
-when Class1 =/=Bool Class
+when Class1 =/=K Class
         [structural]
 
 rule [subtypeFalse]:
-    subtype class object, class Class => false :: bool
-when Class =/=Bool object
+    subtype class X, class Class => false :: bool
+when
+            Id2String(X) ==String "object"
+    andBool X =/=K Class
 
 /*@ \subsubsection{Unsafe Casting}
 Performs unsafe casting.  One should only use it in combination with
@@ -189,10 +196,10 @@ define unsafeCast(objectClosure(<crntClass>_:K </crntClass> Obj) :: _, class Cla
 Like in untyped KOOL. */
 
 rule [ClassDecWithoutExtendsDesugar]:
-    'ClassDec('ClassDecHead(_:K,, ClassName:#Id,,
+    'ClassDec('ClassDecHead(_:K,, ClassName:Id,,
         _:K,,
         ( 'None(_)
-          => 'Some('SuperDec('ClassType('TypeName(object),, 'None(.List{K}))))
+          => 'Some('SuperDec('ClassType('TypeName( String2Id("object") ),, 'None(.List{K}))))
         ),,
         _:K),, _:K
     )
@@ -200,8 +207,8 @@ rule [ClassDecWithoutExtendsDesugar]:
 
 rule [ClassDec]:
     <k>
-      'ClassDec('ClassDecHead(_:K,, ClassName:#Id,, _:K,,
-          'Some('SuperDec('ClassType('TypeName( BaseClassName:#Id ),, _:K))),,
+      'ClassDec('ClassDecHead(_:K,, ClassName:Id,, _:K,,
+          'Some('SuperDec('ClassType('TypeName( BaseClassName:Id ),, _:K))),,
           _:K),,
         'ClassBody( S )
       ) => .
@@ -249,8 +256,8 @@ rule [NewInstance]:
       C:Bag
       <crntObj>
         Obj:Bag
-        =>  <crntClass> object </crntClass>
-            <envStack> ListItem((object, <env>.Map</env>)) </envStack>
+        =>  <crntClass> String2Id("object") </crntClass>
+            <envStack> ListItem((String2Id("object"), <env>.Map</env>)) </envStack>
             <location> L </location>
       </crntObj>
       <return> T => class ClassName </return>
@@ -266,8 +273,8 @@ syntax K ::= "create" "(" K ")"
 
 rule [create]:
     <k>
-      create(Class:#Id)
-      => create(BaseClass:#Id) ~> setCrntClass(Class) ~> S ~> addEnvLayer
+      create(Class)
+      => create(BaseClass:Id) ~> setCrntClass(Class) ~> S ~> addEnvLayer
       ...
     </k>
     <className> Class </className>
@@ -276,10 +283,12 @@ rule [create]:
         [structural]
 
 rule [createObjectDiscard]:
-    <k> create(object) => . ...</k>
+    <k> create( X ) => . ...</k>
+when
+    Id2String(X) ==String "object"
         [structural]
 
-syntax K ::= "setCrntClass" "(" #Id ")"
+syntax K ::= "setCrntClass" "(" Id ")"
 
 rule [setCrntClass]:
     <k> setCrntClass(Class) => . ...</k>
@@ -324,11 +333,11 @@ rule [InstanceOfTrue]:
 rule [InstanceOfRed]:
     'InstanceOf(
       objectClosure(
-        ( _ <envStack> ListItem((Class1:#Id, _)) => . ...</envStack> )
+        ( _ <envStack> ListItem((Class1:Id, _)) => . ...</envStack> )
       )::_,,
-      class Class2:#Id
+      class Class2:Id
     )
-when Class1 =/=Bool Class2  [structural]
+when Class1 =/=K Class2  [structural]
 
 rule [InstanceOfFalse]:
     'InstanceOf(
@@ -398,7 +407,7 @@ rule [ExprNameQualified]:
 
 rule [SuperField]:
     <k>'SuperField(X) => lookupMember(<envStack>EStack</envStack>, X) ...</k>
-    <crntClass> Class:#Id </crntClass>
+    <crntClass> Class </crntClass>
     <envStack>... ListItem((Class, EnvC)) EStack </envStack>
       [structural]
 
@@ -415,13 +424,13 @@ rule 'Method(K,, _:K,, X) => 'MethodName(K,, X)
 rule [MethodNameUnqualified]:
     <k> 'MethodName(X) => 'MethodName('This(.List{K}),, X) ...</k>
     <env> Env </env>
-when notBool (X ==Bool read orBool X ==Bool print)
+when notBool ( X ==K String2Id("read") orBool X ==K String2Id("print") )
         [structural]
 
 rule [MethodNameReadOrPrint]:
     <k> 'MethodName(X) => X ...</k>
     <env> Env </env>
-when X ==Bool read orBool X ==Bool print
+when X ==K String2Id("read") orBool X ==K String2Id("print")
         [structural]
 
 context 'MethodName(HOLE,,_:K)
@@ -441,7 +450,7 @@ rule [SuperMethod]:
       'SuperMethod(_,, X) => lookupMember(<envStack> EStack </envStack>, X)
       ...
     </k>
-    <crntClass> Class:#Id </crntClass>
+    <crntClass> Class </crntClass>
     <envStack>... ListItem((Class, _)) EStack </envStack>
         [structural]
 
@@ -456,7 +465,7 @@ context 'Invoke(_:KResult ,,'ListWrap(_:List{K},,HOLE,,_:List{K}))
 
 rule [Invoke]:
     <k>
-      'Invoke(methodClosure(Class, OL:#Int, 'ListWrap(Params), S, function from _ to T)::_,,
+      'Invoke(methodClosure(Class, OL:Int, 'ListWrap(Params), S, function from _ to T)::_,,
           'ListWrap(ParamValues:List{KResult})) ~> K
        => bindto Params, ParamValues ~> S ~> 'Return('None(.List{K}))
     </k>
@@ -473,7 +482,7 @@ rule [Invoke]:
     <env> Env => . </env>
     <store>
       ...
-      OL |-> objectClosure(<crntClass>_:#Id</crntClass>Obj:Bag) :: _
+      OL |-> objectClosure(<crntClass>_:Id</crntClass>Obj:Bag) :: _
       ...
     </store>
 
@@ -481,7 +490,7 @@ rule [Invoke]:
 Like in untyped KOOL. */
 
 //typed version of lookup
-syntax K ::= "typedLookup" "(" #Int ")"
+syntax K ::= "typedLookup" "(" Int ")"
 
 rule [typedLookup]:
     <k> typedLookup(L) => lookup(L)::T ...</k>
@@ -491,15 +500,15 @@ rule [lvalueTypedLookup]:
     <k> lvalue( typedLookup(L) => lookup(L)::T ) ...</k>
     <store>... L |-> _::T ...</store>
 
-syntax K ::= "(" #Id "," Bag ")"
+syntax K ::= "(" Id "," Bag ")"
 
 //lookup member result is always typed
-declare lookupMember : BagItem #Id -> K
+declare lookupMember : BagItem Id -> K
 
 //todo this definition should fail the test sketched in log.txt
 define lookupMember(
     <envStack>
-      ListItem((_:#Id, <env>... X|->L ...</env>))
+      ListItem((_:Id, <env>... X|->L ...</env>))
       ...
     </envStack>,
     X
@@ -507,7 +516,7 @@ define lookupMember(
 
 define lookupMember(
     <envStack>
-      ListItem((_:#Id, <env> Env </env>)) => .
+      ListItem((_:Id, <env> Env </env>)) => .
       ...
     </envStack>,
     X
@@ -521,7 +530,7 @@ rule [lvalueExprNameMember]:
     <env> Env </env>
 when notBool(X in keys(Env))  [structural]
 
-context lvalue('ExprName(HOLE,, _:#Id) )
+context lvalue('ExprName(HOLE,, _:Id) )
 
 rule [lvalueExprNameQualified]:
     <k>
@@ -544,7 +553,7 @@ rule [lvalueExprNameQualified]:
 
 rule [lvalueSuperField]:
     <k> lvalue('SuperField(X) => lookupMember(<envStack>EStack</envStack>, X)) ...</k>
-    <crntClass> Class:#Id </crntClass>
+    <crntClass> Class </crntClass>
     <envStack>... ListItem((Class, EnvC)) EStack </envStack>
         [structural]
 

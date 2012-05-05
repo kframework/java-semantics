@@ -24,7 +24,7 @@ configuration <T color="red">
                         // holds return type
                       <br/>
                       <crntObj color="Fuchsia">
-                        <crntClass> object </crntClass>
+                        <crntClass> String2Id("object") </crntClass>
                         <envStack> .List </envStack>
                         <location multiplicity="?"> .K </location>
                       </crntObj>
@@ -41,16 +41,14 @@ configuration <T color="red">
                 <br/>
                 <classes color="Fuchsia">
                    <class multiplicity="*" color="Fuchsia">
-                      <className color="Fuchsia"> main </className>
-                      <extends color="Fuchsia"> object </extends>
+                      <className color="Fuchsia"> String2Id("main") </className>
+                      <extends color="Fuchsia"> String2Id("object") </extends>
                       <declarations color="purple"> .K </declarations>
                       <metatype color="Fuchsia"> "concrete class" </metatype>
                    </class>
                 </classes>
               </T>
 
-//constructs encountered in configuration
-syntax #Id ::= "main" | "object"
 syntax K ::= "execute"
 
 //@ \section{Types}
@@ -77,7 +75,7 @@ typed SIMPLE), but only to parse programs ``enough'' to give them
 semantics.  In other words, the \K syntax is the ``syntax of the
 semantics''.  */
 
-syntax RawVal ::= #Int | #Bool | #String
+syntax RawVal ::= Int | Bool | String
                 | "undefined" "(" Type ")" [latex("\bot_{#1}")]
                 | "nothing"
 
@@ -100,8 +98,8 @@ rule true::bool ~> true? => .  [structural]
 /*toString - Converts various result types to string type, mainly for printing.*/
 
 declare toString :  KResult -> TypedVal
-define toString(Str:#String::_) => Str :: rtString
-define toString(I:#Int::_) => Int2String(I) :: rtString
+define toString(Str:String::_) => Str :: rtString
+define toString(I:Int::_) => Int2String(I) :: rtString
 define toString(true::_) => "true" :: rtString
 define toString(false::_) => "false" :: rtString
 

@@ -5,7 +5,7 @@ module JAVA-ARRAYS
 syntax Type ::= "arrayOf" Type
                   [prec(1) latex "{#1}\texttt{\char91\char93}"]
 
-syntax RawVal ::= "arrayRef" "(" Type "," #Int "," #Int ")"
+syntax RawVal ::= "arrayRef" "(" Type "," Int "," Int ")"
 
 /*@ \subsection{Array access}
 Check array bounds, as part of the dynamic typing policy. */
@@ -16,14 +16,16 @@ context lvalue('ArrayAccess(HOLE,,_))
 context lvalue('ArrayAccess(_:KResult,,HOLE))
 
 rule [arrayLookup]:
-    'ArrayAccess(arrayRef(_,L,M:#Int) :: arrayOf T:Type,, N:#Int :: int)
+    'ArrayAccess(arrayRef(_,L,M:Int) :: arrayOf T:Type,, N:Int :: int)
     => lookup(L +Int N) :: T
 when N >=Int 0 andBool N <Int M
         [structural anywhere]
 
 //Array length, as defined in JDK
-syntax #Id ::= "length"
-rule 'ExprName(arrayRef(_,_:#Int,N)::_,, length) => N::int
+rule
+    <k> 'ExprName(arrayRef(_,_:Int,N)::_,, X:Id ) => N::int ...</k>
+when
+    Id2String(X) ==String "length"
 
 //@ \subsection{Array Type}
 
@@ -67,26 +69,26 @@ context newArrayImpl(_:KResult, 'ListWrap('Dim(HOLE)), _)
 
 rule [newArrayImpl]:
     <k>
-      newArrayImpl(T, 'ListWrap('Dim(NI:#Int :: int)), InitExp:K)
-      => evalAndStore((LI:#Int .. LI +Int _-Int_(NI,1)), InitExp)
+      newArrayImpl(T, 'ListWrap('Dim(NI:Int :: int)), InitExp:K)
+      => evalAndStore((LI:Int .. LI +Int _-Int_(NI,1)), InitExp)
          ~> arrayRef( arrayOf T, LI, NI) :: arrayOf T
       ...
     </k>
     <store>... . => LI .. LI +Int _-Int_(NI,1) |-> undefined(T) :: T ...</store>
-    <nextLoc> LI:#Int => LI +Int NI </nextLoc>
+    <nextLoc> LI:Int => LI +Int NI </nextLoc>
 
 syntax K ::= "evalAndStore" "(" List{K}  "," K ")"
 
 rule [evalAndStoreDesugar]:
-    evalAndStore((I1:#Int,,I2:#Int,,Ks:List{K}), InitExp)
+    evalAndStore((I1:Int,,I2:Int,,Ks:List{K}), InitExp)
     => evalAndStore(I1,InitExp) ~> evalAndStore((I2,,Ks),InitExp)
         [structural]
 
-context evalAndStore(_:#Int, HOLE)
+context evalAndStore(_:Int, HOLE)
 
 rule [evalAndStore]:
     <k>
-      evalAndStore(L:#Int, V:RawVal :: T2:Type) => subtype T2, T1 ~> true?
+      evalAndStore(L:Int, V:RawVal :: T2:Type) => subtype T2, T1 ~> true?
       ...
     </k>
     <store>... L |-> (_ :: T1:Type => unsafeCast(V::T2, T1)) ...</store>
@@ -97,8 +99,8 @@ rule [evalAndStoreEmpty]:
 
 //@ Sequences of locations
 
-syntax List{K} ::= #Int ".." #Int
-define N1:#Int..N2:#Int => .List{K}              when N1  >Int N2
-define N1:#Int..N2:#Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2
+syntax List{K} ::= Int ".." Int
+define N1:Int..N2:Int => .List{K}              when N1  >Int N2
+define N1:Int..N2:Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2
 
 end module
