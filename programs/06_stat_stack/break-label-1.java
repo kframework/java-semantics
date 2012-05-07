@@ -1,13 +1,13 @@
 // Simple test with labeled break
 
-public class main {
-  void main(string[] args) {
+class main {
+  void main(String[] args) {
     label_1: {
-      print("Before break","\n");
+      System.out.println("Before break");
       break label_1;
-      print("unreachable");
+      System.out.print("unreachable");
     }
-    print("Done!","\n");
+    System.out.println("Done!");
   }
 }
 // Before break

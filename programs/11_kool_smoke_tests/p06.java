@@ -10,10 +10,10 @@ class c2 extends c1 {
 }
 
 class main {
-  void main(string[] args) {
+  void main(String[] args) {
     c1 o1 = new c1();
     c2 o2 = new c2();
-    print(o1.m1(), o2.m1(), o2.m2());
+    System.out.print("" + o1.m1() + o2.m1() + o2.m2());
   }
 }
 

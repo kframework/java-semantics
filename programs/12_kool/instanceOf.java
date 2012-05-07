@@ -3,11 +3,11 @@
 class C {
   void C() {}
   void test() {
-    print("Instance of class C");
-    if (this instanceof C1) print(1);
-    if (this instanceof C2) print(2);
-    if (this instanceof C3) print(3);
-    print("\n");
+    System.out.print("Instance of class C");
+    if (this instanceof C1) System.out.print(1);
+    if (this instanceof C2) System.out.print(2);
+    if (this instanceof C3) System.out.print(3);
+    System.out.print("\n");
   }
 }
 
@@ -24,12 +24,12 @@ class C3 extends C {
 }
 
 class main {
-  void main(string[] args) {
+  void main(String[] args) {
     (new C()).test();
     (new C1()).test();
     (new C2()).test();
     (new C3()).test();
-    print("Done!","\n");
+    System.out.println("Done!");
   }
 }
 

@@ -2,15 +2,15 @@
 // with the same name as the field. After doWhile completes,
 // we should be able to access the field again.
 
-public class main {
+class main {
   int i = 1;
 
-	void main(string[] args) {
+	void main(String[] args) {
     do {
       int i = 10;
     } while (false);
-    print("After doWhile i = ", i, "\n");
-    print("Done!","\n");
+    System.out.println("After doWhile i = "+ i);
+    System.out.println("Done!");
   }
 }
 

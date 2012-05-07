@@ -1,17 +1,17 @@
 // break label -> simple doWhile -> matched labeled block.
 
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     label_1: {
       do {
-        print("Inside doWhile","\n");
+        System.out.println("Inside doWhile");
         break label_1;
-        print("unreachable 1");
+        System.out.print("unreachable 1");
       } while(true);
-      print("unreachable 2");
+      System.out.print("unreachable 2");
     }
-    print("Done!", "\n");
+    System.out.println("Done!");
   }
 }
 

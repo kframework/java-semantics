@@ -1,10 +1,10 @@
 class c {
   void c() {  }
   void test() {
-    print(-1);
-    if (this instanceof c1) print(1);
-    if (this instanceof c2) print(2);
-    if (this instanceof c3) print(3);
+    System.out.print(-1);
+    if (this instanceof c1) System.out.print(1);
+    if (this instanceof c2) System.out.print(2);
+    if (this instanceof c3) System.out.print(3);
   }
 }
 
@@ -21,7 +21,7 @@ class c3 extends c {
 }
 
 class main {
-  void main(string[] args) {
+  void main(String[] args) {
     (new c()).test();
     (new c1()).test();
     (new c2()).test();

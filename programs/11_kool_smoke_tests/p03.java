@@ -17,7 +17,7 @@ class main extends b {
   int m1(int y) {
     return  y*y;
   }
-  void main(string[] args) {
-    print(m1(4));
+  void main(String[] args) {
+    System.out.print(m1(4));
   }
 }

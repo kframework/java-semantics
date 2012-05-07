@@ -14,7 +14,7 @@ class Point {
   }
 
   void printLocation() {
-    print("x = ", x, ", ", "y = ", y, "\n");
+    System.out.println("x = "+ x+ ", "+ "y = "+ y);
   }
 }
 
@@ -31,12 +31,12 @@ class ColorPoint extends Point {
   }
 
   void printColor() {
-    print("color = ", color, "\n");
+    System.out.println("color = "+ color);
   }
 }
 
 class main {
-  public static void main(string[] args) {
+  static void main(String[] args) {
     Point p = new Point(3,4);
     ColorPoint cp = new ColorPoint(10,20,87);
     p.move(1,2);
@@ -44,7 +44,7 @@ class main {
     cp.move(7, 8);
     cp.printLocation();
     cp.printColor();
-    print("Done!","\n");
+    System.out.println("Done!");
   }
 }
 

@@ -15,13 +15,13 @@ class G {
   void G(int t) {
     a = t;
   }
-  void print2() { print(a, "\n"); }
+  void print2() { System.out.println(a); }
 }
 
 class main {
-  void main(string[] args) {
+  void main(String[] args) {
     ((new I(1)).m1()).print2();
-    print("Done!","\n");
+    System.out.println("Done!");
   }
 }
 

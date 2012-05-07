@@ -18,10 +18,10 @@ class g {
 }
 
 class main {
-  void main(string[] args) {
+  void main(String[] args) {
     i t = new i(1);
     g y = new g(t);  // passes an oect
-    print(y.do1());
+    System.out.print(y.do1());
   }
 }
 

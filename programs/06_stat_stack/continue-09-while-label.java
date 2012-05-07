@@ -1,18 +1,18 @@
 // Testing simple continue inside while loop with label.
 // Label should not affect continue execution.
 
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     int i=0;
     label_1:
     while (i<10) {
       int j = i;
       i++;
       if (j % 2 != 0) continue;
-      print(j," ");
+      System.out.print(j+" ");
     }
-    print("\n", "Done!", "\n");
+    System.out.println("\n"+ "Done!");
   }
 }
 

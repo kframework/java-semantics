@@ -1,4 +1,4 @@
-public class main {
+class main {
   int x, y, z;
 
   void g() {
@@ -9,18 +9,18 @@ public class main {
     g();
   }
 
-  void main(string[] args) {
+  void main(String[] args) {
     x = 5;
     y = 10;
 
     try {
       f();
     } catch(int y) {
-      print(y," ");
+      System.out.print(y+" ");
     }
-    print(x," ");
-    print(y,"\n");
-    print("Done!","\n");
+    System.out.print(x+" ");
+    System.out.println(y);
+    System.out.println("Done!");
   }
 }
 

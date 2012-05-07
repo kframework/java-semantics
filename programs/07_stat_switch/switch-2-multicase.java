@@ -2,27 +2,27 @@
 
 class main {
 	static void howMany(int k) {
-    print(k,": ");
+    System.out.print(k+": ");
 		switch (k) {
 			case 1+0:
-        print("1 ");
+        System.out.print("1 ");
       case 2+0:
 			case 3+0:
-        print("2-3 ");
+        System.out.print("2-3 ");
 			case 4+0:
       case 5+0:
 		}
-    print("\n");
+    System.out.print("\n");
 	}
 
-	public static void main(string[] args) {
+	static void main(String[] args) {
 		howMany(1);
 		howMany(2);
 		howMany(3);
 		howMany(4);
 		howMany(5);
 		howMany(6);
-    print("Done!","\n");
+    System.out.println("Done!");
 	}
 }
 

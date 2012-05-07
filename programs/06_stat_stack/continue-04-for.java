@@ -1,13 +1,13 @@
 // Testing continue inside for loop
 
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     for(int i=0; i<10; i++) {
       if (i % 2 != 0) continue;
-      print(i," ");
+      System.out.print(i+" ");
     }
-    print("\n", "Done!", "\n");
+    System.out.println("\n"+ "Done!");
   }
 }
 

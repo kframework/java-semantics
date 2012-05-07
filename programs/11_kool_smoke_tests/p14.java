@@ -41,10 +41,10 @@ class b extends a {
 }
 
 class main {
-  void main(string[] args) {
+  void main(String[] args) {
     b o = new b();
-    if (o.m5()) print(o.m0(), o.m1(), o.m2(), o.m3(), o.m4());
-    else print("m5 not returning true","\n");
+    if (o.m5()) System.out.print(""+o.m0()+ o.m1()+ o.m2()+ o.m3()+ o.m4());
+    else System.out.println("m5 not returning true");
   }
 }
 

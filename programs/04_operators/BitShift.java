@@ -1,15 +1,15 @@
-public class main {
+class main {
 
-	void printAll(string[] vs, int[] v) {
+	void printAll(String[] vs, int[] v) {
 		for (int i = 0; i<v.length; i++) {
-      print(vs[i]," = ",v[i],"\n");
+      System.out.println(vs[i]+" = "+v[i]);
 		}
 	}
 
   int nrOps = 12;
 
-  string[] initVS() {
-    string[] vs = new string[nrOps];
+  String[] initVS() {
+    String[] vs = new String[nrOps];
     int i=0;
 
 		vs[i++] = " 4 <<   1    ";
@@ -28,9 +28,9 @@ public class main {
     return vs;
   }
 
-	public static void main(string[] args) {
+	static void main(String[] args) {
     int[] v = new int[nrOps];
-    string[] vs = initVS();
+    String[] vs = initVS();
     int i=0;
 
 		v[i++] =  4 <<   1;
@@ -47,6 +47,6 @@ public class main {
 		v[i++] = -4 >>> -1;
 
     printAll(vs,v);
-    print("Done!", "\n");
+    System.out.println("Done!");
 	}
 }

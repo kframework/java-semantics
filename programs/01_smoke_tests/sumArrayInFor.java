@@ -1,6 +1,6 @@
-public class main {
+class main {
 
-	public static void main(string[] args) {
+	static void main(String[] args) {
 		int n=4;
 		int s,i;
 
@@ -13,8 +13,8 @@ public class main {
 		for(i=0; i<v.length; ++i) {
 			s = s + v[i];
 		}
-		print("sum 1..", n, "=", s, "\n");
-    print("Done!", "\n");
+		System.out.println("sum 1.."+ n+ "="+ s);
+    System.out.println("Done!");
 	}
 }
 

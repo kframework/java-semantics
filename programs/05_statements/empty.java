@@ -1,7 +1,7 @@
 class main {
-  void main(string[] args) {
+  void main(String[] args) {
     ;
-    print("Done!","\n");
+    System.out.println("Done!");
   }
 }
 

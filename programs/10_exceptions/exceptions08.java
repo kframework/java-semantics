@@ -1,28 +1,28 @@
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     int e;
     try {
       try {
         try {
           try {
-            int x = 1; print(x," "); throw ++x;
+            int x = 1; System.out.print(x+" "); throw ++x;
           } catch(int e) {
-            print(e," ");
+            System.out.print(e+" ");
             throw ++e;
           }
         } catch(int e) {
-          print(e," ");
+          System.out.print(e+" ");
           throw ++e;
         }
       } catch(int e) {
-        print(e," ");
+        System.out.print(e+" ");
         throw ++e;
       }
     } catch(int e) {
-      print(e,"\n");
+      System.out.println(e);
     }
-    print("Done!","\n");
+    System.out.println("Done!");
   }
 }
 

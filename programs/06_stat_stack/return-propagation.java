@@ -1,10 +1,10 @@
 // Testing that return statement propagates through try-catch blocks.
 
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     test();
-    print("Done!", "\n");
+    System.out.println("Done!");
   }
 
   void test() {
@@ -12,14 +12,14 @@ public class main {
       try {
         return;
 
-        print("No exception","\n");
+        System.out.println("No exception");
       } catch (int e3) {
-        print("caught Exception: ",e3,"\n");
+        System.out.println("caught Exception: "+e3);
       } finally {
-        print("finally after return","\n");
+        System.out.println("finally after return");
       }
     } finally {
-      print("finally 2 after return","\n");
+      System.out.println("finally 2 after return");
     }
   }
 }

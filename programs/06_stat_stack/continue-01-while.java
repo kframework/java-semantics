@@ -1,16 +1,16 @@
 // Testing continue inside while loop
 
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     int i=0;
     while (i<10) {
       int j = i;
       i++;
       if (j % 2 != 0) continue;
-      print(j," ");
+      System.out.print(j+" ");
     }
-    print("\n", "Done!", "\n");
+    System.out.println("\n"+ "Done!");
   }
 }
 

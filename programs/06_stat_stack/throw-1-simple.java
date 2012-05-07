@@ -5,19 +5,19 @@ class Exception {
   Exception(){}
 }
 
-public class main {
-  void main(string[] args) {
+class main {
+  void main(String[] args) {
     int e = 100;
     try {
       int x = 5;
       if (x >= 0)
         throw new Exception();
-      print("unreachable");
+      System.out.print("unreachable");
     } catch(Exception e) {
-      print(e, " ","\n");   // should print Exception
+      System.out.println(e+ " ");   // should print Exception
     }
-    print(e, " ","\n");     // should print 100
-    print("Done!", "\n");
+    System.out.println(e+ " ");     // should print 100
+    System.out.println("Done!");
   }
 }
 // Exception

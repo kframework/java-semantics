@@ -1,7 +1,7 @@
 // This version of insertion sorting declares the vector in the init function
 // and then passes it (actually its reference) where it is needed
 
-public class main {
+class main {
 
 	int[] init(int n) {
 		int[] x = new int[n];
@@ -10,20 +10,20 @@ public class main {
 	}
 
 	void printAll(int[] x) {
-    string s = "";
+    String s = "";
 		for (int i = 0, xi; i<x.length; ++i) {
       xi = x[i];
       s = s + " " + xi;
 		}
-    print(s);
+    System.out.print(s);
 	}
 
-	void main(string[] args) {
+	void main(String[] args) {
 		int n=30;
     int[] x = init(n);
-		print("The original sequence is");
+		System.out.print("The original sequence is");
 		printAll(x);
-		print("\n", "Sorting the array using insertion sort ... ");
+		System.out.print("\n"+ "Sorting the array using insertion sort ... ");
 		for (int i = 0; i<n; ++i) {
 			int j = i - 1, v = x[i];
 			while (j >= 0 && x[j] > v) {
@@ -32,9 +32,9 @@ public class main {
 			}
 			x[j+1] = v;
 		}
-		print("Sort completed.", "\n", "The sorted sequence is");
+		System.out.print("Sort completed."+ "\n"+ "The sorted sequence is");
 		printAll(x);
-		print("\n");
-    print("Done!","\n");
+		System.out.print("\n");
+    System.out.println("Done!");
 	}
 }

@@ -13,7 +13,7 @@ class main extends C {
   C a = new C();
   C f(int i) {return a;}
 
-  void main(string[] args) {
+  void main(String[] args) {
     //situatii posibile:
 
     //'This()
@@ -56,6 +56,6 @@ class main extends C {
     //)
     f(1).g(2);
 
-    print("Done!", "\n");
+    System.out.println("Done!");
   }
 }

@@ -19,7 +19,7 @@ class main extends C {
   C field;
   C a;
 
-  void main(string[] args) {
+  void main(String[] args) {
     C();
     field = a = this;
     C local = this;
@@ -41,6 +41,6 @@ class main extends C {
     f(1).a.b=5;
     f(1).f(1).b=5;
 
-    print("Done!", "\n");
+    System.out.println("Done!");
   }
 }

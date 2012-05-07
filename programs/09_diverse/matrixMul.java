@@ -1,6 +1,6 @@
 //Multiplication of two matrixes. In this program the general form of array creation expression is tested.
 
-public class main {
+class main {
 
   int[][] matrixMul(int[][] m1, int[][] m2) {
     int[][] rez = new int[m1.length][m2[0].length];
@@ -20,13 +20,13 @@ public class main {
   void matrixPrint(int[][] m1) {
     for(int i=0; i<m1.length; ++i) {
       for(int j=0; j<m1[i].length; ++j) {
-        print(m1[i][j]," ");
+        System.out.print(m1[i][j] + " ");
       }
-      print("\n");
+      System.out.println();
     }
   }
 
-  void main(string[] args) {
+  void main(String[] args) {
     int n=2, m=3, p=2;
     int[][] m1,m2;
     m1 = new int[n][m];
@@ -35,7 +35,7 @@ public class main {
         m1[i][j] = i+j;
       }
     }
-    print("M1=","\n");
+    System.out.println("M1=");
     matrixPrint(m1);
     m2 = new int[m][p];
     for(int i=0; i<m; ++i) {
@@ -43,11 +43,11 @@ public class main {
         m2[i][j] = 1;
       }
     }
-    print("M2=","\n");
+    System.out.println("M2=");
     matrixPrint(m2);
     int[][] rez = matrixMul(m1, m2);
-    print("M1 * M2 = ","\n");
+    System.out.println("M1 * M2 = ");
     matrixPrint(rez);
-    print("Done!", "\n");
+    System.out.println("Done!");
   }
 }

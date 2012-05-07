@@ -1,19 +1,19 @@
 // Testing that exception propagates through method calls
 // The last line is not printed due to unknown java-prototype definition bug.
 
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     try {
       try {
         throwEx();
 
-        print("No exception","\n");
+        System.out.println("No exception");
       } finally {
-        print("finally after uncaught exception","\n");
+        System.out.println("finally after uncaught exception");
       }
     } finally {
-      print("finally 2 after uncaught exception","\n");
+      System.out.println("finally 2 after uncaught exception");
     }
   }
 

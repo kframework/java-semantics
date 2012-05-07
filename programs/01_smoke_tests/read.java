@@ -1,10 +1,10 @@
-public class main {
+class main {
 
-	public static void main(string[] args) {
-    print("Insert a number: ");
-    int a = read();
-    print("You inserted: ", a, "\n");
-    print("Done!", "\n");
+	static void main(String[] args) {
+    System.out.print("Insert a number: ");
+    int a = Integer.parseInt(System.console().readLine());
+    System.out.println("You inserted: " + a);
+    System.out.println("Done!");
 	}
 }
 

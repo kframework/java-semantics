@@ -1,7 +1,7 @@
 class main {
-	public static void main(string[] args) {
-		print("abc ", "\n", "");
-		print(123, " ", true, " ", false, "\n");
-		print("Done!","\n");
+	static void main(String[] args) {
+		System.out.print("abc "+ "\n"+ "");
+		System.out.println(123+ " "+ true+ " "+ false);
+		System.out.println("Done!");
 	}
 }

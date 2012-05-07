@@ -9,7 +9,7 @@ class c {
 }
 
 class main {
-  void main(string[] args) {
-    print((new c()).g());
+  void main(String[] args) {
+    System.out.print((new c()).g());
   }
 }

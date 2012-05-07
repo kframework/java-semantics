@@ -1,6 +1,6 @@
 1 > 0 asserted
 1 > 0 asserted with arg
-assertionError: 
-assertionError: abc
-assertionError: -1
+AssertionError: 
+AssertionError: abc
+AssertionError: -1
 Done!

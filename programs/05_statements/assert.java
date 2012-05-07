@@ -3,56 +3,56 @@
 2. Assert with true exp with two args. Second arg have a side effect.
   Testing execution of second arg only if first is false.
 3. Assert with false with one arg.
-4. Assert with false with two args. Second arg of type string.
+4. Assert with false with two args. Second arg of type String.
 5. Assert with false with two args. Second arg of type int.
-  Testing conversion to string.
+  Testing conversion to String.
 */
 
-class assertionError {
-  string message;
+class AssertionError {
+  String message;
 
-  assertionError(string message) {
+  AssertionError(String message) {
     this.message = message;
   }
 
   void print() {
-    print("assertionError: ",message,"\n");
+    System.out.println("AssertionError: "+message);
   }
 }
 
 class main {
-  void main(string[] args) {
+  void main(String[] args) {
     assert 1 > 0;
-    print("1 > 0 asserted","\n");
+    System.out.println("1 > 0 asserted");
 
     assert 1>0 : "abc";
-    print("1 > 0 asserted with arg","\n");
+    System.out.println("1 > 0 asserted with arg");
 
     try {
       assert false;
-    } catch (assertionError err) {
+    } catch (AssertionError err) {
       err.print();
     }
 
     try {
       assert false : "abc";
-    } catch (assertionError err) {
+    } catch (AssertionError err) {
       err.print();
     }
 
     try {
       assert false : -1;
-    } catch (assertionError err) {
+    } catch (AssertionError err) {
       err.print();
     }
 
-    print("Done!","\n");
+    System.out.println("Done!");
   }
 }
 
 // 1 > 0 asserted
 // 1 > 0 asserted with arg
-// assertionError:
-// assertionError: abc
-// assertionError: -1
+// AssertionError:
+// AssertionError: abc
+// AssertionError: -1
 // Done!

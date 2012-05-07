@@ -1,23 +1,23 @@
-public class main {
+class main {
 
   int i, j;
 
-  void main(string[] args) {
+  void main(String[] args) {
     i = 0;
     while (++i <= 3) {
-      print(i," ");
+      System.out.print(i+" ");
     }
     try {
       throw j=1;
       i = 10;
-      print(i);   // should not print this
+      System.out.print(i);   // should not print this
     } catch(int j) {
       i = 20;
-      print(i," ");   // should print this
+      System.out.print(i+" ");   // should print this
     }
     i = 15;
-    print(i,"\n");
-    print("Done!","\n");
+    System.out.println(i);
+    System.out.println("Done!");
   }
 }
 

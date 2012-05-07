@@ -150,7 +150,7 @@ context 'AssertStm(false::bool,, HOLE)
 rule [AssertStm]:
     'AssertStm(false::bool,, TV:TypedVal) => 'Throw('NewInstance(
       'None(.List{K}),,
-      'ClassOrInterfaceType( 'TypeName( String2Id("assertionError") ),, 'None(.List{K}) ),,
+      'ClassOrInterfaceType( 'TypeName( String2Id("AssertionError") ),, 'None(.List{K}) ),,
       'ListWrap( toString(TV) ),,
       'None(.List{K})
     ))
@@ -565,8 +565,8 @@ when
 rule [ThrowCausesThreadTermination]:
     <k>
       'Throw(TV) ~> _:K
-      => 'ExprStm('Invoke(printMethodVal,,
-          'ListWrap("Thread terminated with exception: "::rtString,, TV,, "\n"::rtString)))
+      => 'ExprStm('Invoke(rtSystemOutPrintln,, 'ListWrap(
+          'Plus("Thread terminated with exception: "::rtString,, TV))))
     </k>
     <stack> .List </stack>
 

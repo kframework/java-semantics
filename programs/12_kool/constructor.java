@@ -14,7 +14,7 @@ class C {
   }
 
   void print2() {
-    print(i, " ", j, "\n");
+    System.out.println(i+ " "+ j);
   }
 }
 
@@ -22,13 +22,13 @@ class main {
   int a, b;
   C o;
 
-  void main(string[] args){
+  void main(String[] args){
     a = b = 5;
     o = new C(a);
     o.print2();
     o.add(++b);
     o.print2();
-    print("Done!","\n");
+    System.out.println("Done!");
   }
 }
 

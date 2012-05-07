@@ -1,21 +1,21 @@
 // Testing break with label inside try/finally inside for (the labeled statement).
 // Finally block should execute after break was executed
 
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     int i;
     label_1:
     for(i=0; i<10; i++) {
       try {
         if (i >= 5) break label_1;
-        print(i);
+        System.out.print(i);
       } finally {
-        print("-", i, " ");
+        System.out.print("-"+ i+ " ");
       }
     }
-    print("\n", "final i = ", i, "\n");
-    print("Done!", "\n");
+    System.out.println("\n"+ "final i = "+ i);
+    System.out.println("Done!");
   }
 }
 

@@ -7,24 +7,24 @@ All as previous + default case. Default case is not the first one,
 
 class main {
 	static void howMany(int k) {
-    print(k,": ");
+    System.out.print(k+": ");
 		switch (k) {
 			case 1:
-        print("1 ");
+        System.out.print("1 ");
       case 2:
 			default:
       case 3:
-        print("2-default-3 ");
+        System.out.print("2-default-3 ");
       case 4:
 			case 5:
-        print("4-5 ");
+        System.out.print("4-5 ");
 			case 6:
       case 7:
 		}
-    print("\n");
+    System.out.print("\n");
 	}
 
-	public static void main(string[] args) {
+	static void main(String[] args) {
 		howMany(1);
 		howMany(2);
 		howMany(3);
@@ -33,7 +33,7 @@ class main {
 		howMany(6);
     howMany(7);
     howMany(8);
-    print("Done!","\n");
+    System.out.println("Done!");
 	}
 }
 

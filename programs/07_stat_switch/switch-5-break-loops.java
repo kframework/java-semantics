@@ -8,34 +8,34 @@ Interaction with loops. One loop inside a switch group, one loop enclosing
 
 class main {
 	static void howMany(int k) {
-    print(k,": ");
+    System.out.print(k+": ");
     while(true) {
       switch (k) {
         case 1:
-          print("1, ");
+          System.out.print("1, ");
           while(true) {
-            print("inner while, ");
+            System.out.print("inner while, ");
             break;
-            print("unreachable");
+            System.out.print("unreachable");
           }
         case 2:
-          print("2, ");
+          System.out.print("2, ");
           break;
-          print("unreachable");
+          System.out.print("unreachable");
         case 3:
-          print("3, ");
+          System.out.print("3, ");
       }
-      print("after switch, ");
+      System.out.print("after switch, ");
       break;
-      print("unreachable");
+      System.out.print("unreachable");
     }
-    print("after outer while.");
-    print("\n");
+    System.out.print("after outer while.");
+    System.out.print("\n");
 	}
 
-	public static void main(string[] args) {
+	static void main(String[] args) {
 		howMany(1);
-    print("Done!","\n");
+    System.out.println("Done!");
 	}
 }
 

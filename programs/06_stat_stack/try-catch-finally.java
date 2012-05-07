@@ -1,26 +1,26 @@
 // Testing try with  both catch and finally clause
 
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     try {
       try {
-        print("no exception first time","\n");
+        System.out.println("no exception first time");
       } catch (int e3) {
-        print("caught exception: ",e3,"\n");
+        System.out.println("caught exception: "+e3);
       } finally {
-        print("finally after no exception","\n");
+        System.out.println("finally after no exception");
       }
 
       throw -1;
 
-      print("No exception second time","\n");
+      System.out.println("No exception second time");
     } catch (int e3) {
-      print("caught exception: ",e3,"\n");
+      System.out.println("caught exception: "+e3);
     } finally {
-      print("finally after exception","\n");
+      System.out.println("finally after exception");
     }
-    print("Done!", "\n");
+    System.out.println("Done!");
   }
 }
 

@@ -12,6 +12,12 @@ List of implemented features:
 with methods with same name and return type void.
 7. All statements which deal with single-threaded computation
   (e.g. except synchronized), according to JLS $14.
+8. Support for the following JDK methods's:
+  - System.out.print
+  - System.out.println
+  - Integer.parseInt(System.console().readLine()) - only this term, and no subparts of it.
+(The bare minimum required to write any values to console, or to read integers.)
+
 
 
 Limitations:

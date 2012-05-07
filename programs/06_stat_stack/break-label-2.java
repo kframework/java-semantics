@@ -1,15 +1,15 @@
 // Test with two labels, one labeled break.
-public class main {
-  void main(string[] args) {
+class main {
+  void main(String[] args) {
     label_1: {
       label_2: {
-        print("Before break","\n");
+        System.out.println("Before break");
         break label_1;
-        print("unreachable");
+        System.out.print("unreachable");
       }
-      print("unreachable 2");
+      System.out.print("unreachable 2");
     }
-    print("Done!","\n");
+    System.out.println("Done!");
   }
 }
 // Before break

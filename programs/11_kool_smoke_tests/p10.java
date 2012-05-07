@@ -13,11 +13,11 @@ class g {
   void g(int t) {
     a = t;
   }
-  void print2() { print(a); }
+  void print2() { System.out.print(a); }
 }
 
 class main {
-  void main(string[] args) {
+  void main(String[] args) {
     ((new i(1)).m1()).print2();
   }
 }

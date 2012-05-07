@@ -1,5 +1,5 @@
-public class main {
-	public static void main(string[] args) {
+class main {
+	static void main(String[] args) {
 		int a = 0, i = 1;
 
 		//Infix operators
@@ -52,6 +52,6 @@ public class main {
 		a >>= i;
 		a >>>= i;
 
-    print("Done!", "\n");
+    System.out.println("Done!");
 	}
 }

@@ -1,14 +1,14 @@
 // test of doWhile
 
-public class main {
+class main {
 
-	void main(string[] args) {
+	void main(String[] args) {
     int i=0, j=0;
 		do i++; while (false);
     do j++; while (j < 3);
 
-    print(i," ",j,"\n");
-    print("Done!","\n");
+    System.out.println(i+" "+j);
+    System.out.println("Done!");
 	}
 }
 // 1 3

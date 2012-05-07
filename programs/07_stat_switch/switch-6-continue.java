@@ -7,22 +7,22 @@ Interaction with loops. One loop inside a switch group, one loop enclosing
 */
 
 class main {
-	public static void main(string[] args) {
+	static void main(String[] args) {
     for(int i=0; i<4; i++) {
-      print(i,": ");
+      System.out.print(i+": ");
       switch (i) {
         case 1:
-          print("1 ");
+          System.out.print("1 ");
         case 2:
-          print("2 ","\n");
+          System.out.println("2 ");
           continue;
         case 3:
-          print("3 ");
+          System.out.print("3 ");
       }
-      print("+");
-      print("\n");
+      System.out.print("+");
+      System.out.print("\n");
     }
-    print("Done!","\n");
+    System.out.println("Done!");
 	}
 }
 

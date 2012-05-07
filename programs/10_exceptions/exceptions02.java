@@ -1,18 +1,18 @@
-public class main {
-  void main(string[] args) {
+class main {
+  void main(String[] args) {
     try {
       foo();
     }
     catch(int e) {
-      print(e,"\n");  // should print 7
+      System.out.println(e);  // should print 7
     }
-    print("Done!","\n");
+    System.out.println("Done!");
   }
 
   void foo() {
     try {
       throw 5;
-      print(17);      // should not be printed
+      System.out.print(17);      // should not be printed
     } catch(int e) {
       throw e + 2;    // throws 7
     }

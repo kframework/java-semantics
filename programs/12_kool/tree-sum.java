@@ -35,15 +35,15 @@ class Leaf extends Node {
 }
 
 class main {
-  void main(string[] args) {
+  void main(String[] args) {
     Container o;
     o = new Container(
       new Container(new Leaf(3), new Leaf(4)),
       new Leaf(5)
     );
-    print(o.Sum(), "\n");
-    print("o.left.Sum = " + o.getLeft().Sum() + "\n");
-    print("Done!","\n");
+    System.out.println(o.Sum());
+    System.out.print("o.left.Sum = " + o.getLeft().Sum() + "\n");
+    System.out.println("Done!");
   }
 }
 

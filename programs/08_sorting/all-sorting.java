@@ -1,19 +1,23 @@
-public class main {
+class main {
 
   int[] init(int n) {
     int[] x = new int[n];
-    print("Type ",n," numbers: ");
+    System.out.print("Type "+n+" numbers: ");
     for (int i = 0; i<n; ++i)
       x[i] = read();
-    print("Finished reading the ",n," numbers","\n");
+    System.out.println("Finished reading the "+n+" numbers");
     return x;
+  }
+  
+  int read() {
+    return Integer.parseInt(System.console().readLine());
   }
 
   void printArray(int[] x, int n) {
-    print("\n");
+    System.out.print("\n");
     for (int i = 0; i<n; ++i)
-      print(x[i]," ");
-    print("\n");
+      System.out.print(x[i]+" ");
+    System.out.print("\n");
   }
 
   void reverse(int[] x, int n) {
@@ -89,32 +93,32 @@ public class main {
     }
   }
 
-  void main(string[] args) {
-    print("Size of the array to sort = ");
+  void main(String[] args) {
+    System.out.print("Size of the array to sort = ");
     int n = read();
     int[] x = init(n);
-    print("The original unsorted array is:");
+    System.out.print("The original unsorted array is:");
     printArray(x,n);
-    print("Reversing the array ... ");
+    System.out.print("Reversing the array ... ");
     reverse(x,n);
-    print("Done!"+"\n"+"The reversed array is:");
+    System.out.print("Done!"+"\n"+"The reversed array is:");
     printArray(x,n);
-    print("Sorting the array using insertion sort ... ");
+    System.out.print("Sorting the array using insertion sort ... ");
     insertionSort(x,n);
-    print("Done!"+"\n"+"The resulting array is:");
+    System.out.print("Done!"+"\n"+"The resulting array is:");
     printArray(x,n);
-    print("Reversing the array ... ");
+    System.out.print("Reversing the array ... ");
     reverse(x,n);
-    print("Done!"+"\n"+"Sorting the array using bubble sort ... ");
+    System.out.print("Done!"+"\n"+"Sorting the array using bubble sort ... ");
     bubbleSort(x,n);
-    print("Done!"+"\n"+"The resulting array is:");
+    System.out.print("Done!"+"\n"+"The resulting array is:");
     printArray(x,n);
-    print("Reversing the array ... ");
+    System.out.print("Reversing the array ... ");
     reverse(x,n);
-    print("Done!"+"\n"+"Sorting the array using heap sort ... ");
+    System.out.print("Done!"+"\n"+"Sorting the array using heap sort ... ");
     heapSort(x,n);
-    print("Done!"+"\n"+"The resulting array is:");
+    System.out.print("Done!"+"\n"+"The resulting array is:");
     printArray(x,n);
-    print("Done!","\n");
+    System.out.println("Done!");
   }
 }

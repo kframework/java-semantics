@@ -27,14 +27,14 @@ class B extends A {
 }
 
 class main {
-  void main(string[] args) {
+  void main(String[] args) {
     B b = new B();
     A a = (A)b;
-    print("b.x = ", b.x, "\n");
-    print("a.x = ", a.x, "\n");
-    print("a.getB() = ", ((B)a).getB(), "\n");
-    print("a.getA() = ", a.getA(), "\n");
-    print("Done!","\n");
+    System.out.println("b.x = "+ b.x);
+    System.out.println("a.x = "+ a.x);
+    System.out.println("a.getB() = "+ ((B)a).getB());
+    System.out.println("a.getA() = "+ a.getA());
+    System.out.println("Done!");
   }
 }
 

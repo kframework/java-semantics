@@ -1,19 +1,19 @@
 // Test with one label, one labeled break, all inside while.
 // Due to a bug in k definition, there was a strange interaction
 // between labeled break and loops.
-public class main {
-  void main(string[] args) {
+class main {
+  void main(String[] args) {
     int i=0, a=0;
     while(i<3) {
       label_1: {
-        print("Before break ", i, ", ");
+        System.out.print("Before break "+ i+ ", ");
         break label_1;
-        print("unreachable");
+        System.out.print("unreachable");
       }
-      print("after break ", i, "\n");
+      System.out.println("after break "+ i);
       i++;
     }
-    print("Done!", "\n");
+    System.out.println("Done!");
   }
 }
 // Before break 0, after break 0

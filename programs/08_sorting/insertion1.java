@@ -1,6 +1,6 @@
 // This program should execute correctly
 
-public class main {
+class main {
 	int[] x;
 
 	void init(int n) {
@@ -9,20 +9,20 @@ public class main {
 	}
 
 	void printAll(int n) {
-    string s = "";
+    String s = "";
 		for (int i = 0, xi; i<n; i++) {
       xi = x[i];
       s = s + " " + xi;
 		}
-    print(s);
+    System.out.print(s);
 	}
 
-	void main(string[] args) {
+	void main(String[] args) {
 		int n=30;
 		init(n);
-		print("The original sequence is");
+		System.out.print("The original sequence is");
 		printAll(n);
-		print("\n", "Sorting the array using insertion sort ... ");
+		System.out.print("\n"+ "Sorting the array using insertion sort ... ");
 		for (int i = 0; i<n; i++) {
 			int j = i - 1, v = x[i];
 			while (j >= 0 && x[j] > v) {
@@ -31,9 +31,9 @@ public class main {
 			}
 			x[j+1] = v;
 		}
-		print("Sort completed.", "\n", "The sorted sequence is");
+		System.out.print("Sort completed."+ "\n"+ "The sorted sequence is");
 		printAll(n);
-		print("\n");
-    print("Done!","\n");
+		System.out.print("\n");
+    System.out.println("Done!");
 	}
 }

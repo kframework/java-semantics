@@ -8,9 +8,9 @@
 class main {
   int a = 3;
 
-  void main(string[] args) {
-    print("a = ", a, "\n");
-    print("Done!","\n");
+  void main(String[] args) {
+    System.out.println("a = "+ a);
+    System.out.println("Done!");
   }
 }
 

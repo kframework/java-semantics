@@ -16,19 +16,19 @@ class Exception3 extends Exception2 {
 }
 
 class main {
-  void main(string[] args) {
+  void main(String[] args) {
     try {
       throw new Exception2();
 
-      print("No exception","\n");
+      System.out.println("No exception");
     } catch (Exception3 e3) {
-      print("Caught exception3","\n");
+      System.out.println("Caught exception3");
     } catch (Exception2 e2) {
-      print("Caught exception2","\n");
+      System.out.println("Caught exception2");
     } catch (Exception e) {
-      print("Caught exception","\n");
+      System.out.println("Caught exception");
     }
-    print("Done!", "\n");
+    System.out.println("Done!");
   }
 }
 

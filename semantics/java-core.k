@@ -24,7 +24,7 @@ configuration <T color="red">
                         // holds return type
                       <br/>
                       <crntObj color="Fuchsia">
-                        <crntClass> String2Id("object") </crntClass>
+                        <crntClass> .K </crntClass>
                         <envStack> .List </envStack>
                         <location multiplicity="?"> .K </location>
                       </crntObj>
@@ -41,8 +41,8 @@ configuration <T color="red">
                 <br/>
                 <classes color="Fuchsia">
                    <class multiplicity="*" color="Fuchsia">
-                      <className color="Fuchsia"> String2Id("main") </className>
-                      <extends color="Fuchsia"> String2Id("object") </extends>
+                      <className color="Fuchsia"> .K </className>
+                      <extends color="Fuchsia"> .K </extends>
                       <declarations color="purple"> .K </declarations>
                       <metatype color="Fuchsia"> "concrete class" </metatype>
                    </class>
@@ -82,8 +82,7 @@ syntax RawVal ::= Int | Bool | String
 syntax TypedVal ::= RawVal "::" Type
 
 syntax KResult ::= TypedVal | Type
-                | "printMethodVal"
-                | "readMethodVal"
+                 | rtSystemOutPrintln // used in JAVA-STATEMENTS
 
 /*@ \subsubsection{Generic guard}
 A generic computational guard (should be builtin): it allows the

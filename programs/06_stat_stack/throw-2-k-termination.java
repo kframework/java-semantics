@@ -4,10 +4,10 @@ class Exception {
   Exception(){}
 }
 
-public class main {
-  void main(string[] args) {
+class main {
+  void main(String[] args) {
     throw new Exception();
-    print("unreachable");
+    System.out.print("unreachable");
   }
 }
 // Thread terminated with exception: Exception

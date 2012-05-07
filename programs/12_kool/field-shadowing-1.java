@@ -22,16 +22,16 @@ class C2 extends C1 {
 
 class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     C2 o2 = new C2();
     o2.setx1(11);
     o2.sety1(12);
     o2.sety2(99);
-    print(o2.getx1(), " ");
-    print(o2.gety1(), " ");
-    print(o2.getx2(), " ");
-    print(o2.gety2(), "\n");
-    print("Done!","\n");
+    System.out.print(o2.getx1()+ " ");
+    System.out.print(o2.gety1()+ " ");
+    System.out.print(o2.getx2()+ " ");
+    System.out.println(o2.gety2());
+    System.out.println("Done!");
   }
 }
 

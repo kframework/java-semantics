@@ -2,7 +2,7 @@
 // console (first its length, then its elements).  It reads and prints
 // each elements, then it prints the entire array sorted.
 
-public class main {
+class main {
   int[] v = new int[30];
 
   void bubbleSort(int n) {
@@ -21,20 +21,24 @@ public class main {
     }
   }
 
-  void main(string[] args) {
-    print("Length of array = ");
+  int read() {
+    return Integer.parseInt(System.console().readLine());
+  }
+
+  void main(String[] args) {
+    System.out.print("Length of array = ");
     int x = read();
-    print("Input each of the ",x," elements of the array","\n");
+    System.out.println("Input each of the "+x+" elements of the array");
     for (int y = 0; y<x; ++y) {
-      print("Element ",y," = ");
+      System.out.print("Element "+y+" = ");
       v[y] = read();
     }
-    print("Sorting the array using bubble sort ... ");
+    System.out.print("Sorting the array using bubble sort ... ");
     bubbleSort(x);
-    print("Done!","\n", "Below is the sorted sequence:","\n");
+    System.out.println("Done!"+"\n"+ "Below is the sorted sequence:");
     for (int y = 0; y<x; ++y) {
-      print("Element ", y, " = ", v[y],"\n");
+      System.out.println("Element "+ y+ " = "+ v[y]);
     }
-    print("Done!","\n");
+    System.out.println("Done!");
   }
 }

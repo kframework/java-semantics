@@ -1,0 +1,98 @@
+module JAVA-API-CORE
+    imports JAVA-CORE
+
+// This module contains the minimal part of java API required to perform
+// console read/write operations.
+
+syntax KResult ::=  "rtSystem"
+                  | "rtSystemOut"
+                  | "rtSystemOutPrint"
+               // | "rtSystemOutPrintln"  was moved to JAVA-CORE
+                  | "rtSystemConsole"
+                  | "rtSystemConsoleReadLine"
+                  | "rtInteger"
+                  | "rtIntegerParseInt"
+
+syntax RawVal ::= "rtSymbolicConsoleLine"
+
+rule [NameSystem]:
+    'ExprName(X:Id) => rtSystem
+when
+    Id2String(X) ==String "System"
+
+rule [NameSystemConsole]:
+    'MethodName(rtSystem,, X) => rtSystemConsole
+when
+    Id2String(X) ==String "console"
+
+rule [InvokeSystemConsole]:
+    'Invoke(rtSystemConsole,, 'ListWrap(.List{K})) => rtSystemConsole
+
+rule [NameSystemConsoleReadLine]:
+    'MethodName(rtSystemConsole,, X) => rtSystemConsoleReadLine
+when
+    Id2String(X) ==String "readLine"
+
+rule [InvokeSystemConsoleReadLine]:
+    'Invoke(rtSystemConsoleReadLine,, 'ListWrap(.List{K}))
+    => rtSymbolicConsoleLine :: rtString
+
+rule [NameInteger]:
+    'ExprName(X:Id) => rtInteger
+when
+    Id2String(X) ==String "Integer"
+
+rule [NameIntegerParseInt]:
+    'MethodName(rtInteger,, X) => rtIntegerParseInt
+when
+    Id2String(X) ==String "parseInt"
+
+rule [consoleReadInt]:
+    <k>
+      'Invoke(rtIntegerParseInt,, 'ListWrap(rtSymbolicConsoleLine :: rtString))
+      => I:Int :: int
+      ...
+    </k>
+    <in> ListItem(I) => . ...</in>
+        [transition]
+
+//@ For integers and strings, print their value. For classes, print class type.
+
+rule [NameSystemOut]:
+    'ExprName(rtSystem,, X) => rtSystemOut
+when
+    Id2String(X) ==String "out"
+
+rule [NameSystemOutPrint]:
+    'MethodName(rtSystemOut,, X) => rtSystemOutPrint
+when
+    Id2String(X) ==String "print"
+
+rule [NameSystemOutPrintln]:
+    'MethodName(rtSystemOut,, X) => rtSystemOutPrintln
+when
+    Id2String(X) ==String "println"
+
+rule [printlnDesugar]:
+    'Invoke(rtSystemOutPrintln,, 'ListWrap(KR:KResult))
+    => 'Invoke(rtSystemOutPrint,, 'ListWrap('Plus(KR:KResult,,"\n"::rtString)))
+
+rule [printlnEmptyDesugar]:
+    'Invoke(rtSystemOutPrintln,, 'ListWrap(.List{K}))
+    => 'Invoke(rtSystemOutPrint,, 'ListWrap("\n"::rtString))
+
+rule [consolePrintArgConvert]:
+    'Invoke(rtSystemOutPrint,, 'ListWrap(KR:KResult => toString(KR)))
+when
+    typeOf(KR) =/=K rtString
+
+rule [consolePrint]:
+    <k>
+      'Invoke(rtSystemOutPrint,, 'ListWrap(Str:String :: rtString))
+      => nothing::void
+      ...
+    </k>
+    <out>... .=> ListItem(Str) </out>
+        [transition]
+
+end module

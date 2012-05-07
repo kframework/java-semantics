@@ -5,28 +5,28 @@ Interaction with break with label.
 
 class main {
 	static void howMany(int k) {
-    print(k,": ");
+    System.out.print(k+": ");
     label_1: {
       switch (k) {
         case 1:
-          print("1 ");
+          System.out.print("1 ");
           break;
         case 2:
-          print("2 ");
+          System.out.print("2 ");
           break label_1;
-        case 3: print("3 ");
+        case 3: System.out.print("3 ");
       }
-      print(", after switch.");
+      System.out.print(", after switch.");
     }
-    print("\n");
+    System.out.print("\n");
 	}
 
-	public static void main(string[] args) {
+	static void main(String[] args) {
 		howMany(1);
 		howMany(2);
 		howMany(3);
 		howMany(4);
-    print("Done!","\n");
+    System.out.println("Done!");
 	}
 }
 

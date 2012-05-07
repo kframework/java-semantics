@@ -60,9 +60,9 @@ class c extends b {
 
 class main {
   void p(a o) {
-    print(o.f());print(o.g());print(o.h());
+    System.out.print(o.f());System.out.print(o.g());System.out.print(o.h());
   }
-  void main(string[] args) {
+  void main(String[] args) {
     p(new a());
     p(new b());
     p(new c());

@@ -1,13 +1,13 @@
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     try {
       15;
     } catch(int e) {
-      print(e);   // should not print this
+      System.out.print(e);   // should not print this
     }
-    print(42,"\n");
-    print("Done!","\n");
+    System.out.println(42);
+    System.out.println("Done!");
   }
 }
 

@@ -1,10 +1,10 @@
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     int e;
-    try { int x = 2; print(x," "); throw ( ++x + x ); }
-    catch(int e) { print(e,"\n"); }
-    print("Done!","\n");
+    try { int x = 2; System.out.print(x+" "); throw ( ++x + x ); }
+    catch(int e) { System.out.println(e); }
+    System.out.println("Done!");
   }
 }
 

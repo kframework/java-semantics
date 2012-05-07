@@ -26,10 +26,10 @@ class C3 extends C2 {
 }
 
 class main {
-  void main(string[] args) {
+  void main(String[] args) {
     C3 o3 = new C3();
-    print(o3.m3(), "\n");
-    print("Done!","\n");
+    System.out.println(o3.m3());
+    System.out.println("Done!");
   }
 }
 

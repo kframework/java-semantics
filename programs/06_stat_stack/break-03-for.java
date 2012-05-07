@@ -1,15 +1,15 @@
 // Testing break inside for loop
 
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     int i;
     for(i=0; i<10; i++) {
       if (i >= 5) break;
-      print(i," ");
+      System.out.print(i+" ");
     }
-    print("\n", "final i = ", i, "\n");
-    print("Done!", "\n");
+    System.out.println("\n"+ "final i = "+ i);
+    System.out.println("Done!");
   }
 }
 

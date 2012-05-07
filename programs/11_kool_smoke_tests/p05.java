@@ -17,12 +17,12 @@ class c2 extends c1 {
 }
 
 class main {
-  void main(string[] args) {
+  void main(String[] args) {
     c2 o2 = new c2();
     o2.setx1(11);
     o2.sety1(12);
     o2.sety2(99);
-    print(o2.getx1(), o2.gety1(), o2.getx2(), o2.gety2());
+    System.out.print(""+o2.getx1()+ o2.gety1()+ o2.getx2()+ o2.gety2());
   }
 }
 

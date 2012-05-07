@@ -20,7 +20,7 @@ class b extends a {
   }
 }
 class main {
-  void main(string[] args) {
+  void main(String[] args) {
     a[] o= new a[5];
     b[] p = new b[4];
     boolean b;
@@ -32,10 +32,10 @@ class main {
     o[4] = p[3];
     b = o[4].m1(3);
     if (!b) {
-      print(p[3].c());
+      System.out.print(p[3].c());
     }
     if (!p[2].m1(2)) {
-      print(p[2].c());
+      System.out.print(p[2].c());
     }
   }
 }

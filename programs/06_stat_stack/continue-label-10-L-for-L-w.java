@@ -1,8 +1,8 @@
 // continue label -> labeled for -> matched labeled while.
 
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     int i=0;
     label_1:
     while (i<10) {
@@ -13,9 +13,9 @@ public class main {
         for(;;)
           continue label_1;
       }
-      print(j," ");
+      System.out.print(j+" ");
     }
-    print("\n", "Done!", "\n");
+    System.out.println("\n"+ "Done!");
   }
 }
 

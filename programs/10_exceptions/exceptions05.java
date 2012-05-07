@@ -1,25 +1,25 @@
-public class main {
+class main {
 
   int x;
 
   int f(int y) {
     int t = 1;
     try{
-      print(t," ");
+      System.out.print(t+" ");
       throw 5;
-      print(8);      // not reachable
+      System.out.print(8);      // not reachable
     } catch(int p) {
-      print(p+10," ");
+      System.out.print(p+10+" ");
     }
     for (int i = 1; i<=y; ++i)
       t = t*i;
     return t;
   }
 
-  void main(string[] args) {
+  void main(String[] args) {
     x = 5;
-    print(f(x),"\n");
-    print("Done!","\n");
+    System.out.println(f(x));
+    System.out.println("Done!");
   }
 }
 

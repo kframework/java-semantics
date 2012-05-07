@@ -19,11 +19,11 @@ class Graph {
   //todo support for form int edges[][];
   int[][] edges;
 
-  public Graph(int[][] edges) {
+  Graph(int[][] edges) {
     this.edges = edges;
   }
 
-  public Graph loseEdges(int i, int j) {
+  Graph loseEdges(int i, int j) {
     int n = edges.length;
     int[][] newedges = new int[n][];
     for (int k = 0; k < n; ++k) {
@@ -65,17 +65,17 @@ class Graph {
 
   void print() {
     for (int i = 0; i < edges.length; i++) {
-      print(i + " |-> ");
+      System.out.print(i + " |-> ");
       for (int j = 0; j < edges[i].length; j++) {
-        print(edges[i][j] + " ");
+        System.out.print(edges[i][j] + " ");
       }
-      print("\n");
+      System.out.print("\n");
     }
   }
 }
 
-public class main {
-  public static void main(string[] args) {
+class main {
+  static void main(String[] args) {
     int n = 4;
     int[][] edges = new int[n][n];
     for (int i = 0; i < n; i++) {
@@ -84,12 +84,12 @@ public class main {
       }
     }
     Graph graph1 = new Graph(edges);
-    print("Init graph:"+"\n");
+    System.out.print("Init graph:"+"\n");
     graph1.print();
     Graph graph2 = graph1.loseEdges(1,2);
-    print("\n"+"Graph without edges (1,2),(2,1):"+"\n");
+    System.out.print("\n"+"Graph without edges (1,2),(2,1):"+"\n");
     graph2.print();
-    print("Done!","\n");
+    System.out.println("Done!");
   }
 }
 

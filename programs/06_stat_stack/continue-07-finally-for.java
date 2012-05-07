@@ -1,20 +1,20 @@
 // Testing continue inside try/finally inside for. Finally block should execute
 // after continue was executed
 
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     int i;
     for(i=0; i<10; i++) {
       try {
         if (i % 2 != 0) continue;
-        print(i,"-");
+        System.out.print(i+"-");
       } finally {
-        print(i, " ");
+        System.out.print(i+ " ");
       }
     }
-    print("\n", "final i = ", i, "\n");
-    print("Done!", "\n");
+    System.out.println("\n"+ "final i = "+ i);
+    System.out.println("Done!");
   }
 }
 

@@ -5,18 +5,18 @@
 // Such a semantics for do is correct in absence of continue statement,
 // but leads to problems when we add semantics for continue.
 
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     int i=0;
     label_1:
     do {
       int j = i;
       i++;
       if (j % 2 == 0) continue label_1;
-      print(j," ");
+      System.out.print(j+" ");
     } while (i<10);
-    print("\n", "Done!", "\n");
+    System.out.println("\n"+ "Done!");
   }
 }
 

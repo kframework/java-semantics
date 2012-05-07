@@ -1,15 +1,15 @@
-public class main {
+class main {
 
-	void printAllB(string[] vs, boolean[] v) {
+	void printAllB(String[] vs, boolean[] v) {
 		for (int i = 0; i<v.length; i++) {
-      print(vs[i]," = ",v[i],"\n");
+      System.out.println(vs[i]+" = "+v[i]);
 		}
 	}
 
   int nrOps = 14;
 
-  string[] initVS() {
-    string[] vs = new string[nrOps];
+  String[] initVS() {
+    String[] vs = new String[nrOps];
     int i=0;
 
 		//Infix operators
@@ -33,9 +33,9 @@ public class main {
     return vs;
   }
 
-	public static void main(string[] args) {
+	static void main(String[] args) {
     boolean[] vb = new boolean[nrOps];
-    string[] vs = initVS();
+    String[] vs = initVS();
 
     for(int i=0; i<nrOps; i++) {
       vb[i] = false;
@@ -61,6 +61,6 @@ public class main {
 		vb[i++] = ! true;
 
     printAllB(vs,vb);
-    print("Done!", "\n");
+    System.out.println("Done!");
 	}
 }

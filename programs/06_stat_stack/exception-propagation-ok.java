@@ -1,20 +1,20 @@
 // Testing that exception propagates through method calls
 
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     try {
       try {
         throwEx();
 
-        print("No exception","\n");
+        System.out.println("No exception");
       } finally {
-        print("finally after uncaught exception","\n");
+        System.out.println("finally after uncaught exception");
       }
     } catch (int e) {
-      print("caught exception: ",e,"\n");
+      System.out.println("caught exception: "+e);
     }
-    print("Done!", "\n");
+    System.out.println("Done!");
   }
 
   void throwEx() {

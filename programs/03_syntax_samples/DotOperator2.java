@@ -21,7 +21,7 @@ class main extends C {
   //todo this one get stucked
   //main x = this;
 
-  void main(string[] args) {
+  void main(String[] args) {
     C();
     field = a = this;
     C local = this;
@@ -51,6 +51,6 @@ class main extends C {
     f(1).f(2).b;
     f(1).f(2).g(3);
 
-    print("Done!", "\n");
+    System.out.println("Done!");
   }
 }

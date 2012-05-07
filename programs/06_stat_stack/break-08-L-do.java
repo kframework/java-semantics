@@ -6,15 +6,15 @@ Such a semantics for do was correct in absence of break and continue,
 but now do statement needs a special threatment.
 */
 
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     label_1:
     do {
       break;
-      print("unreachable");
+      System.out.print("unreachable");
     } while (true);
-    print("Done!", "\n");
+    System.out.println("Done!");
   }
 }
 

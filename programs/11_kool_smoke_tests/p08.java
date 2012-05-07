@@ -22,8 +22,8 @@ class c3 extends c2 {
 }
 
 class main {
-  void main(string[] args) {
-    print((new c3()).m3());
+  void main(String[] args) {
+    System.out.print((new c3()).m3());
   }
 }
 

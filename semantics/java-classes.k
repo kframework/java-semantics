@@ -33,7 +33,7 @@ rule 'TypeName(X:Id) => class X  [structural]
 rule
     class X => rtString
 when
-    Id2String(X) ==String "string"
+    Id2String(X) ==String "String"
         [structural]
 
 /*@ \subsection{Method declaration}
@@ -90,7 +90,7 @@ rule [execute]:
             'None(.List{K})
           ),,
           'ListWrap('NewArray(
-              'TypeName( String2Id("string") ),,
+              'TypeName( String2Id("String") ),,
               'ListWrap('Dim(0 :: int)),,
               'ListWrap(.List{K}))),,
           'None(.List{K})
@@ -98,36 +98,6 @@ rule [execute]:
       )
     </k>
     <env> . </env>  [structural]
-
-rule
-    <k> X => readMethodVal ...</k>
-when Id2String(X) ==String "read"
-
-rule [InvokeRead]:
-    <k> 'Invoke(readMethodVal,, 'ListWrap(.List{K})) => I:Int :: int ...</k>
-    <in> ListItem(I) => . ...</in>
-        [transition]
-
-//@ For integers and strings, print their value. For classes, print class type.
-
-rule
-    <k> X => printMethodVal ...</k>
-when
-    Id2String(X) ==String "print"
-
-rule 'Invoke(printMethodVal,, 'ListWrap((KR:KResult => toString(KR)),, _:List{KResult}))
-when typeOf(KR) =/=K rtString
-
-rule [print]:
-    <k>
-      'Invoke(printMethodVal,,
-          'ListWrap( (Str:String :: rtString => .List{K}),, _:List{KResult}))
-      ...
-    </k>
-    <out>... .=>ListItem(Str)</out>
-        [transition]
-
-rule 'Invoke(printMethodVal,,'ListWrap(.List{K})) => nothing::void  [structural]
 
 //@ \subsection{Auxiliary operations}
 
@@ -182,7 +152,7 @@ when Class1 =/=K Class
 rule [subtypeFalse]:
     subtype class X, class Class => false :: bool
 when
-            Id2String(X) ==String "object"
+            Id2String(X) ==String "Object"
     andBool X =/=K Class
 
 /*@ \subsubsection{Unsafe Casting}
@@ -199,7 +169,7 @@ rule [ClassDecWithoutExtendsDesugar]:
     'ClassDec('ClassDecHead(_:K,, ClassName:Id,,
         _:K,,
         ( 'None(_)
-          => 'Some('SuperDec('ClassType('TypeName( String2Id("object") ),, 'None(.List{K}))))
+          => 'Some('SuperDec('ClassType('TypeName( String2Id("Object") ),, 'None(.List{K}))))
         ),,
         _:K),, _:K
     )
@@ -256,7 +226,7 @@ rule [NewInstance]:
       C:Bag
       <crntObj>
         Obj:Bag
-        =>  <crntClass> String2Id("object") </crntClass>
+        =>  <crntClass> String2Id("Object") </crntClass>
             <envStack> ListItem((String2Id("object"), <env>.Map</env>)) </envStack>
             <location> L </location>
       </crntObj>
@@ -285,7 +255,7 @@ rule [create]:
 rule [createObjectDiscard]:
     <k> create( X ) => . ...</k>
 when
-    Id2String(X) ==String "object"
+    Id2String(X) ==String "Object"
         [structural]
 
 syntax K ::= "setCrntClass" "(" Id ")"
@@ -373,11 +343,12 @@ when X in keys(Env)
 
 rule [ExprNameMember]:
     <k>
-      'ExprName(X) => 'ExprName('This(.List{K}),, X )
+      'ExprName(X) => 'ExprName( 'This(.List{K}),, X )
       ...
     </k>
     <env> Env </env>
-when notBool(X in keys(Env))
+when
+    notBool( X in keys(Env) orBool Id2String(X) ==String "System" )
         [structural]
 
 context 'ExprName(HOLE,,_:K)
@@ -422,15 +393,7 @@ rule 'Method('MethodName(Ks:List{K})) => 'MethodName(Ks)
 rule 'Method(K,, _:K,, X) => 'MethodName(K,, X)
 
 rule [MethodNameUnqualified]:
-    <k> 'MethodName(X) => 'MethodName('This(.List{K}),, X) ...</k>
-    <env> Env </env>
-when notBool ( X ==K String2Id("read") orBool X ==K String2Id("print") )
-        [structural]
-
-rule [MethodNameReadOrPrint]:
-    <k> 'MethodName(X) => X ...</k>
-    <env> Env </env>
-when X ==K String2Id("read") orBool X ==K String2Id("print")
+    'MethodName(X) => 'MethodName('This(.List{K}),, X)
         [structural]
 
 context 'MethodName(HOLE,,_:K)

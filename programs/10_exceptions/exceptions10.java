@@ -1,16 +1,16 @@
-public class main {
+class main {
 
   int x;
 
-  void main(string[] args) {
+  void main(String[] args) {
     x = 5;
     try {
       throw 3;
-      print(x);       // should not print this
+      System.out.print(x);       // should not print this
     } catch(int y) {
-      print(y,"\n");  // should print this
+      System.out.println(y);  // should print this
     }
-    print("Done!","\n");
+    System.out.println("Done!");
   }
 }
 

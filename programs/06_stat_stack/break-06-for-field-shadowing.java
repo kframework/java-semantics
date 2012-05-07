@@ -4,16 +4,16 @@
 // This test also ensures that break don't disrupt <env> cell restoration
 // after for terminates.
 
-public class main {
+class main {
   int i=-1;
 
-	void main(string[] args) {
+	void main(String[] args) {
     for(int i=0; i<5; i++) {
-      print(i," ");
+      System.out.print(i+" ");
       if (i == 3) break;
     }
-    print("\n", "After for i = ", i, "\n");
-    print("Done!","\n");
+    System.out.println("\n"+ "After for i = "+ i);
+    System.out.println("Done!");
   }
 }
 

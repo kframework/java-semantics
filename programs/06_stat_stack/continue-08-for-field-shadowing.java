@@ -4,16 +4,16 @@
 // This test also ensures that continue don't disrupt <env> cell restoration
 // after for terminates.
 
-public class main {
+class main {
   int i=-1;
 
-	void main(string[] args) {
+	void main(String[] args) {
     for(int i=0; i<5; i++) {
-      print(i," ");
+      System.out.print(i+" ");
       if (i == 4) continue;
     }
-    print("\n", "After for i = ", i, "\n");
-    print("Done!","\n");
+    System.out.println("\n"+ "After for i = "+ i);
+    System.out.println("Done!");
   }
 }
 

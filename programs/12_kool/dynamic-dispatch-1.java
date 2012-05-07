@@ -12,11 +12,11 @@ class C2 extends C1 {
 }
 
 class main {
-  void main(string[] args) {
+  void main(String[] args) {
     C1 o1 = new C1();
     C2 o2 = new C2();
-    print(o1.m1(), " ", o1.m2(), " ", o2.m1(), " ", o2.m2(), "\n");
-    print("Done!","\n");
+    System.out.println(o1.m1()+ " "+ o1.m2()+ " "+ o2.m1()+ " "+ o2.m2());
+    System.out.println("Done!");
   }
 }
 

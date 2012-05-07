@@ -3,22 +3,22 @@
 // This test exposes an interesting interaction between break and continue
 // if continue rules are not correctly implemented.
 
-public class main {
+class main {
 
-  void main(string[] args) {
+  void main(String[] args) {
     for (int k=0; k<3; k++) {
-      print(k,": ");
+      System.out.print(k+": ");
       int i=0;
       while (i<10) {
         int j = i;
         i++;
         if (j % 2 != 0) continue;
-        print(j," ");
+        System.out.print(j+" ");
       }
-      print(", break follows","\n");
+      System.out.println(", break follows");
       break;
     }
-    print("Done!", "\n");
+    System.out.println("Done!");
   }
 }
 
