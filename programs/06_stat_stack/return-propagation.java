@@ -1,6 +1,6 @@
 // Testing that return statement propagates through try-catch blocks.
 
-class main {
+public class main {
 
   void main(String[] args) {
     test();

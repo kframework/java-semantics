@@ -19,7 +19,7 @@ class b extends a {
     super.a();
   }
 }
-class main {
+public class main {
   void main(String[] args) {
     a[] o= new a[5];
     b[] p = new b[4];

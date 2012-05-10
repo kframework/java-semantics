@@ -1,6 +1,6 @@
 //Multiple switch groups. Multiple cases for group. Multiple trailing cases.
 
-class main {
+public class main {
 	static void howMany(int k) {
     System.out.print(k+": ");
 		switch (k) {

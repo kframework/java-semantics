@@ -1,6 +1,6 @@
 // Testing that exception propagates through method calls
 
-class main {
+public class main {
 
   void main(String[] args) {
     try {

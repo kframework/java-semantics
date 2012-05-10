@@ -1,5 +1,5 @@
 // Test with two labels, one labeled break.
-class main {
+public class main {
   void main(String[] args) {
     label_1: {
       label_2: {

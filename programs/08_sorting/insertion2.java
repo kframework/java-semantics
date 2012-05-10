@@ -1,7 +1,7 @@
 // This version of insertion sorting declares the vector in the init function
 // and then passes it (actually its reference) where it is needed
 
-class main {
+public class main {
 
 	int[] init(int n) {
 		int[] x = new int[n];

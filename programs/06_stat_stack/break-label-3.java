@@ -1,7 +1,7 @@
 // Test with one label, one labeled break, all inside while.
 // Due to a bug in k definition, there was a strange interaction
 // between labeled break and loops.
-class main {
+public class main {
   void main(String[] args) {
     int i=0, a=0;
     while(i<3) {

@@ -4,7 +4,7 @@
 // Such a semantics for do was correct in absence of break and continue,
 // but now do statement needs a special threatment.
 
-class main {
+public class main {
 
   void main(String[] args) {
     do {

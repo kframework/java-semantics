@@ -2,7 +2,7 @@
 // console (first its length, then its elements).  It reads and prints
 // each elements, then it prints the entire array sorted.
 
-class main {
+public class main {
   int[] v = new int[30];
 
   void bubbleSort(int n) {

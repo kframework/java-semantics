@@ -1,6 +1,6 @@
 // break label -> simple doWhile -> matched labeled block.
 
-class main {
+public class main {
 
   void main(String[] args) {
     label_1: {

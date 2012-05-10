@@ -1,7 +1,7 @@
 // Testing break inside try/finally inside for. Finally block should execute
 // after break was executed
 
-class main {
+public class main {
 
   void main(String[] args) {
     int i;

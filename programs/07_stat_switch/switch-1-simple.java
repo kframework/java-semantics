@@ -2,7 +2,7 @@
 //Testing both context rules.
 //Multiple swtch groups. One case for group.
 
-class main {
+public class main {
 	static void howMany(int k) {
     System.out.print(k+": ");
 		switch (k) {

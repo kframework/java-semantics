@@ -1,6 +1,6 @@
 // Simple test with labeled break
 
-class main {
+public class main {
   void main(String[] args) {
     label_1: {
       System.out.println("Before break");

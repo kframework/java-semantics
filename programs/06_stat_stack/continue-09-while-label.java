@@ -1,7 +1,7 @@
 // Testing simple continue inside while loop with label.
 // Label should not affect continue execution.
 
-class main {
+public class main {
 
   void main(String[] args) {
     int i=0;

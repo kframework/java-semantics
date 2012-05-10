@@ -1,7 +1,7 @@
 // Testing break with label inside try/finally inside for (the labeled statement).
 // Finally block should execute after break was executed
 
-class main {
+public class main {
 
   void main(String[] args) {
     int i;

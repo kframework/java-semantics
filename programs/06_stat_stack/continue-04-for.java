@@ -1,6 +1,6 @@
 // Testing continue inside for loop
 
-class main {
+public class main {
 
   void main(String[] args) {
     for(int i=0; i<10; i++) {

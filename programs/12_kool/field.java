@@ -5,7 +5,7 @@
 // The initialized variable declarations desugar into a variable
 // declaration and an assignment statement.
 
-class main {
+public class main {
   int a = 3;
 
   void main(String[] args) {

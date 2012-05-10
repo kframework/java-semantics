@@ -9,7 +9,7 @@ class c2 extends c1 {
   int m1() { return 2; }
 }
 
-class main {
+public class main {
   void main(String[] args) {
     c1 o1 = new c1();
     c2 o2 = new c2();

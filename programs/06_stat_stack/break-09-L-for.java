@@ -1,6 +1,6 @@
 // Testing simple break inside labeled for loop
 
-class main {
+public class main {
 
   void main(String[] args) {
     int i;

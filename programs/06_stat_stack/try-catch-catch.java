@@ -15,7 +15,7 @@ class Exception3 extends Exception2 {
   }
 }
 
-class main {
+public class main {
   void main(String[] args) {
     try {
       throw new Exception2();

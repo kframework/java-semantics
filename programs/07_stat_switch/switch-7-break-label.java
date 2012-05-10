@@ -3,7 +3,7 @@ Interaction with break with label.
   Switch in labeled block. Break with label in switch.
 */
 
-class main {
+public class main {
 	static void howMany(int k) {
     System.out.print(k+": ");
     label_1: {

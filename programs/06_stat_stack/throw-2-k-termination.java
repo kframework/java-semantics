@@ -4,7 +4,7 @@ class Exception {
   Exception(){}
 }
 
-class main {
+public class main {
   void main(String[] args) {
     throw new Exception();
     System.out.print("unreachable");

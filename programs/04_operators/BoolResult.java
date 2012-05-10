@@ -1,4 +1,4 @@
-class main {
+public class main {
 
 	void printAllB(String[] vs, boolean[] v) {
 		for (int i = 0; i<v.length; i++) {

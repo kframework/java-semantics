@@ -17,7 +17,7 @@ class g {
   }
 }
 
-class main {
+public class main {
   void main(String[] args) {
     i t = new i(1);
     g y = new g(t);  // passes an oect

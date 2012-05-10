@@ -12,7 +12,7 @@ class c2 {
   int m1()  { return -v; }
 }
 
-class main {
+public class main {
   void main(String[] args) {
     c1 o1 = new c1();
     c2 o2 = new c2(1);

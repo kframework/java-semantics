@@ -5,7 +5,7 @@
 // Such a semantics for do is correct in absence of continue statement,
 // but leads to problems when we add semantics for continue.
 
-class main {
+public class main {
 
   void main(String[] args) {
     int i=0;

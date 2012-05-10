@@ -6,7 +6,7 @@ Interaction with loops. One loop inside a switch group, one loop enclosing
     - break in outer loop after switch
 */
 
-class main {
+public class main {
 	static void howMany(int k) {
     System.out.print(k+": ");
     while(true) {

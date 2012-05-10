@@ -20,7 +20,7 @@ class c3 extends c {
   void c3() { super.c(); }
 }
 
-class main {
+public class main {
   void main(String[] args) {
     (new c()).test();
     (new c1()).test();

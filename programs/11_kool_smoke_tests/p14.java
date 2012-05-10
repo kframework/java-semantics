@@ -40,7 +40,7 @@ class b extends a {
   }
 }
 
-class main {
+public class main {
   void main(String[] args) {
     b o = new b();
     if (o.m5()) System.out.print(""+o.m0()+ o.m1()+ o.m2()+ o.m3()+ o.m4());

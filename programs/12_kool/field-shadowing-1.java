@@ -20,7 +20,7 @@ class C2 extends C1 {
   int gety2() { return y; }
 }
 
-class main {
+public class main {
 
   void main(String[] args) {
     C2 o2 = new C2();

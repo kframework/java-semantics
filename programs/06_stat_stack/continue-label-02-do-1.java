@@ -2,7 +2,7 @@
 // Nothing should change compared to continue in while,
 // if continue statement don't occur on first iteration.
 
-class main {
+public class main {
 
   void main(String[] args) {
     int i=0;

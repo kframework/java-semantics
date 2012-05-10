@@ -5,7 +5,7 @@ class Exception {
   Exception(){}
 }
 
-class main {
+public class main {
   void main(String[] args) {
     int e = 100;
     try {

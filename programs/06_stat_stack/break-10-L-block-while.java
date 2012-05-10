@@ -1,7 +1,7 @@
 // Testing simple break inside a labeled block, inside simple while loop.
 // Labeled block should not affect break execution.
 
-class main {
+public class main {
 
   void main(String[] args) {
     int i=0;

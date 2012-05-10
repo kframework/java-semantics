@@ -16,7 +16,7 @@ class g {
   void print2() { System.out.print(a); }
 }
 
-class main {
+public class main {
   void main(String[] args) {
     ((new i(1)).m1()).print2();
   }

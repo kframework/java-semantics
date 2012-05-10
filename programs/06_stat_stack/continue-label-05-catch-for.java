@@ -1,7 +1,7 @@
 // Testing continue with label inside try/catch inside for. Try./catch should not affect
 // continue behavior, even if both interact with the same stack.
 
-class main {
+public class main {
 
   void main(String[] args) {
     int i;

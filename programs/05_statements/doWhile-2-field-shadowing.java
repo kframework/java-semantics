@@ -2,7 +2,7 @@
 // with the same name as the field. After doWhile completes,
 // we should be able to access the field again.
 
-class main {
+public class main {
   int i = 1;
 
 	void main(String[] args) {

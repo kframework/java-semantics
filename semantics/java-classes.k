@@ -18,7 +18,7 @@ syntax RawVal ::= "objectClosure" "(" Bag ")"
                   ")"
 
 //@ \subsection{Unused Labels}
-syntax KLabel ::= 'Public | 'Static
+syntax KLabel ::= 'Static
 
 /*@ \subsection{Object and method closures}
 The only change to untyped KOOL's values is that closures are now typed
@@ -77,7 +77,9 @@ context storeMethod(_, _, _, function from (_:List{K},, (HOLE => typeOf(HOLE)),,
 When done with the first pass, call \texttt{main()}. */
 
 rule [CompilationUnit]:
-    <k> 'CompilationUnit(_,,_,,K:K) => K ...</k>
+    <k> 'CompilationUnit(_,,_,,K:K) => K ~> execute </k>
+
+syntax K ::= "execute"
 
 rule [execute]:
     <k> execute =>
@@ -86,7 +88,7 @@ rule [execute]:
         'NewInstance(
           'None(.List{K}),,
           'ClassOrInterfaceType(
-            'TypeName( String2Id("main") ),,
+            'TypeName( MainClass ),,
             'None(.List{K})
           ),,
           'ListWrap('NewArray(
@@ -97,7 +99,8 @@ rule [execute]:
         )
       )
     </k>
-    <env> . </env>  [structural]
+    <env> . </env>
+    <mainClass> MainClass:Id </mainClass>
 
 //@ \subsection{Auxiliary operations}
 
@@ -176,14 +179,26 @@ rule [ClassDecWithoutExtendsDesugar]:
         [structural]
 
 rule [ClassDec]:
-    <k>
-      'ClassDec('ClassDecHead(_:K,, ClassName:Id,, _:K,,
+      'ClassDec('ClassDecHead('ListWrap(ClassModifiers:List{K}),, ClassName:Id,, _:K,,
           'Some('SuperDec('ClassType('TypeName( BaseClassName:Id ),, _:K))),,
           _:K),,
         'ClassBody( S )
-      ) => .
-      ...
-    </k>
+      ) => classDecImpl(ClassModifiers, ClassName, BaseClassName, S)
+        [structural]
+
+syntax K ::= "classDecImpl" "(" List{K} "," Id "," Id "," K ")"
+
+rule [classDecImplModPublic]:
+    <k> classDecImpl( ('Public(_) => .List{K}),, _:List{K}, ClassName, _, _ ) ...</k>
+    <mainClass> . => ClassName </mainClass>
+
+rule [classDecImplModDiscard]:
+    classDecImpl( (K => .List{K}),, _:List{K}, ClassName, _, _ )
+when
+  K =/=K 'Public(.List{K})
+
+rule [classDecImpl]:
+    <k> classDecImpl(.List{K}, ClassName, BaseClassName, S) => . ...</k>
     <classes>
       ...
       ( . =>  <class>
@@ -193,7 +208,6 @@ rule [ClassDec]:
               </class> )
       ...
     </classes>
-        [structural]
 
 /*@ \subsection{New}
 The semantics of \texttt{new} in dynamically typed KOOL is also

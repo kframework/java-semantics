@@ -1,4 +1,4 @@
-class main {
+public class main {
   int factorial(int y) {
     if (y == 1) {
       return 1;

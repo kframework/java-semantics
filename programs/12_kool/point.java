@@ -35,7 +35,7 @@ class ColorPoint extends Point {
   }
 }
 
-class main {
+public class main {
   static void main(String[] args) {
     Point p = new Point(3,4);
     ColorPoint cp = new ColorPoint(10,20,87);

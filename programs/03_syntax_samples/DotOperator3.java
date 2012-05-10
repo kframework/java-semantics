@@ -10,7 +10,7 @@ class C {
   }
 }
 
-class main extends C {
+public class main extends C {
   int b;
   int g(int i){return i;}
 

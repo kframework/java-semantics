@@ -4,7 +4,7 @@
 // This test also ensures that continue don't disrupt <env> cell restoration
 // after for terminates.
 
-class main {
+public class main {
   int i=-1;
 
 	void main(String[] args) {

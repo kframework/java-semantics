@@ -12,7 +12,7 @@ function body encounters an explicit \texttt{return} statement. */
 configuration <T color="red">
                 <threads color="orange">
                   <thread multiplicity="*" color="yellow">
-                    <k color="green"> ($PGM:K ~> execute) </k>
+                    <k color="green"> $PGM:K </k>
                     <env color="violet"> .Map </env>
                     <holds color="black"> .Map </holds>
                     <br/>
@@ -47,9 +47,8 @@ configuration <T color="red">
                       <metatype color="Fuchsia"> "concrete class" </metatype>
                    </class>
                 </classes>
+                <mainClass> .K </mainClass>
               </T>
-
-syntax K ::= "execute"
 
 //@ \section{Identifiers}
 

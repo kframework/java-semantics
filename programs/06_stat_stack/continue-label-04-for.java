@@ -1,6 +1,6 @@
 // Testing continue with label inside simple for loop
 
-class main {
+public class main {
 
   void main(String[] args) {
     label_1:

@@ -1,4 +1,4 @@
-class main {
+public class main {
 
   int i, j;
 

@@ -25,7 +25,7 @@ class C3 extends C2 {
   int m2() { return 33; }
 }
 
-class main {
+public class main {
   void main(String[] args) {
     C3 o3 = new C3();
     System.out.println(o3.m3());

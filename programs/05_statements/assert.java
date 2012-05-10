@@ -20,7 +20,7 @@ class AssertionError {
   }
 }
 
-class main {
+public class main {
   void main(String[] args) {
     assert 1 > 0;
     System.out.println("1 > 0 asserted");

@@ -1,7 +1,7 @@
 // Testing that exception propagates through method calls
 // The last line is not printed due to unknown java-prototype definition bug.
 
-class main {
+public class main {
 
   void main(String[] args) {
     try {

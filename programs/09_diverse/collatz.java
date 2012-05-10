@@ -8,7 +8,7 @@
 // do not want to enforce any particular such value, which is why the
 // latter gets stuck.
 
-class main {
+public class main {
   void collatz(int n) {
     int s=0;
     System.out.print("Testing Collatz' conjecture for n = "+n+" ... ");

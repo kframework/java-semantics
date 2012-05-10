@@ -58,7 +58,7 @@ class c extends b {
   }
 }
 
-class main {
+public class main {
   void p(a o) {
     System.out.print(o.f());System.out.print(o.g());System.out.print(o.h());
   }

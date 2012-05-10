@@ -1,4 +1,4 @@
-class main {
+public class main {
   void main(String[] args) {
     int x = 1;
     try { int x = 5; throw x; int y = x/0;}   // division by zero unreachable

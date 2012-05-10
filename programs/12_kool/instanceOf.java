@@ -23,7 +23,7 @@ class C3 extends C {
   void C3() {}
 }
 
-class main {
+public class main {
   void main(String[] args) {
     (new C()).test();
     (new C1()).test();

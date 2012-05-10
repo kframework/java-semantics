@@ -5,7 +5,7 @@ All as previous + default case. Default case is not the first one,
   having one case before and one case after.
 */
 
-class main {
+public class main {
 	static void howMany(int k) {
     System.out.print(k+": ");
 		switch (k) {

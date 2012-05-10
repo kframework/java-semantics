@@ -1,4 +1,4 @@
-class main {
+public class main {
 
   int[] init(int n) {
     int[] x = new int[n];

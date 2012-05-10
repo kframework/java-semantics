@@ -1,5 +1,5 @@
 //Octal integer literals
-class main {
+public class main {
 	static void main(String[] args) {
     System.out.println("Octa int literals:");
 		System.out.println(00 + " " + 077 +  " " + 037777777777);

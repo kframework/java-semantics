@@ -1,5 +1,5 @@
 //decimal integer literals
-class main {
+public class main {
 	static void main(String[] args) {
     System.out.println("Decimal int literals:");
 		System.out.println(0 + " " + 12 + " " + -13 + " " + -2147483648);

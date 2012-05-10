@@ -34,7 +34,7 @@ class Leaf extends Node {
   }
 }
 
-class main {
+public class main {
   void main(String[] args) {
     Container o;
     o = new Container(

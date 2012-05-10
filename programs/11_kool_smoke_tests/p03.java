@@ -13,7 +13,7 @@ class b extends a {
   }
 }
 
-class main extends b {
+public class main extends b {
   int m1(int y) {
     return  y*y;
   }

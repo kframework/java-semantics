@@ -1,5 +1,5 @@
 //Hexadecimal integer literals
-class main {
+public class main {
 	static void main(String[] args) {
     System.out.println("Hexa int literals:");
 		System.out.println(0x0 + " " + 0x5f + " " + 0X5F + " " + 0xFFFFFFF0);

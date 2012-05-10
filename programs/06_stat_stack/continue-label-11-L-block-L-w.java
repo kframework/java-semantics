@@ -1,6 +1,6 @@
 // continue label -> labeled block -> matched labeled while.
 
-class main {
+public class main {
 
   void main(String[] args) {
     int i=0;

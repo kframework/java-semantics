@@ -11,7 +11,7 @@ class C2 extends C1 {
   int m1() { return 2; }
 }
 
-class main {
+public class main {
   void main(String[] args) {
     C1 o1 = new C1();
     C2 o2 = new C2();

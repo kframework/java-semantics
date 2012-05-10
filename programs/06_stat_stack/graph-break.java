@@ -74,7 +74,7 @@ class Graph {
   }
 }
 
-class main {
+public class main {
   static void main(String[] args) {
     int n = 4;
     int[][] edges = new int[n][n];

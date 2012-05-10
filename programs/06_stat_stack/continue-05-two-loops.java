@@ -3,7 +3,7 @@
 // This test exposes an interesting interaction between break and continue
 // if continue rules are not correctly implemented.
 
-class main {
+public class main {
 
   void main(String[] args) {
     for (int k=0; k<3; k++) {

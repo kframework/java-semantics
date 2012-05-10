@@ -18,7 +18,7 @@ class C {
   }
 }
 
-class main {
+public class main {
   int a, b;
   C o;
 

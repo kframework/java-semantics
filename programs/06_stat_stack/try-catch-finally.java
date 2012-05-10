@@ -1,6 +1,6 @@
 // Testing try with  both catch and finally clause
 
-class main {
+public class main {
 
   void main(String[] args) {
     try {

@@ -1,6 +1,6 @@
 // Testing continue with label inside simple while loop
 
-class main {
+public class main {
 
   void main(String[] args) {
     int i=0;

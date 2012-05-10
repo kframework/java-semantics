@@ -3,7 +3,7 @@
 // each elements, then it prints the entire array sorted
 
 
-class main {
+public class main {
   int[] v = new int[30];
 
   void siftDown(int root, int bottom) {

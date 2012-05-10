@@ -1,7 +1,7 @@
 // Testing continue inside try/finally inside for. Finally block should execute
 // after continue was executed
 
-class main {
+public class main {
 
   void main(String[] args) {
     int i;

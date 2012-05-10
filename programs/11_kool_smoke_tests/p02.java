@@ -8,7 +8,7 @@ class c {
   }
 }
 
-class main {
+public class main {
   void main(String[] args) {
     System.out.print((new c()).g());
   }
