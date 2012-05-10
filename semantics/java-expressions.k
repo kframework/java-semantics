@@ -68,7 +68,7 @@ rule /* I1 >>> I2 */ 'URightShift(I1 :: int,, I2 :: int)
     'Plus('RightShift(I1::int,, I2::int),, 'LeftShift(2::int,, 'Complement(I2::int)))
   )
 
-rule /* I1 + I2     */ 'Plus(I1:Int :: int,, I2:Int :: int) => (I1 +Int I2) :: int
+rule /* I1 + I2     */ 'Plus(I1:Int :: T,, I2:Int :: T) => normalize((I1 +Int I2) :: T)
 rule /* Str1 + Str2 */ 'Plus(Str1:String :: rtString,, Str2:String :: rtString) => (Str1 +String Str2) :: rtString
 rule /* Str + KR    */ 'Plus(Str:String :: rtString,, ( KR:KResult => toString(KR) ))
     when typeOf(KR) =/=K rtString
@@ -95,7 +95,7 @@ rule /* --loc(L) => loc(L) = lookup(L) - 1 */
 rule /* ! B    */ 'Not(B:Bool :: bool) => (notBool B) :: bool
 rule /* ~ I    */ 'Complement(I:Int :: int) => (~Int I) :: int
 rule /* + I    */ 'Plus(I :: int) => I :: int
-rule /* - I    */ 'Minus(I :: int) => (0 -Int I) :: int
+rule /* - I    */ 'Minus(I :: T) => (0 -Int I) :: T
 
 // E++
 context 'PostIncr(HOLE => lvalue(HOLE))

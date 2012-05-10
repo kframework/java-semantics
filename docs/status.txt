@@ -1,0 +1,48 @@
+List of implemented features:
+
+1. Migrated kool semantics to java syntax.
+2. Java array allocation.
+3. Array length.
+4. All integer and boolean operators, including bitwise ops and bit shift.
+  Including unsigned left shift operator >>>. The only difference from java
+  is that here integers have unlimited values, thus no overflow can occur.
+  Also ternary operator ?:
+5. All composite assignment operators.
+6. Constructors, simplified semantcs. Constructors are just replaced
+with methods with same name and return type void.
+7. All statements which deal with single-threaded computation
+  (e.g. except synchronized), according to JLS $14.
+8. Support for the following JDK methods's:
+  - System.out.print
+  - System.out.println
+  - Integer.parseInt(System.console().readLine()) - only this term, and no subparts of it.
+(The bare minimum required to write any values to console, or to read integers.)
+9. Full support for integer literals, both int and long.
+
+
+
+Limitations:
+1. Id's refered in semantics cannot start with capital letters. This
+should be resolved in K, otherwise we would need workarounds to deal
+with java class names.
+
+2. K syntax limitation:
+A production cannot have a non-terminal of sort List{K} and another
+non-terminal of sort some List, surrounded by terminals.
+
+Solution: make the sort "some list" to have a non-terminal on just one side.
+Should be reported as a bug.
+
+Non-related to java semantics:
+1. Investigated various java language test suites over the net.
+  So far, the most adequate for this project is jacks/tests/runtime/jls,
+  part of mauve.
+
+
+Postponed features:
+1. Assert with one argument should call AssertionError exception
+  without arguments. Postponed until constructor overloading will
+  be implemented.
+2. After NPE will be implemented, all seqstrict constructs should be reviewed.
+  Some of them should throw NPE immediatley after first argument evaluates to null,
+  thus second argument should not be evaluated.
