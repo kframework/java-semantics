@@ -16,7 +16,8 @@ newfilename=`basename $prog`
 
 in_file="$outdir/$newfilename.in"
 
-krun_command="krun --parser=\"java -cp ../parser/JavaParser.jar ro.uaic.info.fmse.parser.Main\" --output-mode=none --no-color $prog "
+# krun_command="krun --parser=\"java -cp ../parser/JavaParser.jar ro.uaic.info.fmse.parser.Main\" --output-mode=none --no-color $prog "
+krun_command="../tools/run-jdk-java.sh $prog "
 if [ -f $in_file ]
 then
   krun_command="$krun_command < $in_file > out.tmp"

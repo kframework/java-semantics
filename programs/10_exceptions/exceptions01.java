@@ -1,5 +1,5 @@
-public class main {
-  void main(String[] args) {
+class main {
+  main(String[] args) {
     int e = 100;
     try {
       int x = 5;
@@ -14,5 +14,12 @@ public class main {
     System.out.println("Done!");
   }
 }
+
+public class exceptions01 {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}
+
 // 7 100 10
 // Done!

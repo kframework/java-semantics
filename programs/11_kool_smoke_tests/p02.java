@@ -8,8 +8,15 @@ class c {
   }
 }
 
-public class main {
-  void main(String[] args) {
-    System.out.print((new c()).g());
+class main {
+  main(String[] args) {
+    System.out.println((new c()).g());
+    System.out.println("Done!");
+  }
+}
+
+public class p02 {
+  public static void main(String[] args) {
+    new main(args);
   }
 }

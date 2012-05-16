@@ -10,7 +10,7 @@ class C {
   }
 }
 
-public class main extends C {
+class main extends C {
   int b;
   int g(int i){return i;}
 
@@ -19,7 +19,7 @@ public class main extends C {
   C field;
   C a;
 
-  void main(String[] args) {
+  main(String[] args) {
     C();
     field = a = this;
     C local = this;
@@ -42,5 +42,11 @@ public class main extends C {
     f(1).f(1).b=5;
 
     System.out.println("Done!");
+  }
+}
+
+public class DotOperator3 {
+  public static void main(String[] args) {
+    new main(args);
   }
 }

@@ -12,8 +12,8 @@ class c2 {
   int m1()  { return -v; }
 }
 
-public class main {
-  void main(String[] args) {
+class main {
+  main(String[] args) {
     c1 o1 = new c1();
     c2 o2 = new c2(1);
     System.out.print(o1.m0());
@@ -24,7 +24,13 @@ public class main {
     o1.m0 = o2.m1;
     System.out.print(o1.m0());
     o2.c2(3);
-    System.out.print(o1.m0());
+    System.out.println(o1.m0());
+    System.out.println("Done!");
   }
 }
 
+public class p15 {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}

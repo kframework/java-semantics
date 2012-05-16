@@ -19,8 +19,8 @@ class b extends a {
     super.a();
   }
 }
-public class main {
-  void main(String[] args) {
+class main {
+  main(String[] args) {
     a[] o= new a[5];
     b[] p = new b[4];
     boolean b;
@@ -32,10 +32,17 @@ public class main {
     o[4] = p[3];
     b = o[4].m1(3);
     if (!b) {
-      System.out.print(p[3].c());
+      System.out.println(p[3].c());
     }
     if (!p[2].m1(2)) {
-      System.out.print(p[2].c());
+      System.out.println(p[2].c());
     }
+    System.out.println("Done!");
+  }
+}
+
+public class p04 {
+  public static void main(String[] args) {
+    new main(args);
   }
 }

@@ -13,11 +13,18 @@ class b extends a {
   }
 }
 
-public class main extends b {
+class main extends b {
   int m1(int y) {
     return  y*y;
   }
-  void main(String[] args) {
-    System.out.print(m1(4));
+  main(String[] args) {
+    System.out.println(m1(4));
+    System.out.println("Done!");
+  }
+}
+
+public class p03 {
+  public static void main(String[] args) {
+    new main(args);
   }
 }

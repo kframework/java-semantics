@@ -26,8 +26,8 @@ class B extends A {
   }
 }
 
-public class main {
-  void main(String[] args) {
+class main {
+  main(String[] args) {
     B b = new B();
     A a = (A)b;
     System.out.println("b.x = "+ b.x);
@@ -35,6 +35,12 @@ public class main {
     System.out.println("a.getB() = "+ ((B)a).getB());
     System.out.println("a.getA() = "+ a.getA());
     System.out.println("Done!");
+  }
+}
+
+public class cast {
+  public static void main(String[] args) {
+    new main(args);
   }
 }
 

@@ -17,11 +17,17 @@ class g {
   }
 }
 
-public class main {
-  void main(String[] args) {
+class main {
+  main(String[] args) {
     i t = new i(1);
     g y = new g(t);  // passes an oect
-    System.out.print(y.do1());
+    System.out.println(y.do1());
+    System.out.println("Done!");
   }
 }
 
+public class p11 {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}

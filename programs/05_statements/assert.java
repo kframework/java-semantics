@@ -20,8 +20,8 @@ class AssertionError {
   }
 }
 
-public class main {
-  void main(String[] args) {
+class main {
+  main(String[] args) {
     assert 1 > 0;
     System.out.println("1 > 0 asserted");
 
@@ -47,6 +47,12 @@ public class main {
     }
 
     System.out.println("Done!");
+  }
+}
+
+public class Assert {
+  public static void main(String[] args) {
+    new main(args);
   }
 }
 

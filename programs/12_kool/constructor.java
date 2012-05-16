@@ -18,11 +18,11 @@ class C {
   }
 }
 
-public class main {
+class main {
   int a, b;
   C o;
 
-  void main(String[] args){
+  main(String[] args){
     a = b = 5;
     o = new C(a);
     o.print2();
@@ -32,6 +32,11 @@ public class main {
   }
 }
 
+public class constructor {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}
 
 // 5 6
 // 11 0

@@ -1,9 +1,15 @@
-public class main {
+class main {
   int f(int x) {
     if (x <= 1) return 1; else return(x * (f(x - 1)));
   }
-  void main(String[] args) {
-    System.out.print(f(f(4)));
+  main(String[] args) {
+    System.out.println(f(f(4)));
+    System.out.println("Done!");
   }
 }
 
+public class p12 {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}

@@ -1,6 +1,6 @@
-public class main {
+class main {
 
-  void main(String[] args) {
+  main(String[] args) {
     int e;
     try {
       try {
@@ -23,6 +23,12 @@ public class main {
       System.out.println(e);
     }
     System.out.println("Done!");
+  }
+}
+
+public class exceptions08 {
+  public static void main(String[] args) {
+    new main(args);
   }
 }
 

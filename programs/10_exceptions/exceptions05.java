@@ -1,4 +1,4 @@
-public class main {
+class main {
 
   int x;
 
@@ -16,10 +16,16 @@ public class main {
     return t;
   }
 
-  void main(String[] args) {
+  main(String[] args) {
     x = 5;
     System.out.println(f(x));
     System.out.println("Done!");
+  }
+}
+
+public class exceptions05 {
+  public static void main(String[] args) {
+    new main(args);
   }
 }
 

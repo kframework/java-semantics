@@ -16,13 +16,19 @@ class c2 extends c1 {
   int gety2() { return y; }
 }
 
-public class main {
-  void main(String[] args) {
+class main {
+  main(String[] args) {
     c2 o2 = new c2();
     o2.setx1(11);
     o2.sety1(12);
     o2.sety2(99);
-    System.out.print(""+o2.getx1()+ o2.gety1()+ o2.getx2()+ o2.gety2());
+    System.out.println(""+o2.getx1()+ o2.gety1()+ o2.getx2()+ o2.gety2());
+    System.out.println("Done!");
   }
 }
 
+public class p05 {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}

@@ -18,7 +18,7 @@ syntax RawVal ::= "objectClosure" "(" Bag ")"
                   ")"
 
 //@ \subsection{Unused Labels}
-syntax KLabel ::= 'Static
+syntax KLabel ::= 'Static | 'TypeImportOnDemandDec | 'PackageName
 
 /*@ \subsection{Object and method closures}
 The only change to untyped KOOL's values is that closures are now typed
@@ -83,19 +83,26 @@ syntax K ::= "execute"
 
 rule [execute]:
     <k> execute =>
-      //k-ast for new main();
+      //k-ast for new <MainClass>().main(new String[0]);
       'ExprStm(
-        'NewInstance(
-          'None(.List{K}),,
-          'ClassOrInterfaceType(
-            'TypeName( MainClass ),,
-            'None(.List{K})
+        'Invoke(
+          'Method(
+            'NewInstance(
+              'None(.List{K}),,
+              'ClassOrInterfaceType(
+                'TypeName(MainClass),,
+                'None(.List{K})
+              ),,
+              'ListWrap(.List{K}),,
+              'None(.List{K})
+            ),,
+            'None(.List{K}),,
+            String2Id("main")
           ),,
           'ListWrap('NewArray(
               'TypeName( String2Id("String") ),,
               'ListWrap('Dim(0 :: int)),,
-              'ListWrap(.List{K}))),,
-          'None(.List{K})
+              'ListWrap(.List{K})))
         )
       )
     </k>
@@ -183,7 +190,21 @@ rule [ClassDec]:
           'Some('SuperDec('ClassType('TypeName( BaseClassName:Id ),, _:K))),,
           _:K),,
         'ClassBody( S )
-      ) => classDecImpl(ClassModifiers, ClassName, BaseClassName, S)
+      )  => classDecImpl(ClassModifiers, ClassName, BaseClassName,
+              //public empty constructor
+              //will be overwritten by any other constructor in S
+              'ConstrDec(
+                'ConstrDecHead(
+                  'ListWrap('Public(.List{K})),,
+                  'None(.List{K}),,
+                  ClassName,,
+                  'ListWrap(.List{K}),,
+                  'None(.List{K})
+                ),,
+                'ConstrBody('None(.List{K}),, 'ListWrap(.List{K}))
+              )
+              ~> S
+            )
         [structural]
 
 syntax K ::= "classDecImpl" "(" List{K} "," Id "," Id "," K ")"

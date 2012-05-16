@@ -21,9 +21,15 @@ class c3 extends c2 {
   int m2() { return 33; }
 }
 
-public class main {
-  void main(String[] args) {
-    System.out.print((new c3()).m3());
+class main {
+  main(String[] args) {
+    System.out.println((new c3()).m3());
+    System.out.println("Done!");
   }
 }
 
+public class p08 {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}

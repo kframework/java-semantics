@@ -1,4 +1,4 @@
-public class main {
+class main {
   int x, y, z;
 
   void g() {
@@ -9,7 +9,7 @@ public class main {
     g();
   }
 
-  void main(String[] args) {
+  main(String[] args) {
     x = 5;
     y = 10;
 
@@ -21,6 +21,12 @@ public class main {
     System.out.print(x+" ");
     System.out.println(y);
     System.out.println("Done!");
+  }
+}
+
+public class exceptions09 {
+  public static void main(String[] args) {
+    new main(args);
   }
 }
 

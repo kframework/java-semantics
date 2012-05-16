@@ -1,4 +1,4 @@
-public class main {
+public class sumInWhile {
 
 	public static void main(String[] args) {
 		int n,s,i;

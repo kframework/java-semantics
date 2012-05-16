@@ -58,14 +58,22 @@ class c extends b {
   }
 }
 
-public class main {
+class main {
   void p(a o) {
-    System.out.print(o.f());System.out.print(o.g());System.out.print(o.h());
+    System.out.print(o.f());
+    System.out.print(o.g());
+    System.out.println(o.h());
   }
-  void main(String[] args) {
+  main(String[] args) {
     p(new a());
     p(new b());
     p(new c());
+    System.out.println("Done!");
   }
 }
 
+public class p09 {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}

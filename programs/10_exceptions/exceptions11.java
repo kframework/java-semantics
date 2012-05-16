@@ -1,8 +1,8 @@
-public class main {
+class main {
 
   int i, j;
 
-  void main(String[] args) {
+  main(String[] args) {
     i = 0;
     while (++i <= 3) {
       System.out.print(i+" ");
@@ -18,6 +18,12 @@ public class main {
     i = 15;
     System.out.println(i);
     System.out.println("Done!");
+  }
+}
+
+public class exceptions11 {
+  public static void main(String[] args) {
+    new main(args);
   }
 }
 

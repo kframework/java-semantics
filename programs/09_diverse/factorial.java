@@ -1,4 +1,4 @@
-public class main {
+class main {
   int factorial(int y) {
     if (y == 1) {
       return 1;
@@ -7,14 +7,17 @@ public class main {
     }
   }
 
-  int read() {
-    return Integer.parseInt(System.console().readLine());
-  }
-
-  void main(String[] args) {
+  main(String[] args) {
     System.out.print("Input a natural numer: ");
-    int n = read();
+    int n = new Scanner(System.in).nextInt();
     System.out.println("Factorial of "+n+" is: "+factorial(n));
     System.out.print("Done!"+"\n");
   }
 }
+
+public class factorial {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}
+

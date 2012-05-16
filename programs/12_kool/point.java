@@ -35,8 +35,8 @@ class ColorPoint extends Point {
   }
 }
 
-public class main {
-  static void main(String[] args) {
+class main {
+  main(String[] args) {
     Point p = new Point(3,4);
     ColorPoint cp = new ColorPoint(10,20,87);
     p.move(1,2);
@@ -45,6 +45,12 @@ public class main {
     cp.printLocation();
     cp.printColor();
     System.out.println("Done!");
+  }
+}
+
+public class point {
+  public static void main(String[] args) {
+    new main(args);
   }
 }
 

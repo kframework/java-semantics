@@ -6,14 +6,14 @@ class C {
 
 }
 
-public class main extends C {
+class main extends C {
   int b;
   int g(int i){return i;}
 
   C a = new C();
   C f(int i) {return a;}
 
-  void main(String[] args) {
+  main(String[] args) {
     //situatii posibile:
 
     //'This()
@@ -57,5 +57,11 @@ public class main extends C {
     f(1).g(2);
 
     System.out.println("Done!");
+  }
+}
+
+public class DotOperator1 {
+  public static void main(String[] args) {
+    new main(args);
   }
 }

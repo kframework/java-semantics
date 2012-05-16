@@ -1,5 +1,5 @@
-public class main {
-  void main(String[] args) {
+class main {
+  main(String[] args) {
     int x = 1;
     try { x = x + 1; throw x; x = x/0;}     // division by zero unreachable
     catch(int y) {x = y+1;}
@@ -7,5 +7,12 @@ public class main {
     System.out.println("Done!");
   }
 }
+
+public class exceptions03 {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}
+
 // 3
 // Done!

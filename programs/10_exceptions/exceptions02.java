@@ -1,5 +1,5 @@
-public class main {
-  void main(String[] args) {
+class main {
+  main(String[] args) {
     try {
       foo();
     }
@@ -19,5 +19,12 @@ public class main {
     throw 1;          // should not be reached
   }
 }
+
+public class exceptions02 {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}
+
 // 7
 // Done!

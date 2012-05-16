@@ -1,5 +1,6 @@
 module JAVA-API-CORE
     imports JAVA-CORE
+    imports JAVA-CLASSES
 
 // This module contains the minimal part of java API required to perform
 // console read/write operations.
@@ -12,8 +13,11 @@ syntax KResult ::=  "rtSystem"
                   | "rtSystemConsoleReadLine"
                   | "rtInteger"
                   | "rtIntegerParseInt"
+                  | "rtSystemIn"
+                  | "rtScannerNextInt"
 
 syntax RawVal ::= "rtSymbolicConsoleLine"
+                | "rtScanner"
 
 rule [NameSystem]:
     'ExprName(X:Id) => rtSystem
@@ -93,6 +97,38 @@ rule [consolePrint]:
       ...
     </k>
     <out>... .=> ListItem(Str) </out>
+        [transition]
+
+rule [NameSystemIn]:
+    'ExprName(rtSystem,, X) => rtSystemIn
+when
+    Id2String(X) ==String "in"
+
+rule [NewInstanceScanner]:
+    'NewInstance('None(.List{K}),,
+      'ClassOrInterfaceType(
+        'TypeName(X),,
+        'None(.List{K})
+      ),,
+      'ListWrap(rtSystemIn),,
+      'None(.List{K})
+    )
+    => rtScanner :: class X
+when
+    Id2String(X) ==String "Scanner"
+
+rule [ScannerNextInt]:
+    'MethodName(rtScanner::_,, X) => rtScannerNextInt
+when
+    Id2String(X) ==String "nextInt"
+
+rule [InvokeScannerNextInt]:
+    <k>
+      'Invoke(rtScannerNextInt,, 'ListWrap(.List{K}))
+      => I:Int :: int
+      ...
+    </k>
+    <in> ListItem(I) => . ...</in>
         [transition]
 
 end module

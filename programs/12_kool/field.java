@@ -5,12 +5,18 @@
 // The initialized variable declarations desugar into a variable
 // declaration and an assignment statement.
 
-public class main {
+class main {
   int a = 3;
 
-  void main(String[] args) {
+  main(String[] args) {
     System.out.println("a = "+ a);
     System.out.println("Done!");
+  }
+}
+
+public class field {
+  public static void main(String[] args) {
+    new main(args);
   }
 }
 

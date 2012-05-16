@@ -3,7 +3,8 @@
 // each elements, then it prints the entire array sorted
 
 
-public class main {
+class main {
+  Scanner scanner = new Scanner(System.in);
   int[] v = new int[30];
 
   void siftDown(int root, int bottom) {
@@ -44,17 +45,13 @@ public class main {
     }
   }
 
-  int read() {
-    return Integer.parseInt(System.console().readLine());
-  }
-
-  void main(String[] args) {
+  main(String[] args) {
     System.out.print("Length of array = ");
-    int x = read() ;
+    int x = scanner.nextInt();
     System.out.println("Input each of the "+x+" elements of the array");
     for (int y = 0; y<x; ++y) {
       System.out.print("Element "+y+" = ");
-      v[y] = read();
+      v[y] = scanner.nextInt();
     }
     System.out.print("Sorting the array using heap sort ... ");
     heapSort(x);
@@ -65,3 +62,10 @@ public class main {
     System.out.println("Done!");
   }
 }
+
+public class heap {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}
+

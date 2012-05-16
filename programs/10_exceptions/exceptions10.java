@@ -1,8 +1,8 @@
-public class main {
+class main {
 
   int x;
 
-  void main(String[] args) {
+  main(String[] args) {
     x = 5;
     try {
       throw 3;
@@ -11,6 +11,12 @@ public class main {
       System.out.println(y);  // should print this
     }
     System.out.println("Done!");
+  }
+}
+
+public class exceptions10 {
+  public static void main(String[] args) {
+    new main(args);
   }
 }
 

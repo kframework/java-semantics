@@ -1,7 +1,7 @@
 // This version of insertion sorting declares the vector in the init function
 // and then passes it (actually its reference) where it is needed
 
-public class main {
+class main {
 
 	int[] init(int n) {
 		int[] x = new int[n];
@@ -18,7 +18,7 @@ public class main {
     System.out.print(s);
 	}
 
-	void main(String[] args) {
+	main(String[] args) {
 		int n=30;
     int[] x = init(n);
 		System.out.print("The original sequence is");
@@ -38,3 +38,10 @@ public class main {
     System.out.println("Done!");
 	}
 }
+
+public class insertion2 {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}
+

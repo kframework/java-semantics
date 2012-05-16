@@ -13,12 +13,18 @@ class g {
   void g(int t) {
     a = t;
   }
-  void print2() { System.out.print(a); }
+  void print2() { System.out.println(a); }
 }
 
-public class main {
-  void main(String[] args) {
+class main {
+  main(String[] args) {
     ((new i(1)).m1()).print2();
+    System.out.println("Done!");
   }
 }
 
+public class p10 {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}

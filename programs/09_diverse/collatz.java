@@ -8,10 +8,10 @@
 // do not want to enforce any particular such value, which is why the
 // latter gets stuck.
 
-public class main {
+class main {
   void collatz(int n) {
     int s=0;
-    System.out.print("Testing Collatz' conjecture for n = "+n+" ... ");
+    System.out.print("Testing Collatz' conjecture for n = " + n + " ... ");
     while (n > 1) {
       s = s+1;
       if (n == (n/2)*2)
@@ -22,16 +22,21 @@ public class main {
     System.out.print("Done! It took "+s+" steps."+"\n");
   }
 
-  int read() {
-    return Integer.parseInt(System.console().readLine());
-  }
-
-  void main(String[] args) {
+  main(String[] args) {
     System.out.print("Testing Collatz' conjecture up to what number? ");
-    int m = read();
+    int m = new Scanner(System.in).nextInt();
     for (int i = 1; i<=m; ++i)
       collatz(i);
     System.out.print("It appears to hold."+"\n");
     System.out.print("Done!"+"\n");
   }
 }
+
+public class collatz {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}
+
+
+

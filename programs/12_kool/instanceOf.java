@@ -23,13 +23,19 @@ class C3 extends C {
   void C3() {}
 }
 
-public class main {
-  void main(String[] args) {
+class main {
+  main(String[] args) {
     (new C()).test();
     (new C1()).test();
     (new C2()).test();
     (new C3()).test();
     System.out.println("Done!");
+  }
+}
+
+public class instanceOf {
+  public static void main(String[] args) {
+    new main(args);
   }
 }
 

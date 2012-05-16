@@ -40,11 +40,17 @@ class b extends a {
   }
 }
 
-public class main {
-  void main(String[] args) {
+class main {
+  main(String[] args) {
     b o = new b();
-    if (o.m5()) System.out.print(""+o.m0()+ o.m1()+ o.m2()+ o.m3()+ o.m4());
+    if (o.m5()) System.out.println(""+o.m0()+ o.m1()+ o.m2()+ o.m3()+ o.m4());
     else System.out.println("m5 not returning true");
+    System.out.println("Done!");
   }
 }
 
+public class p14 {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}

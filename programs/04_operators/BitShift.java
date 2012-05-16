@@ -1,4 +1,4 @@
-public class main {
+class main {
 
 	void printAll(String[] vs, int[] v) {
 		for (int i = 0; i<v.length; i++) {
@@ -28,7 +28,7 @@ public class main {
     return vs;
   }
 
-	static void main(String[] args) {
+	main(String[] args) {
     int[] v = new int[nrOps];
     String[] vs = initVS();
     int i=0;
@@ -49,4 +49,10 @@ public class main {
     printAll(vs,v);
     System.out.println("Done!");
 	}
+}
+
+public class BitShift {
+  public static void main(String[] args) {
+    new main(args);
+  }
 }

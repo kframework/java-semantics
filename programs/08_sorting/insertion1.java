@@ -1,6 +1,6 @@
 // This program should execute correctly
 
-public class main {
+class main {
 	int[] x;
 
 	void init(int n) {
@@ -17,7 +17,7 @@ public class main {
     System.out.print(s);
 	}
 
-	void main(String[] args) {
+	main(String[] args) {
 		int n=30;
 		init(n);
 		System.out.print("The original sequence is");
@@ -37,3 +37,10 @@ public class main {
     System.out.println("Done!");
 	}
 }
+
+public class insertion1 {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}
+

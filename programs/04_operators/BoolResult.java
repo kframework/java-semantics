@@ -1,4 +1,4 @@
-public class main {
+class main {
 
 	void printAllB(String[] vs, boolean[] v) {
 		for (int i = 0; i<v.length; i++) {
@@ -33,7 +33,7 @@ public class main {
     return vs;
   }
 
-	static void main(String[] args) {
+	main(String[] args) {
     boolean[] vb = new boolean[nrOps];
     String[] vs = initVS();
 
@@ -63,4 +63,10 @@ public class main {
     printAllB(vs,vb);
     System.out.println("Done!");
 	}
+}
+
+public class BoolResult {
+  public static void main(String[] args) {
+    new main(args);
+  }
 }

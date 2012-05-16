@@ -1,5 +1,5 @@
-public class main {
-	static void main(String[] args) {
+class main {
+	main(String[] args) {
 		int a = 0, i = 1;
 
 		//Infix operators
@@ -54,4 +54,10 @@ public class main {
 
     System.out.println("Done!");
 	}
+}
+
+public class Operators {
+  public static void main(String[] args) {
+    new main(args);
+  }
 }
