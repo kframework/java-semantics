@@ -1,0 +1,110 @@
+module CLASS-DEC-AssertionError
+
+syntax K ::= "classDecAssertionError"
+
+/*
+class AssertionError extends RuntimeException {
+
+    AssertionError(String message) {
+        RuntimeException(message);
+    }
+}
+*/
+rule classDecAssertionError =>
+'ClassDec(
+  'ClassDecHead(
+    'ListWrap(
+      .List{K}
+    ),,
+    'Id(
+      "AssertionError"
+    ),,
+    'None(
+      .List{K}
+    ),,
+    'Some(
+      'SuperDec(
+        'ClassType(
+          'TypeName(
+            'Id(
+              "RuntimeException"
+            )
+          ),,
+          'None(
+            .List{K}
+          )
+        )
+      )
+    ),,
+    'None(
+      .List{K}
+    )
+  ),,
+  'ClassBody(
+    'ListWrap(
+      'ConstrDec(
+        'ConstrDecHead(
+          'ListWrap(
+            .List{K}
+          ),,
+          'None(
+            .List{K}
+          ),,
+          'Id(
+            "AssertionError"
+          ),,
+          'ListWrap(
+            'Param(
+              'ListWrap(
+                .List{K}
+              ),,
+              'ClassOrInterfaceType(
+                'TypeName(
+                  'Id(
+                    "String"
+                  )
+                ),,
+                'None(
+                  .List{K}
+                )
+              ),,
+              'Id(
+                "message"
+              )
+            )
+          ),,
+          'None(
+            .List{K}
+          )
+        ),,
+        'ConstrBody(
+          'None(
+            .List{K}
+          ),,
+          'ListWrap(
+            'ExprStm(
+              'Invoke(
+                'Method(
+                  'MethodName(
+                    'Id(
+                      "RuntimeException"
+                    )
+                  )
+                ),,
+                'ListWrap(
+                  'ExprName(
+                    'Id(
+                      "message"
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+)
+
+end module

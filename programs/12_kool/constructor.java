@@ -3,7 +3,7 @@
 class C {
   int i, j;
 
-  void C(int x) {
+  C(int x) {
     i = x;
     j = ++x;
   }

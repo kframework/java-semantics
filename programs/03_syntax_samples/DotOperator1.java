@@ -1,5 +1,5 @@
 class C {
-  void C(){}
+  C(){}
 
   int b;
   int g(int i){return i;}
@@ -14,37 +14,39 @@ class main extends C {
   C f(int i) {return a;}
 
   main(String[] args) {
+    Object lo;
+    int li;
     //situatii posibile:
 
     //'This()
-    this;
+    lo = this;
 
     //'ExprName(b)
-    b;
+    li = b;
 
     //'Invoke('Method('MethodName(g)),,_)
-    g(2);
+    li = g(2);
 
     //'Field('This(),,b)
-    this.b;
+    li = this.b;
 
     //'Invoke('Method('This(),,_,,g),,_)
-    this.g(2);
+    li = this.g(2);
 
     //'SuperField(b)
-    super.b;
+    li = super.b;
 
     //'Invoke('SuperMethod(_,,g),,_)
-    super.g(2);
+    li = super.g(2);
 
     //'ExprName('AmbName(a),,b)
-    a.b;
+    li = a.b;
 
     //'Invoke('Method('MethodName('AmbName(a),,g)),,_)
-    a.g(2);
+    li = a.g(2);
 
     //'Field('Invoke('Method('MethodName(f)),,_),,b)
-    f(1).b;
+    li = f(1).b;
 
     //'Invoke(
     //  'Method(
@@ -54,7 +56,7 @@ class main extends C {
     //  ),,
     //  _
     //)
-    f(1).g(2);
+    li = f(1).g(2);
 
     System.out.println("Done!");
   }

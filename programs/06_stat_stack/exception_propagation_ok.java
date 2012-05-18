@@ -11,17 +11,17 @@ public class exception_propagation_ok {
       } finally {
         System.out.println("finally after uncaught exception");
       }
-    } catch (int e) {
+    } catch (RuntimeException e) {
       System.out.println("caught exception: "+e);
     }
     System.out.println("Done!");
   }
 
-  void throwEx() {
-    throw 5;
+  static void throwEx() {
+    throw new RuntimeException("");
   }
 }
 
 // finally after uncaught exception
-// caught exception: 5
+// caught exception: RuntimeException
 // Done!

@@ -3,7 +3,7 @@
 class Point {
   int x, y;
 
-  Point(int initx, int inity) {
+  void setValues(int initx, int inity) {
     x = initx;
     y = inity;
   }
@@ -22,7 +22,7 @@ class ColorPoint extends Point {
   int color;
 
   ColorPoint(int initx, int inity, int initcolor) {
-    this.Point(initx, inity);
+    setValues(initx, inity);
     color = initcolor;
   }
 
@@ -37,7 +37,8 @@ class ColorPoint extends Point {
 
 class main {
   main(String[] args) {
-    Point p = new Point(3,4);
+    Point p = new Point();
+    p.setValues(3,4);
     ColorPoint cp = new ColorPoint(10,20,87);
     p.move(1,2);
     p.printLocation();

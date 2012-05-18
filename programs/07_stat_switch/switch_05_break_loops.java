@@ -15,18 +15,18 @@ public class switch_05_break_loops {
           System.out.print("1, ");
           while(true) {
             System.out.print("inner while, ");
-            break;
+            if (true) break;
             System.out.print("unreachable");
           }
         case 2:
           System.out.print("2, ");
-          break;
+          if (true) break;
           System.out.print("unreachable");
         case 3:
           System.out.print("3, ");
       }
       System.out.print("after switch, ");
-      break;
+      if (true) break;
       System.out.print("unreachable");
     }
     System.out.print("after outer while.");

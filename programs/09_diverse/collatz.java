@@ -8,6 +8,8 @@
 // do not want to enforce any particular such value, which is why the
 // latter gets stuck.
 
+import java.util.*;
+
 class main {
   void collatz(int n) {
     int s=0;

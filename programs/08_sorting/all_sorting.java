@@ -1,3 +1,5 @@
+import java.util.*;
+
 class main {
 
   Scanner scanner = new Scanner(System.in);

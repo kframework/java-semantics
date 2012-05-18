@@ -7,7 +7,7 @@ public class break_label_3 {
     while(i<3) {
       label_1: {
         System.out.print("Before break "+ i+ ", ");
-        break label_1;
+        if (true) break label_1;
         System.out.print("unreachable");
       }
       System.out.println("after break "+ i);

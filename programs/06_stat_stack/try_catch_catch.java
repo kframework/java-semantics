@@ -1,11 +1,6 @@
 // Testing try with multiple catch clauses
 
-class Exception {
-  void Exception() {
-  }
-}
-
-class Exception2 extends Exception {
+class Exception2 extends RuntimeException {
   void Exception2() {
   }
 }
@@ -18,19 +13,19 @@ class Exception3 extends Exception2 {
 public class try_catch_catch {
   public static void main(String[] args) {
     try {
-      throw new Exception2();
+      if (true) throw new Exception2();
 
       System.out.println("No exception");
     } catch (Exception3 e3) {
-      System.out.println("Caught exception3");
+      System.out.println("Caught Exception3");
     } catch (Exception2 e2) {
-      System.out.println("Caught exception2");
-    } catch (Exception e) {
-      System.out.println("Caught exception");
+      System.out.println("Caught Exception2");
+    } catch (RuntimeException e) {
+      System.out.println("Caught RuntimeException");
     }
     System.out.println("Done!");
   }
 }
 
-// Caught exception2
+// Caught Exception2
 // Done!

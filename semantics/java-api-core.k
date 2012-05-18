@@ -15,6 +15,9 @@ syntax KResult ::=  "rtSystem"
                   | "rtIntegerParseInt"
                   | "rtSystemIn"
                   | "rtScannerNextInt"
+                  | "methodGetClass" "(" K ")"
+                  | "classObject" "(" Id ")"
+                  | "methodClassGetName" "(" K ")"
 
 syntax RawVal ::= "rtSymbolicConsoleLine"
                 | "rtScanner"
@@ -130,5 +133,30 @@ rule [InvokeScannerNextInt]:
     </k>
     <in> ListItem(I) => . ...</in>
         [transition]
+
+rule [NameGetClass]:
+    'MethodName(KR:KResult,, X) => methodGetClass(KR)
+when
+    Id2String(X) ==String "getClass"
+
+rule [InvokeGetClass]:
+    'Invoke(
+      methodGetClass(
+        objectClosure((_ <envStack>ListItem((Class:Id, _))...</envStack>))::_
+      ),,
+      'ListWrap(.List{K})
+    ) => classObject(Class)
+
+rule [NameClassGetName]:
+    'MethodName(classObject(Class),, X)
+    => methodClassGetName(classObject(Class))
+when
+    Id2String(X) ==String "getName"
+
+rule [InvokeClassGetName]:
+    'Invoke(
+      methodClassGetName(classObject(Class)),,
+      'ListWrap(.List{K})
+    ) => toString(class Class)
 
 end module

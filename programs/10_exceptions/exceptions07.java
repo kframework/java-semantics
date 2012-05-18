@@ -1,9 +1,25 @@
 class main {
+  int x, y, z;
+
+  void g() {
+    throw new RuntimeException("a");
+  }
+
+  void f() {
+    g();
+  }
 
   main(String[] args) {
-    int e;
-    try { int x = 2; System.out.print(x+" "); throw ( ++x + x ); }
-    catch(int e) { System.out.println(e); }
+    x = 5;
+    y = 10;
+
+    try {
+      f();
+    } catch(RuntimeException y) {
+      System.out.print(y+" ");
+    }
+    System.out.print(x+" ");
+    System.out.println(y);
     System.out.println("Done!");
   }
 }
@@ -14,5 +30,5 @@ public class exceptions07 {
   }
 }
 
-// 2 6
+// 15 5 10
 // Done!

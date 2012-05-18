@@ -4,7 +4,7 @@ class C {
   C a;
   C f(int i) {return this;}
 
-  void C(){
+  C(){
     a = this;
   }
 }
@@ -22,34 +22,37 @@ class main extends C {
   //main x = this;
 
   main(String[] args) {
-    C();
+    Object lo;
+    int li;
+
+    new C();
     field = a = this;
     C local = this;
 
-    this.a.b;
-    this.a.g(3);
-    this.f(2).b;
-    this.f(2).g(3);
+    li = this.a.b;
+    li = this.a.g(3);
+    li = this.f(2).b;
+    li = this.f(2).g(3);
 
-    super.a.b;
-    super.a.g(3);
-    super.f(2).b;
-    super.f(2).g(3);
+    li = super.a.b;
+    li = super.a.g(3);
+    li = super.f(2).b;
+    li = super.f(2).g(3);
 
-    field.a.b;
-    field.a.g(3);
-    field.f(2).b;
-    field.f(2).g(3);
+    li = field.a.b;
+    li = field.a.g(3);
+    li = field.f(2).b;
+    li = field.f(2).g(3);
 
-    local.a.b;
-    local.a.g(3);
-    local.f(2).b;
-    local.f(2).g(3);
+    li = local.a.b;
+    li = local.a.g(3);
+    li = local.f(2).b;
+    li = local.f(2).g(3);
 
-    f(1).a.b;
-    f(1).a.g(3);
-    f(1).f(2).b;
-    f(1).f(2).g(3);
+    li = f(1).a.b;
+    li = f(1).a.g(3);
+    li = f(1).f(2).b;
+    li = f(1).f(2).g(3);
 
     System.out.println("Done!");
   }

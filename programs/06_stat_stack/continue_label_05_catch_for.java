@@ -9,7 +9,7 @@ public class continue_label_05_catch_for {
     for(i=0; i<10; i++) {
       try {
         if (i % 2 != 0) continue label_1;
-      } catch(int ex) {
+      } catch(RuntimeException ex) {
         System.out.print("never reached");
       }
       System.out.print(i+" ");

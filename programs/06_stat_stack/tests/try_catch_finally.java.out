@@ -1,5 +1,5 @@
 no exception first time
 finally after no exception
-caught exception: -1
+caught exception: java.lang.RuntimeException: 
 finally after exception
 Done!

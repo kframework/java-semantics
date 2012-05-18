@@ -7,8 +7,8 @@ class main {
     try {
       System.out.print(t+" ");
       System.out.print(8+" ");
-    } catch(int p) {
-      System.out.print(p+10);  // not reachable
+    } catch(RuntimeException p) {
+      System.out.print(p+"10");  // not reachable
     }
     for (int i = 1; i<=y; ++i)
       t = t*i;

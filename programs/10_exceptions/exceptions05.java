@@ -6,10 +6,10 @@ class main {
     int t = 1;
     try{
       System.out.print(t+" ");
-      throw 5;
+      if (true) throw new RuntimeException("a");
       System.out.print(8);      // not reachable
-    } catch(int p) {
-      System.out.print(p+10+" ");
+    } catch(RuntimeException p) {
+      System.out.print(p+"10 ");
     }
     for (int i = 1; i<=y; ++i)
       t = t*i;

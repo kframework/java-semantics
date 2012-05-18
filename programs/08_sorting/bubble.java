@@ -2,6 +2,8 @@
 // console (first its length, then its elements).  It reads and prints
 // each elements, then it prints the entire array sorted.
 
+import java.util.*;
+
 class main {
   Scanner scanner = new Scanner(System.in);
   int[] v = new int[30];

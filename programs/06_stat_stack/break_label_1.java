@@ -4,7 +4,7 @@ public class break_label_1 {
   public static void main(String[] args) {
     label_1: {
       System.out.println("Before break");
-      break label_1;
+      if (true) break label_1;
       System.out.print("unreachable");
     }
     System.out.println("Done!");

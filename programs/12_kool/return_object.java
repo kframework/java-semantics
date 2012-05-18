@@ -2,7 +2,7 @@
 
 class I {
   int val;
-  void I(int v) {
+  I(int v) {
     val = v;
   }
   G m1() {
@@ -12,7 +12,7 @@ class I {
 
 class G {
   int a;
-  void G(int t) {
+  G(int t) {
     a = t;
   }
   void print2() { System.out.println(a); }

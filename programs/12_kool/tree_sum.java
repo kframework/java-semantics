@@ -1,15 +1,15 @@
 // Building and traversing a tree.
 
 class Node {
-  void Node(){}
+  Node(){}
 
-  int Sum() {}
+  int Sum() {return -1;}
 }
 
 class Container extends Node {
   Node left, right;
 
-  void Container(Node left, Node right) {
+  Container(Node left, Node right) {
     this.left = left;
     this.right = right;
   }
@@ -25,7 +25,7 @@ class Container extends Node {
 class Leaf extends Node {
   int val;
 
-  void Leaf(int val) {
+  Leaf(int val) {
     this.val = val;
   }
 

@@ -1,25 +1,23 @@
 class main {
-  int x, y, z;
 
-  void g() {
-    throw 15;
-  }
-
-  void f() {
-    g();
-  }
+  int i, j;
+  String s;
 
   main(String[] args) {
-    x = 5;
-    y = 10;
-
-    try {
-      f();
-    } catch(int y) {
-      System.out.print(y+" ");
+    i = 0;
+    while (++i <= 3) {
+      System.out.print(i+" ");
     }
-    System.out.print(x+" ");
-    System.out.println(y);
+    try {
+      if (true) throw new RuntimeException(s="a");
+      i = 10;
+      System.out.print(i);   // should not print this
+    } catch(RuntimeException j) {
+      i = 20;
+      System.out.print(i+" ");   // should print this
+    }
+    i = 15;
+    System.out.println(i);
     System.out.println("Done!");
   }
 }
@@ -30,5 +28,5 @@ public class exceptions09 {
   }
 }
 
-// 15 5 10
+// 1 2 3 20 15
 // Done!

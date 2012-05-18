@@ -8,7 +8,7 @@ public class break_02_do {
 
   public static void main(String[] args) {
     do {
-      break;
+      if (true) break;
       System.out.print("unreachable");
     } while (true);
     System.out.println("Done!");

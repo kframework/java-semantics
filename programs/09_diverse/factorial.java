@@ -1,3 +1,5 @@
+import java.util.*;
+
 class main {
   int factorial(int y) {
     if (y == 1) {

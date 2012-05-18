@@ -1,8 +1,10 @@
 class i {
   int val;
-  void i(int v) {
+
+  i(int v) {
     val = v;
   }
+
   g m1() {
     return (new g(val+9));  // creates and returns an object
   }
@@ -10,9 +12,11 @@ class i {
 
 class g {
   int a;
-  void g(int t) {
+
+  g(int t) {
     a = t;
   }
+
   void print2() { System.out.println(a); }
 }
 

@@ -3,6 +3,8 @@ module JAVA-CLASSES
     imports JAVA-EXPRESSIONS
     imports JAVA-STATEMENTS
     imports JAVA-ARRAYS
+    imports CLASS-DEC-RuntimeException
+    imports CLASS-DEC-AssertionError
 
 syntax Type ::= "function" "from" List{KResult} "to" Type
                   [prec(1) latex "({#1}\ \texttt{->}\ {#2})"]
@@ -77,7 +79,10 @@ context storeMethod(_, _, _, function from (_:List{K},, (HOLE => typeOf(HOLE)),,
 When done with the first pass, call \texttt{main()}. */
 
 rule [CompilationUnit]:
-    <k> 'CompilationUnit(_,,_,,K:K) => K ~> execute </k>
+    <k>
+      'CompilationUnit(_,,_,,K:K)
+      => K ~> classDecRuntimeException ~> classDecAssertionError ~> execute
+    </k>
 
 syntax K ::= "execute"
 
@@ -136,7 +141,18 @@ rule [bindtoEmpty]:
 
 define typeOf('Param(_:K,,K,,_)) => K
 
-define toString(class Class) => Id2String(Class) :: rtString
+define
+    toString(class Class) => Id2String(Class) :: rtString
+when
+            Id2String(Class) =/=String "RuntimeException"
+    andBool Id2String(Class) =/=String "AssertionError"
+
+define
+    toString(class Class) => "java.lang." +String Id2String(Class) :: rtString
+when
+            Id2String(Class) ==String "RuntimeException"
+     orBool Id2String(Class) ==String "AssertionError"
+
 define toString(objectClosure(Bag:Bag) :: T) => toString(typeOf(objectClosure(Bag) :: T))
 
 /*@ Recall that lists of the form "a,b,c" are a syntactic convenience,
@@ -440,6 +456,8 @@ rule [MethodNameQualified]:
       => lookupMember(<envStack> EStack </envStack>, X)
       ...
     </k>
+when
+    Id2String(X) =/=String "getClass"
         [structural]
 
 // super.X(_) => lookupMember(... , )(_)

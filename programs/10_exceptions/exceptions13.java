@@ -2,11 +2,16 @@ class main {
 
   main(String[] args) {
     try {
-      throw 4;
-    } catch (int e) {
-      System.out.print(e+" ");
+      int b = 1;
+      try {
+        b = 2;
+      } catch(RuntimeException a) {
+        System.out.print(2);     // should not print this
+      }
+      throw new RuntimeException("a");
+    } catch(RuntimeException b) {
+      System.out.println(1);  // should print this
     }
-    System.out.println(42);
     System.out.println("Done!");
   }
 }
@@ -17,5 +22,5 @@ public class exceptions13 {
   }
 }
 
-// 4 42
+// 1
 // Done!

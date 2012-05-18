@@ -1,26 +1,14 @@
 class main {
 
+  int x;
+
   main(String[] args) {
-    int e;
+    x = 5;
     try {
-      try {
-        try {
-          try {
-            int x = 1; System.out.print(x+" "); throw ++x;
-          } catch(int e) {
-            System.out.print(e+" ");
-            throw ++e;
-          }
-        } catch(int e) {
-          System.out.print(e+" ");
-          throw ++e;
-        }
-      } catch(int e) {
-        System.out.print(e+" ");
-        throw ++e;
-      }
-    } catch(int e) {
-      System.out.println(e);
+      if (true) throw new RuntimeException("a");
+      System.out.print(x);       // should not print this
+    } catch(RuntimeException y) {
+      System.out.println(y);  // should print this
     }
     System.out.println("Done!");
   }
@@ -32,5 +20,5 @@ public class exceptions08 {
   }
 }
 
-// 1 2 3 4 5
+// 3
 // Done!

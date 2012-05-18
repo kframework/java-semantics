@@ -1,22 +1,12 @@
 class main {
 
-  int i, j;
-
   main(String[] args) {
-    i = 0;
-    while (++i <= 3) {
-      System.out.print(i+" ");
-    }
     try {
-      throw j=1;
-      i = 10;
-      System.out.print(i);   // should not print this
-    } catch(int j) {
-      i = 20;
-      System.out.print(i+" ");   // should print this
+      throw new RuntimeException("a");
+    } catch (RuntimeException e) {
+      System.out.print(e+" ");
     }
-    i = 15;
-    System.out.println(i);
+    System.out.println(42);
     System.out.println("Done!");
   }
 }
@@ -27,5 +17,5 @@ public class exceptions11 {
   }
 }
 
-// 1 2 3 20 15
+// 4 42
 // Done!

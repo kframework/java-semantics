@@ -6,17 +6,17 @@ public class try_catch_finally {
     try {
       try {
         System.out.println("no exception first time");
-      } catch (int e3) {
-        System.out.println("caught exception: "+e3);
+      } catch (RuntimeException e3) {
+        System.out.println("caught exception: "+e3.toString());
       } finally {
         System.out.println("finally after no exception");
       }
 
-      throw -1;
+      if(true) throw new RuntimeException("");
 
       System.out.println("No exception second time");
-    } catch (int e3) {
-      System.out.println("caught exception: "+e3);
+    } catch (RuntimeException e3) {
+      System.out.println("caught exception: " + e3.toString());
     } finally {
       System.out.println("finally after exception");
     }
@@ -26,6 +26,6 @@ public class try_catch_finally {
 
 // no exception first time
 // finally after no exception
-// caught exception: -1
+// caught exception: java.lang.RuntimeException:
 // finally after exception
 // Done!

@@ -14,7 +14,7 @@ find $progdir -maxdepth 1 -type f \( -name "*java" \) |
   while read FILE; do
     echo "$FILE :"
     echo
-    ./../tools/make-test.sh $FILE
+    ./../tools/make-jdk-test.sh $FILE
     echo
   done
 

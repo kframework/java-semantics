@@ -11,7 +11,7 @@ public class break_08_L_do {
   public static void main(String[] args) {
     label_1:
     do {
-      break;
+      if (true) break;
       System.out.print("unreachable");
     } while (true);
     System.out.println("Done!");

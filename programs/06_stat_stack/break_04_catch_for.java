@@ -8,7 +8,7 @@ public class break_04_catch_for {
     for(i=0; i<10; i++) {
       try {
         if (i >= 5) break;
-      } catch(int ex) {
+      } catch(RuntimeException ex) {
         System.out.print("never reached");
       }
       System.out.print(i+" ");

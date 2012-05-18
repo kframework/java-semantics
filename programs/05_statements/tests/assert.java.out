@@ -1,6 +1,3 @@
 1 > 0 asserted
 1 > 0 asserted with arg
-AssertionError: 
-AssertionError: abc
-AssertionError: -1
 Done!

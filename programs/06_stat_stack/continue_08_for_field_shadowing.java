@@ -4,16 +4,22 @@
 // This test also ensures that continue don't disrupt <env> cell restoration
 // after for terminates.
 
-public class continue_08_for_field_shadowing {
-  int i=-1;
+class main {
+  int i = -1;
 
-	public static void main(String[] args) {
+	main(String[] args) {
     for(int i=0; i<5; i++) {
       System.out.print(i+" ");
       if (i == 4) continue;
     }
     System.out.println("\n"+ "After for i = "+ i);
     System.out.println("Done!");
+  }
+}
+
+public class continue_08_for_field_shadowing {
+  public static void main(String[] args) {
+    new main(args);
   }
 }
 

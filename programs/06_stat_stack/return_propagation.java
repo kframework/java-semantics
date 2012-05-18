@@ -7,14 +7,14 @@ public class return_propagation {
     System.out.println("Done!");
   }
 
-  void test() {
+  static void test() {
     try {
       try {
-        return;
+        if (true) return;
 
         System.out.println("No exception");
-      } catch (int e3) {
-        System.out.println("caught Exception: "+e3);
+      } catch (RuntimeException e3) {
+        System.out.println("caught Exception: " + e3);
       } finally {
         System.out.println("finally after return");
       }

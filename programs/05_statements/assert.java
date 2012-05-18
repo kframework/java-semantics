@@ -8,18 +8,6 @@
   Testing conversion to String.
 */
 
-class AssertionError {
-  String message;
-
-  AssertionError(String message) {
-    this.message = message;
-  }
-
-  void print() {
-    System.out.println("AssertionError: "+message);
-  }
-}
-
 class main {
   main(String[] args) {
     assert 1 > 0;
@@ -31,19 +19,19 @@ class main {
     try {
       assert false;
     } catch (AssertionError err) {
-      err.print();
+      System.out.println(err.toString());
     }
 
     try {
       assert false : "abc";
     } catch (AssertionError err) {
-      err.print();
+      System.out.println(err.toString());
     }
 
     try {
       assert false : -1;
     } catch (AssertionError err) {
-      err.print();
+      System.out.println(err.toString());
     }
 
     System.out.println("Done!");
@@ -58,7 +46,7 @@ public class Assert {
 
 // 1 > 0 asserted
 // 1 > 0 asserted with arg
-// AssertionError:
+// AssertionError
 // AssertionError: abc
 // AssertionError: -1
 // Done!
