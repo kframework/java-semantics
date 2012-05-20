@@ -1,7 +1,7 @@
 // Testing instance of
 
 class C {
-  void C() {}
+  C() {}
   void test() {
     System.out.print("Instance of class C");
     if (this instanceof C1) System.out.print(1);
@@ -12,15 +12,15 @@ class C {
 }
 
 class C1 extends C {
-  void C1() {}
+  C1() {}
 }
 
 class C2 extends C {
-  void C2() {}
+  C2() {}
 }
 
 class C3 extends C {
-  void C3() {}
+  C3() {}
 }
 
 class main {

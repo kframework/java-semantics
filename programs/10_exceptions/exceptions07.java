@@ -16,7 +16,7 @@ class main {
     try {
       f();
     } catch(RuntimeException y) {
-      System.out.print(y+" ");
+      System.out.print(y.toString() + " ");
     }
     System.out.print(x+" ");
     System.out.println(y);

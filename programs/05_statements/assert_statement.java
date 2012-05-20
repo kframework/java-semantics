@@ -13,7 +13,7 @@ class main {
     assert 1 > 0;
     System.out.println("1 > 0 asserted");
 
-    assert 1>0 : "abc";
+    assert 1 > 0 : "abc";
     System.out.println("1 > 0 asserted with arg");
 
     try {
@@ -38,7 +38,7 @@ class main {
   }
 }
 
-public class Assert {
+public class assert_statement{
   public static void main(String[] args) {
     new main(args);
   }

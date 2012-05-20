@@ -4,7 +4,7 @@
 class C1 {
   int x, y;
 
-  void C1() {}
+  C1() {}
   void setx1(int v) { x = v; }
   void sety1(int v) { y = v; }
   int getx1() { return x; }
@@ -14,7 +14,7 @@ class C1 {
 class C2 extends C1 {
   int y;
 
-  void C2() {}
+  C2() {}
   void sety2(int v) { y = v; }
   int getx2() { return x; }
   int gety2() { return y; }

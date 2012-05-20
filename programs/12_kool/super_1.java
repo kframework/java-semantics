@@ -1,7 +1,7 @@
 // Testing dynamic method dispatch and super
 
 class C1 {
-  void C1() {}
+  C1() {}
 
   int m1() {
     return(m2());
@@ -10,7 +10,7 @@ class C1 {
 }
 
 class C2 extends C1 {
-  void C2() {}
+  C2() {}
 
   int m1() { return 22; }
   int m2() { return 23; }

@@ -6,7 +6,7 @@ syntax K ::= "classDecAssertionError"
 class AssertionError extends RuntimeException {
 
     AssertionError(String message) {
-        RuntimeException(message);
+        super(message);
     }
 }
 */
@@ -78,28 +78,22 @@ rule classDecAssertionError =>
           )
         ),,
         'ConstrBody(
-          'None(
-            .List{K}
-          ),,
-          'ListWrap(
-            'ExprStm(
-              'Invoke(
-                'Method(
-                  'MethodName(
-                    'Id(
-                      "RuntimeException"
-                    )
-                  )
-                ),,
-                'ListWrap(
-                  'ExprName(
-                    'Id(
-                      "message"
-                    )
+          'Some(
+            'SuperConstrInv(
+              'None(
+                .List{K}
+              ),,
+              'ListWrap(
+                'ExprName(
+                  'Id(
+                    "message"
                   )
                 )
               )
             )
+          ),,
+          'ListWrap(
+            .List{K}
           )
         )
       )

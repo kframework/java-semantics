@@ -4,7 +4,7 @@ class C {
   C a;
   C f(int i) {return this;}
 
-  C(){
+  void init() {
     a = this;
   }
 }
@@ -22,10 +22,12 @@ class main extends C {
   //main x = this;
 
   main(String[] args) {
+    super.init();
+
     Object lo;
     int li;
 
-    new C();
+    new C().init();
     field = a = this;
     C local = this;
 

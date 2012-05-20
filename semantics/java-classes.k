@@ -54,12 +54,9 @@ rule [MethodDec]:
     => storeMethod(Name, 'ListWrap(Params), S, function from Params to ReturnType)
         [structural]
 
-//contructors are reduced to methods with return type void
-rule [ConstrDec]:
-    'ConstrDec('ConstrDecHead(K1:K,, K2:K,, Ks),, 'ConstrBody(_,,S))
-    => 'MethodDec('MethodDecHead(K1,,K2,,void,,Ks),, S)
-
 syntax K ::= "storeMethod" "(" Id "," K "," K "," Type ")"
+
+context storeMethod(_, _, _, function from (_:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}) to _)
 
 rule [storeMethod]:
     <k> storeMethod(Name, 'ListWrap(Params), S, MethodType:Type) =>. ...</k>
@@ -68,12 +65,69 @@ rule [storeMethod]:
     <env> Env => Env[L:Int/Name] </env>
     <store>
       ...
-      .  => L |-> methodClosure(Class, OL, 'ListWrap(Params), S, MethodType) :: MethodType
+      . => L |-> methodClosure(Class, OL, 'ListWrap(Params), S, MethodType) :: MethodType
       ...
     </store>
     <nextLoc> L => L +Int 1 </nextLoc>
 
-context storeMethod(_, _, _, function from (_:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}) to _)
+rule [ConstrDecSuperCallDesugar]:
+    'ConstrDec(
+      _:K,,
+      'ConstrBody(
+        (
+          'None(_)
+          => 'Some('SuperConstrInv( 'None(.List{K}),, 'ListWrap(.List{K}) ))
+        ),,
+        _:K
+      )
+    )
+
+rule [ConstrDec]:
+    'ConstrDec('ConstrDecHead(_,, _,, Name,, 'ListWrap(Params),, _),,
+        'ConstrBody(
+      'Some('SuperConstrInv( _,, SuperParamsList:K )) ,,S))
+    => storeConstructor(Name, 'ListWrap(Params), SuperParamsList,
+        S, function from Params to void)
+
+syntax K ::= "storeConstructor" "(" Id "," K "," K "," K "," Type ")"
+
+context storeConstructor(_, _, _, _, function from (_:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}) to _)
+
+rule [storeConstructor]:
+    <k>
+        storeConstructor(Name, 'ListWrap(Params), SuperParamsList, S, MethodType)
+        => storeMethod(
+          Name,
+          'ListWrap(Params),
+          'ExprStm(
+            'Invoke( 'Method('MethodName( BaseClass )),, SuperParamsList )
+          ) ~> S,
+          MethodType
+        )
+      ...
+    </k>
+    <crntClass> Class:Id </crntClass>
+    <className> Class </className>
+    <extends> BaseClass </extends>
+when
+    Id2String(BaseClass) =/=String "Object"
+
+rule [storeConstructorSubclassOfObject]:
+    <k>
+        storeConstructor(Name, 'ListWrap(Params), _, S, MethodType)
+        => storeMethod(
+          Name,
+          'ListWrap(Params),
+          S,
+          MethodType
+        )
+      ...
+    </k>
+    <crntClass> Class:Id </crntClass>
+    <className> Class </className>
+    <extends> BaseClass </extends>
+when
+    Id2String(BaseClass) ==String "Object"
 
 /*@ \subsection{Program initialization}
 When done with the first pass, call \texttt{main()}. */

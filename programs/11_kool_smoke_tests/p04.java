@@ -1,12 +1,15 @@
 class a {
   int x;
-  void a() {
+
+  a() {
     x=2;
   }
+
   boolean m1(int x) {
     return (this.x) == x;  // this types, because this.x looked up statically
     // this.x therefore refers to the "int x" field in a
   }
+
   int c() {
     return x;
   }
@@ -14,11 +17,12 @@ class a {
 
 class b extends a {
   boolean x;
-  void b() {
-    x=false;
-    super.a();
+
+  b() {
+    x = false;
   }
 }
+
 class main {
   main(String[] args) {
     a[] o= new a[5];

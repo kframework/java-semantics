@@ -1,5 +1,5 @@
 class c1 {
-  void c1() { }
+  c1() { }
   int m1() {
     return(m2());
   }
@@ -7,7 +7,7 @@ class c1 {
 }
 
 class c2 extends c1 {
-  void c2() { }
+  c2() { }
   int m1() { return 22; }
   int m2() { return 23; }
   int m3() {
@@ -16,7 +16,7 @@ class c2 extends c1 {
 }
 
 class c3 extends c2 {
-  void c3() { }
+  c3() { }
   int m1() { return 32; }
   int m2() { return 33; }
 }

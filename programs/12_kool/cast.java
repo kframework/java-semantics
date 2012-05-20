@@ -4,7 +4,7 @@
 class A {
   int x;
 
-  void A() {
+  A() {
     x=10;
   }
 
@@ -16,8 +16,8 @@ class A {
 class B extends A {
   int x;
 
-  void B() {
-    super.A();
+  B() {
+    super();
     x=20;
   }
 

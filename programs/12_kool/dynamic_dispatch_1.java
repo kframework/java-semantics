@@ -1,13 +1,13 @@
 // Testing dynamic method dispatch
 
 class C1 {
-  void C1() {}
+  C1() {}
   int m1() { return 1; }
   int m2() { return m1(); }
 }
 
 class C2 extends C1 {
-  void C2() {}
+  C2() {}
   int m1() { return 2; }
 }
 

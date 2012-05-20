@@ -5,7 +5,7 @@ class C {
   C a;
   C f(int i) {return this;}
 
-  C(){
+  void init() {
     a = this;
   }
 }
@@ -20,7 +20,9 @@ class main extends C {
   C a;
 
   main(String[] args) {
-    new C();
+    super.init();
+
+    new C().init();
     field = a = this;
     C local = this;
 

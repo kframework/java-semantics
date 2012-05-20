@@ -12,7 +12,7 @@ public class exception_propagation_ok {
         System.out.println("finally after uncaught exception");
       }
     } catch (RuntimeException e) {
-      System.out.println("caught exception: "+e);
+      System.out.println("caught exception: " + e.toString());
     }
     System.out.println("Done!");
   }

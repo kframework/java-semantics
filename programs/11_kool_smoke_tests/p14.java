@@ -1,6 +1,6 @@
 class a {
   int x;
-  void a() {
+  a() {
     x=7;
   }
   int m0() {
@@ -10,8 +10,8 @@ class a {
 
 class b extends a {
   boolean x ;
-  void b() {
-    super.a();
+  b() {
+    super();
     x=true;
   }
   int m1() {

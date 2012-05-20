@@ -8,8 +8,9 @@ class a {  // classes are not enforced to have constructors
 
 class b extends a {
   int x;
-  void b() {
-    x=3;
+
+  b() {
+    x=6;
   }
 }
 
@@ -17,6 +18,7 @@ class main extends b {
   int m1(int y) {
     return  y*y;
   }
+
   main(String[] args) {
     System.out.println(m1(4));
     System.out.println("Done!");

@@ -8,7 +8,7 @@ class main {
       if (true) throw new RuntimeException("a");
       System.out.print(x);       // should not print this
     } catch(RuntimeException y) {
-      System.out.println(y);  // should print this
+      System.out.println(y.toString());  // should print this
     }
     System.out.println("Done!");
   }

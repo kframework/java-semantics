@@ -4,7 +4,7 @@ class main {
       foo();
     }
     catch(RuntimeException e) {
-      System.out.println(e);  // should print 7
+      System.out.println(e.toString());  // should print 7
     }
     System.out.println("Done!");
   }

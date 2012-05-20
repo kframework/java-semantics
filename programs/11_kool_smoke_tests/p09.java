@@ -1,9 +1,11 @@
 class a {
   int i, j;
-  void a() {
+
+  a() {
     i = 0;
     j = ++i+1;
   }
+
   int aa() {
     j = ++i+1;
     return j;
@@ -21,13 +23,15 @@ class a {
 
 class b extends a {
   int j, k;
-  int aa() {
-    return bb();
-  }
-  void b() {
-    super.a();
+
+  b() {
+    super();
     j = 10;
     k = j+1;
+  }
+
+  int aa() {
+    return bb();
   }
   int bb() {
     k = ++j+1;
@@ -42,16 +46,17 @@ class b extends a {
 }
 
 class c extends b {
+  c() {
+    i = 100;
+    j = i+1;
+    k = j+1;
+  }
+
   int aa() {
     return super.aa();
   }
   int bb() {
     return super.bb();
-  }
-  void c() {
-    i = 100;
-    j = i+1;
-    k = j+1;
   }
   int g() {
     return i+k*j;

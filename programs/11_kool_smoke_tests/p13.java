@@ -1,5 +1,5 @@
 class c {
-  void c() {  }
+  c() {  }
   void test() {
     System.out.print(-1);
     if (this instanceof c1) System.out.print(1);
@@ -10,15 +10,15 @@ class c {
 }
 
 class c1 extends c {
-  void c1() { super.c(); }
+  c1() { super(); }
 }
 
 class c2 extends c {
-  void c2() { super.c(); }
+  c2() { super(); }
 }
 
 class c3 extends c {
-  void c3() { super.c(); }
+  c3() { super(); }
 }
 
 class main {

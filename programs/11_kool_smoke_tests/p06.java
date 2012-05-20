@@ -1,11 +1,11 @@
 class c1 {
-  void c1() { }
+  c1() { }
   int m1() { return 1; }
   int m2() { return m1(); }
 }
 
 class c2 extends c1 {
-  void c2() { }
+  c2() { }
   int m1() { return 2; }
 }
 

@@ -14,5 +14,5 @@ mainFile=`basename $javaFile`
 mainClass=`echo "$mainFile" | cut -d'.' -f1`
 
 javac $javaFile
-java -cp $targetDir $mainClass
+java -ea -cp $targetDir $mainClass
 find $targetDir -type f -name "*.class" -exec rm -f {} \;

@@ -9,7 +9,7 @@ class c1 {
 
 class c2 extends c1 {
   int y;
-  void c2() { }   // such empty constructs are necessary when creating instances
+  c2() { }   // such empty constructs are necessary when creating instances
   // of the class; they are not necessary otherwise (see c1 above)
   void sety2(int v) { y=v; }
   int getx2() { return x; }

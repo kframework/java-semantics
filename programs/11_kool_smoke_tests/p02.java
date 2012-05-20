@@ -1,8 +1,10 @@
 class c {
   int x;
-  void c() {  // constructor method, so no need to type it
+
+  c() {  // constructor method, so no need to type it
     x=5;
   }
+
   int g() {
     return x;
   }
