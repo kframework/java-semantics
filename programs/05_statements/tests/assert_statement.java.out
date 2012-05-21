@@ -1,6 +1,7 @@
 1 > 0 asserted
 1 > 0 asserted with arg
 java.lang.AssertionError
+java.lang.AssertionError: null
 java.lang.AssertionError: abc
 java.lang.AssertionError: -1
 Done!

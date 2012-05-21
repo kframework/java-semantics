@@ -235,12 +235,22 @@ when
             Id2String(X) ==String "Object"
     andBool X =/=K Class
 
+rule [subtypeNull]:
+    subtype nullType, class _ => true :: bool
+        [structural]
+
+rule [subtypeNullAndString]:
+    subtype nullType, rtString => true :: bool
+        [structural]
+
 /*@ \subsubsection{Unsafe Casting}
 Performs unsafe casting.  One should only use it in combination with
 the subtype relation above.  */
 
 define unsafeCast(objectClosure(<crntClass>_:K </crntClass> Obj) :: _, class Class)
   => objectClosure(<crntClass> Class </crntClass> Obj) :: class Class
+
+define unsafeCast(null :: nullType, rtString) => null :: rtString
 
 /*@ \subsection{Class declaration}
 Like in untyped KOOL. */

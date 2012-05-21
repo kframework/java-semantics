@@ -141,13 +141,17 @@ context 'AssertStm(HOLE,,_:List{K})
 rule [AssertStmTrueDiscard]:
     'AssertStm(true::bool,, _:List{K}) => .
 
-rule [AssertStmOneArgDesugar]:
-    'AssertStm(false::bool) => 'AssertStm(false::bool,, ""::rtString)
-        [structural]
+rule [AssertStmOneArg]:
+    'AssertStm(false::bool) => 'Throw('NewInstance(
+      'None(.List{K}),,
+      'ClassOrInterfaceType( 'TypeName( String2Id("AssertionError") ),, 'None(.List{K}) ),,
+      'ListWrap( null :: nullType ),,
+      'None(.List{K})
+    ))
 
 context 'AssertStm(false::bool,, HOLE)
 
-rule [AssertStm]:
+rule [AssertStmTwoArgs]:
     'AssertStm(false::bool,, TV:TypedVal) => 'Throw('NewInstance(
       'None(.List{K}),,
       'ClassOrInterfaceType( 'TypeName( String2Id("AssertionError") ),, 'None(.List{K}) ),,

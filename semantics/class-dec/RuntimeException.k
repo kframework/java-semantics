@@ -4,7 +4,7 @@ syntax K ::= "classDecRuntimeException"
 
 /*
 class RuntimeException {
-    private String detailMessage = "";
+    private String detailMessage = null;
 
     RuntimeException(String message) {
         detailMessage = message;
@@ -17,7 +17,7 @@ class RuntimeException {
     String toString() {
         String s = getClass().getName();
         String message = getMessage();
-        return s + ": " + message;
+        return (message != null) ? (s + ": " + message) : s;
     }
 }
 */
@@ -64,10 +64,8 @@ rule classDecRuntimeException =>
               "detailMessage"
             ),,
             'Lit(
-              'String(
-                'ListWrap(
-                  .List{K}
-                )
+              'Null(
+                .List{K}
               )
             )
           )
@@ -289,26 +287,45 @@ rule classDecRuntimeException =>
             ),,
             'Return(
               'Some(
-                'Plus(
-                  'Plus(
+                'Cond(
+                  'NotEq(
                     'ExprName(
                       'Id(
-                        "s"
+                        "message"
                       )
                     ),,
                     'Lit(
-                      'String(
-                        'ListWrap(
-                          'Chars(
-                            ": "
+                      'Null(
+                        .List{K}
+                      )
+                    )
+                  ),,
+                  'Plus(
+                    'Plus(
+                      'ExprName(
+                        'Id(
+                          "s"
+                        )
+                      ),,
+                      'Lit(
+                        'String(
+                          'ListWrap(
+                            'Chars(
+                              ": "
+                            )
                           )
                         )
+                      )
+                    ),,
+                    'ExprName(
+                      'Id(
+                        "message"
                       )
                     )
                   ),,
                   'ExprName(
                     'Id(
-                      "message"
+                      "s"
                     )
                   )
                 )

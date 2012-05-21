@@ -23,6 +23,12 @@ class main {
     }
 
     try {
+      assert false : null;
+    } catch (AssertionError err) {
+      System.out.println(err.toString());
+    }
+
+    try {
       assert false : "abc";
     } catch (AssertionError err) {
       System.out.println(err.toString());
