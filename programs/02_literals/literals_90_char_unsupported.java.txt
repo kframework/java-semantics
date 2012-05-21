@@ -1,5 +1,5 @@
 //Octal and unicode escapes returning different results than JDK.
-public class literals_06_char_unsupported {
+public class literals_90_char_unsupported {
 	public static void main(String[] args) {
     System.out.println("Octal escape:");
     System.out.println(""+'\0'+'\7'+'\00'+'\07'+'\37'+'\77'
