@@ -59,6 +59,7 @@ rule 'Id(Str) => String2Id(Str)     [anywhere]
 syntax Type ::= "int"
               | "long"
               | "bool"
+              | "char"
               | "rtString"
               | "rtType"
               | "void"
@@ -101,7 +102,8 @@ rule true::bool ~> true? => .  [structural]
 /*toString - Converts various result types to string type, mainly for printing.*/
 
 declare toString :  KResult -> TypedVal
-define toString(Str:String::_) => Str :: rtString
+define toString(Str:String :: rtString) => Str :: rtString
+define toString(Str :: char) => Str :: rtString
 define toString(I:Int::_) => Int2String(I) :: rtString
 define toString(true::_) => "true" :: rtString
 define toString(false::_) => "false" :: rtString

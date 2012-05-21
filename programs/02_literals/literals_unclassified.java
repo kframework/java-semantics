@@ -1,7 +1,6 @@
-public class literals {
+public class literals_unclassified {
 	public static void main(String[] args) {
 		System.out.print("abc " + "\n" + "");
-		System.out.println(123 + " " + true + " " + false);
 		System.out.println("Done!");
 	}
 }
