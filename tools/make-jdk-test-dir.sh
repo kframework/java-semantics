@@ -6,15 +6,17 @@ fi
 START=$(date +%s)
 
 progdir=$1
+last_dir_only=`basename $progdir`
 
-echo "Generating test suite"
+echo
+echo "Generating tests for $last_dir_only based on JDK"
 echo
 
 find $progdir -maxdepth 1 -type f \( -name "*java" \) |
   while read FILE; do
     echo "$FILE :"
     echo
-    ./../tools/make-non-jdk-test.sh $FILE
+    ./../tools/make-jdk-test.sh $FILE
     echo
   done
 
