@@ -1,6 +1,6 @@
-public class literals_unclassified {
+public class literals_09_null {
 	public static void main(String[] args) {
-		System.out.print("abc " + "\n" + "");
+    System.out.println("" + null);
 		System.out.println("Done!");
 	}
 }

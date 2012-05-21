@@ -2,11 +2,4 @@ Standart single char literals:
 aA0 #
 Single chars, same as in named escapes:
 btnfr
-Named escape:
-	
-"'\
-Octal escape of simple chars:
-aA0 #
-Unicode escape of simple chars:
-aA0 #
 Done!

@@ -17,12 +17,12 @@ with methods with same name and return type void.
   - System.out.println
   - Integer.parseInt(System.console().readLine()) - only this term, and no subparts of it.
 (The bare minimum required to write any values to console, or to read integers.)
-9. Full support for integer literals, both int and long.
-10. Full support for char literals, to the extent supported by maude.
-  Two limitations caused by maude:
-    Some octal and unicode escape chars are incorrectly written to output.
-    Also, unicode literals beyond ascii range are unsupported
-    - computation just gets stuck when reaching such literals.
+9. Support for all literals, all types and formats covered in JLS $3,
+    with the following exceptions only:
+  - floating point literals
+  - escape chars with values beyond 127, in both char and string literals.
+  (those are not supported by maude)
+
 
 
 

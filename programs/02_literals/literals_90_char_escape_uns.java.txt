@@ -1,0 +1,10 @@
+//Octal and unicode escapes between 128 and 255, returning different results than JDK.
+public class literals_90_char_escape_uns {
+	public static void main(String[] args) {
+    System.out.println("Octal escape:");
+    System.out.println(""+'\377');
+    System.out.println("Unicode escape:");
+    System.out.println(""+'\u0080'+'\u00ff');
+		System.out.println("Done!");
+	}
+}

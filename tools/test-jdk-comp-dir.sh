@@ -12,6 +12,8 @@ START=$(date +%s)
 progdir=$1
 last_dir_only=`basename $progdir`
 
+rm $progdir/tests/*.out
+
 ./../tools/make-jdk-test-dir.sh $progdir
 
 echo

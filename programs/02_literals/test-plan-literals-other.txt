@@ -7,7 +7,20 @@ In all tests the said literals are just concatenated to a string and printed to 
   lowercase letter, uppercase letter, digit, space, symbol.
 3. Single char literals, same chars as used in named escapes: btnfr
 4. Char literals, named escape: all of: \b \t \n \f \r \" \' \\
-5. Char literals, octal escape: range 0, 1-7, 00, 01-07, 10-37, 40-77,
+5. Char literals, octal escapes for "aA0 #"
+6. Char literals, unicode escapes for "aA0 #"
+
+This part for char literals is not entirely supported by maude, so I removed it from test suite:
+7. Char literals, octal escape: range 0, 1-7, 00, 01-07, 10-37, 40-77,
   000, 001-007, 010-077, 100-177, 200-377(extended ascii).
-6. Char literals, unicode escape: range \u0000,  \uu0001-\uu0007, \uuu0010-\uuu007f, \u0080-\u00ff
+8. Char literals, unicode escape: range \u0000,  \uu0001-\uu0007, \uuu0010-\uuu007f, \u0080-\u00ff
   (others are probably not supported by maude). (There may be any number of 'u' in the unicode marker, so we'll test cases with u, uu, uuu).
+
+9.  String literals: empty string.
+10. String literals: sequence of simple chars.
+11. String literals: named escape // only.
+12. Two named escapes only - test that their concatenation will be done on strings, not chars.
+12. String literals: two chars followed by two named escapes, followed by a char.
+13. String literals: char - escape - char, for all escapes tested for single chars.
+
+14. Null literal: print "" + null, to avoid ambiguities.

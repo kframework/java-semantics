@@ -61,8 +61,9 @@ syntax Type ::= "int"
               | "bool"
               | "char"
               | "rtString"
-              | "rtType"
+              | "nullType"
               | "void"
+              | "rtType"
 
 /*@ \subsection{Values and results}
 These are similar to those of untyped SIMPLE, except that the array
@@ -81,8 +82,9 @@ semantics.  In other words, the \K syntax is the ``syntax of the
 semantics''.  */
 
 syntax RawVal ::= Int | Bool | String
-                | "undefined" "(" Type ")" [latex("\bot_{#1}")]
+                | "null"
                 | "nothing"
+                | "undefined" "(" Type ")" [latex("\bot_{#1}")]
 
 syntax TypedVal ::= RawVal "::" Type
 
@@ -101,12 +103,16 @@ rule true::bool ~> true? => .  [structural]
 
 /*toString - Converts various result types to string type, mainly for printing.*/
 
-declare toString :  KResult -> TypedVal
+// declare toString :  KResult -> TypedVal
+declare toString :  K -> TypedVal
+context toString(HOLE)
+
 define toString(Str:String :: rtString) => Str :: rtString
 define toString(Str :: char) => Str :: rtString
 define toString(I:Int::_) => Int2String(I) :: rtString
 define toString(true::_) => "true" :: rtString
 define toString(false::_) => "false" :: rtString
+define toString(null::_) => "null" :: rtString
 
 //@ \texttt{typeOf definition}
 

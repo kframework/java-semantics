@@ -148,10 +148,22 @@ rule 'Lit('Char('UnicodeEscape(_:K,, I1,, I2,, I3,, I4:Int)))
 
 //@ \section{String literals}
 
+rule  'Lit('String('ListWrap(K1:K,, K2:K,, Ks:List{K})))
+      => 'Plus('Lit('String('ListWrap(K1))),,
+               'Lit('String('ListWrap(K2,, Ks)))
+          )
+        [anywhere]
+
 rule 'Lit('String('ListWrap('Chars(Str:String)))) => Str::rtString  [anywhere]
 
-rule 'Lit('String('ListWrap('NamedEscape(110)))) => "\n"::rtString  [anywhere]
+rule 'Lit('String('ListWrap(K:K))) => toString('Lit('Char(K)))
+when getKLabel(K) =/=KLabel 'Chars
+        [anywhere]
 
 rule 'Lit('String('ListWrap(.List{K}))) => ""::rtString             [anywhere]
+
+//@ \section{Null literal}
+
+rule 'Lit('Null(.List{K})) => null::nullType  [anywhere]
 
 end module
