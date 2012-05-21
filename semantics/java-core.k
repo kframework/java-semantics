@@ -108,8 +108,9 @@ declare toString :  K -> TypedVal
 context toString(HOLE)
 
 define toString(Str:String :: rtString) => Str :: rtString
-define toString(Str :: char) => Str :: rtString
-define toString(I:Int::_) => Int2String(I) :: rtString
+define toString(I:Int :: char) => charString(I) :: rtString
+define toString(I :: T:Type) => Int2String(I) :: rtString
+    when T =/=K char
 define toString(true::_) => "true" :: rtString
 define toString(false::_) => "false" :: rtString
 define toString(null::_) => "null" :: rtString

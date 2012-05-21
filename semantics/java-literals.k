@@ -115,36 +115,36 @@ rule 'Lit('Bool('False(.List{K}))) => false::bool
     [anywhere]
 
 //@ \section{char literals}
+//@ Chars are represented as int values, as described in java specification.
 
-rule 'Lit('Char('Single( I ))) => charString( I ) :: char
+rule 'Lit('Char('Single( I ))) => I :: char
 
-rule 'Lit('Char('NamedEscape(  98 ))) => "\b" :: char
-rule 'Lit('Char('NamedEscape( 116 ))) => "\t" :: char
-rule 'Lit('Char('NamedEscape( 110 ))) => "\n" :: char
-rule 'Lit('Char('NamedEscape( 102 ))) => "\f" :: char
-rule 'Lit('Char('NamedEscape( 114 ))) => "\r" :: char
+rule 'Lit('Char('NamedEscape(  98 ))) => asciiString("\b") :: char
+rule 'Lit('Char('NamedEscape( 116 ))) => asciiString("\t") :: char
+rule 'Lit('Char('NamedEscape( 110 ))) => asciiString("\n") :: char
+rule 'Lit('Char('NamedEscape( 102 ))) => asciiString("\f") :: char
+rule 'Lit('Char('NamedEscape( 114 ))) => asciiString("\r") :: char
 
-rule 'Lit('Char('NamedEscape( 34 ))) => "\"" :: char
-rule 'Lit('Char('NamedEscape( 39 ))) => "\'" :: char
-rule 'Lit('Char('NamedEscape( 92 ))) => "\\" :: char
+rule 'Lit('Char('NamedEscape( 34 ))) => asciiString("\"") :: char
+rule 'Lit('Char('NamedEscape( 39 ))) => asciiString("\'") :: char
+rule 'Lit('Char('NamedEscape( 92 ))) => asciiString("\\") :: char
 
-rule 'Lit('Char('OctaEscape1( I )))
-    => charString( octaAsciiToInt(I) ) :: char
+rule 'Lit('Char('OctaEscape1( I ))) => octaAsciiToInt(I) :: char
 
 rule 'Lit('Char('OctaEscape2( I1:Int,, I2:Int )))
-    => charString( octaAsciiToInt(I1) *Int 8
-              +Int octaAsciiToInt(I2) ) :: char
+    =>    octaAsciiToInt(I1) *Int 8
+    +Int  octaAsciiToInt(I2)        :: char
 
 rule 'Lit('Char('OctaEscape3( I1,, I2,, I3:Int )))
-    => charString( octaAsciiToInt(I1) *Int 64
-              +Int octaAsciiToInt(I2) *Int 8
-              +Int octaAsciiToInt(I3) ) :: char
+    =>    octaAsciiToInt(I1) *Int 64
+     +Int octaAsciiToInt(I2) *Int  8
+     +Int octaAsciiToInt(I3)          :: char
 
 rule 'Lit('Char('UnicodeEscape(_:K,, I1,, I2,, I3,, I4:Int)))
-    => charString( hexAsciiToInt(I1) *Int 4096
-              +Int hexAsciiToInt(I2) *Int 256
-              +Int hexAsciiToInt(I3) *Int 16
-              +Int hexAsciiToInt(I4) ) :: char
+    =>    hexAsciiToInt(I1) *Int 4096
+     +Int hexAsciiToInt(I2) *Int  256
+     +Int hexAsciiToInt(I3) *Int   16
+     +Int hexAsciiToInt(I4)           :: char
 
 //@ \section{String literals}
 
