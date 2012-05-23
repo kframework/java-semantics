@@ -84,7 +84,7 @@ semantics''.  */
 syntax RawVal ::= Int | Bool | String
                 | "null"
                 | "nothing"
-                | "undefined" "(" Type ")" [latex("\bot_{#1}")]
+                | "undefined" [latex("\bot_{#1}")]
 
 syntax TypedVal ::= RawVal "::" Type
 

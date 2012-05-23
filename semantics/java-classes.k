@@ -14,9 +14,8 @@ syntax RawVal ::= "objectClosure" "(" Bag ")"
                 | "methodClosure" "("
                     Id ","   // F - method name
                     Int ","  // OL - object location
-                    K ","     // 'ListWrap(Params) - params
-                    K ","     // S - method body
-                    Type      // MethodType
+                    K ","    // 'ListWrap(Params) - params
+                    K        // S - method body
                   ")"
 
 //@ \subsection{Unused Labels}
@@ -65,7 +64,7 @@ rule [storeMethod]:
     <env> Env => Env[L:Int/Name] </env>
     <store>
       ...
-      . => L |-> methodClosure(Class, OL, 'ListWrap(Params), S, MethodType) :: MethodType
+      . => L |-> methodClosure(Class, OL, 'ListWrap(Params), S) :: MethodType
       ...
     </store>
     <nextLoc> L => L +Int 1 </nextLoc>
@@ -184,7 +183,7 @@ rule [bindto]:
       ...
     </k>
     <env> Env:Map => Env[L/X] </env>
-    <store>... . => L |-> undefined(T) :: T ...</store>
+    <store>... . => L |-> undefined :: T ...</store>
     <nextLoc> L => L +Int 1 </nextLoc>
 
 rule [bindtoEmpty]:
@@ -207,7 +206,7 @@ when
             Id2String(Class) ==String "RuntimeException"
      orBool Id2String(Class) ==String "AssertionError"
 
-define toString(objectClosure(Bag:Bag) :: T) => toString(typeOf(objectClosure(Bag) :: T))
+define toString(objectClosure(Obj:Bag) :: T) => toString(typeOf(objectClosure(Obj) :: T))
 
 /*@ Recall that lists of the form "a,b,c" are a syntactic convenience,
 which eventually are translated into cons-lists "(a,(b,(c,.)))".
@@ -247,8 +246,8 @@ rule [subtypeNullAndString]:
 Performs unsafe casting.  One should only use it in combination with
 the subtype relation above.  */
 
-define unsafeCast(objectClosure(<crntClass>_:K </crntClass> Obj) :: _, class Class)
-  => objectClosure(<crntClass> Class </crntClass> Obj) :: class Class
+define unsafeCast(objectClosure(Obj) :: _, class Class)
+  => objectClosure(Obj) :: class Class
 
 define unsafeCast(null :: nullType, rtString) => null :: rtString
 
@@ -340,7 +339,7 @@ rule [NewInstance]:
     <control>
       C:Bag
       <crntObj>
-        Obj:Bag
+        Obj
         =>  <crntClass> String2Id("Object") </crntClass>
             <envStack> ListItem((String2Id("object"), <env>.Map</env>)) </envStack>
             <location> L </location>
@@ -400,7 +399,7 @@ rule [storeObj]:
     </crntObj>
     <store>
       ...
-      . => L |-> objectClosure(Obj <crntClass> Class </crntClass>) :: class Class
+      . => L |-> objectClosure(Obj) :: class Class
       ...
     </store>
 
@@ -411,14 +410,14 @@ syntax KLabel ::= 'InstanceOf [seqstrict]
 
 rule [InstanceOfTrue]:
     'InstanceOf(
-      objectClosure((_ <envStack>ListItem((Class, _))...</envStack>))::_,,
+      objectClosure((<envStack>ListItem((Class, _))...</envStack>))::_,,
       class Class
     ) => true :: bool
 
 rule [InstanceOfRed]:
     'InstanceOf(
       objectClosure(
-        ( _ <envStack> ListItem((Class1:Id, _)) => . ...</envStack> )
+        ( <envStack> ListItem((Class1:Id, _)) => . ...</envStack> )
       )::_,,
       class Class2:Id
     )
@@ -426,7 +425,7 @@ when Class1 =/=K Class2  [structural]
 
 rule [InstanceOfFalse]:
     'InstanceOf(
-      objectClosure((_ <envStack> .List </envStack>))::_,,
+      objectClosure((<envStack> .List </envStack>))::_,,
       class Class
     ) => false :: bool
 
@@ -438,9 +437,9 @@ syntax KLabel ::= 'CastRef [seqstrict]
 
 rule [CastRef]:
     <k>
-      'CastRef(class Class,, objectClosure((<crntClass> _:K </crntClass> Obj))::T )
+      'CastRef(class Class,, objectClosure(Obj)::T )
       => 'InstanceOf( objectClosure(Obj)::T,, class Class) ~> true?
-          ~> objectClosure(<crntClass> Class </crntClass> Obj):: class Class
+          ~> objectClosure(Obj):: class Class
       ...
     </k>
         [structural]
@@ -474,7 +473,7 @@ Like in untyped KOOL. */
 rule [This]:
     <k>
       'This(.List{K})
-      => objectClosure(Obj <crntClass> Class </crntClass>) :: class Class
+      => objectClosure(Obj) :: class Class
       ...
     </k>
     <crntObj> Obj <crntClass> Class </crntClass> </crntObj>
@@ -484,7 +483,7 @@ rule [This]:
 //o.x
 rule [ExprNameQualified]:
     <k>
-      'ExprName(objectClosure(<crntClass> Class </crntClass>
+      'ExprName(objectClosure(
           <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>)::_ ,,X)
       => lookupMember(<envStack>ListItem((Class, EnvC)) EStack</envStack>, X)
       ...
@@ -516,7 +515,7 @@ context 'MethodName(HOLE,,_:K)
 //objClos.X(_) => lookupMember(objClos,X)(_)
 rule [MethodNameQualified]:
     <k>
-      'MethodName(objectClosure(Obj <envStack> EStack </envStack>)::_,, X)
+      'MethodName(objectClosure(<envStack> EStack </envStack>)::_,, X)
       => lookupMember(<envStack> EStack </envStack>, X)
       ...
     </k>
@@ -545,7 +544,7 @@ context 'Invoke(_:KResult ,,'ListWrap(_:List{K},,HOLE,,_:List{K}))
 
 rule [Invoke]:
     <k>
-      'Invoke(methodClosure(Class, OL:Int, 'ListWrap(Params), S, function from _ to T)::_,,
+      'Invoke(methodClosure(Class, OL:Int, 'ListWrap(Params), S) :: function from _ to T,,
           'ListWrap(ParamValues:List{KResult})) ~> K
        => bindto Params, ParamValues ~> S ~> 'Return('None(.List{K}))
     </k>
@@ -562,7 +561,7 @@ rule [Invoke]:
     <env> Env => . </env>
     <store>
       ...
-      OL |-> objectClosure(<crntClass>_:Id</crntClass>Obj:Bag) :: _
+      OL |-> objectClosure(Obj) :: _
       ...
     </store>
 
@@ -617,7 +616,6 @@ rule [lvalueExprNameQualified]:
       lvalue(
         'ExprName(
           objectClosure(
-            <crntClass> Class </crntClass>
             <envStack>... ListItem((Class, EnvC:BagItem)) EStack </envStack>
           ) :: class Class,,
           X

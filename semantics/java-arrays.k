@@ -47,7 +47,7 @@ rule [NewArrayEmptyDims]:
         [structural]
 
 rule [NewArray]:
-    'NewArray(T,, K:K,, 'ListWrap(.List{K})) => newArrayImpl(T, K, undefined(T) :: T)
+    'NewArray(T,, K:K,, 'ListWrap(.List{K})) => newArrayImpl(T, K, undefined :: T)
         [structural]
 
 syntax K ::= "newArrayImpl" "("
@@ -74,7 +74,7 @@ rule [newArrayImpl]:
          ~> arrayRef( arrayOf T, LI, NI) :: arrayOf T
       ...
     </k>
-    <store>... . => LI .. LI +Int _-Int_(NI,1) |-> undefined(T) :: T ...</store>
+    <store>... . => LI .. LI +Int _-Int_(NI,1) |-> undefined :: T ...</store>
     <nextLoc> LI:Int => LI +Int NI </nextLoc>
 
 syntax K ::= "evalAndStore" "(" List{K}  "," K ")"
