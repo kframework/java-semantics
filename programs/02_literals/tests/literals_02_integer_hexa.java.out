@@ -1,7 +1,0 @@
-Hexa int literals:
-0 95 95 -16
-Hexa int overflow, 0x70000000 + 0x70000000 = -536870912
-Hexa long literals:
-0 1250999896491 1250999896491 4294967280 -4294967296
-Hexa long not overflow, 0x70000000L + 0x70000000L = 3758096384
-Done!

@@ -1,5 +1,0 @@
-new Musketeer().getClass().getName() = Musketeer
-dartagnanDA.getClass().getName() = DArtagnan
-musketeerDA.getClass().getName() = DArtagnan
-objectDA.getClass().getName() = DArtagnan
-Done!
