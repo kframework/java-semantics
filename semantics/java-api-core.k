@@ -142,7 +142,7 @@ when
 rule [InvokeGetClass]:
     'Invoke(
       methodGetClass(
-        objectClosure( ListItem((Class:Id, _)) _:List )::_
+        objectClosure((_ <envStack>ListItem((Class:Id, _))...</envStack>))::_
       ),,
       'ListWrap(.List{K})
     ) => classObject(Class)

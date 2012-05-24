@@ -10,7 +10,7 @@ syntax Type ::= "function" "from" List{KResult} "to" Type
                   [prec(1) latex "({#1}\ \texttt{->}\ {#2})"]
               | "class" Id
 
-syntax RawVal ::= "objectClosure" "(" List ")"
+syntax RawVal ::= "objectClosure" "(" Bag ")"
                 | "methodClosure" "("
                     Id ","   // F - method name
                     Int ","  // OL - object location
@@ -206,7 +206,7 @@ when
             Id2String(Class) ==String "RuntimeException"
      orBool Id2String(Class) ==String "AssertionError"
 
-define toString(objectClosure(ELs:List) :: T) => toString(typeOf(objectClosure(ELs) :: T))
+define toString(objectClosure(Obj:Bag) :: T) => toString(typeOf(objectClosure(Obj) :: T))
 
 /*@ Recall that lists of the form "a,b,c" are a syntactic convenience,
 which eventually are translated into cons-lists "(a,(b,(c,.)))".
@@ -246,8 +246,8 @@ rule [subtypeNullAndString]:
 Performs unsafe casting.  One should only use it in combination with
 the subtype relation above.  */
 
-define unsafeCast(objectClosure(ELs) :: _, class Class)
-  => objectClosure(ELs) :: class Class
+define unsafeCast(objectClosure(Obj) :: _, class Class)
+  => objectClosure(Obj) :: class Class
 
 define unsafeCast(null :: nullType, rtString) => null :: rtString
 
@@ -339,7 +339,7 @@ rule [NewInstance]:
     <control>
       C:Bag
       <crntObj>
-        Obj:Bag
+        Obj
         =>  <crntClass> String2Id("Object") </crntClass>
             <envStack> ListItem((String2Id("object"), <env>.Map</env>)) </envStack>
             <location> L </location>
@@ -393,13 +393,13 @@ syntax K ::= "storeObj"
 rule [storeObj]:
     <k> storeObj => . ...</k>
     <crntObj>
-      <envStack> ELs </envStack>
+      Obj
       <crntClass> Class </crntClass>
       (<location> L </location> => .)
     </crntObj>
     <store>
       ...
-      . => L |-> objectClosure(ELs) :: class Class
+      . => L |-> objectClosure(Obj) :: class Class
       ...
     </store>
 
@@ -410,20 +410,22 @@ syntax KLabel ::= 'InstanceOf [seqstrict]
 
 rule [InstanceOfTrue]:
     'InstanceOf(
-      objectClosure(ListItem((Class, _)) _:List )::_,,
+      objectClosure((<envStack>ListItem((Class, _))...</envStack>))::_,,
       class Class
     ) => true :: bool
 
 rule [InstanceOfRed]:
     'InstanceOf(
-      objectClosure( (ListItem((Class1:Id, _)) => .) _:List )::_,,
+      objectClosure(
+        ( <envStack> ListItem((Class1:Id, _)) => . ...</envStack> )
+      )::_,,
       class Class2:Id
     )
 when Class1 =/=K Class2  [structural]
 
 rule [InstanceOfFalse]:
     'InstanceOf(
-      objectClosure( .List )::_,,
+      objectClosure((<envStack> .List </envStack>))::_,,
       class Class
     ) => false :: bool
 
@@ -435,9 +437,9 @@ syntax KLabel ::= 'CastRef [seqstrict]
 
 rule [CastRef]:
     <k>
-      'CastRef(class Class,, objectClosure(ELs)::T )
-      => 'InstanceOf( objectClosure(ELs)::T,, class Class) ~> true?
-          ~> objectClosure(ELs):: class Class
+      'CastRef(class Class,, objectClosure(Obj)::T )
+      => 'InstanceOf( objectClosure(Obj)::T,, class Class) ~> true?
+          ~> objectClosure(Obj):: class Class
       ...
     </k>
         [structural]
@@ -471,21 +473,18 @@ Like in untyped KOOL. */
 rule [This]:
     <k>
       'This(.List{K})
-      => objectClosure(ELs) :: class Class
+      => objectClosure(Obj) :: class Class
       ...
     </k>
-    <crntObj>
-      <crntClass> Class </crntClass>
-      <envStack> ELs </envStack>
-    </crntObj>
+    <crntObj> Obj <crntClass> Class </crntClass> </crntObj>
 
 /*@ \subsection{Object member access} */
 
 //o.x
 rule [ExprNameQualified]:
     <k>
-      'ExprName(objectClosure( ListItem((Class, EnvC:BagItem)) EStack:List )
-          ::_ ,,X)
+      'ExprName(objectClosure(
+          <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>)::_ ,,X)
       => lookupMember(<envStack>ListItem((Class, EnvC)) EStack</envStack>, X)
       ...
     </k>
@@ -516,7 +515,7 @@ context 'MethodName(HOLE,,_:K)
 //objClos.X(_) => lookupMember(objClos,X)(_)
 rule [MethodNameQualified]:
     <k>
-      'MethodName(objectClosure(EStack)::_,, X)
+      'MethodName(objectClosure(<envStack> EStack </envStack>)::_,, X)
       => lookupMember(<envStack> EStack </envStack>, X)
       ...
     </k>
@@ -556,15 +555,13 @@ rule [Invoke]:
                   <return> T2 </return>))
         ...
       </stack>
-      <crntObj>
-        Obj2:Bag => <crntClass>Class</crntClass> <envStack> ELs </envStack>
-      </crntObj>
+      <crntObj> Obj2:Bag => <crntClass>Class</crntClass> Obj </crntObj>
       <return> T2:Type => T </return>
     </control>
     <env> Env => . </env>
     <store>
       ...
-      OL |-> objectClosure(ELs) :: _
+      OL |-> objectClosure(Obj) :: _
       ...
     </store>
 
@@ -618,8 +615,9 @@ rule [lvalueExprNameQualified]:
     <k>
       lvalue(
         'ExprName(
-          objectClosure( ListItem((Class, EnvC:BagItem)) EStack )
-              :: class Class,,
+          objectClosure(
+            <envStack>... ListItem((Class, EnvC:BagItem)) EStack </envStack>
+          ) :: class Class,,
           X
         )
         => lookupMember(
