@@ -1,7 +1,6 @@
 # Removes all temporary files created by test-all.sh, in all program directories.
 
 ./../tools/clean-dir.sh ../programs/01_smoke_tests
-./../tools/clean-dir.sh ../programs/01_smoke_tests
 ./../tools/clean-dir.sh ../programs/02_literals
 ./../tools/clean-dir.sh ../programs/03_syntax_samples
 ./../tools/clean-dir.sh ../programs/04_operators

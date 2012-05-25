@@ -3,8 +3,6 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
-START=$(date +%s)
-
 progdir=$1
 last_dir_only=`basename $progdir`
 
@@ -20,6 +18,3 @@ find $progdir -maxdepth 1 -type f \( -name "*java" \) |
     echo
   done
 
-END=$(date +%s)
-DIFF=$(( $END - $START ))
-echo "It took $DIFF seconds"
