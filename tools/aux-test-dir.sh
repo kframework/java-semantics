@@ -10,10 +10,13 @@ fi
 progdir=$1
 last_dir_only=`basename $progdir`
 
-rm $progdir/tests/*.out
+rm -f $progdir/tests/*.out
 
+INFILES=$(find $progdir -maxdepth 1 -name '*.in')
 OUTFILES=$(find $progdir -maxdepth 1 -name '*.out')
 OUTCOUNT=$(find $progdir -maxdepth 1 -name '*.out' | wc -l)
+
+for i in $INFILES; do cp $i $1/tests; done
 
 if [ $OUTCOUNT == 0 ]; then
     # make test .out files based on JDK
