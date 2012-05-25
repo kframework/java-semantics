@@ -242,15 +242,6 @@ rule [subtypeNullAndString]:
     subtype nullType, rtString => true :: bool
         [structural]
 
-/*@ \subsubsection{Unsafe Casting}
-Performs unsafe casting.  One should only use it in combination with
-the subtype relation above.  */
-
-define unsafeCast(objectClosure(Obj) :: _, class Class)
-  => objectClosure(Obj) :: class Class
-
-define unsafeCast(null :: nullType, rtString) => null :: rtString
-
 /*@ \subsection{Class declaration}
 Like in untyped KOOL. */
 
@@ -483,8 +474,11 @@ rule [This]:
 //o.x
 rule [ExprNameQualified]:
     <k>
-      'ExprName(objectClosure(
-          <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>)::_ ,,X)
+      'ExprName(
+        objectClosure(
+          <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>
+        ) :: class Class,, X
+      )
       => lookupMember(<envStack>ListItem((Class, EnvC)) EStack</envStack>, X)
       ...
     </k>

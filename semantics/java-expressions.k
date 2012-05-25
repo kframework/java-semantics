@@ -135,10 +135,10 @@ context 'Assign(_:KResult,,HOLE)
 rule [Assign]:
     <k>
       'Assign(loc(L) :: T1:Type,, V:RawVal :: T2:Type)
-      => subtype T2, T1 ~> true? ~> unsafeCast(V::T2, T1)
+      => subtype T2, T1 ~> true? ~> V::T1
       ...
     </k>
-    <store>... L |-> (_ :: T1 => unsafeCast(V::T2, T1)) ...</store>
+    <store>... L |-> (_ => V) :: T1 ...</store>
         [transition]
 
 /* loc(L) += E => loc(L) = lookup(L) + E */
@@ -223,7 +223,7 @@ rule [lookupVarName]:
 rule [lookupLocation]:
     <k>
       lookup(L) :: T1
-      => subtype T2, T1 ~> true? ~> unsafeCast(V::T2, T1)
+      => subtype T2, T1 ~> true? ~> V::T1
       ...
     </k>
     <store>... L |-> V::T2 ...</store>

@@ -500,12 +500,12 @@ rule [ReturnNothingDesugar]:
 
 rule [Return]:
     <k>
-      'Return('Some(TV)) ~> _
-      => subtype typeOf(TV), T ~> true? ~> unsafeCast(TV, T) ~> K:K
+      'Return('Some(V:RawVal :: T2:Type)) ~> _
+      => subtype T2, T1 ~> true? ~> V::T1 ~> K:K
     </k>
    <control>
      <stack> ListItem((return,_,_,K,Env,C)) => . ...</stack>
-     ( <return> T </return> _ => C )
+     ( <return> T1:Type </return> _ => C )
    </control>
    <env> _ => Env </env>
 

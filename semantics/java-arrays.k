@@ -91,7 +91,7 @@ rule [evalAndStore]:
       evalAndStore(L:Int, V:RawVal :: T2:Type) => subtype T2, T1 ~> true?
       ...
     </k>
-    <store>... L |-> (_ :: T1:Type => unsafeCast(V::T2, T1)) ...</store>
+    <store>... L |-> (_ => V) :: T1:Type ...</store>
 
 rule [evalAndStoreEmpty]:
     evalAndStore(.List{K}, _) => .

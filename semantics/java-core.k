@@ -117,7 +117,7 @@ define toString(null::_) => "null" :: rtString
 
 declare toNullableString :  K -> TypedVal
 
-define toNullableString(V :: T) => toString(V :: T)
+define toNullableString(V:RawVal :: T) => toString(V :: T)
 when V =/=K null
 
 define toNullableString(null :: T) => null :: rtString
@@ -141,9 +141,6 @@ rule [subtypeList]:
 rule [subtypeEmpty]:
     subtype .List{K}, .List{K} => true :: bool
         [structural]
-
-declare unsafeCast : TypedVal Type -> TypedVal
-define unsafeCast(V:RawVal :: T, T) => V :: T
 
 //@ \subsection{Type labels}
 //@Here we rewrite java type ast into simple types
