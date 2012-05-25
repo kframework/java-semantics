@@ -26,9 +26,8 @@ fi
 
 mkdir -p $outdir
 eval $krun_command
-newfile="$outdir/$newfilename.out"
+newfile="$newfilename.out"
 # echo $newfile
 # echo $out
 mv out.tmp $newfile
 cat $newfile
-

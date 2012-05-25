@@ -4,7 +4,7 @@
 
 if [ $# == 0 ]; then
     ALLDIRS=$(find ../programs/ -maxdepth 1 -mindepth 1 -type d)
-    ./../tools/test-suite.sh $ALLDIRS
+    ./../tools/kjtest.sh $ALLDIRS
 else
     START=$(date +%s)
     PRETTYARGS=$(find ${@} -maxdepth 0)
