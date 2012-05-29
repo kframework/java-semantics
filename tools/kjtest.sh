@@ -15,7 +15,8 @@ else
 
     java -cp $TOOLS_DIR/test-runner.jar ro.uaic.javasemantics.tools.Main \
       -gen $TOOLS_DIR/aux-jdk-run.sh -run $TOOLS_DIR/aux-kjrun.sh \
-      -taskExt java -threads 24 -timeout 20 -testsuiteName java-semantics ${@}
+      -taskExt java -threads 24 -timeout 20 -testsuiteName java-semantics \
+      -rm $TOOLS_DIR/aux-rm.sh ${@}
 
     END=$(date +%s)
     DIFF=$(( $END - $START ))
