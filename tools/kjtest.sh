@@ -13,10 +13,11 @@ else
     echo "$PRETTYARGS"
     echo
 
+# We don't use external script for deleting temp dir,
+# since it have the same performance as standart delete from java.
     java -cp $TOOLS_DIR/test-runner.jar ro.uaic.javasemantics.tools.Main \
       -gen $TOOLS_DIR/aux-jdk-run.sh -run $TOOLS_DIR/aux-kjrun.sh \
-      -taskExt java -threads 22 -timeout 20 -testsuiteName java-semantics \
-      -rm $TOOLS_DIR/aux-rm.sh ${@}
+      -taskExt java -threads 22 -timeout 20 -testsuiteName java-semantics ${@}
 
     END=$(date +%s)
     DIFF=$(( $END - $START ))
