@@ -1,0 +1,24 @@
+Test plans for continue with label and other related statements,
+  which might be affected by changes introduced by continue with label semantics.
+
+Part 1. Continue-Label 1. One labeled loop.
+
+01. continue label -> labeled while.
+02. continue label -> labeled do. Continue on second iteration.
+03. continue label -> labeled do. Continue on first iteration.
+04. continue label -> labeled for.
+05. continue label -> try/catch -> labeled for.
+  Testing rule ContinueWithLabelPropagation.
+06. continue label -> try/finally -> labeled for.
+  Testing rule ContinueInsideFinally.
+
+Part 2. Continue-Label 2. Loop or labeled block inside other labeled loop.
+  Testing that continue with label propagates correctly through
+  other loop-related and label-related constructs.
+  In all tests below continue should match the external labeled while statement.
+
+07. continue label -> simple while -> matched labeled while.
+08. continue label -> labeled while -> matched labeled while.
+09. continue label -> simple for -> matched labeled while.
+10. continue label -> labeled for -> matched labeled while.
+11. continue label -> labeled block -> matched labeled while.

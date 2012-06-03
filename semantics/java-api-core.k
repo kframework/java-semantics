@@ -109,10 +109,7 @@ when
 
 rule [NewInstanceScanner]:
     'NewInstance('None(.List{K}),,
-      'ClassOrInterfaceType(
-        'TypeName(X),,
-        'None(.List{K})
-      ),,
+      class X,,
       'ListWrap(rtSystemIn),,
       'None(.List{K})
     )

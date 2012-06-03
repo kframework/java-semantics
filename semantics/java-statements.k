@@ -144,7 +144,7 @@ rule [AssertStmTrueDiscard]:
 rule [AssertStmOneArg]:
     'AssertStm(false::bool) => 'Throw('NewInstance(
       'None(.List{K}),,
-      'ClassOrInterfaceType( 'TypeName( String2Id("AssertionError") ),, 'None(.List{K}) ),,
+      'class_(String2Id("AssertionError")),,
       'ListWrap( null :: nullType ),,
       'None(.List{K})
     ))
@@ -154,7 +154,7 @@ context 'AssertStm(false::bool,, HOLE)
 rule [AssertStmTwoArgs]:
     'AssertStm(false::bool,, TV:TypedVal) => 'Throw('NewInstance(
       'None(.List{K}),,
-      'ClassOrInterfaceType( 'TypeName( String2Id("AssertionError") ),, 'None(.List{K}) ),,
+      'class_(String2Id("AssertionError")),,
       'ListWrap( toString(TV) ),,
       'None(.List{K})
     ))
@@ -532,24 +532,50 @@ context 'Throw(HOLE)
 
 rule [Throw]:
     <k>
-      'Throw(TV) ~> _:K
-      =>  'If(
-            (subtype typeOf(TV), T),,
-            'Block('ListWrap('LocalVarDecStm('LocalVarDec(
+      (. => checkCatch(subtype typeOf(TV), T)) ~> 'Throw(TV) ~> _:K
+    </k>
+    <stack>
+      ListItem((catch, .K, 'ListWrap('Catch('Param(_:K,, T,, X:Id),, _),,_),
+          _, _, _))
+      ...
+    </stack>
+
+syntax K ::= "checkCatch" "(" K ")"
+context checkCatch(HOLE)
+
+rule [ThrowCheckedTrue]:
+    <k>
+      checkCatch(true::bool) ~> 'Throw(TV) ~> _:K
+      =>  'Block('ListWrap('LocalVarDecStm('LocalVarDec(
                 'ListWrap(.List{K}),, T,, 'ListWrap('VarDec(X,, TV)))),,
-                CatchS)),,
-            'Throw(TV)
-          )
+                CatchS))
           ~> K
     </k>
     <control>
       <stack>
-        ListItem((catch, 'Param(_:K,, T,, X:Id), CatchS, K, Env, C)) => .
+        ListItem((catch, .K, 'ListWrap('Catch(
+            'Param(_:K,, T,, X:Id),, CatchS:K),,_), K, Env, C)) => .
         ...
       </stack>
       (_ => C)
     </control>
     <env> _ => Env </env>
+
+rule [ThrowCheckedFalse]:
+    <k> (checkCatch(false::bool) => .) ~> 'Throw(TV) ~> _:K </k>
+    <stack>
+      ListItem((catch, .K, 'ListWrap(
+          ('Catch('Param(_:K,, T,, X:Id),, CatchS) => .List{K}),,
+        Ks), K, Env, C))
+      ...
+    </stack>
+
+rule [ThrowCatchEmptyDiscard]:
+    <k> 'Throw(TV) ~> _:K </k>
+    <stack>
+      ListItem((catch, .K, 'ListWrap(.List{K}), K, Env, C)) => .
+      ...
+    </stack>
 
 rule [ThrowInTryFinally]:
     <k> (. => FinallyS) ~> 'Throw(_:TypedVal) ...</k>
@@ -566,6 +592,8 @@ when
             StackLT =/=K catch
     andBool StackLT =/=K finally
 
+//todo rewrite the rule so that it don't depend on rtSystemOutPrintln
+// - rewrite it as it would appear in a program kast.
 rule [ThrowCausesThreadTermination]:
     <k>
       'Throw(TV) ~> _:K
@@ -577,13 +605,8 @@ rule [ThrowCausesThreadTermination]:
 //@ \section{Try statement}
 
 rule [TryCatchFinallyDesugar]:
-    'Try(TryS:K,, 'ListWrap( K,,Ks),,FinallyS:K)
-    => 'Try('Try(TryS,,'ListWrap( K,,Ks)),,'ListWrap(.List{K}),,FinallyS)
-        [structural]
-
-rule [TryCatchCatchDesugar]:
-    'Try(TryS,, 'ListWrap(Ks,, K1:K,, K2:K))
-    => 'Try('Try(TryS,, 'ListWrap( Ks,,K1)),, 'ListWrap(K2))
+    'Try(TryS:K,, 'ListWrap(K,,Ks),,FinallyS:K)
+    => 'Try('Try(TryS,,'ListWrap(K,,Ks)),,'ListWrap(.List{K}),,FinallyS)
         [structural]
 
 //@ \subsection{Execution of try–catch} JLS 14.20.1
@@ -593,12 +616,12 @@ context 'Try(_:K,,'ListWrap('Catch('Param(_:K,, HOLE,, _),, _)))
 
 rule [TryCatch]:
     <k>
-      ( 'Try(TryS:K,, 'ListWrap('Catch(CatchParam:K,, CatchS:K)))
+      ( 'Try(TryS:K,, 'ListWrap(Ks))
         => TryS ~> popx )
       ~> K
     </k>
     <control>
-      <stack> . => ListItem((catch, CatchParam, CatchS, K, Env, C)) ...</stack>
+      <stack> . => ListItem((catch, .K, 'ListWrap(Ks), K, Env, C)) ...</stack>
       C:Bag
     </control>
     <env> Env </env>

@@ -115,13 +115,6 @@ define toString(true::_) => "true" :: rtString
 define toString(false::_) => "false" :: rtString
 define toString(null::_) => "null" :: rtString
 
-declare toNullableString :  K -> TypedVal
-
-define toNullableString(V:RawVal :: T) => toString(V :: T)
-when V =/=K null
-
-define toNullableString(null :: T) => null :: rtString
-
 //@ \texttt{typeOf definition}
 
 declare typeOf :  K -> Type

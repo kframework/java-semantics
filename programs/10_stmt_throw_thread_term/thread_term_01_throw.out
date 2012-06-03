@@ -1,0 +1,2 @@
+before ex
+Thread terminated with exception: java.lang.RuntimeException: ex

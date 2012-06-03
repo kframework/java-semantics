@@ -1,0 +1,11 @@
+1. no return
+2. return nothing
+3. return number
+4. return sum
+5. multiple returns: if-return-else-return.
+6. return for
+7. try-return-catch-finally
+8. try-catch-return-finally
+9. try-catch-finally-return(in finally)
+10. return-ref
+11. return derived val, return type is base val.

@@ -1,0 +1,36 @@
+Programming constructs with which exception interacts:
+  - thread termination.
+  - try/catch,
+  - try/finally,
+  - method,
+  - ex. caught and rethrown
+    (so that ex creation and exception throw occur in different places)
+  - catch argument shadows field.
+
+
+1. Ex inside try-catch.
+2. Ex inside try-catch-finally.
+3. Ex inside try-catch-finally, try-catch, caught by second try/catch.
+4. Ex inside try-finally, try-catch-finally.
+5. Ex inside try-catch, catch type = base type of ex.
+6. Ex inside try-three catches, caught by second catch.
+7. Ex inside method, method inside try-catch.
+8. Ex inside all stack-related statements:
+  while, do, for, switch, label, try/catch. Catched.
+9. Ex inside two try-catches, caught by first and rethrown, caught by second.
+10. Ex inside try-catch-finally, caught, new exception thrown in catch. Another try-catch.
+11. Ex inside try-catch-finally, not caught, new ex thrown in finally. Another try-catch.
+12. Ex inside try-catch-catch. First catch catcher ex, throws other one catchable by second catch.
+  Another try/catch.
+13. Ex inside try-catch, catch argument shadows a field with the same name.
+14. try/catch/finally, no throw inside.
+
+Thread term:
+
+1. Ex thread termination.
+2. Ex inside try-catch-finally thread term.
+3. Ex inside method, thread term.
+
+todo: reorganize tests for statements into following directories:
+loop, assert, return, throw, break, continue, switch.
+Starting from third cathegory all statements involve interaction with stack.

@@ -1,0 +1,17 @@
+Part 1. Simple-Break, updated. Simple break inside labeled statements.
+  Test that simple break correctly interacts with labeled statements.
+  It should propagate through labeled non-loops, and interact with labeled loops.
+07. break -> labeled while.
+08. break -> labeled doWhile.
+09. break -> labeled for.
+10. break -> labeled block -> matched simple while.
+
+Part 2. Label-Propagation.
+  Testing that label propagation works correctly and that unlabeled loop will
+  not steal the label from it's enclosing statement.
+  This tests start with name label-propagation, and all contain a labeled break
+  inside an unlabeled loop inside another labeled statement.
+
+1. break label -> simple doWhile -> matched labeled block.
+2. break label -> simple doWhile -> matched labeled while.
+3. break label -> simple doWhile -> matched labeled for.

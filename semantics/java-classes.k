@@ -28,14 +28,15 @@ The only change to untyped KOOL's values is that closures are now typed
 //@ \subsection{Type labels}
 //@Here we rewrite java type ast into simple types
 
-rule 'ClassOrInterfaceType('TypeName(K),,_) => 'TypeName(K) [structural]
-rule 'TypeName(X:Id) => class X  [structural]
+rule 'TypeName(X:Id) => class X  [structural anywhere]
 
 rule
     class X => rtString
 when
     Id2String(X) ==String "String"
-        [structural]
+        [structural anywhere]
+
+rule 'ClassOrInterfaceType(T,,_) => T [structural anywhere]
 
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
@@ -147,10 +148,7 @@ rule [execute]:
           'Method(
             'NewInstance(
               'None(.List{K}),,
-              'ClassOrInterfaceType(
-                'TypeName(MainClass),,
-                'None(.List{K})
-              ),,
+              class MainClass,,
               'ListWrap(.List{K}),,
               'None(.List{K})
             ),,
@@ -158,7 +156,7 @@ rule [execute]:
             String2Id("main")
           ),,
           'ListWrap('NewArray(
-              'TypeName( String2Id("String") ),,
+              rtString,,
               'ListWrap('Dim(0 :: int)),,
               'ListWrap(.List{K})))
         )
@@ -206,7 +204,11 @@ when
             Id2String(Class) ==String "RuntimeException"
      orBool Id2String(Class) ==String "AssertionError"
 
-define toString(objectClosure(Obj:Bag) :: T) => toString(typeOf(objectClosure(Obj) :: T))
+define toString(objectClosure(Obj:Bag) :: T)
+    =>  'Invoke(
+          'MethodName(objectClosure(Obj) :: T,, String2Id("toString")),,
+          'ListWrap(.List{K})
+        )
 
 /*@ Recall that lists of the form "a,b,c" are a syntactic convenience,
 which eventually are translated into cons-lists "(a,(b,(c,.)))".
@@ -249,7 +251,7 @@ rule [ClassDecWithoutExtendsDesugar]:
     'ClassDec('ClassDecHead(_:K,, ClassName:Id,,
         _:K,,
         ( 'None(_)
-          => 'Some('SuperDec('ClassType('TypeName( String2Id("Object") ),, 'None(.List{K}))))
+          => 'Some('SuperDec('ClassType(class String2Id("Object"),, 'None(.List{K}))))
         ),,
         _:K),, _:K
     )
@@ -257,7 +259,7 @@ rule [ClassDecWithoutExtendsDesugar]:
 
 rule [ClassDec]:
       'ClassDec('ClassDecHead('ListWrap(ClassModifiers:List{K}),, ClassName:Id,, _:K,,
-          'Some('SuperDec('ClassType('TypeName( BaseClassName:Id ),, _:K))),,
+          'Some('SuperDec('ClassType(class BaseClassName:Id,, _:K))),,
           _:K),,
         'ClassBody( S )
       )  => classDecImpl(ClassModifiers, ClassName, BaseClassName,
@@ -315,7 +317,7 @@ rule [NewInstance]:
     <k>
       'NewInstance(
         _:K,,
-        'ClassOrInterfaceType('TypeName( ClassName ),, _:K),,
+        class ClassName,,
         'ListWrap( Vals:List{KResult} ),,
         _:K
       ) ~> K
@@ -433,6 +435,10 @@ rule [CastRef]:
           ~> objectClosure(Obj):: class Class
       ...
     </k>
+        [structural]
+
+rule [CastRefNull]:
+    'CastRef(T,, null::_) => null :: T
         [structural]
 
 //@ \subsection{Names}
