@@ -1,7 +1,7 @@
 class main {
 
 	void printAllB(String[] vs, boolean[] v) {
-		for (int i = 0; i<v.length; i++) {
+		for (int i = 0; i<nrOps; i++) {
       System.out.println(vs[i]+" = "+v[i]);
 		}
 	}
@@ -13,13 +13,6 @@ class main {
     int i=0;
 
 		//Infix operators
-		vs[i++] = "true || false";
-		vs[i++] = "true && false";
-		vs[i++] = "true | false ";
-		vs[i++] = "true ^ false ";
-		vs[i++] = "true & false ";
-		vs[i++] = "true == false";
-		vs[i++] = "true != false";
 		vs[i++] = "4 == 2       ";
 		vs[i++] = "4 != 2       ";
 		vs[i++] = "4 < 2        ";
@@ -27,8 +20,7 @@ class main {
 		vs[i++] = "4 <= 2       ";
 		vs[i++] = "4 >= 2       ";
 
-		//Prefix operators
-		vs[i++] = "! true       ";
+    nrOps = i;
 
     return vs;
   }
@@ -43,13 +35,6 @@ class main {
 
     int i=0;
 		//Infix operators
-		vb[i++] = true || false;
-		vb[i++] = true && false;
-		vb[i++] = true | false;
-		vb[i++] = true ^ false;
-    vb[i++] = true & false;
-    vb[i++] = true == false;
-    vb[i++] = true != false;
     vb[i++] = 4 == 2;
     vb[i++] = 4 != 2;
     vb[i++] = 4 < 2;
@@ -57,15 +42,12 @@ class main {
     vb[i++] = 4 <= 2;
     vb[i++] = 4 >= 2;
 
-		//Prefix operators
-		vb[i++] = ! true;
-
     printAllB(vs,vb);
     System.out.println("Done!");
 	}
 }
 
-public class BoolResult {
+public class op_02_int_to_bool {
   public static void main(String[] args) {
     new main(args);
   }

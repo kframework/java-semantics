@@ -1,7 +1,7 @@
 class main {
 
 	void printAll(String[] vs, int[] v) {
-		for (int i = 0; i<v.length; i++) {
+		for (int i = 0; i<nrOps; i++) {
       System.out.println(vs[i]+" = "+v[i]);
 		}
 	}
@@ -83,7 +83,7 @@ class main {
 	}
 }
 
-public class IntResult {
+public class op_01_int_to_int {
   public static void main(String[] args) {
     new main(args);
   }

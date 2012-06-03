@@ -34,9 +34,9 @@ class main {
     int i=0;
 
 		v[i++] =  4 <<   1;
-		v[i++] =  4 <<  -1;//different from java due to overflow
+		v[i++] =  4 <<  -1;
 		v[i++] = -4 <<   1;
-		v[i++] = -4 <<  -1;//different from java due to overflow
+		v[i++] = -4 <<  -1;
 		v[i++] =  4  >>  1;
 		v[i++] =  4  >> -1;
 		v[i++] = -4  >>  1;
@@ -51,7 +51,7 @@ class main {
 	}
 }
 
-public class BitShift {
+public class op_03_int_bit_shift {
   public static void main(String[] args) {
     new main(args);
   }

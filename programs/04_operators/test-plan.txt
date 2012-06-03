@@ -1,0 +1,21 @@
+Testing plan for int and long operators.
+
+1. All operators for int: int to int, int to bool, bit shift, assign.
+2. Int operators with overflow result : int to int.
+  (no matter which kind of overflow)
+3. All operators for long: long to long, long to bool, bit shift, assign.
+4. Long operators with overflow result : long to long.
+  Result should be outside int range.
+5. Several specific overflow cases for int,
+  targeting normalization algorithm:
+  - no overflow positive res,
+  - no overflow negative res,
+  - overflow, positive before norm, positive after.
+  - overflow, positive before norm, negative after.
+  - overflow, negative before norm, positive after.
+  - overflow, negative before norm, negative after.
+  and maybe some others.
+
+Right now just + - and * are checked for overflow.
+I sould also figure out more ways to test bit operators and bit shift.
+Generally all operators should be reviewed and questioned whether they can result in overflow.

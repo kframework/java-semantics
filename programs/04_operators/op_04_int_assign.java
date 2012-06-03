@@ -55,7 +55,7 @@ class main {
 	}
 }
 
-public class Assign {
+public class op_04_int_assign {
   public static void main(String[] args) {
     new main(args);
   }

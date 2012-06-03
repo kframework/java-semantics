@@ -4,7 +4,7 @@ class Ex extends RuntimeException {
   }
 }
 
-public class StringPlus {
+public class op_21_String_plus {
   public static void main(String[] args) {
     System.out.println("ab"+"cde");
     System.out.println("ab"+-12);
