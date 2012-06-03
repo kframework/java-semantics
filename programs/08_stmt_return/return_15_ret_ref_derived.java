@@ -4,7 +4,7 @@ class Ex extends RuntimeException {
   }
 }
 
-public class return_12_ret_ref_derived {
+public class return_15_ret_ref_derived {
 
   public static void main(String[] args) {
     new test();

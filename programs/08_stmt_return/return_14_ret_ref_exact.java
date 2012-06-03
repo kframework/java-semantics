@@ -1,4 +1,4 @@
-public class return_10_ret_string {
+public class return_14_ret_ref_exact {
 
   public static void main(String[] args) {
     new test();
@@ -11,7 +11,7 @@ class test {
     System.out.println("f() = " + f());
   }
 
-  String f() {
-    return "abc";
+  RuntimeException f() {
+    return new RuntimeException("abc");
   }
 }

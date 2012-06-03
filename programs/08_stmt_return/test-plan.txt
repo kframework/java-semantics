@@ -7,6 +7,9 @@
 7. try-return-catch-finally
 8. try-catch-return-finally
 9. try-catch-finally-return(in finally)
-10. return String
-11. return-ref - exact val
-12. return derived val, return type is base val.
+10. try-return-finally-return (in finally)
+11. try-throw-finally-return (in finally)
+12. try-catch-return-finally-return (in finally)
+13. return String
+14. return-ref - exact val
+15. return derived val, return type is base val.
