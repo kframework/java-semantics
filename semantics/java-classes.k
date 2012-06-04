@@ -584,7 +584,6 @@ syntax K ::= "(" Id "," Bag ")"
 //lookup member result is always typed
 declare lookupMember : BagItem Id -> K
 
-//todo this definition should fail the test sketched in log.txt
 define lookupMember(
     <envStack>
       ListItem((_:Id, <env>... X|->L ...</env>))
