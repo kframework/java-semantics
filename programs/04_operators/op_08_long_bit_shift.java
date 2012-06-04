@@ -12,18 +12,18 @@ class main {
     String[] vs = new String[nrOps];
     int i=0;
 
-		vs[i++] = " 4L <<   1L    ";
-		vs[i++] = " 4L <<  -1L    ";
-		vs[i++] = "-4L <<   1L    ";
-		vs[i++] = "-4L <<  -1L    ";
-		vs[i++] = " 4L  >>  1L    ";
-		vs[i++] = " 4L  >> -1L    ";
-		vs[i++] = "-4L  >>  1L    ";
-		vs[i++] = "-4L  >> -1L    ";
-		vs[i++] = " 4L >>>  1L    ";
-		vs[i++] = " 4L >>> -1L    ";
-		vs[i++] = "-4L >>>  1L    ";
-		vs[i++] = "-4L >>> -1L    ";
+		vs[i++] = " 9L <<   2L    ";
+		vs[i++] = " 9L <<  -2L    ";
+		vs[i++] = "-9L <<   2L    ";
+		vs[i++] = "-9L <<  -2L    ";
+		vs[i++] = " 9L  >>  2L    ";
+		vs[i++] = " 9L  >> -2L    ";
+		vs[i++] = "-9L  >>  2L    ";
+		vs[i++] = "-9L  >> -2L    ";
+		vs[i++] = " 9L >>>  2L    ";
+		vs[i++] = " 9L >>> -2L    ";
+		vs[i++] = "-9L >>>  2L    ";
+		vs[i++] = "-9L >>> -2L    ";
 
     return vs;
   }
@@ -33,18 +33,18 @@ class main {
     String[] vs = initVS();
     int i=0;
 
-		v[i++] =  4L <<   1L;
-		v[i++] =  4L <<  -1L;
-		v[i++] = -4L <<   1L;
-		v[i++] = -4L <<  -1L;
-		v[i++] =  4L  >>  1L;
-		v[i++] =  4L  >> -1L;
-		v[i++] = -4L  >>  1L;
-		v[i++] = -4L  >> -1L;
-		v[i++] =  4L >>>  1L;
-		v[i++] =  4L >>> -1L;
-		v[i++] = -4L >>>  1L;
-		v[i++] = -4L >>> -1L;
+		v[i++] =  9L <<   2L;
+		v[i++] =  9L <<  -2L;
+		v[i++] = -9L <<   2L;
+		v[i++] = -9L <<  -2L;
+		v[i++] =  9L  >>  2L;
+		v[i++] =  9L  >> -2L;
+		v[i++] = -9L  >>  2L;
+		v[i++] = -9L  >> -2L;
+		v[i++] =  9L >>>  2L;
+		v[i++] =  9L >>> -2L;
+		v[i++] = -9L >>>  2L;
+		v[i++] = -9L >>> -2L;
 
     printAll(vs,v);
     System.out.println("Done!");

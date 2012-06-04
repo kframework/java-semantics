@@ -13,12 +13,12 @@ class main {
     int i=0;
 
 		//Infix operators
-		vs[i++] = "4 == 2       ";
-		vs[i++] = "4 != 2       ";
-		vs[i++] = "4 < 2        ";
-		vs[i++] = "4 > 2        ";
-		vs[i++] = "4 <= 2       ";
-		vs[i++] = "4 >= 2       ";
+		vs[i++] = "9 == 3       ";
+		vs[i++] = "9 != 3       ";
+		vs[i++] = "9 < 3        ";
+		vs[i++] = "9 > 3        ";
+		vs[i++] = "9 <= 3       ";
+		vs[i++] = "9 >= 3       ";
 
     nrOps = i;
 
@@ -35,12 +35,12 @@ class main {
 
     int i=0;
 		//Infix operators
-    vb[i++] = 4 == 2;
-    vb[i++] = 4 != 2;
-    vb[i++] = 4 < 2;
-    vb[i++] = 4 > 2;
-    vb[i++] = 4 <= 2;
-    vb[i++] = 4 >= 2;
+    vb[i++] = 9 == 3;
+    vb[i++] = 9 != 3;
+    vb[i++] = 9 < 3;
+    vb[i++] = 9 > 3;
+    vb[i++] = 9 <= 3;
+    vb[i++] = 9 >= 3;
 
     printAllB(vs,vb);
     System.out.println("Done!");

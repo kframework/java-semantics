@@ -16,6 +16,8 @@ Testing plan for int and long operators.
   - overflow, negative before norm, negative after.
   and maybe some others.
 
-Right now just + - and * are checked for overflow.
-I sould also figure out more ways to test bit operators and bit shift.
-Generally all operators should be reviewed and questioned whether they can result in overflow.
+General rules:
+1. Test values: 9/3, -10/-4.
+2. For bit ops, 3 tests per op: +op+,+op-,-op-, (-op+ is not necessary)
+3. Operators to test for overflow:
+  +, -, *, -(min possible value), ++,--, bit negation, or, xor, bit shift ops.

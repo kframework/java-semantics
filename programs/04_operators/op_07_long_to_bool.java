@@ -13,12 +13,12 @@ class main {
     int i=0;
 
 		//Infix operators
-		vs[i++] = "4L == 2L       ";
-		vs[i++] = "4L != 2L       ";
-		vs[i++] = "4L  < 2L       ";
-		vs[i++] = "4L  > 2L       ";
-		vs[i++] = "4L <= 2L       ";
-		vs[i++] = "4L >= 2L       ";
+		vs[i++] = "9L == 3L       ";
+		vs[i++] = "9L != 3L       ";
+		vs[i++] = "9L  < 3L       ";
+		vs[i++] = "9L  > 3L       ";
+		vs[i++] = "9L <= 3L       ";
+		vs[i++] = "9L >= 3L       ";
 
     nrOps = i;
 
@@ -35,12 +35,12 @@ class main {
 
     int i=0;
 		//Infix operators
-    vb[i++] = 4L == 2L;
-    vb[i++] = 4L != 2L;
-    vb[i++] = 4L  < 2L;
-    vb[i++] = 4L  > 2L;
-    vb[i++] = 4L <= 2L;
-    vb[i++] = 4L >= 2L;
+    vb[i++] = 9L == 3L;
+    vb[i++] = 9L != 3L;
+    vb[i++] = 9L  < 3L;
+    vb[i++] = 9L  > 3L;
+    vb[i++] = 9L <= 3L;
+    vb[i++] = 9L >= 3L;
 
     printAllB(vs,vb);
     System.out.println("Done!");

@@ -12,18 +12,18 @@ class main {
     String[] vs = new String[nrOps];
     int i=0;
 
-		vs[i++] = "4L  =   2L";
-		vs[i++] = "4L +=   2L";
-		vs[i++] = "4L -=   2L";
-		vs[i++] = "4L *=   2L";
-		vs[i++] = "4L /=   2L";
-		vs[i++] = "4L &=   2L";
-		vs[i++] = "4L |=   2L";
-		vs[i++] = "4L ^=   2L";
-		vs[i++] = "4L %=   2L";
-		vs[i++] = "4L <<=  2L";
-		vs[i++] = "4L >>=  2L";
-		vs[i++] = "4L >>>= 2L";
+		vs[i++] = "9L  =   3L";
+		vs[i++] = "9L +=   3L";
+		vs[i++] = "9L -=   3L";
+		vs[i++] = "9L *=   3L";
+		vs[i++] = "9L /=   3L";
+		vs[i++] = "9L &=   3L";
+		vs[i++] = "9L |=   3L";
+		vs[i++] = "9L ^=   3L";
+		vs[i++] = "9L %=   3L";
+		vs[i++] = "9L <<=  3L";
+		vs[i++] = "9L >>=  3L";
+		vs[i++] = "9L >>>= 3L";
 
     return vs;
   }
@@ -33,22 +33,22 @@ class main {
     String[] vs = initVS();
 
     for(int i=0; i<nrOps; i++) {
-      v[i] = 4L;
+      v[i] = 9L;
     }
     int i=0;
 
-		v[i++] =  2L;
-		v[i++] += 2L;
-		v[i++] -= 2L;
-		v[i++] *= 2L;
-		v[i++] /= 2L;
-		v[i++] &= 2L;
-		v[i++] |= 2L;
-		v[i++] ^= 2L;
-		v[i++] %= 2L;
-		v[i++] <<= 2L;
-		v[i++] >>= 2L;
-		v[i++] >>>= 2L;
+		v[i++] =  3L;
+		v[i++] += 3L;
+		v[i++] -= 3L;
+		v[i++] *= 3L;
+		v[i++] /= 3L;
+		v[i++] &= 3L;
+		v[i++] |= 3L;
+		v[i++] ^= 3L;
+		v[i++] %= 3L;
+		v[i++] <<= 3L;
+		v[i++] >>= 3L;
+		v[i++] >>>= 3L;
 
     printAll(vs,v);
     System.out.println("Done!");
