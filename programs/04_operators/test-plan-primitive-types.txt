@@ -1,0 +1,30 @@
+New features required by JLS $4 - Types, Values and Variables, for primitive types.
+1. Restrictions of int operators to int and long.
+  Restriction applies only to numerical operators, which return a result of type int or long.
+  For comparison operators, which return a boolean, widening to int or long is also defined.
+  But in our semantics, it have no effect.
+  Curious case: Operators ++, --. For them, the argument may be of type byte/short/char,
+    because operator semantics mentions a narrowing conversion before the value is stored.
+    However, it is not clear what is the type of the ++/-- expression.
+    According to $4 it should be int/long. But according to $15 it may be the type of
+    variable in all cases. We'll discover this experimentally.
+2. Definition of primitive types, bit count and normalization, variables of primitive types.
+  2.1. Implement for byte,short,int,long.
+  2.2. Implement for char.
+3. Explicit cast between primitive types.
+4. String concatenation with primitive types.
+
+Test plan:
+1. Add to string plus test tests with any primitive type.
+
+2. Cast with overflow.
+  2.1. Cast to byte: byte, short, int, long, char to byte. Result with any overflow.
+  2.2. Cast to short.
+  2.3 Cast ot int.
+  2.4. Cast to long.
+  2.5. Cast to char. Char will be casted back to int prior to displaying it.
+
+3. Primitive type vars with init. Define var for each primitive type,
+  and init it with a literal casted to the appropriate type. Print the result.
+  We use cast because situation where no cast is used is covered under JLS $5
+  - and not related to functionality discussed here.

@@ -55,7 +55,7 @@ class main {
 	}
 }
 
-public class op_20_bool_to_bool {
+public class op_11_bool_to_bool {
   public static void main(String[] args) {
     new main(args);
   }

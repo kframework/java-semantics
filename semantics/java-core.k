@@ -56,10 +56,13 @@ rule 'Id(Str) => String2Id(Str)     [anywhere]
 
 //@ \section{Types}
 
-syntax Type ::= "int"
-              | "long"
-              | "bool"
+syntax IntOrLongType ::= "int" | "long"
+
+syntax Type ::= "byte"
+              | "short"
+              | IntOrLongType
               | "char"
+              | "bool"
               | "rtString"
               | "nullType"
               | "void"
@@ -133,48 +136,5 @@ rule [subtypeList]:
 rule [subtypeEmpty]:
     subtype .List{K}, .List{K} => true :: bool
         [structural]
-
-//@ \subsection{Type labels}
-//@Here we rewrite java type ast into simple types
-
-rule 'Int(_) => int [structural]
-rule 'Long(_) => long [structural]
-rule 'Boolean(_) => bool [structural]
-rule 'Void(_) => void [structural]
-
-//@ \subsection{Integer types normalization}
-
-declare bitCount : Type -> Int
-define bitCount(int) => 32
-define bitCount(long) => 64
-
-declare normalize : TypedVal -> TypedVal
-
-define normalize(I:Int :: int)
-    =>  #if I <=Int 2147483647 andBool I >=Int -2147483648
-          #then I :: int
-          #else normalizeImpl(I::int)
-        #fi
-
-define normalize(I:Int :: long)
-    =>  #if I <=Int 9223372036854775807 andBool I >=Int -9223372036854775808
-          #then I :: long
-          #else normalizeImpl(I::long)
-        #fi
-
-declare normalizeImpl : TypedVal -> TypedVal
-
-define normalizeImpl(I:Int :: T)
-    => normalizeSign((((I &Int ((1 <<Int bitCount(T)) -Int 1))
-        +Int (1 <<Int bitCount(T)))
-        &Int ((1 <<Int bitCount(T)) -Int 1)) :: T)
-
-declare normalizeSign : TypedVal -> TypedVal
-
-define normalizeSign(I:Int :: T)
-    =>  #if I <=Int ((1 <<Int (bitCount(T) -Int 1)) -Int 1)
-          #then I :: T
-          #else I -Int (1 <<Int bitCount(T)) :: T
-        #fi
 
 end module

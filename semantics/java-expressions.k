@@ -1,5 +1,6 @@
 module JAVA-EXPRESSIONS
     imports JAVA-CORE
+    imports JAVA-PRIMITIVE-TYPES
 
 //@ \section{Operators}
 
@@ -45,11 +46,11 @@ rule /* false || K */ 'LazyOr(false :: bool,, K:K) => K
 rule /* true  && K */ 'LazyAnd(true :: bool,, K) => K
 rule /* false && _ */ 'LazyAnd(false :: bool,, _) => false :: bool
 
-rule /* I1 | I2 */ 'Or(I1 :: T,, I2 :: T) => normalize( (I1 |Int I2) :: T )
+rule /* I1 | I2 */ 'Or(I1 :: ILT,, I2 :: ILT) => normalize( (I1 |Int I2) :: ILT )
 rule /* B1 | B2 */ 'Or(B1:Bool :: bool,, B2:Bool :: bool) => (B1 orBool B2) :: bool
-rule /* I1 ^ I2 */ 'ExcOr(I1 :: T,, I2 :: T) => normalize( (I1 xorInt I2) :: T )
+rule /* I1 ^ I2 */ 'ExcOr(I1 :: ILT,, I2 :: ILT) => normalize( (I1 xorInt I2) :: ILT )
 rule /* B1 ^ B2 */ 'ExcOr(B1 :: bool,, B2 :: bool) => (B1 xorBool B2) :: bool
-rule /* I1 & I2 */ 'And(I1 :: T,, I2 :: T) => normalize( (I1 &Int I2) :: T )
+rule /* I1 & I2 */ 'And(I1 :: ILT,, I2 :: ILT) => normalize( (I1 &Int I2) :: ILT )
 rule /* B1 & B2 */ 'And(B1 :: bool,, B2 :: bool) => (B1 andBool B2) :: bool
 
 rule /* V1 == V2 */ 'Eq(V1:RawVal :: _,, V2:RawVal :: _) => (V1 ==K V2) :: bool
@@ -59,55 +60,55 @@ rule /* I1 >  I2 */ 'Gt(I1 :: T,, I2 :: T) => (I1 >Int I2) :: bool
 rule /* I1 <= I2 */ 'LtEq(I1 :: T,, I2 :: T) => (I1 <=Int I2) :: bool
 rule /* I1 >= I2 */ 'GtEq(I1 :: T,, I2 :: T) => (I1 >=Int I2) :: bool
 
-rule /* I1 <<  I2 */ 'LeftShift(I1 :: T,, I2 :: T)
-    => normalize( (I1 <<Int (I2 &Int (bitCount(T) -Int 1))) :: T ) //JLS 15.19
-rule /* I1 >>  I2 */ 'RightShift(I1 :: T,, I2 :: T)
-    => normalize( (I1 >>Int (I2 &Int (bitCount(T) -Int 1))) :: T )
-rule /* I1 >>> I2 */ 'URightShift(I1 :: T,, I2 :: T)
+rule /* I1 <<  I2 */ 'LeftShift(I1 :: ILT,, I2 :: ILT)
+    => normalize( (I1 <<Int (I2 &Int (bitCount(ILT) -Int 1))) :: ILT ) //JLS 15.19
+rule /* I1 >>  I2 */ 'RightShift(I1 :: ILT,, I2 :: ILT)
+    => normalize( (I1 >>Int (I2 &Int (bitCount(ILT) -Int 1))) :: ILT )
+rule /* I1 >>> I2 */ 'URightShift(I1 :: ILT,, I2 :: ILT)
   => 'Cond(
     (I1 >=Int 0)::bool,,
-    'RightShift(I1::T,, I2::T),,
-    'Plus('RightShift(I1::T,, I2::T),, 'LeftShift(2::T,, 'Complement(I2::T)))
+    'RightShift(I1::ILT,, I2::ILT),,
+    'Plus('RightShift(I1::ILT,, I2::ILT),, 'LeftShift(2::ILT,, 'Complement(I2::ILT)))
   )
 
-rule /* I1 + I2     */ 'Plus(I1:Int :: T,, I2:Int :: T) => normalize( (I1 +Int I2) :: T )
+rule /* I1 + I2     */ 'Plus(I1:Int :: ILT,, I2:Int :: ILT) => normalize( (I1 +Int I2) :: ILT )
 rule /* Str1 + Str2 */ 'Plus(Str1:String :: rtString,, Str2:String :: rtString) => (Str1 +String Str2) :: rtString
 rule /* Str + KR    */ 'Plus(Str:String :: rtString,, ( KR:KResult => toString(KR) ))
     when typeOf(KR) =/=K rtString
 rule /* KR + Str    */ 'Plus(( KR => toString(KR) ),, Str :: rtString)
     when typeOf(KR) =/=K rtString
 
-rule /* I1 - I2    */ 'Minus(I1 :: T,, I2 :: T) => normalize( _-Int_(I1,I2) :: T )
-rule /* I1 * I2    */ 'Mul(I1 :: T,, I2 :: T) => normalize( (I1 *Int I2) :: T )
-rule /* I1 / I2    */ 'Div(I1 :: T,, I2 :: T) => normalize( (I1 /Int I2) :: T )
+rule /* I1 - I2    */ 'Minus(I1 :: ILT,, I2 :: ILT) => normalize( _-Int_(I1,I2) :: ILT )
+rule /* I1 * I2    */ 'Mul(I1 :: ILT,, I2 :: ILT) => normalize( (I1 *Int I2) :: ILT )
+rule /* I1 / I2    */ 'Div(I1 :: ILT,, I2 :: ILT) => normalize( (I1 /Int I2) :: ILT )
     when I2 =/=Int 0 //todo ArithmeticException
-rule /* I1 % I2    */ 'Remain(I1 :: T,, I2 :: T) => normalize( (I1 %Int I2) :: T )
+rule /* I1 % I2    */ 'Remain(I1 :: ILT,, I2 :: ILT) => normalize( (I1 %Int I2) :: ILT )
     when I2 =/=Int 0 //todo ArithmeticException
 
 // ++E
 context 'PreIncr(HOLE => lvalue(HOLE))
 rule /* ++loc(L) => loc(L) = lookup(L) + 1 */
-  'PreIncr(loc(L)::T) => 'Assign(loc(L:Int)::T,, 'Plus(lookup(L)::T,, 1::T))
+  'PreIncr(loc(L)::ILT) => 'Assign(loc(L:Int)::ILT,, 'Plus(lookup(L)::ILT,, 1::ILT))
 
 // --E
 context 'PreDecr(HOLE => lvalue(HOLE))
 rule /* --loc(L) => loc(L) = lookup(L) - 1 */
-  'PreDecr(loc(L)::T) => 'Assign(loc(L)::T,, 'Minus(lookup(L)::T,, 1::T))
+  'PreDecr(loc(L)::ILT) => 'Assign(loc(L)::ILT,, 'Minus(lookup(L)::ILT,, 1::ILT))
 
 rule /* ! B    */ 'Not(B:Bool :: bool) => (notBool B) :: bool
-rule /* ~ I    */ 'Complement(I:Int :: T) => normalize( (~Int I) :: T )
-rule /* + I    */ 'Plus(I :: T) => I :: T
-rule /* - I    */ 'Minus(I :: T) => normalize( (0 -Int I) :: T )
+rule /* ~ I    */ 'Complement(I:Int :: ILT) => normalize( (~Int I) :: ILT )
+rule /* + I    */ 'Plus(I :: ILT:IntOrLongType) => I :: ILT
+rule /* - I    */ 'Minus(I :: ILT) => normalize( (0 -Int I) :: ILT )
 
 // E++
 context 'PostIncr(HOLE => lvalue(HOLE))
 rule /* loc(L)++ => (loc(L) = lookup(L) + 1) - 1 */
-  'PostIncr(loc(L) :: T) => 'Minus( 'Assign(loc(L) :: T,, 'Plus(lookup(L) :: T,, 1 :: T)),, 1 :: T)
+  'PostIncr(loc(L) :: ILT) => 'Minus( 'Assign(loc(L) :: ILT,, 'Plus(lookup(L) :: ILT,, 1 :: ILT)),, 1 :: ILT)
 
 // E--
 context 'PostDecr(HOLE => lvalue(HOLE))
 rule /* loc(L)-- => (loc(L) = lookup(L) - 1) + 1 */
-  'PostDecr(loc(L) :: T) => 'Plus( 'Assign(loc(L) :: T,, 'Minus(lookup(L) :: T,, 1 :: T)),, 1 :: T)
+  'PostDecr(loc(L) :: ILT) => 'Plus( 'Assign(loc(L) :: ILT,, 'Minus(lookup(L) :: ILT,, 1 :: ILT)),, 1 :: ILT)
 
 //semantically if and ?: are equivalent
 rule 'Cond(Ks:List{K}) => 'If(Ks)
@@ -186,6 +187,12 @@ rule 'AssignRightShift(loc(L)::T,, E) => 'Assign(loc(L)::T,, 'RightShift(lookup(
 /* loc(L) >>>= E => loc(L) = lookup(L) >>> E */
 context 'AssignURightShift((HOLE => lvalue(HOLE)),,_)
 rule 'AssignURightShift(loc(L)::T,, E) => 'Assign(loc(L)::T,, 'URightShift(lookup(L)::T,, E))
+
+/*@ \subsection{primitive types cast} */
+
+syntax KLabel ::= 'CastPrim [seqstrict]
+
+rule 'CastPrim(T,, I::_) => normalize(I::T)
 
 /*@ \subsection{lvalue and loc} */
 

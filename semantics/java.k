@@ -1,6 +1,7 @@
 in class-dec/RuntimeException
 in class-dec/AssertionError
 in java-core
+in java-primitive-types
 in java-literals
 in java-expressions
 in java-statements
@@ -12,6 +13,7 @@ module JAVA
     imports CLASS-DEC-RuntimeException
     imports CLASS-DEC-AssertionError
     imports JAVA-CORE
+    imports JAVA-PRIMITIVE-TYPES
     imports JAVA-LITERALS
     imports JAVA-EXPRESSIONS
     imports JAVA-STATEMENTS

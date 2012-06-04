@@ -1,5 +1,6 @@
 module JAVA-LITERALS
     imports JAVA-CORE
+    imports JAVA-PRIMITIVE-TYPES
 
 //@ \section{Auxiliary constructs}
 

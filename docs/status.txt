@@ -23,6 +23,7 @@ with methods with same name and return type void.
   For int and long. Including overflow.
 11. Superclass constructor invocation during new object creation.
 12. Support for default constructor.
+13. Support for all primitive integer types and explicit conversion. (JLS $4)
 
 
 
