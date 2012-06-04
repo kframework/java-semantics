@@ -8,7 +8,7 @@ module JAVA-API-CORE
 syntax KResult ::=  "rtSystem"
                   | "rtSystemOut"
                   | "rtSystemOutPrint"
-               // | "rtSystemOutPrintln"  was moved to JAVA-CORE
+                  | "rtSystemOutPrintln"
                   | "rtSystemConsole"
                   | "rtSystemConsoleReadLine"
                   | "rtInteger"

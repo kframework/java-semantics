@@ -592,13 +592,17 @@ when
             StackLT =/=K catch
     andBool StackLT =/=K finally
 
-//todo rewrite the rule so that it don't depend on rtSystemOutPrintln
-// - rewrite it as it would appear in a program kast.
 rule [ThrowCausesThreadTermination]:
     <k>
       'Throw(TV) ~> _:K
-      => 'ExprStm('Invoke(rtSystemOutPrintln,, 'ListWrap(
-          'Plus("Thread terminated with exception: "::rtString,, TV))))
+      =>  'ExprStm('Invoke(
+            'Method('MethodName(
+              'AmbName('AmbName(String2Id("System")),, String2Id("out")),,
+              String2Id("println")
+            )),,
+            'ListWrap(
+                'Plus("Thread terminated with exception: "::rtString,, TV))
+          ))
     </k>
     <stack> .List </stack>
 

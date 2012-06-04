@@ -89,7 +89,6 @@ syntax RawVal ::= Int | Bool | String
 syntax TypedVal ::= RawVal "::" Type
 
 syntax KResult ::= TypedVal | Type
-                 | rtSystemOutPrintln // used in JAVA-STATEMENTS
 
 /*@ \subsubsection{Generic guard}
 A generic computational guard (should be builtin): it allows the
