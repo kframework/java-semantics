@@ -59,11 +59,13 @@ rule /* I1 >  I2 */ 'Gt(I1 :: T,, I2 :: T) => (I1 >Int I2) :: bool
 rule /* I1 <= I2 */ 'LtEq(I1 :: T,, I2 :: T) => (I1 <=Int I2) :: bool
 rule /* I1 >= I2 */ 'GtEq(I1 :: T,, I2 :: T) => (I1 >=Int I2) :: bool
 
-rule /* I1 <<  I2 */ 'LeftShift(I1 :: T,, I2 :: T) => normalize( (I1 <<Int (I2 &Int 31)) :: T ) //JLS 15.19
-rule /* I1 >>  I2 */ 'RightShift(I1 :: T,, I2 :: T) => normalize( (I1 >>Int (I2 &Int 31)) :: T )
+rule /* I1 <<  I2 */ 'LeftShift(I1 :: T,, I2 :: T)
+    => normalize( (I1 <<Int (I2 &Int (bitCount(T) -Int 1))) :: T ) //JLS 15.19
+rule /* I1 >>  I2 */ 'RightShift(I1 :: T,, I2 :: T)
+    => normalize( (I1 >>Int (I2 &Int (bitCount(T) -Int 1))) :: T )
 rule /* I1 >>> I2 */ 'URightShift(I1 :: T,, I2 :: T)
   => 'Cond(
-    (I2 >=Int 0)::bool,,
+    (I1 >=Int 0)::bool,,
     'RightShift(I1::T,, I2::T),,
     'Plus('RightShift(I1::T,, I2::T),, 'LeftShift(2::T,, 'Complement(I2::T)))
   )
