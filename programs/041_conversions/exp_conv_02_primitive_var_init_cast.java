@@ -1,4 +1,4 @@
-public class op_13_primitive_var_init_cast {
+public class exp_conv_02_primitive_var_init_cast {
   public static void main(String[] args) {
     byte bt = (byte) 100;
     short sh = (short) 1000;

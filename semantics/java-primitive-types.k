@@ -23,35 +23,26 @@ define bitCount(char) => 16
 
 declare normalize : TypedVal -> TypedVal
 
-define normalize(I:Int :: byte)
-    =>  #if I >=Int -128 andBool I <=Int 127
-          #then I :: byte
-          #else normalizeImpl(I::byte)
+define normalize(I:Int :: NT:NumericType)
+    =>  #if isInRange(I::NT)
+          #then I::NT
+          #else normalizeImpl(I::NT)
         #fi
-
-define normalize(I:Int :: short)
-    =>  #if I >=Int -32768 andBool I <=Int 32767
-          #then I :: short
-          #else normalizeImpl(I::short)
-        #fi
-
-define normalize(I:Int :: int)
-    =>  #if I >=Int -2147483648 andBool I <=Int 2147483647
-          #then I :: int
-          #else normalizeImpl(I::int)
-        #fi
-
-define normalize(I:Int :: long)
-    =>  #if I >=Int -9223372036854775808 andBool I <=Int 9223372036854775807
-          #then I :: long
-          #else normalizeImpl(I::long)
-        #fi
+when NT =/=K char
 
 define normalize(I:Int :: char)
-    =>  #if I >=Int 0 andBool I <=Int 65535
+    =>  #if isInRange(I::char)
           #then I :: char
           #else toUnsigned(normalizeImpl(I::char))
         #fi
+
+declare isInRange : TypedVal -> Bool
+define isInRange(I::byte) => (I >=Int -128 andBool I <=Int 127)              [structural]
+define isInRange(I::short) => (I >=Int -32768 andBool I <=Int 32767)         [structural]
+define isInRange(I::int) => (I >=Int -2147483648 andBool I <=Int 2147483647) [structural]
+define isInRange(I::long) => (I >=Int -9223372036854775808
+                      andBool I <=Int  9223372036854775807)                  [structural]
+define isInRange(I::char) => (I >=Int 0 andBool I <=Int 65535)               [structural]
 
 declare normalizeImpl : TypedVal -> TypedVal
 
@@ -74,5 +65,64 @@ define toUnsigned(I:Int :: T)
           #then I :: T
           #else I +Int (1 <<Int bitCount(T)) :: T
         #fi
+
+//promote the result type based on unary operator argument type, and normalize the result.
+declare normalize : Int NumericType -> TypedVal
+define normalize(I, NT) => normalize(I :: normalizeType(NT))
+
+//promote the result type based on binary operator arguments type, and normalize the result.
+declare normalize : Int NumericType NumericType -> TypedVal
+define normalize(I, NT1:NumericType, NT2:NumericType ) => normalize(I :: normalizeType(NT1,NT2))
+
+declare normalizeType : NumericType -> IntOrLongType
+define normalizeType(ILT:IntOrLongType) => ILT
+
+define normalizeType(NT) => int
+when NT =/=K int andBool NT =/=K long
+
+//todo debug changes
+declare normalizeType : NumericType NumericType -> IntOrLongType
+
+define normalizeType(NT1, NT2) => int
+when NT1 =/=K long andBool NT2 =/=K long
+
+define normalizeType(NT1, NT2) => long
+when NT1 ==K long orBool NT2 ==K long
+
+rule subtype byte, T
+=>  #if         T ==K byte
+        orBool  T ==K short
+        orBool  T ==K int
+        orBool  T ==K long
+      #then true :: bool
+      #else false :: bool
+    #fi
+when T =/=K byte [structural]
+
+rule subtype short, T
+=>  #if         T ==K int
+        orBool  T ==K long
+      #then true :: bool
+      #else false :: bool
+    #fi
+when T =/=K short [structural]
+
+rule subtype int, T
+=>  #if         T ==K long
+      #then true :: bool
+      #else false :: bool
+    #fi
+when T =/=K int [structural]
+
+rule subtype long, T =>  false :: bool
+when T =/=K long [structural]
+
+rule subtype char, T
+=>  #if         T ==K long
+        orBool  T ==K char
+      #then true :: bool
+      #else false :: bool
+    #fi
+when T =/=K char [structural]
 
 end module

@@ -1,5 +1,5 @@
 //semantics for this test is covered under chapter $5.
-public class op_20_primitive_var_init {
+public class imp_conv_03_primitive_var_init {
   public static void main(String[] args) {
     byte bt = 100;
     short sh = 1000;

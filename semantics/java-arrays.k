@@ -16,7 +16,7 @@ context lvalue('ArrayAccess(HOLE,,_))
 context lvalue('ArrayAccess(_:KResult,,HOLE))
 
 rule [arrayLookup]:
-    'ArrayAccess(arrayRef(_,L,M:Int) :: arrayOf T:Type,, N:Int :: int)
+    'ArrayAccess(arrayRef(_,L,M:Int) :: arrayOf T:Type,, N:Int::_)
     => lookup(L +Int N) :: T
 when N >=Int 0 andBool N <Int M
         [structural anywhere]
@@ -69,7 +69,7 @@ context newArrayImpl(_:KResult, 'ListWrap('Dim(HOLE)), _)
 
 rule [newArrayImpl]:
     <k>
-      newArrayImpl(T, 'ListWrap('Dim(NI:Int :: int)), InitExp:K)
+      newArrayImpl(T, 'ListWrap('Dim(NI:Int::_)), InitExp:K)
       => evalAndStore((LI:Int .. LI +Int _-Int_(NI,1)), InitExp)
          ~> arrayRef( arrayOf T, LI, NI) :: arrayOf T
       ...

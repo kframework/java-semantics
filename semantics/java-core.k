@@ -57,11 +57,9 @@ rule 'Id(Str) => String2Id(Str)     [anywhere]
 //@ \section{Types}
 
 syntax IntOrLongType ::= "int" | "long"
+syntax NumericType ::= "byte" | "short" | IntOrLongType | "char"
 
-syntax Type ::= "byte"
-              | "short"
-              | IntOrLongType
-              | "char"
+syntax Type ::= NumericType
               | "bool"
               | "rtString"
               | "nullType"
@@ -136,5 +134,26 @@ rule [subtypeList]:
 rule [subtypeEmpty]:
     subtype .List{K}, .List{K} => true :: bool
         [structural]
+
+//todo this rule, if used, leads to the error "failed to load IOWrapper".
+declare isNumericType2 : Type -> Bool
+define isNumericType2(T)
+=>  #if         T ==K byte
+        orBool  T ==K short
+        orBool  T ==K int
+        orBool  T ==K long
+        orBool  T ==K char
+      #then true
+      #else false
+    #fi  [structural]
+
+//@ \subsubsection{Debug aids}
+syntax K ::= K "++" K [seqstrict gather(E e)]
+rule K1:K ++ K2:K => toString(K1) +String toString(K2) [structural anywhere]
+
+syntax K ::= "print" "(" K ")" [strict]
+rule [print]:
+    <k> print(Str:String) => . ...</k>
+    <out>... .=> ListItem(Str) </out>
 
 end module

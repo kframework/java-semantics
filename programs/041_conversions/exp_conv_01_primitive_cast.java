@@ -1,4 +1,4 @@
-public class op_12_primitive_cast {
+public class exp_conv_01_primitive_cast {
   public static void main(String[] args) {
     System.out.println(""
         + (byte)(byte)100 + " "

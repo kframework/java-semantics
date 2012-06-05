@@ -4,7 +4,7 @@ class Ex extends RuntimeException {
   }
 }
 
-public class op_14_String_plus {
+public class str_conv_01_String_plus {
   public static void main(String[] args) {
     System.out.println("ab"+"cde");
     System.out.println("ab"+-12);
@@ -19,6 +19,7 @@ public class op_14_String_plus {
         + (int)1000000 + " "
         + (long)9000000000L + " "
         + 'z');
+    System.out.println("" + null);
     System.out.println("Done!");
   }
 }

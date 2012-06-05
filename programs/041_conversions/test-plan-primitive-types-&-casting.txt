@@ -28,3 +28,5 @@ Test plan:
   and init it with a literal casted to the appropriate type. Print the result.
   We use cast because situation where no cast is used is covered under JLS $5
   - and not related to functionality discussed here.
+
+todo: test ++/-- operators on short.

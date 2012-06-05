@@ -24,6 +24,7 @@ with methods with same name and return type void.
 11. Superclass constructor invocation during new object creation.
 12. Support for default constructor.
 13. Support for all primitive integer types and explicit conversion. (JLS $4)
+14. Support for all kind of conversions and promotions for integers (JLS $5)
 
 
 
@@ -52,3 +53,10 @@ Postponed features:
 2. After NPE will be implemented, all seqstrict constructs should be reviewed.
   Some of them should throw NPE immediatley after first argument evaluates to null,
   thus second argument should not be evaluated.
+3. Test all numeric promotions after we'll implement method overloading.
+  Overloading is the only feature capable to distinguish between byte, short, int
+  with the same value. Test for conditional operator now passes, although
+  I have no logic implemented specifically for it.
+  I cannot implement a test even for char promotion.
+
+
