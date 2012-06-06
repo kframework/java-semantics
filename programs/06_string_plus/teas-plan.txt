@@ -1,0 +1,18 @@
+1. String plus operator:
+  - string + string
+  - string + int
+  - int + string
+  - string + bool
+  - string + object (builtin exception)
+  - string + object (custom exception)
+  - string + all primitive types
+  - string + null
+
+2. String += something cases:
+  - string += string
+  - string += int
+  - array[string] += string
+
+3. Object += string cases:
+  - object += string
+  - array[object] += string

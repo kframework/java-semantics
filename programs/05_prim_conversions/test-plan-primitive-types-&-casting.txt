@@ -12,7 +12,6 @@ New features required by JLS $4 - Types, Values and Variables, for primitive typ
   2.1. Implement for byte,short,int,long.
   2.2. Implement for char.
 3. Explicit cast between primitive types.
-4. String concatenation with primitive types.
 
 Test plan:
 
@@ -27,23 +26,4 @@ Test plan:
   and init it with a literal casted to the appropriate type. Print the result.
   We use cast because situation where no cast is used is covered under JLS $5
   - and not related to functionality discussed here.
-
-3. String plus operator:
-  - string + string
-  - string + int
-  - int + string
-  - string + bool
-  - string + object (builtin exception)
-  - string + object (custom exception)
-  - string + all primitive types
-  - string + null
-
-4. String += something cases:
-  - string += string
-  - string += int
-  - array[string] += string
-
-5. Object += string cases:
-  - object += string
-  - array[object] += string
 
