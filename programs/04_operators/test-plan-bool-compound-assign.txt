@@ -1,0 +1,4 @@
+1. Compound assign with bool operands:
+ - bool &= bool
+ - bool |= bool
+ - bool ^= bool

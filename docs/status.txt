@@ -4,7 +4,8 @@ List of implemented features:
 2. Java array allocation.
 3. Array length.
 4. Boolean operators, ternary ?: operator, string + operator.
-5. All composite assignment operators.
+5. Full support for composite assigment operators, all operand types,
+  except for abnormal termination cases (there might be some special logic involved).
 6. Constructors, simplified semantcs. Constructors are just replaced
 with methods with same name and return type void.
 7. All statements which deal with single-threaded computation

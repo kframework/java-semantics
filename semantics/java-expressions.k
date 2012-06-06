@@ -201,7 +201,8 @@ syntax KLabel ::= 'CastPrim
 rule 'CastPrim(K1:K,, K2:K) => castImpl(K1,K2)
 
 syntax K ::= "castImpl" "(" Type "," K ")" [seqstrict]
-rule [CastPrim]: castImpl(NT, I::_) => normalize(I::NT)
+rule [CastNumber]: castImpl(NT, I::_) => normalize(I::NT)
+rule [CastBool]: castImpl(bool, B::bool) => B::bool
 
 /*@ \subsection{lvalue and loc} */
 
