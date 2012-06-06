@@ -29,4 +29,10 @@ Test plan:
   We use cast because situation where no cast is used is covered under JLS $5
   - and not related to functionality discussed here.
 
-todo: test ++/-- operators on short.
+4. String += cases:
+  - string += string
+  - string += int
+  - array[string] += string
+  - object += string
+  - array[object] += string
+

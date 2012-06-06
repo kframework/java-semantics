@@ -426,19 +426,37 @@ rule [InstanceOfFalse]:
 Unlike in untyped KOOL, in typed KOOL we actually check that the object
 can indeed be cast to the claimed type. */
 
-syntax KLabel ::= 'CastRef [seqstrict]
+syntax KLabel ::= 'CastRef
+rule 'CastRef(K1:K,, K2:K) => castImpl(K1,K2)
 
 rule [CastRef]:
     <k>
-      'CastRef(class Class,, objectClosure(Obj)::T )
+      castImpl(class Class, objectClosure(Obj)::T )
       => 'InstanceOf( objectClosure(Obj)::T,, class Class) ~> true?
           ~> objectClosure(Obj):: class Class
       ...
     </k>
         [structural]
 
-rule [CastRefNull]:
-    'CastRef(T,, null::_) => null :: T
+rule [CastStringToString]:
+    <k>
+      castImpl(rtString, Str:String :: _ )
+      => Str::rtString
+      ...
+    </k>
+        [structural]
+
+rule [CastStringToObject]:
+    <k>
+      castImpl(class Class, Str :: rtString )
+      => Str :: class Class
+      ...
+    </k>
+when Class ==K String2Id("Object")
+        [structural]
+
+rule [CastNull]:
+    castImpl(T, null::_) => null :: T
         [structural]
 
 //@ \subsection{Names}

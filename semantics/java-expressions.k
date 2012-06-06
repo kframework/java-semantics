@@ -160,9 +160,9 @@ when
 context CompAssignLabel:KLabel((HOLE => lvalue(HOLE)),,_)
   when isCompAssignLabel(CompAssignLabel)
 
-rule [CompoundAssign]:
+rule [CompoundAssignPrimitive]:
     CompAssignLabel(loc(L) :: T,, E:K) => 'Assign(loc(L)::T,,
-      'CastPrim(T,, getOpLabel(CompAssignLabel)(lookup(L)::T,, E)))
+      castImpl(T, getOpLabel(CompAssignLabel)(lookup(L)::T,, E)))
 when isCompAssignLabel(CompAssignLabel)
 
 declare isCompAssignLabel : KLabel -> Bool
@@ -197,9 +197,11 @@ define getOpLabel('AssignURightShift) => 'URightShift
 
 /*@ \subsection{primitive types cast} */
 
-syntax KLabel ::= 'CastPrim [seqstrict]
+syntax KLabel ::= 'CastPrim
+rule 'CastPrim(K1:K,, K2:K) => castImpl(K1,K2)
 
-rule 'CastPrim(T,, I::_) => normalize(I::T)
+syntax K ::= "castImpl" "(" Type "," K ")" [seqstrict]
+rule [CastPrim]: castImpl(NT, I::_) => normalize(I::NT)
 
 /*@ \subsection{lvalue and loc} */
 
