@@ -107,7 +107,7 @@ rule true::bool ~> true? => .  [structural]
 declare toString :  K -> TypedVal
 context toString(HOLE)
 
-define toString(Str:String :: rtString) => Str :: rtString
+define toString(Str:String :: _) => Str :: rtString
 define toString(I:Int :: char) => charString(I) :: rtString
 define toString(I :: T:Type) => Int2String(I) :: rtString
     when T =/=K char

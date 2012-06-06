@@ -16,6 +16,7 @@ syntax KResult ::=  "rtSystem"
                   | "rtSystemIn"
                   | "rtScannerNextInt"
                   | "methodGetClass" "(" K ")"
+                  | "methodHashCode" "(" K ")"
                   | "classObject" "(" Id ")"
                   | "methodClassGetName" "(" K ")"
 
@@ -155,5 +156,19 @@ rule [InvokeClassGetName]:
       methodClassGetName(classObject(Class)),,
       'ListWrap(.List{K})
     ) => toString(class Class)
+
+rule [NameHashCode]:
+    'MethodName(KR:KResult,, X) => methodHashCode(KR)
+when
+    Id2String(X) ==String "hashCode"
+
+//hashCode will always return 0 for now
+rule [InvokeHashCode]:
+    'Invoke(
+      methodHashCode(
+        objectClosure((_ <envStack>ListItem((Class:Id, _))...</envStack>))::_
+      ),,
+      'ListWrap(.List{K})
+    ) => 0 :: int
 
 end module

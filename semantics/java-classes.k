@@ -3,6 +3,7 @@ module JAVA-CLASSES
     imports JAVA-EXPRESSIONS
     imports JAVA-STATEMENTS
     imports JAVA-ARRAYS
+    imports CLASS-DEC-Object
     imports CLASS-DEC-RuntimeException
     imports CLASS-DEC-AssertionError
 
@@ -19,7 +20,7 @@ syntax RawVal ::= "objectClosure" "(" Bag ")"
                   ")"
 
 //@ \subsection{Unused Labels}
-syntax KLabel ::= 'Static | 'TypeImportOnDemandDec | 'PackageName
+syntax KLabel ::= 'Static | 'TypeImportOnDemandDec | 'PackageName | 'Final | 'Native
 
 /*@ \subsection{Object and method closures}
 The only change to untyped KOOL's values is that closures are now typed
@@ -135,7 +136,7 @@ When done with the first pass, call \texttt{main()}. */
 rule [CompilationUnit]:
     <k>
       'CompilationUnit(_,,_,,K:K)
-      => K ~> classDecRuntimeException ~> classDecAssertionError ~> execute
+      => K ~> classDecObject ~> classDecRuntimeException ~> classDecAssertionError ~> execute
     </k>
 
 syntax K ::= "execute"
