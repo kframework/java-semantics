@@ -2,7 +2,7 @@ module JAVA-ARRAYS
     imports JAVA-CORE
     imports JAVA-EXPRESSIONS
 
-syntax Type ::= "arrayOf" Type
+syntax RefType ::= "arrayOf" Type
                   [prec(1) latex "{#1}\texttt{\char91\char93}"]
 
 syntax RawVal ::= "arrayRef" "(" Type "," Int "," Int ")"

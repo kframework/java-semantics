@@ -9,7 +9,8 @@ module JAVA-CLASSES
 
 syntax Type ::= "function" "from" List{KResult} "to" Type
                   [prec(1) latex "({#1}\ \texttt{->}\ {#2})"]
-              | "class" Id
+
+syntax RefType ::= "class" Id
 
 syntax RawVal ::= "objectClosure" "(" Bag ")"
                 | "methodClosure" "("
@@ -220,29 +221,56 @@ We extend/change the semantics of several SIMPLE constructs in order
 to take advantage of the richer KOOL semantic infrastructure and thus
 get more from the existing SIMPLE constructs. */
 
-/*@ \subsubsection{Subtyping constraints}
+/*@ \subsubsection{Subtyping among reference types}
 The subclass relation introduces a subtyping relation. */
 
-rule [subtypeRed]:
-    <k> subtype class Class1, class Class
-      => subtype class Class2, class Class ...</k>
+rule [subtypeClassRed]:
+    <k> subtype class Class1:Id, class Class
+      => subtype class Class2:Id, class Class ...</k>
     <className> Class1 </className> <extends> Class2 </extends>
 when Class1 =/=K Class
         [structural]
 
-rule [subtypeFalse]:
+rule [subtypeClassOfClassFalse]:
     subtype class X, class Class => false :: bool
 when
             Id2String(X) ==String "Object"
     andBool X =/=K Class
 
+rule [subTypeClassOfOtherFalse]:
+    subtype class X, RT:RefType => false :: bool
+when
+    getKLabel(RT) =/=KLabel 'class_
+
+rule [subtypeStringOfClass]:
+    subtype rtString, class Class =>
+    #if Id2String(Class) ==String "Object"
+      #then true::bool
+      #else false::bool
+    #fi
+
+rule [subtypeStringOfOtherFalse]:
+    subtype rtString, RT => false::bool
+when
+            getKLabel(RT) =/=KLabel 'rtString
+    andBool getKLabel(RT) =/=KLabel 'class_
+
+//For now, only arrays of the same type may be assigned to each other
+rule [subtypeArrayFalse]:
+    subtype arrayOf T, RT => false::bool
+when
+           getKLabel(RT) =/=KLabel 'arrayOf_
+    orBool arrayOf T =/=K RT
+
 rule [subtypeNull]:
-    subtype nullType, class _ => true :: bool
+    subtype nullType, _:RefType => true :: bool
         [structural]
 
-rule [subtypeNullAndString]:
-    subtype nullType, rtString => true :: bool
-        [structural]
+//@ \texttt{typeOf for raw values of reference type}
+define typeOf(Str:String) => rtString
+define typeOf(null) => nullType
+define typeOf(objectClosure((<envStack>ListItem((Class, _)) _</envStack>))) => class Class
+define typeOf(arrayRef( arrayOf T, _, _)) => arrayOf T
 
 /*@ \subsection{Class declaration}
 Like in untyped KOOL. */
@@ -411,63 +439,22 @@ Like in untyped KOOL. */
 
 syntax KLabel ::= 'InstanceOf [seqstrict]
 
-rule [InstanceOfTrue]:
-    'InstanceOf(
-      objectClosure((<envStack>ListItem((Class, _))...</envStack>))::_,,
-      class Class
-    ) => true :: bool
-
-rule [InstanceOfRed]:
-    'InstanceOf(
-      objectClosure(
-        ( <envStack> ListItem((Class1:Id, _)) => . ...</envStack> )
-      )::_,,
-      class Class2:Id
-    )
-when Class1 =/=K Class2  [structural]
-
-rule [InstanceOfFalse]:
-    'InstanceOf(
-      objectClosure((<envStack> .List </envStack>))::_,,
-      class Class
-    ) => false :: bool
+rule [InstanceOf]:
+    'InstanceOf(V::RT1,, RT2) => subtype typeOf(V), RT2
 
 /*@ \subsection{Cast}
 Unlike in untyped KOOL, in typed KOOL we actually check that the object
 can indeed be cast to the claimed type. */
 
 syntax KLabel ::= 'CastRef
-rule 'CastRef(K1:K,, K2:K) => castImpl(K1,K2)
+rule 'CastRef(K1:K,, K2:K) => castImpl(K1,K2)   [structural]
 
 rule [CastRef]:
     <k>
-      castImpl(class Class, objectClosure(Obj)::T )
-      => 'InstanceOf( objectClosure(Obj)::T,, class Class) ~> true?
-          ~> objectClosure(Obj):: class Class
+      castImpl(RT1:RefType, V:RawVal :: RT2:RefType)
+      => subtype typeOf(V), RT1 ~> true? ~> V::RT1
       ...
     </k>
-        [structural]
-
-rule [CastStringToString]:
-    <k>
-      castImpl(rtString, Str:String :: _ )
-      => Str::rtString
-      ...
-    </k>
-        [structural]
-
-rule [CastStringToObject]:
-    <k>
-      castImpl(class Class, Str :: rtString )
-      => Str :: class Class
-      ...
-    </k>
-when Class ==K String2Id("Object")
-        [structural]
-
-rule [CastNull]:
-    castImpl(T, null::_) => null :: T
-        [structural]
 
 //@ \subsection{Names}
 

@@ -58,11 +58,11 @@ rule 'Id(Str) => String2Id(Str)     [anywhere]
 
 syntax IntOrLongType ::= "int" | "long"
 syntax NumericType ::= "byte" | "short" | IntOrLongType | "char"
+syntax PrimitiveType ::= NumericType | bool
+syntax RefType ::= "rtString" | "nullType"
 
-syntax Type ::= NumericType
-              | "bool"
-              | "rtString"
-              | "nullType"
+syntax Type ::= PrimitiveType
+              | RefType
               | "void"
               | "rtType"
 
@@ -117,13 +117,14 @@ define toString(null::_) => "null" :: rtString
 
 //@ \texttt{typeOf definition}
 
-declare typeOf :  K -> Type
+declare typeOf : K -> Type
 define typeOf(_ :: T:Type) => T
 
+//@ \texttt{subtype definition}
 syntax K ::= "subtype" List{KResult} "," List{KResult}
 
-rule [subtypeTrue]:
-    subtype T,T => true :: bool
+rule [subtypeRefTrue]:
+    subtype T, T => true :: bool
         [structural]
 
 rule [subtypeList]:
