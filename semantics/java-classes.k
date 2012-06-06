@@ -101,7 +101,7 @@ rule [storeConstructor]:
           Name,
           'ListWrap(Params),
           'ExprStm(
-            'Invoke( 'Method('MethodName( BaseClass )),, SuperParamsList )
+            'Invoke( 'Method('MethodName( BaseClass:Id )),, SuperParamsList )
           ) ~> S,
           MethodType
         )
@@ -111,9 +111,9 @@ rule [storeConstructor]:
     <className> Class </className>
     <extends> BaseClass </extends>
 when
-    Id2String(BaseClass) =/=String "Object"
+    Id2String(Class) =/=String "Object"
 
-rule [storeConstructorSubclassOfObject]:
+rule [storeConstructorClassObject]:
     <k>
         storeConstructor(Name, 'ListWrap(Params), _, S, MethodType)
         => storeMethod(
@@ -126,9 +126,8 @@ rule [storeConstructorSubclassOfObject]:
     </k>
     <crntClass> Class:Id </crntClass>
     <className> Class </className>
-    <extends> BaseClass </extends>
 when
-    Id2String(BaseClass) ==String "Object"
+    Id2String(Class) ==String "Object"
 
 /*@ \subsection{Program initialization}
 When done with the first pass, call \texttt{main()}. */
@@ -303,6 +302,19 @@ rule [classDecImpl]:
       ...
     </classes>
 
+rule [classDecImplObject]:
+    <k> classDecImpl(.List{K}, ClassName, BaseClassName, S) => . ...</k>
+    <classes>
+      ...
+      ( . =>  <class>
+                <className> ClassName </className>
+                <extends> .K </extends>
+                <declarations> S </declarations>
+              </class> )
+      ...
+    </classes>
+when Id2String(ClassName) ==String "Object"
+
 /*@ \subsection{New}
 The semantics of \texttt{new} in dynamically typed KOOL is also
 similar to that in untyped KOOL, the main difference being the
@@ -334,8 +346,8 @@ rule [NewInstance]:
       C:Bag
       <crntObj>
         Obj
-        =>  <crntClass> String2Id("Object") </crntClass>
-            <envStack> ListItem((String2Id("object"), <env>.Map</env>)) </envStack>
+        =>  <crntClass> .K </crntClass>
+            <envStack> .List </envStack>
             <location> L </location>
       </crntObj>
       <return> T => class ClassName </return>
@@ -352,19 +364,16 @@ syntax K ::= "create" "(" K ")"
 rule [create]:
     <k>
       create(Class)
-      => create(BaseClass:Id) ~> setCrntClass(Class) ~> S ~> addEnvLayer
+      => create(BaseClassK:K) ~> setCrntClass(Class) ~> S ~> addEnvLayer
       ...
     </k>
     <className> Class </className>
-    <extends> BaseClass </extends>
+    <extends> BaseClassK </extends>
     <declarations> S </declarations>
         [structural]
 
-rule [createObjectDiscard]:
-    <k> create( X ) => . ...</k>
-when
-    Id2String(X) ==String "Object"
-        [structural]
+rule [createEmptyDiscard]:
+    <k> create( .K ) => . ...</k> [structural]
 
 syntax K ::= "setCrntClass" "(" Id ")"
 
