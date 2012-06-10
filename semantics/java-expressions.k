@@ -125,8 +125,9 @@ rule 'Cond(Ks:List{K}) => 'If(Ks)
 Typed KOOL allows to assign subtype instance values to supertype lvalues.
 Assignment operators are seqstrict according to JLS. */
 
-syntax KLabel ::=
-                | /* =    */ 'Assign
+syntax CompoundAssignLabel ::=
+                | /* =    */ 'Assign  // K bug : if we move 'Assign under KLabel, as it's correct,
+                                      // we get errors
                 | /* +=   */ 'AssignPlus
                 | /* -=   */ 'AssignMinus
                 | /* *=   */ 'AssignMul
@@ -138,6 +139,8 @@ syntax KLabel ::=
                 | /* <<=  */ 'AssignLeftShift
                 | /* >>=  */ 'AssignRightShift
                 | /* >>>= */ 'AssignURightShift
+
+syntax KLabel ::= CompoundAssignLabel
 
 context 'Assign((HOLE => lvalue(HOLE)),,_)
 context 'Assign(_:KResult,,HOLE)
@@ -157,32 +160,13 @@ rule [AssignWithConversion]:
 when
     T1 =/=K T2
 
-context CompAssignLabel:KLabel((HOLE => lvalue(HOLE)),,_)
-  when isCompAssignLabel(CompAssignLabel)
+context CALabel:CompoundAssignLabel((HOLE => lvalue(HOLE)),,_)
 
-rule [CompoundAssignPrimitive]:
-    CompAssignLabel(loc(L) :: T,, E:K) => 'Assign(loc(L)::T,,
-      castImpl(T, getOpLabel(CompAssignLabel)(lookup(L)::T,, E)))
-when isCompAssignLabel(CompAssignLabel)
+rule [CompoundAssign]:
+    CALabel(loc(L) :: T,, E:K) => 'Assign(loc(L)::T,,
+      castImpl(T, getOpLabel(CALabel)(lookup(L)::T,, E)))
 
-declare isCompAssignLabel : KLabel -> Bool
-define isCompAssignLabel(KL)
-    =>  #if         KL ==KLabel 'AssignPlus
-            orBool  KL ==KLabel 'AssignMinus
-            orBool  KL ==KLabel 'AssignMul
-            orBool  KL ==KLabel 'AssignDiv
-            orBool  KL ==KLabel 'AssignAnd
-            orBool  KL ==KLabel 'AssignOr
-            orBool  KL ==KLabel 'AssignExcOr
-            orBool  KL ==KLabel 'AssignRemain
-            orBool  KL ==KLabel 'AssignLeftShift
-            orBool  KL ==KLabel 'AssignRightShift
-            orBool  KL ==KLabel 'AssignURightShift
-          #then true
-          #else false
-        #fi
-
-declare getOpLabel : KLabel -> KLabel
+declare getOpLabel : CompoundAssignLabel -> KLabel
 define getOpLabel('AssignPlus) => 'Plus
 define getOpLabel('AssignMinus) => 'Minus
 define getOpLabel('AssignMul) => 'Mul
