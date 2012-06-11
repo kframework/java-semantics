@@ -1,4 +1,4 @@
-# Run a java program with krun.
+# Run a java program with krun, do not display output configuration.
 
 #!/bin/bash
 
@@ -8,9 +8,9 @@ if [ $# -ne 1 ]; then
 fi
 
 javaFile=$1
-
+workDir="$(pwd)"
 TOOLS_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
-krun --parser="java -cp $TOOLS_DIR/../parser/JavaParser.jar ro.uaic.info.fmse.parser.Main" \
+krun --parser="aux-kjparser.sh $workDir" \
   --compiled-def="$TOOLS_DIR/../semantics/java-compiled.maude" \
   --main-module=JAVA --output-mode=none $javaFile
