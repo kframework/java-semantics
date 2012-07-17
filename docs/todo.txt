@@ -1,0 +1,99 @@
+Plan for future development:
+
+1. String +=
+2. Class object. Package name used in getClass().
+3. Basic exceptions.
+4. Conversion and promotion of references.
+5. Operators on references.
+6. Arrays.
+7. Method/constructor overloading.
+8. Class list cleanup.
+9. krun preprocessor.
+10. Test runner improvements.
+
+Details.
+1. String +=
+  It seems that we need a proper class Object and String, to make all tests work.
+
+2. Class object.
+Test plan for class object integration:
+- assign to object: object, string, array, user class.
+- cast from object to: object string, array, user class.
+- object.getClass(), String.getClass(), array.getClass(), userClass.getClass()
+- object.getClass() where object is: string, array, userClass
+- object.toString() where object is: string, userClass with toString overwtitten.
+- Object = null, String = null, array = null, userClass = null.
+- assign from null object, string, array, user class to object.
+- cast from null object to: string, array, user class.
+
+Similarly we need to test NPE and ClassCastException when dealing with a reference
+of type object, and a value of type object, string, array, userClass.
+This will be tested in the test suite for exception.
+
+5. Operators on references.
+After those are done, we can test the example from JLS, chapter compound assignment,
+  with floating-point numbers removed.
+
+6. Arrays.
+Important: there are some nuances regarding array access expression
+  and compound assignment. I suppose similar "particularities" are hidded beyond other
+  expressions in interaction with arrays.
+
+8. Class list cleanup.
+  At the end of program execution, classes which were not used
+  in the program will be deleted from configuration. Thus, final configuration will be kept small
+  and easy analizable.
+
+9. Krun preprocessor explained.
+1.ok. First version: instead of including core classes into the java semantics, they will be
+stored as kast files. Before a program run, a preprocessor will assemble
+those core classes with parser result of the input file into one big kast file,
+which will be considered parsing output. Thus core classes will be included in each program, not in the
+java semantics itself. In this version core classes will be hardcoded.
+
+2. Advanced version.
+This program will take as arguments a list of .java files and directories. The program classpath will consist
+of all given java files, and all java within the given directories.
+for all files in the list,the following operations will be performed:
+  1. the drive will be checked to find out whether there is a .kast file associated with each java file.
+  2. If the kast file exists, and it is newer than the .java file, it is preserved.
+  3. If no kast file exist, or it is older than .java file, the java file will be parsed using the parser,
+    and result stored in a new .kast file.
+  4. At the end, we have a .kast file for each .java file in the classpath.
+In the last step, all .kast files in the classpath will be concatenated in one single file,
+and that file will be given as imput to krun.
+With this tool, we will keep class library files otuside language definition, but they will be moved
+in the program file. As a result, compilaton time shoulddecrease, but run time will increase.
+
+10. Test runner improvements
+1.ok. Write a report at the end of test-runner run:
+  number of tests passed, error, failed, total.
+2.ok. Don't delete any files during test-runner execution. The directory
+  where they are located is not accessed anyway.
+3.ok. Don't delete .temp dir before running the suite, by default.
+  add an option -clean trye/false, to delete it.
+  When we select not to delete the directory, any temp files created
+  will be written over. This should not affect any existing behavior.
+4.ok. Run generator for a test only if .java file or .in file
+  is newer than generated .out file. Thus generator in most cases will not
+  be run.
+  4.1.ok Run generator if .out file is present in the temp dir
+  4.2.ok Check that smart gen is run iff either .java or .in is newer than .out.
+5.ok. Reuse parsing results. Write parse results in a file and feed the file to krun,
+instead of running it directly. Run parser again only if .java file
+has changed since last run.
+6. Write two report files in the .temp dir: list of error tests,
+  and list of failed tests.
+7. Createa a new script: kjf-run , which will run the first failed test, taken from file
+.failed-list.txt, created at step 6. Thus we'll not need anymore
+to specify the name of the test. Since the script will use improved kjrun,
+configuration will be written both on console and in a file.
+8. Improve kjrun so that it displays formatted configuration to the console, and
+uncolored one to a file. This may involve creating a temp dir somwhere in .test,
+and running krun twice in paralel: one for eah configuration.
+
+todo - report to oracle the bug related to array<object>[i]+= string.
+todo - problem in K. Strictness is not applied in the following case:
+syntax KLabel ::= | 'Mul [seqstrict]
+- check java definition to see if there is any syntax affected
+

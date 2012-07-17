@@ -3,9 +3,6 @@ module JAVA-CLASSES
     imports JAVA-EXPRESSIONS
     imports JAVA-STATEMENTS
     imports JAVA-ARRAYS
-    imports CLASS-DEC-Object
-    imports CLASS-DEC-RuntimeException
-    imports CLASS-DEC-AssertionError
 
 syntax Type ::= "function" "from" List{KResult} "to" Type
                   [prec(1) latex "({#1}\ \texttt{->}\ {#2})"]
@@ -135,8 +132,12 @@ When done with the first pass, call \texttt{main()}. */
 
 rule [CompilationUnit]:
     <k>
-      'CompilationUnit(_,,_,,K:K)
-      => K ~> classDecObject ~> classDecRuntimeException ~> classDecAssertionError ~> execute
+      ( 'CompilationUnit(_,,_,,K:K) => K ) ~> 'CompilationUnit(_) ~> _
+    </k>
+
+rule [LastCompilationUnit]:
+    <k>
+      'CompilationUnit(_,,_,,K:K) => K ~> execute
     </k>
 
 syntax K ::= "execute"

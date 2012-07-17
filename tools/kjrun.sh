@@ -9,5 +9,5 @@ fi
 
 javaFile=$1
 
-krun --parser="java -cp ../parser/JavaParser.jar ro.uaic.info.fmse.parser.Main" $javaFile
+krun --parser="prep.sh" $javaFile
 

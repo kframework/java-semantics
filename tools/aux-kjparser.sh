@@ -18,12 +18,12 @@ TOOLS_DIR="$( cd "$( dirname "$0" )" && pwd )"
 if [ ! -f $kastFile ];
 then
     # echo "$kastFile not found"
-    java -cp $TOOLS_DIR/../parser/JavaParser.jar ro.uaic.info.fmse.parser.Main $javaFile > $kastFile
+    prep.sh $javaFile > $kastFile
 else
     if test $javaFile -nt $kastFile
     then
         # echo "$kastFile is too old"
-        java -cp $TOOLS_DIR/../parser/JavaParser.jar ro.uaic.info.fmse.parser.Main $javaFile > $kastFile
+        prep.sh $javaFile > $kastFile
     fi
 fi
 
