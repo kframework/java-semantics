@@ -1,6 +1,6 @@
-# Compiles the given java program, run it and removes the remaining class file.
-
 #!/bin/bash
+
+# Compiles the given java program, run it and removes the remaining class file.
 
 if [ $# -ne 1 ]; then
     echo "Usage: `basename $0` <javaFile>"

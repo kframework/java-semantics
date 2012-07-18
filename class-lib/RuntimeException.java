@@ -1,3 +1,5 @@
+package java.lang;
+
 class RuntimeException {
     String detailMessage = null;
 

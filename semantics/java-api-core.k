@@ -152,10 +152,33 @@ when
     Id2String(X) ==String "getName"
 
 rule [InvokeClassGetName]:
-    'Invoke(
-      methodClassGetName(classObject(Class)),,
-      'ListWrap(.List{K})
-    ) => toString(class Class)
+    <k>
+      'Invoke(
+        methodClassGetName(classObject(Class)),,
+        'ListWrap(.List{K})
+      ) => fullyQualifiedClassName(Ks, Class)
+      ...
+    </k>
+    <class>
+      <className> Class </className>
+      <package> 'ListWrap(Ks:List{K}) </package>
+      ...
+    </class>
+
+syntax K ::= "fullyQualifiedClassName" "("
+                    List{K} //package elements, each of type Id
+                "," Id      //class name
+              ")"
+
+rule [ClassNamePackage]:
+    fullyQualifiedClassName(X,, Ks, Class)
+    => 'Plus(
+      (Id2String(X) +String ".") :: rtString,,
+      toString(fullyQualifiedClassName(Ks, Class))
+    )
+
+rule [ClassNameClass]:
+    fullyQualifiedClassName(.List{K}, Class) => Id2String(Class) :: rtString
 
 rule [NameHashCode]:
     'MethodName(KR:KResult,, X) => methodHashCode(KR)

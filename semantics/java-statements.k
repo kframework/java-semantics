@@ -544,6 +544,7 @@ rule [ThreadTermination]:
       </thread>
     => .)
     <busy> Busy:Set => Busy -Set keys(H) </busy>
+    <executionPhase> "Execute" </executionPhase>
     <dissolveEmptyK> true </dissolveEmptyK>
 
 syntax K ::= "saveStackLayer" "("

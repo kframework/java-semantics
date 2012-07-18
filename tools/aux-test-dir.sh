@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #Creates test suite for the argument dir, using jdk.
 # Executes all the tests in the dir received as argument.
 # Run the script from semantics directory.

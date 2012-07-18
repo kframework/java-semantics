@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #java semantics preprocessor
 # concatenates the parsing result of the given file with java lib classes
 

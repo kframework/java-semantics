@@ -37,6 +37,94 @@ when
 
 rule 'ClassOrInterfaceType(T,,_) => T [structural anywhere]
 
+/*@ \subsection{First pass - processing declarations} */
+
+rule [DefaultPackageDesugar]:
+    'CompilationUnit(
+      ( 'None(_) => 'Some('PackageDec(.K,, 'PackageName( 'ListWrap(.List{K}) ))) ),,
+      _,,_)
+
+rule [CompilationUnit]:
+    <k>
+      'CompilationUnit('Some('PackageDec(_,, 'PackageName( PN:K ))),,_,,K:K) => K ...
+    </k>
+    <cuPackage> _ => PN </cuPackage>
+
+/*@ \subsection{Class declaration}
+Like in untyped KOOL. */
+
+rule [ClassDecWithoutExtendsDesugar]:
+    'ClassDec('ClassDecHead(_:K,, ClassName:Id,,
+        _:K,,
+        ( 'None(_)
+          => 'Some('SuperDec('ClassType(class String2Id("Object"),, 'None(.List{K}))))
+        ),,
+        _:K),, _:K
+    )
+        [structural]
+
+rule [ClassDec]:
+      'ClassDec('ClassDecHead('ListWrap(ClassModifiers:List{K}),, ClassName:Id,, _:K,,
+          'Some('SuperDec('ClassType(class BaseClassName:Id,, _:K))),,
+          _:K),,
+        'ClassBody( S )
+      )  => classDecImpl(ClassModifiers, ClassName, BaseClassName,
+              //public empty constructor
+              //will be overwritten by any other constructor in S
+              'ConstrDec(
+                'ConstrDecHead(
+                  'ListWrap('Public(.List{K})),,
+                  'None(.List{K}),,
+                  ClassName,,
+                  'ListWrap(.List{K}),,
+                  'None(.List{K})
+                ),,
+                'ConstrBody('None(.List{K}),, 'ListWrap(.List{K}))
+              )
+              ~> S
+            )
+        [structural]
+
+syntax K ::= "classDecImpl" "(" List{K} "," Id "," Id "," K ")"
+
+rule [classDecImplModPublic]:
+    <k> classDecImpl( ('Public(_) => .List{K}),, _:List{K}, ClassName, _, _ ) ...</k>
+    <mainClass> . => ClassName </mainClass>
+
+rule [classDecImplModDiscard]:
+    classDecImpl( (K => .List{K}),, _:List{K}, ClassName, _, _ )
+when
+  K =/=K 'Public(.List{K})
+
+rule [classDecImpl]:
+    <k> classDecImpl(.List{K}, ClassName, BaseClassName, S) => . ...</k>
+    <cuPackage> PN </cuPackage>
+    <classes>
+      ...
+      ( . =>  <class>
+                <className> ClassName </className>
+                <extends> BaseClassName </extends>
+                <package> PN </package>
+                <declarations> S </declarations>
+              </class> )
+      ...
+    </classes>
+
+rule [classDecImplObject]:
+    <k> classDecImpl(.List{K}, ClassName, BaseClassName, S) => . ...</k>
+    <cuPackage> PN </cuPackage>
+    <classes>
+      ...
+      ( . =>  <class>
+                <className> ClassName </className>
+                <extends> .K </extends>
+                <package> PN </package>
+                <declarations> S </declarations>
+              </class> )
+      ...
+    </classes>
+when Id2String(ClassName) ==String "Object"
+
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
 closures, so that their type contract can be checked at invocation
@@ -127,23 +215,8 @@ rule [storeConstructorClassObject]:
 when
     Id2String(Class) ==String "Object"
 
-/*@ \subsection{Program initialization}
-When done with the first pass, call \texttt{main()}. */
-
-rule [CompilationUnit]:
-    <k>
-      ( 'CompilationUnit(_,,_,,K:K) => K ) ~> 'CompilationUnit(_) ~> _
-    </k>
-
-rule [LastCompilationUnit]:
-    <k>
-      'CompilationUnit(_,,_,,K:K) => K ~> execute
-    </k>
-
-syntax K ::= "execute"
-
 rule [execute]:
-    <k> execute =>
+    <k> . =>
       //k-ast for new <MainClass>().main(new String[0]);
       'ExprStm(
         'Invoke(
@@ -166,6 +239,7 @@ rule [execute]:
     </k>
     <env> . </env>
     <mainClass> MainClass:Id </mainClass>
+    <executionPhase> "ProcessDeclarations" => "Execute" </executionPhase>
 
 //@ \subsection{Auxiliary operations}
 
@@ -193,18 +267,6 @@ rule [bindtoEmpty]:
 //@ \texttt{typeOf and toString}
 
 define typeOf('Param(_:K,,K,,_)) => K
-
-define
-    toString(class Class) => Id2String(Class) :: rtString
-when
-            Id2String(Class) =/=String "RuntimeException"
-    andBool Id2String(Class) =/=String "AssertionError"
-
-define
-    toString(class Class) => "java.lang." +String Id2String(Class) :: rtString
-when
-            Id2String(Class) ==String "RuntimeException"
-     orBool Id2String(Class) ==String "AssertionError"
 
 define toString(objectClosure(Obj:Bag) :: T)
     =>  'Invoke(
@@ -272,77 +334,6 @@ define typeOf(Str:String) => rtString
 define typeOf(null) => nullType
 define typeOf(objectClosure((<envStack>ListItem((Class, _)) _</envStack>))) => class Class
 define typeOf(arrayRef( arrayOf T, _, _)) => arrayOf T
-
-/*@ \subsection{Class declaration}
-Like in untyped KOOL. */
-
-rule [ClassDecWithoutExtendsDesugar]:
-    'ClassDec('ClassDecHead(_:K,, ClassName:Id,,
-        _:K,,
-        ( 'None(_)
-          => 'Some('SuperDec('ClassType(class String2Id("Object"),, 'None(.List{K}))))
-        ),,
-        _:K),, _:K
-    )
-        [structural]
-
-rule [ClassDec]:
-      'ClassDec('ClassDecHead('ListWrap(ClassModifiers:List{K}),, ClassName:Id,, _:K,,
-          'Some('SuperDec('ClassType(class BaseClassName:Id,, _:K))),,
-          _:K),,
-        'ClassBody( S )
-      )  => classDecImpl(ClassModifiers, ClassName, BaseClassName,
-              //public empty constructor
-              //will be overwritten by any other constructor in S
-              'ConstrDec(
-                'ConstrDecHead(
-                  'ListWrap('Public(.List{K})),,
-                  'None(.List{K}),,
-                  ClassName,,
-                  'ListWrap(.List{K}),,
-                  'None(.List{K})
-                ),,
-                'ConstrBody('None(.List{K}),, 'ListWrap(.List{K}))
-              )
-              ~> S
-            )
-        [structural]
-
-syntax K ::= "classDecImpl" "(" List{K} "," Id "," Id "," K ")"
-
-rule [classDecImplModPublic]:
-    <k> classDecImpl( ('Public(_) => .List{K}),, _:List{K}, ClassName, _, _ ) ...</k>
-    <mainClass> . => ClassName </mainClass>
-
-rule [classDecImplModDiscard]:
-    classDecImpl( (K => .List{K}),, _:List{K}, ClassName, _, _ )
-when
-  K =/=K 'Public(.List{K})
-
-rule [classDecImpl]:
-    <k> classDecImpl(.List{K}, ClassName, BaseClassName, S) => . ...</k>
-    <classes>
-      ...
-      ( . =>  <class>
-                <className> ClassName </className>
-                <extends> BaseClassName </extends>
-                <declarations> S </declarations>
-              </class> )
-      ...
-    </classes>
-
-rule [classDecImplObject]:
-    <k> classDecImpl(.List{K}, ClassName, BaseClassName, S) => . ...</k>
-    <classes>
-      ...
-      ( . =>  <class>
-                <className> ClassName </className>
-                <extends> .K </extends>
-                <declarations> S </declarations>
-              </class> )
-      ...
-    </classes>
-when Id2String(ClassName) ==String "Object"
 
 /*@ \subsection{New}
 The semantics of \texttt{new} in dynamically typed KOOL is also

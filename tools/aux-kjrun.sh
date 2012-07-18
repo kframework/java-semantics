@@ -1,6 +1,6 @@
-# Run a java program with krun, do not display output configuration.
-
 #!/bin/bash
+
+# Run a java program with krun, do not display output configuration.
 
 if [ $# -ne 1 ]; then
     echo "Usage: `basename $0` <javaFile>"

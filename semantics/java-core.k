@@ -1,13 +1,7 @@
 module JAVA-CORE
 
 /*@ \section{Configuration}
-The configuration is almost identical to that of untyped SIMPLE,
-except for a \textsf{return} cell inside the \textsf{control} cell.
-This \textsf{return} cell will hold, like in the static semantics of
-typed SIMPLE, the expected type of the value returned by the function
-being executed.  The contents of this cell will be set whenever a
-function is invoked and will be checked whenever the evaluation of the
-function body encounters an explicit \texttt{return} statement. */
+The configuration is almost identical to that of typed KOOL.*/
 
 configuration <T color="red">
                 <threads color="orange">
@@ -43,11 +37,14 @@ configuration <T color="red">
                    <class multiplicity="*" color="Fuchsia">
                       <className color="Fuchsia"> .K </className>
                       <extends color="Fuchsia"> .K </extends>
+                      <package> .K </package>
                       <declarations color="purple"> .K </declarations>
-                      <metatype color="Fuchsia"> "concrete class" </metatype>
                    </class>
                 </classes>
                 <mainClass> .K </mainClass>
+                //current compilation unit package
+                <cuPackage> .K </cuPackage>
+                <executionPhase> "ProcessDeclarations" </executionPhase>
               </T>
 
 //@ \section{Identifiers}

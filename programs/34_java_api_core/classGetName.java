@@ -1,5 +1,3 @@
-import java.util.*;
-
 class Musketeer {}
 class DArtagnan extends Musketeer {}
 

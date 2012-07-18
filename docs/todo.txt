@@ -1,50 +1,60 @@
 Plan for future development:
 
-1. String +=
-2. Class object. Package name used in getClass().
-3. Basic exceptions.
-4. Conversion and promotion of references.
-5. Operators on references.
-6. Arrays.
+1.ok. String +=
+2. Class object.
+  2.1. Package names used in getClass(). (and as a result in toString())
+  Remove reference to core class packages in semantics.
+3. Reference operators.
+4. Basic exceptions.
+5. Arrays.
 7. Method/constructor overloading.
 8. Class list cleanup.
 9.ok. krun preprocessor.
 10. Test runner improvements.
 
 Details.
-1. String +=
-  It seems that we need a proper class Object and String, to make all tests work.
+1.ok. String +=
+  All seems to work.
 
-2. Class object.
-Test plan for class object integration:
-- assign to object: object, string, array, user class.
-- cast from object to: object string, array, user class.
+2. Object methods:
 - object.getClass(), String.getClass(), array.getClass(), userClass.getClass()
 - object.getClass() where object is: string, array, userClass
-- object.toString() where object is: string, userClass with toString overwtitten.
+- object.toString() where object is: string, userClass with toString overwritten.
+
+3. Reference operators.
+Test plan for class object integration:
+- assign to object: object, string, array, user class.
 - Object = null, String = null, array = null, userClass = null.
 - assign from null object, string, array, user class to object.
-- cast from null object to: string, array, user class.
 
-Similarly we need to test NPE and ClassCastException when dealing with a reference
-of type object, and a value of type object, string, array, userClass.
-This will be tested in the test suite for exception.
+- cast from object to: object string, array, user class.
+- cast from object with value null to: string, array, user class.
 
-5. Operators on references.
-After those are done, we can test the example from JLS, chapter compound assignment,
-  with floating-point numbers removed.
+(todo check other operators: instanceOf, ==, !=)
 
-6. Arrays.
-Important: there are some nuances regarding array access expression
+(Conversion and promotion of references?)
+- JLS Compound assignment example.
+  The example from JLS, chapter compound assignment, without floating-point numbers.
+  Now it should work.
+
+4. Basic Exception.
+  Similarly we need to test NPE and ClassCastException when dealing with a reference
+  of type object, and a value of type object, string, array, userClass.
+  This will be tested in the test suite for exception.
+
+5. Arrays.
+  Important: there are some nuances regarding array access expression
   and compound assignment. I suppose similar "particularities" are hidded beyond other
   expressions in interaction with arrays.
+
+7. Method/constructor overloading.
 
 8. Class list cleanup.
   At the end of program execution, classes which were not used
   in the program will be deleted from configuration. Thus, final configuration will be kept small
   and easy analizable.
 
-9.ok. K java preprocessor explained.
+9.ok. K java preprocessor.
 
 1.ok. First version: instead of including core classes into the java semantics, they will be
   stored as kast files. Before a program run, a preprocessor will assemble
@@ -76,13 +86,14 @@ Important: there are some nuances regarding array access expression
 5.ok. Reuse parsing results. Write parse results in a file and feed the file to krun,
 instead of running it directly. Run parser again only if .java file
 has changed since last run.
-6. Write two report files in the .temp dir: list of error tests,
+6.ok. add -clean option to kjtest.sh
+7. Write two report files in the .temp dir: list of error tests,
   and list of failed tests.
-7. Createa a new script: kjf-run , which will run the first failed test, taken from file
+8. Createa a new script: kjf-run , which will run the first failed test, taken from file
 .failed-list.txt, created at step 6. Thus we'll not need anymore
 to specify the name of the test. Since the script will use improved kjrun,
 configuration will be written both on console and in a file.
-8. Improve kjrun so that it displays formatted configuration to the console, and
+9. Improve kjrun so that it displays formatted configuration to the console, and
 uncolored one to a file. This may involve creating a temp dir somwhere in .test,
 and running krun twice in paralel: one for eah configuration.
 
