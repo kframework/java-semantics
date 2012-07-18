@@ -9,5 +9,5 @@ fi
 
 javaFile=$1
 
-krun --parser="prep.sh" $javaFile
+krun --parser="aux-kjprep.sh" $javaFile
 

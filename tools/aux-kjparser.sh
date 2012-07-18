@@ -1,6 +1,6 @@
-# Parse a java program, and savethe parsed result in a file.
-# Output that file. If the file with parse result already exists and is newer
-# than java file, just output that file.
+# Parse a java program, and save the parsed result in a file.
+# Output that file. If the file with parse result already exists and it is newer
+# than the java file, just output that file.
 
 #!/bin/bash
 
@@ -18,12 +18,12 @@ TOOLS_DIR="$( cd "$( dirname "$0" )" && pwd )"
 if [ ! -f $kastFile ];
 then
     # echo "$kastFile not found"
-    prep.sh $javaFile > $kastFile
+    aux-kjprep.sh $javaFile > $kastFile
 else
     if test $javaFile -nt $kastFile
     then
         # echo "$kastFile is too old"
-        prep.sh $javaFile > $kastFile
+        aux-kjprep.sh $javaFile > $kastFile
     fi
 fi
 

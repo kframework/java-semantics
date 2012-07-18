@@ -8,7 +8,7 @@ Plan for future development:
 6. Arrays.
 7. Method/constructor overloading.
 8. Class list cleanup.
-9. krun preprocessor.
+9.ok. krun preprocessor.
 10. Test runner improvements.
 
 Details.
@@ -44,26 +44,20 @@ Important: there are some nuances regarding array access expression
   in the program will be deleted from configuration. Thus, final configuration will be kept small
   and easy analizable.
 
-9. Krun preprocessor explained.
-1.ok. First version: instead of including core classes into the java semantics, they will be
-stored as kast files. Before a program run, a preprocessor will assemble
-those core classes with parser result of the input file into one big kast file,
-which will be considered parsing output. Thus core classes will be included in each program, not in the
-java semantics itself. In this version core classes will be hardcoded.
+9.ok. K java preprocessor explained.
 
-2. Advanced version.
-This program will take as arguments a list of .java files and directories. The program classpath will consist
-of all given java files, and all java within the given directories.
-for all files in the list,the following operations will be performed:
-  1. the drive will be checked to find out whether there is a .kast file associated with each java file.
-  2. If the kast file exists, and it is newer than the .java file, it is preserved.
-  3. If no kast file exist, or it is older than .java file, the java file will be parsed using the parser,
-    and result stored in a new .kast file.
-  4. At the end, we have a .kast file for each .java file in the classpath.
-In the last step, all .kast files in the classpath will be concatenated in one single file,
-and that file will be given as imput to krun.
-With this tool, we will keep class library files otuside language definition, but they will be moved
-in the program file. As a result, compilaton time shoulddecrease, but run time will increase.
+1.ok. First version: instead of including core classes into the java semantics, they will be
+  stored as kast files. Before a program run, a preprocessor will assemble
+  those core classes with parser result of the input file into one big kast file,
+  which will be considered parsing output. Thus core classes will be included in each program, not in
+  the java semantics itself. In this version core classes will be hardcoded in the preprocessor.
+2.ok. Improve the preprocessor to recursively parse the class-lib directory
+  and to include all the .kast files within. Now we don't need to hardcode the .kast files.
+3.ok. Now search for .java files in class-lib and parse them all into .kast files before assembling.
+4.ok. Implement cached class lib parsing - parse .kast files only if they don't exist or if .java file
+  is newer than the associated .kast file. Since neither kast format or java syntax are expected to
+  change, this caching should be safe.
+
 
 10. Test runner improvements
 1.ok. Write a report at the end of test-runner run:
