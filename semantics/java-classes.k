@@ -318,12 +318,18 @@ when
             getKLabel(RT) =/=KLabel 'rtString
     andBool getKLabel(RT) =/=KLabel 'class_
 
-//For now, only arrays of the same type may be assigned to each other
-rule [subtypeArrayFalse]:
-    subtype arrayOf T, RT => false::bool
+rule [subtypeArrayOfClass]:
+    subtype arrayOf _, class Class =>
+    #if Id2String(Class) ==String "Object"
+      #then true::bool
+      #else false::bool
+    #fi
+
+rule [subtypeArrayOfOtherFalse]:
+    subtype arrayOf _, RT => false::bool
 when
-           getKLabel(RT) =/=KLabel 'arrayOf_
-    orBool arrayOf T =/=K RT
+            getKLabel(RT) =/=KLabel 'arrayOf_
+    andBool getKLabel(RT) =/=KLabel 'class_
 
 rule [subtypeNull]:
     subtype nullType, _:RefType => true :: bool
@@ -432,7 +438,11 @@ Like in untyped KOOL. */
 syntax KLabel ::= 'InstanceOf [seqstrict]
 
 rule [InstanceOf]:
-    'InstanceOf(V::RT1,, RT2) => subtype typeOf(V), RT2
+    'InstanceOf(V::_,, RT2)
+    =>  #if V =/=K null
+          #then subtype typeOf(V), RT2
+          #else false::bool
+        #fi
 
 /*@ \subsection{Cast}
 Unlike in untyped KOOL, in typed KOOL we actually check that the object

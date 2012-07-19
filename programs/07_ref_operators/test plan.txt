@@ -1,0 +1,37 @@
+Reference operators.
+All operators: =, ==, !=, cast, instanceof
+
+Part 1: operator =
+01. assign to object: object, string, array, userClass.
+02. Object = null, String = null, array = null, userClass = null.
+03. assign from null object, string, array, userClass to object.
+
+Part 2: operator ==
+04. ==true: object, string, array, userClass
+05. ==true: string object w string, array object w array, userClass object w userClass, userClass w null
+06. == false: object w object, string w string, diff. content, array w array, same content, userClass w userClass, same content
+07. == false, object w obj string, object w obj array, object w obj userClass, obj userClass w obj null.
+
+Part 3: operator !=
+08. != false: object w object, string object w string, array object w array, userClass object w userClass, userClass w null.
+09. != true, object w object, object w obj string, object w obj array, object w obj userClass, obj userClass w obj null.
+
+Part 4: operator cast
+10. cast from object to: object, string, array, userClass.
+11. cast from object with value null to: object, string, array, userClass.
+12. cast from base class to derived, exact type
+13. cast from base class to derived, instance is more derived type.
+
+Part 5: operator instanceof
+14. instanceof true: obj right value instanceof object, string, array, userClass
+15. instanceof false: object, userClass1 instanceof string, array, userClass2.
+16. null instanceof object, string, array, userClass.
+17. instanceof true: base class is exact derived class
+    instanceof true: base class is derived class, instance is more derived class.
+18. instanceof false: base class is not derived class
+    instanceof false: base class is first derived class, but not second, more derived class.
+    instanceof false: base class is one derived class, but not another one, unrelated.
+
+Part 6: conditional operator ?:
+19. obj = (?) string : userClass => string
+    obj = (?) string : userClass => userClass

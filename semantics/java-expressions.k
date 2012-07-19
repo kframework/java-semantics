@@ -82,9 +82,11 @@ rule /* I1 + I2     */ 'Plus(I1:Int :: NT1,, I2:Int :: NT2) => normalize( (I1 +I
 rule /* Str1 + Str2 */ 'Plus(Str1:String :: rtString,, Str2:String :: rtString)
     => (Str1 +String Str2) :: rtString
 rule /* Str + KR    */ 'Plus(Str:String :: rtString,, ( KR:KResult => toString(KR) ))
-    when typeOf(KR) =/=K rtString
+when       typeOf(KR) =/=K rtString
+    orBool KR ==K (null::rtString)
 rule /* KR + Str    */ 'Plus(( KR => toString(KR) ),, Str :: rtString)
-    when typeOf(KR) =/=K rtString
+when       typeOf(KR) =/=K rtString
+    orBool KR ==K (null::rtString)
 
 rule /* I1 - I2    */ 'Minus(I1 :: NT1,, I2 :: NT2) => normalize( _-Int_(I1,I2), NT1, NT2 )
 rule /* I1 * I2    */ 'Mul(I1 :: NT1,, I2 :: NT2) => normalize( (I1 *Int I2), NT1, NT2 )

@@ -67,6 +67,8 @@ rule [newArrayImplMultiDim]:
 
 context newArrayImpl(_:KResult, 'ListWrap('Dim(HOLE)), _)
 
+//in order to avoid problems with empty arrays
+//even if the created array is empty it will increment nextLoc by one
 rule [newArrayImpl]:
     <k>
       newArrayImpl(T, 'ListWrap('Dim(NI:Int::_)), InitExp:K)
@@ -75,7 +77,13 @@ rule [newArrayImpl]:
       ...
     </k>
     <store>... . => LI .. LI +Int _-Int_(NI,1) |-> undefined :: T ...</store>
-    <nextLoc> LI:Int => LI +Int NI </nextLoc>
+    <nextLoc> LI:Int => LI +Int max(NI,1) </nextLoc>
+
+declare max : Int Int -> Int
+define max(I1, I2) => #if I1 >=Int I2
+                        #then I1
+                        #else I2
+                      #fi
 
 syntax K ::= "evalAndStore" "(" List{K}  "," K ")"
 
@@ -96,6 +104,14 @@ rule [evalAndStore]:
 rule [evalAndStoreEmpty]:
     evalAndStore(.List{K}, _) => .
         [structural]
+
+//@ Subtype
+rule [subtypeArrayOfArray]:
+    subtype arrayOf T1, arrayOf T2 =>
+    #if T1 ==K T2
+      #then true::bool
+      #else false::bool
+    #fi
 
 //@ Sequences of locations
 
