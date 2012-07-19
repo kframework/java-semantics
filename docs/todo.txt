@@ -22,22 +22,44 @@ Details.
 - object.toString() where object is: string, userClass with toString overwritten.
 
 3. Reference operators.
-Test plan for class object integration:
+All operators: =, ==, !=, cast, instanceof
+
+3.1 =
 - assign to object: object, string, array, user class.
 - Object = null, String = null, array = null, userClass = null.
 - assign from null object, string, array, user class to object.
 
-- cast from object to: object string, array, user class.
+3.2 ==
+- ==true: object, string, array, exception
+- ==true: string object w string, array object w array, exception object w exception, object w null
+- == false: object w object, string w string, diff. content, array w array, same content, exception w exception, same content
+- == false, object w obj string, object w obj array, object w obj exception, obj exception w obj null.
+
+3.3 !=
+- !=false: object, string, array, exception, object w null
+- !=false: string object w string, array object w array, exception object w exception.
+- != true: object w object, string w string, diff. content, array w array, same content, exception w exception, same content
+- != true, object w obj string, object w obj array, object w obj exception, obj exception w obj null.
+
+3.4 cast
+- cast from object to: object, string, array, exception.
+- cast from base class to derived, exact type
+- cast from base class to derived, more derived type
 - cast from object with value null to: string, array, user class.
 
-(todo check other operators: instanceOf, ==, !=)
+3.5 instanceof
+- instanceof true: object instanceof string, array, exception
+- instanceof false: obj string, obj array, obj exception as user class
+- instanceof true: base class is exact derived class
+- instanceof true: base class is derived class, instance is more derived class.
 
-(Conversion and promotion of references?)
-- JLS Compound assignment example.
+3.6 JLS Compound assignment example.
   The example from JLS, chapter compound assignment, without floating-point numbers.
   Now it should work.
 
-4. Basic Exception.
+3.7 Conversion and promotion of references?
+
+4. Basic Exceptions.
   Similarly we need to test NPE and ClassCastException when dealing with a reference
   of type object, and a value of type object, string, array, userClass.
   This will be tested in the test suite for exception.

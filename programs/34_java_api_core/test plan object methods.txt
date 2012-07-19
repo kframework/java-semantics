@@ -1,0 +1,7 @@
+1. object.getClass(), String.getClass(), array.getClass(), userClass.getClass()
+2. object.getClass() where object is: string, array, userClass
+3. object.toString() where object is: string, userClass with toString overwritten.
+
+Important: just a part of the plan is implemented in tests: reason - we should avoid implementation
+  of array and string as real classes until later moment, to avoid overbloated configurations.
+
