@@ -1,11 +1,11 @@
 Plan for future development:
 
 1.ok. String +=
-2. Class object.
-  2.1. Package names used in getClass(). (and as a result in toString())
+2.ok. Object methods.
+  Package names used in getClass(). (and as a result in toString())
   Remove reference to core class packages in semantics.
-3. Reference operators.
-4. Basic exceptions.
+3.ok. Reference operators.
+4.ok. Basic exceptions.
 5. Arrays.
 7. Method/constructor overloading.
 8. Class list cleanup.
@@ -19,13 +19,14 @@ Details.
 2.ok. Object methods:
   Test plan is in 34_java_api_core.
 
-3. Reference operators.
-3.1.ok. All operators: =, ==, !=, cast, instanceof
+3.ok. Reference operators.
+  All operators: =, ==, !=, cast, instanceof
   Test plan is in ref_operators dir.
+  With this operators implemented, conversions and promotions for reference types
+  are completely implemented.
 
-3.2 Conversion and promotion of references?
-
-4. Basic Exceptions.
+4.ok. Basic Exceptions.
+  JLS $5.6 is the best reference.
   ArithmeticException, NullPointerException, ClassCastException.
   Similarly to step 3 we need to test NPE and ClassCastException when dealing with a reference
   of type object, and a value of type object, string, array, userClass.

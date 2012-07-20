@@ -91,9 +91,24 @@ when       typeOf(KR) =/=K rtString
 rule /* I1 - I2    */ 'Minus(I1 :: NT1,, I2 :: NT2) => normalize( _-Int_(I1,I2), NT1, NT2 )
 rule /* I1 * I2    */ 'Mul(I1 :: NT1,, I2 :: NT2) => normalize( (I1 *Int I2), NT1, NT2 )
 rule /* I1 / I2    */ 'Div(I1 :: NT1,, I2 :: NT2) => normalize( (I1 /Int I2), NT1, NT2 )
-    when I2 =/=Int 0 //todo ArithmeticException
+    when I2 =/=Int 0
+rule                  'Div(_::_     ,, 0::_)
+   => 'Throw('NewInstance(
+        'None(.List{K}),,
+        'class_(String2Id("ArithmeticException")),,
+        'ListWrap( "/ by zero" :: rtString ),,
+        'None(.List{K})
+      ))
+
 rule /* I1 % I2    */ 'Remain(I1 :: NT1,, I2 :: NT2) => normalize( (I1 %Int I2), NT1, NT2 )
-    when I2 =/=Int 0 //todo ArithmeticException
+    when I2 =/=Int 0
+rule                  'Remain(_::_     ,, 0::_)
+   => 'Throw('NewInstance(
+        'None(.List{K}),,
+        'class_(String2Id("ArithmeticException")),,
+        'ListWrap( "/ by zero" :: rtString ),,
+        'None(.List{K})
+      ))
 
 // ++E
 context 'PreIncr(HOLE => lvalue(HOLE))

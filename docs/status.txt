@@ -22,19 +22,17 @@ with methods with same name and return type void.
   (those are not supported by maude)
 10. All integer operators - arithmetic, bitwise, bit shift, composite assignment.
   For int and long. Including overflow.
-11. Superclass constructor invocation during new object creation.
-12. Support for default constructor.
-13. Support for all primitive integer types and explicit conversion. (JLS $4)
-14. Support for all kind of conversions and promotions for integers (JLS $5)
-
+11. All reference operators.
+12. Superclass constructor invocation during new object creation.
+13. Support for default constructor.
+14. Support for all primitive integer types and explicit conversion. (JLS $4)
+15. Support for all kind of conversions and promotions for integers and references (JLS $5)
+16. Basic exceptions: ArithmeticException, NullPointerException, ClassCastException.
 
 
 Limitations:
-1. Id's refered in semantics cannot start with capital letters. This
-should be resolved in K, otherwise we would need workarounds to deal
-with java class names.
 
-2. K syntax limitation:
+1. K syntax limitation:
 A production cannot have a non-terminal of sort List{K} and another
 non-terminal of sort some List, surrounded by terminals.
 
@@ -50,7 +48,7 @@ Non-related to java semantics:
 Postponed features:
 1. Assert with one argument should call AssertionError exception
   without arguments. Postponed until constructor overloading will
-  be implemented.
+  be implemented. There's no semantics difference though.
 2. After NPE will be implemented, all seqstrict constructs should be reviewed.
   Some of them should throw NPE immediatley after first argument evaluates to null,
   thus second argument should not be evaluated.
@@ -59,5 +57,4 @@ Postponed features:
   with the same value. Test for conditional operator now passes, although
   I have no logic implemented specifically for it.
   I cannot implement a test even for char promotion.
-
 

@@ -166,6 +166,12 @@ rule [InvokeClassGetName]:
       ...
     </class>
 
+define toString(class Class)
+    => 'Invoke(
+          methodClassGetName(classObject(Class)),,
+          'ListWrap(.List{K})
+        )
+
 syntax K ::= "fullyQualifiedClassName" "("
                     List{K} //package elements, each of type Id
                 "," Id      //class name

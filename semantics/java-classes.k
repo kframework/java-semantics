@@ -454,7 +454,17 @@ rule 'CastRef(K1:K,, K2:K) => castImpl(K1,K2)   [structural]
 rule [CastRef]:
     <k>
       castImpl(RT1:RefType, V:RawVal :: RT2:RefType)
-      => subtype typeOf(V), RT1 ~> true? ~> V::RT1
+      =>  'If(
+            (subtype typeOf(V), RT1),,
+            (V::RT1),,
+            'Throw('NewInstance(
+                    'None(.List{K}),,
+                    'class_(String2Id("ClassCastException")),,
+                    'ListWrap( 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to "::rtString),,
+                        toString(RT1)) ),,
+                    'None(.List{K})
+                  ))
+          )
       ...
     </k>
 
@@ -507,6 +517,19 @@ rule [ExprNameQualified]:
     </k>
         [structural]
 
+rule [ExprNameQualifiedNull]:
+    <k>
+      'ExprName(null :: class Class,, X)
+      =>  'Throw('NewInstance(
+            'None(.List{K}),,
+            'class_(String2Id("NullPointerException")),,
+            'ListWrap( null :: nullType ),,
+            'None(.List{K})
+          ))
+      ...
+    </k>
+        [structural]
+
 rule [SuperField]:
     <k>'SuperField(X) => lookupMember(<envStack>EStack</envStack>, X) ...</k>
     <crntClass> Class </crntClass>
@@ -538,6 +561,19 @@ rule [MethodNameQualified]:
     </k>
 when
     Id2String(X) =/=String "getClass"
+        [structural]
+
+rule [MethodNameQualifiedNull]:
+    <k>
+      'MethodName(null :: _,, X)
+      =>  'Throw('NewInstance(
+            'None(.List{K}),,
+            'class_(String2Id("NullPointerException")),,
+            'ListWrap( null :: nullType ),,
+            'None(.List{K})
+          ))
+      ...
+    </k>
         [structural]
 
 // super.X(_) => lookupMember(... , )(_)

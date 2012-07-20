@@ -95,7 +95,12 @@ computation to continue only if a prefix guard evaluates to true.  */
 syntax K ::= "true?"
 rule true::bool ~> true? => .  [structural]
 
-/*@ \section{auxiliaty constructs} */
+//Converts a Bool::bool result into Bool, to be used with #if
+declare isTrue : K -> Bool
+context isTrue(HOLE)
+define isTrue(B:Bool :: bool) => B
+
+/*@ \section{auxiliary constructs} */
 
 
 /*toString - Converts various result types to string type, mainly for printing.*/
@@ -111,6 +116,14 @@ define toString(I :: T:Type) => Int2String(I) :: rtString
 define toString(true::_) => "true" :: rtString
 define toString(false::_) => "false" :: rtString
 define toString(null::_) => "null" :: rtString
+
+define toString(rtString) => "java.lang.String"::rtString
+
+//string representation of a type within an array type
+//see JDK: Class.getName()
+declare arrayToString : K -> TypedVal
+context arrayToString(HOLE)
+define arrayToString(int) => "I"::rtString
 
 //@ \texttt{typeOf definition}
 

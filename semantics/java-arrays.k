@@ -113,6 +113,8 @@ rule [subtypeArrayOfArray]:
       #else false::bool
     #fi
 
+define toString(arrayOf T) => 'Plus("["::rtString,, arrayToString(T))
+
 //@ Sequences of locations
 
 syntax List{K} ::= Int ".." Int
