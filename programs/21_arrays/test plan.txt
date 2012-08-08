@@ -23,22 +23,30 @@ Part 2. Array allocation.
 4. Array allocation, NegativeArraySizeException:
   - [negative]
   - [positive][negative]
-  - [zero][negative] ??
+  - [zero][negative]
 
-5. Array variable, [] as part of the declarator (compatibility with C):
+5. Various dim expression types: int, short, byte, char (true literal).
+  For each a read and a write.
+
+6. Order of dims during allocation:
+  - [++i][++i][++i]
+  - [negative][2/0] - should throw ArithmeticException.
+
+7. Array variable, [] as part of the declarator (compatibility with C):
   - int[] b[]. Assign, access.
 
 Part 3. Array access.
 
-6. Normal access:
+canceled. Normal access:
   - one dim, constant index
   - two dims, constant index
   - one dim, var index
   - two dims, var index
+  Already covered by previous tests.
 
-7. Various index types: int, short, byte, char (true literal).
+8. Various index types: int, short, byte, char (true literal).
 
-8. ArrayOutOfBoundsException.
+9. ArrayOutOfBoundsException.
   - one dim, negative, read & write.
   - one dim, = length
   - one dim > length
@@ -47,34 +55,37 @@ Part 3. Array access.
   - two dims, second dim = length
   - two dims, second dim > length
 
-9. Order of dims evaluation:
-  - two dims, first index is 2/0, second index is negative.
-    Throws ArithmeticException.
+10. Array access evaluation order:
+  - [++i][++i][++i]
+  - [2/0][negative] - throws ArithmeticException.
+
+11. Array access null.
+  - null[2] - throws NullPointerException. Read, write.
 
 Part 4. Array assignment (no conversion).
 
-10. Assign among arrays.
+12. Assign among arrays.
   - two one dim arrays, assign one to another. Test an element in second array.
   Change an element in first. Element should be changed in both arrays.
 
-11. Assign among arrays.
+13. Assign among arrays.
   - two one dim arrays, both initialized, assign one to another.
     Initialization value of assigned array is rewritten.
 
-12. Assign among arrays. Multidim arrays.
+14. Assign among arrays. Multidim arrays.
   - A[][]. B[]. A[1] = B. Test.
   - A[][][]. B[][], A[1] = B. Test final value.
   - A[1][1] = B[1]. Test
 
 Part 5. Array members.
 
-13. array.length
+15. array.length
   - one dim, positive
   - one dim, zero
   - two dims, positive
   - two dims, zero
 
-14. array.clone
+16. array.clone
   - one dim, array of ints, length = 0, test for ==
   - two dims, array of ints, [zero][zero], test for ==
   - int[3], test for ==
@@ -84,11 +95,11 @@ Part 5. Array members.
 
 Part 6. Arrays assignment compatibility and ArrayStoreException.
 
-15. Compatible arrays.
+17. Compatible arrays.
   - RuntimeException[] vre = NullPointerException[]. assign. read.
   - NPE[] b = (RE[]) vre. Cast to the opposite direction should work.
 
-16. ArrayStoreException.
+18. ArrayStoreException.
   - Example from JLS $10.10
 
 Part 7 Array initializer.
@@ -96,25 +107,25 @@ Part 7 Array initializer.
 Subpart 7.1: Array initializer in array creation expression:
   like new int[]{1,2,3}
 
-17. One dim int[] = new int[]{1,3,7}
-18. Two dim ints = new int[][]{{1,2}, null}
-19. One dim string = new String[]{"abc", "d"+"e"}
-20. Left-to-right eval: {++i, ++i, ++i}
-21. Array assign compatibility test:
+19. One dim int[] = new int[]{1,3,7}
+20. Two dim ints = new int[][]{{1,2}, null}
+21. One dim string = new String[]{"abc", "d"+"e"}
+22. Left-to-right eval: {++i, ++i, ++i}
+23. Array assign compatibility test:
   new Object[][]{new RuntimeException[] {new RuntimeException("re")} }
 
 Subpart 7.2: Array initializer as part of array var declaration:
 
-22. One dim int[] = {1,3,7}
-23. Two dim ints = {{1,2}, null}
-24. One dim string = {"abc", "d"+"e"}
-25. Left-to-right eval: {++i, ++i, ++i}
+24. One dim int[] = {1,3,7}
+25. Two dim ints = {{1,2}, null}
+26. One dim string = {"abc", "d"+"e"}
+27. Left-to-right eval: {++i, ++i, ++i}
 
 Part 8. Array element default value.
 
-26. Default value of primitive types:
+28. Default value of primitive types:
   byte[], short[], int[], long[], char[], boolean[],
-27. Default value of refs:
+29. Default value of refs:
   object[], string[], RuntimeExeption[], Object[][].
 
 todo for later:
