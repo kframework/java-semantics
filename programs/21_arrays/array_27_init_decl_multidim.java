@@ -12,7 +12,7 @@ public class array_27_init_decl_multidim {
   }
 }
 
-class main() {
+class main {
   main() {
     int[][] m = {{1,2}, new int[]{3}, null};
     printMatrix(m);

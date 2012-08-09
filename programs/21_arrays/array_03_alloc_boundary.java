@@ -14,7 +14,7 @@ public class array_03_alloc_boundary {
   }
 }
 
-class main() {
+class main {
   main() {
     int[] vpos = new int[3];
     int[] vzero = new int[0];

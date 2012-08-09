@@ -7,7 +7,7 @@ class Point { int x, y; }
 
 class ColoredPoint extends Point { int color; }
 
-class Test {
+public class array_18_ArrayStoreException {
   public static void main(String[] args) {
     ColoredPoint[] cpa = new ColoredPoint[10];
     Point[] pa = cpa;

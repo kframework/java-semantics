@@ -10,12 +10,12 @@ public class array_23_init_seqstrict {
   }
 }
 
-class main() {
+class main {
   main() {
     int i = 0;
     int[] v;
     v = new int[]{i++,i++,i++};
-    printArray(m);
+    printArray(v);
   }
 
   void printArray(int[] v1) {

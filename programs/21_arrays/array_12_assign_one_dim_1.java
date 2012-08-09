@@ -12,7 +12,7 @@ public class array_12_assign_one_dim_1 {
   }
 }
 
-class main() {
+class main {
   main() {
     int[] v1, v2;
     v1 = new int[3];

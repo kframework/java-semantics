@@ -12,16 +12,16 @@ public class array_10_access_eval_order {
   }
 }
 
-class main() {
+class main {
   main() {
     int[][][] m = new int[1][2][3];
 
     int i = -1;
-    v[++i][++i][++i] = i;
-    System.out.println(v[0][1][2]);
+    m[++i][++i][++i] = i;
+    System.out.println(m[0][1][2]);
 
     try {
-      v[2/0][-2] = -2;
+      m[2/0][-2][0] = -2;
       System.out.println("ok");
     } catch(RuntimeException re) {
       System.out.println(re);

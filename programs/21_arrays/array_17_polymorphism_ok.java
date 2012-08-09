@@ -11,7 +11,7 @@ public class array_17_polymorphism_ok {
   }
 }
 
-class main() {
+class main {
   main() {
     RuntimeException[] vre = new NullPointerException[2];
     vre[0] = null;

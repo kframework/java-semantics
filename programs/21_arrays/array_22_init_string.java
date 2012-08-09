@@ -10,11 +10,11 @@ public class array_22_init_string {
   }
 }
 
-class main() {
+class main {
   main() {
     String[] v;
-    m = new String[]{"abc", "d"+"e"};
-    printArray(m);
+    v = new String[]{"abc", "d"+"e"};
+    printArray(v);
   }
 
   void printArray(String[] v1) {

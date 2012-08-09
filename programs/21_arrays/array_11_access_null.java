@@ -11,7 +11,7 @@ public class array_11_access_null {
   }
 }
 
-class main() {
+class main {
   main() {
     int[] v = null;
 

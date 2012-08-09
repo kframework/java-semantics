@@ -11,17 +11,17 @@ public class array_02_alloc_multidim {
   }
 }
 
-class main() {
+class main {
   main() {
     int[][][] threeDim = new int[2+0][3+0][4+0];
 
     for(int i=0; i<2; i++)
-      for(int j=0; j<3; i++)
-        for(int k=0; k<4; i++)
+      for(int j=0; j<3; j++)
+        for(int k=0; k<4; k++)
           threeDim[i][j][k] = i+j+k;
     for(int i=0; i<2; i++)
-      for(int j=0; j<3; i++)
-        for(int k=0; k<4; i++)
+      for(int j=0; j<3; j++)
+        for(int k=0; k<4; k++)
           System.out.print(threeDim[i][j][k] + " ");
     System.out.println();
   }

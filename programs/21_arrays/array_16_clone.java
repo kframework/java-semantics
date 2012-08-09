@@ -18,7 +18,7 @@ public class array_16_clone {
   }
 }
 
-class main() {
+class main {
   main() {
     int[] v1 = new int[0];
     int[] v2 = v1.clone();
@@ -44,7 +44,7 @@ class main() {
     vo[1] = new RuntimeException("re");
     vo[2] = new Object();
     vo[3] = null;
-    Object vo2 = vo.clone();
+    Object[] vo2 = vo.clone();
     System.out.print("Object[] : "+ (vo == vo2) + " : ");
     for(int i=0; i<vo2.length; i++) {
       System.out.print((vo[i] == vo2[i]) + " ");

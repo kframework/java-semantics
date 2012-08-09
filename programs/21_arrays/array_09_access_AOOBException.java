@@ -17,7 +17,7 @@ public class array_09_access_AOOBException {
   }
 }
 
-class main() {
+class main {
   main() {
     int[] v = new int[2];
 

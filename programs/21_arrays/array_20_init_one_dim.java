@@ -10,7 +10,7 @@ public class array_20_init_one_dim {
   }
 }
 
-class main() {
+class main {
   main() {
     int[] v;
     v = new int[]{1,3,7};

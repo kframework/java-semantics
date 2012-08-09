@@ -11,7 +11,7 @@ public class array_05_alloc_dim_expr_types {
   }
 }
 
-class main() {
+class main {
   main() {
     String[] v;
 

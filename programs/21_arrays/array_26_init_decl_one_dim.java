@@ -12,7 +12,7 @@ public class array_26_init_decl_one_dim {
   }
 }
 
-class main() {
+class main {
   main() {
     int[] v = {1,3,7};
     printArray(v);

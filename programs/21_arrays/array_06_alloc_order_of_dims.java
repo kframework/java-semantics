@@ -13,18 +13,18 @@ public class array_06_alloc_order_of_dims {
   }
 }
 
-class main() {
+class main {
   main() {
     int i = 0;
     int[][][] m = new int[++i][++i][++i];
 
-    m[1][2][3] = 123;
-    System.out.println(m[1][2][3]);
+    m[0][1][2] = 123;
+    System.out.println(m[0][1][2]);
 
     try {
       m = new int[-2][2/0][4];
-    } catch (RuntimeException re) {
-      System.out.println(re);
+    } catch (ArithmeticException e) {
+      System.out.println(e);
     }
   }
 }

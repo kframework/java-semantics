@@ -11,10 +11,10 @@ public class array_24_init_polymorph {
   }
 }
 
-class main() {
+class main {
   main() {
     Object[][] m;
-    m = new Object[][]{new RuntimeException[] {new RuntimeException("re")} }
+    m = new Object[][]{new RuntimeException[] {new RuntimeException("re")} };
     printMatrix(m);
   }
 

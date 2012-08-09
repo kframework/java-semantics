@@ -13,7 +13,7 @@ public class array_19_cast {
   }
 }
 
-class main() {
+class main {
   main() {
     RuntimeException[] vre = new NullPointerException[2];
     vre[0] = null;

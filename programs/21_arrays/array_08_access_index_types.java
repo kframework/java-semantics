@@ -10,7 +10,7 @@ public class array_08_access_index_types {
   }
 }
 
-class main() {
+class main {
   main() {
     String[] v = new String['x' + 1];
 

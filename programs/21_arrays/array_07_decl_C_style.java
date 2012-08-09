@@ -11,7 +11,7 @@ public class array_07_decl_C_style {
   }
 }
 
-class main() {
+class main {
   main() {
     int[] m[];
     m = new int[2][2];

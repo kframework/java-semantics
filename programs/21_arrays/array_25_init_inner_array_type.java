@@ -12,10 +12,10 @@ public class array_25_init_inner_array_type {
   }
 }
 
-class main() {
+class main {
   main() {
     Object[][] m;
-    m = new Object[][]{ {new RuntimeException("re")} }
+    m = new Object[][]{ {new RuntimeException("re")} };
     if (m[0] instanceof RuntimeException[]) {
       System.out.println("Inner array is of type RuntimeException[]");
     } else {

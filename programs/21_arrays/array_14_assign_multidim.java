@@ -13,10 +13,10 @@ public class array_14_assign_multidim {
   }
 }
 
-class main() {
+class main {
   main() {
     int[][] m = new int[3][];
-    int[] m = new int[1];
+    int[] v = new int[1];
     v[0] = 12;
     m[1] = v;
     System.out.println(m[1][0]);
@@ -26,8 +26,8 @@ class main() {
     System.out.println(m3[1][1][0]);
 
     int[][] m2 = new int[1][1];
-    m2[1][1] = 11;
-    m3[1][1] = m2[1];
-    System.out.println(m3[1][1][1]);
+    m2[0][0] = 11;
+    m3[1][1] = m2[0];
+    System.out.println(m3[1][1][0]);
   }
 }

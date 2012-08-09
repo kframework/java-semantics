@@ -13,7 +13,7 @@ public class array_04_alloc_NASException {
   }
 }
 
-class main() {
+class main {
   main() {
     int[] v;
     int[][] m;

@@ -15,7 +15,7 @@ public class array_15_length {
   }
 }
 
-class main() {
+class main {
   main() {
     int[] v = new int[4];
     System.out.println(v.length);

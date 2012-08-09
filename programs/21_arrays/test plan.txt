@@ -134,7 +134,7 @@ Part 8. Array element default value.
 28. Default value of primitive types:
   byte[], short[], int[], long[], char[], boolean[].
 29. Default value of refs:
-  Object[], String[], RuntimeExeption[], Object[][].
+  Object[], String[], RuntimeException[], Object[][].
 
 todo for later:
 1. JLS $10.1: Array types: interface, abstract class.

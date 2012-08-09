@@ -10,7 +10,7 @@ public class array_21_init_multidim {
   }
 }
 
-class main() {
+class main {
   main() {
     int[][] m;
     m = new int[][]{{1,2}, {3}, null};
