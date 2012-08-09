@@ -65,8 +65,8 @@ canceled. Normal access:
 Part 4. Array assignment (no conversion).
 
 12. Assign among arrays.
-  - two one dim arrays, assign one to another. Test an element in second array.
-  Change an element in first. Element should be changed in both arrays.
+  - two one dim arrays, assign one to another. Test an element in the second array.
+  Change an element in the first. Element should be changed in both arrays.
 
 13. Assign among arrays.
   - two one dim arrays, both initialized, assign one to another.
@@ -83,50 +83,58 @@ Part 5. Array members.
   - one dim, positive
   - one dim, zero
   - two dims, positive
-  - two dims, zero
+  - two dims, second dim assigned, positive
+  - two dims, second dim assigned, zero
 
 16. array.clone
-  - one dim, array of ints, length = 0, test for ==
-  - two dims, array of ints, [zero][zero], test for ==
-  - int[3], test for ==
-  - int[2][0], test for ==
-  - int[2][2], test for ==
-  - Object[2] - values are strings, test for ==
+  - one dim, array of ints, length = 0, full test
+  - two dims, array of ints, [zero][zero], full test
+  - int[3], full test
+  - int[2][0], full test
+  - int[2][2], full test
+  - Object[2] - values are string, RuntimeException, full test
+  By full test we mean test for ==, and full test on all elements
+    (possible recursively).
 
 Part 6. Arrays assignment compatibility and ArrayStoreException.
 
-17. Compatible arrays.
+17. Compatible arrays assignment.
   - RuntimeException[] vre = NullPointerException[]. assign. read.
-  - NPE[] b = (RE[]) vre. Cast to the opposite direction should work.
 
 18. ArrayStoreException.
   - Example from JLS $10.10
+
+19. Array cast.
+  - cast ok: RuntimeException[] -> NPE[], object is NPE[]
+    Print content after cast.
+  - ClassCastException: RuntimeException[] -> NPE[], object is RuntimeException[].
 
 Part 7 Array initializer.
 
 Subpart 7.1: Array initializer in array creation expression:
   like new int[]{1,2,3}
 
-19. One dim int[] = new int[]{1,3,7}
-20. Two dim ints = new int[][]{{1,2}, null}
-21. One dim string = new String[]{"abc", "d"+"e"}
-22. Left-to-right eval: {++i, ++i, ++i}
-23. Array assign compatibility test:
+20. One dim int[] = new int[]{1,3,7}
+21. Two dim ints = new int[][]{{1,2}, {3}, null}
+22. One dim string = new String[]{"abc", "d"+"e"}
+23. Left-to-right eval: {i++,i++,i++}
+24. Array assign compatibility test:
   new Object[][]{new RuntimeException[] {new RuntimeException("re")} }
+25. Inner array type:
+  m = new Object[][]{ {new RuntimeException("re")} }
+  (RuntimeException[])m[0] - throws ClassCastException
 
 Subpart 7.2: Array initializer as part of array var declaration:
 
-24. One dim int[] = {1,3,7}
-25. Two dim ints = {{1,2}, null}
-26. One dim string = {"abc", "d"+"e"}
-27. Left-to-right eval: {++i, ++i, ++i}
+26. One dim int[] = {1,3,7}
+27. Two dim ints = {{1,2}, new int[]{3}, null}
 
 Part 8. Array element default value.
 
 28. Default value of primitive types:
-  byte[], short[], int[], long[], char[], boolean[],
+  byte[], short[], int[], long[], char[], boolean[].
 29. Default value of refs:
-  object[], string[], RuntimeExeption[], Object[][].
+  Object[], String[], RuntimeExeption[], Object[][].
 
 todo for later:
 1. JLS $10.1: Array types: interface, abstract class.
