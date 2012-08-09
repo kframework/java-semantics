@@ -42,7 +42,7 @@ and assign the right type ($T$) to the allocated array locations. */
 context 'NewArray(HOLE,, _:List{K})
 
 rule [NewArrayEmptyDims]:
-    'NewArray( (T => arrayOf T),, _,,
+    'NewArray( (T => arrayOf T),, _:List{K},,
         'ListWrap( ( 'Dim(.List{K}) => .List{K} ) ,,_:List{K}) )
         [structural]
 
@@ -56,22 +56,57 @@ syntax K ::= "newArrayImpl" "("
                 K         // InitExp
              ")"
 
-rule [newArrayImplMultiDim]:
-    newArrayImpl(T, 'ListWrap(Dims:List{K},,Dim1K:K,,Dim2K:K), InitExp)
-    =>  newArrayImpl(
+context newArrayImpl(_:KResult, 'ListWrap(_:List{KResult},,HOLE,, _), _)
+
+//applies right after the previous rule, because HOLE is of the form 'Dim(K)
+rule 'Dim(K) => K [structural]
+
+//when all dims were computed, check that dims are positive, and only
+//after that begin array allocation
+rule newArrayImpl(T, 'ListWrap(Dims:List{KResult}), InitExp)
+    => checkNonNegative(Dims) ~> newArrayAlloc(T, 'ListWrap(Dims), InitExp)
+
+//same as newArrayImpl, but after dims were computed and checked
+syntax K ::= "newArrayAlloc" "("
+                Type ","  // T - element type
+                K ","     // 'ListWrap(Dims) - array dimensions
+                K         // InitExp
+             ")"
+
+syntax K ::= "checkNonNegative" "("
+                List{KResult}      // - computed array dimensions
+             ")"
+
+rule checkNonNegative((NI::_ => .List{K}),, _)
+when NI >=Int 0
+
+rule [NegativeArraySizeException]:
+    checkNonNegative((NI::_),, _)
+    => 'Throw('NewInstance(
+      'None(.List{K}),,
+      'class_(String2Id("NegativeArraySizeException")),,
+      'ListWrap( null :: rtString ),,
+      'None(.List{K})
+    ))
+when
+    NI <Int 0
+
+rule checkNonNegative(.List{K}) => .
+
+rule [newArrayAllocMultiDim]:
+    newArrayAlloc(T, 'ListWrap(Dims,,Dim1K:TypedVal,,Dim2K:TypedVal), InitExp)
+    =>  newArrayAlloc(
           arrayOf T,
           'ListWrap(Dims,,Dim1K),
-          newArrayImpl(T, 'ListWrap(Dim2K), InitExp)
+          newArrayAlloc(T, 'ListWrap(Dim2K), InitExp)
         )
         [structural]
 
-context newArrayImpl(_:KResult, 'ListWrap('Dim(HOLE)), _)
-
 //in order to avoid problems with empty arrays
 //even if the created array is empty it will increment nextLoc by one
-rule [newArrayImpl]:
+rule [newArrayAlloc]:
     <k>
-      newArrayImpl(T, 'ListWrap('Dim(NI:Int::_)), InitExp:K)
+      newArrayAlloc(T, 'ListWrap(NI:Int::_), InitExp:K)
       => evalAndStore((LI:Int .. LI +Int _-Int_(NI,1)), InitExp)
          ~> arrayRef( arrayOf T, LI, NI) :: arrayOf T
       ...
