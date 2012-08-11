@@ -30,7 +30,6 @@ configuration <T color="red">
                 <busy color="cyan">.Set</busy>
                 <in color="magenta" stream="stdin"> .List </in>
                 <out color="brown" stream="stdout"> .List </out>
-                <dissolveEmptyK> true </dissolveEmptyK>
                 <nextLoc color="gray"> 0 </nextLoc>
                 <br/>
                 <classes color="Fuchsia">
@@ -45,6 +44,9 @@ configuration <T color="red">
                 //current compilation unit package
                 <cuPackage> .K </cuPackage>
                 <executionPhase> "ProcessDeclarations" </executionPhase>
+
+                <dissolveEmptyK> true </dissolveEmptyK>
+                <dissolveClasses> true </dissolveClasses>
               </T>
 
 //@ \section{Identifiers}
@@ -154,6 +156,18 @@ define isNumericType2(T)
         orBool  T ==K int
         orBool  T ==K long
         orBool  T ==K char
+      #then true
+      #else false
+    #fi  [structural]
+
+//this is actually a hack, since we should not access k-labels 'arrayOf_ and 'class_ .
+//maybe this isSort methods will be provided by K later on.
+declare isRefType2 : Type -> Bool
+define isRefType2(T)
+=>  #if         T ==K rtString
+        orBool  T ==K nullType
+        orBool  getKLabel(T) ==KLabel 'arrayOf_
+        orBool  getKLabel(T) ==KLabel 'class_
       #then true
       #else false
     #fi  [structural]

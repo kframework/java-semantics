@@ -5,7 +5,28 @@ module JAVA-ARRAYS
 syntax RefType ::= "arrayOf" Type
                   [prec(1) latex "{#1}\texttt{\char91\char93}"]
 
-syntax RawVal ::= "arrayRef" "(" Type "," Int "," Int ")"
+syntax RawVal ::= "arrayRef" "("
+                    Type ","  // Type of array
+                    Int ","   // Location of first element
+                    Int       // Length
+                  ")"
+
+//@ \subsection{C-style array declarators}
+
+rule [ArrayVarDecIdDesugar]:
+    'LocalVarDec(
+      (T:Type => arrayOf T),,
+      'ListWrap('VarDec('ArrayVarDecId(
+          X:Id,,
+          'ListWrap(('Dim(.List{K}) => .List{K}) ,,_)
+      ),, _ //possible initializer
+    )))
+
+rule [ArrayVarDecIdDiscard]:
+    'LocalVarDec(T,, 'ListWrap('VarDec(
+        ( 'ArrayVarDecId( X,, 'ListWrap(.List{K}) ) => X ),,
+        _ //possible initializer
+    )))
 
 /*@ \subsection{Array access}
 Check array bounds, as part of the dynamic typing policy. */
@@ -19,6 +40,32 @@ rule [arrayLookup]:
     'ArrayAccess(arrayRef(_,L,M:Int) :: arrayOf T:Type,, N:Int::_)
     => lookup(L +Int N) :: T
 when N >=Int 0 andBool N <Int M
+        [structural anywhere]
+
+rule [ArrayIndexOutOfBoundsException]:
+    'ArrayAccess(arrayRef(_,_,M) :: _,, N::_)
+    => 'Throw('NewInstance(
+      'None(.List{K}),,
+      'class_(String2Id("ArrayIndexOutOfBoundsException")),,
+      'ListWrap( Int2String(N) :: rtString ),,
+      'None(.List{K})
+    ))
+when notBool (N >=Int 0 andBool N <Int M)
+        [structural anywhere]
+
+//Required to desugar effects of the previous rule, when exception happens
+//inside lvalue.
+rule [LvalueIndexOutOfBoundsDesugar]:
+    lvalue('Throw(K)) => 'Throw(K)
+
+rule [arrayAccessNull]:
+    'ArrayAccess(null::_ ,, _)
+    => 'Throw('NewInstance(
+      'None(.List{K}),,
+      'class_(String2Id("NullPointerException")),,
+      'ListWrap( null :: rtString ),,
+      'None(.List{K})
+    ))
         [structural anywhere]
 
 //Array length, as defined in JDK
@@ -53,7 +100,7 @@ rule [NewArray]:
 syntax K ::= "newArrayImpl" "("
                 Type ","  // T - element type
                 K ","     // 'ListWrap(Dims) - array dimensions
-                K         // InitExp
+                K         // InitExp - expression used to initialize each array element
              ")"
 
 context newArrayImpl(_:KResult, 'ListWrap(_:List{KResult},,HOLE,, _), _)
@@ -70,9 +117,11 @@ rule newArrayImpl(T, 'ListWrap(Dims:List{KResult}), InitExp)
 syntax K ::= "newArrayAlloc" "("
                 Type ","  // T - element type
                 K ","     // 'ListWrap(Dims) - array dimensions
-                K         // InitExp
+                K         // InitExp - expression used to initialize each array element
              ")"
 
+/*Computation designed to check that array creation expression dimensions are non-negative. If they are non-negative, checkNonNegative is dissolved. Otherwise NegativeArraySizeException is thrown.
+*/
 syntax K ::= "checkNonNegative" "("
                 List{KResult}      // - computed array dimensions
              ")"
@@ -102,7 +151,7 @@ rule [newArrayAllocMultiDim]:
         )
         [structural]
 
-//in order to avoid problems with empty arrays
+//In order to avoid problems with empty arrays, such as the test for equality,
 //even if the created array is empty it will increment nextLoc by one
 rule [newArrayAlloc]:
     <k>
@@ -141,12 +190,17 @@ rule [evalAndStoreEmpty]:
         [structural]
 
 //@ Subtype
-rule [subtypeArrayOfArray]:
+rule [subtypeArrayOfArrayPrimitive]:
     subtype arrayOf T1, arrayOf T2 =>
     #if T1 ==K T2
       #then true::bool
       #else false::bool
     #fi
+when
+    notBool isRefType2(T1) andBool notBool isRefType2(T2)
+
+rule [subtypeArrayOfArrayRef]:
+    subtype arrayOf RefT1:RefType, arrayOf RefT2:RefType => subtype RefT1, RefT2
 
 define toString(arrayOf T) => 'Plus("["::rtString,, arrayToString(T))
 
@@ -155,5 +209,76 @@ define toString(arrayOf T) => 'Plus("["::rtString,, arrayToString(T))
 syntax List{K} ::= Int ".." Int
 define N1:Int..N2:Int => .List{K}              when N1  >Int N2
 define N1:Int..N2:Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2
+
+//@ \subsection{Array initializer}
+
+rule [ArrayInitPreprocess]:
+    'NewArray((T => arrayOf T),, 'ListWrap(('Dim(.List{K}) => .List{K}),, _),, 'ArrayInit(_))
+
+rule [ArrayInitPreprocess2]:
+    'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitContent:K))
+    => arrayInitCountSize(T, 0, InitContent, InitContent)
+
+//counts elements of an array initiaizer, then passes the counted data, as well as the original
+//initializer to the next step - array allocation based on counted size.
+syntax K ::= "arrayInitCountSize" "("
+                                Type ","  //array type
+                                Int ","   //counted size
+                                K ","     //InitContent - content of original 'ArrayInit term,
+                                          //a 'ListWrap
+                                K         //InitContent - copy of the second argument
+                              ")"
+
+rule [arrayInitCountSize]:
+    arrayInitCountSize(_, I:Int => I +Int 1, 'ListWrap((_:K => .List{K}),, _), _)
+
+rule [arrayInitCountSizeEnd]:
+    arrayInitCountSize(arrayOf T, I, 'ListWrap(.List{K}), InitContent)
+    => arrayInitAlloc(newArrayAlloc(T, 'ListWrap(I::int), undefined :: T), InitContent)
+
+//allocates the array based on previously computed size, the proceeds to array initialization
+syntax K ::= "arrayInitAlloc" "("
+                                  K "," //newArrayAlloc(), reduces to arrayRef()
+                                  K     //InitContent - original 'ArrayInit content
+                              ")"
+        [strict(1)]
+
+rule [arrayInitAlloc]:
+    arrayInitAlloc(arrayRef(T, L, Len:Int)::T, InitContent)
+    => arrayInitImpl(T, L, InitContent) ~> arrayRef(T, L, Len)::T
+
+syntax K ::= "arrayInitImpl" "("
+                                  Type ","//T - array type
+                                          //    used by inner ArrayInit's
+                                  Int "," //L - location of first element in store
+                                  K       //InitContent - initialization content inside 'ListWrap
+                              ")"
+
+rule [arrayInitImpl]:
+    ( . => 'ExprStm(assignImpl(true::bool, L, K)) )
+    ~> arrayInitImpl(_, (L => L +Int 1), 'ListWrap((K => .List{K}),, _) )
+when
+    getKLabel(K) =/=KLabel 'ArrayInit
+
+rule [arrayInitImplInnerArrayInit]:
+    ( . => 'ExprStm(assignImpl(
+              true::bool,
+              L,
+              'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitContent))
+           )) )
+    ~> arrayInitImpl(
+          arrayOf T,
+          (L => L +Int 1),
+          'ListWrap(('ArrayInit(InitContent) => .List{K}),, _)
+       )
+
+rule [arrayInitImplDiscard]:
+    arrayInitImpl(_, _, 'ListWrap(.List{K})) => .
+
+rule [VarDecWithArrayInitDesugar]:
+    'LocalVarDec(T,, 'ListWrap('VarDec(
+      X,,
+      ( 'ArrayInit(InitContent) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitContent)) )
+    )))
 
 end module

@@ -1,9 +1,11 @@
 /*
-17. Compatible arrays assignment.
+174. Polimorphic array assignment, element read and element write.
   - RuntimeException[] vre = NullPointerException[]. assign. read.
+  - O[] RE[0] = new NPE[] - assigning to array element a more derived type than
+    aray object type. Permitted.
 */
 
-public class array_17_polymorphism_ok {
+public class array_174_polymorph_elem_write {
 
   public static void main(String[] args) {
     new main();
@@ -17,6 +19,10 @@ class main {
     vre[0] = null;
     vre[1] = new NullPointerException("npe");
     printArray(vre);
+
+    Object[] ovre = new RuntimeException[1];
+    ovre[0] = new NullPointerException("npe2");
+    System.out.println("ovre[0] = " + ovre[0]);
   }
 
   void printArray(RuntimeException[] v1) {

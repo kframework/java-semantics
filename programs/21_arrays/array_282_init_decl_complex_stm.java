@@ -1,10 +1,10 @@
 /*
 Array initializer as part of array var declaration:
 
-27. Two dim ints = {{1,2}, new int[]{3}, null}
+282. Combination of multi var declaration, var with [] in declarator, array initializer.
 */
 
-public class array_27_init_decl_multidim {
+public class array_282_init_decl_complex_stm {
 
   public static void main(String[] args) {
     new main();
@@ -14,8 +14,10 @@ public class array_27_init_decl_multidim {
 
 class main {
   main() {
-    int[][] m = {{1,2}, new int[]{3}, null};
+    int[] v = {1, 2}, m[] = {{3,4}, {5+6}, null}, m2[] = {{7}, null};
+    printArray(v);
     printMatrix(m);
+    printMatrix(m2);
   }
 
   void printArray(int[] v1) {

@@ -1,9 +1,9 @@
 /*
-28. Default value of primitive types:
+29. Default value of primitive types:
   byte[], short[], int[], long[], char[], boolean[].
 */
 
-public class array_28_default_val_primitive {
+public class array_29_default_val_primitive {
 
   public static void main(String[] args) {
     byte[] vb = new byte[2];

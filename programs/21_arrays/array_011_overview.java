@@ -1,5 +1,5 @@
 /*
-1. Array allocation by new, value assignment and value read:
+011. Array allocation by new, value assignment and value read:
   - int
   - short
   - String
@@ -7,7 +7,7 @@
   - RuntimeException
 */
 
-public class array_01_overview {
+public class array_011_overview {
 
   public static void main(String[] args) {
     new main();

@@ -5,6 +5,7 @@
   - two dims, positive
   - two dims, second dim assigned, positive
   - two dims, second dim assigned, zero
+  - null.length
 */
 
 public class array_15_length {
@@ -29,5 +30,12 @@ class main {
       System.out.print(m[i].length + " ");
     }
     System.out.println();
+
+    m = null;
+    try {
+      System.out.println(m.length);
+    } catch (NullPointerException e) {
+      System.out.println(e);
+    }
   }
 }

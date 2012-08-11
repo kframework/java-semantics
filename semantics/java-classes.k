@@ -519,7 +519,7 @@ rule [ExprNameQualified]:
 
 rule [ExprNameQualifiedNull]:
     <k>
-      'ExprName(null :: class Class,, X)
+      'ExprName(null::_ ,, X)
       =>  'Throw('NewInstance(
             'None(.List{K}),,
             'class_(String2Id("NullPointerException")),,
@@ -565,7 +565,7 @@ when
 
 rule [MethodNameQualifiedNull]:
     <k>
-      'MethodName(null :: _,, X)
+      'MethodName(null::_ ,, X)
       =>  'Throw('NewInstance(
             'None(.List{K}),,
             'class_(String2Id("NullPointerException")),,

@@ -1,16 +1,18 @@
 /*
-16. array.clone
+161. array.clone
   - one dim, array of ints, length = 0, full test
   - two dims, array of ints, [zero][zero], full test
   - int[3], full test
   - int[2][0], full test
   - int[2][2], full test
   - Object[2] - values are string, RuntimeException, full test
+  - null.clone(), full test
+  - int[][] = {{...}, null} , clone, full test
   By full test we mean test for ==, and full test on all elements
     (possible recursively).
 */
 
-public class array_16_clone {
+public class array_161_clone {
 
   public static void main(String[] args) {
     new main();
@@ -50,22 +52,47 @@ class main {
       System.out.print((vo[i] == vo2[i]) + " ");
     }
     System.out.println();
+
+    System.out.println("Null tests:");
+    v1 = null;
+    try {
+      v2 = v1.clone();
+      cloneTest(v1, v2);
+    } catch (NullPointerException e) {
+      System.out.println(e);
+    }
+
+    m1[1] = null;
+    try {
+      m2 = m1.clone();
+      matrixCloneTest(m1, m2);
+    } catch (NullPointerException e) {
+      System.out.println(e);
+    }
   }
 
   void cloneTest(int[] v1, int[] v2) {
     System.out.print((v1 == v2)+" : ");
-    for(int i=0; i<v1.length; i++) {
-      System.out.print((v1[i] == v2[i]));
+    if (v1 == null) {
+      System.out.println(v1 + "+" + v2);
+    } else {
+      for(int i=0; i<v1.length; i++) {
+        System.out.print((v1[i] == v2[i]));
+      }
+      System.out.println();
     }
-    System.out.println();
   }
 
   void matrixCloneTest(int[][] m1, int[][] m2) {
-    System.out.print("Matrix " + (m1 == m2)+" : ");
-    for(int i=0; i<m1.length; i++) {
-      cloneTest(m1[i],m2[i]);
+    System.out.println("Matrix " + (m1 == m2)+" : ");
+    if (m1 == null) {
+      System.out.println(m1 + "+" + m2);
+    } else {
+      for(int i=0; i<m1.length; i++) {
+        cloneTest(m1[i],m2[i]);
+      }
+      System.out.println("end matrix.\n");
     }
-    System.out.println();
   }
 
   int[] allocateAndInitArray(int start, int length) {

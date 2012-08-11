@@ -2,12 +2,18 @@ Test plan for arrays.
 
 Part 1. Arrays of various types.
 
-1. Array allocation by new, value assignment and value read:
+011. Array allocation by new, value assignment and value read:
   - int
   - short
   - String
   - Object
   - RuntimeException
+
+012. Array element type preservation.
+  Check that the type of element of an array of primitives does not change
+    after assignment of a literal of narrower type.
+  - long[] a; a[0] = 2.000.000.000. print(a[0]*a[0]) - should print 4.000.000.000
+  - long[][] m. Same test for two-dim array.
 
 Part 2. Array allocation.
 
@@ -34,6 +40,9 @@ Part 2. Array allocation.
 
 7. Array variable, [] as part of the declarator (compatibility with C):
   - int[] b[]. Assign, access.
+  - int[] b[][]. Assign, access.
+  - int[][] b[][] = new[][][][]. Assign, access.
+  - int a = 1, v[] = new int[2]. Assign, access.
 
 Part 3. Array access.
 
@@ -85,24 +94,73 @@ Part 5. Array members.
   - two dims, positive
   - two dims, second dim assigned, positive
   - two dims, second dim assigned, zero
+  - null.length
 
-16. array.clone
+161. array.clone
   - one dim, array of ints, length = 0, full test
   - two dims, array of ints, [zero][zero], full test
   - int[3], full test
   - int[2][0], full test
   - int[2][2], full test
   - Object[2] - values are string, RuntimeException, full test
+  - null.clone(), full test
+  - int[][] = {{...}, null} , clone, full test
   By full test we mean test for ==, and full test on all elements
     (possible recursively).
 
+162 array.clone polymorphism due to different runtime-type and compile-time type
+      of cloned object.
+  - case when object type is not the actual array type - it is another array
+      or just Object. Important for semantics of this method.
+    We just check that what is returned can be cast to the runtime clone result type.
+    Compile-time type may only be checked with method overloading.
+
 Part 6. Arrays assignment compatibility and ArrayStoreException.
 
-17. Compatible arrays assignment.
-  - RuntimeException[] vre = NullPointerException[]. assign. read.
+171. Array instanceof:
+  Object NPE[] instanceof RE[]
+  Object RE[] instanceof NPE[]
+  RE[] NPE[] instanceof NPE[]
+  RE[] NPE[] instanceof CCE[]
+  Object int[] instanceof long[]
+  Object long[] instanceof int[]
 
-18. ArrayStoreException.
-  - Example from JLS $10.10
+172. Polymorphic array assignment.
+  NPE[] va; init a.
+  RE[] vb = va.
+  va == vb?
+
+173. Polymorphic array assignment, element read.
+  NPE[] va; init a.
+  RE[] vb = va; read vb.
+
+174. Polimorphic array assignment, element read and element write.
+  - RuntimeException[] vre = NullPointerException[]. assign. read.
+  - O[] RE[0] = new NPE[] - assigning to array element a more derived type than
+    aray object type. Permitted.
+
+175. Matrix polymorphism.
+    Object[][] mo = new RuntimeException[][];
+    mo[0] = new NPE[]. read, write element.
+
+181. ArrayStoreException.
+  - Example from JLS $10.10, adapted to currently implemented features.
+    ColoredPoint[] cpa = new ColoredPoint[10];
+    Point[] pa = ColoredPoint[];
+    pa[0] = new Point(); - ASException
+
+  - additional: P[] CP[0] = new P2(); - assign different type, incompatible with
+    array object type.
+
+182. ArrayStoreException on matrixes.
+    Object[][] mo = new RuntimeException[][];
+    - mo[0] = new Object[] - ASException
+    mo[0] = new NullPointerException[] - ok
+    - mo[0][0] = new Object() - ASException
+    - mo[0][0] = new RuntimeException() - ASException
+    mo[0][0] = new NullPointerException() - ok
+
+183. Assignment don't happen when ArrayStoreException is thrown.
 
 19. Array cast.
   - cast ok: RuntimeException[] -> NPE[], object is NPE[]
@@ -124,18 +182,41 @@ Subpart 7.1: Array initializer in array creation expression:
   m = new Object[][]{ {new RuntimeException("re")} }
   (RuntimeException[])m[0] - throws ClassCastException
 
+Notes:
+If an exception is thrown in the initializer evaluation process,
+  there's no way to distinguish whether array was allocated or not.
+  Thus, we will not test this behavior.
+
 Subpart 7.2: Array initializer as part of array var declaration:
 
 26. One dim int[] = {1,3,7}
 27. Two dim ints = {{1,2}, new int[]{3}, null}
+281. Two dims, dim count cannot be deduced from initializer:
+  - int[][][] m = {null,null}, assign a valid array, test
+  - int[] m[][] = {null,null}, assign a valid array, test
+282. Combination of multi var declaration, var with [] in declarator, array initializer.
 
 Part 8. Array element default value.
 
-28. Default value of primitive types:
+29. Default value of primitive types:
   byte[], short[], int[], long[], char[], boolean[].
-29. Default value of refs:
+30. Default value of refs:
   Object[], String[], RuntimeException[], Object[][].
+
+todo now:
+1. Refactoring.
+  Change compile-time type of array element from actual T to elem T. This type will not be used
+    by array lookup rules, thus no changes there required. It will be used however by assign.
+    Also we will be able to move assignment for arrays logic from expression module to arrays
+    module.
 
 todo for later:
 1. JLS $10.1: Array types: interface, abstract class.
 2. JLS $10.8: Class objects for arrays.
+3. clone() should return an Object. Check that the method return type is neither the source compile-time or run-time type, but Object. Use overloaded methods. Same as 16.2, but now we
+should check compile-time type of clone result instead of runtime type.
+4. Check that the type of array element assignment is the compile-time type
+  of array reference, not run-time type. (Requires method overloading).
+5. Array polymorphic write. Check that compile-time type of the array
+  element is not changed during assignment, to the compile-time type of the assignment lvalue.
+  (A particular case of the fact that compile-time type of array elem is not used).

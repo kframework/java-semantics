@@ -129,6 +129,8 @@ rule [VarDecWithInitDesugar]:
     'LocalVarDec(TypeK,, 'ListWrap('VarDec(X1:Id,,K3:K)))
     => 'LocalVarDec(TypeK,, 'ListWrap('VarDec(X1:Id)))
         ~> 'ExprStm('Assign('ExprName(X1),, K3))
+when
+    getKLabel(K3) =/=KLabel 'ArrayInit
       [structural]
 
 /*In Java current version of semantics only int and boolean primitive
@@ -561,5 +563,13 @@ rule [saveStackLayer]:
       C:Bag
     </control>
     <env> Env </env>
+
+//Debug aid. Dissolves classes cell so that configuration is not overbloated, at the end
+//of the execution.
+rule [DissolveClasses]:
+    (<classes> _:Bag </classes> => .)
+    <threads> .Bag </threads>
+    <executionPhase> "Execute" </executionPhase>
+    <dissolveClasses> true </dissolveClasses>
 
 end module

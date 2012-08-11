@@ -162,11 +162,6 @@ syntax KLabel ::= CompoundAssignLabel
 context 'Assign((HOLE => lvalue(HOLE)),,_)
 context 'Assign(_:KResult,,HOLE)
 
-rule [Assign]:
-    <k> 'Assign(loc(L) :: T:Type,, V:RawVal :: T) =>  V::T ...</k>
-    <store>... L |-> (_ => V) :: T ...</store>
-        [transition]
-
 //todo check assign expression type in JLS
 rule [AssignWithConversion]:
     'Assign(loc(L) :: T1:Type,, V :: T2:Type)
@@ -176,6 +171,59 @@ rule [AssignWithConversion]:
         #fi ~> 'Assign(loc(L)::T1,, V::T1)
 when
     T1 =/=K T2
+
+rule [AssignSimple]:
+    <k> 'Assign(loc(L) :: T:Type,, V:RawVal :: T) => assignImpl(true::bool, L, V::T) ...</k>
+    <store>... L |-> _::T ...</store>
+
+rule [AssignWithStoreTypeCheck]:
+    <k>
+      'Assign(loc(L) :: T:Type,, V:RawVal :: T)
+      => assignImpl(
+          (subtype typeOf(V), StoreType),
+          L,
+          V::T
+      )
+      ...
+    </k>
+    <store>... L |-> _ :: StoreType:Type ...</store>
+when
+    StoreType =/=K T
+
+//Bug. [strict(1,3)] gives a weird error in K2. Have to use context for argument (3).
+syntax K ::= "assignImpl" "("
+                            K ","     //subtype check on array element assignment
+                            Int ","   //destination store location
+                            TypedVal  //assigned value
+                          ")"
+        [strict(1)]
+
+context assignImpl(_:KResult, _, HOLE)
+
+rule [assignImpl]:
+    <k> assignImpl( true::bool, L, V::T) => V::T ...</k>
+    <store>... L |-> (_ => V) :: _ ...</store>
+        [transition]
+
+rule [ArrayStoreException]:
+    assignImpl( false::bool, _, V::T)
+    =>  'Throw('NewInstance(
+          'None(.List{K}),,
+          'class_(String2Id("ArrayStoreException")),,
+          'ListWrap(
+            //the ArrayStoreException argument is the assigned object type
+            'Invoke(
+              'MethodName(
+                'Invoke(
+                  'MethodName(V::T,, String2Id("getClass")),,
+                  'ListWrap(.List{K})
+                ),,
+                String2Id("getName")),,
+              'ListWrap(.List{K})
+            )
+          ),,
+          'None(.List{K})
+        ))
 
 context CALabel:CompoundAssignLabel((HOLE => lvalue(HOLE)),,_)
 

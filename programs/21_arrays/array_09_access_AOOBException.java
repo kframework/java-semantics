@@ -42,6 +42,13 @@ class main {
       System.out.println(re);
     }
 
+    try {
+      v[3] = 2;
+      System.out.println("ok");
+    } catch(RuntimeException re) {
+      System.out.println(re);
+    }
+
     v = new int[0];
     try {
       v[0] = 0;

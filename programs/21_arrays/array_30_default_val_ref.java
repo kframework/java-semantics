@@ -1,9 +1,9 @@
 /*
-29. Default value of refs:
+30. Default value of refs:
   Object[], String[], RuntimeException[], Object[][].
 */
 
-public class array_29_default_val_ref {
+public class array_30_default_val_ref {
 
   public static void main(String[] args) {
     Object[] vo = new Object[2];
