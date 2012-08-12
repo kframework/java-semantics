@@ -11,6 +11,8 @@ syntax RawVal ::= "arrayRef" "("
                     Int       // Length
                   ")"
 
+syntax K ::= RawVal "::" "elem" Type
+
 //@ \subsection{C-style array declarators}
 
 rule [ArrayVarDecIdDesugar]:
@@ -41,6 +43,15 @@ rule [arrayLookup]:
     => lookup(L +Int N) :: T
 when N >=Int 0 andBool N <Int M
         [structural anywhere]
+
+rule [lookupArrayLocation]:
+    <k>
+      lookup(L) :: T1
+      => subtype T2, T1 ~> true? ~> V::T1
+      ...
+    </k>
+    <store>... L |-> V::elem T2 ...</store>
+        [transition]
 
 rule [ArrayIndexOutOfBoundsException]:
     'ArrayAccess(arrayRef(_,_,M) :: _,, N::_)
@@ -160,7 +171,7 @@ rule [newArrayAlloc]:
          ~> arrayRef( arrayOf T, LI, NI) :: arrayOf T
       ...
     </k>
-    <store>... . => LI .. LI +Int _-Int_(NI,1) |-> undefined :: T ...</store>
+    <store>... . => LI .. LI +Int _-Int_(NI,1) |-> undefined :: elem T ...</store>
     <nextLoc> LI:Int => LI +Int max(NI,1) </nextLoc>
 
 declare max : Int Int -> Int
@@ -183,7 +194,7 @@ rule [evalAndStore]:
       evalAndStore(L:Int, V:RawVal :: T2:Type) => subtype T2, T1 ~> true?
       ...
     </k>
-    <store>... L |-> (_ => V) :: T1:Type ...</store>
+    <store>... L |-> (_ => V) :: elem T1:Type ...</store>
 
 rule [evalAndStoreEmpty]:
     evalAndStore(.List{K}, _) => .
@@ -209,6 +220,61 @@ define toString(arrayOf T) => 'Plus("["::rtString,, arrayToString(T))
 syntax List{K} ::= Int ".." Int
 define N1:Int..N2:Int => .List{K}              when N1  >Int N2
 define N1:Int..N2:Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2
+
+//@ \subsection{Array element assignment}
+
+rule [AssignInArrayExact]:
+    <k> 'Assign(loc(L) :: T:Type,, V:RawVal :: T) => V::T ...</k>
+    <store>... L |-> (_ => V)::elem T ...</store>
+
+rule [AssignInArrayWithCheck]:
+    <k>
+      'Assign(loc(L) :: T:Type,, V:RawVal :: T)
+      => assignImpl(
+          (subtype typeOf(V), StoreType),
+          L,
+          V::T
+      )
+      ...
+    </k>
+    <store>... L |-> _ :: elem StoreType:Type ...</store>
+when
+    T =/=K StoreType
+
+//Bug. [strict(1,3)] gives a weird error in K2. Have to use context for argument (3).
+syntax K ::= "assignImpl" "("
+                            K ","     //subtype check on array element assignment
+                            Int ","   //destination store location
+                            TypedVal  //assigned value
+                          ")"
+        [strict(1)]
+
+context assignImpl(_:KResult, _, HOLE)
+
+rule [assignImpl]:
+    <k> assignImpl( true::bool, L, V::T) => V::T ...</k>
+    <store>... L |-> (_ => V) :: elem _ ...</store>
+        [transition]
+
+rule [ArrayStoreException]:
+    assignImpl( false::bool, _, V::T)
+    =>  'Throw('NewInstance(
+          'None(.List{K}),,
+          'class_(String2Id("ArrayStoreException")),,
+          'ListWrap(
+            //the ArrayStoreException argument is the assigned object type
+            'Invoke(
+              'MethodName(
+                'Invoke(
+                  'MethodName(V::T,, String2Id("getClass")),,
+                  'ListWrap(.List{K})
+                ),,
+                String2Id("getName")),,
+              'ListWrap(.List{K})
+            )
+          ),,
+          'None(.List{K})
+        ))
 
 //@ \subsection{Array initializer}
 
