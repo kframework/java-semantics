@@ -57,7 +57,7 @@ rule 'Id(Str) => String2Id(Str)     [anywhere]
 
 syntax IntOrLongType ::= "int" | "long"
 syntax NumericType ::= "byte" | "short" | IntOrLongType | "char"
-syntax PrimitiveType ::= NumericType | bool
+syntax PrimitiveType ::= NumericType | "bool"
 syntax RefType ::= "rtString" | "nullType"
 
 syntax Type ::= PrimitiveType
@@ -120,12 +120,6 @@ define toString(false::_) => "false" :: rtString
 define toString(null::_) => "null" :: rtString
 
 define toString(rtString) => "java.lang.String"::rtString
-
-//string representation of a type within an array type
-//see JDK: Class.getName()
-declare arrayToString : K -> TypedVal
-context arrayToString(HOLE)
-define arrayToString(int) => "I"::rtString
 
 //@ \texttt{typeOf definition}
 

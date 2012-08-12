@@ -17,7 +17,7 @@ syntax KResult ::=  "rtSystem"
                   | "rtScannerNextInt"
                   | "methodGetClass" "(" K ")"
                   | "methodHashCode" "(" K ")"
-                  | "classObject" "(" Id ")"
+                  | "classObject" "(" KResult ")"
                   | "methodClassGetName" "(" K ")"
                   | "methodArrayClone" "(" K ")"
 
@@ -141,24 +141,36 @@ when
 
 rule [InvokeGetClass]:
     'Invoke(
-      methodGetClass(
-        objectClosure((_ <envStack>ListItem((Class:Id, _))...</envStack>))::_
-      ),,
+      methodGetClass(KR),,
       'ListWrap(.List{K})
-    ) => classObject(Class)
+    ) => classObject(KR)
 
 rule [NameClassGetName]:
-    'MethodName(classObject(Class),, X)
-    => methodClassGetName(classObject(Class))
+    'MethodName(classObject(KR),, X) => methodClassGetName(KR)
 when
     Id2String(X) ==String "getName"
 
-rule [InvokeClassGetName]:
+rule [InvokeClassGetNameObject]:
+    'Invoke(
+      methodClassGetName(objectClosure((_ <envStack>ListItem((Class:Id, _))...</envStack>))::_),,
+      'ListWrap(.List{K})
+    ) => fullyQualifiedClassName(Class)
+
+rule [InvokeClassGetNameString]:
+    'Invoke(
+      methodClassGetName(Str::_),,
+      'ListWrap(.List{K})
+    ) => toString(rtString)
+
+rule [InvokeClassGetNameArray]:
+    'Invoke(
+      methodClassGetName(arrayRef(T,_,_)::_),,
+      'ListWrap(.List{K})
+    ) => toString(T)
+
+rule [fullyQualifiedClassName]:
     <k>
-      'Invoke(
-        methodClassGetName(classObject(Class)),,
-        'ListWrap(.List{K})
-      ) => fullyQualifiedClassName(Ks, Class)
+      fullyQualifiedClassName(Class) => fullyQualifiedClassName(Ks, Class)
       ...
     </k>
     <class>
@@ -167,16 +179,13 @@ rule [InvokeClassGetName]:
       ...
     </class>
 
-define toString(class Class)
-    => 'Invoke(
-          methodClassGetName(classObject(Class)),,
-          'ListWrap(.List{K})
-        )
+define toString(class Class) => fullyQualifiedClassName(Class)
 
 syntax K ::= "fullyQualifiedClassName" "("
                     List{K} //package elements, each of type Id
                 "," Id      //class name
               ")"
+            | "fullyQualifiedClassName" "(" Id ")"
 
 rule [ClassNamePackage]:
     fullyQualifiedClassName(X,, Ks, Class)

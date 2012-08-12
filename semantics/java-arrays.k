@@ -213,8 +213,6 @@ when
 rule [subtypeArrayOfArrayRef]:
     subtype arrayOf RefT1:RefType, arrayOf RefT2:RefType => subtype RefT1, RefT2
 
-define toString(arrayOf T) => 'Plus("["::rtString,, arrayToString(T))
-
 //@ Sequences of locations
 
 syntax List{K} ::= Int ".." Int
@@ -337,5 +335,28 @@ rule [VarDecWithArrayInitDesugar]:
       X,,
       ( 'ArrayInit(InitK) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK)) )
     )))
+
+
+//@ toString
+
+define toString(arrayOf T) => arrayToString(arrayOf T)
+
+//string representation of a type within an array type
+//see JDK: Class.getName()
+declare arrayToString : Type -> TypedVal
+define arrayToString(byte) => "B"::rtString
+define arrayToString(short) => "S"::rtString
+define arrayToString(int) => "I"::rtString
+define arrayToString(long) => "J"::rtString
+define arrayToString(char) => "C"::rtString
+define arrayToString(bool) => "Z"::rtString
+
+//hack in order to access class Id construct from classes
+define arrayToString('class_(Class:Id))
+    => 'Plus("L"::rtString,,'Plus(toString('class_(Class)) ,,";"::rtString))
+
+define arrayToString(rtString)
+    => 'Plus("L"::rtString,,'Plus(toString(rtString   ) ,,";"::rtString))
+define arrayToString(arrayOf T) => 'Plus("["::rtString ,,arrayToString(T))
 
 end module

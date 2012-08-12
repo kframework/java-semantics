@@ -1,7 +1,7 @@
 class Musketeer {}
 class DArtagnan extends Musketeer {}
 
-public class classGetName {
+public class className_03_user_classes {
   public static void main(String[] args) {
     System.out.println("new Musketeer().getClass().getName() = "
         + new Musketeer().getClass().getName());

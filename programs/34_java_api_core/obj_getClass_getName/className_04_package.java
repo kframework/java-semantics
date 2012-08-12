@@ -3,7 +3,7 @@ package ro.uaic.java.test;
 class TheClass {}
 class TheClass2 {}
 
-public class classGetName_2_package {
+public class className_04_package {
   public static void main(String[] args) {
     System.out.println(new RuntimeException((String) null).getClass().getName());
     System.out.println(new Object().getClass().getName());
