@@ -203,10 +203,11 @@ Part 8. Array element default value.
 30. Default value of refs:
   Object[], String[], RuntimeException[], Object[][].
 
-todo now:
+Implemented:
 1. Refactoring.
   Change compile-time type of array element from actual T to elem T. This type will not be used
-    by array lookup rules, thus no changes there required. It will be used however by assign.
+    by array lookup rules, thus no changes there required. (Actually it is used, but only as a
+    redundant type check.) It will be used however by assign.
     Also we will be able to move assignment for arrays logic from expression module to arrays
     module.
 

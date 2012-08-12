@@ -245,9 +245,9 @@ rule [storeCopy]:
     </k>
     <store>
       ...
-      L1 |-> TV:TypedVal
+      L1 |-> K:K
       //...
-      L2 |-> (_ => TV)
+      L2 |-> (_ => K)
       ...
     </store>
 when
