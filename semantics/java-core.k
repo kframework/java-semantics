@@ -172,6 +172,12 @@ define isRefType2(T)
       #else false
     #fi  [structural]
 
+//default value of all types
+declare default : Type -> TypedVal
+define default(NT:NumericType) => 0 :: NT
+define default(bool) => false :: bool
+define default(RT:RefType) => null :: RT
+
 //@ \subsubsection{Debug aids}
 syntax K ::= K "++" K [seqstrict gather(E e)]
 rule K1:K ++ K2:K => toString(K1) +String toString(K2) [structural anywhere]

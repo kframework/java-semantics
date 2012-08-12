@@ -105,7 +105,7 @@ rule [NewArrayEmptyDims]:
         [structural]
 
 rule [NewArray]:
-    'NewArray(T,, K:K,, 'ListWrap(.List{K})) => newArrayImpl(T, K, undefined :: T)
+    'NewArray(T,, K:K,, 'ListWrap(.List{K})) => newArrayImpl(T, K, default(T))
         [structural]
 
 syntax K ::= "newArrayImpl" "("
@@ -281,31 +281,22 @@ rule [ArrayStoreException]:
 rule [ArrayInitPreprocess]:
     'NewArray((T => arrayOf T),, 'ListWrap(('Dim(.List{K}) => .List{K}),, _),, 'ArrayInit(_))
 
-rule [ArrayInitPreprocess2]:
-    'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitContent:K))
-    => arrayInitCountSize(T, 0, InitContent, InitContent)
+rule [ArrayInit]:
+    'NewArray(arrayOf T,, 'ListWrap(.List{K}),, 'ArrayInit('ListWrap(InitContent:List{K})))
+    => arrayInitAlloc(newArrayImpl(T, 'ListWrap(count(InitContent)), undefined :: T), InitContent)
 
-//counts elements of an array initiaizer, then passes the counted data, as well as the original
-//initializer to the next step - array allocation based on counted size.
-syntax K ::= "arrayInitCountSize" "("
-                                Type ","  //array type
-                                Int ","   //counted size
-                                K ","     //InitContent - content of original 'ArrayInit term,
-                                          //a 'ListWrap
-                                K         //InitContent - copy of the second argument
-                              ")"
+//counts the number of elements in the List{K} list. Evaluates to an Int::int .
+syntax K ::= "count" "(" List{K} ")"
+           | "count" "(" Int "," List{K} ")"
 
-rule [arrayInitCountSize]:
-    arrayInitCountSize(_, I:Int => I +Int 1, 'ListWrap((_:K => .List{K}),, _), _)
-
-rule [arrayInitCountSizeEnd]:
-    arrayInitCountSize(arrayOf T, I, 'ListWrap(.List{K}), InitContent)
-    => arrayInitAlloc(newArrayAlloc(T, 'ListWrap(I::int), undefined :: T), InitContent)
+rule count(Ks) => count(0, Ks)
+rule count(I:Int, K,,Ks) => count(I +Int 1, Ks)
+rule count(I, .List{K}) => I::int
 
 //allocates the array based on previously computed size, the proceeds to array initialization
 syntax K ::= "arrayInitAlloc" "("
                                   K "," //newArrayAlloc(), reduces to arrayRef()
-                                  K     //InitContent - original 'ArrayInit content
+                                  List{K} //InitContent - list of initialization expressions
                               ")"
         [strict(1)]
 
@@ -317,12 +308,12 @@ syntax K ::= "arrayInitImpl" "("
                                   Type ","//T - array type
                                           //    used by inner ArrayInit's
                                   Int "," //L - location of first element in store
-                                  K       //InitContent - initialization content inside 'ListWrap
+                                  List{K} //InitContent - list of initialization expressions
                               ")"
 
 rule [arrayInitImpl]:
     ( . => 'ExprStm(assignImpl(true::bool, L, K)) )
-    ~> arrayInitImpl(_, (L => L +Int 1), 'ListWrap((K => .List{K}),, _) )
+    ~> arrayInitImpl(_, (L => L +Int 1), ((K => .List{K}),, _) )
 when
     getKLabel(K) =/=KLabel 'ArrayInit
 
@@ -330,21 +321,21 @@ rule [arrayInitImplInnerArrayInit]:
     ( . => 'ExprStm(assignImpl(
               true::bool,
               L,
-              'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitContent))
+              'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK:K))
            )) )
     ~> arrayInitImpl(
           arrayOf T,
           (L => L +Int 1),
-          'ListWrap(('ArrayInit(InitContent) => .List{K}),, _)
+          (('ArrayInit(InitK) => .List{K}),, _)
        )
 
 rule [arrayInitImplDiscard]:
-    arrayInitImpl(_, _, 'ListWrap(.List{K})) => .
+    arrayInitImpl(_, _, .List{K}) => .
 
 rule [VarDecWithArrayInitDesugar]:
     'LocalVarDec(T,, 'ListWrap('VarDec(
       X,,
-      ( 'ArrayInit(InitContent) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitContent)) )
+      ( 'ArrayInit(InitK) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK)) )
     )))
 
 end module

@@ -1,6 +1,6 @@
 /*
 30. Default value of refs:
-  Object[], String[], RuntimeException[], Object[][].
+  Object[], String[], RuntimeException[], Object[][], int[][].
 */
 
 public class array_30_default_val_ref {
@@ -17,6 +17,9 @@ public class array_30_default_val_ref {
 
     Object[][] vvo = new Object[2][];
     System.out.println(vvo[0] + " " + vvo[1]);
+
+    int[][] vvi = new int[2][];
+    System.out.println(vvi[0] + " " + vvi[1]);
 
     System.out.println("Done!");
   }

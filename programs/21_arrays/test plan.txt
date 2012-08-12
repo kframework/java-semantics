@@ -198,10 +198,10 @@ Subpart 7.2: Array initializer as part of array var declaration:
 
 Part 8. Array element default value.
 
-29. Default value of primitive types:
+29. Default value of arrays primitive types:
   byte[], short[], int[], long[], char[], boolean[].
 30. Default value of refs:
-  Object[], String[], RuntimeException[], Object[][].
+  Object[], String[], RuntimeException[], Object[][], int[][].
 
 Implemented:
 1. Refactoring.
