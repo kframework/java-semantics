@@ -1,33 +1,32 @@
 List of implemented features:
 
 1. Migrated kool semantics to java syntax.
-2. Java array allocation.
-3. Array length.
-4. Boolean operators, ternary ?: operator, string + operator.
-5. Full support for composite assigment operators, all operand types,
+2. Full support of operators over primitive types, String + operator.
+3. Full support for composite assigment operators, all operand types,
   except for abnormal termination cases (there might be some special logic involved).
-6. Constructors, simplified semantcs. Constructors are just replaced
+4. Constructors, simplified semantcs. Constructors are just replaced
 with methods with same name and return type void.
-7. All statements which deal with single-threaded computation
+5. All statements which deal with single-threaded computation
   (e.g. except synchronized), according to JLS $14.
-8. Support for the following JDK methods's:
+6. Support for the following JDK methods's:
   - System.out.print
   - System.out.println
   - Integer.parseInt(System.console().readLine()) - only this term, and no subparts of it.
 (The bare minimum required to write any values to console, or to read integers.)
-9. Support for all literals, all types and formats covered in JLS $3,
+  - object.getClass().getName()
+7. Support for all literals, all types and formats covered in JLS $3,
     with the following exceptions only:
   - floating point literals
   - escape chars with values beyond 127, in both char and string literals.
   (those are not supported by maude)
-10. All integer operators - arithmetic, bitwise, bit shift, composite assignment.
-  For int and long. Including overflow.
-11. All reference operators.
-12. Superclass constructor invocation during new object creation.
-13. Support for default constructor.
-14. Support for all primitive integer types and explicit conversion. (JLS $4)
-15. Support for all kind of conversions and promotions for integers and references (JLS $5)
-16. Basic exceptions: ArithmeticException, NullPointerException, ClassCastException.
+8. All integer primitive types. Semantics for overflow.
+9. All reference operators.
+10. Superclass constructor invocation during new object creation.
+11. Support for default constructor.
+12. Support for all primitive integer types and explicit conversion. (JLS $4)
+13. Support for all kind of conversions and promotions for integers and references (JLS $5)
+14. Basic exceptions: ArithmeticException, NullPointerException, ClassCastException.
+15. Full support for arrays, as per JLS $10, $15.10, $15.13.
 
 
 Limitations:
@@ -46,13 +45,10 @@ Non-related to java semantics:
 
 
 Postponed features:
-1. Assert with one argument should call AssertionError exception
-  without arguments. Postponed until constructor overloading will
-  be implemented. There's no semantics difference though.
-2. After NPE will be implemented, all seqstrict constructs should be reviewed.
+1. After NPE will be implemented, all seqstrict constructs should be reviewed.
   Some of them should throw NPE immediatley after first argument evaluates to null,
   thus second argument should not be evaluated.
-3. Test all numeric promotions after we'll implement method overloading.
+2. Test all numeric promotions after we'll implement method overloading.
   Overloading is the only feature capable to distinguish between byte, short, int
   with the same value. Test for conditional operator now passes, although
   I have no logic implemented specifically for it.
