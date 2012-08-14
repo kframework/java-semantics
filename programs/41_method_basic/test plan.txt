@@ -1,0 +1,51 @@
+Test plan for basic method calls.
+All calls are done from outside the class, using qualified expressions.
+There are no tests of accessibility based on access specifiers.
+
+Part 1. Method call, one class, exact arguments.
+01. Simple method test.
+  - call a method, no args, return type void, printing a value.
+
+02. Test method return type. Call a method returning:
+  - int, bool, String, RuntimeException, int[].
+  - RuntimeException return, converted to Object. (return type conversion)
+  - RuntimeException return, ignored. Called using Expression statement.
+  Print the result.
+
+03. Testing method arguments:
+  - int, bool, String, RuntimeException, int[].
+  Print the arg inside method.
+
+04. Multiple methods, multiple argument types/numbers:
+  - method negation(one arg),
+  - method max(two args),
+  - method maxArray(one arg)
+
+05. Argument conversion.
+  Method with four arguments, arguments 2 and 3 needs conversion.
+  formal types: int, int, Object, String
+  actual method call types:
+    - int, short, RuntimeException, String
+    - int, int, null, null
+
+Part 2. Inheritance.
+
+06. Method inheritance.
+  - Three classes. A < B < C. A{f()} B{g()} C{h()} C c; c.f(); c.g(); c.h();
+
+Part 3. Overriding, polymorphism.
+
+07. Overriding, polymorphism.
+  Three classes. A < B < C.
+    - A{f() g() h() m()}
+    - B{g() h()}
+    - C{h() m()}
+  Six references: A aa, ab, ac; B bb, bc; C cc;
+  All six references call all accessible methods.
+
+Part 4. Access mode.
+  - Testing that a class may have multiple methods
+  with the same signature but not in an overloading relation,
+  due to private/package access mode.
+
+todo.

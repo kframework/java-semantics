@@ -1,0 +1,50 @@
+Test plan for method call with overloading.
+
+Part 1. Two methods with the same name, distinct number of arguments.
+
+11. Same name, distinct arguments number, exact call arguments type.
+  - f(int, int, int)
+  - f(int, int)
+  - f(Object[])
+  Call all with exact arg types.
+
+12. Two overloaded methods:
+   f(int), f(int, int), g(int), g(int,int). Call all of them.
+
+13. Same name, distinct arguments number, call arguments conversion.
+  - f(int, int, int)
+  - f(int, int)
+  - f(Object[])
+
+14. Distinct arguments number, conversion from null.
+  - f(Object), f(Object, Object)
+  Call types: (null), (null, String)
+  Call all arguments requiring conversion.
+
+Part 2. Multiple methods with the same name and the same number of arguments,
+  just one with compatible argument types, thus just one potentially applicable method.
+
+21. One argument, no conversion.
+  - f(long), f(String), f(RuntimeException), f(A)
+22. One argument, conversion
+  - Definitions: f(long), f(String), f(RuntimeException), f(A)
+  - calls types: int, NPE, B (B < A).
+23. One argument, some methods share compatible values, but for the used calls
+  just one method is applicable.
+  - Definitions: Definitions: f(long), f(String), f(RuntimeException), f(NPE), f(A)
+  - calls types: int, NPE, B (B < A).
+24. Multiple arguments, multiple argument number types:
+  - f(int), f(int, long), f(long, int)
+  - call types: int, long, (int, long), (long, int)
+25. case ambiguous in one argument, unambiguous in other:
+  - f(RuntimeException, String), f(String, RuntimeException)
+  - call tyes: (null, String), (null, RuntimeException)
+
+Part 3.  Multiple potentially applicable methods - same name, same number
+  of arguments, compatible arguments type, but just one is the most specific.
+  Cases with and without conversion.
+Part 4. Multiple potentially applicable + inheritance.
+  For multiple arguments: cases with base class one arg, derived two, and the opposite.
+
+Part 5. Accessibility test. Multiple potentially applicable, but not all accessible due to
+  access specifiers.
