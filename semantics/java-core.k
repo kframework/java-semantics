@@ -22,7 +22,7 @@ configuration <T color="red">
                         <envStack> .List </envStack>
                         <location multiplicity="?"> .K </location>
                       </crntObj>
-                     </control>
+                    </control>
                   </thread>
                 </threads>
                 <br/>
@@ -135,11 +135,19 @@ rule [subtypeRefTrue]:
 
 rule [subtypeList]:
     subtype(T1:Type,,T2:Type,,Ts:List{KResult}), (Tp1:Type,,Tp2:Type,,Tps:List{KResult})
-    => subtype T1,Tp1 ~> true? ~> subtype (T2,,Ts),(Tp2,,Tps)
+    => 'LazyAnd( (subtype T1,Tp1),, (subtype (T2,,Ts),(Tp2,,Tps)) )
         [structural]
 
 rule [subtypeEmpty]:
     subtype .List{K}, .List{K} => true :: bool
+        [structural]
+
+rule [subtypeEmptyLeft]:
+    subtype .List{K}, T,,_ => false :: bool
+        [structural]
+
+rule [subtypeEmptyRight]:
+    subtype T,,_ , .List{K} => false :: bool
         [structural]
 
 //todo this rule, if used, leads to the error "failed to load IOWrapper".

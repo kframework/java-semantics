@@ -4,13 +4,13 @@ module JAVA-PRIMITIVE-TYPES
 //@ \subsection{Type labels}
 //@Here we rewrite java type ast into simple types
 
-rule 'Byte(_) => byte [structural]
-rule 'Short(_) => short [structural]
-rule 'Int(_) => int [structural]
-rule 'Long(_) => long [structural]
-rule 'Char(_) => char [structural]
-rule 'Boolean(_) => bool [structural]
-rule 'Void(_) => void [structural]
+rule 'Byte(_) => byte [structural anywhere]
+rule 'Short(_) => short [structural anywhere]
+rule 'Int(_) => int [structural anywhere]
+rule 'Long(_) => long [structural anywhere]
+rule 'Char(_) => char [structural anywhere]
+rule 'Boolean(_) => bool [structural anywhere]
+rule 'Void(_) => void [structural anywhere]
 
 //@ \subsection{Integer types normalization}
 

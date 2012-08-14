@@ -89,7 +89,7 @@ when
 
 context 'ArrayType(HOLE)
 
-rule 'ArrayType(T) => arrayOf T [structural]
+rule 'ArrayType(T) => arrayOf T [structural anywhere]
 
 //@ \subsection{New array allocation}
 /*@ The dynamic semantics of typed array declarations is

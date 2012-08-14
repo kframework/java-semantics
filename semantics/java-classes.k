@@ -138,18 +138,50 @@ rule [MethodDec]:
       'MethodDecHead(_,, _,, ReturnType:Type,, Name:Id,, 'ListWrap(Params:List{K}),, _),,
       S:K
     )
-    => storeMethod(Name, 'ListWrap(Params), S, function from Params to ReturnType)
+    => storeMethod(Name, types(Params), 'ListWrap(Params), S,
+          function from Params to ReturnType)
         [structural]
 
-syntax K ::= "storeMethod" "(" Id "," K "," K "," Type ")"
+syntax K ::= "storeMethod" "("
+                              Id ","
+                              K "," //will evalute to Types - a syntactic list of types
+                              K ","
+                              K ","
+                              Type
+                            ")"
+        [strict(2)]
 
-context storeMethod(_, _, _, function from (_:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}) to _)
+syntax K       ::= "types" "(" List{K} ")"
+syntax Types ::= "types" "(" List{KResult} ")"
+syntax KResult ::= Types
+
+rule types(_:List{KResult},, ('Param(_:K,,T,,_:K) => T),, _:List{K})
+
+//Value in <env> representing a map from method signatures to method closures.
+//Holds all the methods with the same name.
+syntax KResult ::= "signatures" "(" Map ")"
+
+context storeMethod(_, _, _, _, function from (_:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}) to _)
+
+//allocate an entry in <env> for this method, if there are no other methods with this name
+rule [storeMethodAllocEnv]:
+    <k> storeMethod(Name, _, _, _, _) ...</k>
+    <env>
+      Env
+      ( . => Name |-> signatures(.Map) )
+    </env>
+when
+    notBool Name in keys(Env)
 
 rule [storeMethod]:
-    <k> storeMethod(Name, 'ListWrap(Params), S, MethodType:Type) =>. ...</k>
+    <k> storeMethod(Name, Ts:Types, 'ListWrap(Params), S, MethodType:Type) =>. ...</k>
     <crntClass> Class:Id </crntClass>
     <location> OL:Int </location>
-    <env> Env => Env[L:Int/Name] </env>
+    <env>
+      ...
+      Name |-> signatures( SigMap:Map => SigMap[L:Int/Ts] )
+      ...
+    </env>
     <store>
       ...
       . => L |-> methodClosure(Class, OL, 'ListWrap(Params), S) :: MethodType
@@ -185,6 +217,7 @@ rule [storeConstructor]:
         storeConstructor(Name, 'ListWrap(Params), SuperParamsList, S, MethodType)
         => storeMethod(
           Name,
+          types(Params),
           'ListWrap(Params),
           'ExprStm(
             'Invoke( 'Method('MethodName( BaseClass:Id )),, SuperParamsList )
@@ -204,6 +237,7 @@ rule [storeConstructorClassObject]:
         storeConstructor(Name, 'ListWrap(Params), _, S, MethodType)
         => storeMethod(
           Name,
+          types(Params),
           'ListWrap(Params),
           S,
           MethodType
@@ -246,8 +280,6 @@ rule [execute]:
 //@ \texttt{bindto} also checks the well-formedness of the function parameters
 
 syntax K ::= "bindto" List{K} "," List{KResult}
-
-context bindto('Param(_:K,,HOLE,,_),, _:List{K}), _:List{K}
 
 rule [bindto]:
     <k>
@@ -592,9 +624,39 @@ be checked against the return type of the method.  To do this correctly,
 we also need to stack the current status of the \textsf{return} cell
 and then pop it when the method returns. */
 
+//todo test order of params evaluation - here it should get wrong
 context 'Invoke(HOLE,, _)
 context 'Invoke(_:KResult ,,'ListWrap(_:List{K},,HOLE,,_:List{K}))
 
+rule [InitSignatureSearch]:
+    'Invoke(
+      ( signatures(SigMap) => searchSignature( getTypes(ParamValues), SigMap) ),,
+      'ListWrap(ParamValues)
+    )
+
+//converts a List{TypedVal} to Types.
+syntax K ::= "getTypes" "("
+                            List{KResult} //a list of values
+                        ")"
+           | "getTypes" "("
+                            List{KResult} "," //a list of types
+                            List{KResult}     //a list of values
+                        ")"
+
+rule getTypes(Ks) => getTypes(.List{K}, Ks)
+rule getTypes(_,, (.List{K} => T), (_::T => .List{K}),, _)
+rule getTypes(Ks, .List{K}) => types(Ks)
+
+//searches a list of signatures for one compatible with a given method call type list.
+syntax K ::= "searchSignature" "(" Types "," //The call values type list
+                                   Map       //The signatures to search
+                                ")"
+        [strict(1)]
+
+rule searchSignature(types(CallTL:List{K}), SigMap types(SigTL:List{K}) |-> L)
+    => 'If( subtype CallTL, SigTL,, typedLookup(L),, searchSignature(types(CallTL), SigMap) )
+
+//todo search signatures first
 rule [Invoke]:
     <k>
       'Invoke(methodClosure(Class, OL:Int, 'ListWrap(Params), S) :: function from _ to T,,
@@ -644,6 +706,17 @@ define lookupMember(
     </envStack>,
     X
   ) => typedLookup(L)
+
+define lookupMember(
+    <envStack>
+      ListItem((
+        _:Id,
+        <env>... X |-> signatures( SigMap ) ...</env>
+      ))
+      ...
+    </envStack>,
+    X
+  ) => signatures( SigMap )
 
 define lookupMember(
     <envStack>

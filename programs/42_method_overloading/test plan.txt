@@ -2,7 +2,7 @@ Test plan for method call with overloading.
 
 Part 1. Two methods with the same name, distinct number of arguments.
 
-11. Same name, distinct arguments number, exact call arguments type.
+11. Same name, distinct argument number, exact call arguments type.
   - f(int, int, int)
   - f(int, int)
   - f(Object[])
@@ -32,13 +32,22 @@ Part 2. Multiple methods with the same name and the same number of arguments,
 23. One argument, some methods share compatible values, but for the used calls
   just one method is applicable.
   - Definitions: Definitions: f(long), f(String), f(RuntimeException), f(NPE), f(A)
-  - calls types: int, NPE, B (B < A).
-24. Multiple arguments, multiple argument number types:
-  - f(int), f(int, long), f(long, int)
+  - calls types: int, B (B < A).
+24. Unambiguous null  - distinguishing between primitive type and reference.
+  - f(long), f(A)
+  - call types: int, null
+25. Multiple arguments, multiple argument number types:
+  - f(long), f(int, long), f(long, int)
   - call types: int, long, (int, long), (long, int)
-25. case ambiguous in one argument, unambiguous in other:
+26. case ambiguous in one argument, unambiguous in other:
   - f(RuntimeException, String), f(String, RuntimeException)
   - call tyes: (null, String), (null, RuntimeException)
+
+todo:
+  Refactor current overloading implementation so that we have just one level
+of maps, from method signatures, including name, to closures.
+This should simplify the semantics a lot. Also we can cleverly
+implement map search so that we will have the same performance.
 
 Part 3.  Multiple potentially applicable methods - same name, same number
   of arguments, compatible arguments type, but just one is the most specific.
