@@ -1,10 +1,10 @@
 /*
-175. Matrix polymorphism.
+176. Matrix polymorphism.
     Object[][] mo = new RuntimeException[][];
     mo[0] = new NPE[]. read, write element.
 */
 
-public class array_175_polymorph_matrix {
+public class array_176_polymorph_matrix {
 
   public static void main(String[] args) {
     new main();

@@ -87,8 +87,6 @@ when
 
 //@ \subsection{Array Type}
 
-context 'ArrayType(HOLE)
-
 rule 'ArrayType(T) => arrayOf T [structural anywhere]
 
 //@ \subsection{New array allocation}
@@ -202,13 +200,9 @@ rule [evalAndStoreEmpty]:
 
 //@ Subtype
 rule [subtypeArrayOfArrayPrimitive]:
-    subtype arrayOf T1, arrayOf T2 =>
-    #if T1 ==K T2
-      #then true::bool
-      #else false::bool
-    #fi
+    subtype arrayOf T1, arrayOf T2 => (T1 ==K T2)::bool
 when
-    notBool isRefType2(T1) andBool notBool isRefType2(T2)
+    notBool isRefType2(T1) orBool notBool isRefType2(T2)
 
 rule [subtypeArrayOfArrayRef]:
     subtype arrayOf RefT1:RefType, arrayOf RefT2:RefType => subtype RefT1, RefT2

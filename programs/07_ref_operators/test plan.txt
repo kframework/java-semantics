@@ -25,6 +25,9 @@ Part 4: operator cast
 Part 5: operator instanceof
 14. instanceof true: obj right value instanceof object, string, array, userClass
 15. instanceof false: object, userClass1 instanceof string, array, userClass2.
+151. instanceof String:
+  String instanceof Object, String, array, userClass.
+
 16. null instanceof object, string, array, userClass.
 17. instanceof true: base class is exact derived class
     instanceof true: base class is derived class, instance is more derived class.

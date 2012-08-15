@@ -358,10 +358,10 @@ rule [subtypeArrayOfClass]:
     #fi
 
 rule [subtypeArrayOfOtherFalse]:
-    subtype arrayOf _, RT => false::bool
+    subtype arrayOf _, T => false::bool
 when
-            getKLabel(RT) =/=KLabel 'arrayOf_
-    andBool getKLabel(RT) =/=KLabel 'class_
+            getKLabel(T) =/=KLabel 'arrayOf_
+    andBool getKLabel(T) =/=KLabel 'class_
 
 rule [subtypeNull]:
     subtype nullType, _:RefType => true :: bool
@@ -654,7 +654,7 @@ syntax K ::= "searchSignature" "(" Types "," //The call values type list
         [strict(1)]
 
 rule searchSignature(types(CallTL:List{K}), SigMap types(SigTL:List{K}) |-> L)
-    => 'If( subtype CallTL, SigTL,, typedLookup(L),, searchSignature(types(CallTL), SigMap) )
+    => 'If( (subtype CallTL, SigTL),, typedLookup(L),, searchSignature(types(CallTL), SigMap) )
 
 //todo search signatures first
 rule [Invoke]:

@@ -1,11 +1,11 @@
 /*
-174. Polimorphic array assignment, element read and element write.
+175. Polimorphic array assignment, element read and element write.
   - RuntimeException[] vre = NullPointerException[]. assign. read.
   - O[] RE[0] = new NPE[] - assigning to array element a more derived type than
     aray object type. Permitted.
 */
 
-public class array_174_polymorph_elem_write {
+public class array_175_polymorph_elem_write {
 
   public static void main(String[] args) {
     new main();

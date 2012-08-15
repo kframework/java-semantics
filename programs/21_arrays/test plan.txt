@@ -125,23 +125,42 @@ Part 6. Arrays assignment compatibility and ArrayStoreException.
   Object int[] instanceof long[]
   Object long[] instanceof int[]
 
-172. Polymorphic array assignment.
+172. Array instanceof complex cases:
+  Object Object instanceof int[]
+  Object int[] instanceof Object
+  Object Object[] instanceof int[]
+  Object int[] instanceof Object[]
+  Object int[] instanceof int[][]
+  Object int[][] instanceof int[]
+  Object int[][] instanceof Object[]
+  Object Object[] instanceof int[][]
+  Object String instanceof int[]
+  Object int[] instanceof String
+  Object RE instanceof int[]
+  Object int[] instanceof RE
+  Object RE[] instanceof int[]
+  Object int[] instanceof RE[]
+
+173. Polymorphic array assignment.
   NPE[] va; init a.
   RE[] vb = va.
   va == vb?
 
-173. Polymorphic array assignment, element read.
+174. Polymorphic array assignment, element read.
   NPE[] va; init a.
   RE[] vb = va; read vb.
 
-174. Polimorphic array assignment, element read and element write.
+175. Polimorphic array assignment, element read and element write.
   - RuntimeException[] vre = NullPointerException[]. assign. read.
   - O[] RE[0] = new NPE[] - assigning to array element a more derived type than
     aray object type. Permitted.
 
-175. Matrix polymorphism.
+176. Matrix polymorphism.
     Object[][] mo = new RuntimeException[][];
     mo[0] = new NPE[]. read, write element.
+
+177. Compatibility of Object and int[].
+    Object[] vo = new int[][]; Elem read,write.
 
 181. ArrayStoreException.
   - Example from JLS $10.10, adapted to currently implemented features.
@@ -160,7 +179,11 @@ Part 6. Arrays assignment compatibility and ArrayStoreException.
     - mo[0][0] = new RuntimeException() - ASException
     mo[0][0] = new NullPointerException() - ok
 
-183. Assignment don't happen when ArrayStoreException is thrown.
+183. ArrayStoreException on interplay of Object[] and int[][].
+    Object[] vo = new int[][].
+    - assign to vo[0]: array of all primitive types, String[], Object[], int[][].
+
+184. Assignment don't happen when ArrayStoreException is thrown.
 
 19. Array cast.
   - cast ok: RuntimeException[] -> NPE[], object is NPE[]

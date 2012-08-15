@@ -1,8 +1,8 @@
 /*
-183. Assignment don't happen when ArrayStoreException is thrown.
+184. Assignment don't happen when ArrayStoreException is thrown.
 */
 
-public class array_183_ASException_no_assign {
+public class array_184_ASException_no_assign {
   public static void main(String[] args) {
     Object[] vo = new RuntimeException[1];
     vo[0] = null;

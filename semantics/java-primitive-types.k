@@ -4,13 +4,13 @@ module JAVA-PRIMITIVE-TYPES
 //@ \subsection{Type labels}
 //@Here we rewrite java type ast into simple types
 
-rule 'Byte(_) => byte [structural anywhere]
-rule 'Short(_) => short [structural anywhere]
-rule 'Int(_) => int [structural anywhere]
-rule 'Long(_) => long [structural anywhere]
-rule 'Char(_) => char [structural anywhere]
-rule 'Boolean(_) => bool [structural anywhere]
-rule 'Void(_) => void [structural anywhere]
+rule 'Byte(.List{K}) => byte [structural anywhere]
+rule 'Short(.List{K}) => short [structural anywhere]
+rule 'Int(.List{K}) => int [structural anywhere]
+rule 'Long(.List{K}) => long [structural anywhere]
+rule 'Char(.List{K}) => char [structural anywhere]
+rule 'Boolean(.List{K}) => bool [structural anywhere]
+rule 'Void(.List{K}) => void [structural anywhere]
 
 //@ \subsection{Integer types normalization}
 
@@ -92,8 +92,7 @@ when NT1 ==K long orBool NT2 ==K long
 /*@ \subsubsection{Subtyping among primitive types} */
 
 rule subtype byte, T
-=>  #if         T ==K byte
-        orBool  T ==K short
+=>  #if         T ==K short
         orBool  T ==K int
         orBool  T ==K long
       #then true :: bool
@@ -120,8 +119,8 @@ rule subtype long, T =>  false :: bool
 when T =/=K long [structural]
 
 rule subtype char, T
-=>  #if         T ==K long
-        orBool  T ==K char
+=>  #if         T ==K int
+        orBool  T ==K long
       #then true :: bool
       #else false :: bool
     #fi

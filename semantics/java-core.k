@@ -133,13 +133,16 @@ rule [subtypeRefTrue]:
     subtype T, T => true :: bool
         [structural]
 
-rule [subtypeList]:
-    subtype(T1:Type,,T2:Type,,Ts:List{KResult}), (Tp1:Type,,Tp2:Type,,Tps:List{KResult})
-    => 'LazyAnd( (subtype T1,Tp1),, (subtype (T2,,Ts),(Tp2,,Tps)) )
+//Bug. Attempt to write a single rule instead of two below, using side conditions,
+//leads to SUBSORT-TO-WRAPPERS
+rule [subtypeListLeft]:
+    subtype(T1:Type,,T2:Type,,Ts:List{KResult}), (Tp1:Type,,Tps:List{KResult})
+    => 'LazyAnd( (subtype T1,Tp1),, (subtype (T2,,Ts),(Tps)) )
         [structural]
 
-rule [subtypeEmpty]:
-    subtype .List{K}, .List{K} => true :: bool
+rule [subtypeListRight]:
+    subtype(T1:Type,,Ts:List{KResult}), (Tp1:Type,,Tp2:Type,,Tps:List{KResult})
+    => 'LazyAnd( (subtype T1,Tp1),, (subtype (Ts),(Tp2,,Tps)) )
         [structural]
 
 rule [subtypeEmptyLeft]:
@@ -148,6 +151,10 @@ rule [subtypeEmptyLeft]:
 
 rule [subtypeEmptyRight]:
     subtype T,,_ , .List{K} => false :: bool
+        [structural]
+
+rule [subtypeEmpty]:
+    subtype .List{K}, .List{K} => true :: bool
         [structural]
 
 //todo this rule, if used, leads to the error "failed to load IOWrapper".

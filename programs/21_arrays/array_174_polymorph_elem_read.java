@@ -1,11 +1,10 @@
 /*
-172. Polymorphic array assignment.
+174. Polymorphic array assignment, element read.
   NPE[] va; init a.
-  RE[] vb = va.
-  va == vb?
+  RE[] vb = va; read vb.
 */
 
-public class array_172_polymorph_array_assign {
+public class array_174_polymorph_elem_read {
 
   public static void main(String[] args) {
     new main();
@@ -20,12 +19,19 @@ class main {
     vnpe[1] = new NullPointerException("npe");
 
     RuntimeException[] vre = vnpe;
-    System.out.println(vnpe == vre);
+    printArray(vre);
 
     RuntimeException[] vre2 = new RuntimeException[1];
     vre2[0] = new NullPointerException("npe2");
 
     Object[] ovre = vre2;
-    System.out.println(ovre == vre2);
+    System.out.println("ovre[0] = " + ovre[0]);
+  }
+
+  void printArray(RuntimeException[] v1) {
+    for(int i=0; i<v1.length; i++) {
+      System.out.print(v1[i] + " ");
+    }
+    System.out.println();
   }
 }

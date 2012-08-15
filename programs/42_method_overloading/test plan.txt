@@ -42,6 +42,10 @@ Part 2. Multiple methods with the same name and the same number of arguments,
 26. case ambiguous in one argument, unambiguous in other:
   - f(RuntimeException, String), f(String, RuntimeException)
   - call tyes: (null, String), (null, RuntimeException)
+27. Compare all possible pairs of types in a relation of subtyping, where the result is false.
+    Method overloading makes this test possible and necessary.
+    Types to compare:
+    int, bool, RuntimeException, String, int[], Object[].
 
 todo:
   Refactor current overloading implementation so that we have just one level
@@ -54,6 +58,14 @@ Part 3.  Multiple potentially applicable methods - same name, same number
   Cases with and without conversion.
 Part 4. Multiple potentially applicable + inheritance.
   For multiple arguments: cases with base class one arg, derived two, and the opposite.
+  Extensive tests of the most specific type for primitive types and references.
+
+Extensive test of subtyping: method with one argument, of all relevant types,
+  one version in the base class,
+  all other in the derived. Called with the argument from the base class.
+  Also called with argument null, for non-ambiguous cases.
+  One version of this test for all relevant types. This is the most complete test of subtyping
+  case false.
 
 Part 5. Accessibility test. Multiple potentially applicable, but not all accessible due to
   access specifiers.
