@@ -1,0 +1,5 @@
+1. Ability to have sorts List{S} where S is any sort, not just K and KResult.
+2. Type ckecking for terms in label-based form. I want to specify that label 'Plus
+may have one or two arguments of type Exp.
+3. Ability to explicitly use HOLE in any rule. this will make context rules a special case or rewrite rules. In some complex situations this is usefl. for example, I can make a hole inside a deeply nested element of a map inside a term in a computation.
+Now I need to simulate HOLE and strictness by many simple rules.

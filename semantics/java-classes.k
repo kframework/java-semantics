@@ -157,37 +157,22 @@ syntax KResult ::= Types
 
 rule types(_:List{KResult},, ('Param(_:K,,T,,_:K) => T),, _:List{K})
 
-//Value in <env> representing a map from method signatures to method closures.
-//Holds all the methods with the same name.
-syntax KResult ::= "signatures" "(" Map ")"
-
 context storeMethod(_, _, _, _, function from (_:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}) to _)
-
-//allocate an entry in <env> for this method, if there are no other methods with this name
-rule [storeMethodAllocEnv]:
-    <k> storeMethod(Name, _, _, _, _) ...</k>
-    <env>
-      Env
-      ( . => Name |-> signatures(.Map) )
-    </env>
-when
-    notBool Name in keys(Env)
 
 rule [storeMethod]:
     <k> storeMethod(Name, Ts:Types, 'ListWrap(Params), S, MethodType:Type) =>. ...</k>
     <crntClass> Class:Id </crntClass>
     <location> OL:Int </location>
-    <env>
-      ...
-      Name |-> signatures( SigMap:Map => SigMap[L:Int/Ts] )
-      ...
-    </env>
+    <env> Env => Env[ L:Int/sig(Name,Ts) ] </env>
     <store>
       ...
       . => L |-> methodClosure(Class, OL, 'ListWrap(Params), S) :: MethodType
       ...
     </store>
     <nextLoc> L => L +Int 1 </nextLoc>
+
+//A method signature
+syntax K ::= "sig" "(" Id "," Types ")"
 
 rule [ConstrDecSuperCallDesugar]:
     'ConstrDec(
@@ -544,7 +529,7 @@ rule [ExprNameQualified]:
           <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>
         ) :: class Class,, X
       )
-      => lookupMember(<envStack>ListItem((Class, EnvC)) EStack</envStack>, X)
+      => lookupField(<envStack>ListItem((Class, EnvC)) EStack</envStack>, X)
       ...
     </k>
         [structural]
@@ -563,7 +548,7 @@ rule [ExprNameQualifiedNull]:
         [structural]
 
 rule [SuperField]:
-    <k>'SuperField(X) => lookupMember(<envStack>EStack</envStack>, X) ...</k>
+    <k>'SuperField(X) => lookupField(<envStack>EStack</envStack>, X) ...</k>
     <crntClass> Class </crntClass>
     <envStack>... ListItem((Class, EnvC)) EStack </envStack>
       [structural]
@@ -575,8 +560,8 @@ since we need to check that the type of the returned value is an
 instance of the claimed return type of the method.  The first group of
 rules below are identical to those in untyped KOOL. */
 
-rule 'Method('MethodName(Ks:List{K})) => 'MethodName(Ks)
-rule 'Method(K,, _:K,, X) => 'MethodName(K,, X)
+rule 'Method('MethodName(Ks:List{K})) => 'MethodName(Ks)  [structural anywhere]
+rule 'Method(K,, _:K,, X) => 'MethodName(K,, X)           [structural anywhere]
 
 rule [MethodNameUnqualified]:
     'MethodName(X) => 'MethodName('This(.List{K}),, X)
@@ -584,11 +569,11 @@ rule [MethodNameUnqualified]:
 
 context 'MethodName(HOLE,,_:K)
 
-//objClos.X(_) => lookupMember(objClos,X)(_)
+//objClos.X(_) => lookupMethodData(x, objClos)(_)
 rule [MethodNameQualified]:
     <k>
       'MethodName(objectClosure(<envStack> EStack </envStack>)::_,, X)
-      => lookupMember(<envStack> EStack </envStack>, X)
+      => lookupMethodData(X, <envStack> EStack </envStack>)
       ...
     </k>
 when
@@ -608,15 +593,17 @@ rule [MethodNameQualifiedNull]:
     </k>
         [structural]
 
-// super.X(_) => lookupMember(... , )(_)
+// super.X(_) => lookupMethodData(... , )(_)
 rule [SuperMethod]:
     <k>
-      'SuperMethod(_,, X) => lookupMember(<envStack> EStack </envStack>, X)
+      'SuperMethod(_,, X) => lookupMethodData(X, <envStack> EStack </envStack>)
       ...
     </k>
     <crntClass> Class </crntClass>
     <envStack>... ListItem((Class, _)) EStack </envStack>
         [structural]
+
+syntax KResult ::= "lookupMethodData" "(" Id "," BagItem ")"
 
 /*@ Closure application needs to also set a new return type in the
 \textsf{return} cell, in order for the values returned by its body to
@@ -630,7 +617,7 @@ context 'Invoke(_:KResult ,,'ListWrap(_:List{K},,HOLE,,_:List{K}))
 
 rule [InitSignatureSearch]:
     'Invoke(
-      ( signatures(SigMap) => searchSignature( getTypes(ParamValues), SigMap) ),,
+      ( lookupMethodData(X,BI:BagItem) => lookupMethod(X, getTypes(ParamValues), BI) ),,
       'ListWrap(ParamValues)
     )
 
@@ -647,14 +634,59 @@ rule getTypes(Ks) => getTypes(.List{K}, Ks)
 rule getTypes(_,, (.List{K} => T), (_::T => .List{K}),, _)
 rule getTypes(Ks, .List{K}) => types(Ks)
 
-//searches a list of signatures for one compatible with a given method call type list.
-syntax K ::= "searchSignature" "(" Types "," //The call values type list
-                                   Map       //The signatures to search
-                                ")"
-        [strict(1)]
+syntax K ::= "lookupMethod" "(" Id ","    //Method name
+                                Types "," //Method param types
+                                BagItem   //<envStack> to search
+                            ")"
+        [strict(2)]
 
-rule searchSignature(types(CallTL:List{K}), SigMap types(SigTL:List{K}) |-> L)
-    => 'If( (subtype CallTL, SigTL),, typedLookup(L),, searchSignature(types(CallTL), SigMap) )
+rule [lookupMethod]:
+    (. => isApplicable((subtype CallTL, SigTL), L) )
+     ~> lookupMethod(
+          Name,
+          types(CallTL:List{K}),
+          <envStack>
+            ListItem((_, <env>... sig(Name, types(SigTL:List{K})) |-> L =>. ...</env>))
+            ...
+          </envStack>
+        )
+
+syntax K ::= "isApplicable" "(" K "," Int ")"  [strict(1)]
+
+rule isApplicable(true::bool ,L) ~> lookupMethod(_,_,_) => typedLookup(L)
+rule isApplicable(false::bool,_) => .
+
+rule [lookupMethodOtherNameDiscard]:
+    lookupMethod(
+      Name,
+      _,
+      <envStack>
+        ListItem((_, <env>... sig(X, _) |-> _ => . ...</env>))
+        ...
+      </envStack>
+    )
+when
+    X =/=K Name
+
+rule [lookupMethodOtherDiscard]:
+    lookupMethod(
+      _,
+      _,
+      <envStack>
+        ListItem((_, <env>... X |-> _ => . ...</env>))
+        ...
+      </envStack>
+    )
+
+rule [lookupMethodLayerDiscard]:
+    lookupMethod(
+      _,
+      _,
+      <envStack>
+        ListItem((_, <env> . </env>)) => .
+        ...
+      </envStack>
+    )
 
 //todo search signatures first
 rule [Invoke]:
@@ -696,10 +728,10 @@ rule [lvalueTypedLookup]:
 
 syntax K ::= "(" Id "," Bag ")"
 
-//lookup member result is always typed
-declare lookupMember : BagItem Id -> K
+//lookup field result is always typed
+declare lookupField : BagItem Id -> K
 
-define lookupMember(
+define lookupField(
     <envStack>
       ListItem((_:Id, <env>... X|->L ...</env>))
       ...
@@ -707,18 +739,7 @@ define lookupMember(
     X
   ) => typedLookup(L)
 
-define lookupMember(
-    <envStack>
-      ListItem((
-        _:Id,
-        <env>... X |-> signatures( SigMap ) ...</env>
-      ))
-      ...
-    </envStack>,
-    X
-  ) => signatures( SigMap )
-
-define lookupMember(
+define lookupField(
     <envStack>
       ListItem((_:Id, <env> Env </env>)) => .
       ...
@@ -745,7 +766,7 @@ rule [lvalueExprNameQualified]:
           ) :: class Class,,
           X
         )
-        => lookupMember(
+        => lookupField(
             <envStack> ListItem((Class, EnvC)) EStack:List </envStack>,
             X
           )
@@ -755,7 +776,7 @@ rule [lvalueExprNameQualified]:
         [structural]
 
 rule [lvalueSuperField]:
-    <k> lvalue('SuperField(X) => lookupMember(<envStack>EStack</envStack>, X)) ...</k>
+    <k> lvalue('SuperField(X) => lookupField(<envStack>EStack</envStack>, X)) ...</k>
     <crntClass> Class </crntClass>
     <envStack>... ListItem((Class, EnvC)) EStack </envStack>
         [structural]
