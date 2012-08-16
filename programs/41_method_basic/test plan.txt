@@ -43,9 +43,3 @@ Part 3. Overriding, polymorphism.
   Six references: A aa, ab, ac; B bb, bc; C cc;
   All six references call all accessible methods.
 
-Part 4. Access mode.
-  - Testing that a class may have multiple methods
-  with the same signature but not in an overloading relation,
-  due to private/package access mode.
-
-todo.
