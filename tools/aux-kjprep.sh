@@ -3,7 +3,7 @@
 #java semantics preprocessor
 # concatenates the parsing result of the given file with java lib classes
 
-if [ $# -ne 1 ]; then
+if [  $# == 0 ]; then
     echo "Usage: `basename $0` <javaFile>"
     exit 1
 fi
@@ -11,7 +11,18 @@ fi
 javaFile=$1
 TOOLS_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
-java -jar $TOOLS_DIR/../parser/JavaParser.jar $javaFile
+if [ -f $javaFile ];
+then
+  java -jar $TOOLS_DIR/../parser/JavaParser.jar $javaFile
+  echo "~>"
+else
+  find -P $javaFile -name "*.java" -type f |
+  while read FILE; do
+    java -jar $TOOLS_DIR/../parser/JavaParser.jar $FILE
+    echo "~>"
+  done
+fi
+
 find $TOOLS_DIR/../class-lib -type f \( -name "*java" \) |
   while read libFile; do
     kastFile=$libFile.kast
@@ -27,6 +38,8 @@ find $TOOLS_DIR/../class-lib -type f \( -name "*java" \) |
         fi
     fi
 
-    echo "~>"
     cat $kastFile
+    echo "~>"
   done
+
+echo "."

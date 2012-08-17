@@ -8,6 +8,9 @@ if [ $# -ne 1 ]; then
 fi
 
 javaFile=$1
+TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-krun --parser="aux-kjprep.sh" $javaFile
-
+# The last argument is not used, we put it here just to overcome file presence checking of krun
+# We cannot put $javaFile directly because krun expects only files,
+# and $javaFile may also be a dir
+krun --parser="aux-kjprep.sh $javaFile" $TOOLS_DIR/kjrun.sh

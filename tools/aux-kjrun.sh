@@ -11,6 +11,6 @@ javaFile=$1
 workDir="$(pwd)"
 TOOLS_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
-krun --parser="aux-kjparser.sh $workDir" \
+krun --parser="aux-kjparser.sh $workDir $javaFile" \
   --compiled-def="$TOOLS_DIR/../semantics/java-compiled.maude" \
-  --main-module=JAVA --output-mode=none $javaFile
+  --main-module=JAVA --output-mode=none $TOOLS_DIR/aux-kjrun.sh
