@@ -18,7 +18,8 @@ syntax RawVal ::= "objectClosure" "(" Bag ")"
                   ")"
 
 //@ \subsection{Unused Labels}
-syntax KLabel ::= 'Static | 'TypeImportOnDemandDec | 'PackageName | 'Final | 'Native
+syntax KLabel ::= 'TypeImportOnDemandDec | 'PackageName | 'Final | 'Native
+                | 'Public | 'Protected | 'Private
 
 /*@ \subsection{Object and method closures}
 The only change to untyped KOOL's values is that closures are now typed
@@ -87,18 +88,10 @@ rule [ClassDec]:
 
 syntax K ::= "classDecImpl" "(" List{K} "," Id "," Id "," K ")"
 
-rule [classDecImplModPublic]:
-    <k> classDecImpl( ('Public(_) => .List{K}),, _:List{K}, ClassName, _, _ ) ...</k>
-    <mainClass> . => ClassName </mainClass>
-
-rule [classDecImplModDiscard]:
-    classDecImpl( (K => .List{K}),, _:List{K}, ClassName, _, _ )
-when
-  K =/=K 'Public(.List{K})
-
 rule [classDecImpl]:
-    <k> classDecImpl(.List{K}, ClassName, BaseClassName, S) => . ...</k>
+    <k> classDecImpl(_, ClassName, BaseClassName, S) => checkForMain(S) ...</k>
     <cuPackage> PN </cuPackage>
+    <crntClass> _ => ClassName </crntClass>
     <classes>
       ...
       ( . =>  <class>
@@ -124,6 +117,32 @@ rule [classDecImplObject]:
       ...
     </classes>
 when Id2String(ClassName) ==String "Object"
+
+/*@ \subsection{Method declaration} */
+
+//for now we consider all static methods found to be main
+syntax K ::= "checkForMain" "(" K ")"
+
+rule checkForMain(('ConstrDec(_) => .K) ~> _)
+
+rule (. => checkForStatic(Ks) )
+    ~> checkForMain('ListWrap(('MethodDec('MethodDecHead('ListWrap(Ks),,_),,_) => .List{K}) ,,_))
+
+syntax K ::= "checkForStatic" "(" List{K} ")"
+
+rule <k> checkForStatic('Static(_),,_) => . ...</k>
+     <crntClass> Class </crntClass>
+     <mainClass> _ => Class </mainClass>
+
+rule checkForStatic((K => .List{K}),, _)
+when getKLabel(K) =/=KLabel 'Static
+
+rule checkForStatic(.List{K}) => .
+
+rule checkForMain('ListWrap((K => .List{K}),,_))
+when getKLabel(K) =/=KLabel 'MethodDec
+
+rule checkForMain('ListWrap(.List{K})) => .
 
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
