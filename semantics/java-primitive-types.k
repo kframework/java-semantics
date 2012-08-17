@@ -126,4 +126,7 @@ rule subtype char, T
     #fi
 when T =/=K char [structural]
 
+rule subtype bool, T => false::bool
+when T =/=K bool [structural]
+
 end module

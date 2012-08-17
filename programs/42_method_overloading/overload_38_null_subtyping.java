@@ -1,5 +1,5 @@
 /*
-37. Subtyping of null.
+38. Subtyping of null.
     - A: int, boolean, Object
     - B: Object[]
     - C: String[]
@@ -8,7 +8,7 @@
     - call arguments: null
 */
 
-public class overload_37_null_subtyping {
+public class overload_38_null_subtyping {
 
   public static void main(String[] args) {
     A a = new A();

@@ -13,12 +13,12 @@ public class overload_33_multi_appl_multi_arg {
     Object o = null;
     RuntimeException re = null;
 
-    a.f((byte) 0, (byte) 0));
-    a.f((int)  0, (byte) 0));
-    a.f((byte) 0, (int)  0));
-    a.f((int)  0, (int)  0));
-    a.f((byte) 0, (long) 0));
-    a.f((long) 0, (short)0));
+    a.f((byte) 0, (byte) 0);
+    a.f((int)  0, (byte) 0);
+    a.f((byte) 0, (int)  0);
+    a.f((int)  0, (int)  0);
+    a.f((byte) 0, (long) 0);
+    a.f((long) 0, (short)0);
     a.f(o, o);
     a.f(re, o);
     a.f(o, re);

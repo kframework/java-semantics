@@ -318,9 +318,9 @@ when
     andBool X =/=K Class
 
 rule [subTypeClassOfOtherFalse]:
-    subtype class X, RT:RefType => false :: bool
+    subtype class X, T => false :: bool
 when
-    getKLabel(RT) =/=KLabel 'class_
+    getKLabel(T) =/=KLabel 'class_
 
 rule [subtypeStringOfClass]:
     subtype rtString, class Class =>
@@ -330,10 +330,10 @@ rule [subtypeStringOfClass]:
     #fi
 
 rule [subtypeStringOfOtherFalse]:
-    subtype rtString, RT => false::bool
+    subtype rtString, T => false::bool
 when
-            getKLabel(RT) =/=KLabel 'rtString
-    andBool getKLabel(RT) =/=KLabel 'class_
+            getKLabel(T) =/=KLabel 'rtString
+    andBool getKLabel(T) =/=KLabel 'class_
 
 rule [subtypeArrayOfClass]:
     subtype arrayOf _, class Class =>
@@ -349,7 +349,7 @@ when
     andBool getKLabel(T) =/=KLabel 'class_
 
 rule [subtypeNull]:
-    subtype nullType, _:RefType => true :: bool
+    subtype nullType, T => isRefType2(T) :: bool
         [structural]
 
 //@ \texttt{typeOf for raw values of reference type}
@@ -569,11 +569,11 @@ rule [MethodNameUnqualified]:
 
 context 'MethodName(HOLE,,_:K)
 
-//objClos.X(_) => lookupMethodData(x, objClos)(_)
+//objClos.X(_)
 rule [MethodNameQualified]:
     <k>
-      'MethodName(objectClosure(<envStack> EStack </envStack>)::_,, X)
-      => lookupMethodData(X, <envStack> EStack </envStack>)
+      'MethodName(objectClosure(<envStack> EStack </envStack>)::class Class,, X)
+      => lookupMethodData(Class, X, <envStack> EStack </envStack>)
       ...
     </k>
 when
@@ -593,17 +593,22 @@ rule [MethodNameQualifiedNull]:
     </k>
         [structural]
 
-// super.X(_) => lookupMethodData(... , )(_)
+// super.X(_)
 rule [SuperMethod]:
     <k>
-      'SuperMethod(_,, X) => lookupMethodData(X, <envStack> EStack </envStack>)
+      'SuperMethod(_,, X) => lookupMethodData(BaseClass, X, <envStack> EStack </envStack>)
       ...
     </k>
     <crntClass> Class </crntClass>
     <envStack>... ListItem((Class, _)) EStack </envStack>
+    <className> Class </className>
+    <extends> BaseClass </extends>
         [structural]
 
-syntax KResult ::= "lookupMethodData" "(" Id "," BagItem ")"
+syntax KResult ::= "lookupMethodData" "(" Id      //target ref class name
+                                      "," Id      //method name
+                                      "," BagItem //target <envLayer> content
+                    ")"
 
 /*@ Closure application needs to also set a new return type in the
 \textsf{return} cell, in order for the values returned by its body to
@@ -617,7 +622,7 @@ context 'Invoke(_:KResult ,,'ListWrap(_:List{K},,HOLE,,_:List{K}))
 
 rule [InitSignatureSearch]:
     'Invoke(
-      ( lookupMethodData(X,BI:BagItem) => lookupMethod(X, getTypes(ParamValues), BI) ),,
+      ( lookupMethodData(Class,X,BI:BagItem) => lookupMethod(Class,X, getTypes(ParamValues), BI) ),,
       'ListWrap(ParamValues)
     )
 
@@ -634,36 +639,90 @@ rule getTypes(Ks) => getTypes(.List{K}, Ks)
 rule getTypes(_,, (.List{K} => T), (_::T => .List{K}),, _)
 rule getTypes(Ks, .List{K}) => types(Ks)
 
-syntax K ::= "lookupMethod" "(" Id ","    //Method name
-                                Types "," //Method param types
-                                BagItem   //<envStack> to search
-                            ")"
-        [strict(2)]
+syntax K ::= "lookupMethod" "(" K ","       //Class name of the reference used to call the method
+                                            //or .K if we cannot search for more specific signature
+                                Id ","      //Method name
+                                Types ","   //Method param types
+                                BagItem     //<envStack> to search
+                            ")"           [strict(3)]
+           | "lookupMethod" "(" K ","       //Class name of the reference used to call the method
+                                            //or .K if we cannot search for more specific signature
+                                Id ","      //Method name
+                                Types ","   //Method param types
+                                BagItem "," //<envStack> to search
+                                K           //method closure of the most specific method so far
+                                            //or undefined::nullType if no method was found yet
+                            ")"           [strict(5)]
 
-rule [lookupMethod]:
-    (. => isApplicable((subtype CallTL, SigTL), L) )
+rule lookupMethod(Class, Name, Ts, BI) => lookupMethod(Class, Name, Ts, BI, undefined::nullType)
+
+rule [lookupMethodNoAlternatives]:
+    (. => isPreferableSig((subtype CallTL, SigTL), L) )
      ~> lookupMethod(
+          _:Id,
           Name,
           types(CallTL:List{K}),
           <envStack>
-            ListItem((_, <env>... sig(Name, types(SigTL:List{K})) |-> L =>. ...</env>))
             ...
-          </envStack>
+            ListItem((_, <env>... sig(Name, types(SigTL:List{K})) |-> L =>. ...</env>))
+          </envStack>,
+          undefined::_
         )
 
-syntax K ::= "isApplicable" "(" K "," Int ")"  [strict(1)]
+rule [lookupMethodWithAlternative]:
+    (. => isPreferableSig( 'LazyAnd((subtype CallTL, SigTL),, (subtype SigTL, AltTL)), L ) )
+     ~> lookupMethod(
+          _:Id,
+          Name,
+          types(CallTL),
+          <envStack>
+            ...
+            ListItem((_, <env>... sig(Name, types(SigTL)) |-> L =>. ...</env>))
+          </envStack>,
+          _::function from AltTL:List{K} to _
+        )
 
-rule isApplicable(true::bool ,L) ~> lookupMethod(_,_,_) => typedLookup(L)
-rule isApplicable(false::bool,_) => .
-
-rule [lookupMethodOtherNameDiscard]:
+rule [lookupMethodSignatureFixed]:
     lookupMethod(
+      .K,
       Name,
       _,
       <envStack>
-        ListItem((_, <env>... sig(X, _) |-> _ => . ...</env>))
         ...
-      </envStack>
+        ListItem((_, <env>... sig(Name, types(AltTL)) |-> L =>. ...</env>))
+      </envStack>,
+      _::function from AltTL to _ => typedLookup(L)
+    )
+
+rule [lookupMethodSignatureFixedLayerDiscard]:
+    lookupMethod(
+      .K,
+      Name,
+      _,
+      <envStack>
+        ...
+        ListItem((_, <env> Env </env>)) => .
+      </envStack>,
+      _::function from AltTL to _
+    )
+when
+    notBool sig(Name, types(AltTL)) in keys(Env)
+
+syntax K ::= "isPreferableSig" "(" K "," Int ")"  [strict(1)]
+
+rule (isPreferableSig(true::bool, L) => .) ~> lookupMethod(_,_,_,_, _ => typedLookup(L) )
+rule isPreferableSig(false::bool, _) => .
+
+rule [lookupMethodOtherNameDiscard]:
+    lookupMethod(
+      _,
+      Name,
+      _,
+      <envStack>
+        ...
+        ListItem((_, <env>... sig(X, _) |-> _ => . ...</env>))
+      </envStack>,
+      _:K
     )
 when
     X =/=K Name
@@ -672,21 +731,48 @@ rule [lookupMethodOtherDiscard]:
     lookupMethod(
       _,
       _,
+      _,
       <envStack>
-        ListItem((_, <env>... X |-> _ => . ...</env>))
         ...
-      </envStack>
+        ListItem((_, <env>... X |-> _ => . ...</env>))
+      </envStack>,
+      _:K
     )
 
 rule [lookupMethodLayerDiscard]:
     lookupMethod(
+      Class1,
       _,
       _,
       <envStack>
-        ListItem((_, <env> . </env>)) => .
         ...
-      </envStack>
+        ListItem((Class2, <env> . </env>)) => .
+      </envStack>,
+      _:K
     )
+when
+    Class1 =/=K Class2
+
+rule [lookupMethodLayerDiscard]:
+    lookupMethod(
+      Class => .K,
+      _,
+      _,
+      <envStack>
+        ...
+        ListItem((Class, <env> . </env>)) => .
+      </envStack>,
+      _:K
+    )
+
+rule [lookupMethodEnd]:
+    lookupMethod(
+      _,
+      _,
+      _,
+      <envStack> . </envStack>,
+      TV:TypedVal
+    ) => TV
 
 //todo search signatures first
 rule [Invoke]:

@@ -173,13 +173,11 @@ define isNumericType2(T)
 //maybe this isSort methods will be provided by K later on.
 declare isRefType2 : Type -> Bool
 define isRefType2(T)
-=>  #if         T ==K rtString
-        orBool  T ==K nullType
-        orBool  getKLabel(T) ==KLabel 'arrayOf_
-        orBool  getKLabel(T) ==KLabel 'class_
-      #then true
-      #else false
-    #fi  [structural]
+=>          T ==K rtString
+    orBool  T ==K nullType
+    orBool  getKLabel(T) ==KLabel 'arrayOf_
+    orBool  getKLabel(T) ==KLabel 'class_
+        [structural]
 
 //default value of all types
 declare default : Type -> TypedVal

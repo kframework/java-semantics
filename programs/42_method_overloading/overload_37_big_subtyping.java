@@ -1,5 +1,5 @@
 /*
-36. Extensive test of subtyping.
+37. Extensive test of subtyping.
     - A: long, Object, boolean
     - B: int, char, String, Object[]
     - C: byte, short, RE[], int[], Object[][]
@@ -8,7 +8,7 @@
     - call arguments: all primitive types, Object, String, RE, Object[], String[], RE[], int[], int[][], Object[][], RE[][]
 */
 
-public class overload_36_big_subtyping {
+public class overload_37_big_subtyping {
 
   public static void main(String[] args) {
     A a = new A();
@@ -31,6 +31,7 @@ public class overload_36_big_subtyping {
     a.f((int[][])null);
     a.f((Object[][])null);
     a.f((RuntimeException[][])null);
+    System.out.println();
 
     b.f((byte)0);
     b.f((short)0);
@@ -48,6 +49,7 @@ public class overload_36_big_subtyping {
     b.f((int[][])null);
     b.f((Object[][])null);
     b.f((RuntimeException[][])null);
+    System.out.println();
 
     c.f((byte)0);
     c.f((short)0);
@@ -65,6 +67,7 @@ public class overload_36_big_subtyping {
     c.f((int[][])null);
     c.f((Object[][])null);
     c.f((RuntimeException[][])null);
+    System.out.println();
 
     System.out.println("Done!");
   }
