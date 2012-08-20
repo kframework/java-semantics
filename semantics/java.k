@@ -5,6 +5,7 @@ in java-expressions
 in java-statements
 in java-arrays
 in java-classes
+in java-method-invoke
 in java-api-core
 
 module JAVA
@@ -15,6 +16,7 @@ module JAVA
     imports JAVA-STATEMENTS
     imports JAVA-ARRAYS
     imports JAVA-CLASSES
+    imports JAVA-METHOD-INVOKE
     imports JAVA-API-CORE
 
 end module

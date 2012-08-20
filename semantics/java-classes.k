@@ -4,7 +4,7 @@ module JAVA-CLASSES
     imports JAVA-STATEMENTS
     imports JAVA-ARRAYS
 
-syntax Type ::= "function" "from" List{KResult} "to" Type
+syntax Type ::= "method" "from" List{KResult} "to" Type
                   [prec(1) latex "({#1}\ \texttt{->}\ {#2})"]
 
 syntax RefType ::= "class" Id
@@ -125,7 +125,7 @@ syntax K ::= "checkForMain" "(" K ")"
 
 rule checkForMain(('ConstrDec(_) => .K) ~> _)
 
-rule (. => checkForStatic(Ks) )
+rule (. => checkForStatic(Ks:List{K}) )
     ~> checkForMain('ListWrap(('MethodDec('MethodDecHead('ListWrap(Ks),,_),,_) => .List{K}) ,,_))
 
 syntax K ::= "checkForStatic" "(" List{K} ")"
@@ -158,7 +158,7 @@ rule [MethodDec]:
       S:K
     )
     => storeMethod(Name, types(Params), 'ListWrap(Params), S,
-          function from Params to ReturnType)
+          method from Params to ReturnType)
         [structural]
 
 syntax K ::= "storeMethod" "("
@@ -176,7 +176,7 @@ syntax KResult ::= Types
 
 rule types(_:List{KResult},, ('Param(_:K,,T,,_:K) => T),, _:List{K})
 
-context storeMethod(_, _, _, _, function from (_:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}) to _)
+context storeMethod(_, _, _, _, method from (_:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}) to _)
 
 rule [storeMethod]:
     <k> storeMethod(Name, Ts:Types, 'ListWrap(Params), S, MethodType:Type) =>. ...</k>
@@ -210,11 +210,11 @@ rule [ConstrDec]:
         'ConstrBody(
       'Some('SuperConstrInv( _,, SuperParamsList:K )) ,,S))
     => storeConstructor(Name, 'ListWrap(Params), SuperParamsList,
-        S, function from Params to void)
+        S, method from Params to void)
 
 syntax K ::= "storeConstructor" "(" Id "," K "," K "," K "," Type ")"
 
-context storeConstructor(_, _, _, _, function from (_:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}) to _)
+context storeConstructor(_, _, _, _, method from (_:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}) to _)
 
 rule [storeConstructor]:
     <k>
@@ -281,7 +281,7 @@ rule [execute]:
 
 //@ \subsection{Auxiliary operations}
 
-//@ \texttt{bindto} also checks the well-formedness of the function parameters
+//@ \texttt{bindto} also checks the well-formedness of the method parameters
 
 syntax K ::= "bindto" List{K} "," List{KResult}
 
@@ -572,266 +572,10 @@ rule [SuperField]:
     <envStack>... ListItem((Class, EnvC)) EStack </envStack>
       [structural]
 
-/*@\subsection{Method invocation}
-The method lookup is the same as in untyped KOOL.
-The method closure application and return are slightly different,
-since we need to check that the type of the returned value is an
-instance of the claimed return type of the method.  The first group of
-rules below are identical to those in untyped KOOL. */
-
-rule 'Method('MethodName(Ks:List{K})) => 'MethodName(Ks)  [structural anywhere]
-rule 'Method(K,, _:K,, X) => 'MethodName(K,, X)           [structural anywhere]
-
-rule [MethodNameUnqualified]:
-    'MethodName(X) => 'MethodName('This(.List{K}),, X)
-        [structural]
-
-context 'MethodName(HOLE,,_:K)
-
-//objClos.X(_)
-rule [MethodNameQualified]:
-    <k>
-      'MethodName(objectClosure(<envStack> EStack </envStack>)::class Class,, X)
-      => lookupMethodData(Class, X, <envStack> EStack </envStack>)
-      ...
-    </k>
-when
-    Id2String(X) =/=String "getClass"
-        [structural]
-
-rule [MethodNameQualifiedNull]:
-    <k>
-      'MethodName(null::_ ,, X)
-      =>  'Throw('NewInstance(
-            'None(.List{K}),,
-            'class_(String2Id("NullPointerException")),,
-            'ListWrap( null :: nullType ),,
-            'None(.List{K})
-          ))
-      ...
-    </k>
-        [structural]
-
-// super.X(_)
-rule [SuperMethod]:
-    <k>
-      'SuperMethod(_,, X) => lookupMethodData(BaseClass, X, <envStack> EStack </envStack>)
-      ...
-    </k>
-    <crntClass> Class </crntClass>
-    <envStack>... ListItem((Class, _)) EStack </envStack>
-    <className> Class </className>
-    <extends> BaseClass </extends>
-        [structural]
-
-syntax KResult ::= "lookupMethodData" "(" Id      //target ref class name
-                                      "," Id      //method name
-                                      "," BagItem //target <envLayer> content
-                    ")"
-
-/*@ Closure application needs to also set a new return type in the
-\textsf{return} cell, in order for the values returned by its body to
-be checked against the return type of the method.  To do this correctly,
-we also need to stack the current status of the \textsf{return} cell
-and then pop it when the method returns. */
-
-//todo test order of params evaluation - here it should get wrong
-context 'Invoke(HOLE,, _)
-context 'Invoke(_:KResult ,,'ListWrap(_:List{K},,HOLE,,_:List{K}))
-
-rule [InitSignatureSearch]:
-    'Invoke(
-      ( lookupMethodData(Class,X,BI:BagItem) => lookupMethod(Class,X, getTypes(ParamValues), BI) ),,
-      'ListWrap(ParamValues)
-    )
-
-//converts a List{TypedVal} to Types.
-syntax K ::= "getTypes" "("
-                            List{KResult} //a list of values
-                        ")"
-           | "getTypes" "("
-                            List{KResult} "," //a list of types
-                            List{KResult}     //a list of values
-                        ")"
-
-rule getTypes(Ks) => getTypes(.List{K}, Ks)
-rule getTypes(_,, (.List{K} => T), (_::T => .List{K}),, _)
-rule getTypes(Ks, .List{K}) => types(Ks)
-
-syntax K ::= "lookupMethod" "(" K ","       //Class name of the reference used to call the method
-                                            //or .K if we cannot search for more specific signature
-                                Id ","      //Method name
-                                Types ","   //Method param types
-                                BagItem     //<envStack> to search
-                            ")"           [strict(3)]
-           | "lookupMethod" "(" K ","       //Class name of the reference used to call the method
-                                            //or .K if we cannot search for more specific signature
-                                Id ","      //Method name
-                                Types ","   //Method param types
-                                BagItem "," //<envStack> to search
-                                K           //method closure of the most specific method so far
-                                            //or undefined::nullType if no method was found yet
-                            ")"           [strict(5)]
-
-rule lookupMethod(Class, Name, Ts, BI) => lookupMethod(Class, Name, Ts, BI, undefined::nullType)
-
-rule [lookupMethodNoAlternatives]:
-    (. => isPreferableSig((subtype CallTL, SigTL), L) )
-     ~> lookupMethod(
-          _:Id,
-          Name,
-          types(CallTL:List{K}),
-          <envStack>
-            ...
-            ListItem((_, <env>... sig(Name, types(SigTL:List{K})) |-> L =>. ...</env>))
-          </envStack>,
-          undefined::_
-        )
-
-rule [lookupMethodWithAlternative]:
-    (. => isPreferableSig( 'LazyAnd((subtype CallTL, SigTL),, (subtype SigTL, AltTL)), L ) )
-     ~> lookupMethod(
-          _:Id,
-          Name,
-          types(CallTL),
-          <envStack>
-            ...
-            ListItem((_, <env>... sig(Name, types(SigTL)) |-> L =>. ...</env>))
-          </envStack>,
-          _::function from AltTL:List{K} to _
-        )
-
-rule [lookupMethodSignatureFixed]:
-    lookupMethod(
-      .K,
-      Name,
-      _,
-      <envStack>
-        ...
-        ListItem((_, <env>... sig(Name, types(AltTL)) |-> L =>. ...</env>))
-      </envStack>,
-      _::function from AltTL to _ => typedLookup(L)
-    )
-
-rule [lookupMethodSignatureFixedLayerDiscard]:
-    lookupMethod(
-      .K,
-      Name,
-      _,
-      <envStack>
-        ...
-        ListItem((_, <env> Env </env>)) => .
-      </envStack>,
-      _::function from AltTL to _
-    )
-when
-    notBool sig(Name, types(AltTL)) in keys(Env)
-
-syntax K ::= "isPreferableSig" "(" K "," Int ")"  [strict(1)]
-
-rule (isPreferableSig(true::bool, L) => .) ~> lookupMethod(_,_,_,_, _ => typedLookup(L) )
-rule isPreferableSig(false::bool, _) => .
-
-rule [lookupMethodOtherNameDiscard]:
-    lookupMethod(
-      _,
-      Name,
-      _,
-      <envStack>
-        ...
-        ListItem((_, <env>... sig(X, _) |-> _ => . ...</env>))
-      </envStack>,
-      _:K
-    )
-when
-    X =/=K Name
-
-rule [lookupMethodOtherDiscard]:
-    lookupMethod(
-      _,
-      _,
-      _,
-      <envStack>
-        ...
-        ListItem((_, <env>... X |-> _ => . ...</env>))
-      </envStack>,
-      _:K
-    )
-
-rule [lookupMethodLayerDiscard]:
-    lookupMethod(
-      Class1,
-      _,
-      _,
-      <envStack>
-        ...
-        ListItem((Class2, <env> . </env>)) => .
-      </envStack>,
-      _:K
-    )
-when
-    Class1 =/=K Class2
-
-rule [lookupMethodLayerDiscard]:
-    lookupMethod(
-      Class => .K,
-      _,
-      _,
-      <envStack>
-        ...
-        ListItem((Class, <env> . </env>)) => .
-      </envStack>,
-      _:K
-    )
-
-rule [lookupMethodEnd]:
-    lookupMethod(
-      _,
-      _,
-      _,
-      <envStack> . </envStack>,
-      TV:TypedVal
-    ) => TV
-
-//todo search signatures first
-rule [Invoke]:
-    <k>
-      'Invoke(methodClosure(Class, OL:Int, 'ListWrap(Params), S) :: function from _ to T,,
-          'ListWrap(ParamValues:List{KResult})) ~> K
-       => bindto Params, ParamValues ~> S ~> 'Return('None(.List{K}))
-    </k>
-    <control> C:Bag
-      <stack>
-        . =>  ListItem((return,.K,.K,K, Env,
-                  C <crntObj> Obj2 </crntObj>
-                  <return> T2 </return>))
-        ...
-      </stack>
-      <crntObj> Obj2:Bag => <crntClass>Class</crntClass> Obj </crntObj>
-      <return> T2:Type => T </return>
-    </control>
-    <env> Env => . </env>
-    <store>
-      ...
-      OL |-> objectClosure(Obj) :: _
-      ...
-    </store>
-
 /*@ \subsection{Lookup member}
 Like in untyped KOOL. */
 
-//typed version of lookup
-syntax K ::= "typedLookup" "(" Int ")"
-
-rule [typedLookup]:
-    <k> typedLookup(L) => lookup(L)::T ...</k>
-    <store>... L |-> _::T ...</store>
-
-rule [lvalueTypedLookup]:
-    <k> lvalue( typedLookup(L) => lookup(L)::T ) ...</k>
-    <store>... L |-> _::T ...</store>
-
-syntax K ::= "(" Id "," Bag ")"
+syntax K ::= "(" Id "," BagItem ")"
 
 //lookup field result is always typed
 declare lookupField : BagItem Id -> K
@@ -852,6 +596,17 @@ define lookupField(
     X
   )
 when notBool(X in keys(Env))
+
+//typed version of lookup
+syntax K ::= "typedLookup" "(" Int ")"
+
+rule [typedLookup]:
+    <k> typedLookup(L) => lookup(L)::T ...</k>
+    <store>... L |-> _::T ...</store>
+
+rule [lvalueTypedLookup]:
+    <k> lvalue( typedLookup(L) => lookup(L)::T ) ...</k>
+    <store>... L |-> _::T ...</store>
 
 //@ \texttt{lvalue}
 
