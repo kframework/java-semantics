@@ -86,6 +86,19 @@ syntax RawVal ::= Int | Bool | String
                 | "nothing"
                 | "undefined" [latex("\bot_{#1}")]
 
+syntax Type ::= "method" "from" List{KResult} "to" Type
+                  [prec(1) latex "({#1}\ \texttt{->}\ {#2})"]
+
+syntax RefType ::= "class" Id
+
+syntax RawVal ::= "objectClosure" "(" Bag ")"
+                | "methodClosure" "("
+                    Id ","   // F - method name
+                    Int ","  // OL - object location
+                    K ","    // 'ListWrap(Params) - params
+                    K        // S - method body
+                  ")"
+
 syntax TypedVal ::= RawVal "::" Type
 
 syntax KResult ::= TypedVal | Type

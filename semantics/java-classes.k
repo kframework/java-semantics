@@ -4,19 +4,6 @@ module JAVA-CLASSES
     imports JAVA-STATEMENTS
     imports JAVA-ARRAYS
 
-syntax Type ::= "method" "from" List{KResult} "to" Type
-                  [prec(1) latex "({#1}\ \texttt{->}\ {#2})"]
-
-syntax RefType ::= "class" Id
-
-syntax RawVal ::= "objectClosure" "(" Bag ")"
-                | "methodClosure" "("
-                    Id ","   // F - method name
-                    Int ","  // OL - object location
-                    K ","    // 'ListWrap(Params) - params
-                    K        // S - method body
-                  ")"
-
 //@ \subsection{Unused Labels}
 syntax KLabel ::= 'TypeImportOnDemandDec | 'PackageName | 'Final | 'Native
                 | 'Public | 'Protected | 'Private
@@ -37,112 +24,6 @@ when
         [structural anywhere]
 
 rule 'ClassOrInterfaceType(T,,_) => T [structural anywhere]
-
-/*@ \subsection{First pass - processing declarations} */
-
-rule [DefaultPackageDesugar]:
-    'CompilationUnit(
-      ( 'None(_) => 'Some('PackageDec(.K,, 'PackageName( 'ListWrap(.List{K}) ))) ),,
-      _,,_)
-
-rule [CompilationUnit]:
-    <k>
-      'CompilationUnit('Some('PackageDec(_,, 'PackageName( PN:K ))),,_,,K:K) => K ...
-    </k>
-    <cuPackage> _ => PN </cuPackage>
-
-/*@ \subsection{Class declaration}
-Like in untyped KOOL. */
-
-rule [ClassDecWithoutExtendsDesugar]:
-    'ClassDec('ClassDecHead(_:K,, ClassName:Id,,
-        _:K,,
-        ( 'None(_)
-          => 'Some('SuperDec('ClassType(class String2Id("Object"),, 'None(.List{K}))))
-        ),,
-        _:K),, _:K
-    )
-        [structural]
-
-rule [ClassDec]:
-      'ClassDec('ClassDecHead('ListWrap(ClassModifiers:List{K}),, ClassName:Id,, _:K,,
-          'Some('SuperDec('ClassType(class BaseClassName:Id,, _:K))),,
-          _:K),,
-        'ClassBody( S )
-      )  => classDecImpl(ClassModifiers, ClassName, BaseClassName,
-              //public empty constructor
-              //will be overwritten by any other constructor in S
-              'ConstrDec(
-                'ConstrDecHead(
-                  'ListWrap('Public(.List{K})),,
-                  'None(.List{K}),,
-                  ClassName,,
-                  'ListWrap(.List{K}),,
-                  'None(.List{K})
-                ),,
-                'ConstrBody('None(.List{K}),, 'ListWrap(.List{K}))
-              )
-              ~> S
-            )
-        [structural]
-
-syntax K ::= "classDecImpl" "(" List{K} "," Id "," Id "," K ")"
-
-rule [classDecImpl]:
-    <k> classDecImpl(_, ClassName, BaseClassName, S) => checkForMain(S) ...</k>
-    <cuPackage> PN </cuPackage>
-    <crntClass> _ => ClassName </crntClass>
-    <classes>
-      ...
-      ( . =>  <class>
-                <className> ClassName </className>
-                <extends> BaseClassName </extends>
-                <package> PN </package>
-                <declarations> S </declarations>
-              </class> )
-      ...
-    </classes>
-
-rule [classDecImplObject]:
-    <k> classDecImpl(.List{K}, ClassName, BaseClassName, S) => . ...</k>
-    <cuPackage> PN </cuPackage>
-    <classes>
-      ...
-      ( . =>  <class>
-                <className> ClassName </className>
-                <extends> .K </extends>
-                <package> PN </package>
-                <declarations> S </declarations>
-              </class> )
-      ...
-    </classes>
-when Id2String(ClassName) ==String "Object"
-
-/*@ \subsection{Method declaration} */
-
-//for now we consider all static methods found to be main
-syntax K ::= "checkForMain" "(" K ")"
-
-rule checkForMain(('ConstrDec(_) => .K) ~> _)
-
-rule (. => checkForStatic(Ks:List{K}) )
-    ~> checkForMain('ListWrap(('MethodDec('MethodDecHead('ListWrap(Ks),,_),,_) => .List{K}) ,,_))
-
-syntax K ::= "checkForStatic" "(" List{K} ")"
-
-rule <k> checkForStatic('Static(_),,_) => . ...</k>
-     <crntClass> Class </crntClass>
-     <mainClass> _ => Class </mainClass>
-
-rule checkForStatic((K => .List{K}),, _)
-when getKLabel(K) =/=KLabel 'Static
-
-rule checkForStatic(.List{K}) => .
-
-rule checkForMain('ListWrap((K => .List{K}),,_))
-when getKLabel(K) =/=KLabel 'MethodDec
-
-rule checkForMain('ListWrap(.List{K})) => .
 
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
@@ -253,32 +134,6 @@ rule [storeConstructorClassObject]:
 when
     Id2String(Class) ==String "Object"
 
-rule [execute]:
-    <k> . =>
-      //k-ast for new <MainClass>().main(new String[0]);
-      'ExprStm(
-        'Invoke(
-          'Method(
-            'NewInstance(
-              'None(.List{K}),,
-              class MainClass,,
-              'ListWrap(.List{K}),,
-              'None(.List{K})
-            ),,
-            'None(.List{K}),,
-            String2Id("main")
-          ),,
-          'ListWrap('NewArray(
-              rtString,,
-              'ListWrap('Dim(0 :: int)),,
-              'ListWrap(.List{K})))
-        )
-      )
-    </k>
-    <env> . </env>
-    <mainClass> MainClass:Id </mainClass>
-    <executionPhase> "ProcessDeclarations" => "Execute" </executionPhase>
-
 //@ \subsection{Auxiliary operations}
 
 //@ \texttt{bindto} also checks the well-formedness of the method parameters
@@ -302,7 +157,7 @@ rule [bindtoEmpty]:
 
 //@ \texttt{typeOf and toString}
 
-define typeOf('Param(_:K,,K,,_)) => K
+define typeOf('Param(_:K,,K:K,,_)) => K
 
 define toString(objectClosure(Obj:Bag) :: T)
     =>  'Invoke(
@@ -392,7 +247,7 @@ rule [NewInstance]:
     <k>
       'NewInstance(
         _:K,,
-        class ClassName,,
+        class ClassName:Id,,
         'ListWrap( Vals:List{KResult} ),,
         _:K
       ) ~> K
@@ -506,7 +361,7 @@ rule [CastRef]:
 
 //@ \subsection{Names}
 
-rule 'AmbName(Ks) => 'ExprName(Ks) [structural anywhere]
+rule 'AmbName(Ks) => 'ExprName(Ks:List{K}) [structural anywhere]
 rule 'Field(Ks) => 'ExprName(Ks)   [structural anywhere]
 
 rule [ExprNameLocalVar]:
