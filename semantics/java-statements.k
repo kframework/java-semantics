@@ -434,7 +434,7 @@ rule [ReturnNothingDesugar]:
 rule [Return]:
     <k>
       'Return('Some(V:RawVal :: T2:Type)) ~> _
-      => restoreControl(K,Env,C) ~> subtype T2, T1 ~> true? ~> V::T1
+      => restoreControl(K,Env,C) ~> subtype(T2, T1) ~> true? ~> V::T1
     </k>
     <stack> ListItem((return,_,_,K,Env,C)) => . ...</stack>
     <return> T1:Type </return>
@@ -447,7 +447,7 @@ context 'Throw(HOLE)
 
 rule [Throw]:
     <k>
-      (. => checkCatch(subtype typeOf(TV), T)) ~> 'Throw(TV) ~> _:K
+      (. => checkCatch(subtype(typeOf(TV), T))) ~> 'Throw(TV) ~> _:K
     </k>
     <stack>
       ListItem((catch, .K, 'ListWrap('Catch('Param(_:K,, T,, X:Id),, _),,_), _, _, _))

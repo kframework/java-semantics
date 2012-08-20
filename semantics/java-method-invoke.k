@@ -108,7 +108,7 @@ rule lookupMethod(Class, Name, Ts:Types, BI)
   => lookupMethod(Class, Name, Ts, BI, undefined::nullType)
 
 rule [lookupMethodNoAlternatives]:
-    (. => isPreferableSig((subtype CallTL, SigTL), L:Int) )
+    (. => isPreferableSig(subtype(CallTL, SigTL), L:Int) )
      ~> lookupMethod(
           _:Id,
           Name,
@@ -121,7 +121,7 @@ rule [lookupMethodNoAlternatives]:
         )
 
 rule [lookupMethodWithAlternative]:
-    (. => isPreferableSig( 'LazyAnd((subtype CallTL, SigTL),, (subtype SigTL, AltTL)), L ) )
+    (. => isPreferableSig( 'LazyAnd(subtype(CallTL, SigTL),, subtype(SigTL, AltTL)), L ) )
      ~> lookupMethod(
           _:Id,
           Name,

@@ -1,0 +1,134 @@
+module JAVA-SUBTYPING
+    imports JAVA-CORE
+
+rule [subtypeRefTrue]:
+    subtype( T:Type, T ) => true :: bool
+        [structural]
+
+/*@ \subsubsection{Subtyping among primitive types} */
+
+rule subtype( byte, T )
+=>  #if         T ==K short
+        orBool  T ==K int
+        orBool  T ==K long
+      #then true :: bool
+      #else false :: bool
+    #fi
+when T =/=K byte [structural]
+
+rule subtype( short, T )
+=>  #if         T ==K int
+        orBool  T ==K long
+      #then true :: bool
+      #else false :: bool
+    #fi
+when T =/=K short [structural]
+
+rule subtype( int, T )
+=>  #if         T ==K long
+      #then true :: bool
+      #else false :: bool
+    #fi
+when T =/=K int [structural]
+
+rule subtype( long, T ) =>  false :: bool
+when T =/=K long [structural]
+
+rule subtype( char, T )
+=>  #if         T ==K int
+        orBool  T ==K long
+      #then true :: bool
+      #else false :: bool
+    #fi
+when T =/=K char [structural]
+
+rule subtype( bool, T ) => false::bool
+when T =/=K bool [structural]
+
+/*@ \subsubsection{Subtyping among reference types}
+The subclass relation introduces a subtyping relation. */
+
+rule [subtypeClassRed]:
+    <k> subtype( class Class1:Id, class Class:Id )
+      => subtype( class Class2:Id, class Class ) ...</k>
+    <className> Class1 </className> <extends> Class2 </extends>
+when Class1 =/=K Class
+        [structural]
+
+rule [subtypeClassOfClassFalse]:
+    subtype( class X:Id, class Class ) => false :: bool
+when
+            Id2String(X) ==String "Object"
+    andBool X =/=K Class
+
+rule [subTypeClassOfOtherFalse]:
+    subtype( class X, T ) => false :: bool
+when
+    getKLabel(T) =/=KLabel 'class_
+
+rule [subtypeStringOfClass]:
+    subtype( rtString, class Class ) =>
+    #if Id2String(Class) ==String "Object"
+      #then true::bool
+      #else false::bool
+    #fi
+
+rule [subtypeStringOfOtherFalse]:
+    subtype( rtString, T ) => false::bool
+when
+            getKLabel(T) =/=KLabel 'rtString
+    andBool getKLabel(T) =/=KLabel 'class_
+
+rule [subtypeArrayOfClass]:
+    subtype( arrayOf _, class Class ) =>
+    #if Id2String(Class) ==String "Object"
+      #then true::bool
+      #else false::bool
+    #fi
+
+rule [subtypeArrayOfOtherFalse]:
+    subtype( arrayOf _, T ) => false::bool
+when
+            getKLabel(T) =/=KLabel 'arrayOf_
+    andBool getKLabel(T) =/=KLabel 'class_
+
+rule [subtypeNull]:
+    subtype( nullType, T ) => isRefType2(T) :: bool
+        [structural]
+
+//@ Subtype
+rule [subtypeArrayOfArrayPrimitive]:
+    subtype( arrayOf T1, arrayOf T2 ) => (T1 ==K T2)::bool
+when
+    notBool isRefType2(T1) orBool notBool isRefType2(T2)
+
+rule [subtypeArrayOfArrayRef]:
+    subtype( arrayOf RefT1:RefType, arrayOf RefT2:RefType ) => subtype( RefT1, RefT2 )
+
+/*@ \subsubsection{Subtyping lists of types}*/
+
+//Bug. Attempt to write a single rule instead of two below, using side conditions,
+//leads to SUBSORT-TO-WRAPPERS
+rule [subtypeListLeft]:
+    subtype(T1:Type,,T2:Type,,Ts:List{KResult}, Tp1:Type,,Tps:List{KResult})
+    => 'LazyAnd( subtype(T1,Tp1),, subtype(T2,,Ts, Tps) )
+        [structural]
+
+rule [subtypeListRight]:
+    subtype(T1:Type,,Ts:List{KResult}, Tp1:Type,,Tp2:Type,,Tps:List{KResult})
+    => 'LazyAnd( subtype(T1,Tp1),, subtype(Ts, Tp2,,Tps) )
+        [structural]
+
+rule [subtypeEmptyLeft]:
+    subtype(.List{K}, T,,_) => false :: bool
+        [structural]
+
+rule [subtypeEmptyRight]:
+    subtype(T,,_ , .List{K}) => false :: bool
+        [structural]
+
+rule [subtypeEmpty]:
+    subtype(.List{K}, .List{K}) => true :: bool
+        [structural]
+
+end module

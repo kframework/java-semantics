@@ -166,9 +166,9 @@ context 'Assign(_:KResult,,HOLE)
 rule [AssignWithConversion]:
     'Assign(loc(L) :: T1:Type,, V :: T2:Type)
     =>  #if isNumericType2(T1)
-          #then isInRange(V::T1)::bool ~> true?
-          #else subtype T2, T1 ~> true?
-        #fi ~> 'Assign(loc(L)::T1,, V::T1)
+          #then isInRange(V::T1)::bool
+          #else subtype(T2, T1)
+        #fi ~> true? ~> 'Assign(loc(L)::T1,, V::T1)
 when
     T1 =/=K T2
 
@@ -242,7 +242,7 @@ rule [lookupVarName]:
 rule [lookupLocation]:
     <k>
       lookup(L) :: T1
-      => subtype T2, T1 ~> true? ~> V::T1
+      => subtype(T2, T1) ~> true? ~> V::T1
       ...
     </k>
     <store>... L |-> V::T2 ...</store>

@@ -2,15 +2,6 @@ module JAVA-ARRAYS
     imports JAVA-CORE
     imports JAVA-EXPRESSIONS
 
-syntax RefType ::= "arrayOf" Type
-                  [prec(1) latex "{#1}\texttt{\char91\char93}"]
-
-syntax RawVal ::= "arrayRef" "("
-                    Type ","  // Type of array
-                    Int ","   // Location of first element
-                    Int       // Length
-                  ")"
-
 syntax K ::= RawVal "::" "elem" Type
 
 //@ \subsection{C-style array declarators}
@@ -47,7 +38,7 @@ when N >=Int 0 andBool N <Int M
 rule [lookupArrayLocation]:
     <k>
       lookup(L) :: T1
-      => subtype T2, T1 ~> true? ~> V::T1
+      => subtype(T2, T1) ~> true? ~> V::T1
       ...
     </k>
     <store>... L |-> V::elem T2 ...</store>
@@ -189,7 +180,7 @@ context evalAndStore(_:Int, HOLE)
 
 rule [evalAndStore]:
     <k>
-      evalAndStore(L:Int, V:RawVal :: T2:Type) => subtype T2, T1 ~> true?
+      evalAndStore(L:Int, V:RawVal :: T2:Type) => subtype(T2, T1) ~> true?
       ...
     </k>
     <store>... L |-> (_ => V) :: elem T1:Type ...</store>
@@ -197,15 +188,6 @@ rule [evalAndStore]:
 rule [evalAndStoreEmpty]:
     evalAndStore(.List{K}, _) => .
         [structural]
-
-//@ Subtype
-rule [subtypeArrayOfArrayPrimitive]:
-    subtype arrayOf T1, arrayOf T2 => (T1 ==K T2)::bool
-when
-    notBool isRefType2(T1) orBool notBool isRefType2(T2)
-
-rule [subtypeArrayOfArrayRef]:
-    subtype arrayOf RefT1:RefType, arrayOf RefT2:RefType => subtype RefT1, RefT2
 
 //@ Sequences of locations
 
@@ -223,7 +205,7 @@ rule [AssignInArrayWithCheck]:
     <k>
       'Assign(loc(L) :: T:Type,, V:RawVal :: T)
       => assignImpl(
-          (subtype typeOf(V), StoreType),
+          subtype(typeOf(V), StoreType),
           L,
           V::T
       )

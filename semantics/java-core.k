@@ -99,6 +99,15 @@ syntax RawVal ::= "objectClosure" "(" Bag ")"
                     K        // S - method body
                   ")"
 
+syntax RefType ::= "arrayOf" Type
+                  [prec(1) latex "{#1}\texttt{\char91\char93}"]
+
+syntax RawVal ::= "arrayRef" "("
+                    Type ","  // Type of array
+                    Int ","   // Location of first element
+                    Int       // Length
+                  ")"
+
 syntax TypedVal ::= RawVal "::" Type
 
 syntax KResult ::= TypedVal | Type
@@ -140,35 +149,7 @@ declare typeOf : K -> Type
 define typeOf(_ :: T:Type) => T
 
 //@ \texttt{subtype definition}
-syntax K ::= "subtype" List{KResult} "," List{KResult}
-
-rule [subtypeRefTrue]:
-    subtype T, T => true :: bool
-        [structural]
-
-//Bug. Attempt to write a single rule instead of two below, using side conditions,
-//leads to SUBSORT-TO-WRAPPERS
-rule [subtypeListLeft]:
-    subtype(T1:Type,,T2:Type,,Ts:List{KResult}), (Tp1:Type,,Tps:List{KResult})
-    => 'LazyAnd( (subtype T1,Tp1),, (subtype (T2,,Ts),(Tps)) )
-        [structural]
-
-rule [subtypeListRight]:
-    subtype(T1:Type,,Ts:List{KResult}), (Tp1:Type,,Tp2:Type,,Tps:List{KResult})
-    => 'LazyAnd( (subtype T1,Tp1),, (subtype (Ts),(Tp2,,Tps)) )
-        [structural]
-
-rule [subtypeEmptyLeft]:
-    subtype .List{K}, T,,_ => false :: bool
-        [structural]
-
-rule [subtypeEmptyRight]:
-    subtype T,,_ , .List{K} => false :: bool
-        [structural]
-
-rule [subtypeEmpty]:
-    subtype .List{K}, .List{K} => true :: bool
-        [structural]
+syntax K ::= "subtype" "(" List{KResult} "," List{KResult} ")"
 
 //todo this rule, if used, leads to the error "failed to load IOWrapper".
 declare isNumericType2 : Type -> Bool

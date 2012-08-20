@@ -175,57 +175,6 @@ We extend/change the semantics of several SIMPLE constructs in order
 to take advantage of the richer KOOL semantic infrastructure and thus
 get more from the existing SIMPLE constructs. */
 
-/*@ \subsubsection{Subtyping among reference types}
-The subclass relation introduces a subtyping relation. */
-
-rule [subtypeClassRed]:
-    <k> subtype class Class1:Id, class Class
-      => subtype class Class2:Id, class Class ...</k>
-    <className> Class1 </className> <extends> Class2 </extends>
-when Class1 =/=K Class
-        [structural]
-
-rule [subtypeClassOfClassFalse]:
-    subtype class X, class Class => false :: bool
-when
-            Id2String(X) ==String "Object"
-    andBool X =/=K Class
-
-rule [subTypeClassOfOtherFalse]:
-    subtype class X, T => false :: bool
-when
-    getKLabel(T) =/=KLabel 'class_
-
-rule [subtypeStringOfClass]:
-    subtype rtString, class Class =>
-    #if Id2String(Class) ==String "Object"
-      #then true::bool
-      #else false::bool
-    #fi
-
-rule [subtypeStringOfOtherFalse]:
-    subtype rtString, T => false::bool
-when
-            getKLabel(T) =/=KLabel 'rtString
-    andBool getKLabel(T) =/=KLabel 'class_
-
-rule [subtypeArrayOfClass]:
-    subtype arrayOf _, class Class =>
-    #if Id2String(Class) ==String "Object"
-      #then true::bool
-      #else false::bool
-    #fi
-
-rule [subtypeArrayOfOtherFalse]:
-    subtype arrayOf _, T => false::bool
-when
-            getKLabel(T) =/=KLabel 'arrayOf_
-    andBool getKLabel(T) =/=KLabel 'class_
-
-rule [subtypeNull]:
-    subtype nullType, T => isRefType2(T) :: bool
-        [structural]
-
 //@ \texttt{typeOf for raw values of reference type}
 define typeOf(Str:String) => rtString
 define typeOf(null) => nullType
@@ -331,7 +280,7 @@ syntax KLabel ::= 'InstanceOf [seqstrict]
 rule [InstanceOf]:
     'InstanceOf(V::_,, RT2)
     =>  #if V =/=K null
-          #then subtype typeOf(V), RT2
+          #then subtype(typeOf(V), RT2)
           #else false::bool
         #fi
 
@@ -346,7 +295,7 @@ rule [CastRef]:
     <k>
       castImpl(RT1:RefType, V:RawVal :: RT2:RefType)
       =>  'If(
-            (subtype typeOf(V), RT1),,
+            subtype(typeOf(V), RT1),,
             (V::RT1),,
             'Throw('NewInstance(
                     'None(.List{K}),,

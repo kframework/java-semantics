@@ -89,44 +89,4 @@ when NT1 =/=K long andBool NT2 =/=K long
 define normalizeType(NT1, NT2) => long
 when NT1 ==K long orBool NT2 ==K long
 
-/*@ \subsubsection{Subtyping among primitive types} */
-
-rule subtype byte, T
-=>  #if         T ==K short
-        orBool  T ==K int
-        orBool  T ==K long
-      #then true :: bool
-      #else false :: bool
-    #fi
-when T =/=K byte [structural]
-
-rule subtype short, T
-=>  #if         T ==K int
-        orBool  T ==K long
-      #then true :: bool
-      #else false :: bool
-    #fi
-when T =/=K short [structural]
-
-rule subtype int, T
-=>  #if         T ==K long
-      #then true :: bool
-      #else false :: bool
-    #fi
-when T =/=K int [structural]
-
-rule subtype long, T =>  false :: bool
-when T =/=K long [structural]
-
-rule subtype char, T
-=>  #if         T ==K int
-        orBool  T ==K long
-      #then true :: bool
-      #else false :: bool
-    #fi
-when T =/=K char [structural]
-
-rule subtype bool, T => false::bool
-when T =/=K bool [structural]
-
 end module
