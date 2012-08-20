@@ -6,7 +6,6 @@ module JAVA-CLASSES
 
 //@ \subsection{Unused Labels}
 syntax KLabel ::= 'TypeImportOnDemandDec | 'PackageName | 'Final | 'Native
-                | 'Public | 'Protected | 'Private
 
 /*@ \subsection{Object and method closures}
 The only change to untyped KOOL's values is that closures are now typed

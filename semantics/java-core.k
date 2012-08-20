@@ -115,6 +115,7 @@ syntax TypedVal ::= RawVal "::" Type
 syntax KResult ::= TypedVal | Type
 
 syntax AccessMode ::= "public" | "protected" | "package" | "private"
+syntax KResult ::= AccessMode
 
 /*@ \subsubsection{Generic guard}
 A generic computational guard (should be builtin): it allows the

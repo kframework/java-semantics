@@ -1,21 +1,38 @@
 module JAVA-METHOD-DEC
     imports JAVA-CORE
 
+//@process access modes
+rule 'Public(.List{K}) => public        [structural anywhere]
+rule 'Protected(.List{K}) => protected  [structural anywhere]
+rule 'Private(.List{K}) => private      [structural anywhere]
+
+syntax K ::= "getAccessMode" "(" K //'ListWrap(...) - the list of method attributes
+                             ")"
+rule getAccessMode('ListWrap(Acc:AccessMode,,_)) => Acc
+
+rule getAccessMode('ListWrap((K:K => .List{K}),, _))
+when        K =/=K public
+    andBool K =/=K protected
+    andBool K =/=K private
+
+rule getAccessMode('ListWrap(.List{K})) => package
+
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
 closures, so that their type contract can be checked at invocation
 time.  The rule below is conceptually similar to that of untyped KOOL;
 the only difference is the addition of the types.  */
 
-context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _:List{K}),, _)
+context 'MethodDec('MethodDecHead((HOLE => getAccessMode(HOLE)),, _),, _)
+context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _),, _)
 
 rule [MethodDec]:
     'MethodDec(
-      'MethodDecHead(_,, _,, ReturnType:Type,, Name:Id,, 'ListWrap(Params:List{K}),, _),,
+      'MethodDecHead(Acc,, _,, ReturnType:Type,, Name:Id,, 'ListWrap(Params:List{K}),, _),,
       S:K
     )
     => storeMethod(Name, types(Params), 'ListWrap(Params), S,
-          methodType(public, Params, ReturnType))
+          methodType(Acc, Params, ReturnType))
         [structural]
 
 syntax K ::= "storeMethod" "("
@@ -24,7 +41,7 @@ syntax K ::= "storeMethod" "("
                               K ","
                               K ","
                               Type
-                            ")"
+                           ")"
         [strict(2)]
 
 syntax K       ::= "types" "(" List{K} ")"
@@ -63,12 +80,14 @@ rule [ConstrDecSuperCallDesugar]:
       )
     )
 
+context 'ConstrDec('ConstrDecHead((HOLE => getAccessMode(HOLE)),, _),, _)
+
 rule [ConstrDec]:
-    'ConstrDec('ConstrDecHead(_,, _,, Name,, 'ListWrap(Params),, _),,
+    'ConstrDec('ConstrDecHead(Acc,, _,, Name,, 'ListWrap(Params),, _),,
         'ConstrBody(
       'Some('SuperConstrInv( _,, SuperParamsList:K )) ,,S))
     => storeConstructor(Name, 'ListWrap(Params), SuperParamsList,
-        S, methodType(public, Params, void))
+        S, methodType(Acc, Params, void))
 
 syntax K ::= "storeConstructor" "(" Id "," K "," K "," K "," Type ")"
 
