@@ -86,8 +86,10 @@ syntax RawVal ::= Int | Bool | String
                 | "nothing"
                 | "undefined" [latex("\bot_{#1}")]
 
-syntax Type ::= "method" "from" List{KResult} "to" Type
-                  [prec(1) latex "({#1}\ \texttt{->}\ {#2})"]
+syntax Type ::= "methodType" "(" AccessMode ","    // access mode
+                                 List{KResult} "," // argument types
+                                 Type              // return type
+                             ")"
 
 syntax RefType ::= "class" Id
 
@@ -111,6 +113,8 @@ syntax RawVal ::= "arrayRef" "("
 syntax TypedVal ::= RawVal "::" Type
 
 syntax KResult ::= TypedVal | Type
+
+syntax AccessMode ::= "public" | "protected" | "package" | "private"
 
 /*@ \subsubsection{Generic guard}
 A generic computational guard (should be builtin): it allows the

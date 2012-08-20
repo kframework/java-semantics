@@ -1,5 +1,6 @@
 module JAVA-METHOD-INVOKE
     imports JAVA-CLASSES
+    imports JAVA-METHOD-DEC
 
 /*@\subsection{Method invocation}
 The method lookup is the same as in untyped KOOL.
@@ -130,7 +131,7 @@ rule [lookupMethodWithAlternative]:
             ...
             ListItem((_, <env>... sig(Name, types(SigTL)) |-> L =>. ...</env>))
           </envStack>,
-          _::method from AltTL:List{K} to _
+          _ :: methodType(_, AltTL:List{K}, _)
         )
 
 rule [lookupMethodSignatureFixed]:
@@ -142,7 +143,7 @@ rule [lookupMethodSignatureFixed]:
         ...
         ListItem((_, <env>... sig(Name, types(AltTL)) |-> L =>. ...</env>))
       </envStack>,
-      _::method from AltTL to _ => typedLookup(L)
+      _ :: methodType(_, AltTL, _) => typedLookup(L)
     )
 
 rule [lookupMethodSignatureFixedLayerDiscard]:
@@ -154,7 +155,7 @@ rule [lookupMethodSignatureFixedLayerDiscard]:
         ...
         ListItem((_, <env> Env:Map </env>)) => .
       </envStack>,
-      _::method from AltTL to _
+      _ :: methodType(_, AltTL, _)
     )
 when
     notBool sig(Name, types(AltTL)) in keys(Env)
@@ -229,7 +230,7 @@ rule [Invoke]:
     <k>
       'Invoke(
         methodClosure(Class, OL:Int, 'ListWrap(Params:List{K}), Body:K)
-            :: method from _ to T,,
+            :: methodType(_, _, T),,
         'ListWrap(ParamValues:List{KResult})
       ) ~> K
        => bindto Params, ParamValues ~> Body ~> 'Return('None(.List{K}))
