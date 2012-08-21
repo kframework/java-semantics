@@ -141,10 +141,12 @@ rule [lookupMethodSignatureFixed]:
       _,
       <envStack>
         ...
-        ListItem((_, <env>... sig(Name, types(AltTL)) |-> L =>. ...</env>))
+        ListItem((Class, <env>... sig(Name, SigTL) |-> L =>. ...</env>))
       </envStack>,
-      _ :: methodType(_, AltTL, _) => typedLookup(L)
+      TV => 'If(isAccessible(Class, getAccessMode(lookup(L))),, typedLookup(L),, TV)
     )
+when
+    getArgTypes(TV) ==K types(SigTL)
 
 rule [lookupMethodSignatureFixedLayerDiscard]:
     lookupMethod(
@@ -225,6 +227,51 @@ rule [lookupMethodEnd]:
       <envStack> . </envStack>,
       TV:TypedVal
     ) => TV
+
+//Tests whether a method from a given class with a given access mode may be called from
+//the current object environment
+syntax K ::= "isAccessible" "(" Id ","      //the method class
+                                K           //the method access mode
+                            ")"
+        [strict(2)]
+
+rule [isAccessiblePublic]:
+    isAccessible(_, public) => true::bool
+
+rule [isAccessibleProtected]:
+    <k>
+      isAccessible(Class, protected)
+      => 'LazyOr(
+            subtype(CurrentClass, Class),,
+            isAccessible(Class, package)
+      )
+    </k>
+    <crntClass> CurrentClass:Id </crntClass>
+
+rule [isAccessiblePackage]:
+    <k> isAccessible(Class, package) => (PK ==K CurrentPK)::bool </k>
+    <crntClass> CurrentClass:Id </crntClass>
+    <class>
+      <className> Class </className>
+      <package> PK:K </package>
+      ...
+    </class>
+    <class>
+      <className> CurrentClass </className>
+      <package> CurrentPK:K </package>
+      ...
+    </class>
+
+rule [isAccessiblePrivate]:
+    <k> isAccessible(Class, private) => (Class ==K CurrentClass)::bool </k>
+    <crntClass> CurrentClass:Id </crntClass>
+
+//returns the access mode of a method in the location L given as argument
+declare getAccessMode : K -> AccessMode  [strict(1)]
+define getAccessMode( '_::_(_:RawVal,, 'methodType`(_`,_`,_`)(Acc:AccessMode,,_:List{K},,_:Type)) ) => Acc
+
+declare getArgTypes : TypedVal -> Types
+define getArgTypes(_ :: methodType(_,Ks,_)) => types(Ks)
 
 rule [Invoke]:
     <k>
