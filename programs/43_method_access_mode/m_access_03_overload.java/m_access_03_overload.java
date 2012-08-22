@@ -26,16 +26,17 @@ import b.*;
 
 public class m_access_03_overload {
   public static void main(String[] args) {
+    A arg = new A();
     A a = new A();
     B b = new B();
     C c = new C();
     D d = new D();
-    a.call(a);
+    a.call(arg);
     a.call();
-    b.call(a);
-    c.call(a);
+    b.call(arg);
+    c.call(arg);
     c.call();
-    d.call(a);
+    d.call(arg);
 
     System.out.println("Done!");
   }
