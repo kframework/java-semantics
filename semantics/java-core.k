@@ -23,6 +23,9 @@ configuration <T color="red">
                         <location multiplicity="?"> .K </location>
                       </crntObj>
                     </control>
+                    <lookupMethod>
+                      <isQualified> false </isQualified>
+                    </lookupMethod>
                   </thread>
                 </threads>
                 <br/>

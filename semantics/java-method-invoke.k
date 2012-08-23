@@ -16,22 +16,32 @@ rule [MethodNameUnqualified]:
     'MethodName(Name) => 'MethodName('This(.List{K}),, Name)
         [structural]
 
-context 'MethodName(HOLE,,_:K)
+rule <k> 'MethodName(K,, Name) => methodNameImpl(K, Name, getKLabel(K) =/=KLabel 'This) ...</k>
+
+syntax K ::= "methodNameImpl" "("
+                                  K ","   //qualifier exp
+                                  Id ","  //method name
+                                  Bool    //IsQ - isQualified
+                              ")"
+
+context methodNameImpl(HOLE, _, _)
 
 //objClos.X(_)
 rule [MethodNameQualified]:
     <k>
-      'MethodName(objectClosure(<envStack> EStack:List </envStack>)::class Class,, Name)
-      => lookupMethodData(Class, Name, <envStack> EStack </envStack>)
+      methodNameImpl(objectClosure(<envStack> EStack:List </envStack>)::class Class,
+          Name, IsQ:Bool)
+      => lookupMethodData(Class, Name, <envStack> EStack </envStack>, IsQ)
       ...
     </k>
+    <isQualified> _ => IsQ </isQualified>
 when
     Id2String(Name) =/=String "getClass"
         [structural]
 
 rule [MethodNameQualifiedNull]:
     <k>
-      'MethodName(null::_ ,, X)
+      methodNameImpl(null::_ , X, _)
       =>  'Throw('NewInstance(
             'None(.List{K}),,
             'class_(String2Id("NullPointerException")),,
@@ -45,7 +55,8 @@ rule [MethodNameQualifiedNull]:
 // super.X(_)
 rule [SuperMethod]:
     <k>
-      'SuperMethod(_,, Name) => lookupMethodData(BaseClass, Name, <envStack> EStack </envStack>)
+      'SuperMethod(_,, Name)
+      => lookupMethodData(BaseClass, Name, <envStack> EStack </envStack>, true)
       ...
     </k>
     <crntClass> Class </crntClass>
@@ -57,6 +68,7 @@ rule [SuperMethod]:
 syntax KResult ::= "lookupMethodData" "(" Id      //target ref class name
                                       "," Id      //method name
                                       "," BagItem //target <envLayer> content
+                                      "," Bool    //IsQ - isQualified
                     ")"
 
 /*@ Closure application needs to also set a new return type in the
@@ -70,12 +82,16 @@ context 'Invoke(HOLE,, _)
 context 'Invoke(_:KResult ,,'ListWrap(_:List{K},,HOLE,,_:List{K}))
 
 rule [InitSignatureSearch]:
-    'Invoke(
-      ( lookupMethodData(Class,Name, BI:BagItem)
-        => lookupMethod(Class,Name, getTypes(ParamValues), BI)
-      ),,
-      'ListWrap(ParamValues)
-    )
+    <k>
+      'Invoke(
+        ( lookupMethodData(Class,Name, BI:BagItem, IsQ)
+          => lookupMethod(Class,Name, getTypes(ParamValues), BI)
+        ),,
+        'ListWrap(ParamValues)
+      )
+      ...
+    </k>
+    <isQualified> _ => IsQ </isQualified>
 
 //converts a List{TypedVal} to Types.
 syntax K ::= "getTypes" "("
@@ -259,7 +275,7 @@ rule [isAccessibleProtected]:
     <k>
       isAccessible(Class, protected)
       => 'LazyOr(
-            subtype(class CurrentClass, class Class),,
+            'LazyAnd('Not(isQualifiedMethodCall),, subtype(class CurrentClass, class Class)),,
             isAccessible(Class, package)
       )
       ...
@@ -273,6 +289,10 @@ rule [isAccessiblePackage]:
 rule [isAccessiblePrivate]:
     <k> isAccessible(Class, private) => (Class ==K CurrentClass)::bool ...</k>
     <crntClass> CurrentClass </crntClass>
+
+syntax K ::= "isQualifiedMethodCall"
+rule <k> isQualifiedMethodCall => B :: bool  ...</k>
+     <isQualified> B:Bool </isQualified>
 
 //tests whether a new method in an overwriting chain is accessible to the old method
 syntax K ::= "isAccessibleForOverwriting" "("

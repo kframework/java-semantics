@@ -1,6 +1,7 @@
 module JAVA-API-CORE
     imports JAVA-CORE
     imports JAVA-CLASSES
+    imports JAVA-METHOD-INVOKE
 
 // This module contains the minimal part of java API required to perform
 // console read/write operations.
@@ -30,7 +31,7 @@ when
     Id2String(X) ==String "System"
 
 rule [NameSystemConsole]:
-    'MethodName(rtSystem,, X) => rtSystemConsole
+    methodNameImpl(rtSystem, X, _) => rtSystemConsole
 when
     Id2String(X) ==String "console"
 
@@ -38,7 +39,7 @@ rule [InvokeSystemConsole]:
     'Invoke(rtSystemConsole,, 'ListWrap(.List{K})) => rtSystemConsole
 
 rule [NameSystemConsoleReadLine]:
-    'MethodName(rtSystemConsole,, X) => rtSystemConsoleReadLine
+    methodNameImpl(rtSystemConsole, X, _) => rtSystemConsoleReadLine
 when
     Id2String(X) ==String "readLine"
 
@@ -52,7 +53,7 @@ when
     Id2String(X) ==String "Integer"
 
 rule [NameIntegerParseInt]:
-    'MethodName(rtInteger,, X) => rtIntegerParseInt
+    methodNameImpl(rtInteger, X, _) => rtIntegerParseInt
 when
     Id2String(X) ==String "parseInt"
 
@@ -73,12 +74,12 @@ when
     Id2String(X) ==String "out"
 
 rule [NameSystemOutPrint]:
-    'MethodName(rtSystemOut,, X) => rtSystemOutPrint
+    methodNameImpl(rtSystemOut, X, _) => rtSystemOutPrint
 when
     Id2String(X) ==String "print"
 
 rule [NameSystemOutPrintln]:
-    'MethodName(rtSystemOut,, X) => rtSystemOutPrintln
+    methodNameImpl(rtSystemOut, X, _) => rtSystemOutPrintln
 when
     Id2String(X) ==String "println"
 
@@ -121,7 +122,7 @@ when
     Id2String(X) ==String "Scanner"
 
 rule [ScannerNextInt]:
-    'MethodName(rtScanner::_,, X) => rtScannerNextInt
+    methodNameImpl(rtScanner::_, X, _) => rtScannerNextInt
 when
     Id2String(X) ==String "nextInt"
 
@@ -135,7 +136,7 @@ rule [InvokeScannerNextInt]:
         [transition]
 
 rule [NameGetClass]:
-    'MethodName(KR:KResult,, X) => methodGetClass(KR)
+    methodNameImpl(KR:KResult, X, _) => methodGetClass(KR)
 when
     Id2String(X) ==String "getClass"
 
@@ -146,7 +147,7 @@ rule [InvokeGetClass]:
     ) => classObject(KR)
 
 rule [NameClassGetName]:
-    'MethodName(classObject(KR),, X) => methodClassGetName(KR)
+    methodNameImpl(classObject(KR), X, _) => methodClassGetName(KR)
 when
     Id2String(X) ==String "getName"
 
@@ -191,7 +192,7 @@ rule [ClassNameClass]:
     fullyQualifiedClassName(package(.List{K}), Class) => Id2String(Class) :: rtString
 
 rule [NameHashCode]:
-    'MethodName(KR:KResult,, X) => methodHashCode(KR)
+    methodNameImpl(KR:KResult, X, _) => methodHashCode(KR)
 when
     Id2String(X) ==String "hashCode"
 
@@ -205,7 +206,7 @@ rule [InvokeHashCode]:
     ) => 0 :: int
 
 rule [NameArrayClone]:
-    'MethodName(arrayRef(T:Type,L1,Len)::CompileT,, X) => methodArrayClone(arrayRef(T,L1,Len)::CompileT)
+    methodNameImpl(arrayRef(T:Type,L1,Len)::CompileT, X, _) => methodArrayClone(arrayRef(T,L1,Len)::CompileT)
 when
     Id2String(X) ==String "clone"
 
