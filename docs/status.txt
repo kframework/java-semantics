@@ -1,32 +1,43 @@
 List of implemented features:
 
 1. Migrated kool semantics to java syntax.
-2. Full support of operators over primitive types, String + operator.
-3. Full support for composite assigment operators, all operand types,
-  except for abnormal termination cases (there might be some special logic involved).
-4. Constructors, simplified semantcs. Constructors are just replaced
-with methods with same name and return type void.
-5. All statements which deal with single-threaded computation
-  (e.g. except synchronized), according to JLS $14.
-6. Support for the following JDK methods's:
+2. Support for all literals, all types and formats (JLS $3),
+    with the following exceptions only:
+  - floating point types are not supported
+  - escape chars with values beyond 127, in both char and string literals.
+  (those are not supported by maude)
+3. Support for all primitive integer types. Overflow and explicit conversion. (JLS $4)
+4. Support for all kinds of conversions and promotions for integers and references. (JLS $5)
+5. Full support for operators. Including primitive type operators, reference operators
+  and composite addignment.
+6. All statements which deal with single-threaded computation
+  (e.g. except synchronized), (JLS $14).
+7. Full support for arrays, as per JLS $10, $15.10, $15.13.
+8. Basic exceptions: ArithmeticException, NullPointerException, ClassCastException.
+9. Support for the following JDK methods's:
   - System.out.print
   - System.out.println
   - Integer.parseInt(System.console().readLine()) - only this term, and no subparts of it.
 (The bare minimum required to write any values to console, or to read integers.)
-  - object.getClass().getName()
-7. Support for all literals, all types and formats covered in JLS $3,
-    with the following exceptions only:
-  - floating point literals
-  - escape chars with values beyond 127, in both char and string literals.
-  (those are not supported by maude)
-8. All integer primitive types. Semantics for overflow.
-9. All reference operators.
-10. Superclass constructor invocation during new object creation.
-11. Support for default constructor.
-12. Support for all primitive integer types and explicit conversion. (JLS $4)
-13. Support for all kind of conversions and promotions for integers and references (JLS $5)
-14. Basic exceptions: ArithmeticException, NullPointerException, ClassCastException.
-15. Full support for arrays, as per JLS $10, $15.10, $15.13.
+  - object.getClass().getName() (used by Exception.toString())
+10. Constructors, simplified semantics. Constructors are just replaced
+with methods with same name and return type void.
+11. Superclass constructor invocation during new object creation.
+12. Default constructor.
+13. Method and constructor overloading.
+14. Runtime semantics of method access modes. Since our semantics does all compile-time
+  preprocessing at runtime, access modes have a runtime semantics in some peculiar cases,
+  particularly in context of overwriting and overloading. See the test plan
+  in the directory 43_method_access_mode for details.
+  (Right now all access mode semantics is implemented except a peculair case involving
+  call to a protected method through a reference other than "this".)
+
+Major features yet to be implemented:
+1. Initialization sequence of an object. (right now we have a simplified semantics from kool)
+2. Abstract classes and interfaces.
+3. Static members.
+4. Packages.
+5. Inner classes (including nested, local and anonymous classes).
 
 
 Limitations:
