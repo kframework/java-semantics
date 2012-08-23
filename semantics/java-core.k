@@ -95,7 +95,7 @@ syntax RefType ::= "class" Id
 
 syntax RawVal ::= "objectClosure" "(" Bag ")"
                 | "methodClosure" "("
-                    Id ","   // F - method name
+                    Id ","   // Class - class defining the method
                     Int ","  // OL - object location
                     K ","    // 'ListWrap(Params) - params
                     K        // S - method body
@@ -184,13 +184,25 @@ define default(NT:NumericType) => 0 :: NT
 define default(bool) => false :: bool
 define default(RT:RefType) => null :: RT
 
+//@ \subsubsection{Auxiliary constructs for other modules}
+
+syntax Package ::= "package" "(" List{K} ")"
+syntax KResult ::= Package
+
+syntax K ::= "getPackage" "(" Id ")"
+rule [getPackage]:
+    <k> getPackage(Class:Id) => Pack ...</k>
+    <class>
+      <className> Class </className>
+      <package> Pack:Package </package>
+      ...
+    </class>
+
+syntax K ::= "kEq" "(" K "," K ")" [seqstrict]
+rule kEq(KR1:KResult, KR2:KResult) => (KR1 ==K KR2)::bool
+
 //@ \subsubsection{Debug aids}
 syntax K ::= K "++" K [seqstrict gather(E e)]
 rule K1:K ++ K2:K => toString(K1) +String toString(K2) [structural anywhere]
-
-syntax K ::= "print" "(" K ")" [strict]
-rule [print]:
-    <k> print(Str:String) => . ...</k>
-    <out>... .=> ListItem(Str) </out>
 
 end module

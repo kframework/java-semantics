@@ -2,7 +2,7 @@ package java.lang;
 
 class ArrayIndexOutOfBoundsException extends RuntimeException {
 
-    ArrayIndexOutOfBoundsException(String s) {
+    public ArrayIndexOutOfBoundsException(String s) {
         super(s);
     }
 }

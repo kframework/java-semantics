@@ -2,7 +2,7 @@ package java.lang;
 
 class NegativeArraySizeException extends RuntimeException {
 
-    NegativeArraySizeException(String s) {
+    public NegativeArraySizeException(String s) {
         super(s);
     }
 }

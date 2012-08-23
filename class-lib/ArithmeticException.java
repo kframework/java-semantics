@@ -2,7 +2,7 @@ package java.lang;
 
 class ArithmeticException extends RuntimeException {
 
-    ArithmeticException(String s) {
+    public ArithmeticException(String s) {
         super(s);
     }
 }

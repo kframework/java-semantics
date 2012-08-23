@@ -2,7 +2,7 @@ package java.lang;
 
 class ArrayStoreException extends RuntimeException {
 
-    ArrayStoreException(String s) {
+    public ArrayStoreException(String s) {
         super(s);
     }
 }

@@ -1,17 +1,17 @@
 package java.lang;
 
 class RuntimeException {
-    String detailMessage = null;
+    private String detailMessage = null;
 
-    RuntimeException(String message) {
+    public RuntimeException(String message) {
         detailMessage = message;
     }
 
-    String getMessage() {
+    public String getMessage() {
         return detailMessage;
     }
 
-    String toString() {
+    public String toString() {
         String s = getClass().getName();
         String message = getMessage();
         return (message != null) ? (s + ": " + message) : s;

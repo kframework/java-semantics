@@ -109,27 +109,39 @@ rule lookupMethod(Class, Name, Ts:Types, BI)
   => lookupMethod(Class, Name, Ts, BI, undefined::nullType)
 
 rule [lookupMethodNoAlternatives]:
-    (. => isPreferableSig(subtype(CallTL, SigTL), L:Int) )
+    (. => isPreferableSig(
+            'LazyAnd(
+              isAccessible(Class, getMethodAccessMode(typedLookup(L))),,
+              subtype(CallTL, SigTL)
+            ),
+            L:Int
+          ) )
      ~> lookupMethod(
           _:Id,
           Name,
           types(CallTL:List{K}),
           <envStack>
             ...
-            ListItem((_, <env>... sig(Name, types(SigTL:List{K})) |-> L =>. ...</env>))
+            ListItem((Class, <env>... sig(Name, types(SigTL:List{K})) |-> L =>. ...</env>))
           </envStack>,
           undefined::_
         )
 
 rule [lookupMethodWithAlternative]:
-    (. => isPreferableSig( 'LazyAnd(subtype(CallTL, SigTL),, subtype(SigTL, AltTL)), L ) )
+    (. => isPreferableSig(
+            'LazyAnd(
+              isAccessible(Class, getMethodAccessMode(typedLookup(L))),,
+              'LazyAnd(subtype(CallTL, SigTL),, subtype(SigTL, AltTL))
+            ),
+            L
+          ) )
      ~> lookupMethod(
           _:Id,
           Name,
           types(CallTL),
           <envStack>
             ...
-            ListItem((_, <env>... sig(Name, types(SigTL)) |-> L =>. ...</env>))
+            ListItem((Class, <env>... sig(Name, types(SigTL)) |-> L =>. ...</env>))
           </envStack>,
           _ :: methodType(_, AltTL:List{K}, _)
         )
@@ -143,14 +155,15 @@ rule [lookupMethodSignatureFixed]:
         ...
         ListItem((Class, <env>... sig(Name, types(SigTL)) |-> L =>. ...</env>))
       </envStack>,
-      TV => 'If(
-        isAccessible(Class, getMethodAccessMode(typedLookup(L))),, 
-        typedLookup(L),, 
-        TV
-      )
+      methodClosure(OldMethodClass:Id, OL, ParamsK:K, Body) :: methodType(Acc, SigTL, T)
+      => 'If(
+            isAccessibleForOverwriting(
+              OldMethodClass, Acc, Class, getMethodAccessMode(typedLookup(L))
+            ),,
+            typedLookup(L),,
+            methodClosure(OldMethodClass, OL, ParamsK, Body) :: methodType(Acc, SigTL, T)
+          )
     )
-when
-    getArgTypes(TV) ==K types(SigTL)
 
 rule [lookupMethodSignatureFixedLayerDiscard]:
     lookupMethod(
@@ -246,45 +259,37 @@ rule [isAccessibleProtected]:
     <k>
       isAccessible(Class, protected)
       => 'LazyOr(
-            subtype(CurrentClass, Class),,
+            subtype(class CurrentClass, class Class),,
             isAccessible(Class, package)
       )
+      ...
     </k>
     <crntClass> CurrentClass:Id </crntClass>
 
 rule [isAccessiblePackage]:
-    <k> isAccessible(Class, package) => (PK ==K CurrentPK)::bool ...</k>
+    <k> isAccessible(Class, package) => kEq(getPackage(Class), getPackage(CurrentClass)) ...</k>
     <crntClass> CurrentClass:Id </crntClass>
-    <classes>
-      <class>
-        <className> Class </className>
-        <package> PK:K </package>
-        ...
-      </class>
-      <class>
-        <className> CurrentClass </className>
-        <package> CurrentPK:K </package>
-        ...
-      </class>
-      _:Bag //bug configuration abstraction don't like "..."
-    <classes>
-    
-//test    
-rule [isAccessiblePackageTest]:
-    <threads>
-      <thread>
-        <k> isAccessible(Class, package) => (Class ==K Class)::bool ...</k>
-      </thread>
-    </threads>
-    <classes>
-      <class>
-        <className> Class </className>        
-      </class>
-    <classes>    
 
 rule [isAccessiblePrivate]:
     <k> isAccessible(Class, private) => (Class ==K CurrentClass)::bool ...</k>
     <crntClass> CurrentClass </crntClass>
+
+//tests whether a new method in an overwriting chain is accessible to the old method
+syntax K ::= "isAccessibleForOverwriting" "("
+                                              Id ","          //OldMethodClass
+                                              AccessMode ","  //OldMethodAccessMode
+                                              Id ","          //NewMethodClass
+                                              AccessMode      //NewMethodAccessMode
+                                          ")"
+        [strict(4)] //strict(2) also makes sense ut is not used by the construct creation rule
+
+rule isAccessibleForOverwriting(_, private, _, _) => false::bool
+
+rule isAccessibleForOverwriting(OldClass:Id, package, NewClass:Id, NewAcc:AccessMode)
+    => kEq(getPackage(OldClass), getPackage(NewClass))
+
+rule isAccessibleForOverwriting(_, protected, _, _) => true::bool
+rule isAccessibleForOverwriting(_, public,    _, _) => true::bool
 
 //returns the access mode of a method in the location L given as argument
 declare getMethodAccessMode : TypedVal -> AccessMode  [strict(1)]

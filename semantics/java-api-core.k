@@ -169,33 +169,26 @@ rule [InvokeClassGetNameArray]:
     ) => toString(T)
 
 rule [fullyQualifiedClassName]:
-    <k>
-      fullyQualifiedClassName(Class) => fullyQualifiedClassName(Ks, Class)
-      ...
-    </k>
-    <class>
-      <className> Class </className>
-      <package> 'ListWrap(Ks:List{K}) </package>
-      ...
-    </class>
+    fullyQualifiedClassName(Class) => fullyQualifiedClassName(getPackage(Class), Class)
 
 define toString(class Class) => fullyQualifiedClassName(Class)
 
 syntax K ::= "fullyQualifiedClassName" "("
-                    List{K} //package elements, each of type Id
+                    Package //package elements, each of type Id
                 "," Id      //class name
-              ")"
+                ")"
+        [strict(1)]
             | "fullyQualifiedClassName" "(" Id ")"
 
 rule [ClassNamePackage]:
-    fullyQualifiedClassName(X,, Ks, Class)
+    fullyQualifiedClassName(package(X,, Ks:List{K}), Class)
     => 'Plus(
-      (Id2String(X) +String ".") :: rtString,,
-      toString(fullyQualifiedClassName(Ks, Class))
-    )
+          (Id2String(X) +String ".") :: rtString,,
+          fullyQualifiedClassName(package(Ks), Class)
+        )
 
 rule [ClassNameClass]:
-    fullyQualifiedClassName(.List{K}, Class) => Id2String(Class) :: rtString
+    fullyQualifiedClassName(package(.List{K}), Class) => Id2String(Class) :: rtString
 
 rule [NameHashCode]:
     'MethodName(KR:KResult,, X) => methodHashCode(KR)

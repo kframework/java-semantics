@@ -2,7 +2,7 @@ package java.lang;
 
 class AssertionError extends RuntimeException {
 
-    AssertionError(String message) {
+    public AssertionError(String message) {
         super(message);
     }
 }

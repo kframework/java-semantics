@@ -10,9 +10,10 @@ rule [DefaultPackageDesugar]:
 
 rule [CompilationUnit]:
     <k>
-      'CompilationUnit('Some('PackageDec(_,, 'PackageName( PN:K ))),,_,,K:K) => K ...
+      'CompilationUnit('Some('PackageDec(_,, 'PackageName( 'ListWrap(Ks) ))),,_,,K:K) => K
+      ...
     </k>
-    <cuPackage> _ => PN </cuPackage>
+    <cuPackage> _ => package(Ks) </cuPackage>
 
 /*@ \subsection{Class declaration}
 Like in untyped KOOL. */
@@ -53,14 +54,14 @@ syntax K ::= "classDecImpl" "(" List{K} "," Id "," Id "," K ")"
 
 rule [classDecImpl]:
     <k> classDecImpl(_, Class, BaseClass, CBody) => checkForMain(CBody) ...</k>
-    <cuPackage> PN </cuPackage>
+    <cuPackage> Pack:Package </cuPackage>
     <crntClass> _ => Class </crntClass>
     <classes>
       ...
       ( . =>  <class>
                 <className> Class </className>
                 <extends> BaseClass </extends>
-                <package> PN </package>
+                <package> Pack </package>
                 <declarations> CBody </declarations>
               </class> )
       ...
@@ -68,13 +69,13 @@ rule [classDecImpl]:
 
 rule [classDecImplObject]:
     <k> classDecImpl(.List{K}, Class, BaseClass, CBody) => . ...</k>
-    <cuPackage> PN </cuPackage>
+    <cuPackage> Pack </cuPackage>
     <classes>
       ...
       ( . =>  <class>
                 <className> Class </className>
                 <extends> .K </extends>
-                <package> PN </package>
+                <package> Pack </package>
                 <declarations> CBody </declarations>
               </class> )
       ...
