@@ -9,6 +9,6 @@ import a.*;
 public class B extends A {
 
   void f(int a) {
-    System.out.print("b.B.f(int)  ");
+    System.out.println(" - b.B.f(int)  ");
   }
 }

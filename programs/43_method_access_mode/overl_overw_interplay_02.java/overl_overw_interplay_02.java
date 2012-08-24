@@ -17,6 +17,7 @@ import b.*;
 
 public class overl_overw_interplay_02 {
   public static void main(String[] args) {
+    System.out.println("Overview: package a.A.f, package b.B.f, protected a.C.f");
     new Test_in_a();
     new Test_in_b();
 

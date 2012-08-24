@@ -1,6 +1,7 @@
 /*
     - a.A  public f, less specific.
     - a.A: package f
+    - a.A: pckage f, most specific.
 */
 
 package a;
@@ -12,5 +13,9 @@ public class A {
 
   void f(int a) {
     System.out.println(" - a.A.f(int)  ");
+  }
+
+  void f(short a) {
+    System.out.println(" - a.A.f(short)");
   }
 }
