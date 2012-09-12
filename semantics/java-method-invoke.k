@@ -29,9 +29,9 @@ context methodNameImpl(HOLE, _, _)
 //objClos.X(_)
 rule [MethodNameQualified]:
     <k>
-      methodNameImpl(objectClosure(<envStack> EStack:List </envStack>)::class Class,
+      methodNameImpl(objectClosure(OL:Int, <envStack> EStack:List </envStack>)::class Class,
           Name, IsQ:Bool)
-      => lookupMethodData(Class, Name, <envStack> EStack </envStack>, IsQ)
+      => lookupMethodData(OL, Class, Name, <envStack> EStack </envStack>, IsQ)
       ...
     </k>
     <isQualified> _ => IsQ </isQualified>
@@ -41,7 +41,7 @@ when
 
 rule [MethodNameQualifiedNull]:
     <k>
-      methodNameImpl(null::_ , X, _)
+      methodNameImpl(null::_ , _,_)
       =>  'Throw('NewInstance(
             'None(.List{K}),,
             'class_(String2Id("NullPointerException")),,
@@ -56,16 +56,18 @@ rule [MethodNameQualifiedNull]:
 rule [SuperMethod]:
     <k>
       'SuperMethod(_,, Name)
-      => lookupMethodData(BaseClass, Name, <envStack> EStack </envStack>, true)
+      => lookupMethodData(OL, BaseClass, Name, <envStack> EStack </envStack>, true)
       ...
     </k>
     <crntClass> Class </crntClass>
+    <location> OL </location>
     <envStack>... ListItem((Class, _)) EStack </envStack>
     <className> Class:Id </className>
     <extends> BaseClass:Id </extends>
         [structural]
 
-syntax KResult ::= "lookupMethodData" "(" Id      //target ref class name
+syntax KResult ::= "lookupMethodData" "(" Int     //OL - object location
+                                      "," Id      //target ref class name
                                       "," Id      //method name
                                       "," BagItem //target <envLayer> content
                                       "," Bool    //IsQ - isQualified
@@ -83,15 +85,40 @@ context 'Invoke(_:KResult ,,'ListWrap(_:List{K},,HOLE,,_:List{K}))
 
 rule [InitSignatureSearch]:
     <k>
-      'Invoke(
-        ( lookupMethodData(Class,Name, BI:BagItem, IsQ)
-          => lookupMethod(Class,Name, getTypes(ParamValues), BI)
-        ),,
+      'Invoke(lookupMethodData(
+        OL,
+        Class,
+        Name,
+        <envStack>
+          Rest:List
+          ListItem((ObjectClass:Id, BI:BagItem))
+        </envStack>,
+        IsQ
+      ),,
+        'ListWrap(ParamValues)
+      ) => invokeImpl(
+        lookupMethod(
+          Class,
+          <envStack>
+            Rest
+            ListItem((ObjectClass, BI))
+          </envStack>,
+          Name, getTypes(ParamValues), Env
+        ),
+        OL,
         'ListWrap(ParamValues)
       )
       ...
     </k>
     <isQualified> _ => IsQ </isQualified>
+    <className> ObjectClass </className>
+    <methods> Env:Map </methods>
+
+syntax K ::= "invokeImpl" "(" K   //lookupMethod statement, later protoMethodClosure
+                          "," Int //OL - object location
+                          "," K   //'ListWrap(ParamValues)
+                          ")"
+        [strict(1)]
 
 //converts a List{TypedVal} to Types.
 syntax K ::= "getTypes" "("
@@ -108,157 +135,183 @@ rule getTypes(Ks, .List{K}) => types(Ks)
 
 syntax K ::= "lookupMethod" "(" K ","       //Class name of the reference used to call the method
                                             //or .K if we cannot search for more specific signature
+                                BagItem "," //<envStack> - class hierarchy
                                 Id ","      //Method name
                                 Types ","   //Method param types
-                                BagItem     //<envStack> to search
-                            ")"           [strict(3)]
+                                Map         //methods map of the ObjectClass to search
+                            ")"           [strict(4)]
            | "lookupMethod" "(" K ","       //Class name of the reference used to call the method
                                             //or .K if we cannot search for more specific signature
+                                BagItem "," //<envStack> - class hierarchy
                                 Id ","      //Method name
                                 Types ","   //Method param types
-                                BagItem "," //<envStack> to search
+                                Map ","     //methods map of the ObjectClass to search
                                 K           //method closure of the most specific method so far
                                             //or undefined::nullType if no method was found yet
-                            ")"           [strict(5)]
+                            ")"           [strict(6)]
 
-rule lookupMethod(Class, Name, Ts:Types, BI)
-  => lookupMethod(Class, Name, Ts, BI, undefined::nullType)
+rule lookupMethod(Class, BI, Name, Ts:Types, Env)
+  => lookupMethod(Class, BI, Name, Ts, Env, undefined::nullType)
 
+// all lookupMethod rules traverse the class hierarchy from Object to the concrete class itself.
 rule [lookupMethodNoAlternatives]:
     (. => isPreferableSig(
             'LazyAnd(
-              isAccessible(Class, getMethodAccessMode(typedLookup(L))),,
+              isAccessible(ObjectClass, getMethodAccessMode(typedLookup(L))),,
               subtype(CallTL, SigTL)
             ),
             L:Int
           ) )
      ~> lookupMethod(
           _:Id,
-          Name,
-          types(CallTL:List{K}),
           <envStack>
             ...
-            ListItem((Class, <env>... sig(Name, types(SigTL:List{K})) |-> L =>. ...</env>))
+            ListItem((ObjectClass, _))
           </envStack>,
+          Name,
+          types(CallTL:List{K}),
+          (sig(Name, types(SigTL:List{K})) |-> L => .) _:Map,
           undefined::_
         )
 
 rule [lookupMethodWithAlternative]:
     (. => isPreferableSig(
             'LazyAnd(
-              isAccessible(Class, getMethodAccessMode(typedLookup(L))),,
+              isAccessible(ObjectClass, getMethodAccessMode(typedLookup(L))),,
               'LazyAnd(subtype(CallTL, SigTL),, subtype(SigTL, AltTL))
             ),
             L
           ) )
      ~> lookupMethod(
           _:Id,
-          Name,
-          types(CallTL),
           <envStack>
             ...
-            ListItem((Class, <env>... sig(Name, types(SigTL)) |-> L =>. ...</env>))
+            ListItem((ObjectClass, _))
           </envStack>,
+          Name,
+          types(CallTL),
+          (sig(Name, types(SigTL)) |-> L => .) _:Map,
           _ :: methodType(_, AltTL:List{K}, _)
         )
 
 rule [lookupMethodSignatureFixed]:
     lookupMethod(
       .K,
-      Name,
-      _,
       <envStack>
         ...
-        ListItem((Class, <env>... sig(Name, types(SigTL)) |-> L =>. ...</env>))
+        ListItem((ObjectClass, _))
       </envStack>,
-      methodClosure(OldMethodClass:Id, OL, ParamsK:K, Body) :: methodType(Acc, SigTL, T)
+      Name,
+      _,
+      (sig(Name, types(SigTL)) |-> L => .) _:Map,
+      protoMethodClosure(OldMethodClass:Id, ParamsK:K, Body) :: methodType(Acc, SigTL, T)
       => 'If(
             isAccessibleForOverwriting(
-              OldMethodClass, Acc, Class, getMethodAccessMode(typedLookup(L))
+              OldMethodClass, Acc, ObjectClass, getMethodAccessMode(typedLookup(L))
             ),,
             typedLookup(L),,
-            methodClosure(OldMethodClass, OL, ParamsK, Body) :: methodType(Acc, SigTL, T)
+            protoMethodClosure(OldMethodClass, ParamsK, Body) :: methodType(Acc, SigTL, T)
           )
     )
 
+//todo restore, also two other discard rules
 rule [lookupMethodSignatureFixedLayerDiscard]:
-    lookupMethod(
-      .K,
-      Name,
-      _,
-      <envStack>
-        ...
-        ListItem((_, <env> Env:Map </env>)) => .
-      </envStack>,
-      _ :: methodType(_, AltTL, _)
-    )
+    <k>
+      lookupMethod(
+        .K,
+        <envStack>
+          ...
+          ListItem((SubClass:Id, _))
+          (ListItem((ObjectClass, _)) => .)
+        </envStack>,
+        Name,
+        _,
+        Env => NewEnv,
+        _ :: methodType(_, AltTL, _)
+      )
+    ...
+    </k>
+    <class>
+      <className> SubClass </className>
+      <methods> NewEnv:Map </methods>
+      ...
+    </class>
 when
     notBool sig(Name, types(AltTL)) in keys(Env)
 
 syntax K ::= "isPreferableSig" "(" K "," Int ")"  [strict(1)]
 
-rule (isPreferableSig(true::bool, L) => .) ~> lookupMethod(_,_,_,_, _ => typedLookup(L) )
+rule (isPreferableSig(true::bool, L:Int) => .) ~> lookupMethod(_,_,_,_,_, _ => typedLookup(L) )
 rule isPreferableSig(false::bool, _) => .
 
 rule [lookupMethodOtherNameDiscard]:
     lookupMethod(
       _,
+      _,
       Name,
       _,
-      <envStack>
-        ...
-        ListItem((_, <env>... sig(X:Id, _) |-> _ => . ...</env>))
-      </envStack>,
+      (sig(X:Id, _) |-> _ => .) _:Map,
       _:K
     )
 when
     X =/=K Name
 
-rule [lookupMethodOtherDiscard]:
-    lookupMethod(
-      _,
-      _,
-      _,
-      <envStack>
-        ...
-        ListItem((_, <env>... X |-> _ => . ...</env>))
-      </envStack>,
-      _:K
-    )
-
 rule [lookupMethodLayerDiscard]:
-    lookupMethod(
-      Class1:Id,
-      _,
-      _,
-      <envStack>
-        ...
-        ListItem((Class2:Id, <env> . </env>)) => .
-      </envStack>,
-      _:K
-    )
+    <k>
+      lookupMethod(
+        Class,
+        <envStack>
+          ...
+          ListItem((SubClass:Id, _))
+          (ListItem((ObjectClass, _)) => .)
+        </envStack>,
+        _,
+        _,
+        .Map => NewEnv,
+        _:K
+      )
+      ...
+    </k>
+    <class>
+      <className> SubClass </className>
+      <methods> NewEnv:Map </methods>
+      ...
+    </class>
 when
-    Class1 =/=K Class2
+    Class =/=K ObjectClass
 
-rule [lookupMethodLayerDiscard]:
-    lookupMethod(
-      Class => .K,
-      _,
-      _,
-      <envStack>
-        ...
-        ListItem((Class, <env> . </env>)) => .
-      </envStack>,
-      _:K
-    )
+rule [lookupMethodLayerDiscard2]:
+    <k>
+      lookupMethod(
+        ObjectClass => .K,
+        <envStack>
+          ...
+          ListItem((SubClass:Id, _))
+          (ListItem((ObjectClass, _)) => .)
+        </envStack>,
+        _,
+        _,
+        .Map => NewEnv,
+        _:K
+      )
+    ...
+    </k>
+    <class>
+      <className> SubClass </className>
+      <methods> NewEnv:Map </methods>
+      ...
+    </class>
 
 rule [lookupMethodEnd]:
     lookupMethod(
       _,
+      <envStack>
+        ListItem(_)
+      </envStack>,
       _,
       _,
-      <envStack> . </envStack>,
-      TV:TypedVal
+      .Map,
+     TV:TypedVal
     ) => TV
 
 //Tests whether a method from a given class with a given access mode may be called from
@@ -318,11 +371,12 @@ define getMethodAccessMode( _ :: methodType(Acc:AccessMode,_,_) ) => Acc
 declare getArgTypes : TypedVal -> Types
 define getArgTypes(_ :: methodType(_,Ks,_)) => types(Ks)
 
-rule [Invoke]:
+rule [invokeImpl]:
     <k>
-      'Invoke(
-        methodClosure(Class, OL:Int, 'ListWrap(Params:List{K}), Body:K)
-            :: methodType(_, _, T),,
+      invokeImpl(
+        protoMethodClosure(Class, 'ListWrap(Params:List{K}), Body:K)
+            :: methodType(_, _, T),
+        OL,
         'ListWrap(ParamValues:List{KResult})
       ) ~> K
        => bindto Params, ParamValues ~> Body ~> 'Return('None(.List{K}))
@@ -338,14 +392,19 @@ rule [Invoke]:
               ))
         ...
       </stack>
-      <crntObj> OldObj:Bag => <crntClass>Class</crntClass> Obj </crntObj>
+      <crntObj>
+        OldObj:Bag
+        => <crntClass>Class</crntClass>
+           <location> NewOL </location>
+           Obj
+      </crntObj>
       <return> OldT:Type => T </return>
       C:Bag
     </control>
     <env> Env => . </env>
     <store>
       ...
-      OL |-> objectClosure(Obj:Bag) :: _
+      OL |-> objectClosure(NewOL:Int, Obj:Bag) :: _
       ...
     </store>
 

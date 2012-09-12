@@ -153,7 +153,7 @@ when
 
 rule [InvokeClassGetNameObject]:
     'Invoke(
-      methodClassGetName(objectClosure((_ <envStack>ListItem((Class:Id, _))...</envStack>))::_),,
+      methodClassGetName(objectClosure(_, _ <envStack>ListItem((Class:Id, _))...</envStack>)::_),,
       'ListWrap(.List{K})
     ) => fullyQualifiedClassName(Class)
 
@@ -200,10 +200,10 @@ when
 rule [InvokeHashCode]:
     'Invoke(
       methodHashCode(
-        objectClosure((_ <envStack>ListItem((Class:Id, _))...</envStack>))::_
+        objectClosure(I:Int, _ <envStack>ListItem((Class:Id, _))...</envStack>)::_
       ),,
       'ListWrap(.List{K})
-    ) => 0 :: int
+    ) => I :: int
 
 rule [NameArrayClone]:
     methodNameImpl(arrayRef(T:Type,L1,Len)::CompileT, X, _) => methodArrayClone(arrayRef(T,L1,Len)::CompileT)

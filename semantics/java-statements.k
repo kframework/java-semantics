@@ -1,6 +1,34 @@
 module JAVA-STATEMENTS
     imports JAVA-CORE
 
+//@ \section{Initiation of execution}
+
+rule [execute]:
+    <k> . =>
+      //k-ast for new <MainClass>().main(new String[0]);
+      'ExprStm(
+        'Invoke(
+          'Method(
+            'NewInstance(
+              'None(.List{K}),,
+              class MainClass,,
+              'ListWrap(.List{K}),,
+              'None(.List{K})
+            ),,
+            'None(.List{K}),,
+            String2Id("main")
+          ),,
+          'ListWrap('NewArray(
+              rtString,,
+              'ListWrap('Dim(0 :: int)),,
+              'ListWrap(.List{K})))
+        )
+      )
+    </k>
+    <env> . </env>
+    <mainClass> MainClass:Id </mainClass>
+    <executionPhase> "ClassListAnalyze" => "Execute" </executionPhase>
+
 //@ \section{Program stack}
 
 //ListItem content as a stack layer
@@ -111,11 +139,6 @@ rule [envDiscard]:
 //local var decs and field decs are reduced to a single case
 rule [LocalVarDecStmRed]:
     'LocalVarDecStm('LocalVarDec(_,, TypeK:K,, 'ListWrap(Ks)))
-    => 'LocalVarDec(TypeK,, 'ListWrap(Ks))
-        [structural]
-
-rule [FieldDecToLocalVarDec]:
-    'FieldDec(_,, TypeK:K,, 'ListWrap(Ks))
     => 'LocalVarDec(TypeK,, 'ListWrap(Ks))
         [structural]
 

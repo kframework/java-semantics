@@ -9,6 +9,7 @@ in java-classes
 in java-method-dec
 in java-method-invoke
 in java-compilation-unit
+in java-class-list-analyze
 in java-api-core
 
 module JAVA
@@ -23,6 +24,7 @@ module JAVA
     imports JAVA-METHOD-DEC
     imports JAVA-METHOD-INVOKE
     imports JAVA-COMPILATION-UNIT
+    imports JAVA-CLASS-LIST-ANALYZE
     imports JAVA-API-CORE
 
 end module

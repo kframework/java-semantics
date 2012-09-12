@@ -41,11 +41,14 @@ configuration <T color="red">
                       <extends color="Fuchsia"> .K </extends>
                       <package> .K </package>
                       <declarations color="purple"> .K </declarations>
+                      <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>
+                      <methods color="purple"> .Map </methods>
                    </class>
                 </classes>
                 <mainClass> .K </mainClass>
                 //current compilation unit package
                 <cuPackage> .K </cuPackage>
+                <cuClass> .K </cuClass>
                 <executionPhase> "ProcessDeclarations" </executionPhase>
 
                 <dissolveEmptyK> true </dissolveEmptyK>
@@ -96,7 +99,10 @@ syntax Type ::= "methodType" "(" AccessMode ","    // access mode
 
 syntax RefType ::= "class" Id
 
-syntax RawVal ::= "objectClosure" "(" Bag ")"
+syntax RawVal ::= "objectClosure" "(" Int //OL - object location
+                                  "," Bag //<envStack> - the object content
+                                  ")"
+
                 | "methodClosure" "("
                     Id ","   // Class - class defining the method
                     Int ","  // OL - object location

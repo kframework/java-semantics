@@ -49,9 +49,9 @@ rule [bindtoEmpty]:
 
 define typeOf('Param(_:K,,K:K,,_)) => K
 
-define toString(objectClosure(Obj:Bag) :: T)
+define toString(objectClosure(I:Int, Obj:Bag) :: T)
     =>  'Invoke(
-          'MethodName(objectClosure(Obj) :: T,, String2Id("toString")),,
+          'MethodName(objectClosure(I, Obj) :: T,, String2Id("toString")),,
           'ListWrap(.List{K})
         )
 
@@ -68,7 +68,7 @@ get more from the existing SIMPLE constructs. */
 //@ \texttt{typeOf for raw values of reference type}
 define typeOf(Str:String) => rtString
 define typeOf(null) => nullType
-define typeOf(objectClosure((<envStack>ListItem((Class:Id, _)) _</envStack>))) => class Class
+define typeOf(objectClosure(_, (<envStack>ListItem((Class:Id, _)) _</envStack>))) => class Class
 define typeOf(arrayRef( arrayOf T, _, _)) => arrayOf T
 
 /*@ \subsection{New}
@@ -125,7 +125,7 @@ rule [create]:
     </k>
     <className> Class </className>
     <extends> BaseClassK </extends>
-    <declarations> S:K </declarations>
+    <fieldDecs> S:K </fieldDecs>
         [structural]
 
 rule [createEmptyDiscard]:
@@ -154,13 +154,15 @@ rule [storeObj]:
     <crntObj>
       Obj
       <crntClass> Class </crntClass>
-      (<location> L </location> => .)
+      <location> L </location>
     </crntObj>
     <store>
       ...
-      . => L |-> objectClosure(Obj) :: class Class
+      . => L |-> objectClosure(L, Obj) :: class Class
       ...
     </store>
+
+syntax K ::= "buildMethodClosures" "(" Map ")"
 
 /*@ \subsection{Instance Of}
 Like in untyped KOOL. */
@@ -227,10 +229,14 @@ Like in untyped KOOL. */
 rule [This]:
     <k>
       'This(.List{K})
-      => objectClosure(Obj) :: class Class
+      => objectClosure(OL, Obj) :: class Class
       ...
     </k>
-    <crntObj> Obj <crntClass> Class </crntClass> </crntObj>
+    <crntObj>
+      Obj
+      <crntClass> Class </crntClass>
+      <location> OL:Int </location>
+    </crntObj>
 
 /*@ \subsection{Object member access} */
 
@@ -238,7 +244,7 @@ rule [This]:
 rule [ExprNameQualified]:
     <k>
       'ExprName(
-        objectClosure(
+        objectClosure(_,
           <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>
         ) :: class Class,, X
       )
@@ -315,7 +321,7 @@ rule [lvalueExprNameQualified]:
     <k>
       lvalue(
         'ExprName(
-          objectClosure(
+          objectClosure(_,
             <envStack>... ListItem((Class, EnvC:BagItem)) EStack </envStack>
           ) :: class Class,,
           X

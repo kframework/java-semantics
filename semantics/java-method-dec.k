@@ -55,15 +55,18 @@ context storeMethod(_, _, _, _,
 
 rule [storeMethod]:
     <k> storeMethod(Name, Ts:Types, 'ListWrap(Params), S, MethodType:Type) =>. ...</k>
-    <crntClass> Class:Id </crntClass>
-    <location> OL:Int </location>
-    <env> Env:Map => Env[ L:Int/sig(Name,Ts) ] </env>
+    <cuClass> Class:Id </cuClass>
+    <className> Class </className>
+    <methods> Env:Map => Env[ L:Int/sig(Name,Ts) ] </methods>
     <store>
       ...
-      . => L |-> methodClosure(Class, OL, 'ListWrap(Params), S) :: MethodType
+      . => L |-> protoMethodClosure(Class, 'ListWrap(Params), S) :: MethodType
       ...
     </store>
     <nextLoc> L => L +Int 1 </nextLoc>
+
+syntax RawVal ::= "protoMethodClosure" "(" Id "," K "," K ")"
+    //same as methodClosure byt without ObjectLocaton.
 
 //A method signature
 syntax K ::= "sig" "(" Id "," Types ")"
@@ -108,7 +111,7 @@ rule [storeConstructor]:
         )
       ...
     </k>
-    <crntClass> Class:Id </crntClass>
+    <cuClass> Class:Id </cuClass>
     <className> Class </className>
     <extends> BaseClass </extends>
 when
@@ -126,9 +129,16 @@ rule [storeConstructorClassObject]:
         )
       ...
     </k>
-    <crntClass> Class:Id </crntClass>
+    <cuClass> Class:Id </cuClass>
     <className> Class </className>
 when
     Id2String(Class) ==String "Object"
+
+rule [FieldDecToLocalVarDec]:
+    <k> 'FieldDec(_,, TypeK:K,, VarDecList:K) => . ...</k>
+    <cuClass> Class </cuClass>
+    <className> Class </className>
+    <fieldDecs> 'ListWrap(_,, (.List{K} => 'LocalVarDec(TypeK,, VarDecList:K))) </fieldDecs>
+        [structural]
 
 end module

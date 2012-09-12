@@ -63,6 +63,7 @@ rule [classDecImpl]:
                 <extends> BaseClass </extends>
                 <package> Pack </package>
                 <declarations> CBody </declarations>
+                ...
               </class> )
       ...
     </classes>
@@ -77,6 +78,7 @@ rule [classDecImplObject]:
                 <extends> .K </extends>
                 <package> Pack </package>
                 <declarations> CBody </declarations>
+                ...
               </class> )
       ...
     </classes>
@@ -108,31 +110,5 @@ rule checkForMain('ListWrap((K => .List{K}),,_))
 when getKLabel(K) =/=KLabel 'MethodDec
 
 rule checkForMain('ListWrap(.List{K})) => .
-
-rule [execute]:
-    <k> . =>
-      //k-ast for new <MainClass>().main(new String[0]);
-      'ExprStm(
-        'Invoke(
-          'Method(
-            'NewInstance(
-              'None(.List{K}),,
-              class MainClass,,
-              'ListWrap(.List{K}),,
-              'None(.List{K})
-            ),,
-            'None(.List{K}),,
-            String2Id("main")
-          ),,
-          'ListWrap('NewArray(
-              rtString,,
-              'ListWrap('Dim(0 :: int)),,
-              'ListWrap(.List{K})))
-        )
-      )
-    </k>
-    <env> . </env>
-    <mainClass> MainClass:Id </mainClass>
-    <executionPhase> "ProcessDeclarations" => "Execute" </executionPhase>
 
 end module
