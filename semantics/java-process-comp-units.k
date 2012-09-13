@@ -1,4 +1,4 @@
-module JAVA-COMPILATION-UNIT
+module JAVA-PROCESS-COMP-UNITS
     imports JAVA-CORE
 
 /*@ \subsection{First pass - processing declarations} */

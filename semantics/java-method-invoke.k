@@ -1,6 +1,6 @@
 module JAVA-METHOD-INVOKE
+    imports JAVA-PROCESS-CLASSES
     imports JAVA-CLASSES
-    imports JAVA-METHOD-DEC
 
 /*@\subsection{Method invocation}
 The method lookup is the same as in untyped KOOL.
@@ -91,7 +91,8 @@ rule [InitSignatureSearch]:
         Name,
         <envStack>
           Rest:List
-          ListItem((ObjectClass:Id, BI:BagItem))
+          ListItem((Class:Id, BI))
+          ...
         </envStack>,
         IsQ
       ),,
@@ -101,7 +102,7 @@ rule [InitSignatureSearch]:
           Class,
           <envStack>
             Rest
-            ListItem((ObjectClass, BI))
+            ListItem((Class, BI))
           </envStack>,
           Name, getTypes(ParamValues), Env
         ),
@@ -111,10 +112,10 @@ rule [InitSignatureSearch]:
       ...
     </k>
     <isQualified> _ => IsQ </isQualified>
-    <className> ObjectClass </className>
+    <className> Class </className>
     <methods> Env:Map </methods>
 
-syntax K ::= "invokeImpl" "(" K   //lookupMethod statement, later protoMethodClosure
+syntax K ::= "invokeImpl" "(" K   //lookupMethod statement, later methodClosure
                           "," Int //OL - object location
                           "," K   //'ListWrap(ParamValues)
                           ")"
@@ -150,17 +151,17 @@ syntax K ::= "lookupMethod" "(" K ","       //Class name of the reference used t
                                             //or undefined::nullType if no method was found yet
                             ")"           [strict(6)]
 
-rule lookupMethod(Class, BI, Name, Ts:Types, Env)
+rule lookupMethod(Class, BI:BagItem, Name, Ts:Types, Env)
   => lookupMethod(Class, BI, Name, Ts, Env, undefined::nullType)
 
 // all lookupMethod rules traverse the class hierarchy from Object to the concrete class itself.
 rule [lookupMethodNoAlternatives]:
     (. => isPreferableSig(
             'LazyAnd(
-              isAccessible(ObjectClass, getMethodAccessMode(typedLookup(L))),,
+              isAccessible(ObjectClass:Id, getMethodAccessMode(TV)),,
               subtype(CallTL, SigTL)
             ),
-            L:Int
+            TV
           ) )
      ~> lookupMethod(
           _:Id,
@@ -170,17 +171,17 @@ rule [lookupMethodNoAlternatives]:
           </envStack>,
           Name,
           types(CallTL:List{K}),
-          (sig(Name, types(SigTL:List{K})) |-> L => .) _:Map,
+          (sig(Name, types(SigTL:List{K})) |-> TV => .) _:Map,
           undefined::_
         )
 
 rule [lookupMethodWithAlternative]:
     (. => isPreferableSig(
             'LazyAnd(
-              isAccessible(ObjectClass, getMethodAccessMode(typedLookup(L))),,
+              isAccessible(ObjectClass, getMethodAccessMode(TV)),,
               'LazyAnd(subtype(CallTL, SigTL),, subtype(SigTL, AltTL))
             ),
-            L
+            TV
           ) )
      ~> lookupMethod(
           _:Id,
@@ -190,7 +191,7 @@ rule [lookupMethodWithAlternative]:
           </envStack>,
           Name,
           types(CallTL),
-          (sig(Name, types(SigTL)) |-> L => .) _:Map,
+          (sig(Name, types(SigTL)) |-> TV => .) _:Map,
           _ :: methodType(_, AltTL:List{K}, _)
         )
 
@@ -203,14 +204,14 @@ rule [lookupMethodSignatureFixed]:
       </envStack>,
       Name,
       _,
-      (sig(Name, types(SigTL)) |-> L => .) _:Map,
-      protoMethodClosure(OldMethodClass:Id, ParamsK:K, Body) :: methodType(Acc, SigTL, T)
+      (sig(Name, types(SigTL)) |-> TV => .) _:Map,
+      methodClosure(OldMethodClass:Id, ParamsK:K, Body) :: methodType(Acc:AccessMode, SigTL, T)
       => 'If(
             isAccessibleForOverwriting(
-              OldMethodClass, Acc, ObjectClass, getMethodAccessMode(typedLookup(L))
+              OldMethodClass, Acc, ObjectClass, getMethodAccessMode(TV)
             ),,
-            typedLookup(L),,
-            protoMethodClosure(OldMethodClass, ParamsK, Body) :: methodType(Acc, SigTL, T)
+            TV,,
+            methodClosure(OldMethodClass, ParamsK, Body) :: methodType(Acc, SigTL, T)
           )
     )
 
@@ -228,7 +229,7 @@ when
 
 syntax K ::= "isPreferableSig" "(" K "," Int ")"  [strict(1)]
 
-rule (isPreferableSig(true::bool, L:Int) => .) ~> lookupMethod(_,_,_,_,_, _ => typedLookup(L) )
+rule (isPreferableSig(true::bool, TV) => .) ~> lookupMethod(_,_,_,_,_, _ => TV )
 rule isPreferableSig(false::bool, _) => .
 
 rule [lookupMethodOtherNameEntryDiscard]:
@@ -351,17 +352,13 @@ rule isAccessibleForOverwriting(OldClass:Id, package, NewClass:Id, NewAcc:Access
 rule isAccessibleForOverwriting(_, protected, _, _) => true::bool
 rule isAccessibleForOverwriting(_, public,    _, _) => true::bool
 
-//returns the access mode of a method in the location L given as argument
-declare getMethodAccessMode : TypedVal -> AccessMode  [strict(1)]
-define getMethodAccessMode( _ :: methodType(Acc:AccessMode,_,_) ) => Acc
-
 declare getArgTypes : TypedVal -> Types
 define getArgTypes(_ :: methodType(_,Ks,_)) => types(Ks)
 
 rule [invokeImpl]:
     <k>
       invokeImpl(
-        protoMethodClosure(Class, 'ListWrap(Params:List{K}), Body:K)
+        methodClosure(Class, 'ListWrap(Params:List{K}), Body:K)
             :: methodType(_, _, T),
         OL,
         'ListWrap(ParamValues:List{KResult})

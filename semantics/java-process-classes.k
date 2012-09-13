@@ -1,4 +1,4 @@
-module JAVA-METHOD-DEC
+module JAVA-PROCESS-CLASSES
     imports JAVA-CORE
 
 //@process access modes
@@ -16,6 +16,134 @@ when        K =/=K public
     andBool K =/=K private
 
 rule getAccessMode('ListWrap(.List{K})) => package
+
+//@ \section{Class list analyze}
+syntax K ::= "classListAnalyze" "("
+                                    Bag // the collection of <class> tags
+                                ")"
+           | "classAnalyze" "("
+                                Id  //the class to be analyzed
+                            ")"
+
+rule [classListAnalyze]:
+    <k> . => classListAnalyze(Classes) </k>
+    <classes> Classes:Bag </classes>
+    <executionPhase> "ProcessCompUnits" => "ProcessClasses" </executionPhase>
+
+rule [classAnalyzeInit]:
+    (. => classAnalyze(Class))
+    ~>  classListAnalyze(
+          (<class>
+            ...
+            <className> Class:Id </className>
+            ...
+          </class> => .Bag)
+          _:Bag
+        )
+
+rule [classAnalyzeBaseClass]:
+    <k> (. => classAnalyze(BaseClass)) ~> classAnalyze(Class) ...</k>
+    <class>
+      <className> Class </className>
+      <extends> BaseClass:Id </extends>
+      ...
+    </class>
+    <class>
+      <className> BaseClass </className>
+      <declarations> Decls:K </declarations>
+      ...
+    </class>
+when
+    Decls =/=K .K
+
+rule [ClassAnalyze]:
+    <k> classAnalyze(Class) => tryInherit(Env) ~> Decls ...</k>
+    <class>
+      <className> Class </className>
+      <extends> BaseClass:Id </extends>
+      <declarations> Decls:K => . </declarations>
+      ...
+    </class>
+    <class>
+      <className> BaseClass </className>
+      <declarations> .K </declarations>
+      <methods> Env:Map </methods>
+      ...
+    </class>
+    <cuClass> _ => Class </cuClass>
+when
+    Decls =/=K .K
+
+rule [ClassAnalyzeObject]:
+    <k> classAnalyze(Class) => Decls ...</k>
+    <class>
+      <className> Class </className>
+      <declarations> Decls:K => . </declarations>
+      ...
+    </class>
+    <cuClass> _ => Class </cuClass>
+when
+    Id2String(Class) ==String "Object"
+
+rule [ClassAnalyzeDiscard]:
+    <k> classAnalyze(Class) => . ...</k>
+    <class>
+      <className> Class </className>
+      <declarations> .K </declarations>
+      ...
+    </class>
+
+rule [classListAnalyzeDiscard]:
+    classListAnalyze(.) => .
+
+//inherits the methods of the base class, based on rules in JLS $8.4.8 paragraph 1
+syntax K ::= "tryInherit" "(" Map ")"
+           | "inherit" "(" Map ")"  //when checks are made, we are inheriting the method
+
+rule [tryInheritUnfold]:
+    <k> (. => tryInherit(MI)) ~> tryInherit( (MI:MapItem => .) _:MapItem _) ...</k>
+
+rule [tryInherit]:
+    tryInherit(Sig:K |-> TV:TypedVal)
+    => 'If(
+          isInheritable(getMethodAccessMode(TV)),,
+          inherit(Sig |-> TV),,
+          .K
+        )
+
+syntax K ::= "isInheritable" "(" K ")" [strict]
+rule isInheritable(public) => true::bool
+rule isInheritable(protected) => true::bool
+
+rule [isInheritablePackage]:
+    <k> isInheritable(package) => (P1 ==K P2)::bool ...</k>
+    <cuClass> Class </cuClass>
+    <class>
+      <className> Class </className>
+      <extends> BaseClass </extends>
+      <package> P1:K </package>
+      ...
+    </class>
+    <class>
+      <className> BaseClass </className>
+      <package> P2:K </package>
+      ...
+    </class>
+
+rule isInheritable(private) => false::bool
+
+rule [inherit]:
+    <k> inherit(MI) => . ...</k>
+    <cuClass> Class </cuClass>
+    <class>
+      <className> Class </className>
+      <methods> (. => MI) _ </methods>
+      ...
+    </class>
+
+//returns the access mode of a method in the location L given as argument
+declare getMethodAccessMode : TypedVal -> AccessMode  [strict(1)]
+define getMethodAccessMode( _ :: methodType(Acc:AccessMode,_,_) ) => Acc
 
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
@@ -57,16 +185,9 @@ rule [storeMethod]:
     <k> storeMethod(Name, Ts:Types, 'ListWrap(Params), S, MethodType:Type) =>. ...</k>
     <cuClass> Class:Id </cuClass>
     <className> Class </className>
-    <methods> Env:Map => Env[ L:Int/sig(Name,Ts) ] </methods>
-    <store>
-      ...
-      . => L |-> protoMethodClosure(Class, 'ListWrap(Params), S) :: MethodType
-      ...
-    </store>
-    <nextLoc> L => L +Int 1 </nextLoc>
-
-syntax RawVal ::= "protoMethodClosure" "(" Id "," K "," K ")"
-    //same as methodClosure byt without ObjectLocaton.
+    <methods>
+      Env:Map => Env[ methodClosure(Class, 'ListWrap(Params), S) :: MethodType / sig(Name,Ts) ]
+    </methods>
 
 //A method signature
 syntax K ::= "sig" "(" Id "," Types ")"

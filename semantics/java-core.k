@@ -49,7 +49,7 @@ configuration <T color="red">
                 //current compilation unit package
                 <cuPackage> .K </cuPackage>
                 <cuClass> .K </cuClass>
-                <executionPhase> "ProcessDeclarations" </executionPhase>
+                <executionPhase> "ProcessCompUnits" </executionPhase>
 
                 <dissolveEmptyK> true </dissolveEmptyK>
                 <dissolveClasses> true </dissolveClasses>
@@ -105,7 +105,6 @@ syntax RawVal ::= "objectClosure" "(" Int //OL - object location
 
                 | "methodClosure" "("
                     Id ","   // Class - class defining the method
-                    Int ","  // OL - object location
                     K ","    // 'ListWrap(Params) - params
                     K        // S - method body
                   ")"
