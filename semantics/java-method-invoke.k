@@ -214,37 +214,24 @@ rule [lookupMethodSignatureFixed]:
           )
     )
 
-//todo restore, also two other discard rules
-rule [lookupMethodSignatureFixedLayerDiscard]:
-    <k>
-      lookupMethod(
-        .K,
-        <envStack>
-          ...
-          ListItem((SubClass:Id, _))
-          (ListItem((ObjectClass, _)) => .)
-        </envStack>,
-        Name,
-        _,
-        Env => NewEnv,
-        _ :: methodType(_, AltTL, _)
-      )
-    ...
-    </k>
-    <class>
-      <className> SubClass </className>
-      <methods> NewEnv:Map </methods>
-      ...
-    </class>
+rule [lookupMethodSignatureFixedEntryDiscard]:
+    lookupMethod(
+      .K,
+      _,
+      Name,
+      _,
+      (sig(X, types(SigTL)) |-> _ => .) _:Map,
+      _ :: methodType(_, ChosenSigTL:List{K}, _)
+    )
 when
-    notBool sig(Name, types(AltTL)) in keys(Env)
+    sig(X, types(SigTL)) =/=K sig(Name, types(ChosenSigTL))
 
 syntax K ::= "isPreferableSig" "(" K "," Int ")"  [strict(1)]
 
 rule (isPreferableSig(true::bool, L:Int) => .) ~> lookupMethod(_,_,_,_,_, _ => typedLookup(L) )
 rule isPreferableSig(false::bool, _) => .
 
-rule [lookupMethodOtherNameDiscard]:
+rule [lookupMethodOtherNameEntryDiscard]:
     lookupMethod(
       _,
       _,
@@ -259,7 +246,7 @@ when
 rule [lookupMethodLayerDiscard]:
     <k>
       lookupMethod(
-        Class,
+        K,
         <envStack>
           ...
           ListItem((SubClass:Id, _))
@@ -278,7 +265,7 @@ rule [lookupMethodLayerDiscard]:
       ...
     </class>
 when
-    Class =/=K ObjectClass
+    K =/=K ObjectClass
 
 rule [lookupMethodLayerDiscard2]:
     <k>
