@@ -91,7 +91,7 @@ rule [InitSignatureSearch]:
         Name,
         <envStack>
           Rest:List
-          ListItem((Class:Id, BI))
+          ListItem((Class:Id, BI:BagItem))
           ...
         </envStack>,
         IsQ
@@ -100,10 +100,7 @@ rule [InitSignatureSearch]:
       ) => invokeImpl(
         lookupMethod(
           Class,
-          <envStack>
-            Rest
-            ListItem((Class, BI))
-          </envStack>,
+          getClassList(Rest ListItem((Class, BI))),
           Name, getTypes(ParamValues), Env
         ),
         OL,
@@ -114,6 +111,12 @@ rule [InitSignatureSearch]:
     <isQualified> _ => IsQ </isQualified>
     <className> Class </className>
     <methods> Env:Map </methods>
+
+syntax K ::= "getClassList" "(" List ")"
+rule (.List{K} => Class),, getClassList((ListItem(Class, _) => .) _)
+        [structural anywhere]
+rule getClassList(.) => .List{K}
+        [structural anywhere]
 
 syntax K ::= "invokeImpl" "(" K   //lookupMethod statement, later methodClosure
                           "," Int //OL - object location
@@ -136,14 +139,14 @@ rule getTypes(Ks, .List{K}) => types(Ks)
 
 syntax K ::= "lookupMethod" "(" K ","       //Class name of the reference used to call the method
                                             //or .K if we cannot search for more specific signature
-                                BagItem "," //<envStack> - class hierarchy
+                                List{K} "," //class list, from derived to base one
                                 Id ","      //Method name
                                 Types ","   //Method param types
                                 Map         //methods map of the ObjectClass to search
                             ")"           [strict(4)]
            | "lookupMethod" "(" K ","       //Class name of the reference used to call the method
                                             //or .K if we cannot search for more specific signature
-                                BagItem "," //<envStack> - class hierarchy
+                                List{K} "," //class list, from derived to base one
                                 Id ","      //Method name
                                 Types ","   //Method param types
                                 Map ","     //methods map of the ObjectClass to search
@@ -151,8 +154,8 @@ syntax K ::= "lookupMethod" "(" K ","       //Class name of the reference used t
                                             //or undefined::nullType if no method was found yet
                             ")"           [strict(6)]
 
-rule lookupMethod(Class, BI:BagItem, Name, Ts:Types, Env)
-  => lookupMethod(Class, BI, Name, Ts, Env, undefined::nullType)
+rule lookupMethod(Class, Ks, Name, Ts:Types, Env)
+  => lookupMethod(Class, Ks, Name, Ts, Env, undefined::nullType)
 
 // all lookupMethod rules traverse the class hierarchy from Object to the concrete class itself.
 rule [lookupMethodNoAlternatives]:
@@ -165,10 +168,7 @@ rule [lookupMethodNoAlternatives]:
           ) )
      ~> lookupMethod(
           _:Id,
-          <envStack>
-            ...
-            ListItem((ObjectClass, _))
-          </envStack>,
+          (_,, ObjectClass),
           Name,
           types(CallTL:List{K}),
           (sig(Name, types(SigTL:List{K})) |-> TV => .) _:Map,
@@ -185,10 +185,7 @@ rule [lookupMethodWithAlternative]:
           ) )
      ~> lookupMethod(
           _:Id,
-          <envStack>
-            ...
-            ListItem((ObjectClass, _))
-          </envStack>,
+          (_,, ObjectClass),
           Name,
           types(CallTL),
           (sig(Name, types(SigTL)) |-> TV => .) _:Map,
@@ -198,10 +195,7 @@ rule [lookupMethodWithAlternative]:
 rule [lookupMethodSignatureFixed]:
     lookupMethod(
       .K,
-      <envStack>
-        ...
-        ListItem((ObjectClass, _))
-      </envStack>,
+      (_,, ObjectClass),
       Name,
       _,
       (sig(Name, types(SigTL)) |-> TV => .) _:Map,
@@ -248,11 +242,7 @@ rule [lookupMethodLayerDiscard]:
     <k>
       lookupMethod(
         K,
-        <envStack>
-          ...
-          ListItem((SubClass:Id, _))
-          (ListItem((ObjectClass, _)) => .)
-        </envStack>,
+        (_,, SubClass:Id,, (ObjectClass => .List{K})),
         _,
         _,
         .Map => NewEnv,
@@ -272,11 +262,7 @@ rule [lookupMethodLayerDiscard2]:
     <k>
       lookupMethod(
         ObjectClass => .K,
-        <envStack>
-          ...
-          ListItem((SubClass:Id, _))
-          (ListItem((ObjectClass, _)) => .)
-        </envStack>,
+        (_,, SubClass,, (ObjectClass => .List{K})),
         _,
         _,
         .Map => NewEnv,
@@ -293,9 +279,7 @@ rule [lookupMethodLayerDiscard2]:
 rule [lookupMethodEnd]:
     lookupMethod(
       _,
-      <envStack>
-        ListItem(_)
-      </envStack>,
+      (_:Id),
       _,
       _,
       .Map,
