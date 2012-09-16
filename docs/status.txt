@@ -26,11 +26,10 @@ with methods with same name and return type void.
 12. Default constructor.
 13. Method and constructor overloading.
 14. Runtime semantics of method access modes. Since our semantics does all compile-time
-  preprocessing at runtime, access modes have a runtime semantics in some peculiar cases,
+  preprocessing at runtime, access modes have a runtime semantics just in some peculiar cases,
   particularly in context of overwriting and overloading. See the test plan
   in the directory 43_method_access_mode for details.
-  (Right now all access mode semantics is implemented except a peculair case involving
-  call to a protected method through a reference other than "this".)
+
 
 Major features yet to be implemented:
 1. Initialization sequence of an object. (right now we have a simplified semantics from kool)
