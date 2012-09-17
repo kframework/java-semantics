@@ -31,7 +31,7 @@ echo
 # since it have the same performance as standart delete from java.
 java -cp $TOOLS_DIR/test-runner.jar ro.uaic.javasemantics.tools.Main \
   -gen $TOOLS_DIR/aux-jdk-run.sh -run $TOOLS_DIR/aux-kjrun.sh \
-  -taskExt java -threads 1 -timeout 20 -testsuiteName java-semantics \
+  -taskExt java -threads 1 -timeout 30 -testsuiteName java-semantics \
   -clean $CLEAN ${@:STARTARG}
 
 END=$(date +%s)
