@@ -2,8 +2,7 @@
 
 # if no arguments are provided - running the whole test suite.
 # if several arguments are provided as directories - running
-# tests inside that directories.
-# Use only one thread.
+# tests inside that directories. Uses only one thread.
 
 TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -17,7 +16,7 @@ if [ $# == 0 ] || [ $1 != "-clean" ];
 fi
 
 if [ $# -lt $STARTARG ]; then
-    $TOOLS_DIR/kjtest.sh ${@} $TOOLS_DIR/../programs/
+    $TOOLS_DIR/st-kjtest.sh ${@} $TOOLS_DIR/../programs/
     exit
 fi
 
