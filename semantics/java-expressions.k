@@ -182,18 +182,18 @@ rule [CompoundAssign]:
     CALabel(loc(L) :: T,, E:K) => 'Assign(loc(L)::T,,
       castImpl(T, getOpLabel(CALabel)(lookup(L)::T,, E)))
 
-declare getOpLabel : CompoundAssignLabel -> KLabel
-define getOpLabel('AssignPlus) => 'Plus
-define getOpLabel('AssignMinus) => 'Minus
-define getOpLabel('AssignMul) => 'Mul
-define getOpLabel('AssignDiv) => 'Div
-define getOpLabel('AssignAnd) => 'And
-define getOpLabel('AssignOr) => 'Or
-define getOpLabel('AssignExcOr) => 'ExcOr
-define getOpLabel('AssignRemain) => 'Remain
-define getOpLabel('AssignLeftShift) => 'LeftShift
-define getOpLabel('AssignRightShift) => 'RightShift
-define getOpLabel('AssignURightShift) => 'URightShift
+syntax KLabel ::= "getOpLabel" "(" CompoundAssignLabel ")" [function]
+rule getOpLabel('AssignPlus) => 'Plus [anywhere]
+rule getOpLabel('AssignMinus) => 'Minus [anywhere]
+rule getOpLabel('AssignMul) => 'Mul [anywhere]
+rule getOpLabel('AssignDiv) => 'Div [anywhere]
+rule getOpLabel('AssignAnd) => 'And [anywhere]
+rule getOpLabel('AssignOr) => 'Or [anywhere]
+rule getOpLabel('AssignExcOr) => 'ExcOr [anywhere]
+rule getOpLabel('AssignRemain) => 'Remain [anywhere]
+rule getOpLabel('AssignLeftShift) => 'LeftShift [anywhere]
+rule getOpLabel('AssignRightShift) => 'RightShift [anywhere]
+rule getOpLabel('AssignURightShift) => 'URightShift [anywhere]
 
 /*@ \subsection{primitive types cast} */
 

@@ -172,7 +172,7 @@ rule [InvokeClassGetNameArray]:
 rule [fullyQualifiedClassName]:
     fullyQualifiedClassName(Class) => fullyQualifiedClassName(getPackage(Class), Class)
 
-define toString(class Class) => fullyQualifiedClassName(Class)
+rule toString(class Class) => fullyQualifiedClassName(Class) [anywhere]
 
 syntax K ::= "fullyQualifiedClassName" "("
                     Package //package elements, each of type Id

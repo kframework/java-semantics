@@ -336,8 +336,8 @@ rule isAccessibleForOverwriting(OldClass:Id, package, NewClass:Id, NewAcc:Access
 rule isAccessibleForOverwriting(_, protected, _, _) => true::bool
 rule isAccessibleForOverwriting(_, public,    _, _) => true::bool
 
-declare getArgTypes : TypedVal -> Types
-define getArgTypes(_ :: methodType(_,Ks,_)) => types(Ks)
+syntax K ::= "getArgTypes" "(" TypedVal ")" [function]
+rule getArgTypes(_ :: methodType(_,Ks,_)) => types(Ks) [anywhere]
 
 rule [invokeImpl]:
     <k>

@@ -142,8 +142,8 @@ rule [inherit]:
     </class>
 
 //returns the access mode of a method in the location L given as argument
-declare getMethodAccessMode : TypedVal -> AccessMode  [strict(1)]
-define getMethodAccessMode( _ :: methodType(Acc:AccessMode,_,_) ) => Acc
+syntax K ::= "getMethodAccessMode" "(" TypedVal ")" [function strict(1)]
+rule getMethodAccessMode( _ :: methodType(Acc:AccessMode,_,_) ) => Acc [anywhere]
 
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their

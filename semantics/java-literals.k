@@ -4,83 +4,83 @@ module JAVA-LITERALS
 
 //@ \section{Auxiliary constructs}
 
-declare charAt : String Int -> String
-define charAt(Str:String, Pos:Int) => substrString(Str, Pos, 1)
+syntax K ::= "charAt" "(" String "," Int ")" [function]
+rule charAt(Str:String, Pos:Int) => substrString(Str, Pos, 1) [anywhere]
 
-declare lastChar : String -> String
-define lastChar(Str) => charAt(Str, lengthString(Str) -Int 1)
+syntax K ::= "lastChar" "(" String ")" [function]
+rule lastChar(Str) => charAt(Str, lengthString(Str) -Int 1) [anywhere]
 
-declare stringRemoveLast : String -> String
-define stringRemoveLast(Str) => substrString(Str, 0, lengthString(Str) -Int 1)
+syntax K ::= "stringRemoveLast" "(" String ")" [function]
+rule stringRemoveLast(Str) => substrString(Str, 0, lengthString(Str) -Int 1) [anywhere]
 
-declare substrFrom : String Int -> String
-define substrFrom(Str, I) => substrString(Str, I, lengthString(Str) -Int I)
+syntax K ::= "substrFrom" "(" String "," Int ")" [function]
+rule substrFrom(Str, I) => substrString(Str, I, lengthString(Str) -Int I) [anywhere]
 
-declare hexToInt : String -> Int
-define hexToInt(Str) => hexToInt(0, Str)
+syntax K ::= "hexToInt" "(" String ")" [function]
+rule hexToInt(Str) => hexToInt(0, Str) [anywhere]
 
-declare hexToInt : Int String -> Int
+syntax K ::= "hexToInt" "(" Int "," String ")" [function]
 
-define hexToInt(I:Int, Str:String) => hexToInt( I, charAt(Str,0),
+rule hexToInt(I:Int, Str:String) => hexToInt( I, charAt(Str,0),
     substrString(Str, 1, lengthString(Str) -Int 1) )
 when
-    Str =/=String ""
+    Str =/=String "" [anywhere]
 
-define hexToInt(I:Int, "") => I
+rule hexToInt(I:Int, "") => I [anywhere]
 
 /*
   first argument - upper digits already converted
   second argument - one char - current digit
   third argument - next digits
 */
-declare hexToInt : Int String String -> Int
-define hexToInt(I, Digit:String, Str:String) =>
-    hexToInt( (I *Int 16) +Int hexDigitToInt(Digit), Str )
+syntax K ::= "hexToInt" "(" Int "," String "," String ")" [function]
+rule hexToInt(I, Digit:String, Str:String) =>
+    hexToInt( (I *Int 16) +Int hexDigitToInt(Digit), Str ) [anywhere]
 
-declare hexDigitToInt : String -> Int
+syntax K ::= "hexDigitToInt" "(" String ")" [function]
 
-define hexDigitToInt(Digit) => asciiString(Digit) -Int asciiString("0")
+rule hexDigitToInt(Digit) => asciiString(Digit) -Int asciiString("0")
     when    asciiString(Digit) >=Int asciiString("0")
-    andBool asciiString(Digit) <=Int asciiString("9")
+    andBool asciiString(Digit) <=Int asciiString("9") [anywhere]
 
-define hexDigitToInt(Digit) => asciiString(Digit) -Int asciiString("A") +Int 10
+rule hexDigitToInt(Digit) => asciiString(Digit) -Int asciiString("A") +Int 10
     when    asciiString(Digit) >=Int asciiString("A")
-    andBool asciiString(Digit) <=Int asciiString("F")
+    andBool asciiString(Digit) <=Int asciiString("F") [anywhere]
 
-define hexDigitToInt(Digit) => asciiString(Digit) -Int asciiString("a") +Int 10
+rule hexDigitToInt(Digit) => asciiString(Digit) -Int asciiString("a") +Int 10
     when    asciiString(Digit) >=Int asciiString("a")
-    andBool asciiString(Digit) <=Int asciiString("f")
+    andBool asciiString(Digit) <=Int asciiString("f") [anywhere]
 
-declare octaToInt : String -> Int
-define octaToInt(Str) => octaToInt(0, Str)
+syntax K ::= "octaToInt" "(" String ")" [function]
+rule octaToInt(Str) => octaToInt(0, Str) [anywhere]
 
-declare octaToInt : Int String -> Int
+syntax K ::= "octaToInt" "(" Int "," String ")" [function]
 
-define octaToInt(I:Int, Str:String) => octaToInt( I, charAt(Str,0),
+rule octaToInt(I:Int, Str:String) => octaToInt( I, charAt(Str,0),
     substrString(Str, 1, lengthString(Str) -Int 1) )
 when
-    Str =/=String ""
+    Str =/=String "" [anywhere]
 
-define octaToInt(I:Int, "") => I
+rule octaToInt(I:Int, "") => I [anywhere]
 
 /*
   first argument - upper digits already converted
   second argument - one char - current digit
   third argument - next digits
 */
-declare octaToInt : Int String String -> Int
-define octaToInt(I, Digit:String, Str:String) =>
-    octaToInt( (I *Int 8) +Int octaDigitToInt(Digit), Str )
+syntax K ::= "octaToInt" "(" Int "," String "," String ")" [function]
+rule octaToInt(I, Digit:String, Str:String) =>
+    octaToInt( (I *Int 8) +Int octaDigitToInt(Digit), Str ) [anywhere]
 
-declare octaDigitToInt : String -> Int
+syntax K ::= "octaDigitToInt" "(" String ")" [function]
 
-define octaDigitToInt(Digit) => hexDigitToInt(Digit)
+rule octaDigitToInt(Digit) => hexDigitToInt(Digit) [anywhere]
 
-declare octaAsciiToInt : Int -> Int
-define octaAsciiToInt(I) => octaDigitToInt(charString(I))
+syntax K ::= "octaAsciiToInt" "(" Int ")" [function]
+rule octaAsciiToInt(I) => octaDigitToInt(charString(I)) [anywhere]
 
-declare hexAsciiToInt : Int -> Int
-define hexAsciiToInt(I) => hexDigitToInt(charString(I))
+syntax K ::= "hexAsciiToInt" "(" Int ")" [function]
+rule hexAsciiToInt(I) => hexDigitToInt(charString(I)) [anywhere]
 
 //@ \section{Integer literals}
 

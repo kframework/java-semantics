@@ -163,11 +163,12 @@ rule [newArrayAlloc]:
     <store>... . => LI .. LI +Int _-Int_(NI,1) |-> undefined :: elem T ...</store>
     <nextLoc> LI:Int => LI +Int max(NI,1) </nextLoc>
 
-declare max : Int Int -> Int
-define max(I1, I2) => #if I1 >=Int I2
+syntax K ::= "max" "(" Int "," Int ")" [function]
+rule max(I1, I2) => #if I1 >=Int I2
                         #then I1
                         #else I2
                       #fi
+        [anywhere]
 
 syntax K ::= "evalAndStore" "(" List{K}  "," K ")"
 
@@ -192,8 +193,8 @@ rule [evalAndStoreEmpty]:
 //@ Sequences of locations
 
 syntax List{K} ::= Int ".." Int
-define N1:Int..N2:Int => .List{K}              when N1  >Int N2
-define N1:Int..N2:Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2
+rule N1:Int..N2:Int => .List{K}              when N1  >Int N2 [anywhere]
+rule N1:Int..N2:Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2 [anywhere]
 
 //@ \subsection{Array element assignment}
 
@@ -315,24 +316,27 @@ rule [VarDecWithArrayInitDesugar]:
 
 //@ toString
 
-define toString(arrayOf T) => arrayToString(arrayOf T)
+rule toString(arrayOf T) => arrayToString(arrayOf T) [anywhere]
 
 //string representation of a type within an array type
 //see JDK: Class.getName()
-declare arrayToString : Type -> TypedVal
-define arrayToString(byte) => "B"::rtString
-define arrayToString(short) => "S"::rtString
-define arrayToString(int) => "I"::rtString
-define arrayToString(long) => "J"::rtString
-define arrayToString(char) => "C"::rtString
-define arrayToString(bool) => "Z"::rtString
+syntax K ::= "arrayToString" "(" Type ")" [function]
+rule arrayToString(byte) => "B"::rtString [anywhere]
+rule arrayToString(short) => "S"::rtString [anywhere]
+rule arrayToString(int) => "I"::rtString [anywhere]
+rule arrayToString(long) => "J"::rtString [anywhere]
+rule arrayToString(char) => "C"::rtString [anywhere]
+rule arrayToString(bool) => "Z"::rtString [anywhere]
 
 //hack in order to access class Id construct from classes
-define arrayToString('class_(Class:Id))
+rule arrayToString('class_(Class:Id))
     => 'Plus("L"::rtString,,'Plus(toString('class_(Class)) ,,";"::rtString))
+        [anywhere]
 
-define arrayToString(rtString)
+rule arrayToString(rtString)
     => 'Plus("L"::rtString,,'Plus(toString(rtString   ) ,,";"::rtString))
-define arrayToString(arrayOf T) => 'Plus("["::rtString ,,arrayToString(T))
+        [anywhere]
+rule arrayToString(arrayOf T) => 'Plus("["::rtString ,,arrayToString(T))
+        [anywhere]
 
 end module

@@ -47,13 +47,14 @@ rule [bindtoEmpty]:
 
 //@ \texttt{typeOf and toString}
 
-define typeOf('Param(_:K,,K:K,,_)) => K
+rule typeOf('Param(_:K,,K:K,,_)) => K [anywhere]
 
-define toString(objectClosure(I:Int, Obj:Bag) :: T)
+rule toString(objectClosure(I:Int, Obj:Bag) :: T)
     =>  'Invoke(
           'MethodName(objectClosure(I, Obj) :: T,, String2Id("toString")),,
           'ListWrap(.List{K})
         )
+        [anywhere]
 
 /*@ Recall that lists of the form "a,b,c" are a syntactic convenience,
 which eventually are translated into cons-lists "(a,(b,(c,.)))".
@@ -66,10 +67,10 @@ to take advantage of the richer KOOL semantic infrastructure and thus
 get more from the existing SIMPLE constructs. */
 
 //@ \texttt{typeOf for raw values of reference type}
-define typeOf(Str:String) => rtString
-define typeOf(null) => nullType
-define typeOf(objectClosure(_, (<envStack>ListItem((Class:Id, _)) _</envStack>))) => class Class
-define typeOf(arrayRef( arrayOf T, _, _)) => arrayOf T
+rule typeOf(Str:String) => rtString [anywhere]
+rule typeOf(null) => nullType [anywhere]
+rule typeOf(objectClosure(_, (<envStack>ListItem((Class:Id, _)) _</envStack>))) => class Class [anywhere]
+rule typeOf(arrayRef( arrayOf T, _, _)) => arrayOf T [anywhere]
 
 /*@ \subsection{New}
 The semantics of \texttt{new} in dynamically typed KOOL is also
@@ -278,17 +279,18 @@ Like in untyped KOOL. */
 syntax K ::= "(" Id "," BagItem ")"
 
 //lookup field result is always typed
-declare lookupField : BagItem Id -> K
+syntax K ::= "lookupField" "(" BagItem "," Id ")" [function]
 
-define lookupField(
+rule lookupField(
     <envStack>
       ListItem((_:Id, <env>... X|->L ...</env>))
       ...
     </envStack>,
     X
   ) => typedLookup(L)
+        [anywhere]
 
-define lookupField(
+rule lookupField(
     <envStack>
       ListItem((_:Id, <env> Env </env>)) => .
       ...
@@ -296,6 +298,7 @@ define lookupField(
     X
   )
 when notBool(X in keys(Env))
+        [anywhere]
 
 //typed version of lookup
 syntax K ::= "typedLookup" "(" Int ")"

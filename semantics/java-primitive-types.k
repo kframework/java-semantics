@@ -14,79 +14,79 @@ rule 'Void(.List{K}) => void [structural anywhere]
 
 //@ \subsection{Integer types normalization}
 
-declare bitCount : Type -> Int
-define bitCount(byte) => 8
-define bitCount(short) => 16
-define bitCount(int) => 32
-define bitCount(long) => 64
-define bitCount(char) => 16
+syntax K ::= "bitCount" "(" Type ")" [function]
+rule bitCount(byte) => 8 [anywhere]
+rule bitCount(short) => 16 [anywhere]
+rule bitCount(int) => 32 [anywhere]
+rule bitCount(long) => 64 [anywhere]
+rule bitCount(char) => 16 [anywhere]
 
-declare normalize : TypedVal -> TypedVal
+syntax K ::= "normalize" "(" TypedVal ")" [function]
 
-define normalize(I:Int :: NT:NumericType)
+rule normalize(I:Int :: NT:NumericType)
     =>  #if isInRange(I::NT)
           #then I::NT
           #else normalizeImpl(I::NT)
         #fi
-when NT =/=K char
+when NT =/=K char [anywhere]
 
-define normalize(I:Int :: char)
+rule normalize(I:Int :: char)
     =>  #if isInRange(I::char)
           #then I :: char
           #else toUnsigned(normalizeImpl(I::char))
-        #fi
+        #fi [anywhere]
 
-declare isInRange : TypedVal -> Bool
-define isInRange(I::byte) => (I >=Int -128 andBool I <=Int 127)              [structural]
-define isInRange(I::short) => (I >=Int -32768 andBool I <=Int 32767)         [structural]
-define isInRange(I::int) => (I >=Int -2147483648 andBool I <=Int 2147483647) [structural]
-define isInRange(I::long) => (I >=Int -9223372036854775808
-                      andBool I <=Int  9223372036854775807)                  [structural]
-define isInRange(I::char) => (I >=Int 0 andBool I <=Int 65535)               [structural]
+syntax K ::= "isInRange" "(" TypedVal ")" [function]
+rule isInRange(I::byte) => (I >=Int -128 andBool I <=Int 127)              [structural anywhere]
+rule isInRange(I::short) => (I >=Int -32768 andBool I <=Int 32767)         [structural anywhere]
+rule isInRange(I::int) => (I >=Int -2147483648 andBool I <=Int 2147483647) [structural anywhere]
+rule isInRange(I::long) => (I >=Int -9223372036854775808
+                      andBool I <=Int  9223372036854775807)                [structural anywhere]
+rule isInRange(I::char) => (I >=Int 0 andBool I <=Int 65535)               [structural anywhere]
 
-declare normalizeImpl : TypedVal -> TypedVal
+syntax K ::= "normalizeImpl" "(" TypedVal ")" [function]
 
-define normalizeImpl(I:Int :: T:Type)
+rule normalizeImpl(I:Int :: T:Type)
     => normalizeSign((((I &Int ((1 <<Int bitCount(T)) -Int 1))
         +Int (1 <<Int bitCount(T)))
-        &Int ((1 <<Int bitCount(T)) -Int 1)) :: T)
+        &Int ((1 <<Int bitCount(T)) -Int 1)) :: T) [anywhere]
 
-declare normalizeSign : TypedVal -> TypedVal
+syntax K ::= "normalizeSign" "(" TypedVal ")" [function]
 
-define normalizeSign(I:Int :: T)
+rule normalizeSign(I:Int :: T)
     =>  #if I <=Int ((1 <<Int (bitCount(T) -Int 1)) -Int 1)
           #then I :: T
           #else I -Int (1 <<Int bitCount(T)) :: T
-        #fi
+        #fi [anywhere]
 
-declare toUnsigned : TypedVal -> TypedVal
-define toUnsigned(I:Int :: T)
+syntax K ::= "toUnsigned" "(" TypedVal ")" [function]
+rule toUnsigned(I:Int :: T)
     =>  #if I >=Int 0
           #then I :: T
           #else I +Int (1 <<Int bitCount(T)) :: T
-        #fi
+        #fi [anywhere]
 
 //promote the result type based on unary operator argument type, and normalize the result.
-declare normalize : Int NumericType -> TypedVal
-define normalize(I, NT) => normalize(I :: normalizeType(NT))
+syntax K ::= "normalize" "(" Int "," NumericType ")" [function]
+rule normalize(I, NT) => normalize(I :: normalizeType(NT)) [anywhere]
 
 //promote the result type based on binary operator arguments type, and normalize the result.
-declare normalize : Int NumericType NumericType -> TypedVal
-define normalize(I, NT1:NumericType, NT2:NumericType ) => normalize(I :: normalizeType(NT1,NT2))
+syntax K ::= "normalize" "(" Int "," NumericType "," NumericType ")" [function]
+rule normalize(I, NT1:NumericType, NT2:NumericType ) => normalize(I :: normalizeType(NT1,NT2)) [anywhere]
 
-declare normalizeType : NumericType -> IntOrLongType
-define normalizeType(ILT:IntOrLongType) => ILT
+syntax K ::= "normalizeType" "(" NumericType ")" [function]
+rule normalizeType(ILT:IntOrLongType) => ILT [anywhere]
 
-define normalizeType(NT) => int
-when NT =/=K int andBool NT =/=K long
+rule normalizeType(NT) => int
+when NT =/=K int andBool NT =/=K long [anywhere]
 
 //todo debug changes
-declare normalizeType : NumericType NumericType -> IntOrLongType
+syntax K ::= "normalizeType" "(" NumericType "," NumericType ")" [function]
 
-define normalizeType(NT1, NT2) => int
-when NT1 =/=K long andBool NT2 =/=K long
+rule normalizeType(NT1, NT2) => int
+when NT1 =/=K long andBool NT2 =/=K long [anywhere]
 
-define normalizeType(NT1, NT2) => long
-when NT1 ==K long orBool NT2 ==K long
+rule normalizeType(NT1, NT2) => long
+when NT1 ==K long orBool NT2 ==K long [anywhere]
 
 end module

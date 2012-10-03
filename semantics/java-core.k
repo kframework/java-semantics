@@ -133,40 +133,40 @@ syntax K ::= "true?"
 rule true::bool ~> true? => .  [structural]
 
 //Converts a Bool::bool result into Bool, to be used with #if
-declare isTrue : K -> Bool
+syntax K ::= "isTrue" "(" K ")" [function]
 context isTrue(HOLE)
-define isTrue(B:Bool :: bool) => B
+rule isTrue(B:Bool :: bool) => B [anywhere]
 
 /*@ \section{auxiliary constructs} */
 
 
 /*toString - Converts various result types to string type, mainly for printing.*/
 
-// declare toString :  KResult -> TypedVal
-declare toString :  K -> TypedVal
+// syntax K ::= "toString" "(" KResult ")" [function]
+syntax K ::= "toString" "(" K ")" [function]
 context toString(HOLE)
 
-define toString(Str:String :: _) => Str :: rtString
-define toString(I:Int :: char) => charString(I) :: rtString
-define toString(I :: T:Type) => Int2String(I) :: rtString
-    when T =/=K char
-define toString(true::_) => "true" :: rtString
-define toString(false::_) => "false" :: rtString
-define toString(null::_) => "null" :: rtString
+rule toString(Str:String :: _) => Str :: rtString [anywhere]
+rule toString(I:Int :: char) => charString(I) :: rtString [anywhere]
+rule toString(I :: T:Type) => Int2String(I) :: rtString
+    when T =/=K char [anywhere]
+rule toString(true::_) => "true" :: rtString [anywhere]
+rule toString(false::_) => "false" :: rtString [anywhere]
+rule toString(null::_) => "null" :: rtString [anywhere]
 
-define toString(rtString) => "java.lang.String"::rtString
+rule toString(rtString) => "java.lang.String"::rtString [anywhere]
 
 //@ \texttt{typeOf definition}
 
-declare typeOf : K -> Type
-define typeOf(_ :: T:Type) => T
+syntax K ::= "typeOf" "(" K ")" [function]
+rule typeOf(_ :: T:Type) => T [anywhere]
 
 //@ \texttt{subtype definition}
 syntax K ::= "subtype" "(" List{KResult} "," List{KResult} ")"
 
 //todo this rule, if used, leads to the error "failed to load IOWrapper".
-declare isNumericType2 : Type -> Bool
-define isNumericType2(T)
+syntax K ::= "isNumericType2" "(" Type ")" [function]
+rule isNumericType2(T)
 =>  #if         T ==K byte
         orBool  T ==K short
         orBool  T ==K int
@@ -174,23 +174,23 @@ define isNumericType2(T)
         orBool  T ==K char
       #then true
       #else false
-    #fi  [structural]
+    #fi  [structural anywhere]
 
 //this is actually a hack, since we should not access k-labels 'arrayOf_ and 'class_ .
 //maybe this isSort methods will be provided by K later on.
-declare isRefType2 : Type -> Bool
-define isRefType2(T)
+syntax K ::= "isRefType2" "(" Type ")" [function]
+rule isRefType2(T)
 =>          T ==K rtString
     orBool  T ==K nullType
     orBool  getKLabel(T) ==KLabel 'arrayOf_
     orBool  getKLabel(T) ==KLabel 'class_
-        [structural]
+        [structural anywhere]
 
 //default value of all types
-declare default : Type -> TypedVal
-define default(NT:NumericType) => 0 :: NT
-define default(bool) => false :: bool
-define default(RT:RefType) => null :: RT
+syntax K ::= "default" "(" Type ")" [function]
+rule default(NT:NumericType) => 0 :: NT [anywhere]
+rule default(bool) => false :: bool [anywhere]
+rule default(RT:RefType) => null :: RT [anywhere]
 
 //@ \subsubsection{Auxiliary constructs for other modules}
 
