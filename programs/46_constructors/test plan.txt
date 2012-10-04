@@ -12,6 +12,9 @@ Testing class initialization sequence
 52. Two classes, call of superclass constructor with arguments.
 53. Two classes, superclass constructor call arguments are expressions using this class arguments,
   also calling methods that print something to the console.
+54. Argument to super() throws an exception. Test that instance initializers
+  are not executed on neither base nor derived class. Do this by printing
+  something in the instance initializers.
 
 61. A class with three constructors. Chain all of them, implicit call to no-args super() at last.
 Instantiate three objects, using each constructor as primary one. Trace calls
