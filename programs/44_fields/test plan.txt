@@ -1,0 +1,18 @@
+Testing class initialization sequence
+  - the last feature remaining for full support of non-static semantics of classes.
+
+Part 1 Fields
+1. fields and inheritance.
+
+Individual tests:
+11. One class with fields.
+12. Subclass/superclass with fields, different names. Access from derived class.
+13. Fields hiding. Subclass/superclass with fields, same name, access from both base and derived class.
+14. Local vars hiding fields. Class with a fields, method with a local var with the same name.
+  Access both from within and outside var scope. Also use this.field.
+15. Param hiding field. Class with a fields, method with a param with the same name.
+  Access both from within and outside method. Also use this.field.
+
+Already tested in other suites:
+  - catch param hiding a field
+  - for param hiding a field
