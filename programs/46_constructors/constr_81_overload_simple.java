@@ -1,10 +1,10 @@
 /*
-41. Constructor overloading.
+Standart constructor overloading.
   decl: A: A(), A(short), A(long).
   calls: arguments: (), (short), (int)
 */
 
-public class overload_41_constructor {
+public class constr_81_overload_simple {
 
   public static void main(String[] args) {
     new A();

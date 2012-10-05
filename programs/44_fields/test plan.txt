@@ -12,6 +12,8 @@ Individual tests:
   Access both from within and outside var scope. Also use this.field.
 15. Param hiding a field. Class with a field, method with a param with the same name.
   Access both from within and outside method. Also use this.field.
+16. Field default values. Class with fields of all relevant types, without initializer.
+  Test their value.
 
 Already tested in other suites:
   - catch param hiding a field

@@ -1,0 +1,1 @@
+/*- class a.Test1. Instantiate A with byte.*/package a;public class Test1 {  public Test1() {    System.out.println("Test1: new A(byte):");    new A((byte)0);  }}

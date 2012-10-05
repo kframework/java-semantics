@@ -109,15 +109,6 @@ Part 3.  Multiple potentially applicable methods - same name, same number
     - Call targets: A a, B b, C c
     - call arguments: null
 
-Part 4. Constructor overloading.
-  Here we test just the fact that consturctor overloading works,
-  since extensive test of constructors, including calls to superclass constructor,
-  is not part of this chapter of functionality.
-
-41. Constructor overloading.
-  decl: A: A(), A(short), A(long).
-  calls: arguments: (), (short), (int)
-
 Done:
   Refactor current overloading implementation so that we have just one level
 of maps, from method signatures, including name, to closures.
