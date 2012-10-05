@@ -42,6 +42,7 @@ configuration <T color="red">
                       <package> .K </package>
                       <declarations color="purple"> .K </declarations>
                       <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>
+                      <instanceInit> .K </instanceInit>
                       <methods color="purple"> .Map </methods>
                    </class>
                 </classes>

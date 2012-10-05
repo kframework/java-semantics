@@ -14,6 +14,7 @@ Individual tests:
   Access both from within and outside method. Also use this.field.
 16. Field default values. Class with fields of all relevant types, without initializer.
   Test their value.
+17. Multifield. One field declaration with multiple fields.
 
 Already tested in other suites:
   - catch param hiding a field

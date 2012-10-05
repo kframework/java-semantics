@@ -255,11 +255,31 @@ rule [storeConstructorClassObject]:
 when
     Id2String(Class) ==String "Object"
 
+rule [FieldDecDesugar]:
+    (. => 'FieldDec(SomeK,, TypeK,, 'ListWrap(K1))) ~>
+    'FieldDec(SomeK:K,, TypeK:K,, 'ListWrap((K1:K => .List{K}),, K2:K,, Ks:List{K}))
+
+rule [FieldDecInitDesugar]:
+    'FieldDec(_:K,, TypeK,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .List{K})) ))
+    ~> (. => 'InstanceInit('ExprStm('Assign('ExprName(X),, InitExp))))
+when
+    getKLabel(InitExp) =/=KLabel 'ArrayInit
+      [structural]
+
 rule [FieldDecToLocalVarDec]:
-    <k> 'FieldDec(_,, TypeK:K,, VarDecList:K) => . ...</k>
+    <k> 'FieldDec(_,, TypeK:K,, 'ListWrap('VarDec(X:Id))) => . ...</k>
     <cuClass> Class </cuClass>
     <className> Class </className>
-    <fieldDecs> 'ListWrap(_,, (.List{K} => 'LocalVarDec(TypeK,, VarDecList:K))) </fieldDecs>
+    <fieldDecs>
+      'ListWrap(_,, ( .List{K} => 'LocalVarDec(TypeK,, 'ListWrap('VarDec(X,, default(TypeK)))) ))
+    </fieldDecs>
+        [structural]
+
+rule [InstanceInitSave]:
+    <k> 'InstanceInit(K) => . ...</k>
+    <cuClass> Class </cuClass>
+    <className> Class </className>
+    <instanceInit>... . => K </instanceInit>
         [structural]
 
 end module
