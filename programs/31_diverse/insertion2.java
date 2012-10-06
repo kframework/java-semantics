@@ -19,7 +19,7 @@ class main {
 	}
 
 	main(String[] args) {
-		int n=30;
+		int n=10;
     int[] x = init(n);
 		System.out.print("The original sequence is");
 		printAll(x);
