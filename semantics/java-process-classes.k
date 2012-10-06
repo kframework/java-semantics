@@ -159,7 +159,7 @@ rule [MethodDec]:
       'MethodDecHead(Acc,, _,, ReturnType:Type,, Name:Id,, 'ListWrap(Params:List{K}),, _),,
       S:K
     )
-    => storeMethod(Name, types(Params), 'ListWrap(Params), S,
+    => storeMethod(Name, typesFromParams(Params), 'ListWrap(Params), S,
           methodType(Acc, Params, ReturnType))
         [structural]
 
@@ -170,13 +170,16 @@ syntax K ::= "storeMethod" "("
                               K ","
                               Type
                            ")"
-        [strict(2)]
 
-syntax K       ::= "types" "(" List{K} ")"
+syntax K     ::= "typesFromParams" "(" List{K} ")"
 syntax Types ::= "types" "(" List{KResult} ")"
 syntax KResult ::= Types
 
-rule types(_:List{KResult},, ('Param(_:K,,T:Type,,_:K) => T),, _:List{K})
+rule typesFromParams(_:List{KResult},, ('Param(_:K,,T:Type,,_:K) => T),, _:List{K})
+        [structural anywhere]
+
+rule typesFromParams(KRs:List{KResult}) => types(KRs)
+        [structural anywhere]
 
 context storeMethod(_, _, _, _,
     methodType(_, _:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}, _))
@@ -192,9 +195,11 @@ rule [storeMethod]:
 //A method signature
 syntax K ::= "sig" "(" Id "," Types ")"
 
+//todo Simplify constructor processing. There are too much indirections right now.
+
 rule [ConstrDecSuperCallDesugar]:
     'ConstrDec(
-      _:K,,
+      'ConstrDecHead(_:K,, _:K,, Name,, _:List{K}),,
       'ConstrBody(
         (
           'None(_)
@@ -203,57 +208,76 @@ rule [ConstrDecSuperCallDesugar]:
         _:K
       )
     )
+when
+    Id2String(Name) =/=String "Object"
+
+rule [ConstrDecObjectDesugar]:
+    'ConstrDec(
+      'ConstrDecHead(_:K,, _:K,, Name,, _:List{K}),,
+      'ConstrBody(
+        (
+          'None(_) => 'Some(.K)
+        ),,
+        _:K
+      )
+    )
+when
+    Id2String(Name) ==String "Object"
 
 context 'ConstrDec('ConstrDecHead((HOLE => getAccessMode(HOLE)),, _),, _)
 
 rule [ConstrDec]:
-    'ConstrDec('ConstrDecHead(Acc,, _,, Name,, 'ListWrap(Params),, _),,
+    'ConstrDec('ConstrDecHead(Acc,, _:K,, Name,, 'ListWrap(Params),, _),,
         'ConstrBody(
-      'Some('SuperConstrInv( _,, SuperParamsList:K )) ,,S))
-    => storeConstructor(Name, 'ListWrap(Params), SuperParamsList,
+      'Some(FirstLine:K) ,,S))
+    => storeConstructor(Name, 'ListWrap(Params), FirstLine,
         S, methodType(Acc, Params, void))
 
-syntax K ::= "storeConstructor" "(" Id "," K "," K "," K "," Type ")"
+syntax K ::= "storeConstructor" "(" Id    // Class name
+                                "," K     // 'ListWrap(Params) - formal params
+                                "," K     // FirstLine - SyperConstrInv()
+                                "," K     // S - constructor body
+                                "," Type  // MethodType of the constructor
+                                ")"
 
 context storeConstructor(_, _, _, _,
     methodType(_, _:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}, _))
 
 rule [storeConstructor]:
-    <k>
-        storeConstructor(Name, 'ListWrap(Params), SuperParamsList, S, MethodType)
-        => storeMethod(
-          Name,
-          types(Params),
-          'ListWrap(Params),
-          'ExprStm(
-            'Invoke( 'Method('MethodName( BaseClass:Id )),, SuperParamsList )
-          ) ~> S,
-          MethodType
-        )
-      ...
-    </k>
-    <cuClass> Class:Id </cuClass>
-    <className> Class </className>
-    <extends> BaseClass </extends>
-when
-    Id2String(Class) =/=String "Object"
+    storeConstructor(Name, 'ListWrap(Params), FirstLine, S, MethodType)
+    => storeConstrImpl(
+      Name,
+      typesFromParams(Params),
+      'ListWrap(Params),
+      FirstLine,
+      S,
+      MethodType
+    )
 
-rule [storeConstructorClassObject]:
+syntax K ::= "storeConstrImpl" "("
+                              Id ","
+                              K "," //will evalute to Types - a syntactic list of types
+                              K ","
+                              K "," // this(), super() of .K - constructor first line
+                              K "," // S - constructor body
+                              Type
+                           ")"
+
+context storeConstrImpl(_, _, _, _, _,
+    methodType(_, _:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}, _))
+
+rule [storeConstrImpl]:
     <k>
-        storeConstructor(Name, 'ListWrap(Params), _, S, MethodType)
-        => storeMethod(
-          Name,
-          types(Params),
-          'ListWrap(Params),
-          S,
-          MethodType
-        )
+      storeConstrImpl(Name, Ts:Types, 'ListWrap(Params), FirstLine, S, MethodType:Type) => .
       ...
     </k>
     <cuClass> Class:Id </cuClass>
     <className> Class </className>
-when
-    Id2String(Class) ==String "Object"
+    <methods>
+      Env:Map => Env[
+        constrClosure(Class, 'ListWrap(Params), FirstLine, S) :: MethodType / sig(Name,Ts)
+      ]
+    </methods>
 
 rule [FieldDecDesugar]:
     (. => 'FieldDec(SomeK,, TypeK,, 'ListWrap(K1))) ~>

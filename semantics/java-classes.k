@@ -91,9 +91,10 @@ rule [NewInstance]:
         'ListWrap( Vals:List{KResult} ),,
         _:K
       ) ~> K
-      => create(ClassName) ~> storeObj
-         ~> invokeConstructor(ClassName, Vals)
-         ~> 'Return('Some('This( .List{K} )))
+      => create(ClassName)
+        ~> storeObj
+        ~> invokeConstr(ClassName, Vals)
+        ~> 'Return('Some('This( .List{K} )))
     </k>
     <env> Env => . </env>
     <control>
@@ -160,20 +161,14 @@ rule [storeObj]:
       ...
     </store>
 
-syntax K ::= "invokeConstructor" "(" Id "," List{K} ")"
+syntax K ::= "invokeConstr" "(" Id "," List{K} ")"
 
-rule [invokeConstructor]:
-    <k>
-      invokeConstructor(ClassName, Vals)
-      => K
-         ~> 'ExprStm('Invoke(
-              'Method('MethodName( ClassName )),,
-              'ListWrap( Vals )
-            ))
-      ...
-    </k>
-    <className> ClassName </className>
-    <instanceInit> K </instanceInit>
+rule [invokeConstr]:
+    invokeConstr(ClassName, Vals)
+    => 'ExprStm('Invoke(
+          'Method('MethodName( ClassName )),,
+          'ListWrap( Vals )
+        ))
 
 /*@ \subsection{Instance Of}
 Like in untyped KOOL. */

@@ -109,6 +109,15 @@ syntax RawVal ::= "objectClosure" "(" Int //OL - object location
                     K ","    // 'ListWrap(Params) - params
                     K        // S - method body
                   ")"
+                | "constrClosure" "("
+                    Id ","   // Class - class defining the method
+                    K ","    // 'ListWrap(Params) - params
+                    K ","    // first line - either:
+                             //   'SuperInv - superclass constructor invocation
+                             //   'AltConstrInv - alternate this class consturctor invocation
+                             //   .K - none, if this class is Object
+                    K        // S - method body
+                  ")"
 
 syntax RefType ::= "arrayOf" Type
                   [prec(1) latex "{#1}\texttt{\char91\char93}"]

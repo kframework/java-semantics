@@ -120,7 +120,7 @@ rule getClassList(.) => .List{K}
 
 syntax K ::= "invokeImpl" "(" K   //lookupMethod statement, later methodClosure
                           "," Int //OL - object location
-                          "," K   //'ListWrap(ParamValues)
+                          "," K   //'ListWrap(ParamValues:KResult)
                           ")"
         [strict(1)]
 
@@ -199,13 +199,13 @@ rule [lookupMethodSignatureFixed]:
       Name,
       _,
       (sig(Name, types(SigTL)) |-> TV => .) _:Map,
-      methodClosure(OldMethodClass:Id, ParamsK:K, Body) :: methodType(Acc:AccessMode, SigTL, T)
+      MCClosure:RawVal :: methodType(Acc:AccessMode, SigTL, T)
       => 'If(
             isAccessibleForOverwriting(
-              OldMethodClass, Acc, ObjectClass, getMethodAccessMode(TV)
+              getMethConsClosureClass(MCClosure), Acc, ObjectClass, getMethodAccessMode(TV)
             ),,
             TV,,
-            methodClosure(OldMethodClass, ParamsK, Body) :: methodType(Acc, SigTL, T)
+            MCClosure :: methodType(Acc, SigTL, T)
           )
     )
 
@@ -285,6 +285,10 @@ rule [lookupMethodEnd]:
       .Map,
      TV:TypedVal
     ) => TV
+
+syntax K ::= "getMethConsClosureClass" "(" RawVal ")"
+rule getMethConsClosureClass( (_:KLabel)(Class,, _:List{K}) ) => Class
+        [structural anywhere]
 
 //Tests whether a method from a given class with a given access mode may be called from
 //the current object environment
@@ -375,5 +379,31 @@ rule [invokeImpl]:
       OL |-> objectClosure(NewOL:Int, Obj:Bag) :: _
       ...
     </store>
+
+rule [invokeConstrClosure]:
+    <k>
+      invokeImpl( constrClosure(Class, 'ListWrap(Params), FirstLine:K, Body) :: T, OL, K )
+      => invokeImpl(
+            methodClosure(Class, 'ListWrap(Params), FirstLine ~> IInit ~> Body) :: T, OL, K
+         )
+      ...
+    </k>
+    <className> Class </className>
+    <instanceInit> IInit:K </instanceInit>
+
+context 'SuperConstrInv(_,, 'ListWrap(_:List{KResult},, HOLE,, _) )
+
+rule [SuperConstrInv]:
+    <k>
+      'SuperConstrInv(_,, 'ListWrap( Vals:List{KResult} ))
+      => 'ExprStm('Invoke(
+                'Method('MethodName( BaseClass )),,
+                'ListWrap(Vals)
+          ))
+      ...
+    </k>
+    <crntClass> Class </crntClass>
+    <className> Class </className>
+    <extends> BaseClass </extends>
 
 end module
