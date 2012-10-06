@@ -41,7 +41,5 @@ todo:
   Field of array type special cases:
     - fields with array initializer
     - fields with C-style array declaration
-  - Tracing of instance init with inheritance. Strict tracing of operations order.
-    Add field tracing to constr_55 test.
 
 
