@@ -27,6 +27,8 @@ Part 2 - class init
   int a, b=..., c;
   int d=..., e, f=...;
   Test their values.
+212. Array fields with array initializer in the most complex fashion:
+Combination of multi field declaration, field with [] in declarator, array initializer.
 
 31. Field with initializer, then instance initializer, initializing the same field, then constructor.
 32. Instance initializer, then field initializer, initializing the same field, then constructor.
@@ -36,13 +38,4 @@ Part 2 - class init
 
 41. Three classes, all with fields with initializer and no-arg constructor. Test that the order is correct.
   All initializers print a message.
-
-todo:
-  Field of array type special cases:
-    - fields with array initializer
-    - fields with C-style array declaration
-  - interaction between InstInit and constructor arguments.
-    Should appen when instance init writes fields having the same name as constructor arguments.
-
-
 

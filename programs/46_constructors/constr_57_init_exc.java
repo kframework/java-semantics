@@ -31,7 +31,7 @@ class Tracer {
   }
 }
 
-public class constr_56_init_exc {
+public class constr_57_init_exc {
   public static void main(String[] args) {
     try {
       B b = new B();

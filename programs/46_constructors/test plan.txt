@@ -14,9 +14,13 @@ Testing class initialization sequence
 54. Two classes, superclass constructor call arguments are expressions using this constructor arguments,
   also calling methods that print something to the console.
 55. Two classes with initializer, field with initializer and constructor.
+  Trace execution within initializer, fields init, constructor
+  and super call expression. Fields and constructor arguments all have different names.
+56. Two classes with initializer, field with initializer and constructor.
   Trace execution within initializer, fields init, constructor.
-  and super call expression.
-56. Argument to super() throws an exception. Test that instance initializers
+  and super call expression. Fields and constructor arguments have the same name.
+  Fields in derived class hide fields in the base class.
+57. Argument to super() throws an exception. Test that instance initializers
   are not executed on neither base nor derived class. Do this by printing
   something in the instance initializers.
 

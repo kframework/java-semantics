@@ -1,6 +1,7 @@
 /*
 Two classes with initializer, field with initializer and constructor.
-Trace execution within initializer, fields init, constructor.
+Trace execution within initializer, fields init, constructor
+and super call expression. Fields and constructor arguments all have different names.
 */
 
 class A {
@@ -13,8 +14,8 @@ class A {
 
   int b = new Tracer().f(2);
 
-  A(int a) {
-    System.out.println("A.A("+a+")");
+  A(int c) {
+    System.out.println("A.A("+c+")");
   }
 }
 
@@ -23,7 +24,7 @@ class B extends A {
     System.out.println("B.init 1");
   }
 
-  int c = new Tracer().f(3);
+  int d = new Tracer().f(3);
 
   {
     System.out.println("B.init 2");

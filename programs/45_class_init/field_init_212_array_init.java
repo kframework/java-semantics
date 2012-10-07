@@ -1,7 +1,6 @@
 /*
-Array initializer as part of array var declaration:
-
-282. Combination of multi var declaration, var with [] in declarator, array initializer.
+Array fields with array initializer in the most complex fashion:
+Combination of multi field declaration, field with [] in declarator, array initializer.
 */
 
 public class array_282_init_decl_complex_stm {
@@ -13,8 +12,10 @@ public class array_282_init_decl_complex_stm {
 }
 
 class main {
+
+  int[] v = {1, 2}, m[] = {{3,4}, {5+6}, null}, m2[] = {{7}, {}, null};
+
   main() {
-    int[] v = {1, 2}, m[] = {{3,4}, {5+6}, null}, m2[] = {{7}, {}, null};
     printArray(v);
     printMatrix(m);
     printMatrix(m2);
