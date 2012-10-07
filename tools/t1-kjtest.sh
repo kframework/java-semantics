@@ -16,7 +16,7 @@ if [ $# == 0 ] || [ $1 != "-clean" ];
 fi
 
 if [ $# -lt $STARTARG ]; then
-    $TOOLS_DIR/st-kjtest.sh ${@} $TOOLS_DIR/../programs/
+    $TOOLS_DIR/t1-kjtest.sh ${@} $TOOLS_DIR/../programs/
     exit
 fi
 
