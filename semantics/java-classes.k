@@ -90,28 +90,21 @@ rule [NewInstance]:
         class ClassName:Id,,
         'ListWrap( Vals:List{KResult} ),,
         _:K
-      ) ~> K
+      )
       => create(ClassName)
         ~> storeObj
-        ~> invokeConstr(ClassName, Vals)
-        ~> 'Return('Some('This( .List{K} )))
+        ~> restoreEnvAndObj(Env, Obj)
+        ~> invokeConstr(L, ClassName, Vals)
+        ~> typedLookup(L)
+      ...
     </k>
     <env> Env => . </env>
-    <control>
-      C:Bag
-      <crntObj>
-        Obj
-        =>  <crntClass> .K </crntClass>
-            <envStack> .List </envStack>
-            <location> L </location>
-      </crntObj>
-      <return> T => class ClassName </return>
-      <stack>
-        . => ListItem((return, .K, .K, K, Env,
-                       C <return> T </return> <crntObj> Obj </crntObj>))
-        ...
-      </stack>
-    </control>
+    <crntObj>
+      Obj
+      =>  <crntClass> .K </crntClass>
+          <envStack> .List </envStack>
+          <location> L </location>
+    </crntObj>
     <nextLoc> L => L +Int 1 </nextLoc>
 
 syntax K ::= "create" "(" K ")"
@@ -161,12 +154,19 @@ rule [storeObj]:
       ...
     </store>
 
-syntax K ::= "invokeConstr" "(" Id "," List{K} ")"
+syntax K ::= "restoreEnvAndObj" "(" Map "," Bag ")"
+
+rule [restoreEnvAndObj]:
+    <k> restoreEnvAndObj(Env, Obj) => . ...</k>
+    <env> _ => Env </env>
+    <crntObj> _ => Obj </crntObj>
+
+syntax K ::= "invokeConstr" "(" Int "," Id "," List{K} ")"
 
 rule [invokeConstr]:
-    invokeConstr(ClassName, Vals)
+    invokeConstr(OL, ClassName, Vals)
     => 'ExprStm('Invoke(
-          'Method('MethodName( ClassName )),,
+          'Method('MethodName( typedLookup(OL),, ClassName )),,
           'ListWrap( Vals )
         ))
 

@@ -27,6 +27,12 @@ Testing class initialization sequence
 61. A class with three constructors. Chain all of them, explicit call to no-args super() at last.
 Instantiate three objects, using each constructor as primary one. Trace calls
 both in the constructor arguments and in the constructor body.
+No instance fields/initializers.
+
+62. A class with three constructors. Chain all of them, explicit call to no-args super() at last.
+Instantiate three objects, using each constructor as primary one. Trace calls
+both in the constructor arguments and in the constructor body.
+Instance initializers with tracing.
 
 71. Class A with an instance initializer with a trace. No constructor.
   Call it explicitly, from subclass implicitly, from subclass explicitly.
@@ -40,16 +46,35 @@ both in the constructor arguments and in the constructor body.
   - instantiating B < A, by super().
   - instantiating A, by this() - constructors should be chained, with explicit cast to most
     specific type.
-83. super() access modes.
-  - class a.A with four constructors:
+
+83. Access modes of super() and this():
+  - class a.A with constructors:
+    - public A(): calls this(byte)
     - private A(byte)
     - package A(short)
     - protected A(int)
     - public A(long)
-  - class a.B < A. Instantiate with super(byte).
-  - class b.C < A. Instantiate with super(byte).
-  - class a.Test1. instantiate A with byte.
-  - class b.Test2. instantiate A with byte.
+  - class a.B < A. Calls super(byte).
+  - class b.C < A. Calls super(byte).
+  - Instantiate A(), B(), C() from main.
+
+84. Access of constructors in a new Class(...) expression:
+  - class a.A with:
+    - public A()
+    - private A(byte)
+    - package A(short)
+    - protected A(int)
+    - public A(long)
+    - privateNew - calls new A(byte)
+  - class a.B < A:
+    - packageProtectedNew: calls new A(byte)
+  - class b.C < A:
+    - protectedNew: calls new A(byte)
+  - class a.TestPackage:
+    - method packageNew: calls new A(byte)
+  - class b.TestPublic:
+    - method publicNew: calls new A(byte)
+  - main: calls all test methods.
 
 Note:
   An attempt of a constructor to invoke itself recursively results in a compile-time error.

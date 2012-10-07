@@ -1,0 +1,10 @@
+1. Bug. Repeated evaluation of programs with compile-time errors without -clean attribute gives error
+  first time, and ok the second one. This happens when there is an error in the semantics too and k-java
+  don't output anything.
+
+2. Implement one more status message after running a test: timed out.
+
+3. When multifile tests are run, changes in the test are not detected.
+
+4. Some unexpected files are created in the semantics dir when we run kjtest.sh with argument
+  one multi-file test.

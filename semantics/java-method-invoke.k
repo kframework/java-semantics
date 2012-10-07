@@ -1,6 +1,7 @@
 module JAVA-METHOD-INVOKE
     imports JAVA-PROCESS-CLASSES
     imports JAVA-CLASSES
+    imports JAVA-STATEMENTS
 
 /*@\subsection{Method invocation}
 The method lookup is the same as in untyped KOOL.
@@ -384,12 +385,28 @@ rule [invokeConstrClosure]:
     <k>
       invokeImpl( constrClosure(Class, 'ListWrap(Params), FirstLine:K, Body) :: T, OL, K )
       => invokeImpl(
-            methodClosure(Class, 'ListWrap(Params), FirstLine ~> IInit ~> Body) :: T, OL, K
+            methodClosure(Class, 'ListWrap(Params),
+              FirstLine
+              ~>  #if getKLabel(FirstLine) ==KLabel 'AltConstrInv
+                    #then .K
+                    #else freshEnv(IInit)
+                  #fi
+              ~> Body
+            ) :: T, OL, K
          )
       ...
     </k>
     <className> Class </className>
     <instanceInit> IInit:K </instanceInit>
+
+//executes the given computation in a fresh environment, then restores the original environment.
+syntax K ::= "freshEnv" "(" K ")"
+rule [freshEnv]:
+    <k>
+      freshEnv(K) => K ~> env(Env)
+      ...
+    </k>
+    <env> Env:Map => . </env>
 
 context 'SuperConstrInv(_,, 'ListWrap(_:List{KResult},, HOLE,, _) )
 
@@ -405,5 +422,18 @@ rule [SuperConstrInv]:
     <crntClass> Class </crntClass>
     <className> Class </className>
     <extends> BaseClass </extends>
+
+context 'AltConstrInv(_,, 'ListWrap(_:List{KResult},, HOLE,, _) )
+
+rule [AltConstrInv]:
+    <k>
+      'AltConstrInv(_,, 'ListWrap( Vals:List{KResult} ))
+      => 'ExprStm('Invoke(
+                'Method('MethodName( Class )),,
+                'ListWrap(Vals)
+          ))
+      ...
+    </k>
+    <crntClass> Class </crntClass>
 
 end module

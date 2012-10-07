@@ -2,21 +2,17 @@
 A class with three constructors. Chain all of them, explicit call to one-arg super() at last.
 Instantiate three objects, using each constructor as primary one. Trace calls
 both in the constructor arguments and in the constructor body.
+No instance fields/initializers.
 */
 
 class A {
-  {
-    System.out.println("A.init");
-  }
+
   A(int a) {
     System.out.println("A.A("+a+")");
   }
 }
 
 class B extends A {
-  {
-    System.out.println("B.init");
-  }
 
   B(int a) {
     super(new Tracer().f(a));
@@ -41,11 +37,14 @@ class Tracer {
   }
 }
 
-public class constr_61_this_chaining {
+public class constr_61_this_chain {
   public static void main(String[] args) {
     B b1 = new B(1,10,100);
+    System.out.println();
     B b2 = new B(2,20);
+    System.out.println();
     B b3 = new B(3);
+    System.out.println();
     System.out.println("Done!");
   }
 }

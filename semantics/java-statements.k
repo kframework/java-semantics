@@ -150,11 +150,11 @@ rule [VarListDecDesugar]:
       [structural]
 
 rule [VarDecWithInitDesugar]:
-    'LocalVarDec(TypeK,, 'ListWrap('VarDec(X1:Id,,K3:K)))
+    'LocalVarDec(TypeK,, 'ListWrap('VarDec(X1:Id,,InitExp:K)))
     => 'LocalVarDec(TypeK,, 'ListWrap('VarDec(X1:Id)))
-        ~> 'ExprStm('Assign('ExprName(X1),, K3))
+        ~> 'ExprStm('Assign('ExprName(X1),, InitExp))
 when
-    getKLabel(K3) =/=KLabel 'ArrayInit
+    getKLabel(InitExp) =/=KLabel 'ArrayInit
       [structural]
 
 /*In Java current version of semantics only int and boolean primitive

@@ -3,7 +3,7 @@ Array fields with array initializer in the most complex fashion:
 Combination of multi field declaration, field with [] in declarator, array initializer.
 */
 
-public class array_282_init_decl_complex_stm {
+public class field_init_212_array_init {
 
   public static void main(String[] args) {
     new main();

@@ -306,4 +306,34 @@ rule [InstanceInitSave]:
     <instanceInit>... . => K </instanceInit>
         [structural]
 
+//@ \subsection{Interplay of fields and arrays}
+
+//The following three rules are copy-paste adaptations from rules related to local vars,
+//from java-statements.
+
+//desugaring of C-style array declarators
+
+rule [ArrayFieldDecIdDesugar]:
+    'FieldDec(
+      _,,
+      (T:Type => arrayOf T),,
+      'ListWrap('VarDec('ArrayVarDecId(
+          X:Id,,
+          'ListWrap(('Dim(.List{K}) => .List{K}) ,,_)
+      ),, _ //possible initializer
+    )))
+
+rule [ArrayFieldDecIdDiscard]:
+    'FieldDec(_,, T,, 'ListWrap('VarDec(
+        ( 'ArrayVarDecId( X,, 'ListWrap(.List{K}) ) => X ),,
+        _ //possible initializer
+    )))
+
+//desugaring fields with ArrayInit
+rule [FieldDecWithArrayInitDesugar]:
+    'FieldDec(_,, T,, 'ListWrap('VarDec(
+      X,,
+      ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK)) )
+    )))
+
 end module
