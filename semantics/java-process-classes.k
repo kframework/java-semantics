@@ -275,7 +275,8 @@ rule [storeConstrImpl]:
     <className> Class </className>
     <methods>
       Env:Map => Env[
-        constrClosure(Class, 'ListWrap(Params), FirstLine, S) :: MethodType / sig(Name,Ts)
+        constrClosure(Class, 'ListWrap(Params), FirstLine, S) :: MethodType
+          / sig(getConsName(Name), Ts)
       ]
     </methods>
 
@@ -335,5 +336,9 @@ rule [FieldDecWithArrayInitDesugar]:
       X,,
       ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK)) )
     )))
+
+//get internal constructor name from a class name
+syntax K ::= "getConsName" "(" Id ")" [function]
+rule getConsName(X:Id) => String2Id("$cons$" +String Id2String(X)) [structural anywhere]
 
 end module

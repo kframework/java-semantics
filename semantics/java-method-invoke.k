@@ -414,7 +414,7 @@ rule [SuperConstrInv]:
     <k>
       'SuperConstrInv(_,, 'ListWrap( Vals:List{KResult} ))
       => 'ExprStm('Invoke(
-                'Method('MethodName( BaseClass )),,
+                'Method('MethodName( getConsName(BaseClass) )),,
                 'ListWrap(Vals)
           ))
       ...
@@ -429,7 +429,7 @@ rule [AltConstrInv]:
     <k>
       'AltConstrInv(_,, 'ListWrap( Vals:List{KResult} ))
       => 'ExprStm('Invoke(
-                'Method('MethodName( Class )),,
+                'Method('MethodName( getConsName(Class) )),,
                 'ListWrap(Vals)
           ))
       ...

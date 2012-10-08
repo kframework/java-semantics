@@ -29,14 +29,15 @@ with methods with same name and return type void.
   preprocessing at runtime, access modes have a runtime semantics just in some peculiar cases,
   particularly in context of overwriting and overloading. See the test plan
   in the directory 43_method_access_mode for details.
+15. Classes, non-static members, object initialization.
+  With this one, non-static & non-abstract semantics for classes is complete.
 
 
 Major features yet to be implemented:
-1. Initialization sequence of an object. (right now we have a simplified semantics from kool)
-2. Abstract classes and interfaces.
-3. Static members.
-4. Packages.
-5. Inner classes (including nested, local and anonymous classes).
+1. Abstract classes and interfaces.
+2. Static members.
+3. Packages.
+4. Inner classes (including nested, local and anonymous classes).
 
 
 Limitations:

@@ -1,5 +1,6 @@
 module JAVA-CLASSES
     imports JAVA-CORE
+    imports JAVA-PROCESS-CLASSES
     imports JAVA-EXPRESSIONS
     imports JAVA-STATEMENTS
     imports JAVA-ARRAYS
@@ -166,7 +167,7 @@ syntax K ::= "invokeConstr" "(" Int "," Id "," List{K} ")"
 rule [invokeConstr]:
     invokeConstr(OL, ClassName, Vals)
     => 'ExprStm('Invoke(
-          'Method('MethodName( typedLookup(OL),, ClassName )),,
+          'Method('MethodName( typedLookup(OL),, getConsName(ClassName) )),,
           'ListWrap( Vals )
         ))
 
