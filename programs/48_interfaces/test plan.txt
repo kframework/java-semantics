@@ -17,15 +17,15 @@ Tests
 
   Part 1, interface cast and instanceof
 
-11. A < Intf, B. Test cast and instanceof among (A,Intf) and (B, Intf).
-12. B < A < Intf. Test cast and instanceof among (A,Intf) and (B, Intf).
-13. B < A < (InterP, InterQ). Test cast and instanceof among
-  (A,IntetP), (A,IntetQ), (B,IntetP), (B,IntetP)
+11. B < I1, A. Test cast and instanceof among (A,I1) and (B, I1).
+12. B < A < I1. Test cast and instanceof among (A,I1) and (B, I1).
+13. B < A < (I1, I2). Test cast and instanceof among
+  (A,I1), (A,I2), (B,I1), (B,I2)
 14. A < InterSub < InterBase. Test cast and instanceof among all three pairs
   where possible.
-15. A < InterSub < (Inter1, Inter2). Test cast and instanceof
-  among (A, Inter1), (A, Inter2), (InterSub, Inter1), (Inter1, Inter2)
-16. A < (IntA), B < (A, IntB1, IntB2, IntB3). Test that b can be cast to all four interfaces.
+15. IC < (IA, IB). C < IC, B < IB, A < IA Test instanceof
+  among (IA)A, (IB)B, (IC)C on one side and (IA, IB, IC) on other.
+16. A < (IA), B < (A, IB1, IB2, IB3). Test that b is instanceof all four interfaces.
 
   Part 2. Interfaces with methods. One interface involved.
 
