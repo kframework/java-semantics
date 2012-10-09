@@ -15,6 +15,7 @@ Individual tests:
 16. Field default values. Class with fields of all relevant types, without initializer.
   Test their value.
 17. Multifield. One field declaration with multiple fields.
+18. Final field. A simple final field. Initialized in constructor. Null semantics.
 
 Already tested in other suites:
   - catch param hiding a field

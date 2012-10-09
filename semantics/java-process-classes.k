@@ -3,7 +3,7 @@ module JAVA-PROCESS-CLASSES
 
 //no semantics for 'Abstract and 'NoMethodBody required
 //existing semantics for methods covers them too
-syntax KLabel ::= 'Abstract | 'NoMethodBody
+syntax KLabel ::= 'ThrowsDec | 'Abstract | 'NoMethodBody
 
 //@process access modes
 rule 'Public(.List{K}) => public        [structural anywhere]

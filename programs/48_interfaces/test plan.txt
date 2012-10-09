@@ -1,0 +1,81 @@
+Interfaces with just abstract methods.
+
+High-level plan:
+Part 1, interface cast and instanceof.
+Part 2. Interfaces with methods. One interface involved.
+Part 3. Interfaces with methods. Multiple interfaces. Multiple inheritance of interfaces.
+Part 4. Other concerns:
+  - Access methods from Object() through an interface. According to JLS $9.2 this is possible.
+  - Access modes - test that all interface methods are public.
+
+Important note:
+  return type substitution ($8.4.5) is introduced in Java 5, thus is not supported
+    in this version of semantics.
+
+
+Tests
+
+  Part 1, interface cast and instanceof
+
+11. A < Intf, B. Test cast and instanceof among (A,Intf) and (B, Intf).
+12. B < A < Intf. Test cast and instanceof among (A,Intf) and (B, Intf).
+13. B < A < (InterP, InterQ). Test cast and instanceof among
+  (A,IntetP), (A,IntetQ), (B,IntetP), (B,IntetP)
+14. A < InterSub < InterBase. Test cast and instanceof among all three pairs
+  where possible.
+15. A < InterSub < (Inter1, Inter2). Test cast and instanceof
+  among (A, Inter1), (A, Inter2), (InterSub, Inter1), (Inter1, Inter2)
+16. A < (IntA), B < (A, IntB1, IntB2, IntB3). Test that b can be cast to all four interfaces.
+
+  Part 2. Interfaces with methods. One interface involved.
+
+21. Basic interface test.
+  Interface Intf:
+    - void f()
+    - void g()
+  - class A < Intf:
+    - implements f, g
+  - main:
+    - call f, g through interface and through A.
+
+22. Interface polymorphism.
+  Interface Intf:
+    - void f()
+    - void g()
+  - class A < Intf:
+    - implements f, g
+  - class B < Intf:
+    - implements f, g
+  - main:
+    - call (Intf)A.f(), (Intf)A.g(), (Intf)B.f(), (Intf)B.g(), use just one var.
+
+23. Case B < A < Intf A don't implement interface all methods. One method is
+  not mentioned in A, the other one is redeclared abstract, the third one is implemented.
+  They are implemented by subclass B. Call the method through Intf, A, B.
+
+24. Case B < (A, Intf). Method f() is declared in Intf, implemented by A.
+  (Method declared on one path, implemented on other one).
+  Add another method implemented by B.
+
+25. Interfaces and overloading.
+  A < Intf. two versions of f(...) in intf, third, the most specific one - in A.
+
+  Part 3. Interfaces with methods. Multiple interfaces.
+
+31. A < (Inter1, Inter2). call all interface methods through Inter1, Inter2.
+32. A < (Inter1, Inter2), one method is common, others are different.
+33. A < Inter1 < (Inter2, Inter3). call through all interfaces.
+34. A < InterA, B < (A, InterB) One method is common across interfaces.
+  Call through interfaces.
+35. A < Inter1. Inter1 < (Inter2, Inter4). (Inter2, Inter3) < Inter4.
+  Each interface have a specific method. Some methods are redeclared.
+36. Method Overloading through multiple interface inheritance.
+  A < Inter1 < (Inter2, Inter3). Each have a specific version of f(). Test all cases.
+
+  Part 4. Other concerns.
+
+41. Access methods inherited from object. A < I1 < I2. Test that both I1 and I2
+  have access to equals() and toString().
+42. Interface methods are public.
+  A < pack.I1. Access I1 methods from main.
+
