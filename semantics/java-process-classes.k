@@ -248,31 +248,8 @@ context storeConstructor(_, _, _, _,
     methodType(_, _:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}, _))
 
 rule [storeConstructor]:
-    storeConstructor(Name, 'ListWrap(Params), FirstLine, S, MethodType)
-    => storeConstrImpl(
-      Name,
-      typesFromParams(Params),
-      'ListWrap(Params),
-      FirstLine,
-      S,
-      MethodType
-    )
-
-syntax K ::= "storeConstrImpl" "("
-                              Id ","
-                              K "," //will evalute to Types - a syntactic list of types
-                              K ","
-                              K "," // this(), super() of .K - constructor first line
-                              K "," // S - constructor body
-                              Type
-                           ")"
-
-context storeConstrImpl(_, _, _, _, _,
-    methodType(_, _:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}, _))
-
-rule [storeConstrImpl]:
     <k>
-      storeConstrImpl(Name, Ts:Types, 'ListWrap(Params), FirstLine, S, MethodType:Type) => .
+      storeConstructor(Name, 'ListWrap(Params), FirstLine, S, MethodType) => .
       ...
     </k>
     <cuClass> Class:Id </cuClass>
@@ -280,7 +257,7 @@ rule [storeConstrImpl]:
     <methods>
       Env:Map => Env[
         constrClosure(Class, 'ListWrap(Params), FirstLine, S) :: MethodType
-          / sig(getConsName(Name), Ts)
+          / sig(getConsName(Name), typesFromParams(Params))
       ]
     </methods>
 
