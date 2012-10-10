@@ -2,7 +2,7 @@
 A < (IA), B < (A, IB1, IB2, IB3). Test that b is instanceof all four interfaces.
 */
 
-public class interface_06_hierarchy_tree {
+public class interface_16_instof_hierarchy_tree {
   public static void main(String[] args) {
     IA b = new B();
     System.out.println("B instanceof IA "+ (b instanceof IA));

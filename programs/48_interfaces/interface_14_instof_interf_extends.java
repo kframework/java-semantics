@@ -3,7 +3,7 @@ A < InterSub < InterBase. Test cast and instanceof among all three pairs
   where possible.
 */
 
-public class interface_04_interf_extends {
+public class interface_14_instof_interf_extends {
   public static void main(String[] args) {
     A a = new A();
     System.out.println("A instanceof InterBase "+ (a instanceof InterBase));

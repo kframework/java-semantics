@@ -1,8 +1,8 @@
 /*
-B < I1, A. Test cast and instanceof among (A,I1) and (B, I1).
+B < A < I1. Test cast and instanceof among (A,I1) and (B, I1).
 */
 
-public class interface_01_cast {
+public class interface_12_instof_chain {
   public static void main(String[] args) {
     A a = new A();
     B b = new B();
@@ -43,6 +43,6 @@ public class interface_01_cast {
 
 interface I1 {}
 
-class A {}
+class A implements I1 {}
 
-class B extends A implements I1 {}
+class B extends A {}

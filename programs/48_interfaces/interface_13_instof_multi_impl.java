@@ -3,7 +3,7 @@ B < A < (I1, I2). Test cast and instanceof among
   (A,I1), (A,I2), (B,I1), (B,I2)
 */
 
-public class interface_03_multi_impl {
+public class interface_13_instof_multi_impl {
   public static void main(String[] args) {
     A a = new A();
     B b = new B();

@@ -3,7 +3,7 @@ IC < (IA, IB). C < IC, B < IB, A < IA Test instanceof
   among (IA)A, (IB)B, (IC)C on one side and (IA, IB, IC) on other.
 */
 
-public class interface_05_interf_multi_ext {
+public class interface_15_instof_interf_multi_ext {
   public static void main(String[] args) {
     IA a = new A();
     IB b = new B();
