@@ -18,9 +18,8 @@ rule [CompilationUnit]:
 /*@ \subsection{Class declaration}
 Like in untyped KOOL. */
 
-rule [ClassDecWithoutExtendsDesugar]:
-    'ClassDec('ClassDecHead(_:K,, Class:Id,,
-        _:K,,
+rule [ClassDecNoExtendsDesugar]:
+    'ClassDec('ClassDecHead(_:K,, Class:Id,, _:K,,
         ( 'None(_)
           => 'Some('SuperDec('ClassType(class String2Id("Object"),, 'None(.List{K}))))
         ),,
@@ -28,12 +27,21 @@ rule [ClassDecWithoutExtendsDesugar]:
     )
         [structural]
 
+rule [ClassDecNoImplementsDesugar]:
+    'ClassDec('ClassDecHead(_:K,, Class,, _:K,, _:K,,
+        ( 'None(.List{K}) => 'Some('ImplementsDec('ListWrap(.List{K}))) )
+      ),, _:K
+    )
+        [structural]
+
+//todo remove aux
 rule [ClassDec]:
       'ClassDec('ClassDecHead('ListWrap(ClassModifiers:List{K}),, Class,, _:K,,
           'Some('SuperDec('ClassType(class BaseClass:Id,, _:K))),,
-          _:K),,
+          'Some('ImplementsDec('ListWrap(ImplTypes:List{KResult})))
+        ),,
         'ClassBody( CBody:K )
-      )  => classDecImpl(ClassModifiers, Class, BaseClass,
+      )  => classDecImpl(ClassModifiers, Class, BaseClass, ImplTypes, classMetaT,
               //public empty constructor
               //will be overwritten by any other constructor in S
               'ConstrDec(
@@ -50,10 +58,42 @@ rule [ClassDec]:
             )
         [structural]
 
-syntax K ::= "classDecImpl" "(" List{K} "," Id "," Id "," K ")"
+rule [InterfaceDecNoExtendsDesugar]:
+    'InterfaceDec('InterfaceDecHead(_:K,, Class,, _:K,,
+        ( 'None(.List{K}) => 'Some('ExtendsInterfaces('ListWrap(.List{K}))) )
+      ),, _:K
+    )
+        [structural]
 
+rule [InterfaceDec]:
+    'InterfaceDec(
+      'InterfaceDecHead(
+        'ListWrap(ClassModifiers:List{K}),,
+        Class,,
+        _:K,,
+        'Some('ExtendsInterfaces('ListWrap(ImplTypes)))
+      ),,
+      'ListWrap(CBody)
+    ) => classDecImpl(ClassModifiers, Class, .K, ImplTypes, interfaceMetaT, CBody)
+        [structural]
+
+syntax K ::= "aux" "(" List{K} ")"
+syntax K ::= "classDecImpl" "("
+                                List{K}       // ClassModifiers, .List{K} for Object
+                            "," Id            // Class
+                            "," Id            // BaseClass
+                            "," List{KResult} // ImplTypes
+                            "," MetaType      // classCT or interfaceCT
+                            "," K             // CBody
+                          ")"
+
+//todo use ImplTypes
 rule [classDecImpl]:
-    <k> classDecImpl(_, Class, BaseClass, CBody) => checkForMain(CBody) ...</k>
+    <k>
+      classDecImpl(_, Class, BaseClass, ImplTypes, MetaT:MetaType, CBody)
+        => checkForMain(CBody)
+      ...
+    </k>
     <cuPackage> Pack:Package </cuPackage>
     <crntClass> _ => Class </crntClass>
     <classes>
@@ -63,13 +103,15 @@ rule [classDecImpl]:
                 <extends> BaseClass </extends>
                 <package> Pack </package>
                 <declarations> CBody </declarations>
+                //bug: uncommenting this line causes infinite loop
+                //<metaType> MetaT </metaType>
                 ...
               </class> )
       ...
     </classes>
 
 rule [classDecImplObject]:
-    <k> classDecImpl(.List{K}, Class, BaseClass, CBody) => . ...</k>
+    <k> classDecImpl(.List{K}, Class, BaseClass, _, classMetaT, CBody) => . ...</k>
     <cuPackage> Pack </cuPackage>
     <classes>
       ...
@@ -78,6 +120,8 @@ rule [classDecImplObject]:
                 <extends> .K </extends>
                 <package> Pack </package>
                 <declarations> CBody </declarations>
+                //bug: uncommenting this line causes infinite loop
+                //<metaType> classMetaT </metaType>
                 ...
               </class> )
       ...

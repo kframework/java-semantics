@@ -8,3 +8,6 @@
 
 4. Some unexpected files are created in the semantics dir when we run kjtest.sh with argument
   one multi-file test.
+
+5. Flush test-results.xml file after every written result. This way when runner is stopped
+  in the middle of execution, xml file will still have the results acquired so far.

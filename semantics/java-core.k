@@ -37,13 +37,15 @@ configuration <T color="red">
                 <br/>
                 <classes color="Fuchsia">
                    <class multiplicity="*" color="Fuchsia">
+                      <package> .K </package>
                       <className color="Fuchsia"> .K </className>
                       <extends color="Fuchsia"> .K </extends>
-                      <package> .K </package>
+                      <implements> .Set </implements>
                       <declarations color="purple"> .K </declarations>
                       <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>
-                      <instanceInit> .K </instanceInit>
                       <methods color="purple"> .Map </methods>
+                      <instanceInit> .K </instanceInit>
+                      <metaType> .K </metaType>
                    </class>
                 </classes>
                 <mainClass> .K </mainClass>
@@ -71,22 +73,6 @@ syntax Type ::= PrimitiveType
               | RefType
               | "void"
               | "rtType"
-
-/*@ \subsection{Values and results}
-These are similar to those of untyped SIMPLE, except that the array
-references and the function abstrations now also hold their types.
-These types are needed in order to easily compute the type of any
-value inthe language (see the auxiliary \texttt{typeOf} operation at
-the end of this module).  Note that our more-generous-than-needed
-syntax here allows function abstractions to take a list of expressions
-as parameters; in fact, the semantics will be given in a way that
-those expressions can only be typed identifiers.  Recall that the
-purpose of syntax in a \K definition is not to parse programs in order
-to reject those not satisfying the expected syntactic/typing
-conventions (this is what a static semantics does---see the statically
-typed SIMPLE), but only to parse programs ``enough'' to give them
-semantics.  In other words, the \K syntax is the ``syntax of the
-semantics''.  */
 
 syntax RawVal ::= Int | Bool | String
                 | "null"
@@ -134,6 +120,11 @@ syntax KResult ::= TypedVal | Type
 
 syntax AccessMode ::= "public" | "protected" | "package" | "private"
 syntax KResult ::= AccessMode
+
+//bug cannot call this construct ClassType:
+//collision between sort ClassType and KLabel 'ClassType
+//causes infinite loop on any program
+syntax MetaType ::= "classMetaT" | "interfaceMetaT"
 
 /*@ \subsubsection{Generic guard}
 A generic computational guard (should be builtin): it allows the

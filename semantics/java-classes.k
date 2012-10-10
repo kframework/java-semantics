@@ -6,7 +6,7 @@ module JAVA-CLASSES
     imports JAVA-ARRAYS
 
 //@ \subsection{Unused Labels}
-syntax KLabel ::= 'TypeImportOnDemandDec | 'PackageName | 'Final | 'Native
+syntax KLabel ::= 'TypeImportOnDemandDec | 'PackageName | 'Native
 
 /*@ \subsection{Object and method closures}
 The only change to untyped KOOL's values is that closures are now typed
@@ -24,6 +24,7 @@ when
         [structural anywhere]
 
 rule 'ClassOrInterfaceType(T,,_) => T [structural anywhere]
+rule 'InterfaceType(T,,_) => T        [structural anywhere]
 
 //@ \subsection{Auxiliary operations}
 
