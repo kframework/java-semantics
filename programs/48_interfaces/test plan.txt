@@ -7,6 +7,11 @@ Part 3. Interfaces with methods. Multiple interfaces. Multiple inheritance of in
 Part 4. Methods inherited from Object.
 Part 5. Access modes.
 
+Todo:
+
+Part 6. General picture of subtyping, including primitive types,
+  classes, arrays and interfaces.
+
 Important note:
   return type substitution ($8.4.5) is introduced in Java 5, thus is not supported
     in this version of semantics.

@@ -5,6 +5,9 @@ module JAVA-PROCESS-CLASSES
 //existing semantics for methods covers them too
 syntax KLabel ::= 'Final | 'ThrowsDec | 'Abstract | 'NoMethodBody
 
+//todo temp
+syntax KLabel ::= 'AbstractMethodDec
+
 //@process access modes
 rule 'Public(.List{K}) => public        [structural anywhere]
 rule 'Protected(.List{K}) => protected  [structural anywhere]
@@ -64,7 +67,7 @@ rule [ClassAnalyze]:
     <k> classAnalyze(Class) => tryInherit(Env) ~> Decls ...</k>
     <class>
       <className> Class </className>
-      <extends> BaseClass:Id </extends>
+      <extends> BaseClass </extends>
       <declarations> Decls:K => . </declarations>
       ...
     </class>

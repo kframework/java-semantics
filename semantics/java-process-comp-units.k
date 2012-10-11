@@ -34,16 +34,15 @@ rule [ClassDecNoImplementsDesugar]:
     )
         [structural]
 
-//todo remove aux
 rule [ClassDec]:
       'ClassDec('ClassDecHead('ListWrap(ClassModifiers:List{K}),, Class,, _:K,,
           'Some('SuperDec('ClassType(class BaseClass:Id,, _:K))),,
           'Some('ImplementsDec('ListWrap(ImplTypes:List{KResult})))
         ),,
         'ClassBody( CBody:K )
-      )  => classDecImpl(ClassModifiers, Class, BaseClass, ImplTypes, classMetaT,
-              //public empty constructor
-              //will be overwritten by any other constructor in S
+      )  => classDecImpl(ClassModifiers, Class, BaseClass, typesToSet(ImplTypes, .Set), classMetaT,
+              //default constructor
+              //if there is a no-args constructor in CBody, it will overwrite this one
               'ConstrDec(
                 'ConstrDecHead(
                   'ListWrap('Public(.List{K})),,
@@ -73,24 +72,24 @@ rule [InterfaceDec]:
         _:K,,
         'Some('ExtendsInterfaces('ListWrap(ImplTypes)))
       ),,
-      'ListWrap(CBody)
-    ) => classDecImpl(ClassModifiers, Class, .K, ImplTypes, interfaceMetaT, CBody)
+      CBody
+    ) => classDecImpl(ClassModifiers, Class, .K, typesToSet(ImplTypes, .Set),
+            interfaceMetaT, CBody)
         [structural]
 
-syntax K ::= "aux" "(" List{K} ")"
 syntax K ::= "classDecImpl" "("
                                 List{K}       // ClassModifiers, .List{K} for Object
                             "," Id            // Class
-                            "," Id            // BaseClass
-                            "," List{KResult} // ImplTypes
+                            "," K             // BaseClass for classes or .K for interfaces
+                            "," K             // typesToSet(ImplTypes, .Map)
                             "," MetaType      // classCT or interfaceCT
                             "," K             // CBody
                           ")"
+        [strict(4)]
 
-//todo use ImplTypes
 rule [classDecImpl]:
     <k>
-      classDecImpl(_, Class, BaseClass, ImplTypes, MetaT:MetaType, CBody)
+      classDecImpl(_, Class, BaseClassK:K, setKResult(TypeSet), MetaT:MetaType, CBody)
         => checkForMain(CBody)
       ...
     </k>
@@ -99,34 +98,21 @@ rule [classDecImpl]:
     <classes>
       ...
       ( . =>  <class>
-                <className> Class </className>
-                <extends> BaseClass </extends>
                 <package> Pack </package>
+                <className> Class </className>
+                <extends>
+                  #if Id2String(Class) =/=String "Object"
+                    #then BaseClassK
+                    #else .K
+                  #fi
+                </extends>
+                <implements> TypeSet </implements>
                 <declarations> CBody </declarations>
-                //bug: uncommenting this line causes infinite loop
-                //<metaType> MetaT </metaType>
+                <metaType> MetaT </metaType>
                 ...
               </class> )
       ...
     </classes>
-
-rule [classDecImplObject]:
-    <k> classDecImpl(.List{K}, Class, BaseClass, _, classMetaT, CBody) => . ...</k>
-    <cuPackage> Pack </cuPackage>
-    <classes>
-      ...
-      ( . =>  <class>
-                <className> Class </className>
-                <extends> .K </extends>
-                <package> Pack </package>
-                <declarations> CBody </declarations>
-                //bug: uncommenting this line causes infinite loop
-                //<metaType> classMetaT </metaType>
-                ...
-              </class> )
-      ...
-    </classes>
-when Id2String(Class) ==String "Object"
 
 /*@ \subsection{Method declaration} */
 
@@ -154,5 +140,13 @@ rule checkForMain('ListWrap((K => .List{K}),,_))
 when getKLabel(K) =/=KLabel 'MethodDec
 
 rule checkForMain('ListWrap(.List{K})) => .
+
+syntax K ::= "typesToSet" "(" List{K} //a list of class types "class Id"
+                          "," Set     //the result map
+                          ")"
+syntax KResult ::= "setKResult" "(" Set ")" //set wrapper of type KResult
+
+rule typesToSet((class Class => .List{K}),,_ , (_ (.Set => SetItem(Class) )))
+rule typesToSet(.List{K}, TypeSet:Set) => setKResult(TypeSet)
 
 end module

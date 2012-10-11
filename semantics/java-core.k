@@ -42,10 +42,10 @@ configuration <T color="red">
                       <extends color="Fuchsia"> .K </extends>
                       <implements> .Set </implements>
                       <declarations color="purple"> .K </declarations>
+                      <metaType> .K </metaType>
                       <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>
                       <methods color="purple"> .Map </methods>
                       <instanceInit> .K </instanceInit>
-                      <metaType> .K </metaType>
                    </class>
                 </classes>
                 <mainClass> .K </mainClass>
