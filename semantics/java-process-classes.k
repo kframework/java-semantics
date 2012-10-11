@@ -24,22 +24,25 @@ when        K =/=K public
 
 rule getAccessMode('ListWrap(.List{K})) => package
 
-//@ \section{Class list analyze}
-syntax K ::= "classListAnalyze" "("
+//@ \section{Process type list}
+syntax K ::= "processTypeList" "("
                                     Bag // the collection of <class> tags
                                 ")"
-           | "classAnalyze" "("
-                                Id  //the class to be analyzed
+           | "processTypeWithDepends" "("
+                                Id  //the class to be processed
+                            ")"
+           | "processType" "("
+                                Id  //the class to be processed
                             ")"
 
-rule [classListAnalyze]:
-    <k> . => classListAnalyze(Classes) </k>
+rule [processTypeList]:
+    <k> . => processTypeList(Classes) </k>
     <classes> Classes:Bag </classes>
-    <executionPhase> "ProcessCompUnits" => "ProcessClasses" </executionPhase>
+    <executionPhase> "ProcessCompUnits" => "ProcessTypes" </executionPhase>
 
-rule [classAnalyzeInit]:
-    (. => classAnalyze(Class))
-    ~>  classListAnalyze(
+rule [processTypeInit]:
+    (. => processTypeWithDepends(Class))
+    ~>  processTypeList(
           (<class>
             ...
             <className> Class:Id </className>
@@ -48,8 +51,8 @@ rule [classAnalyzeInit]:
           _:Bag
         )
 
-rule [classAnalyzeBaseClass]:
-    <k> (. => classAnalyze(BaseClass)) ~> classAnalyze(Class) ...</k>
+rule [processTypeBaseClass]:
+    <k> (. => processTypeWithDepends(BaseClass)) ~> processTypeWithDepends(Class) ...</k>
     <class>
       <className> Class </className>
       <extends> BaseClass:Id </extends>
@@ -63,8 +66,11 @@ rule [classAnalyzeBaseClass]:
 when
     Decls =/=K .K
 
-rule [ClassAnalyze]:
-    <k> classAnalyze(Class) => tryInherit(Env) ~> Decls ...</k>
+rule [ProcessType]:
+    <k>
+      processTypeWithDepends(Class) => tryInherit(Env) ~> Decls
+      ...
+    </k>
     <class>
       <className> Class </className>
       <extends> BaseClass </extends>
@@ -81,27 +87,28 @@ rule [ClassAnalyze]:
 when
     Decls =/=K .K
 
-rule [ClassAnalyzeObject]:
-    <k> classAnalyze(Class) => Decls ...</k>
+rule [ProcessTypeObjectClOrInterface]:
+    <k> processTypeWithDepends(Class) => Decls ...</k>
     <class>
       <className> Class </className>
+      <extends> .K </extends>
       <declarations> Decls:K => . </declarations>
       ...
     </class>
     <cuClass> _ => Class </cuClass>
 when
-    Id2String(Class) ==String "Object"
+    Decls =/=K .K
 
-rule [ClassAnalyzeDiscard]:
-    <k> classAnalyze(Class) => . ...</k>
+rule [ProcessTypeDiscard]:
+    <k> processTypeWithDepends(Class) => . ...</k>
     <class>
       <className> Class </className>
       <declarations> .K </declarations>
       ...
     </class>
 
-rule [classListAnalyzeDiscard]:
-    classListAnalyze(.) => .
+rule [ProcessTypeListDiscard]:
+    processTypeList(.) => .
 
 //inherits the methods of the base class, based on rules in JLS $8.4.8 paragraph 1
 syntax K ::= "tryInherit" "(" Map ")"

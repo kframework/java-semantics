@@ -27,7 +27,7 @@ rule [execute]:
     </k>
     <env> . </env>
     <mainClass> MainClass:Id </mainClass>
-    <executionPhase> "ProcessClasses" => "Execute" </executionPhase>
+    <executionPhase> "ProcessTypes" => "Execute" </executionPhase>
 
 //@ \section{Program stack}
 
