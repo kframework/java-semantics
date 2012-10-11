@@ -5,9 +5,6 @@ module JAVA-PROCESS-CLASSES
 //existing semantics for methods covers them too
 syntax KLabel ::= 'Final | 'ThrowsDec | 'Abstract | 'NoMethodBody
 
-//todo temp
-syntax KLabel ::= 'AbstractMethodDec
-
 //@process access modes
 rule 'Public(.List{K}) => public        [structural anywhere]
 rule 'Protected(.List{K}) => protected  [structural anywhere]
@@ -28,19 +25,22 @@ rule getAccessMode('ListWrap(.List{K})) => package
 syntax K ::= "processTypeList" "("
                                     Bag // the collection of <class> tags
                                 ")"
+           | "processTypeSet" "("
+                                  Set   // the set of Ids - implemented interface names
+                              ")"
            | "processTypeWithDepends" "("
-                                Id  //the class to be processed
+                                K  //the class to be processed, or .K if no processing is required
                             ")"
            | "processType" "("
                                 Id  //the class to be processed
                             ")"
 
-rule [processTypeList]:
+rule [StartProcessClassesPhase]:
     <k> . => processTypeList(Classes) </k>
     <classes> Classes:Bag </classes>
-    <executionPhase> "ProcessCompUnits" => "ProcessTypes" </executionPhase>
+    <computationPhase> ProcessCompUnitsPhase => ProcessClassesPhase </computationPhase>
 
-rule [processTypeInit]:
+rule [processTypeList]:
     (. => processTypeWithDepends(Class))
     ~>  processTypeList(
           (<class>
@@ -51,55 +51,32 @@ rule [processTypeInit]:
           _:Bag
         )
 
-rule [processTypeBaseClass]:
-    <k> (. => processTypeWithDepends(BaseClass)) ~> processTypeWithDepends(Class) ...</k>
+rule [ProcessTypeListDiscard]:
+    processTypeList(.) => .
+
+rule [processTypeSet]:
+    (. => processTypeWithDepends(Class)) ~> processTypeSet((SetItem(Class) => .) _)
+
+rule [processTypeSetDiscard]:
+    processTypeSet(.) => .
+
+rule [processTypeWithDepends]:
+    <k>
+      processTypeWithDepends(Class)
+      => processTypeWithDepends(BaseClassK) ~> processTypeSet(ISet) ~> processType(Class)
+      ...
+    </k>
     <class>
       <className> Class </className>
-      <extends> BaseClass:Id </extends>
-      ...
-    </class>
-    <class>
-      <className> BaseClass </className>
+      <extends> BaseClassK:K </extends>
+      <implements> ISet:Set </implements>
       <declarations> Decls:K </declarations>
       ...
     </class>
 when
     Decls =/=K .K
 
-rule [ProcessType]:
-    <k>
-      processTypeWithDepends(Class) => tryInherit(Env) ~> Decls
-      ...
-    </k>
-    <class>
-      <className> Class </className>
-      <extends> BaseClass </extends>
-      <declarations> Decls:K => . </declarations>
-      ...
-    </class>
-    <class>
-      <className> BaseClass </className>
-      <declarations> .K </declarations>
-      <methods> Env:Map </methods>
-      ...
-    </class>
-    <cuClass> _ => Class </cuClass>
-when
-    Decls =/=K .K
-
-rule [ProcessTypeObjectClOrInterface]:
-    <k> processTypeWithDepends(Class) => Decls ...</k>
-    <class>
-      <className> Class </className>
-      <extends> .K </extends>
-      <declarations> Decls:K => . </declarations>
-      ...
-    </class>
-    <cuClass> _ => Class </cuClass>
-when
-    Decls =/=K .K
-
-rule [ProcessTypeDiscard]:
+rule [processTypeWithDependsDiscard]:
     <k> processTypeWithDepends(Class) => . ...</k>
     <class>
       <className> Class </className>
@@ -107,34 +84,104 @@ rule [ProcessTypeDiscard]:
       ...
     </class>
 
-rule [ProcessTypeListDiscard]:
-    processTypeList(.) => .
+rule [processTypeWithDependsDiscard2]:
+    processTypeWithDepends(.K) => .K
+
+//todo test a curious case if not tested yet - interface inherited through a base class,
+//cast to that itnerface. Should fail.
+rule [ProcessType]:
+    <k>
+      processType(Class) => computeImplTrans(ISet) ~> tryInheritSet(ISet)
+          ~> tryInherit(BaseClassK) ~> Decls
+      ...
+    </k>
+    <class>
+      <className> Class </className>
+      <extends> BaseClassK </extends>
+      <implements> ISet </implements>
+      <implTrans> . => ISet </implTrans>
+      <declarations> Decls:K => . </declarations>
+      ...
+    </class>
+    <cuClass> _ => Class </cuClass>
+
+//compute <implTrans> cell - interfaces transitively implemented
+syntax K ::= "computeImplTrans" "(" Set ")"
+
+rule [computeImplTrans]:
+    <k>
+      (. => implTransUnion(ITrans, BaseItfITrans))
+      ~> computeImplTrans( (SetItem(BaseItf:Id) => .) _)
+      ...
+    </k>
+    <cuClass> Class </cuClass>
+    <className> Class </className>
+    <implTrans> ITrans:Set </implTrans>
+    <className> BaseItf </className>
+    <implTrans> BaseItfITrans:Set </implTrans>
+
+rule [computeImplTransDiscard]: computeImplTrans(.) => .
+
+//subsection implTransUnion, union of sets. Remove when +Set will be implemented
+syntax K ::= "implTransUnion" "(" Set "," Set ")"
+
+rule implTransUnion(S1:Set, SetItem(K:K) S2:Set) => implTransUnion(S1 SetItem(K), S2)
+when notBool(K in S1)
+
+rule implTransUnion(S1, SetItem(K) S2) => implTransUnion(S1, S2)
+when K in S1
+
+rule <k> implTransUnion(S1, .Set) => . ...</k>
+     <cuClass> Class </cuClass>
+     <className> Class </className>
+     <implTrans> _ => S1 </implTrans>
 
 //inherits the methods of the base class, based on rules in JLS $8.4.8 paragraph 1
-syntax K ::= "tryInherit" "(" Map ")"
+syntax K ::= "tryInheritSet" "(" Set ")"
+           | "tryInherit" "(" K ")"
+           | "tryInheritImpl" "(" Map ")"
            | "inherit" "(" Map ")"  //when checks are made, we are inheriting the method
 
-rule [tryInheritUnfold]:
-    <k> (. => tryInherit(MI)) ~> tryInherit( (MI:MapItem => .) _:MapItem _) ...</k>
+rule [tryInheritSet]:
+    (. => tryInherit(Class)) ~> tryInheritSet( (SetItem(Class) => .) _)
+
+rule [tryInheritSetDiscard]: tryInheritSet(.) => .
 
 rule [tryInherit]:
-    tryInherit(Sig:K |-> TV:TypedVal)
+    <k>
+      tryInherit(Class) => tryInheritImpl(Env)
+      ...
+    </k>
+    <className> Class </className>
+    <methods> Env:Map </methods>
+
+rule [tryInheritDiscard]:
+    tryInherit(.K) => .K
+
+rule [tryInheritImplUnfold]:
+    <k> (. => tryInheritImpl(MI)) ~> tryInheritImpl( (MI:MapItem => .) _:MapItem _) ...</k>
+
+rule [tryInheritImpl]:
+    tryInheritImpl(Sig:K |-> TV:TypedVal)
     => 'If(
           isInheritable(getMethodAccessMode(TV)),,
           inherit(Sig |-> TV),,
           .K
         )
 
+rule [tryInheritImplDiscard]: tryInheritImpl(.) => .
+
 syntax K ::= "isInheritable" "(" K ")" [strict]
 rule isInheritable(public) => true::bool
 rule isInheritable(protected) => true::bool
 
+//Object class cannot match this rule since it have public access mode
 rule [isInheritablePackage]:
     <k> isInheritable(package) => (P1 ==K P2)::bool ...</k>
     <cuClass> Class </cuClass>
     <class>
       <className> Class </className>
-      <extends> BaseClass </extends>
+      <extends> BaseClass:Id </extends>
       <package> P1:K </package>
       ...
     </class>
@@ -146,6 +193,8 @@ rule [isInheritablePackage]:
 
 rule isInheritable(private) => false::bool
 
+//todo if the same method is inherited say from base class ant interface,
+//we're in trouble
 rule [inherit]:
     <k> inherit(MI) => . ...</k>
     <cuClass> Class </cuClass>
@@ -176,6 +225,10 @@ rule [MethodDec]:
     => storeMethod(Name, typesFromParams(Params), 'ListWrap(Params), S,
           methodType(Acc, Params, ReturnType))
         [structural]
+
+rule [AbstractMethodDec]:
+    'AbstractMethodDec(_:K,, Ks:List{K})
+    => 'MethodDec('MethodDecHead('ListWrap('Abstract(.List{K})),, Ks),, 'NoMethodBody(.List{K}))
 
 syntax K ::= "storeMethod" "("
                               Id ","

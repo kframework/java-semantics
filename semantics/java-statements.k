@@ -3,7 +3,7 @@ module JAVA-STATEMENTS
 
 //@ \section{Initiation of execution}
 
-rule [execute]:
+rule [StartExecutionPhase]:
     <k> . =>
       //k-ast for new <MainClass>().main(new String[0]);
       'ExprStm(
@@ -27,7 +27,7 @@ rule [execute]:
     </k>
     <env> . </env>
     <mainClass> MainClass:Id </mainClass>
-    <executionPhase> "ProcessTypes" => "Execute" </executionPhase>
+    <computationPhase> ProcessClassesPhase => ExecutionPhase </computationPhase>
 
 //@ \section{Program stack}
 
@@ -570,7 +570,7 @@ rule [ThreadTermination]:
       </thread>
     => .)
     <busy> Busy:Set => Busy -Set keys(H) </busy>
-    <executionPhase> "Execute" </executionPhase>
+    <computationPhase> ExecutionPhase </computationPhase>
     <dissolveEmptyK> true </dissolveEmptyK>
 
 syntax K ::= "saveStackLayer" "("
@@ -593,7 +593,7 @@ rule [saveStackLayer]:
 rule [DissolveClasses]:
     (<classes> _:Bag </classes> => .)
     <threads> .Bag </threads>
-    <executionPhase> "Execute" </executionPhase>
+    <computationPhase> ExecutionPhase </computationPhase>
     <dissolveClasses> true </dissolveClasses>
 
 end module

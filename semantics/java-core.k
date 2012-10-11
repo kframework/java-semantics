@@ -41,6 +41,7 @@ configuration <T color="red">
                       <className color="Fuchsia"> .K </className>
                       <extends color="Fuchsia"> .K </extends>
                       <implements> .Set </implements>
+                      <implTrans> .Set </implTrans>
                       <declarations color="purple"> .K </declarations>
                       <metaType> .K </metaType>
                       <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>
@@ -52,13 +53,17 @@ configuration <T color="red">
                 //current compilation unit package
                 <cuPackage> .K </cuPackage>
                 <cuClass> .K </cuClass>
-                <executionPhase> "ProcessCompUnits" </executionPhase>
+                <computationPhase> ProcessCompUnitsPhase </computationPhase>
 
                 <dissolveEmptyK> true </dissolveEmptyK>
                 <dissolveClasses> true </dissolveClasses>
               </T>
 
 //@ \section{Identifiers}
+
+syntax ComputationPhase ::= "ProcessCompUnitsPhase"
+                          | "ProcessClassesPhase"
+                          | "ExecutionPhase"
 
 rule 'Id(Str) => String2Id(Str)     [anywhere]
 

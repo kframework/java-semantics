@@ -51,9 +51,32 @@ The subclass relation introduces a subtyping relation. */
 rule [subtypeClassRed]:
     <k> subtype( class Class1:Id, class Class:Id )
       => subtype( class Class2:Id, class Class ) ...</k>
-    <className> Class1 </className> <extends> Class2 </extends>
-when Class1 =/=K Class
+    <class>
+      <className> Class1 </className>
+      <extends> Class2 </extends>
+      ...
+    </class>
+    <class>
+      <className> Class </className>
+      <metaType> classMetaT </metaType>
+      ...
+    </class>
+when
+    Class1 =/=K Class
         [structural]
+
+rule [subtypeOfInterface]:
+    <k> subtype( class Class1:Id, class Class:Id ) => (Class in ISet)::bool ...</k>
+    <class>
+      <className> Class1 </className>
+      <implTrans> ISet:Set </implTrans>
+      ...
+    </class>
+    <class>
+      <className> Class </className>
+      <metaType> interfaceMetaT </metaType>
+      ...
+    </class>
 
 rule [subtypeClassOfClassFalse]:
     subtype( class X:Id, class Class ) => false :: bool
