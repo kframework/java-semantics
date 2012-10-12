@@ -84,12 +84,12 @@ and then pop it when the method returns. */
 context 'Invoke(HOLE,, _)
 context 'Invoke(_:KResult ,,'ListWrap(_:List{K},,HOLE,,_:List{K}))
 
-rule [InitSignatureSearch]:
+rule [InitSignatureSearchInClassRef]:
     <k>
       'Invoke(lookupMethodData(
         OL,
         Class,
-        Name,
+        MethodName:Id,
         <envStack>
           Rest:List
           ListItem((Class:Id, BI:BagItem))
@@ -100,9 +100,16 @@ rule [InitSignatureSearch]:
         'ListWrap(ParamValues)
       ) => invokeImpl(
         lookupMethod(
-          Class,
+          lookupSignature(
+            Class,
+            MethodName,
+            getTypes(ParamValues),
+            Env,
+            .K
+          ),
           getClassList(Rest ListItem((Class, BI))),
-          Name, getTypes(ParamValues), Env
+          Env,
+          undefined::nullType
         ),
         OL,
         'ListWrap(ParamValues)
@@ -112,6 +119,51 @@ rule [InitSignatureSearch]:
     <isQualified> _ => IsQ </isQualified>
     <className> Class </className>
     <methods> Env:Map </methods>
+    <metaType> classMetaT </metaType>
+
+rule [InitSignatureSearchInInterfaceRef]:
+    <k>
+      'Invoke(lookupMethodData(
+        OL,
+        Class,
+        MethodName:Id,
+        <envStack>
+          ListItem((ActualClass:Id, _))
+          ...
+        </envStack>,
+        IsQ
+      ),,
+        'ListWrap(ParamValues)
+      ) => invokeImpl(
+        lookupMethod(
+          lookupSignature(
+            Class,
+            MethodName,
+            getTypes(ParamValues),
+            Env,
+            .K
+          ),
+          ActualClass,
+          ActualClassEnv,
+          undefined::nullType
+        ),
+        OL,
+        'ListWrap(ParamValues)
+      )
+      ...
+    </k>
+    <isQualified> _ => IsQ </isQualified>
+    <class>
+      <className> Class </className>
+      <methods> Env:Map </methods>
+      <metaType> interfaceMetaT </metaType>
+      ...
+    </class>
+    <class>
+      <className> ActualClass </className>
+      <methods> ActualClassEnv:Map </methods>
+      ...
+    </class>
 
 syntax K ::= "getClassList" "(" List ")"
 rule (.List{K} => Class),, getClassList((ListItem(Class, _) => .) _)
@@ -138,72 +190,94 @@ rule getTypes(Ks) => getTypes(.List{K}, Ks)
 rule getTypes(_,, (.List{K} => T), (_::T:Type => .List{K}),, _)
 rule getTypes(Ks, .List{K}) => types(Ks)
 
-syntax K ::= "lookupMethod" "(" K ","       //Class name of the reference used to call the method
-                                            //or .K if we cannot search for more specific signature
-                                List{K} "," //class list, from derived to base one
-                                Id ","      //Method name
-                                Types ","   //Method param types
-                                Map         //methods map of the ObjectClass to search
-                            ")"           [strict(4)]
-           | "lookupMethod" "(" K ","       //Class name of the reference used to call the method
-                                            //or .K if we cannot search for more specific signature
-                                List{K} "," //class list, from derived to base one
-                                Id ","      //Method name
-                                Types ","   //Method param types
-                                Map ","     //methods map of the ObjectClass to search
-                                K           //method closure of the most specific method so far
-                                            //or undefined::nullType if no method was found yet
-                            ")"           [strict(6)]
+//searches for the correct method signature to use
+//when calling a given MethodName with the given argument types
+//computes into a signature
+syntax K ::= "lookupSignature" "("  Id    // Class - target reference compile-time type
+                               ","  Id    // MethodName
+                               ","  Types // Argument types
+                               ","  Map   // Env - methods environment
+                               ","  K     // The best signature found so far, or .K if none found
+                               ")"
+        [strict(3)]
 
-rule lookupMethod(Class, Ks, Name, Ts:Types, Env)
-  => lookupMethod(Class, Ks, Name, Ts, Env, undefined::nullType)
-
-// all lookupMethod rules traverse the class hierarchy from Object to the concrete class itself.
-rule [lookupMethodNoAlternatives]:
+rule [lookupSignatureNoAlternatives]:
     (. => isPreferableSig(
             'LazyAnd(
-              isAccessible(ObjectClass:Id, getMethodAccessMode(TV)),,
+              isAccessible(Class:Id, getMethodAccessMode(TV)),,
               subtype(CallTL, SigTL)
             ),
-            TV
+            sig(MethodName, types(SigTL))
           ) )
-     ~> lookupMethod(
-          _:Id,
-          (_,, ObjectClass),
-          Name,
+     ~> lookupSignature(
+          Class,
+          MethodName,
           types(CallTL:List{K}),
-          (sig(Name, types(SigTL:List{K})) |-> TV => .) _:Map,
-          undefined::_
+          (sig(MethodName, types(SigTL:List{K})) |-> TV => .) _:Map,
+          .K
         )
 
-rule [lookupMethodWithAlternative]:
+rule [lookupSignatureWithAlternative]:
     (. => isPreferableSig(
             'LazyAnd(
-              isAccessible(ObjectClass, getMethodAccessMode(TV)),,
+              isAccessible(Class, getMethodAccessMode(TV)),,
               'LazyAnd(subtype(CallTL, SigTL),, subtype(SigTL, AltTL))
             ),
-            TV
+            sig(MethodName, types(SigTL))
           ) )
-     ~> lookupMethod(
-          _:Id,
-          (_,, ObjectClass),
-          Name,
+     ~> lookupSignature(
+          Class,
+          MethodName,
           types(CallTL),
-          (sig(Name, types(SigTL)) |-> TV => .) _:Map,
-          _ :: methodType(_, AltTL:List{K}, _)
+          (sig(MethodName, types(SigTL)) |-> TV => .) _:Map,
+          sig(MethodName, types(AltTL:List{K}))
         )
+
+rule [lookupSignatureSigDiscard]:
+    lookupSignature(
+      _,
+      MethodName,
+      _,
+      (sig(Name, _) |-> _ => .) _:Map,
+      _
+    )
+when
+    Name =/=K MethodName
+
+rule [lookupSignatureEnd]: lookupSignature(_,_,_,.Map,K) => K
+
+syntax K ::= "isPreferableSig" "(" K "," K ")"  [strict(1)]
+
+rule (isPreferableSig(true::bool, K) => .) ~> lookupSignature(_,_,_,_, _ => K )
+rule isPreferableSig(false::bool, _) => .
+
+syntax K ::= "lookupMethod" "(" K ","      // sig(Name, SigTL) - Method name
+                                List{K} "," //class list, from derived to base
+                                Map ","     //methods map of current LayerClass to search
+                                TypedVal    //method closure of the most specific method found so far
+                                            //or undefined::nullType if no applicable method
+                                            //was found yet
+                            ")"           [strict(1)]
+
+context lookupMethod(_,_,_,HOLE)    //replacement for strict(4)
+
+rule [lookupMethodFirstCandidate]:
+    lookupMethod(
+      sig(Name,types(SigTL)),
+      _,
+      (sig(Name, types(SigTL)) |-> TV _:Map) => .Map,
+      undefined::_ => TV
+    )
 
 rule [lookupMethodSignatureFixed]:
     lookupMethod(
-      .K,
-      (_,, ObjectClass),
-      Name,
-      _,
+      sig(Name,types(SigTL)),
+      (_,, LayerClass:Id),
       (sig(Name, types(SigTL)) |-> TV => .) _:Map,
       MCClosure:RawVal :: methodType(Acc:AccessMode, SigTL, T)
       => 'If(
             isAccessibleForOverwriting(
-              getMethConsClosureClass(MCClosure), Acc, ObjectClass, getMethodAccessMode(TV)
+              getMethConsClosureClass(MCClosure), Acc, LayerClass, getMethodAccessMode(TV)
             ),,
             TV,,
             MCClosure :: methodType(Acc, SigTL, T)
@@ -212,9 +286,7 @@ rule [lookupMethodSignatureFixed]:
 
 rule [lookupMethodSignatureFixedEntryDiscard]:
     lookupMethod(
-      .K,
-      _,
-      Name,
+      sig(Name,types(ChosenSigTL)),
       _,
       (sig(X, types(SigTL)) |-> _ => .) _:Map,
       _ :: methodType(_, ChosenSigTL:List{K}, _)
@@ -222,16 +294,9 @@ rule [lookupMethodSignatureFixedEntryDiscard]:
 when
     sig(X, types(SigTL)) =/=K sig(Name, types(ChosenSigTL))
 
-syntax K ::= "isPreferableSig" "(" K "," Int ")"  [strict(1)]
-
-rule (isPreferableSig(true::bool, TV) => .) ~> lookupMethod(_,_,_,_,_, _ => TV )
-rule isPreferableSig(false::bool, _) => .
-
 rule [lookupMethodOtherNameEntryDiscard]:
     lookupMethod(
-      _,
-      _,
-      Name,
+      sig(Name,_),
       _,
       (sig(X:Id, _) |-> _ => .) _:Map,
       _:K
@@ -242,37 +307,15 @@ when
 rule [lookupMethodLayerDiscard]:
     <k>
       lookupMethod(
-        K,
-        (_,, SubClass:Id,, (ObjectClass => .List{K})),
         _,
-        _,
+        (_,, NewLayerClass:Id,, (_:Id => .List{K})),
         .Map => NewEnv,
         _:K
       )
       ...
     </k>
     <class>
-      <className> SubClass </className>
-      <methods> NewEnv:Map </methods>
-      ...
-    </class>
-when
-    K =/=K ObjectClass
-
-rule [lookupMethodLayerDiscard2]:
-    <k>
-      lookupMethod(
-        ObjectClass => .K,
-        (_,, SubClass,, (ObjectClass => .List{K})),
-        _,
-        _,
-        .Map => NewEnv,
-        _:K
-      )
-    ...
-    </k>
-    <class>
-      <className> SubClass </className>
+      <className> NewLayerClass </className>
       <methods> NewEnv:Map </methods>
       ...
     </class>
@@ -281,8 +324,6 @@ rule [lookupMethodEnd]:
     lookupMethod(
       _,
       (_:Id),
-      _,
-      _,
       .Map,
      TV:TypedVal
     ) => TV

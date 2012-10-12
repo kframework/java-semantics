@@ -196,7 +196,7 @@ rule [IfFalse]:
     'If(false::bool,, _,, S) => S
 
 rule [IfThenDesugar]:
-    'If(E:K,,S1:K) => 'If(E:K,,S1:K,,'Block('ListWrap(.List{K})))
+    'If(E:K,,S1:K) => 'If(E:K,, S1:K,, .K)
 
 //@ \section{Assert statement}
 

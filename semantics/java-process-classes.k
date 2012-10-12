@@ -87,11 +87,14 @@ rule [processTypeWithDependsDiscard]:
 rule [processTypeWithDependsDiscard2]:
     processTypeWithDepends(.K) => .K
 
-//todo test a curious case if not tested yet - interface inherited through a base class,
-//cast to that itnerface. Should fail.
 rule [ProcessType]:
     <k>
-      processType(Class) => computeImplTrans(ISet) ~> tryInheritSet(ISet)
+      processType(Class) => computeImplTrans(SetItem(BaseClassK) ISet)
+          ~> tryInheritSet(ISet)
+
+          //interfaces should also contain Object members
+          ~> 'If((MetaT ==K interfaceMetaT)::bool,, tryInherit(String2Id("Object")))
+
           ~> tryInherit(BaseClassK) ~> Decls
       ...
     </k>
@@ -101,6 +104,7 @@ rule [ProcessType]:
       <implements> ISet </implements>
       <implTrans> . => ISet </implTrans>
       <declarations> Decls:K => . </declarations>
+      <metaType> MetaT:MetaType </metaType>
       ...
     </class>
     <cuClass> _ => Class </cuClass>
@@ -119,6 +123,8 @@ rule [computeImplTrans]:
     <implTrans> ITrans:Set </implTrans>
     <className> BaseItf </className>
     <implTrans> BaseItfITrans:Set </implTrans>
+
+rule [computeImplTransElemDiscard]: computeImplTrans( (SetItem(.K) => .) _)
 
 rule [computeImplTransDiscard]: computeImplTrans(.) => .
 
@@ -196,11 +202,11 @@ rule isInheritable(private) => false::bool
 //todo if the same method is inherited say from base class ant interface,
 //we're in trouble
 rule [inherit]:
-    <k> inherit(MI) => . ...</k>
+    <k> inherit(Sig |-> TV) => . ...</k>
     <cuClass> Class </cuClass>
     <class>
       <className> Class </className>
-      <methods> (. => MI) _ </methods>
+      <methods> Env => Env[TV/Sig] </methods>
       ...
     </class>
 
@@ -228,7 +234,10 @@ rule [MethodDec]:
 
 rule [AbstractMethodDec]:
     'AbstractMethodDec(_:K,, Ks:List{K})
-    => 'MethodDec('MethodDecHead('ListWrap('Abstract(.List{K})),, Ks),, 'NoMethodBody(.List{K}))
+    =>  'MethodDec(
+          'MethodDecHead('ListWrap('Public(.List{K}),,'Abstract(.List{K})),, Ks),,
+          'NoMethodBody(.List{K})
+        )
 
 syntax K ::= "storeMethod" "("
                               Id ","
@@ -260,9 +269,8 @@ rule [storeMethod]:
     </methods>
 
 //A method signature
-syntax K ::= "sig" "(" Id "," Types ")"
-
-//todo Simplify constructor processing. There are too much indirections right now.
+//KResult is required in java-method-invoke module
+syntax KResult ::= "sig" "(" Id "," Types ")"
 
 rule [ConstrDecSuperCallDesugar]:
     'ConstrDec(

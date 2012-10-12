@@ -62,7 +62,13 @@ rule [subtypeClassRed]:
       ...
     </class>
 when
-    Class1 =/=K Class
+    Class1 =/=K Class andBool Id2String(Class) =/=K "Object"
+        [structural]
+
+rule [subtypeOfObject]:
+    subtype( class _, class Class ) => true::bool
+when
+    Id2String(Class) ==K "Object"
         [structural]
 
 rule [subtypeOfInterface]:
