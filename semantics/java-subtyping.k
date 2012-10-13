@@ -48,7 +48,7 @@ when T =/=K bool [structural]
 /*@ \subsubsection{Subtyping among reference types}
 The subclass relation introduces a subtyping relation. */
 
-rule [subtypeClassRed]:
+rule [subtypeClassOfClassRed]:
     <k> subtype( class Class1:Id, class Class:Id )
       => subtype( class Class2:Id, class Class ) ...</k>
     <class>
@@ -64,6 +64,35 @@ rule [subtypeClassRed]:
 when
     Class1 =/=K Class andBool Id2String(Class) =/=K "Object"
         [structural]
+
+rule [subtypeClassOfClassFalse]:
+    subtype( class X:Id, class Class ) => false :: bool
+when
+            Id2String(X) ==String "Object"
+    andBool X =/=K Class
+
+rule [subtypeInterfaceOfClass]:
+    <k> subtype( class Class1:Id, class Class:Id ) => false::bool ...</k>
+    <class>
+      <className> Class1 </className>
+      <metaType> interfaceMetaT </metaType>
+      ...
+    </class>
+    <class>
+      <className> Class </className>
+      <metaType> classMetaT </metaType>
+      ...
+    </class>
+when
+    Id2String(Class) =/=K "Object"
+        [structural]
+/*
+K Limitation: This way don't seem to work:
+    <className> Class1 </className>
+    <metaType> interfaceMetaT </metaType>
+    <className> Class </className>
+    <metaType> classMetaT </metaType>
+*/
 
 rule [subtypeOfObject]:
     subtype( class _, class Class ) => true::bool
@@ -83,12 +112,6 @@ rule [subtypeOfInterface]:
       <metaType> interfaceMetaT </metaType>
       ...
     </class>
-
-rule [subtypeClassOfClassFalse]:
-    subtype( class X:Id, class Class ) => false :: bool
-when
-            Id2String(X) ==String "Object"
-    andBool X =/=K Class
 
 rule [subTypeClassOfOtherFalse]:
     subtype( class X, T ) => false :: bool

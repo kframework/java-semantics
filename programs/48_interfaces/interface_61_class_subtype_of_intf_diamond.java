@@ -5,7 +5,7 @@ Overloading with interfaces as method arguments.
   of static type A, B, C, IA, IB, IC, IMax.
 */
 
-public class interface_37_intf_as_arg_overload {
+public class interface_61_class_subtype_of_intf_diamond {
   public static void main(String[] args) {
     Tester t = new Tester();
     System.out.println("f(IA):   " + t.f((IA)null));

@@ -6,26 +6,9 @@ Part 2. Interfaces with methods. One interface involved.
 Part 3. Interfaces with methods. Multiple interfaces. Multiple inheritance of interfaces.
 Part 4. Methods inherited from Object.
 Part 5. Access modes.
-
-Todo:
-
-Part 6. General picture of subtyping, including primitive types,
-  classes, arrays and interfaces.
+Part 6. Subtyping. Complete testing.
 
 Todo refactoring:
-  - simplify lookupMethodData / lookupMethods semantics.
-    Instead of traversing a fraction of the stack in search for the right method,
-    we should analyze just two lauers: the layer of ref type, which provides the signature,
-      and the layer of object type, which provides the implementation.
-      At least this way will work for interfaces too. Not always possible - see
-      non-public methods. We should find a way out of this.
-      We should use two algorithms: either one for public / one for non-public methods
-      or one for classes and one for interfaces. And existing algorithm for classes
-      may also be simplified.
-
-      First part: right now lookupMethod() searches for both the signature and the
-      implementation. we should separate the two tasks into two separate terms.
-
   - replace usage of crntClass in process-comp-unit module with cuClass
   - investigate the possibility to add a new syntactic cathegory:
     OptionalId, which will ecompass Id and .K, meaning the lack of an id,
@@ -99,10 +82,6 @@ Tests
 36. Method Overloading through multiple interface inheritance.
   A < (I3, I4). I3 < (I1, I2). I4 < I1.
   Each class and interface have a specific version of f(). Test all cases.
-37. Overloading with interfaces as method arguments.
-  IC < (IA, IB) < IMax. A < IA ; B < (IB, IMax); C < (IB, IC).
-  Tester: have an f(IA), f(IB), f(IC), f(IMax). Call it with arguments
-  of static type A, B, C, IA, IB, IC, IMax.
 
   Part 4.
 41. Access methods from Object() through an interface. According to JLS $9.2 this is possible.
@@ -113,3 +92,32 @@ Tests
   a.A < a.I1.
   a.I1: public f(int), f(byte).
   Access I1 methods from main through A, I1.
+
+  Part 6. Subtyping. Complete testing.
+
+61. Overloading with interfaces as method arguments. Diamond hierarchy.
+  IC < (IA, IB) < IMax. A < IA ; B < (IB, IMax); C < (IB, IC).
+  Tester: have an f(IA), f(IB), f(IC), f(IMax). Call it with arguments
+  of static type A, B, C, IA, IB, IC, IMax.
+
+62. Interface subtype of other.
+  Class A < IA.
+  Class Tester, method f() with the following argument types:
+    - all primitive types, String, Object, int[], Object[], Object[][], A, A[].
+    - call arguments: IA, IA[], IA[][], IA[][][].
+
+63. Interfaces and others subtype of interface.
+  Class A < IA, IC < IB < IA.
+  Class Tester, method f() with the following argument types:
+    - Object, IA, IA[], IA[][], IC[], long, boolean.
+    - call arguments: all primitive types, Object, Object[], IA, IA[], IA[][], IA[][][],
+      IB, IB[], IB[][], IB[][][], IC, IC[], IC[][], A, A[][], A[][][], String, String[],
+      RuntimeException, int[], IOther, IOther[][].
+
+64. Null subtype of interface.
+  IB < IA
+  - T0: f(IA),   f(IB),   f(Object)
+  - T1: f(IA[]), f(IB[]), f(Object)
+  - call target: A,B,C
+  - call argument: null.
+
