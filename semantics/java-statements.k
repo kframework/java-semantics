@@ -76,25 +76,25 @@ rule interactsWithStack('Return(_), StackLT:StackLayerType, _) =>
            StackLT ==K return
     orBool StackLT ==K finally [anywhere]
 
-rule interactsWithStack('Throw(_), StackLT, _) =>
+rule interactsWithStack('Throw(_), StackLT:StackLayerType, _) =>
            StackLT ==K catch
     orBool StackLT ==K finally [anywhere]
 
-rule interactsWithStack('Break('None(_)), StackLT, _) =>
+rule interactsWithStack('Break('None(_)), StackLT:StackLayerType, _) =>
            StackLT ==K loop
     orBool StackLT ==K switch
     orBool StackLT ==K finally [anywhere]
 
-rule interactsWithStack('Break('Some(X)), StackLT, StackArg2:K) =>
+rule interactsWithStack('Break('Some(X:Id)), StackLT:StackLayerType, StackArg2:K) =>
          ( StackLT ==K label   andBool X ==K StackArg2)
     orBool StackLT ==K finally [anywhere]
 
-rule interactsWithStack('Continue('None(_)), StackLT, _) =>
+rule interactsWithStack('Continue('None(_)), StackLT:StackLayerType, _) =>
            StackLT ==K loop
     orBool StackLT ==K forBody
     orBool StackLT ==K finally [anywhere]
 
-rule interactsWithStack('Continue('Some(X)), StackLT, StackArg2) =>
+rule interactsWithStack('Continue('Some(X:Id)), StackLT:StackLayerType, StackArg2:K) =>
            ( StackLT ==K loop    andBool X ==K StackArg2)
     orBool ( StackLT ==K forBody andBool X ==K StackArg2)
     orBool   StackLT ==K finally [anywhere]
@@ -108,12 +108,12 @@ rule [popx]:
 //@ \section{Blocks} JLS $14.2
 
 rule [Block]:
-    <k> 'Block(S) => S ~> env(Env) ...</k>
+    <k> 'Block(S:K) => S ~> env(Env:Map) ...</k>
     <env> Env </env>
         [structural]
 
 rule [ListOfStatements]:
-    'ListWrap(S1,,Ss:List{K}) => S1 ~> 'ListWrap(Ss)
+    'ListWrap(S1:K,, Ss:List{K}) => S1 ~> 'ListWrap(Ss)
         [structural]
 
 rule [DiscardEmptyList]:
@@ -126,7 +126,7 @@ rule [DiscardEmptyList]:
 syntax K ::= "env" "(" Map ")"
 
 rule [env]:
-    <k> env(Env) => . ...</k>
+    <k> env(Env:Map) => . ...</k>
     <env> _ => Env </env>
         [structural]
 
@@ -139,18 +139,18 @@ rule [envDiscard]:
 
 //local var decs and field decs are reduced to a single case
 rule [LocalVarDecStmRed]:
-    'LocalVarDecStm('LocalVarDec(_,, TypeK:K,, 'ListWrap(Ks)))
+    'LocalVarDecStm('LocalVarDec(_,, TypeK:K,, 'ListWrap(Ks:List{K})))
     => 'LocalVarDec(TypeK,, 'ListWrap(Ks))
         [structural]
 
 rule [VarListDecDesugar]:
-    'LocalVarDec(TypeK,, 'ListWrap(Var1:K,, Var2:K,, VarDecs:List{K}))
+    'LocalVarDec(TypeK:K,, 'ListWrap(Var1:K,, Var2:K,, VarDecs:List{K}))
     => 'LocalVarDec(TypeK,, 'ListWrap(Var1))
         ~> 'LocalVarDec(TypeK,, 'ListWrap(Var2,, VarDecs))
       [structural]
 
 rule [VarDecWithInitDesugar]:
-    'LocalVarDec(TypeK,, 'ListWrap('VarDec(X1:Id,,InitExp:K)))
+    'LocalVarDec(TypeK:K,, 'ListWrap('VarDec(X1:Id,,InitExp:K)))
     => 'LocalVarDec(TypeK,, 'ListWrap('VarDec(X1:Id)))
         ~> 'ExprStm('Assign('ExprName(X1),, InitExp))
 when
@@ -176,7 +176,7 @@ rule [Empty]:
 //@ \section{Labeled statements} JLS $14.7
 
 rule [Labeled]:
-    <k> ('Labeled(X,,S) => saveStackLayer(label,X,S,K) ~> S ~> popx) ~> K </k>
+    <k> ('Labeled(X:Id,, S:K) => saveStackLayer(label,X,S,K) ~> S ~> popx) ~> K:K </k>
 
 //@ \section{Expression statements} JLS $14.8
 
@@ -190,10 +190,10 @@ rule [ExprStm]:
 context 'If(HOLE,,_,,_)
 
 rule [IfTrue]:
-    'If(true::bool,, S,, _) => S
+    'If(true::bool,, S:K,, _) => S
 
 rule [IfFalse]:
-    'If(false::bool,, _,, S) => S
+    'If(false::bool,, _,, S:K) => S
 
 rule [IfThenDesugar]:
     'If(E:K,,S1:K) => 'If(E:K,, S1:K,, .K)
@@ -234,7 +234,7 @@ context 'Switch(HOLE,,_)
 
 rule [Switch]:
     <k>
-      ( 'Switch(TV,, 'SwitchBlock('ListWrap(Ks),, TrailingLabels:K))
+      ( 'Switch(TV:TypedVal,, 'SwitchBlock('ListWrap(Ks:List{K}),, TrailingLabels:K))
         => saveStackLayer(switch, .K, .K, K)
       ~> switchImpl TV, (Ks,, 'SwitchGroup(TrailingLabels,, .K)), .K )
       ~> K:K
@@ -259,19 +259,19 @@ by it's block. The execution rules for switch will discard switch-related
 constructs and will execute the statements. */
 
 rule [SwitchCaseMatch]:
-    ( switchImpl V :: _, ('SwitchGroup('ListWrap('Case(V :: _),,_:List{K}),,S),,Ks), _ )
+    ( switchImpl V:RawVal :: _, ('SwitchGroup('ListWrap('Case(V :: _),,_:List{K}),,S:K),,Ks:List{K}), _ )
     => 'ListWrap(S,,Ks)
 
 rule [SwitchDefaultSave]:
-    switchImpl TV, (
+    switchImpl TV:TypedVal, (
       'SwitchGroup('ListWrap(
           ( 'Default(_) => .List{K} ),,
-          _:List{K}),, S),, Ks
+          _:List{K}),, S:K),, Ks:List{K}
     ),
     ( _:K => 'ListWrap(S,, Ks) )
 
 rule [SwitchGroupDiscard]:
-    switchImpl TV, (
+    switchImpl TV:TypedVal, (
         ( 'SwitchGroup('ListWrap( .List{K} ),,_) => .List{K} ),,
     _), _
 
@@ -279,14 +279,14 @@ rule [SwitchDefaultExec]:
     switchImpl _, .List{K}, DefaultStm:K => DefaultStm
 
 rule [SwitchGroupExec]:
-    'SwitchGroup(_:K,, S) => S
+    'SwitchGroup(_:K,, S:K) => S
 
 //@ \section{While statement} and loop infrastructure.
 
 rule [While]:
     <k> ( 'While(E:K,,S:K)
           => saveLoop(loopImpl(E, S, .K),K) ~> loopImpl(E, S, .K) ~> popx )
-        ~> K
+        ~> K:K
     </k>
         [structural]
 
@@ -297,7 +297,7 @@ syntax K ::= "loopImpl" "("
              ")"
 
 rule [loopImpl]:
-    <k> loopImpl(E, S, UpdClause)
+    <k> loopImpl(E:K, S:K, UpdClause:K)
         => 'If(E,, 'Block(S ~> UpdClause ~> loopImpl(E, S, UpdClause)),, .K)
       ...
     </k>
@@ -310,7 +310,7 @@ syntax K ::= "saveLoop" "("
 
 rule [saveLoop]:
     <k>
-      saveLoop(LoopStm:K, K) => saveStackLayer(loop, getLoopLabel(ParentLayer), LoopStm, K)
+      saveLoop(LoopStm:K, K:K) => saveStackLayer(loop, getLoopLabel(ParentLayer), LoopStm, K)
       ...
     </k>
     <stack> ListItem(ParentLayer:K) ...</stack>
@@ -320,7 +320,7 @@ continue statement with label.*/
 
 syntax K ::= "getLoopLabel" "(" K ")" [function]
 
-rule getLoopLabel((StackLT, K, KL(_), _,_,_)) =>
+rule getLoopLabel((StackLT:StackLayerType, K:K, KL:KLabel(_), _,_,_)) =>
     #if StackLT ==K label
         andBool (        KL ==KLabel 'While
                   orBool KL ==KLabel 'DoWhile
@@ -332,10 +332,10 @@ rule getLoopLabel((StackLT, K, KL(_), _,_,_)) =>
 
 //@ \section{Do statement}
 rule
-    <k> ( 'DoWhile(S,,E)
+    <k> ( 'DoWhile(S:K,,E:K)
           => saveLoop(loopImpl(E, S, .K), K) ~> S ~> loopImpl(E, S, .K) ~> popx
         )
-        ~> K
+        ~> K:K
     </k>
         [structural]
 
@@ -353,7 +353,7 @@ rule [stmList]:
         [structural]
 
 rule [stmLocalVarDec]:
-    <k> stm('LocalVarDec(Ks)) => 'LocalVarDecStm('LocalVarDec(Ks)) ...</k>
+    <k> stm('LocalVarDec(Ks:List{K})) => 'LocalVarDecStm('LocalVarDec(Ks)) ...</k>
         [structural]
 
 rule [ForFirstArgV1Red]:
@@ -386,7 +386,7 @@ rule [For]:
           => saveLoop(loopImpl(TestExp, S, stm(UpdClause)), K) ~> 'Block(stm(InitClause)
               ~> saveForBody ~> loopImpl(TestExp, S, stm(UpdClause))) ~> popx
         )
-        ~> K
+        ~> K:K
     </k>
         [structural]
 
@@ -396,35 +396,35 @@ rule [saveForBody]:
     <k>
       (saveForBody
           => saveStackLayer(forBody, getForBodyLabel(ParentLayer), loopImpl(E, S, UpdClause), K))
-      ~> loopImpl(E, S, UpdClause) ~> (. => popx) ~> K
+      ~> loopImpl(E:K, S:K, UpdClause:K) ~> (. => popx) ~> K:K
     </k>
-    <stack> ListItem(ParentLayer) ...</stack>
+    <stack> ListItem(ParentLayer:K) ...</stack>
 
 syntax K ::= "getForBodyLabel" "(" K ")" [function]
 
 //the parent layer of forBody is always loop
-rule getForBodyLabel((loop, K, _,_,_,_:Bag)) => K [anywhere]
+rule getForBodyLabel((loop, K:K, _,_,_,_:Bag)) => K [anywhere]
 
 //@ \section{Break statement}
 
 rule [Break]:
-    <k> 'Break(Arg) ~> _:K => restoreControl(K,Env,C) </k>
-    <stack> ListItem((StackLT, XK, _, K, Env, C)) => . ...</stack>
+    <k> 'Break(Arg:K) ~> _:K => restoreControl(K,Env,C) </k>
+    <stack> ListItem((StackLT:StackLayerType, XK:K, _, K:K, Env:Map, C:Bag)) => . ...</stack>
 when
     interactsWithStack('Break(Arg), StackLT, XK)
     andBool StackLT =/=K finally
 
 rule [StackConsumerStmPassThrough]:
-    <k> KL(Ks) ...</k>
-    <stack> ListItem((StackLT, XK, _,_,_,_)) => . ...</stack>
+    <k> KL:KLabel(Ks:List{K}) ...</k>
+    <stack> ListItem((StackLT:StackLayerType, XK:K, _,_,_,_)) => . ...</stack>
 when
     isStackConsumer(KL)
     andBool notBool interactsWithStack(KL(Ks), StackLT, XK)
 
 //stack consumer stm - Return, Throw, Break or Continue reaches finally layer
 rule [StackConsumerStmInTryFinally]:
-    <k> (. => restoreControl(K,Env,C) ~> FinallyS) ~> KL(_:List{K}) ...</k>
-    <stack> ListItem((finally,_,FinallyS,K,Env,C)) => . ...</stack>
+    <k> (. => restoreControl(K,Env,C) ~> FinallyS) ~> KL:KLabel(_:List{K}) ...</k>
+    <stack> ListItem((finally, _, FinallyS:K, K:K, Env:Map, C:Bag)) => . ...</stack>
 when
   isStackConsumer(KL)
 
@@ -436,7 +436,8 @@ rule [Continue]:
       => restoreControl(K,Env,C) ~> UpdClause ~> loopImpl(E, S, UpdClause) ~> popx
     </k>
     <stack>
-      ListItem((StackLT, XK:K, loopImpl(E, S, UpdClause), K, Env, C))
+      ListItem((StackLT:StackLayerType, XK:K, loopImpl(E:K, S:K, UpdClause:K),
+                K:K, Env:Map, C:Bag))
       ...
     </stack>
 when
@@ -460,7 +461,7 @@ rule [Return]:
       'Return('Some(V:RawVal :: T2:Type)) ~> _
       => restoreControl(K,Env,C) ~> subtype(T2, T1) ~> true? ~> V::T1
     </k>
-    <stack> ListItem((return,_,_,K,Env,C)) => . ...</stack>
+    <stack> ListItem((return,_,_, K:K, Env:Map, C:Bag)) => . ...</stack>
     <return> T1:Type </return>
 
 /*@ \section{Throw statement}
@@ -471,10 +472,10 @@ context 'Throw(HOLE)
 
 rule [Throw]:
     <k>
-      (. => checkCatch(subtype(typeOf(TV), T))) ~> 'Throw(TV) ~> _:K
+      (. => checkCatch(subtype(typeOf(TV:TypedVal), T))) ~> 'Throw(TV) ~> _:K
     </k>
     <stack>
-      ListItem((catch, .K, 'ListWrap('Catch('Param(_:K,, T,, X:Id),, _),,_), _, _, _))
+      ListItem((catch, .K, 'ListWrap('Catch('Param(_:K,, T:Type,, X:Id),, _),,_), _, _, _))
       ...
     </stack>
 
@@ -483,7 +484,7 @@ context checkCatch(HOLE)
 
 rule [ThrowCheckedTrue]:
     <k>
-      checkCatch(true::bool) ~> 'Throw(TV) ~> _:K
+      checkCatch(true::bool) ~> 'Throw(TV:TypedVal) ~> _:K
       =>  restoreControl(K,Env,C)
           ~> 'Block('ListWrap('LocalVarDecStm('LocalVarDec(
                 'ListWrap(.List{K}),, T,, 'ListWrap('VarDec(X,, TV)))),,
@@ -491,13 +492,13 @@ rule [ThrowCheckedTrue]:
     </k>
     <stack>
       ListItem((catch, .K, 'ListWrap('Catch(
-          'Param(_:K,, T,, X:Id),, CatchS:K),,_), K, Env, C)) => .
+          'Param(_:K,, T:Type,, X:Id),, CatchS:K),,_), K:K, Env:Map, C:Bag)) => .
       ...
     </stack>
 
 syntax K ::= "restoreControl" "(" K "," Map "," Bag ")"
 rule [restoreControl]:
-    <k> ( restoreControl(K, Env, C) => .) ~> _:K ~> (. => K) </k>
+    <k> ( restoreControl(K:K, Env:Map, C:Bag) => .) ~> _:K ~> (. => K) </k>
     <control>
       <stack> _:List </stack>
       (_ => C)
@@ -505,21 +506,21 @@ rule [restoreControl]:
     <env> _ => Env </env>
 
 rule [ThrowCheckedFalse]:
-    <k> (checkCatch(false::bool) => .) ~> 'Throw(TV) ~> _:K </k>
+    <k> (checkCatch(false::bool) => .) ~> 'Throw(TV:TypedVal) ~> _:K </k>
     <stack>
-      ListItem((catch, .K, 'ListWrap(
-          ('Catch('Param(_:K,, T,, X:Id),, CatchS) => .List{K}),,
-        Ks), K, Env, C))
+      ListItem((catch, .K,
+        'ListWrap( ('Catch('Param(_:K,, T:Type,, X:Id),, CatchS:K) => .List{K}),, _),
+      K:K, Env:Map, C:Bag))
       ...
     </stack>
 
 rule [ThrowCatchEmptyDiscard]:
-    <k> 'Throw(TV) ~> _:K </k>
-    <stack> ListItem((catch, .K, 'ListWrap(.List{K}), K, Env, C)) => . ...</stack>
+    <k> 'Throw(TV:TypedVal) ~> _:K </k>
+    <stack> ListItem((catch, .K, 'ListWrap(.List{K}), K:K, Env:Map, C:Bag)) => . ...</stack>
 
 rule [ThrowCausesThreadTermination]:
     <k>
-      'Throw(TV) ~> _:K
+      'Throw(TV:TypedVal) ~> _:K
       =>  'ExprStm('Invoke(
             'Method('MethodName(
               'AmbName('AmbName(String2Id("System")),, String2Id("out")),,
@@ -534,7 +535,7 @@ rule [ThrowCausesThreadTermination]:
 //@ \section{Try statement}
 
 rule [TryCatchFinallyDesugar]:
-    'Try(TryS:K,, 'ListWrap(K,,Ks),,FinallyS:K)
+    'Try(TryS:K,, 'ListWrap(K:K,, Ks:List{K}),,FinallyS:K)
     => 'Try('Try(TryS,,'ListWrap(K,,Ks)),,'ListWrap(.List{K}),,FinallyS)
         [structural]
 
@@ -545,9 +546,9 @@ context 'Try(_:K,,'ListWrap('Catch('Param(_:K,, HOLE,, _),, _)))
 
 rule [TryCatch]:
     <k>
-      ( 'Try(TryS:K,, 'ListWrap(Ks))
+      ( 'Try(TryS:K,, 'ListWrap(Ks:List{K}))
         => saveStackLayer(catch, .K, 'ListWrap(Ks), K) ~> TryS ~> popx )
-      ~> K
+      ~> K:K
     </k>
 
 //@ \subsection{Execution of try-finally} JLS 14.20.2
@@ -556,7 +557,7 @@ rule [TryFinally]:
     <k>
       ( 'Try(TryS:K ,,'ListWrap(.List{K}),,FinallyS:K)
         => saveStackLayer(finally, .K, FinallyS, .K) ~> TryS ~> popx ~> FinallyS )
-      ~> K
+      ...
     </k>
 
 //@ \section{Auxiliary operations}
@@ -581,12 +582,12 @@ syntax K ::= "saveStackLayer" "("
               ")"
 
 rule [saveStackLayer]:
-    <k> (saveStackLayer(StackLT, IdK:K, S, K) => .) ~> _:K </k>
+    <k> (saveStackLayer(StackLT:StackLayerType, IdK:K, S:K, K:K) => .) ~> _:K </k>
     <control>
       <stack> . => ListItem((StackLT, IdK, S, K, Env, C)) ...</stack>
       C:Bag
     </control>
-    <env> Env </env>
+    <env> Env:Map </env>
 
 //Debug aid. Dissolves classes cell so that configuration is not overbloated, at the end
 //of the execution.
@@ -596,4 +597,4 @@ rule [DissolveClasses]:
     <computationPhase> ExecutionPhase </computationPhase>
     <dissolveClasses> true </dissolveClasses>
 
-end module
+endmodule

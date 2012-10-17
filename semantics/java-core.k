@@ -65,7 +65,7 @@ syntax ComputationPhase ::= "ProcessCompUnitsPhase"
                           | "ProcessClassesPhase"
                           | "ExecutionPhase"
 
-rule 'Id(Str) => String2Id(Str)     [anywhere]
+rule 'Id(Str:String) => String2Id(Str)     [anywhere]
 
 //@ \section{Types}
 
@@ -82,10 +82,10 @@ syntax Type ::= PrimitiveType
 syntax RawVal ::= Int | Bool | String
                 | "null"
                 | "nothing"
-                | "undefined" [latex("\bot_{#1}")]
+                | "undefined" [latex(\bot_{#1})]
 
 syntax Type ::= "methodType" "(" AccessMode ","    // access mode
-                                 List{KResult} "," // argument types
+                                 List{K} "," // argument types
                                  Type              // return type
                              ")"
 
@@ -111,7 +111,7 @@ syntax RawVal ::= "objectClosure" "(" Int //OL - object location
                   ")"
 
 syntax RefType ::= "arrayOf" Type
-                  [prec(1) latex "{#1}\texttt{\char91\char93}"]
+                  [latex({#1}\texttt{\char91\char93})]
 
 syntax RawVal ::= "arrayRef" "("
                     Type ","  // Type of array
@@ -154,7 +154,7 @@ context toString(HOLE)
 
 rule toString(Str:String :: _) => Str :: rtString [anywhere]
 rule toString(I:Int :: char) => charString(I) :: rtString [anywhere]
-rule toString(I :: T:Type) => Int2String(I) :: rtString
+rule toString(I:Int :: T:Type) => Int2String(I) :: rtString
     when T =/=K char [anywhere]
 rule toString(true::_) => "true" :: rtString [anywhere]
 rule toString(false::_) => "false" :: rtString [anywhere]
@@ -168,11 +168,11 @@ syntax K ::= "typeOf" "(" K ")" [function]
 rule typeOf(_ :: T:Type) => T [anywhere]
 
 //@ \texttt{subtype definition}
-syntax K ::= "subtype" "(" List{KResult} "," List{KResult} ")"
+syntax K ::= "subtype" "(" List{K} "," List{K} ")"
 
 //todo this rule, if used, leads to the error "failed to load IOWrapper".
 syntax K ::= "isNumericType2" "(" Type ")" [function]
-rule isNumericType2(T)
+rule isNumericType2(T:Type)
 =>  #if         T ==K byte
         orBool  T ==K short
         orBool  T ==K int
@@ -180,17 +180,17 @@ rule isNumericType2(T)
         orBool  T ==K char
       #then true
       #else false
-    #fi  [structural anywhere]
+    #fi  [structural, anywhere]
 
 //this is actually a hack, since we should not access k-labels 'arrayOf_ and 'class_ .
 //maybe this isSort methods will be provided by K later on.
 syntax K ::= "isRefType2" "(" Type ")" [function]
-rule isRefType2(T)
+rule isRefType2(T:Type)
 =>          T ==K rtString
     orBool  T ==K nullType
     orBool  getKLabel(T) ==KLabel 'arrayOf_
     orBool  getKLabel(T) ==KLabel 'class_
-        [structural anywhere]
+        [structural, anywhere]
 
 //default value of all types
 syntax K ::= "default" "(" Type ")" [function]
@@ -215,8 +215,4 @@ rule [getPackage]:
 syntax K ::= "kEq" "(" K "," K ")" [seqstrict]
 rule kEq(KR1:KResult, KR2:KResult) => (KR1 ==K KR2)::bool
 
-//@ \subsubsection{Debug aids}
-syntax K ::= K "++" K [seqstrict gather(E e)]
-rule K1:K ++ K2:K => toString(K1) +String toString(K2) [structural anywhere]
-
-end module
+endmodule

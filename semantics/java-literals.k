@@ -8,16 +8,16 @@ syntax K ::= "charAt" "(" String "," Int ")" [function]
 rule charAt(Str:String, Pos:Int) => substrString(Str, Pos, 1) [anywhere]
 
 syntax K ::= "lastChar" "(" String ")" [function]
-rule lastChar(Str) => charAt(Str, lengthString(Str) -Int 1) [anywhere]
+rule lastChar(Str:String) => charAt(Str, lengthString(Str) -Int 1) [anywhere]
 
 syntax K ::= "stringRemoveLast" "(" String ")" [function]
-rule stringRemoveLast(Str) => substrString(Str, 0, lengthString(Str) -Int 1) [anywhere]
+rule stringRemoveLast(Str:String) => substrString(Str, 0, lengthString(Str) -Int 1) [anywhere]
 
 syntax K ::= "substrFrom" "(" String "," Int ")" [function]
-rule substrFrom(Str, I) => substrString(Str, I, lengthString(Str) -Int I) [anywhere]
+rule substrFrom(Str:String, I:Int) => substrString(Str, I, lengthString(Str) -Int I) [anywhere]
 
 syntax K ::= "hexToInt" "(" String ")" [function]
-rule hexToInt(Str) => hexToInt(0, Str) [anywhere]
+rule hexToInt(Str:String) => hexToInt(0, Str) [anywhere]
 
 syntax K ::= "hexToInt" "(" Int "," String ")" [function]
 
@@ -34,25 +34,25 @@ rule hexToInt(I:Int, "") => I [anywhere]
   third argument - next digits
 */
 syntax K ::= "hexToInt" "(" Int "," String "," String ")" [function]
-rule hexToInt(I, Digit:String, Str:String) =>
-    hexToInt( (I *Int 16) +Int hexDigitToInt(Digit), Str ) [anywhere]
+rule hexToInt(I:Int, Digit:String, Str:String)
+     => hexToInt( (I *Int 16) +Int hexDigitToInt(Digit), Str ) [anywhere]
 
 syntax K ::= "hexDigitToInt" "(" String ")" [function]
 
-rule hexDigitToInt(Digit) => asciiString(Digit) -Int asciiString("0")
+rule hexDigitToInt(Digit:String) => asciiString(Digit) -Int asciiString("0")
     when    asciiString(Digit) >=Int asciiString("0")
     andBool asciiString(Digit) <=Int asciiString("9") [anywhere]
 
-rule hexDigitToInt(Digit) => asciiString(Digit) -Int asciiString("A") +Int 10
+rule hexDigitToInt(Digit:String) => asciiString(Digit) -Int asciiString("A") +Int 10
     when    asciiString(Digit) >=Int asciiString("A")
     andBool asciiString(Digit) <=Int asciiString("F") [anywhere]
 
-rule hexDigitToInt(Digit) => asciiString(Digit) -Int asciiString("a") +Int 10
+rule hexDigitToInt(Digit:String) => asciiString(Digit) -Int asciiString("a") +Int 10
     when    asciiString(Digit) >=Int asciiString("a")
     andBool asciiString(Digit) <=Int asciiString("f") [anywhere]
 
 syntax K ::= "octaToInt" "(" String ")" [function]
-rule octaToInt(Str) => octaToInt(0, Str) [anywhere]
+rule octaToInt(Str:String) => octaToInt(0, Str) [anywhere]
 
 syntax K ::= "octaToInt" "(" Int "," String ")" [function]
 
@@ -69,23 +69,23 @@ rule octaToInt(I:Int, "") => I [anywhere]
   third argument - next digits
 */
 syntax K ::= "octaToInt" "(" Int "," String "," String ")" [function]
-rule octaToInt(I, Digit:String, Str:String) =>
+rule octaToInt(I:Int, Digit:String, Str:String) =>
     octaToInt( (I *Int 8) +Int octaDigitToInt(Digit), Str ) [anywhere]
 
 syntax K ::= "octaDigitToInt" "(" String ")" [function]
 
-rule octaDigitToInt(Digit) => hexDigitToInt(Digit) [anywhere]
+rule octaDigitToInt(Digit:String) => hexDigitToInt(Digit) [anywhere]
 
 syntax K ::= "octaAsciiToInt" "(" Int ")" [function]
-rule octaAsciiToInt(I) => octaDigitToInt(charString(I)) [anywhere]
+rule octaAsciiToInt(I:Int) => octaDigitToInt(charString(I)) [anywhere]
 
 syntax K ::= "hexAsciiToInt" "(" Int ")" [function]
-rule hexAsciiToInt(I) => hexDigitToInt(charString(I)) [anywhere]
+rule hexAsciiToInt(I:Int) => hexDigitToInt(charString(I)) [anywhere]
 
 //@ \section{Integer literals}
 
 rule [LitDeci]:
-    'Lit('Deci(Str))
+    'Lit('Deci(Str:String))
     =>  #if lastChar(Str) ==String "l" orBool lastChar(Str) ==String "L"
           #then String2Int(stringRemoveLast(Str)) :: long
           #else String2Int(Str                  ) :: int
@@ -93,7 +93,7 @@ rule [LitDeci]:
         [anywhere]
 
 rule [LitHexa]:
-    'Lit('Hexa(Str))
+    'Lit('Hexa(Str:String))
     =>  #if lastChar(Str) ==String "l" orBool lastChar(Str) ==String "L"
           #then normalize(hexToInt(substrFrom(stringRemoveLast(Str), 2)) :: long)
           #else normalize(hexToInt(substrFrom(Str,                   2)) :: int )
@@ -101,7 +101,7 @@ rule [LitHexa]:
         [anywhere]
 
 rule [LitOcta]:
-    'Lit('Octa(Str))
+    'Lit('Octa(Str:String))
     =>  #if lastChar(Str) ==String "l" orBool lastChar(Str) ==String "L"
           #then normalize(octaToInt(substrFrom(stringRemoveLast(Str), 1)) :: long)
           #else normalize(octaToInt(substrFrom(Str,                   1)) :: int )
@@ -118,30 +118,31 @@ rule 'Lit('Bool('False(.List{K}))) => false::bool
 //@ \section{char literals}
 //@ Chars are represented as int values, as described in java specification.
 
-rule 'Lit('Char('Single( I ))) => I :: char
+rule 'Lit('Char('Single( I:Int ))) => I :: char
 
-rule 'Lit('Char('NamedEscape(  98 ))) => asciiString("\b") :: char
+//todo uncomment when K3 bug is resolved
+//rule 'Lit('Char('NamedEscape(  98 ))) => asciiString("\b") :: char
+//rule 'Lit('Char('NamedEscape( 102 ))) => asciiString("\f") :: char
+//rule 'Lit('Char('NamedEscape( 39 ))) => asciiString("\'") :: char
 rule 'Lit('Char('NamedEscape( 116 ))) => asciiString("\t") :: char
 rule 'Lit('Char('NamedEscape( 110 ))) => asciiString("\n") :: char
-rule 'Lit('Char('NamedEscape( 102 ))) => asciiString("\f") :: char
 rule 'Lit('Char('NamedEscape( 114 ))) => asciiString("\r") :: char
 
 rule 'Lit('Char('NamedEscape( 34 ))) => asciiString("\"") :: char
-rule 'Lit('Char('NamedEscape( 39 ))) => asciiString("\'") :: char
 rule 'Lit('Char('NamedEscape( 92 ))) => asciiString("\\") :: char
 
-rule 'Lit('Char('OctaEscape1( I ))) => octaAsciiToInt(I) :: char
+rule 'Lit('Char('OctaEscape1( I:Int ))) => octaAsciiToInt(I) :: char
 
 rule 'Lit('Char('OctaEscape2( I1:Int,, I2:Int )))
     =>    octaAsciiToInt(I1) *Int 8
     +Int  octaAsciiToInt(I2)        :: char
 
-rule 'Lit('Char('OctaEscape3( I1,, I2,, I3:Int )))
+rule 'Lit('Char('OctaEscape3( I1:Int,, I2:Int,, I3:Int )))
     =>    octaAsciiToInt(I1) *Int 64
      +Int octaAsciiToInt(I2) *Int  8
      +Int octaAsciiToInt(I3)          :: char
 
-rule 'Lit('Char('UnicodeEscape(_:K,, I1,, I2,, I3,, I4:Int)))
+rule 'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
     =>    hexAsciiToInt(I1) *Int 4096
      +Int hexAsciiToInt(I2) *Int  256
      +Int hexAsciiToInt(I3) *Int   16
@@ -167,4 +168,4 @@ rule 'Lit('String('ListWrap(.List{K}))) => ""::rtString             [anywhere]
 
 rule 'Lit('Null(.List{K})) => null::nullType  [anywhere]
 
-end module
+endmodule

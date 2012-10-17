@@ -16,36 +16,36 @@ rule [ArrayVarDecIdDesugar]:
     )))
 
 rule [ArrayVarDecIdDiscard]:
-    'LocalVarDec(T,, 'ListWrap('VarDec(
-        ( 'ArrayVarDecId( X,, 'ListWrap(.List{K}) ) => X ),,
+    'LocalVarDec(T:Type,, 'ListWrap('VarDec(
+        ( 'ArrayVarDecId( X:Id,, 'ListWrap(.List{K}) ) => X ),,
         _ //possible initializer
     )))
 
 /*@ \subsection{Array access}
 Check array bounds, as part of the dynamic typing policy. */
 
-syntax KLabel ::= 'ArrayAccess [seqstrict]
+syntax KLabel ::= "'ArrayAccess" [seqstrict]
 
 context lvalue('ArrayAccess(HOLE,,_))
 context lvalue('ArrayAccess(_:KResult,,HOLE))
 
 rule [arrayLookup]:
-    'ArrayAccess(arrayRef(_,L,M:Int) :: arrayOf T:Type,, N:Int::_)
+    'ArrayAccess(arrayRef(_, L:Int, M:Int) :: arrayOf T:Type,, N:Int::_)
     => lookup(L +Int N) :: T
 when N >=Int 0 andBool N <Int M
-        [structural anywhere]
+        [structural, anywhere]
 
 rule [lookupArrayLocation]:
     <k>
-      lookup(L) :: T1
+      lookup(L:Int) :: T1:Type
       => subtype(T2, T1) ~> true? ~> V::T1
       ...
     </k>
-    <store>... L |-> V::elem T2 ...</store>
+    <store>... L |-> V:RawVal ::elem T2:Type ...</store>
         [transition]
 
 rule [ArrayIndexOutOfBoundsException]:
-    'ArrayAccess(arrayRef(_,_,M) :: _,, N::_)
+    'ArrayAccess(arrayRef(_,_,M:Int) :: _,, N:Int::_)
     => 'Throw('NewInstance(
       'None(.List{K}),,
       'class_(String2Id("ArrayIndexOutOfBoundsException")),,
@@ -53,12 +53,12 @@ rule [ArrayIndexOutOfBoundsException]:
       'None(.List{K})
     ))
 when notBool (N >=Int 0 andBool N <Int M)
-        [structural anywhere]
+        [structural, anywhere]
 
 //Required to desugar effects of the previous rule, when exception happens
 //inside lvalue.
 rule [LvalueIndexOutOfBoundsDesugar]:
-    lvalue('Throw(K)) => 'Throw(K)
+    lvalue('Throw(K:K)) => 'Throw(K)
 
 rule [arrayAccessNull]:
     'ArrayAccess(null::_ ,, _)
@@ -68,17 +68,17 @@ rule [arrayAccessNull]:
       'ListWrap( null :: rtString ),,
       'None(.List{K})
     ))
-        [structural anywhere]
+        [structural, anywhere]
 
 //Array length, as defined in JDK
 rule
-    <k> 'ExprName(arrayRef(_,_:Int,N)::_,, X:Id ) => N::int ...</k>
+    <k> 'ExprName(arrayRef(_,_:Int, N:Int)::_,, X:Id ) => N::int ...</k>
 when
     Id2String(X) ==String "length"
 
 //@ \subsection{Array Type}
 
-rule 'ArrayType(T) => arrayOf T [structural anywhere]
+rule 'ArrayType(T:Type) => arrayOf T [structural, anywhere]
 
 //@ \subsection{New array allocation}
 /*@ The dynamic semantics of typed array declarations is
@@ -89,12 +89,12 @@ and assign the right type ($T$) to the allocated array locations. */
 context 'NewArray(HOLE,, _:List{K})
 
 rule [NewArrayEmptyDims]:
-    'NewArray( (T => arrayOf T),, _:List{K},,
+    'NewArray( (T:Type => arrayOf T),, _:List{K},,
         'ListWrap( ( 'Dim(.List{K}) => .List{K} ) ,,_:List{K}) )
         [structural]
 
 rule [NewArray]:
-    'NewArray(T,, K:K,, 'ListWrap(.List{K})) => newArrayImpl(T, K, default(T))
+    'NewArray(T:Type,, K:K,, 'ListWrap(.List{K})) => newArrayImpl(T, K, default(T))
         [structural]
 
 syntax K ::= "newArrayImpl" "("
@@ -103,34 +103,36 @@ syntax K ::= "newArrayImpl" "("
                 K         // InitExp - expression used to initialize each array element
              ")"
 
-context newArrayImpl(_:KResult, 'ListWrap(_:List{KResult},,HOLE,, _), _)
+context newArrayImpl(_:KResult, 'ListWrap(Dims:List{K},,HOLE,, _), _)
+when isKResult(Dims)
 
 //applies right after the previous rule, because HOLE is of the form 'Dim(K)
-rule 'Dim(K) => K [structural]
+rule 'Dim(K:K) => K [structural]
 
 //when all dims were computed, check that dims are positive, and only
 //after that begin array allocation
-rule newArrayImpl(T, 'ListWrap(Dims:List{KResult}), InitExp)
+rule newArrayImpl(T:Type, 'ListWrap(Dims:List{K}), InitExp:K)
     => checkNonNegative(Dims) ~> newArrayAlloc(T, 'ListWrap(Dims), InitExp)
+when isKResult(Dims)
 
 //same as newArrayImpl, but after dims were computed and checked
 syntax K ::= "newArrayAlloc" "("
                 Type ","  // T - element type
-                K ","     // 'ListWrap(Dims) - array dimensions
+                K ","     // 'ListWrap(Dims:List{KResult}) - array dimensions
                 K         // InitExp - expression used to initialize each array element
              ")"
 
 /*Computation designed to check that array creation expression dimensions are non-negative. If they are non-negative, checkNonNegative is dissolved. Otherwise NegativeArraySizeException is thrown.
 */
 syntax K ::= "checkNonNegative" "("
-                List{KResult}      // - computed array dimensions
+                List{K}           // List{KResult} - computed array dimensions
              ")"
 
-rule checkNonNegative((NI::_ => .List{K}),, _)
+rule checkNonNegative((NI:Int::_ => .List{K}),, _)
 when NI >=Int 0
 
 rule [NegativeArraySizeException]:
-    checkNonNegative((NI::_),, _)
+    checkNonNegative((NI:Int::_),, _)
     => 'Throw('NewInstance(
       'None(.List{K}),,
       'class_(String2Id("NegativeArraySizeException")),,
@@ -143,28 +145,29 @@ when
 rule checkNonNegative(.List{K}) => .
 
 rule [newArrayAllocMultiDim]:
-    newArrayAlloc(T, 'ListWrap(Dims,,Dim1K:TypedVal,,Dim2K:TypedVal), InitExp)
+    newArrayAlloc(T:Type, 'ListWrap(Dims:List{K},,Dim1K:TypedVal,,Dim2K:TypedVal), InitExp:K)
     =>  newArrayAlloc(
           arrayOf T,
           'ListWrap(Dims,,Dim1K),
           newArrayAlloc(T, 'ListWrap(Dim2K), InitExp)
         )
+when isKResult(Dims)
         [structural]
 
 //In order to avoid problems with empty arrays, such as the test for equality,
 //even if the created array is empty it will increment nextLoc by one
 rule [newArrayAlloc]:
     <k>
-      newArrayAlloc(T, 'ListWrap(NI:Int::_), InitExp:K)
-      => evalAndStore((LI:Int .. LI +Int _-Int_(NI,1)), InitExp)
+      newArrayAlloc(T:Type, 'ListWrap(NI:Int::_), InitExp:K)
+      => evalAndStore((LI:Int .. LI +Int (NI -Int 1)), InitExp)
          ~> arrayRef( arrayOf T, LI, NI) :: arrayOf T
       ...
     </k>
-    <store>... . => LI .. LI +Int _-Int_(NI,1) |-> undefined :: elem T ...</store>
+    <store>... .Map => Map((LI .. LI +Int (NI -Int 1)) |-> (undefined :: elem T)) ...</store>
     <nextLoc> LI:Int => LI +Int max(NI,1) </nextLoc>
 
 syntax K ::= "max" "(" Int "," Int ")" [function]
-rule max(I1, I2) => #if I1 >=Int I2
+rule max(I1:Int, I2:Int) => #if I1 >=Int I2
                         #then I1
                         #else I2
                       #fi
@@ -173,7 +176,7 @@ rule max(I1, I2) => #if I1 >=Int I2
 syntax K ::= "evalAndStore" "(" List{K}  "," K ")"
 
 rule [evalAndStoreDesugar]:
-    evalAndStore((I1:Int,,I2:Int,,Ks:List{K}), InitExp)
+    evalAndStore((I1:Int,, I2:Int,, Ks:List{K}), InitExp:K)
     => evalAndStore(I1,InitExp) ~> evalAndStore((I2,,Ks),InitExp)
         [structural]
 
@@ -199,12 +202,12 @@ rule N1:Int..N2:Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2 [anywhere]
 //@ \subsection{Array element assignment}
 
 rule [AssignInArrayExact]:
-    <k> 'Assign(loc(L) :: T:Type,, V:RawVal :: T) => V::T ...</k>
+    <k> 'Assign(loc(L:Int) :: T:Type,, V:RawVal :: T) => V::T ...</k>
     <store>... L |-> (_ => V)::elem T ...</store>
 
 rule [AssignInArrayWithCheck]:
     <k>
-      'Assign(loc(L) :: T:Type,, V:RawVal :: T)
+      'Assign(loc(L:Int) :: T:Type,, V:RawVal :: T)
       => assignImpl(
           subtype(typeOf(V), StoreType),
           L,
@@ -227,12 +230,12 @@ syntax K ::= "assignImpl" "("
 context assignImpl(_:KResult, _, HOLE)
 
 rule [assignImpl]:
-    <k> assignImpl( true::bool, L, V::T) => V::T ...</k>
+    <k> assignImpl( true::bool, L:Int, V:RawVal :: T:Type) => V::T ...</k>
     <store>... L |-> (_ => V) :: elem _ ...</store>
         [transition]
 
 rule [ArrayStoreException]:
-    assignImpl( false::bool, _, V::T)
+    assignImpl( false::bool, _, TV:TypedVal)
     =>  'Throw('NewInstance(
           'None(.List{K}),,
           'class_(String2Id("ArrayStoreException")),,
@@ -241,7 +244,7 @@ rule [ArrayStoreException]:
             'Invoke(
               'MethodName(
                 'Invoke(
-                  'MethodName(V::T,, String2Id("getClass")),,
+                  'MethodName(TV,, String2Id("getClass")),,
                   'ListWrap(.List{K})
                 ),,
                 String2Id("getName")),,
@@ -254,19 +257,19 @@ rule [ArrayStoreException]:
 //@ \subsection{Array initializer}
 
 rule [ArrayInitPreprocess]:
-    'NewArray((T => arrayOf T),, 'ListWrap(('Dim(.List{K}) => .List{K}),, _),, 'ArrayInit(_))
+    'NewArray((T:Type => arrayOf T),, 'ListWrap(('Dim(.List{K}) => .List{K}),, _),, 'ArrayInit(_))
 
 rule [ArrayInit]:
-    'NewArray(arrayOf T,, 'ListWrap(.List{K}),, 'ArrayInit('ListWrap(InitContent:List{K})))
+    'NewArray(arrayOf T:Type,, 'ListWrap(.List{K}),, 'ArrayInit('ListWrap(InitContent:List{K})))
     => arrayInitAlloc(newArrayImpl(T, 'ListWrap(count(InitContent)), undefined :: T), InitContent)
 
 //counts the number of elements in the List{K} list. Evaluates to an Int::int .
 syntax K ::= "count" "(" List{K} ")"
            | "count" "(" Int "," List{K} ")"
 
-rule count(Ks) => count(0, Ks)
-rule count(I:Int, K,,Ks) => count(I +Int 1, Ks)
-rule count(I, .List{K}) => I::int
+rule count(Ks:List{K}) => count(0, Ks)
+rule count(I:Int, K:K,, Ks:List{K}) => count(I +Int 1, Ks)
+rule count(I:Int, .List{K}) => I::int
 
 //allocates the array based on previously computed size, the proceeds to array initialization
 syntax K ::= "arrayInitAlloc" "("
@@ -276,7 +279,7 @@ syntax K ::= "arrayInitAlloc" "("
         [strict(1)]
 
 rule [arrayInitAlloc]:
-    arrayInitAlloc(arrayRef(T, L, Len:Int)::T, InitContent)
+    arrayInitAlloc(arrayRef(T:Type, L:Int, Len:Int)::T, InitContent:K)
     => arrayInitImpl(T, L, InitContent) ~> arrayRef(T, L, Len)::T
 
 syntax K ::= "arrayInitImpl" "("
@@ -288,7 +291,7 @@ syntax K ::= "arrayInitImpl" "("
 
 rule [arrayInitImpl]:
     ( . => 'ExprStm(assignImpl(true::bool, L, K)) )
-    ~> arrayInitImpl(_, (L => L +Int 1), ((K => .List{K}),, _) )
+    ~> arrayInitImpl(_, (L:Int => L +Int 1), ((K:K => .List{K}),, _) )
 when
     getKLabel(K) =/=KLabel 'ArrayInit
 
@@ -299,34 +302,34 @@ rule [arrayInitImplInnerArrayInit]:
               'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK:K))
            )) )
     ~> arrayInitImpl(
-          arrayOf T,
-          (L => L +Int 1),
-          (('ArrayInit(InitK) => .List{K}),, _)
+          arrayOf T:Type,
+          (L:Int => L +Int 1),
+          (('ArrayInit(InitK:K) => .List{K}),, _)
        )
 
 rule [arrayInitImplDiscard]:
     arrayInitImpl(_, _, .List{K}) => .
 
 rule [VarDecWithArrayInitDesugar]:
-    'LocalVarDec(T,, 'ListWrap('VarDec(
-      X,,
-      ( 'ArrayInit(InitK) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK)) )
+    'LocalVarDec(T:Type,, 'ListWrap('VarDec(
+      X:Id,,
+      ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK)) )
     )))
 
 
 //@ toString
 
-rule toString(arrayOf T) => arrayToString(arrayOf T) [anywhere]
+rule toString(arrayOf T:Type) => arrayToString(arrayOf T) [anywhere]
 
 //string representation of a type within an array type
 //see JDK: Class.getName()
 syntax K ::= "arrayToString" "(" Type ")" [function]
-rule arrayToString(byte) => "B"::rtString [anywhere]
+rule arrayToString(byte)  => "B"::rtString [anywhere]
 rule arrayToString(short) => "S"::rtString [anywhere]
-rule arrayToString(int) => "I"::rtString [anywhere]
-rule arrayToString(long) => "J"::rtString [anywhere]
-rule arrayToString(char) => "C"::rtString [anywhere]
-rule arrayToString(bool) => "Z"::rtString [anywhere]
+rule arrayToString(int)   => "I"::rtString [anywhere]
+rule arrayToString(long)  => "J"::rtString [anywhere]
+rule arrayToString(char)  => "C"::rtString [anywhere]
+rule arrayToString(bool)  => "Z"::rtString [anywhere]
 
 //hack in order to access class Id construct from classes
 rule arrayToString('class_(Class:Id))
@@ -336,7 +339,7 @@ rule arrayToString('class_(Class:Id))
 rule arrayToString(rtString)
     => 'Plus("L"::rtString,,'Plus(toString(rtString   ) ,,";"::rtString))
         [anywhere]
-rule arrayToString(arrayOf T) => 'Plus("["::rtString ,,arrayToString(T))
+rule arrayToString(arrayOf T:Type) => 'Plus("["::rtString ,,arrayToString(T))
         [anywhere]
 
-end module
+endmodule

@@ -6,7 +6,7 @@ module JAVA-CLASSES
     imports JAVA-ARRAYS
 
 //@ \subsection{Unused Labels}
-syntax KLabel ::= 'TypeImportOnDemandDec | 'PackageName | 'Native
+syntax KLabel ::= "'TypeImportOnDemandDec" | "'PackageName" | "'Native"
 
 /*@ \subsection{Object and method closures}
 The only change to untyped KOOL's values is that closures are now typed
@@ -15,27 +15,28 @@ The only change to untyped KOOL's values is that closures are now typed
 //@ \subsection{Type labels}
 //@Here we rewrite java type ast into simple types
 
-rule 'TypeName(X:Id) => class X  [structural anywhere]
+rule 'TypeName(X:Id) => class X  [structural, anywhere]
 
 rule
-    class X => rtString
+    class X:Id => rtString
 when
     Id2String(X) ==String "String"
-        [structural anywhere]
+        [structural, anywhere]
 
-rule 'ClassOrInterfaceType(T,,_) => T [structural anywhere]
-rule 'InterfaceType(T,,_) => T        [structural anywhere]
+rule 'ClassOrInterfaceType(T:Type,, _) => T [structural, anywhere]
+rule 'InterfaceType(T:Type,, _) => T        [structural, anywhere]
 
 //@ \subsection{Auxiliary operations}
 
 //@ \texttt{bindto} also checks the well-formedness of the method parameters
 
-syntax K ::= "bindto" List{K} "," List{KResult}
+syntax K ::= "bindto" List{K}
+                  "," List{K}  //List{KResult}
 
 rule [bindto]:
     <k>
       (. => 'ExprStm('Assign('ExprName(X),,TV:TypedVal)))
-      ~> bindto( ('Param(_,,T:Type,,X) => .List{K}),, _:List{K} ),
+      ~> bindto( ('Param(_,, T:Type,, X:Id) => .List{K}),, _:List{K} ),
           ( (TV => .List{K}),, _:List{K} )
       ...
     </k>
@@ -51,17 +52,12 @@ rule [bindtoEmpty]:
 
 rule typeOf('Param(_:K,,K:K,,_)) => K [anywhere]
 
-rule toString(objectClosure(I:Int, Obj:Bag) :: T)
+rule toString(objectClosure(I:Int, Obj:Bag) :: T:Type)
     =>  'Invoke(
           'MethodName(objectClosure(I, Obj) :: T,, String2Id("toString")),,
           'ListWrap(.List{K})
         )
         [anywhere]
-
-/*@ Recall that lists of the form "a,b,c" are a syntactic convenience,
-which eventually are translated into cons-lists "(a,(b,(c,.)))".
-Unfortunately, the current K tool is not able to cons-listify
-the RHSes of the rules below, so we have to do it manually.  */
 
 /*@ \subsection{Changes to SIMPLE Semantics}
 We extend/change the semantics of several SIMPLE constructs in order
@@ -72,7 +68,7 @@ get more from the existing SIMPLE constructs. */
 rule typeOf(Str:String) => rtString [anywhere]
 rule typeOf(null) => nullType [anywhere]
 rule typeOf(objectClosure(_, (<envStack>ListItem((Class:Id, _)) _</envStack>))) => class Class [anywhere]
-rule typeOf(arrayRef( arrayOf T, _, _)) => arrayOf T [anywhere]
+rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T [anywhere]
 
 /*@ \subsection{New}
 The semantics of \texttt{new} in dynamically typed KOOL is also
@@ -90,7 +86,7 @@ rule [NewInstance]:
       'NewInstance(
         _:K,,
         class ClassName:Id,,
-        'ListWrap( Vals:List{KResult} ),,
+        'ListWrap( Vals:List{K} ),,
         _:K
       )
       => create(ClassName)
@@ -100,25 +96,26 @@ rule [NewInstance]:
         ~> typedLookup(L)
       ...
     </k>
-    <env> Env => . </env>
+    <env> Env:Map => . </env>
     <crntObj>
-      Obj
+      Obj:Bag
       =>  <crntClass> .K </crntClass>
           <envStack> .List </envStack>
           <location> L </location>
     </crntObj>
-    <nextLoc> L => L +Int 1 </nextLoc>
+    <nextLoc> L:Int => L +Int 1 </nextLoc>
+when isKResult(Vals)
 
 syntax K ::= "create" "(" K ")"
 
 rule [create]:
     <k>
-      create(Class)
-      => create(BaseClassK:K) ~> setCrntClass(Class) ~> S ~> addEnvLayer
+      create(Class:Id)
+      => create(BaseClassK) ~> setCrntClass(Class) ~> S ~> addEnvLayer
       ...
     </k>
     <className> Class </className>
-    <extends> BaseClassK </extends>
+    <extends> BaseClassK:K </extends>
     <fieldDecs> S:K </fieldDecs>
         [structural]
 
@@ -128,7 +125,7 @@ rule [createEmptyDiscard]:
 syntax K ::= "setCrntClass" "(" Id ")"
 
 rule [setCrntClass]:
-    <k> setCrntClass(Class) => . ...</k>
+    <k> setCrntClass(Class:Id) => . ...</k>
     <crntClass> _ => Class </crntClass>
         [structural]
 
@@ -136,8 +133,8 @@ syntax K ::= "addEnvLayer"
 
 rule [addEnvLayer]:
     <k> addEnvLayer => . ...</k>
-    <env> Env => . </env>
-    <crntClass> Class </crntClass>
+    <env> Env:Map => . </env>
+    <crntClass> Class:Id </crntClass>
     <envStack> . => ListItem((Class, <env>Env</env>)) ...</envStack>
         [structural]
 
@@ -146,9 +143,9 @@ syntax K ::= "storeObj"
 rule [storeObj]:
     <k> storeObj => . ...</k>
     <crntObj>
-      Obj
-      <crntClass> Class </crntClass>
-      <location> L </location>
+      Obj:Bag
+      <crntClass> Class:Id </crntClass>
+      <location> L:Int </location>
     </crntObj>
     <store>
       ...
@@ -159,26 +156,27 @@ rule [storeObj]:
 syntax K ::= "restoreEnvAndObj" "(" Map "," Bag ")"
 
 rule [restoreEnvAndObj]:
-    <k> restoreEnvAndObj(Env, Obj) => . ...</k>
+    <k> restoreEnvAndObj(Env:Map, Obj:Bag) => . ...</k>
     <env> _ => Env </env>
     <crntObj> _ => Obj </crntObj>
 
 syntax K ::= "invokeConstr" "(" Int "," Id "," List{K} ")"
 
 rule [invokeConstr]:
-    invokeConstr(OL, ClassName, Vals)
+    invokeConstr(OL:Int, ClassName:Id, Vals:List{K})
     => 'ExprStm('Invoke(
           'Method('MethodName( typedLookup(OL),, getConsName(ClassName) )),,
           'ListWrap( Vals )
         ))
+when isKResult(Vals)
 
 /*@ \subsection{Instance Of}
 Like in untyped KOOL. */
 
-syntax KLabel ::= 'InstanceOf [seqstrict]
+syntax KLabel ::= "'InstanceOf" [seqstrict]
 
 rule [InstanceOf]:
-    'InstanceOf(V::_,, RT2)
+    'InstanceOf(V:Int::_,, RT2:RefType)
     =>  #if V =/=K null
           #then subtype(typeOf(V), RT2)
           #else false::bool
@@ -188,7 +186,7 @@ rule [InstanceOf]:
 Unlike in untyped KOOL, in typed KOOL we actually check that the object
 can indeed be cast to the claimed type. */
 
-syntax KLabel ::= 'CastRef
+syntax KLabel ::= "'CastRef"
 rule 'CastRef(K1:K,, K2:K) => castImpl(K1,K2)   [structural]
 
 rule [CastRef]:
@@ -210,21 +208,21 @@ rule [CastRef]:
 
 //@ \subsection{Names}
 
-rule 'AmbName(Ks) => 'ExprName(Ks:List{K}) [structural anywhere]
-rule 'Field(Ks) => 'ExprName(Ks)   [structural anywhere]
+rule 'AmbName(Ks:List{K}) => 'ExprName(Ks) [structural, anywhere]
+rule 'Field(Ks:List{K}) => 'ExprName(Ks)   [structural, anywhere]
 
 rule [ExprNameLocalVar]:
-    <k> 'ExprName(X) => X ...</k>
-    <env> Env </env>
+    <k> 'ExprName(X:Id) => X ...</k>
+    <env> Env:Map </env>
 when X in keys(Env)
         [structural]
 
 rule [ExprNameMember]:
     <k>
-      'ExprName(X) => 'ExprName( 'This(.List{K}),, X )
+      'ExprName(X:Id) => 'ExprName( 'This(.List{K}),, X )
       ...
     </k>
-    <env> Env </env>
+    <env> Env:Map </env>
 when
     notBool( X in keys(Env) orBool Id2String(X) ==String "System" )
         [structural]
@@ -241,8 +239,8 @@ rule [This]:
       ...
     </k>
     <crntObj>
-      Obj
-      <crntClass> Class </crntClass>
+      Obj:Bag
+      <crntClass> Class:Id </crntClass>
       <location> OL:Int </location>
     </crntObj>
 
@@ -253,8 +251,8 @@ rule [ExprNameQualified]:
     <k>
       'ExprName(
         objectClosure(_,
-          <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>
-        ) :: class Class,, X
+          <envStack>... ListItem((Class:Id, EnvC:BagItem)) EStack:List </envStack>
+        ) :: class Class,, X:Id
       )
       => lookupField(<envStack>ListItem((Class, EnvC)) EStack</envStack>, X)
       ...
@@ -263,7 +261,7 @@ rule [ExprNameQualified]:
 
 rule [ExprNameQualifiedNull]:
     <k>
-      'ExprName(null::_ ,, X)
+      'ExprName(null::_ ,, X:Id)
       =>  'Throw('NewInstance(
             'None(.List{K}),,
             'class_(String2Id("NullPointerException")),,
@@ -275,9 +273,9 @@ rule [ExprNameQualifiedNull]:
         [structural]
 
 rule [SuperField]:
-    <k>'SuperField(X) => lookupField(<envStack>EStack</envStack>, X) ...</k>
-    <crntClass> Class </crntClass>
-    <envStack>... ListItem((Class, EnvC)) EStack </envStack>
+    <k>'SuperField(X:Id) => lookupField(<envStack>EStack</envStack>, X) ...</k>
+    <crntClass> Class:Id </crntClass>
+    <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>
       [structural]
 
 /*@ \subsection{Lookup member}
@@ -290,7 +288,7 @@ syntax K ::= "lookupField" "(" BagItem "," Id ")" [function]
 
 rule lookupField(
     <envStack>
-      ListItem((_:Id, <env>... X|->L ...</env>))
+      ListItem((_:Id, <env>... X:Id |-> L:Int ...</env>))
       ...
     </envStack>,
     X
@@ -299,10 +297,10 @@ rule lookupField(
 
 rule lookupField(
     <envStack>
-      ListItem((_:Id, <env> Env </env>)) => .
+      ListItem((_:Id, <env> Env:Map </env>)) => .
       ...
     </envStack>,
-    X
+    X:Id
   )
 when notBool(X in keys(Env))
         [anywhere]
@@ -311,18 +309,18 @@ when notBool(X in keys(Env))
 syntax K ::= "typedLookup" "(" Int ")"
 
 rule [typedLookup]:
-    <k> typedLookup(L) => lookup(L)::T ...</k>
-    <store>... L |-> _::T ...</store>
+    <k> typedLookup(L:Int) => lookup(L)::T ...</k>
+    <store>... L |-> _::T:Type ...</store>
 
 rule [lvalueTypedLookup]:
-    <k> lvalue( typedLookup(L) => lookup(L)::T ) ...</k>
-    <store>... L |-> _::T ...</store>
+    <k> lvalue( typedLookup(L:Int) => lookup(L)::T ) ...</k>
+    <store>... L |-> _::T:Type ...</store>
 
 //@ \texttt{lvalue}
 
 rule [lvalueExprNameMember]:
-    <k> lvalue( 'ExprName(X) => 'ExprName('This(.List{K}),, X) ) ...</k>
-    <env> Env </env>
+    <k> lvalue( 'ExprName(X:Id) => 'ExprName('This(.List{K}),, X) ) ...</k>
+    <env> Env:Map </env>
 when notBool(X in keys(Env))  [structural]
 
 context lvalue('ExprName(HOLE,, _:Id) )
@@ -332,9 +330,9 @@ rule [lvalueExprNameQualified]:
       lvalue(
         'ExprName(
           objectClosure(_,
-            <envStack>... ListItem((Class, EnvC:BagItem)) EStack </envStack>
+            <envStack>... ListItem((Class:Id, EnvC:BagItem)) EStack:List </envStack>
           ) :: class Class,,
-          X
+          X:Id
         )
         => lookupField(
             <envStack> ListItem((Class, EnvC)) EStack:List </envStack>,
@@ -346,9 +344,9 @@ rule [lvalueExprNameQualified]:
         [structural]
 
 rule [lvalueSuperField]:
-    <k> lvalue('SuperField(X) => lookupField(<envStack>EStack</envStack>, X)) ...</k>
-    <crntClass> Class </crntClass>
-    <envStack>... ListItem((Class, EnvC)) EStack </envStack>
+    <k> lvalue('SuperField(X:Id) => lookupField(<envStack>EStack</envStack>, X)) ...</k>
+    <crntClass> Class:Id </crntClass>
+    <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>
         [structural]
 
-end module
+endmodule

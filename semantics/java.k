@@ -1,15 +1,15 @@
-in java-core
-in java-process-comp-units
-in java-process-classes
-in java-primitive-types
-in java-literals
-in java-subtyping
-in java-expressions
-in java-statements
-in java-arrays
-in java-classes
-in java-method-invoke
-in java-api-core
+require "java-core.k"
+require "java-process-comp-units.k"
+require "java-process-classes.k"
+require "java-primitive-types.k"
+require "java-literals.k"
+require "java-subtyping.k"
+require "java-expressions.k"
+require "java-statements.k"
+require "java-arrays.k"
+require "java-classes.k"
+require "java-method-invoke.k"
+require "java-api-core.k"
 
 module JAVA
     imports JAVA-CORE
@@ -25,4 +25,4 @@ module JAVA
     imports JAVA-METHOD-INVOKE
     imports JAVA-API-CORE
 
-end module
+endmodule

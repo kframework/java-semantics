@@ -3,12 +3,12 @@ module JAVA-PROCESS-CLASSES
 
 //no semantics for 'Abstract and 'NoMethodBody required
 //existing semantics for methods covers them too
-syntax KLabel ::= 'Final | 'ThrowsDec | 'Abstract | 'NoMethodBody
+syntax KLabel ::= "'Final" | "'ThrowsDec" | "'Abstract" | "'NoMethodBody"
 
 //@process access modes
-rule 'Public(.List{K}) => public        [structural anywhere]
-rule 'Protected(.List{K}) => protected  [structural anywhere]
-rule 'Private(.List{K}) => private      [structural anywhere]
+rule 'Public(.List{K}) => public        [structural, anywhere]
+rule 'Protected(.List{K}) => protected  [structural, anywhere]
+rule 'Private(.List{K}) => private      [structural, anywhere]
 
 syntax K ::= "getAccessMode" "(" K //'ListWrap(...) - the list of method attributes
                              ")"
@@ -55,14 +55,14 @@ rule [ProcessTypeListDiscard]:
     processTypeList(.) => .
 
 rule [processTypeSet]:
-    (. => processTypeWithDepends(Class)) ~> processTypeSet((SetItem(Class) => .) _)
+    (. => processTypeWithDepends(Class:Id)) ~> processTypeSet((SetItem(Class) => .) _)
 
 rule [processTypeSetDiscard]:
     processTypeSet(.) => .
 
 rule [processTypeWithDepends]:
     <k>
-      processTypeWithDepends(Class)
+      processTypeWithDepends(Class:Id)
       => processTypeWithDepends(BaseClassK) ~> processTypeSet(ISet) ~> processType(Class)
       ...
     </k>
@@ -77,7 +77,7 @@ when
     Decls =/=K .K
 
 rule [processTypeWithDependsDiscard]:
-    <k> processTypeWithDepends(Class) => . ...</k>
+    <k> processTypeWithDepends(Class:Id) => . ...</k>
     <class>
       <className> Class </className>
       <declarations> .K </declarations>
@@ -89,7 +89,7 @@ rule [processTypeWithDependsDiscard2]:
 
 rule [ProcessType]:
     <k>
-      processType(Class) => computeImplTrans(SetItem(BaseClassK) ISet)
+      processType(Class:Id) => computeImplTrans(SetItem(BaseClassK) ISet)
           ~> tryInheritSet(ISet)
 
           //interfaces should also contain Object members
@@ -100,8 +100,8 @@ rule [ProcessType]:
     </k>
     <class>
       <className> Class </className>
-      <extends> BaseClassK </extends>
-      <implements> ISet </implements>
+      <extends> BaseClassK:K </extends>
+      <implements> ISet:Set </implements>
       <implTrans> . => ISet </implTrans>
       <declarations> Decls:K => . </declarations>
       <metaType> MetaT:MetaType </metaType>
@@ -118,7 +118,7 @@ rule [computeImplTrans]:
       ~> computeImplTrans( (SetItem(BaseItf:Id) => .) _)
       ...
     </k>
-    <cuClass> Class </cuClass>
+    <cuClass> Class:Id </cuClass>
     <className> Class </className>
     <implTrans> ITrans:Set </implTrans>
     <className> BaseItf </className>
@@ -134,11 +134,11 @@ syntax K ::= "implTransUnion" "(" Set "," Set ")"
 rule implTransUnion(S1:Set, SetItem(K:K) S2:Set) => implTransUnion(S1 SetItem(K), S2)
 when notBool(K in S1)
 
-rule implTransUnion(S1, SetItem(K) S2) => implTransUnion(S1, S2)
+rule implTransUnion(S1:Set, SetItem(K:K) S2:Set) => implTransUnion(S1, S2)
 when K in S1
 
-rule <k> implTransUnion(S1, .Set) => . ...</k>
-     <cuClass> Class </cuClass>
+rule <k> implTransUnion(S1:Set, .Set) => . ...</k>
+     <cuClass> Class:Id </cuClass>
      <className> Class </className>
      <implTrans> _ => S1 </implTrans>
 
@@ -149,13 +149,13 @@ syntax K ::= "tryInheritSet" "(" Set ")"
            | "inherit" "(" Map ")"  //when checks are made, we are inheriting the method
 
 rule [tryInheritSet]:
-    (. => tryInherit(Class)) ~> tryInheritSet( (SetItem(Class) => .) _)
+    (. => tryInherit(Class:Id)) ~> tryInheritSet( (SetItem(Class) => .) _)
 
 rule [tryInheritSetDiscard]: tryInheritSet(.) => .
 
 rule [tryInherit]:
     <k>
-      tryInherit(Class) => tryInheritImpl(Env)
+      tryInherit(Class:Id) => tryInheritImpl(Env)
       ...
     </k>
     <className> Class </className>
@@ -184,7 +184,7 @@ rule isInheritable(protected) => true::bool
 //Object class cannot match this rule since it have public access mode
 rule [isInheritablePackage]:
     <k> isInheritable(package) => (P1 ==K P2)::bool ...</k>
-    <cuClass> Class </cuClass>
+    <cuClass> Class:Id </cuClass>
     <class>
       <className> Class </className>
       <extends> BaseClass:Id </extends>
@@ -202,17 +202,17 @@ rule isInheritable(private) => false::bool
 //todo if the same method is inherited say from base class ant interface,
 //we're in trouble
 rule [inherit]:
-    <k> inherit(Sig |-> TV) => . ...</k>
-    <cuClass> Class </cuClass>
+    <k> inherit(Sig:K |-> TV:TypedVal) => . ...</k>
+    <cuClass> Class:Id </cuClass>
     <class>
       <className> Class </className>
-      <methods> Env => Env[TV/Sig] </methods>
+      <methods> Env:Map => Env[TV/Sig] </methods>
       ...
     </class>
 
 //returns the access mode of a method in the location L given as argument
-syntax K ::= "getMethodAccessMode" "(" TypedVal ")" [function strict(1)]
-rule getMethodAccessMode( _ :: methodType(Acc:AccessMode,_,_) ) => Acc [anywhere]
+syntax K ::= "getMethodAccessMode" "(" TypedVal ")" [function, strict(1)]
+rule getMethodAccessMode( _ :: methodType(Acc:AccessMode, _ , _ ) ) => Acc [anywhere]
 
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
@@ -225,7 +225,9 @@ context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _),, _)
 
 rule [MethodDec]:
     'MethodDec(
-      'MethodDecHead(Acc,, _,, ReturnType:Type,, Name:Id,, 'ListWrap(Params:List{K}),, _),,
+      'MethodDecHead(Acc:AccessMode,, _:K,, ReturnType:Type,, Name:Id,,
+          'ListWrap(Params:List{K}),, _:K
+      ),,
       S:K
     )
     => storeMethod(Name, typesFromParams(Params), 'ListWrap(Params), S,
@@ -248,20 +250,22 @@ syntax K ::= "storeMethod" "("
                            ")"
 
 syntax K     ::= "typesFromParams" "(" List{K} ")"
-syntax Types ::= "types" "(" List{KResult} ")"
+syntax Types ::= "types" "(" List{K} ")"
 syntax KResult ::= Types
 
-rule typesFromParams(_:List{KResult},, ('Param(_:K,,T:Type,,_:K) => T),, _:List{K})
-        [structural anywhere]
+rule typesFromParams(Ks:List{K},, ('Param(_:K,,T:Type,,_:K) => T),, _:List{K})
+when isKResult(Ks)
+        [structural, anywhere]
 
-rule typesFromParams(KRs:List{KResult}) => types(KRs)
-        [structural anywhere]
+rule typesFromParams(KRs:List{K}) => types(KRs)
+when isKResult(KRs)
+        [structural, anywhere]
 
 context storeMethod(_, _, _, _,
     methodType(_, _:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}, _))
 
 rule [storeMethod]:
-    <k> storeMethod(Name, Ts:Types, 'ListWrap(Params), S, MethodType:Type) =>. ...</k>
+    <k> storeMethod(Name:Id, Ts:Types, 'ListWrap(Params:List{K}), S:K, MethodType:Type) =>. ...</k>
     <cuClass> Class:Id </cuClass>
     <className> Class </className>
     <methods>
@@ -274,7 +278,7 @@ syntax KResult ::= "sig" "(" Id "," Types ")"
 
 rule [ConstrDecSuperCallDesugar]:
     'ConstrDec(
-      'ConstrDecHead(_:K,, _:K,, Name,, _:List{K}),,
+      'ConstrDecHead(_:K,, _:K,, Name:Id,, _:List{K}),,
       'ConstrBody(
         (
           'None(_)
@@ -288,7 +292,7 @@ when
 
 rule [ConstrDecObjectDesugar]:
     'ConstrDec(
-      'ConstrDecHead(_:K,, _:K,, Name,, _:List{K}),,
+      'ConstrDecHead(_:K,, _:K,, Name:Id,, _:List{K}),,
       'ConstrBody(
         (
           'None(_) => 'Some(.K)
@@ -302,9 +306,9 @@ when
 context 'ConstrDec('ConstrDecHead((HOLE => getAccessMode(HOLE)),, _),, _)
 
 rule [ConstrDec]:
-    'ConstrDec('ConstrDecHead(Acc,, _:K,, Name,, 'ListWrap(Params),, _),,
+    'ConstrDec('ConstrDecHead(Acc:AccessMode,, _:K,, Name:Id,, 'ListWrap(Params:List{K}),, _),,
         'ConstrBody(
-      'Some(FirstLine:K) ,,S))
+      'Some(FirstLine:K) ,,S:K))
     => storeConstructor(Name, 'ListWrap(Params), FirstLine,
         S, methodType(Acc, Params, void))
 
@@ -320,14 +324,14 @@ context storeConstructor(_, _, _, _,
 
 rule [storeConstructor]:
     <k>
-      storeConstructor(Name, 'ListWrap(Params), FirstLine, S, MethodType) => .
+      storeConstructor(Name:Id, 'ListWrap(Params:List{K}), FirstLine:K, S, MethodType:Type) => .
       ...
     </k>
     <cuClass> Class:Id </cuClass>
     <className> Class </className>
     <methods>
       Env:Map => Env[
-        constrClosure(Class, 'ListWrap(Params), FirstLine, S) :: MethodType
+        constrClosure(Class, 'ListWrap(Params), FirstLine, S:K) :: MethodType
           / sig(getConsName(Name), typesFromParams(Params))
       ]
     </methods>
@@ -337,7 +341,7 @@ rule [FieldDecDesugar]:
     'FieldDec(SomeK:K,, TypeK:K,, 'ListWrap((K1:K => .List{K}),, K2:K,, Ks:List{K}))
 
 rule [FieldDecInitDesugar]:
-    'FieldDec(_:K,, TypeK,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .List{K})) ))
+    'FieldDec(_:K,, TypeK:K,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .List{K})) ))
     ~> (. => 'InstanceInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
     getKLabel(InitExp) =/=KLabel 'ArrayInit
@@ -345,7 +349,7 @@ when
 
 rule [FieldDecToLocalVarDec]:
     <k> 'FieldDec(_,, TypeK:K,, 'ListWrap('VarDec(X:Id))) => . ...</k>
-    <cuClass> Class </cuClass>
+    <cuClass> Class:Id </cuClass>
     <className> Class </className>
     <fieldDecs>
       'ListWrap(_,, ( .List{K} => 'LocalVarDec(TypeK,, 'ListWrap('VarDec(X,, default(TypeK)))) ))
@@ -353,8 +357,8 @@ rule [FieldDecToLocalVarDec]:
         [structural]
 
 rule [InstanceInitSave]:
-    <k> 'InstanceInit(K) => . ...</k>
-    <cuClass> Class </cuClass>
+    <k> 'InstanceInit(K:K) => . ...</k>
+    <cuClass> Class:Id </cuClass>
     <className> Class </className>
     <instanceInit>... . => K </instanceInit>
         [structural]
@@ -377,20 +381,20 @@ rule [ArrayFieldDecIdDesugar]:
     )))
 
 rule [ArrayFieldDecIdDiscard]:
-    'FieldDec(_,, T,, 'ListWrap('VarDec(
-        ( 'ArrayVarDecId( X,, 'ListWrap(.List{K}) ) => X ),,
-        _ //possible initializer
+    'FieldDec(_,, T:Type,, 'ListWrap('VarDec(
+        ( 'ArrayVarDecId( X:Id,, 'ListWrap(.List{K}) ) => X ),,
+        _:K //possible initializer
     )))
 
 //desugaring fields with ArrayInit
 rule [FieldDecWithArrayInitDesugar]:
-    'FieldDec(_,, T,, 'ListWrap('VarDec(
-      X,,
+    'FieldDec(_,, T:Type,, 'ListWrap('VarDec(
+      X:Id,,
       ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK)) )
     )))
 
 //get internal constructor name from a class name
 syntax K ::= "getConsName" "(" Id ")" [function]
-rule getConsName(X:Id) => String2Id("$cons$" +String Id2String(X)) [structural anywhere]
+rule getConsName(X:Id) => String2Id("$cons$" +String Id2String(X)) [structural, anywhere]
 
-end module
+endmodule

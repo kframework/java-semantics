@@ -31,7 +31,7 @@ when
     Id2String(X) ==String "System"
 
 rule [NameSystemConsole]:
-    methodNameImpl(rtSystem, X, _) => rtSystemConsole
+    methodNameImpl(rtSystem, X:Id, _) => rtSystemConsole
 when
     Id2String(X) ==String "console"
 
@@ -39,7 +39,7 @@ rule [InvokeSystemConsole]:
     'Invoke(rtSystemConsole,, 'ListWrap(.List{K})) => rtSystemConsole
 
 rule [NameSystemConsoleReadLine]:
-    methodNameImpl(rtSystemConsole, X, _) => rtSystemConsoleReadLine
+    methodNameImpl(rtSystemConsole, X:Id, _) => rtSystemConsoleReadLine
 when
     Id2String(X) ==String "readLine"
 
@@ -53,7 +53,7 @@ when
     Id2String(X) ==String "Integer"
 
 rule [NameIntegerParseInt]:
-    methodNameImpl(rtInteger, X, _) => rtIntegerParseInt
+    methodNameImpl(rtInteger, X:Id, _) => rtIntegerParseInt
 when
     Id2String(X) ==String "parseInt"
 
@@ -69,17 +69,17 @@ rule [consoleReadInt]:
 //@ For integers and strings, print their value. For classes, print class type.
 
 rule [NameSystemOut]:
-    'ExprName(rtSystem,, X) => rtSystemOut
+    'ExprName(rtSystem,, X:Id) => rtSystemOut
 when
     Id2String(X) ==String "out"
 
 rule [NameSystemOutPrint]:
-    methodNameImpl(rtSystemOut, X, _) => rtSystemOutPrint
+    methodNameImpl(rtSystemOut, X:Id, _) => rtSystemOutPrint
 when
     Id2String(X) ==String "print"
 
 rule [NameSystemOutPrintln]:
-    methodNameImpl(rtSystemOut, X, _) => rtSystemOutPrintln
+    methodNameImpl(rtSystemOut, X:Id, _) => rtSystemOutPrintln
 when
     Id2String(X) ==String "println"
 
@@ -107,13 +107,13 @@ rule [consolePrint]:
         [transition]
 
 rule [NameSystemIn]:
-    'ExprName(rtSystem,, X) => rtSystemIn
+    'ExprName(rtSystem,, X:Id) => rtSystemIn
 when
     Id2String(X) ==String "in"
 
 rule [NewInstanceScanner]:
     'NewInstance('None(.List{K}),,
-      class X,,
+      class X:Id,,
       'ListWrap(rtSystemIn),,
       'None(.List{K})
     )
@@ -122,7 +122,7 @@ when
     Id2String(X) ==String "Scanner"
 
 rule [ScannerNextInt]:
-    methodNameImpl(rtScanner::_, X, _) => rtScannerNextInt
+    methodNameImpl(rtScanner::_, X:Id, _) => rtScannerNextInt
 when
     Id2String(X) ==String "nextInt"
 
@@ -136,18 +136,18 @@ rule [InvokeScannerNextInt]:
         [transition]
 
 rule [NameGetClass]:
-    methodNameImpl(KR:KResult, X, _) => methodGetClass(KR)
+    methodNameImpl(KR:KResult, X:Id, _) => methodGetClass(KR)
 when
     Id2String(X) ==String "getClass"
 
 rule [InvokeGetClass]:
     'Invoke(
-      methodGetClass(KR),,
+      methodGetClass(KR:KResult),,
       'ListWrap(.List{K})
     ) => classObject(KR)
 
 rule [NameClassGetName]:
-    methodNameImpl(classObject(KR), X, _) => methodClassGetName(KR)
+    methodNameImpl(classObject(KR:KResult), X:Id, _) => methodClassGetName(KR)
 when
     Id2String(X) ==String "getName"
 
@@ -159,20 +159,20 @@ rule [InvokeClassGetNameObject]:
 
 rule [InvokeClassGetNameString]:
     'Invoke(
-      methodClassGetName(Str::_),,
+      methodClassGetName(Str:String::_),,
       'ListWrap(.List{K})
     ) => toString(rtString)
 
 rule [InvokeClassGetNameArray]:
     'Invoke(
-      methodClassGetName(arrayRef(T,_,_)::_),,
+      methodClassGetName(arrayRef(T:Type,_,_)::_),,
       'ListWrap(.List{K})
     ) => toString(T)
 
 rule [fullyQualifiedClassName]:
-    fullyQualifiedClassName(Class) => fullyQualifiedClassName(getPackage(Class), Class)
+    fullyQualifiedClassName(Class:Id) => fullyQualifiedClassName(getPackage(Class), Class)
 
-rule toString(class Class) => fullyQualifiedClassName(Class) [anywhere]
+rule toString(class Class:Id) => fullyQualifiedClassName(Class) [anywhere]
 
 syntax K ::= "fullyQualifiedClassName" "("
                     Package //package elements, each of type Id
@@ -182,17 +182,17 @@ syntax K ::= "fullyQualifiedClassName" "("
             | "fullyQualifiedClassName" "(" Id ")"
 
 rule [ClassNamePackage]:
-    fullyQualifiedClassName(package(X,, Ks:List{K}), Class)
+    fullyQualifiedClassName(package(X:Id,, Ks:List{K}), Class:Id)
     => 'Plus(
           (Id2String(X) +String ".") :: rtString,,
           fullyQualifiedClassName(package(Ks), Class)
         )
 
 rule [ClassNameClass]:
-    fullyQualifiedClassName(package(.List{K}), Class) => Id2String(Class) :: rtString
+    fullyQualifiedClassName(package(.List{K}), Class:Id) => Id2String(Class) :: rtString
 
 rule [NameHashCode]:
-    methodNameImpl(KR:KResult, X, _) => methodHashCode(KR)
+    methodNameImpl(KR:KResult, X:Id, _) => methodHashCode(KR)
 when
     Id2String(X) ==String "hashCode"
 
@@ -206,7 +206,8 @@ rule [InvokeHashCode]:
     ) => I :: int
 
 rule [NameArrayClone]:
-    methodNameImpl(arrayRef(T:Type,L1,Len)::CompileT, X, _) => methodArrayClone(arrayRef(T,L1,Len)::CompileT)
+    methodNameImpl(arrayRef(T:Type, L1:Int, Len:Int)::CompileT:Type, X:Id, _)
+    => methodArrayClone(arrayRef(T,L1,Len)::CompileT)
 when
     Id2String(X) ==String "clone"
 
@@ -231,7 +232,7 @@ syntax K ::=  "arrayCopy" "("
               ")"
         [strict(2)]
 
-rule arrayCopy(arrayRef(T,L1:Int,Len)::_, arrayRef(T,L2:Int,Len)::_)
+rule arrayCopy(arrayRef(T:Type, L1:Int, Len:Int)::_, arrayRef(T, L2:Int, Len)::_)
     => storeCopy(L1, L2, Len) ~> arrayRef(T,L2:Int,Len)::T
 
 //copy a sequence of store values from one place to another
@@ -243,7 +244,7 @@ syntax K ::=  "storeCopy" "("
 
 rule [storeCopy]:
     <k>
-      storeCopy(L1, L2, Len) => storeCopy(L1 +Int 1, L2 +Int 1, Len -Int 1)
+      storeCopy(L1:Int, L2:Int, Len:Int) => storeCopy(L1 +Int 1, L2 +Int 1, Len -Int 1)
       ...
     </k>
     <store>
@@ -259,4 +260,4 @@ when
 rule [storeCopyDiscard]:
     storeCopy(_, _, 0) => .
 
-end module
+endmodule

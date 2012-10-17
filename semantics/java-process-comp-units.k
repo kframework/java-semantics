@@ -10,7 +10,7 @@ rule [DefaultPackageDesugar]:
 
 rule [CompilationUnit]:
     <k>
-      'CompilationUnit('Some('PackageDec(_,, 'PackageName( 'ListWrap(Ks) ))),,_,,K:K) => K
+      'CompilationUnit('Some('PackageDec(_,, 'PackageName( 'ListWrap(Ks:List{K}) ))),,_,,K:K) => K
       ...
     </k>
     <cuPackage> _ => package(Ks) </cuPackage>
@@ -28,16 +28,16 @@ rule [ClassDecNoExtendsDesugar]:
         [structural]
 
 rule [ClassDecNoImplementsDesugar]:
-    'ClassDec('ClassDecHead(_:K,, Class,, _:K,, _:K,,
+    'ClassDec('ClassDecHead(_:K,, Class:Id,, _:K,, _:K,,
         ( 'None(.List{K}) => 'Some('ImplementsDec('ListWrap(.List{K}))) )
       ),, _:K
     )
         [structural]
 
 rule [ClassDec]:
-      'ClassDec('ClassDecHead('ListWrap(ClassModifiers:List{K}),, Class,, _:K,,
+      'ClassDec('ClassDecHead('ListWrap(ClassModifiers:List{K}),, Class:Id,, _:K,,
           'Some('SuperDec('ClassType(class BaseClass:Id,, _:K))),,
-          'Some('ImplementsDec('ListWrap(ImplTypes:List{KResult})))
+          'Some('ImplementsDec('ListWrap(ImplTypes:List{K})))
         ),,
         'ClassBody( CBody:K )
       )  => classDecImpl(ClassModifiers, Class, BaseClass, typesToSet(ImplTypes, .Set), classMetaT,
@@ -55,10 +55,11 @@ rule [ClassDec]:
               )
               ~> CBody
             )
+when isKResult(ImplTypes)
         [structural]
 
 rule [InterfaceDecNoExtendsDesugar]:
-    'InterfaceDec('InterfaceDecHead(_:K,, Class,, _:K,,
+    'InterfaceDec('InterfaceDecHead(_:K,, Class:Id,, _:K,,
         ( 'None(.List{K}) => 'Some('ExtendsInterfaces('ListWrap(.List{K}))) )
       ),, _:K
     )
@@ -68,19 +69,20 @@ rule [InterfaceDec]:
     'InterfaceDec(
       'InterfaceDecHead(
         'ListWrap(ClassModifiers:List{K}),,
-        Class,,
+        Class:Id,,
         _:K,,
-        'Some('ExtendsInterfaces('ListWrap(ImplTypes)))
+        'Some('ExtendsInterfaces('ListWrap(ImplTypes:List{K})))
       ),,
-      CBody
+      CBody:K
     ) => classDecImpl(ClassModifiers, Class, .K, typesToSet(ImplTypes, .Set),
             interfaceMetaT, CBody)
+when isKResult(ImplTypes)
         [structural]
 
 syntax K ::= "classDecImpl" "("
                                 List{K}       // ClassModifiers, .List{K} for Object
-                            "," Id            // Class
-                            "," K             // BaseClass for classes or .K for interfaces
+                            "," Id            // Class:Id
+                            "," K             // BaseClassK, Id for classes or .K for interfaces
                             "," K             // typesToSet(ImplTypes, .Map)
                             "," MetaType      // classCT or interfaceCT
                             "," K             // CBody
@@ -89,7 +91,7 @@ syntax K ::= "classDecImpl" "("
 
 rule [classDecImpl]:
     <k>
-      classDecImpl(_, Class, BaseClassK:K, setKResult(TypeSet), MetaT:MetaType, CBody)
+      classDecImpl(_, Class:Id, BaseClassK:K, setKResult(TypeSet:Set), MetaT:MetaType, CBody:K)
         => checkForMain(CBody)
       ...
     </k>
@@ -128,15 +130,15 @@ syntax K ::= "checkForStatic" "(" List{K} ")"
 
 //For now main method is identified by it's static attribute.
 rule <k> checkForStatic('Static(_),,_) => . ...</k>
-     <crntClass> Class </crntClass>
+     <crntClass> Class:Id </crntClass>
      <mainClass> _ => Class </mainClass>
 
-rule checkForStatic((K => .List{K}),, _)
+rule checkForStatic((K:K => .List{K}),, _)
 when getKLabel(K) =/=KLabel 'Static
 
 rule checkForStatic(.List{K}) => .
 
-rule checkForMain('ListWrap((K => .List{K}),,_))
+rule checkForMain('ListWrap((K:K => .List{K}),,_))
 when getKLabel(K) =/=KLabel 'MethodDec
 
 rule checkForMain('ListWrap(.List{K})) => .
@@ -146,7 +148,7 @@ syntax K ::= "typesToSet" "(" List{K} //a list of class types "class Id"
                           ")"
 syntax KResult ::= "setKResult" "(" Set ")" //set wrapper of type KResult
 
-rule typesToSet((class Class => .List{K}),,_ , (_ (.Set => SetItem(Class) )))
+rule typesToSet((class Class:Id => .List{K}),,_ , (_ (.Set => SetItem(Class) )))
 rule typesToSet(.List{K}, TypeSet:Set) => setKResult(TypeSet)
 
-end module
+endmodule
