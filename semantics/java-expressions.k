@@ -146,22 +146,19 @@ rule 'Cond(Ks:List{K}) => 'If(Ks)
 Typed KOOL allows to assign subtype instance values to supertype lvalues.
 Assignment operators are seqstrict according to JLS. */
 
-syntax CompoundAssignLabel ::=
-                  /* =    */ "'Assign"  // K bug : if we move 'Assign under KLabel, as it's correct,
-                                      // we get errors
-                | /* +=   */ "'AssignPlus"
-                | /* -=   */ "'AssignMinus"
-                | /* *=   */ "'AssignMul"
-                | /* /=   */ "'AssignDiv"
-                | /* &=   */ "'AssignAnd"
-                | /* |=   */ "'AssignOr"
-                | /* ^=   */ "'AssignExcOr"
-                | /* %=   */ "'AssignRemain"
-                | /* <<=  */ "'AssignLeftShift"
-                | /* >>=  */ "'AssignRightShift"
-                | /* >>>= */ "'AssignURightShift"
-
-syntax KLabel ::= CompoundAssignLabel
+syntax K ::= "isCompoundAssignLabel" "(" KLabel ")" [function]
+rule isCompoundAssignLabel(KL:KLabel) =>
+           KL ==KLabel 'AssignPlus
+    orBool KL ==KLabel 'AssignMinus
+    orBool KL ==KLabel 'AssignMul
+    orBool KL ==KLabel 'AssignDiv
+    orBool KL ==KLabel 'AssignAnd
+    orBool KL ==KLabel 'AssignOr
+    orBool KL ==KLabel 'AssignExcOr
+    orBool KL ==KLabel 'AssignRemain
+    orBool KL ==KLabel 'AssignLeftShift
+    orBool KL ==KLabel 'AssignRightShift
+    orBool KL ==KLabel 'AssignURightShift           [structural, anywhere]
 
 context 'Assign((HOLE => lvalue(HOLE)),,_)
 context 'Assign(_:KResult,,HOLE)
@@ -180,13 +177,16 @@ rule [Assign]:
     <k> 'Assign(loc(L:Int) :: T:Type,, V:RawVal :: T) => V::T ...</k>
     <store>... L |-> (_ => V)::T ...</store>
 
-context CALabel:CompoundAssignLabel((HOLE => lvalue(HOLE)),,_)
+context KL:KLabel((HOLE => lvalue(HOLE)),,_)
+when isCompoundAssignLabel(KL)
 
 rule [CompoundAssign]:
-    CALabel:CompoundAssignLabel(loc(L:Int) :: T:Type,, E:K) => 'Assign(loc(L)::T,,
-      castImpl(T, getOpLabel(CALabel)(lookup(L)::T,, E)))
+    KL:KLabel(loc(L:Int) :: T:Type,, E:K) => 'Assign(loc(L)::T,,
+      castImpl(T, getOpLabel(KL)(lookup(L)::T,, E)))
+when isCompoundAssignLabel(KL)
 
-syntax KLabel ::= "getOpLabel" "(" CompoundAssignLabel ")" [function]
+//only for Compound Assign KLabel's
+syntax KLabel ::= "getOpLabel" "(" KLabel ")" [function]
 rule getOpLabel('AssignPlus) => 'Plus [anywhere]
 rule getOpLabel('AssignMinus) => 'Minus [anywhere]
 rule getOpLabel('AssignMul) => 'Mul [anywhere]
