@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Parse a java program, and save the parsed result in a file.
-# Output that file. If the file with parse result already exists and it is newer
+# Outputs that file. If the file with parse result already exists and it is newer
 # than the java file, just output that file.
 
-if [ $# -ne 3 ]; then
-    echo "Usage: `basename $0` <outDir> <javaFile> empty.txt"
+if [ $# -ne 2 ]; then
+    echo "Usage: `basename $0` <outDir> <javaFile>"
     exit 1
 fi
 
