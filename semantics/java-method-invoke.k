@@ -166,6 +166,7 @@ rule [InitSignatureSearchInInterfaceRef]:
       ...
     </class>
 when isKResult(ParamValues)
+        [transition]
 
 syntax K ::= "getClassList" "(" List ")"
 rule (.List{K} => Class),, getClassList((ListItem((Class:Id, _)) => .List) _)

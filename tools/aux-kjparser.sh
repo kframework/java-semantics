@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Parse a java program, and save the parsed result in a file.
-# Outputs that file. If the file with parse result already exists and it is newer
-# than the java file, just output that file.
+# If the file with parse result already exists and it is newer
+# than the java file, then nothing happens.
 
 if [ $# -ne 2 ]; then
     echo "Usage: `basename $0` <outDir> <javaFile>"
@@ -45,5 +45,3 @@ else
       fi
     fi
 fi
-
-cat $kastFile
