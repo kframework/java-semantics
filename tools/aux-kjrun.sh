@@ -7,10 +7,17 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
-javaFile=$1
-workDir="$(pwd)"
+JAVA_FILE=$1
+WORK_DIR="$(pwd)"
 TOOLS_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
-krun --parser="aux-kjparser.sh $workDir $javaFile" \
-  --compiled-def="$TOOLS_DIR/../semantics/java-compiled.maude" \
-  --main-module=JAVA --output-mode=none $TOOLS_DIR/aux-kjrun.sh
+KRUN_CMD="krun --parser=\"aux-kjparser.sh $WORK_DIR $JAVA_FILE\" \
+  --compiled-def=\"$TOOLS_DIR/../semantics/java-compiled.maude\" \
+  --main-module=JAVA --output-mode=none $TOOLS_DIR/aux-kjrun.sh"
+
+echo "WORK_DIR="
+echo $WORK_DIR
+echo "KRUN_CMD="
+echo $KRUN_CMD
+
+eval $KRUN_CMD
