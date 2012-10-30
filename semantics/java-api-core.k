@@ -64,7 +64,6 @@ rule [consoleReadInt]:
       ...
     </k>
     <in> ListItem(I) => . ...</in>
-        [transition]
 
 //@ For integers and strings, print their value. For classes, print class type.
 
@@ -104,7 +103,6 @@ rule [consolePrint]:
       ...
     </k>
     <out>... .=> ListItem(Str) </out>
-        [transition]
 
 rule [NameSystemIn]:
     'ExprName(rtSystem,, X:Id) => rtSystemIn
@@ -133,7 +131,6 @@ rule [InvokeScannerNextInt]:
       ...
     </k>
     <in> ListItem(I) => . ...</in>
-        [transition]
 
 rule [NameGetClass]:
     methodNameImpl(KR:KResult, X:Id, _) => methodGetClass(KR)

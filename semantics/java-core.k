@@ -173,11 +173,11 @@ syntax K ::= "subtype" "(" List{K} "," List{K} ")"
 //todo this rule, if used, leads to the error "failed to load IOWrapper".
 syntax K ::= "isNumericType2" "(" Type ")" [function]
 rule isNumericType2(T:Type)
-=>  #if         T ==K byte
-        orBool  T ==K short
-        orBool  T ==K int
-        orBool  T ==K long
-        orBool  T ==K char
+=>  #if         (T ==K byte)
+        orBool  (T ==K short)
+        orBool  (T ==K int)
+        orBool  (T ==K long)
+        orBool  (T ==K char)
       #then true
       #else false
     #fi  [structural, anywhere]
@@ -186,10 +186,10 @@ rule isNumericType2(T:Type)
 //maybe this isSort methods will be provided by K later on.
 syntax K ::= "isRefType2" "(" Type ")" [function]
 rule isRefType2(T:Type)
-=>          T ==K rtString
-    orBool  T ==K nullType
-    orBool  getKLabel(T) ==KLabel 'arrayOf_
-    orBool  getKLabel(T) ==KLabel 'class_
+=>          (T ==K rtString)
+    orBool  (T ==K nullType)
+    orBool  (getKLabel(T) ==KLabel 'arrayOf_)
+    orBool  (getKLabel(T) ==KLabel 'class_)
         [structural, anywhere]
 
 //default value of all types

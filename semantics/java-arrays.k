@@ -42,7 +42,6 @@ rule [lookupArrayLocation]:
       ...
     </k>
     <store>... L |-> V:RawVal ::elem T2:Type ...</store>
-        [transition]
 
 rule [ArrayIndexOutOfBoundsException]:
     'ArrayAccess(arrayRef(_,_,M:Int) :: _,, N:Int::_)
@@ -232,7 +231,6 @@ context assignImpl(_:KResult, _, HOLE)
 rule [assignImpl]:
     <k> assignImpl( true::bool, L:Int, V:RawVal :: T:Type) => V::T ...</k>
     <store>... L |-> (_ => V) :: elem _ ...</store>
-        [transition]
 
 rule [ArrayStoreException]:
     assignImpl( false::bool, _, TV:TypedVal)

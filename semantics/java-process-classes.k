@@ -44,7 +44,6 @@ rule [processTypeList]:
     (. => processTypeWithDepends(Class))
     ~>  processTypeList(
           (<class>
-            ...
             <className> Class:Id </className>
             ...
           </class> => .Bag)

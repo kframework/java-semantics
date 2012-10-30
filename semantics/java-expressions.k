@@ -241,7 +241,6 @@ rule [lookupVarName]:
     <k> X:Id => TV ...</k>
     <env>... X |-> L:Int ...</env>
     <store>... L |-> TV:TypedVal ...</store>
-        [transition]
 
 rule [lookupLocation]:
     <k>
@@ -250,6 +249,5 @@ rule [lookupLocation]:
       ...
     </k>
     <store>... L |-> V:RawVal :: T2:Type ...</store>
-        [transition]
 
 endmodule
