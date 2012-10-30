@@ -32,7 +32,7 @@ context lvalue('ArrayAccess(_:KResult,,HOLE))
 rule [arrayLookup]:
     'ArrayAccess(arrayRef(_, L:Int, M:Int) :: arrayOf T:Type,, N:Int::_)
     => lookup(L +Int N) :: T
-when N >=Int 0 andBool N <Int M
+when (N >=Int 0) andBool (N <Int M)
         [structural, anywhere]
 
 rule [lookupArrayLocation]:
@@ -51,7 +51,7 @@ rule [ArrayIndexOutOfBoundsException]:
       'ListWrap( Int2String(N) :: rtString ),,
       'None(.List{K})
     ))
-when notBool (N >=Int 0 andBool N <Int M)
+when notBool ((N >=Int 0) andBool (N <Int M))
         [structural, anywhere]
 
 //Required to desugar effects of the previous rule, when exception happens
@@ -277,7 +277,7 @@ syntax K ::= "arrayInitAlloc" "("
         [strict(1)]
 
 rule [arrayInitAlloc]:
-    arrayInitAlloc(arrayRef(T:Type, L:Int, Len:Int)::T, InitContent:K)
+    arrayInitAlloc(arrayRef(T:Type, L:Int, Len:Int)::T, InitContent:List{K})
     => arrayInitImpl(T, L, InitContent) ~> arrayRef(T, L, Len)::T
 
 syntax K ::= "arrayInitImpl" "("

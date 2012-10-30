@@ -15,9 +15,9 @@ syntax K ::= "getAccessMode" "(" K //'ListWrap(...) - the list of method attribu
 rule getAccessMode('ListWrap(Acc:AccessMode,,_)) => Acc
 
 rule getAccessMode('ListWrap((K:K => .List{K}),, _))
-when        K =/=K public
-    andBool K =/=K protected
-    andBool K =/=K private
+when        (K =/=K public)
+    andBool (K =/=K protected)
+    andBool (K =/=K private)
 
 rule getAccessMode('ListWrap(.List{K})) => package
 

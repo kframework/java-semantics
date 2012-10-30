@@ -8,17 +8,17 @@ rule [subtypeRefTrue]:
 /*@ \subsubsection{Subtyping among primitive types} */
 
 rule subtype( byte, T:Type )
-=>  #if         T ==K short
-        orBool  T ==K int
-        orBool  T ==K long
+=>  #if         (T ==K short)
+        orBool  (T ==K int)
+        orBool  (T ==K long)
       #then true :: bool
       #else false :: bool
     #fi
 when T =/=K byte [structural]
 
 rule subtype( short, T:Type )
-=>  #if         T ==K int
-        orBool  T ==K long
+=>  #if         (T ==K int)
+        orBool  (T ==K long)
       #then true :: bool
       #else false :: bool
     #fi
@@ -35,8 +35,8 @@ rule subtype( long, T:Type ) =>  false :: bool
 when T =/=K long [structural]
 
 rule subtype( char, T:Type )
-=>  #if         T ==K int
-        orBool  T ==K long
+=>  #if         (T ==K int)
+        orBool  (T ==K long)
       #then true :: bool
       #else false :: bool
     #fi
@@ -62,14 +62,14 @@ rule [subtypeClassOfClassRed]:
       ...
     </class>
 when
-    Class1 =/=K Class andBool Id2String(Class) =/=K "Object"
+    (Class1 =/=K Class) andBool (Id2String(Class) =/=K "Object")
         [structural]
 
 rule [subtypeClassOfClassFalse]:
     subtype( class X:Id, class Class:Id ) => false :: bool
 when
-            Id2String(X) ==String "Object"
-    andBool X =/=K Class
+            (Id2String(X) ==String "Object")
+    andBool (X =/=K Class)
 
 rule [subtypeInterfaceOfClass]:
     <k> subtype( class Class1:Id, class Class:Id ) => false::bool ...</k>
@@ -141,8 +141,8 @@ rule [subtypeArrayOfClass]:
 rule [subtypeArrayOfOtherFalse]:
     subtype( arrayOf _, T:Type ) => false::bool
 when
-            getKLabel(T) =/=KLabel 'arrayOf_
-    andBool getKLabel(T) =/=KLabel 'class_
+            (getKLabel(T) =/=KLabel 'arrayOf_)
+    andBool (getKLabel(T) =/=KLabel 'class_)
 
 rule [subtypeNull]:
     subtype( nullType, T:Type ) => isRefType2(T) :: bool

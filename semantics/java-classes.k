@@ -176,7 +176,7 @@ Like in untyped KOOL. */
 syntax KLabel ::= "'InstanceOf" [seqstrict]
 
 rule [InstanceOf]:
-    'InstanceOf(V:Int::_,, RT2:RefType)
+    'InstanceOf(V:RawVal::_,, RT2:RefType)
     =>  #if V =/=K null
           #then subtype(typeOf(V), RT2)
           #else false::bool
@@ -224,7 +224,7 @@ rule [ExprNameMember]:
     </k>
     <env> Env:Map </env>
 when
-    notBool( X in keys(Env) orBool Id2String(X) ==String "System" )
+    notBool( (X in keys(Env)) orBool (Id2String(X) ==String "System") )
         [structural]
 
 context 'ExprName(HOLE,,_:K)

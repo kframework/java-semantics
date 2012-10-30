@@ -40,16 +40,16 @@ rule hexToInt(I:Int, Digit:String, Str:String)
 syntax K ::= "hexDigitToInt" "(" String ")" [function]
 
 rule hexDigitToInt(Digit:String) => asciiString(Digit) -Int asciiString("0")
-    when    asciiString(Digit) >=Int asciiString("0")
-    andBool asciiString(Digit) <=Int asciiString("9") [anywhere]
+when        (asciiString(Digit) >=Int asciiString("0"))
+    andBool (asciiString(Digit) <=Int asciiString("9")) [anywhere]
 
 rule hexDigitToInt(Digit:String) => asciiString(Digit) -Int asciiString("A") +Int 10
-    when    asciiString(Digit) >=Int asciiString("A")
-    andBool asciiString(Digit) <=Int asciiString("F") [anywhere]
+when        (asciiString(Digit) >=Int asciiString("A"))
+    andBool (asciiString(Digit) <=Int asciiString("F")) [anywhere]
 
 rule hexDigitToInt(Digit:String) => asciiString(Digit) -Int asciiString("a") +Int 10
-    when    asciiString(Digit) >=Int asciiString("a")
-    andBool asciiString(Digit) <=Int asciiString("f") [anywhere]
+when        (asciiString(Digit) >=Int asciiString("a"))
+    andBool (asciiString(Digit) <=Int asciiString("f")) [anywhere]
 
 syntax K ::= "octaToInt" "(" String ")" [function]
 rule octaToInt(Str:String) => octaToInt(0, Str) [anywhere]
@@ -86,7 +86,7 @@ rule hexAsciiToInt(I:Int) => hexDigitToInt(charString(I)) [anywhere]
 
 rule [LitDeci]:
     'Lit('Deci(Str:String))
-    =>  #if lastChar(Str) ==String "l" orBool lastChar(Str) ==String "L"
+    =>  #if (lastChar(Str) ==String "l") orBool (lastChar(Str) ==String "L")
           #then String2Int(stringRemoveLast(Str)) :: long
           #else String2Int(Str                  ) :: int
         #fi
@@ -94,7 +94,7 @@ rule [LitDeci]:
 
 rule [LitHexa]:
     'Lit('Hexa(Str:String))
-    =>  #if lastChar(Str) ==String "l" orBool lastChar(Str) ==String "L"
+    =>  #if (lastChar(Str) ==String "l") orBool (lastChar(Str) ==String "L")
           #then normalize(hexToInt(substrFrom(stringRemoveLast(Str), 2)) :: long)
           #else normalize(hexToInt(substrFrom(Str,                   2)) :: int )
         #fi
@@ -102,7 +102,7 @@ rule [LitHexa]:
 
 rule [LitOcta]:
     'Lit('Octa(Str:String))
-    =>  #if lastChar(Str) ==String "l" orBool lastChar(Str) ==String "L"
+    =>  #if (lastChar(Str) ==String "l") orBool (lastChar(Str) ==String "L")
           #then normalize(octaToInt(substrFrom(stringRemoveLast(Str), 1)) :: long)
           #else normalize(octaToInt(substrFrom(Str,                   1)) :: int )
         #fi
@@ -120,10 +120,11 @@ rule 'Lit('Bool('False(.List{K}))) => false::bool
 
 rule 'Lit('Char('Single( I:Int ))) => I :: char
 
-//todo uncomment when K3 bug is resolved
-//rule 'Lit('Char('NamedEscape(  98 ))) => asciiString("\b") :: char
-//rule 'Lit('Char('NamedEscape( 102 ))) => asciiString("\f") :: char
-//rule 'Lit('Char('NamedEscape( 39 ))) => asciiString("\'") :: char
+//todo the three escape characters below are not parsed by K3 in their nice form
+rule 'Lit('Char('NamedEscape(  98 ))) =>                 8 :: char  // \b
+rule 'Lit('Char('NamedEscape( 102 ))) =>                12 :: char  // \f
+rule 'Lit('Char('NamedEscape(  39 ))) =>                39 :: char  // \'
+
 rule 'Lit('Char('NamedEscape( 116 ))) => asciiString("\t") :: char
 rule 'Lit('Char('NamedEscape( 110 ))) => asciiString("\n") :: char
 rule 'Lit('Char('NamedEscape( 114 ))) => asciiString("\r") :: char

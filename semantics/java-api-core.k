@@ -93,8 +93,8 @@ rule [printlnEmptyDesugar]:
 rule [consolePrintArgConvert]:
     'Invoke(rtSystemOutPrint,, 'ListWrap(KR:KResult => toString(KR)))
 when
-           typeOf(KR) =/=K rtString
-    orBool KR ==K (null::rtString)
+           (typeOf(KR) =/=K rtString)
+    orBool (KR ==K (null::rtString))
 
 rule [consolePrint]:
     <k>

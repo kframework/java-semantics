@@ -37,12 +37,12 @@ rule normalize(I:Int :: char)
         #fi [anywhere]
 
 syntax K ::= "isInRange" "(" TypedVal ")" [function]
-rule isInRange(I:Int::byte) => (I >=Int -128 andBool I <=Int 127)              [structural, anywhere]
-rule isInRange(I:Int::short) => (I >=Int -32768 andBool I <=Int 32767)         [structural, anywhere]
-rule isInRange(I:Int::int) => (I >=Int -2147483648 andBool I <=Int 2147483647) [structural, anywhere]
-rule isInRange(I:Int::long) => (I >=Int -9223372036854775808
-                          andBool I <=Int  9223372036854775807)                [structural, anywhere]
-rule isInRange(I:Int::char) => (I >=Int 0 andBool I <=Int 65535)               [structural, anywhere]
+rule isInRange(I:Int::byte) => ((I >=Int -128) andBool (I <=Int 127))              [structural, anywhere]
+rule isInRange(I:Int::short) => ((I >=Int -32768) andBool (I <=Int 32767))         [structural, anywhere]
+rule isInRange(I:Int::int) => ((I >=Int -2147483648) andBool (I <=Int 2147483647)) [structural, anywhere]
+rule isInRange(I:Int::long) => ((I >=Int -9223372036854775808)
+                          andBool (I <=Int  9223372036854775807))                  [structural, anywhere]
+rule isInRange(I:Int::char) => ((I >=Int 0) andBool (I <=Int 65535))               [structural, anywhere]
 
 syntax K ::= "normalizeImpl" "(" TypedVal ")" [function]
 
@@ -80,15 +80,15 @@ syntax K ::= "normalizeType" "(" NumericType ")" [function]
 rule normalizeType(ILT:IntOrLongType) => ILT [anywhere]
 
 rule normalizeType(NT:NumericType) => int
-when NT =/=K int andBool NT =/=K long [anywhere]
+when (NT =/=K int) andBool (NT =/=K long) [anywhere]
 
 //todo debug changes
 syntax K ::= "normalizeType" "(" NumericType "," NumericType ")" [function]
 
 rule normalizeType(NT1:NumericType, NT2:NumericType) => int
-when NT1 =/=K long andBool NT2 =/=K long [anywhere]
+when (NT1 =/=K long) andBool (NT2 =/=K long) [anywhere]
 
 rule normalizeType(NT1:NumericType, NT2:NumericType) => long
-when NT1 ==K long orBool NT2 ==K long [anywhere]
+when (NT1 ==K long) orBool (NT2 ==K long) [anywhere]
 
 endmodule

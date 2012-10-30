@@ -61,10 +61,10 @@ syntax StackLayerType ::=
 
 syntax K ::= "isStackConsumer" "(" KLabel ")" [function]
 rule isStackConsumer (KL:KLabel) =>
-           KL ==KLabel 'Return
-    orBool KL ==KLabel 'Throw
-    orBool KL ==KLabel 'Break
-    orBool KL ==KLabel 'Continue [anywhere]
+           (KL ==KLabel 'Return)
+    orBool (KL ==KLabel 'Throw)
+    orBool (KL ==KLabel 'Break)
+    orBool (KL ==KLabel 'Continue) [anywhere]
 
 syntax K ::= "interactsWithStack" "(" K   // S - the stack consumer statement, see above
                               "," StackLayerType
@@ -73,31 +73,31 @@ syntax K ::= "interactsWithStack" "(" K   // S - the stack consumer statement, s
                                           // false if layer if layer is simply deleted
 
 rule interactsWithStack('Return(_), StackLT:StackLayerType, _) =>
-           StackLT ==K return
-    orBool StackLT ==K finally [anywhere]
+           (StackLT ==K return)
+    orBool (StackLT ==K finally) [anywhere]
 
 rule interactsWithStack('Throw(_), StackLT:StackLayerType, _) =>
-           StackLT ==K catch
-    orBool StackLT ==K finally [anywhere]
+           (StackLT ==K catch)
+    orBool (StackLT ==K finally) [anywhere]
 
 rule interactsWithStack('Break('None(_)), StackLT:StackLayerType, _) =>
-           StackLT ==K loop
-    orBool StackLT ==K switch
-    orBool StackLT ==K finally [anywhere]
+           (StackLT ==K loop)
+    orBool (StackLT ==K switch)
+    orBool (StackLT ==K finally) [anywhere]
 
 rule interactsWithStack('Break('Some(X:Id)), StackLT:StackLayerType, StackArg2:K) =>
-         ( StackLT ==K label   andBool X ==K StackArg2)
-    orBool StackLT ==K finally [anywhere]
+         ( (StackLT ==K label)   andBool (X ==K StackArg2))
+    orBool (StackLT ==K finally) [anywhere]
 
 rule interactsWithStack('Continue('None(_)), StackLT:StackLayerType, _) =>
-           StackLT ==K loop
-    orBool StackLT ==K forBody
-    orBool StackLT ==K finally [anywhere]
+           (StackLT ==K loop)
+    orBool (StackLT ==K forBody)
+    orBool (StackLT ==K finally) [anywhere]
 
 rule interactsWithStack('Continue('Some(X:Id)), StackLT:StackLayerType, StackArg2:K) =>
-           ( StackLT ==K loop    andBool X ==K StackArg2)
-    orBool ( StackLT ==K forBody andBool X ==K StackArg2)
-    orBool   StackLT ==K finally [anywhere]
+           ( (StackLT ==K loop)    andBool (X ==K StackArg2))
+    orBool ( (StackLT ==K forBody) andBool (X ==K StackArg2))
+    orBool   (StackLT ==K finally) [anywhere]
 
 syntax K ::= "popx" //discard the top stack layer
 
@@ -322,9 +322,9 @@ syntax K ::= "getLoopLabel" "(" K ")" [function]
 
 rule getLoopLabel((StackLT:StackLayerType, K:K, KL:KLabel(_), _,_,_)) =>
     #if StackLT ==K label
-        andBool (        KL ==KLabel 'While
-                  orBool KL ==KLabel 'DoWhile
-                  orBool KL ==KLabel 'For )
+        andBool (        (KL ==KLabel 'While)
+                  orBool (KL ==KLabel 'DoWhile)
+                  orBool (KL ==KLabel 'For) )
 
       #then K
       #else .K
@@ -412,7 +412,7 @@ rule [Break]:
     <stack> ListItem((StackLT:StackLayerType, XK:K, _, K:K, Env:Map, C:Bag)) => . ...</stack>
 when
     interactsWithStack('Break(Arg), StackLT, XK)
-    andBool StackLT =/=K finally
+    andBool (StackLT =/=K finally)
 
 rule [StackConsumerStmPassThrough]:
     <k> KL:KLabel(Ks:List{K}) ...</k>
@@ -442,7 +442,7 @@ rule [Continue]:
     </stack>
 when
     interactsWithStack('Continue(Arg), StackLT, XK)
-    andBool StackLT =/=K finally
+    andBool (StackLT =/=K finally)
 
 /*@\section{Return} At method return, we have to check that the type
 of the returned

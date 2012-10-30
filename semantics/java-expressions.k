@@ -63,9 +63,9 @@ rule /* I1 >= I2 */ 'GtEq(I1:Int :: _,, I2:Int :: _) => (I1 >=Int I2) :: bool
 
 //normalization of first argument of bit shift operator
 rule KL:KLabel(I1:Int :: NT1:NumericType,, I2:Int :: NT2:NumericType) => KL(I1 :: normalizeType(NT1),, I2 :: NT2)
-    when    KL ==KLabel 'LeftShift
-     orBool KL ==KLabel 'RightShift
-     orBool KL ==KLabel 'URightShift
+    when    (KL ==KLabel 'LeftShift)
+     orBool (KL ==KLabel 'RightShift)
+     orBool (KL ==KLabel 'URightShift)
 
 rule /* I1 <<  I2 */ 'LeftShift(I1:Int :: ILT:IntOrLongType,, I2:Int :: _)
     => normalize( (I1 <<Int (I2 &Int (bitCount(ILT) -Int 1))) :: ILT ) //JLS 15.19
@@ -82,11 +82,11 @@ rule /* I1 + I2     */ 'Plus(I1:Int :: NT1:NumericType,, I2:Int :: NT2:NumericTy
 rule /* Str1 + Str2 */ 'Plus(Str1:String :: rtString,, Str2:String :: rtString)
     => (Str1 +String Str2) :: rtString
 rule /* Str + KR    */ 'Plus(Str:String :: rtString,, ( KR:KResult => toString(KR) ))
-when       typeOf(KR) =/=K rtString
-    orBool KR ==K (null::rtString)
+when       (typeOf(KR) =/=K rtString)
+    orBool (KR ==K (null::rtString))
 rule /* KR + Str    */ 'Plus(( KR:KResult => toString(KR) ),, Str:String :: rtString)
-when       typeOf(KR) =/=K rtString
-    orBool KR ==K (null::rtString)
+when       (typeOf(KR) =/=K rtString)
+    orBool (KR ==K (null::rtString))
 
 rule /* I1 - I2    */ 'Minus(I1:Int :: NT1:NumericType,, I2:Int :: NT2:NumericType) => normalize( (I1 -Int I2), NT1, NT2 )
 rule /* I1 * I2    */ 'Mul(I1:Int :: NT1:NumericType,, I2:Int :: NT2:NumericType) => normalize( (I1 *Int I2), NT1, NT2 )
@@ -148,17 +148,17 @@ Assignment operators are seqstrict according to JLS. */
 
 syntax K ::= "isCompoundAssignLabel" "(" KLabel ")" [function]
 rule isCompoundAssignLabel(KL:KLabel) =>
-           KL ==KLabel 'AssignPlus
-    orBool KL ==KLabel 'AssignMinus
-    orBool KL ==KLabel 'AssignMul
-    orBool KL ==KLabel 'AssignDiv
-    orBool KL ==KLabel 'AssignAnd
-    orBool KL ==KLabel 'AssignOr
-    orBool KL ==KLabel 'AssignExcOr
-    orBool KL ==KLabel 'AssignRemain
-    orBool KL ==KLabel 'AssignLeftShift
-    orBool KL ==KLabel 'AssignRightShift
-    orBool KL ==KLabel 'AssignURightShift           [structural, anywhere]
+           (KL ==KLabel 'AssignPlus)
+    orBool (KL ==KLabel 'AssignMinus)
+    orBool (KL ==KLabel 'AssignMul)
+    orBool (KL ==KLabel 'AssignDiv)
+    orBool (KL ==KLabel 'AssignAnd)
+    orBool (KL ==KLabel 'AssignOr)
+    orBool (KL ==KLabel 'AssignExcOr)
+    orBool (KL ==KLabel 'AssignRemain)
+    orBool (KL ==KLabel 'AssignLeftShift)
+    orBool (KL ==KLabel 'AssignRightShift)
+    orBool (KL ==KLabel 'AssignURightShift)           [structural, anywhere]
 
 context 'Assign((HOLE => lvalue(HOLE)),,_)
 context 'Assign(_:KResult,,HOLE)
