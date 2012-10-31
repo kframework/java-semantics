@@ -16,6 +16,7 @@ Individual tests:
 Access a hidden field through super qualifier, cast to base class,
   or named reference to base class.
 133. Accessing hidden fields through super in a three-level hierarchy.
+134. Field hiding with access modes. Private fields hides a public field.
 14. Local var hiding a field. Class with a field, method with a local var with the same name.
   Access both from within and outside var scope. Also use this.field.
 15. Param hiding a field. Class with a field, method with a param with the same name.

@@ -1,0 +1,143 @@
+    Test plan for static members.
+Part 1. Static methods.
+Part 2. Static fields.
+Part 3. Static initialization.
+Part 4. Final static fields in interfaces.
+
+  Part 1. Static methods
+
+101. Static method call through Class.f() expression.
+102. Static method call unqualified, from an instance method.
+103. Two static and two instance methods in one class. Call all unqualified
+  in static context.
+104. Static method resolution:
+  6 possible expressions:
+  - unqualified in static cotnext
+  - unqualified in instance context
+  - this.f()
+  - super.f()
+  - object.f()
+  - Class.f()
+  2 possible target contexts:
+  - method defined in the target type/ current class
+  - method inherited. Test all possibilities.
+
+105. Static method overloading, all versions in one class.
+106. Static methods access modes - test just public vs private access mode
+  in one compilation unit.
+107. Static method versions from derived classes are not accessible.
+  B < A, B.f() <sig A.f(), call to (A)B.f() have no access to B.f().
+108. Static methods are not overwritten. B < A, A.f() =sig B.f().
+  Call to (A)B.f() calls A.f().
+109. Static methods hiding.
+  A < B, A.f() =sig B.f(). Other variations by need.
+  6 possible expressions:
+  - unqualified in static cotnext
+  - unqualified in instance context
+  - this.f()
+  - super.f()
+  - object.f()
+  - Class.f()
+  2 possible target contexts:
+  - method defined in the target type/ current class
+  - method inherited. Test all possibilities.
+
+  Method hiding is described in: $8.4.8.2, $8.4.8.3
+110. Hiding and overloading independence. A < B. A.f(int), A.f(long), B.f(int).
+  From B, A.f(long) is visible.
+111. Overloading through a mix of static and instance methods.
+  Call from instance context. All methods are accessible.
+  Class A:
+    - f(byte)
+    - static f(short)
+    - f(int)
+    - static f(long)
+    Call via:
+      - inside instance method, unqualified.
+      - this,
+      - instance of A,
+    with all param types.
+
+112. Overloading through a mix of static and instance methods.
+  Call from static context. Only static methods are accessible.
+  Class A:
+    - f(byte)
+    - static f(short)
+    - f(int)
+    - static f(long)
+    Call via:
+      - inside static method, unqualified.
+      - class name A,
+    with all param types.
+
+113. Overloading through a mix of static and instance methods.
+  Inheritnace. Call through super.f()
+  Class A:
+    - f(int)
+    - static f(long)
+  Class B < A:
+    - f(byte)
+    - static f(short)
+    Call via:
+      - super.f() inside B, with all param types.
+
+114. Overloading vs hiding.
+  A: f(), static g().
+  B < A: f(), static g(). Call both from (A)a, (B)b, (B)a.
+
+115. Unqualified static method in instance initializing contexts.
+  Access a static method through unqualified expression in:
+  - instance field initializer
+  - instance initializer
+  - super() call
+  - constructor
+
+  Part 2. Static fields
+
+201. Static field, accesed though class qualified expression for read/write.
+202. Static field, accessed through unqualified expression in static methods,
+  for read/write.
+203. Two static and two instance fields in the same class, all accessed unqualified.
+204. Static field as instance counter.
+  Class have one static and one instance field. Create three instances.
+  Check that static field is the same, instance field is different.
+
+205. Field resolution:
+  We have 6 possible expressions:
+    - unqualified f in static context
+    - unqualified f in instance context
+    - this.f
+    - object.f
+    - Class.f
+    - super.f
+  combined by two target contexts:
+    - field in current class
+    - field inherited from superclass.
+
+206. Field hiding:
+  We have 6 modes to access a static field:
+    - unqualified f in static context
+    - unqualified f in instance context
+    - this.f
+    - object.f
+    - Class.f
+    - super.f
+  We have three hiding scenarios involving static fields:
+    - static hides static field
+    - static hides instance
+    - instance hides static
+  We should test every combination that passes static checking.
+
+207. Fields do not participate in polymorphism.
+  B < A, four hidding scenarios:
+  static - static, static - instance, instance - static, instance - instance.
+  Call all fourthrough (A)B ref. Field from A should be called.
+
+208. Unqualified static fields in instance initializing contexts.
+  Access a static field through unqualified expression in:
+  - instance field initializer
+  - instance initializer
+  - super() call
+  - constructor
+
+
