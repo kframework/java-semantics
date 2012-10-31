@@ -38,6 +38,7 @@ Major features yet to be implemented:
 1. Static members, including interface fields.
 2. Packages.
 3. Inner classes (including nested, local and anonymous classes).
+4. Advanced names resolution, shadowing and obscuring. JLS $6.
 
 
 Limitations:
