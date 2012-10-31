@@ -8,6 +8,8 @@ Testing class initialization sequence
 8. constructor overloading / access modes. (one test for overloading, probably one for access modes.)
   (Both for this(); and super();)
 
+50. Basic testing of new, constructor, method invocation.
+  Constructor uses arguments to initialize fields.
 51. Two classes, implicit call of no-args superclass constructor.
 52. Two classes, explicit call of no-args superclass constructor.
 53. Two classes, call of superclass constructor with arguments.

@@ -34,8 +34,8 @@ class Leaf extends Node {
   }
 }
 
-class main {
-  main(String[] args) {
+public class tree_sum {
+  public static void main(String[] args) {
     Container o;
     o = new Container(
       new Container(new Leaf(3), new Leaf(4)),
@@ -44,12 +44,6 @@ class main {
     System.out.println(o.Sum());
     System.out.print("o.left.Sum = " + o.getLeft().Sum() + "\n");
     System.out.println("Done!");
-  }
-}
-
-public class tree_sum {
-  public static void main(String[] args) {
-    new main(args);
   }
 }
 

@@ -1,3 +1,7 @@
+/*
+Fields with unqualified access. Read and write a field from inside the class.
+*/
+
 class c {
   int x;
 
@@ -10,15 +14,9 @@ class c {
   }
 }
 
-class main {
-  main(String[] args) {
+public class fields_101_local_access {
+  public static void main(String[] args) {
     System.out.println((new c()).g());
     System.out.println("Done!");
-  }
-}
-
-public class p02 {
-  public static void main(String[] args) {
-    new main(args);
   }
 }

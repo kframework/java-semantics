@@ -1,4 +1,7 @@
-// Testing new, constructor, method invocation.
+/*
+Basic testing of new, constructor, method invocation.
+  Constructor uses arguments to initialize fields.
+*/
 
 class C {
   int i, j;
@@ -18,23 +21,16 @@ class C {
   }
 }
 
-class main {
-  int a, b;
-  C o;
-
-  main(String[] args){
+public class constr_50_basic {
+  public static void main(String[] args) {
+    int a, b;
+    C o;
     a = b = 5;
     o = new C(a);
     o.print2();
     o.add(++b);
     o.print2();
     System.out.println("Done!");
-  }
-}
-
-public class constructor {
-  public static void main(String[] args) {
-    new main(args);
   }
 }
 

@@ -5,9 +5,17 @@ Part 1 Fields
 1. fields and inheritance.
 
 Individual tests:
+101. Fields with unqualified access. Read and write a field from inside the class.
+102. Use a field of type reference. Pass a reference as a method argument.
 11. One class with fields.
 12. Subclass/superclass with fields, different names. Access from derived class.
 13. Fields hiding. Subclass/superclass with fields, same name, access from both base and derived class.
+131. Fields hiding. Subclass/superclass with fields, same name, access from both base and derived class.
+  Now fields are accessed locally, via unqualified expressions.
+132. B < A. B.x, A.x.
+Access a hidden field through super qualifier, cast to base class,
+  or named reference to base class.
+133. Accessing hidden fields through super in a three-level hierarchy.
 14. Local var hiding a field. Class with a field, method with a local var with the same name.
   Access both from within and outside var scope. Also use this.field.
 15. Param hiding a field. Class with a field, method with a param with the same name.

@@ -1,5 +1,7 @@
-// Testing shadowing of a field by another field and
-// whether the object stack environment works.
+/*
+Fields hiding. Subclass/superclass with fields, same name, access from both base and derived class.
+  Now fields are accessed locally, via unqualified expressions.
+*/
 
 class C1 {
   int x, y;
@@ -20,9 +22,8 @@ class C2 extends C1 {
   int gety2() { return y; }
 }
 
-class main {
-
-  main(String[] args) {
+public class fields_131_hiding_local_access {
+  public static void main(String[] args) {
     C2 o2 = new C2();
     o2.setx1(11);
     o2.sety1(12);
@@ -32,12 +33,6 @@ class main {
     System.out.print(o2.getx2()+ " ");
     System.out.println(o2.gety2());
     System.out.println("Done!");
-  }
-}
-
-public class field_shadowing_1 {
-  public static void main(String[] args) {
-    new main(args);
   }
 }
 

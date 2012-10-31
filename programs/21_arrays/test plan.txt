@@ -15,6 +15,10 @@ Part 1. Arrays of various types.
   - long[] a; a[0] = 2.000.000.000. print(a[0]*a[0]) - should print 4.000.000.000
   - long[][] m. Same test for two-dim array.
 
+013. Array element ref type preservation.
+    Check that the type of element of an array of references does not change
+    after assigning a value of a narrower reference type.
+
 Part 2. Array allocation.
 
 2. Array allocation. Multidim array allocation in one piece:
