@@ -23,7 +23,7 @@ Part 2 - class init
   and the constructor are not executed.
 210. Using super in the field initializer. Call a super field/method with the same name
   as a member in this class, from a filed initializer.
-211. Multifield with init. two groups of three fields each:
+211. Multifield with init. Two groups of three fields each:
   int a, b=..., c;
   int d=..., e, f=...;
   Test their values.
@@ -34,7 +34,7 @@ Combination of multi field declaration, field with [] in declarator, array initi
 32. Instance initializer, then field initializer, initializing the same field, then constructor.
 33. Field, initializer, field, initializer, then constructor.
 34. Inst initializer throwing exc. The remaining field inits and constructor are not executed.
-35. Inst initializer with a local var hiding a field.
+35. Inst initializer with a local var shadowing a field.
 
 41. Three classes, all with fields with initializer and no-arg constructor. Test that the order is correct.
   All initializers print a message.

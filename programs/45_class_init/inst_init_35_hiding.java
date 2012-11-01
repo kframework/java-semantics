@@ -1,5 +1,5 @@
 /*
-Inst initializer with a local var hiding a field.
+Inst initializer with a local var shadowing a field.
 */
 
 class A {

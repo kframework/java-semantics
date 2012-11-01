@@ -1,10 +1,12 @@
     Test plan for static members.
 Part 1. Static methods.
 Part 2. Static fields.
-Part 3. Static initialization.
-Part 4. Final static fields in interfaces.
+Part 3. Static initialization - just static members.
+Part 4. Static initialization, itnerplay of static and instance members.
+Part 5. Triggering class initialization.
+Part 6. Final static fields in interfaces.
 
-Part 5. Implementation of console read/out and others through static members.
+Part 7. Implementation of console read/out and others through static members.
   Add required tests in java-api-core section, just the main functionality.
   Also test that other fields/methods may have the same name as builtin native methods.
 
@@ -161,3 +163,5 @@ Part 5. Implementation of console read/out and others through static members.
   The main class have a method main with type int[]. Test that the main class is correctly
   choosen.
 
+todo:
+  Add tests inspired from tests for instance fields.

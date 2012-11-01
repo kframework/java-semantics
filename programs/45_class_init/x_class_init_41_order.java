@@ -1,6 +1,6 @@
 /*
 Three classes, all with fields with initializer and no-arg constructor. Test that the order is correct.
-All initializers print a message.
+All the initializers print a message.
 */
 
 class A {
