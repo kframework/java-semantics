@@ -4,6 +4,10 @@ Part 2. Static fields.
 Part 3. Static initialization.
 Part 4. Final static fields in interfaces.
 
+Part 5. Implementation of console read/out and others through static members.
+  Add required tests in java-api-core section, just the main functionality.
+  Also test that other fields/methods may have the same name as builtin native methods.
+
   Part 1. Static methods
 
 101. Static method call through Class.f() expression.
@@ -107,12 +111,7 @@ Part 4. Final static fields in interfaces.
   Class have one static and one instance field. Create three instances.
   Check that static field is the same, instance field is different.
 
-205. Main method is executed in static context. Two static and two instance methods inside main class.
-  One static field - instance counter.
-  Call static ones from the static context, all of them from the instance context.
-  Test that class counter is o before main instantiation, 1 afterwards.
-
-206. Field resolution:
+205. Static field lookup, all the forms:
   We have 6 possible expressions:
     - unqualified f in static context
     - unqualified f in instance context
@@ -124,7 +123,7 @@ Part 4. Final static fields in interfaces.
     - field in current class
     - field inherited from superclass.
 
-207. Field hiding:
+206. Static field hiding:
   We have 6 modes to access a static field:
     - unqualified f in static context
     - unqualified f in instance context
@@ -138,16 +137,27 @@ Part 4. Final static fields in interfaces.
     - instance hides static
   We should test every combination that passes static checking.
 
-208. Fields do not participate in polymorphism.
+207. Fields do not participate in polymorphism. (neither static nor instance)
   B < A, four hidding scenarios:
   static - static, static - instance, instance - static, instance - instance.
-  Call all fourthrough (A)B ref. Field from A should be called.
+  Call all four through (A)B ref. Fields from A should be called.
 
-209. Unqualified static fields in instance initializing contexts.
+208. Unqualified static fields in instance initializing contexts.
   Access a static field through unqualified expression in:
   - instance field initializer
   - instance initializer
   - super() call
   - constructor
 
+209. Main method is executed in static context. Two static and two instance methods inside main class.
+  One static field - instance counter.
+  Call static ones from the static context, all of them from the instance context.
+  Test that class counter is 0 before main instantiation, 1 afterwards.
+
+210. Choosing the main class.
+  A program with three public classes - one with the name before the main class, main class,
+  and the third one after the main class. Classes one and three also have public static
+  methods main, with one argument, but the type is int, respectively Object[].
+  The main class have a method main with type int[]. Test that the main class is correctly
+  choosen.
 
