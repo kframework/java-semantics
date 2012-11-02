@@ -1,0 +1,76 @@
+Interfaces with static final fields.
+
+Part 1. Access to an interface field may be done in four ways:
+  11. Through the defining interface.
+  12. Through a subinterface.
+  13. Through a class implementing directly the defined interface.
+  14. Through a class extending a class implementing the defining interface.
+  15. Through a class implementing indirectly the defining interface.
+
+  We will test all cases with all possible expressions.
+
+Part 2. Fields hiding involving an interface:
+  21. I2{v} < I1{v}
+  22. I3 < I2{v} < I1{v}
+  23.  A < I2{v} < I1{v}
+  24. A{v} < I1{v}
+  untested cases:
+    - B < A{v} < I1{v}
+
+  Test using unqualified and class-qualified expression.
+
+Part 3. Multiple inheritance, no subtleties.
+  31. I3{d} < I2{c}, I1{a,b} - access all throuch class qualifiers.
+  32. A{c} < I2{b}, I1{a} - access all through class qualifiers and unqualified in a,
+    static and dynamic context.
+
+Part 4. Multiple-inherited field.
+  The following cases:
+  41. I4 < I3, I2 < I1{v}
+  42. B < (A, I2) < I1{v}
+  untested cases:
+    - I3 < (I2, I1), I2 < I1{v}
+    - B < (A, I1), A < I1{v}
+  We will test cases 2 and 4, from b - unqualified and class-qualified.
+
+Part 5. Ambiguously inherited fields:
+  51. A < I3 < I2{v}, I1{v}
+  52. B < A{v}, I1{v}
+  Test the cases by object-qualified expression. Actual object of most derived type.
+
+Part 6. Resolution of ambiguously inherited fields through super:
+  61. B < A{v}, I1{v}
+  62. B < (A, I2{v}), A < I1{v}
+  Test both cases calling super.f in B.
+
+Part 7. Field initializers, no hierarchy.
+  Same capabilities as for static field initializers in classes,
+  except that an interface field cannot be part of an composite-assignment expression with forward
+  reference:
+
+71. Fileds with initializer, all initialized with a constant expression.
+  (static fields 101)
+72. Fields with initializer, some initializer exps refer to fields declared above.
+  (static fields 102)
+73. Fields with initializer, initializer exps refer to fields declared below. Default values exposed.
+  (static fields 103)
+74. Fields with initializer, forward reference, default values for all types tested.
+  (static fields 104)
+75. Fields with initializer throwing an exception. Test that all the remaining initializers
+  and the constructor are not executed. Catch StaticInitializationError in main.
+  (static fields 107)
+76. Multifield with init, also methods. Two groups of fields:
+  static int a=...;
+  static int d=..., f=...;
+  Test their values. Do not implement the interface. We are interested only in preprocessing.
+
+77. Three field initializers, all with tracing. Test their order.
+
+Part 8. Field initializers, hierarchy:
+
+81. I2 < I1. Fields with initializer, refering to superclass static fields
+  by simple name. Test that superclass fields are initialized.
+82. Hierarchy of type I1 < (I2,I3), Interfaces all with fields with initializer,
+  Fields in I3 refer to I1 then I2 by simple name.
+  All initializers print a message. Test that the order is correct.
+
