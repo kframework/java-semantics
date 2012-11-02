@@ -3,7 +3,7 @@ Static methods are not overwritten. B < A, A.f() =sig B.f().
   Call to (A)B.f() calls A.f().
 */
 
-public class static_109_m_no_overwrite {
+public class static_m_109_no_overwrite {
   public static void main(String[] args) {
     A a = new B();
     a.sf(0);

@@ -12,7 +12,7 @@ Overloading through a mix of static and instance methods.
     with param types: short, long. Other ones will give compile-time error.
 */
 
-public class static_113_m_overl_static_inst_2 {
+public class static_m_113_overl_static_inst_2 {
   public static void main(String[] args) {
     A.test();
     System.out.println("Done!");

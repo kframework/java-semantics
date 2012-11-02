@@ -7,7 +7,7 @@ Unqualified static fields in instance initializing contexts.
   - constructor
 */
 
-public class static_208_f_in_inst_init {
+public class static_f_108_in_inst_init {
   public static void main(String[] args) {
     new B();
     System.out.println("Done!");

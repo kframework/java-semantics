@@ -4,7 +4,7 @@ Overwriting vs hiding.
   B < A: f(), static g(). Call both from (A)a, (B)b, (B)a.
 */
 
-public class static_115_m_overl_vs_hiding {
+public class static_m_115_overl_vs_hiding {
   public static void main(String[] args) {
     A aa = new A();
     aa.f();

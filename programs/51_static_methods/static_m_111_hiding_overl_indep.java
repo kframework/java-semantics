@@ -3,7 +3,7 @@ Hiding and overloading independence. A < B. A.f(int), A.f(long), B.f(int).
   From B, A.f(long) is visible.
 */
 
-public class static_111_m_hiding_overl_indep {
+public class static_m_111_hiding_overl_indep {
   public static void main(String[] args) {
     A.sf((int)0);
     A.sf((long)0);

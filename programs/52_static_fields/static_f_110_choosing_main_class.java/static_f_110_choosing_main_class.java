@@ -7,7 +7,7 @@ Choosing the main class.
   choosen.
 */
 
-public class static_210_choosing_main_class {
+public class static_f_110_choosing_main_class {
   public static void main(String[] args) {
     System.out.println("program main method");
     System.out.println("Done!");

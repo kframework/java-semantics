@@ -14,7 +14,7 @@ Static field hiding:
   We should test every combination that passes static checking.
 */
 
-public class static_206_f_hiding {
+public class static_f_106_hiding {
   public static void main(String[] args) {
     A.a = 1;
     A.c = 3;

@@ -6,9 +6,9 @@ Static protected access mode. Test that a static protected method can be
 
 import a.*;
 
-public class static_107_protected_mode extends A {
+public class static_m_107_protected_mode extends A {
   public static void main(String[] args) {
-    new static_107_protected_mode().instanceContext();
+    new static_m_107_protected_mode().instanceContext();
     staticContext();
 
     System.out.println("Done!");

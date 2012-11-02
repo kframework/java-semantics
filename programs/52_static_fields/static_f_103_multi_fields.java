@@ -2,7 +2,7 @@
 Two static and two instance fields in the same class, all accessed unqualified.
 */
 
-public class static_203_f_multi_fields {
+public class static_f_103_multi_fields {
   public static void main(String[] args) {
     A a = new A(1,2,3,4);
     a.printFields();

@@ -3,7 +3,7 @@ Two static and two instance methods in one class. Call all unqualified
   in an instance context.
 */
 
-public class static_103_m_multi_unqualified {
+public class static_m_103_multi_unqualified {
   public static void main(String[] args) {
     new A().test();
     System.out.println("Done!");

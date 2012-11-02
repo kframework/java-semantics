@@ -12,7 +12,7 @@ Static field lookup, all the forms:
     - field inherited from superclass.
 */
 
-public class static_205_f_lookup_general {
+public class static_f_105_lookup_general {
   public static void main(String[] args) {
     A.sv = 8;
 

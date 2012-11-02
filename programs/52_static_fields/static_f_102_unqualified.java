@@ -3,7 +3,7 @@ Static field, accessed through unqualified expression in static methods,
   for read/write.
 */
 
-public class static_202_f_unqualified {
+public class static_f_102_unqualified {
   public static void main(String[] args) {
     A.setV(7);
     System.out.println(A.getV());

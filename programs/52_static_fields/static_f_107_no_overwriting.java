@@ -5,7 +5,7 @@ Fields do not participate in polymorphism. (neither static nor instance)
   Call all four through (A)B ref. Fields from A should be called.
 */
 
-public class static_207_f_no_overwriting {
+public class static_f_107_no_overwriting {
   public static void main(String[] args) {
     A.a = 1;
     A.c = 3;

@@ -15,7 +15,7 @@ Static methods hiding.
   Method hiding is described in: $8.4.8.2, $8.4.8.3
 */
 
-public class static_110_m_hiding {
+public class static_m_110_hiding {
   public static void main(String[] args) {
     C c = new C();
 

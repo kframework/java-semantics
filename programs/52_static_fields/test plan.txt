@@ -1,0 +1,64 @@
+    Test plan for static members
+
+  Part 2. Static fields
+
+101. Static field, accesed though class qualified expression for read/write.
+102. Static field, accessed through unqualified expression in static methods,
+  for read/write.
+103. Two static and two instance fields in the same class, all accessed unqualified.
+104. Static field as instance counter.
+  Class have one static and one instance field. Create three instances.
+  Check that static field is the same, instance field is different.
+
+105. Static field lookup, all the forms:
+  We have 6 possible expressions:
+    - unqualified f in static context
+    - unqualified f in instance context
+    - this.f
+    - object.f
+    - Class.f
+    - super.f
+  combined by two target contexts:
+    - field in current class
+    - field inherited from superclass.
+
+106. Static field hiding:
+  We have 6 modes to access a static field:
+    - unqualified f in static context
+    - unqualified f in instance context
+    - this.f
+    - object.f
+    - Class.f
+    - super.f
+  We have three hiding scenarios involving static fields:
+    - static hides static field
+    - static hides instance
+    - instance hides static
+  We should test every combination that passes static checking.
+
+107. Fields do not participate in polymorphism. (neither static nor instance)
+  B < A, four hidding scenarios:
+  static - static, static - instance, instance - static, instance - instance.
+  Call all four through (A)B ref. Fields from A should be called.
+
+108. Unqualified static fields in instance initializing contexts.
+  Access a static field through unqualified expression in:
+  - instance field initializer
+  - instance initializer
+  - super() call
+  - constructor
+
+109. Main method is executed in static context. Two static and two instance methods inside main class.
+  One static field - instance counter.
+  Call static ones from the static context, all of them from the instance context.
+  Test that class counter is 0 before main instantiation, 1 afterwards.
+
+110. Choosing the main class.
+  A program with three public classes - one with the name before the main class, main class,
+  and the third one after the main class. Classes one and three also have public static
+  methods main, with one argument, but the type is int, respectively Object[].
+  The main class have a method main with type int[]. Test that the main class is correctly
+  choosen.
+
+todo:
+  Add tests inspired from tests for instance fields.

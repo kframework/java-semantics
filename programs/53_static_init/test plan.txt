@@ -1,4 +1,6 @@
-Testing static class initialization sequence.
+    Test plan for static members.
+
+Part 3. Static initialization - just static members.
 
 Just the order of initialization within a class/hierarchy. we are not testing
   when a class initialization is triggered. Tested classes have only static members.
@@ -7,12 +9,9 @@ Just the order of initialization within a class/hierarchy. we are not testing
 
 (We'll later rename them to part 1-2-3.)
 
-Part 2. Static field initializers.
-Part 3. Static initializers.
-Part 4. Init order through class hierarchies.
-
-todo:
-See what other tests should be done for static init.
+Part 3.1. Static field initializers.
+Part 3.2. Static initializers.
+Part 3.3. Init order through class hierarchies.
 
 201. Fileds with initializer, all initialized with a constant expression.
 202. Fields with initializer, some initializer exps refer to fields declared above.

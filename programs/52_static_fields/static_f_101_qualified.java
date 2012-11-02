@@ -2,7 +2,7 @@
 Static field, accesed though class qualified expression for read/write.
 */
 
-public class static_201_f_qualified {
+public class static_f_101_qualified {
   public static void main(String[] args) {
     A.v = 7;
     System.out.println(A.v);

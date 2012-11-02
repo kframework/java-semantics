@@ -4,7 +4,7 @@ Static method versions from subclasses are not accessible,
   B < A, B.f() <sig A.f(), call to (A)B.f() have no access to B.f().
 */
 
-public class static_108_m_overload_hier {
+public class static_m_108_overload_hier {
   public static void main(String[] args) {
     A a = new B();
     a.sf((byte) 0);

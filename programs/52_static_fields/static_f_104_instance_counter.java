@@ -4,7 +4,7 @@ Static field as instance counter.
   Check that static field is the same, instance field is different.
 */
 
-public class static_204_f_instance_counter {
+public class static_f_104_instance_counter {
   public static void main(String[] args) {
     A.nextId = 0;
     System.out.println(A.nextId);
