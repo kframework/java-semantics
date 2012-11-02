@@ -60,5 +60,9 @@
   The main class have a method main with type int[]. Test that the main class is correctly
   choosen.
 
-todo:
-  Add tests inspired from tests for instance fields.
+111. Local var hiding a static field. Class with a static field, method with a local var
+  with the same name. Access both from within and outside var scope. Also use this.field.
+
+112. Static field default values. Class with static fields of all relevant types,
+  without initializer. Test their value.
+
