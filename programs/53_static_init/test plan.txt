@@ -7,39 +7,32 @@ Just the order of initialization within a class/hierarchy. we are not testing
   Initialization is triggered through call to a static method.
   We will not test final constant fields here, since they are initialized differently.
 
-(We'll later rename them to part 1-2-3.)
+Subpart 1. Static field initializers.
+Subpart 2. Static initializers.
+Subpart 3. Init order through class hierarchies.
 
-Part 3.1. Static field initializers.
-Part 3.2. Static initializers.
-Part 3.3. Init order through class hierarchies.
-
-201. Fileds with initializer, all initialized with a constant expression.
-202. Fields with initializer, some initializer exps refer to fields declared above.
-203. Fields with initializer, initializer exps refer to fields declared below. Default values exposed.
-204. Fields with initializer, forward reference, default values for all types tested.
-205. Field with initializer, initializer have an assignment to other field declared forward.
-206. Fields with initializer, refering to methods declared both below and above.
-207. Fields with initializer, refering to superclass fields/methods.
-208. Fields with initializer, calling a method from subclass through qualified expression. The method
-  references fileds in the subclass which have initializers. The test should expose default values
-  of the fields in the subclass.
-209. Fields with initializer throwing an exception. Test that all the remaining initializers
+101. Fileds with initializer, all initialized with a constant expression.
+102. Fields with initializer, some initializer exps refer to fields declared above.
+103. Fields with initializer, initializer exps refer to fields declared below. Default values exposed.
+104. Fields with initializer, forward reference, default values for all types tested.
+105. Field with initializer, initializer have an assignment to other field declared forward.
+106. Fields with initializer, refering to methods declared both below and above.
+107. Fields with initializer throwing an exception. Test that all the remaining initializers
   and the constructor are not executed. Catch StaticInitializationError in main.
-211. Multifield with init. Two groups of three fields each:
+108. Multifield with init. Two groups of three fields each:
   static int a, b=..., c;
   static int d=..., e, f=...;
   Test their values.
-212. Array fields with array initializer in the most complex fashion:
+109. Array fields with array initializer in the most complex fashion:
 Combination of multi field declaration, field with [] in declarator, array initializer.
 
-31. Field with initializer, then static initializer, initializing the same field.
-32. Static initializer, then field initializer, initializing the same field.
-33. Field, initializer, field, initializer.
-34. Static initializer throwing exc. The remaining field and static inits are not executed.
-35. Static initializer with a local var shadowing a field.
+21. Field with initializer, then static initializer, initializing the same field.
+22. Static initializer, then field initializer, initializing the same field.
+23. Field, static initializer, field, static initializer.
+24. Static initializer throwing exc. The remaining field and static inits are not executed.
+25. Static initializer with a local var shadowing a field.
 
-41. Hierarchy of three classes, all with fields with initializer, static initializers.
+31. Fields with initializer, refering to superclass static fields/methods.
+32. Hierarchy of three classes, all with fields with initializer, static initializers.
   Test that the order is correct. All initializers print a message.
 
-todo:
-  See what other tests should be done for static init.

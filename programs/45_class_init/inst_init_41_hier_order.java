@@ -47,7 +47,7 @@ class C extends B {
   }
 }
 
-public class x_class_init_41_order {
+public class inst_init_41_hier_order {
   public static void main(String[] args) {
     C c = new C();
     System.out.println("Done!");

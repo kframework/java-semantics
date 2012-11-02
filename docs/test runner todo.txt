@@ -1,6 +1,6 @@
 1. Bug. Repeated evaluation of programs with compile-time errors without -clean attribute gives error
-  first time, and ok the second one. This happens when there is an error in the semantics too and k-java
-  don't output anything.
+  first time, and ok the second one, after we correct the compile-time error.
+  This happens when there is an error in the semantics too and k-java don't output anything.
 
 2. Implement one more status message after running a test: timed out.
 
