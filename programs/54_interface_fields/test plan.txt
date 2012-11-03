@@ -1,15 +1,6 @@
 Interfaces with static final fields.
 
 todo:
-  26. White-box test. An interface field hides fields in one or more superinterfaces.
-    Access the visible field via subinterface or subclass.
-    Suppose that interface field resolving algorithm takes the set <implTrans>
-    of implemented interfaces of the target class, and checks the presence of the field in them in the
-    order in which they were added to the set.
-    Can we desigh a test such that this behavior would be wrong, and we would need a list with strict
-      order of implemented interface checking?
-    This problem don't appear in field hiding inside class, because the collection of superclasses is
-      always a list. We have the problem with interfaces, because of multiple inheritance.
 
 Part 1. Access to an interface field may be done in the following ways:
   11. Through the defining interface.
@@ -33,8 +24,7 @@ Part 2. Fields hiding involving an interface:
   23.  A < I2{v} < I1{v}
   24. A{v} < I1{v}
   25. B < A{v} < I1{v}
-
-  Test using unqualified (where possible) and class-qualified expression.
+    Test using unqualified (where possible) and class-qualified expression.
 
 Part 3. Multiple inheritance, no ambiguities.
   31. I3{d} < I2{c}, I1{a,b} - access all through class qualifiers.
@@ -43,6 +33,23 @@ Part 3. Multiple inheritance, no ambiguities.
   33. Multiple interface inheritance with indirect multi-hiding.
     I4 < I3{v} < (I2{v}, I1{v}) - I3.v hides both I1.v and I2.v
     Test using interface-qualified expression.
+
+  34. White-box test. An interface field hides fields in one or more superinterfaces.
+    Access the visible field via subinterface or subclass.
+    Suppose that interface field resolving algorithm takes the set <implTrans>
+    of implemented interfaces of the target class, and checks the presence of the field in them in the
+    order in which they were added to the set.
+    Can we desigh a test such that this behavior would be wrong, and we would need a list with strict
+      order of implemented interface checking?
+    This problem don't appear in field hiding inside class, because the collection of superclasses is
+      always a list. We have the problem with interfaces, because of multiple inheritance.
+    The only way to conceive this test is to have the "master itnerface" - the one with the field
+      hiding other fields, indirectly implemented, with as many child interfaces as possible,
+      and child interfaces should have names lexicographically both befor and after the master
+      interface. Something like:
+
+      IA < (I1, I5, I9); I5 < I6; I6{v} < (I3, I7) I3{v} < (I2{v}, I4{v}), I7{v} < (I4{v}, I8{v})
+      Access IA.v, I5.v, I6.v.
 
 Part 4. Multiple-inherited field.
   The following cases:
