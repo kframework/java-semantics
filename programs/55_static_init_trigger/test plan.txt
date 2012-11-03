@@ -24,65 +24,70 @@
 
 Part 1 Class initialization is triggered once.
   101. Class A. Call a traced static method twice.
-  102. Classes A and B. Call a static traced method in each twice.
+  102. Classes A and B. Call a static traced method in each twice, interleaved.
 
 Part 2 Class initialization conditions.
   103. Class A instantiation.
-  104. Class A static method call.
-  105. Class A static field read.
-  106. Class A static field write.
+      ( Class A static method call was already tested in test 101)
+  104. Class A static field read.
+  105. Class A static field write.
+  106. Class A all four triggers, only one static init.
   107. Class A with both static and instance init tracing.
     Static and instance members/inits interleaved. Instantiate A.
 
 Part 3. Class init triggers superclass init.
-  108. B < A. Class B instantiation.
-  109. (C,D) < B < A. C instantiation, D instantiation.
+  108. B < A. Static and instance init tracing. Instantiate B.
+  109. B < A. Static and instance init tracing. Call static method on B.
+  110. (C,D) < B < A. C instantiation, D instantiation. Static tracing.
     A and B should be initialized only once.
-  110. B < A. Static and instance init tracing. Instantiate B.
 
-Part 4. Init is triggered for the class that declared member, not qualifier class.
+Part 4. When a static member is accessed. Init is triggered for the class that declared
+  the member, not the qualifier class.
   111. C < B{f()} < A. Call to C.f(). Init in B, A.
+  112. C < B{v} < A. Call to C.v. Init in B, A.
 
 Part 5. Init triggering chain for class.
-  112. A,B. Static init in B accesses field in A.
+  113. A,B. Static init in B accesses field in A.
     Static sequence of B: {trace} {access of A} {trace}
 
-Part 6. Class init triggering loop.
-  113. A,B,C, C triggers init of B, that triggers init of A, that triggers init of C.
-    Instantiate C. Default values of C should be observed. Tracing.
-  114. B < A. A reads static fields of B. Instantiate B. default values of B
-    should be observed.
+Part 6. Class init triggering a cyclic initialization request.
+  114. A,B,C, C triggers init of B, that triggers init of A, that triggers init of C.
+    Call a static method on C. Default values of C should be observed. Tracing.
+  115. B < A. A reads static fields of B. B reads static fields of A.
+    Call a static method on B. Default values of B should be observed.
 
 Part 7. Interface initialization is triggered once.
   201. Interface I1. Read a field twice. Trace.
-  202. Interfaces I1, I2. Read a field twice in both. Trace.
+  202. Interfaces I1, I2. Read a field twice in both, interleaved. Trace.
 
 Part 8. Interface initialization conditions - no tests, we already performed them.
+  (It's just field read)
 
 Part 9. Class/interface init do not trigger superinterface init.
   203. A < I1. Class A instantiation. I1 init is not triggered.
-    Access afield in I1 - I1 init is triggered.
+    Access a field in I1 - I1 init is triggered.
   204. I3 < I2, I1. Access a field in I3. Then access a field
     in I1, then in I2. Observe init order: I3, I1, I2.
-  204. A < I1{f()}. Instantiate A and call the method f. I1 init is not triggered.
-  205. A < I1{v, getV()} Instantiate A and call getV() that returns v.
+  205. A < I1{f()}. Instantiate A and call the method f. I1 init is not triggered.
+  206. A < I1{v, getV()} Instantiate A and call getV() that returns v.
     I1 init is triggered.
 
-Part 10. Init is triggered for the interface that declared member, not qualifier type.
-  206. I3 < I2{v} < I1. Access I3.v. Only I2 init is performed.
-  207. B{v2} < A < I1{v1}. Call to B.v1. Init of I1 only.
+Part 10. Init is triggered for the interface that declared the member,
+    not for the qualifier type.
+  207. I3 < I2{v} < I1. Access I3.v. Only I2 init is performed.
+  208. B{v2} < A < I1{v1}. Call to B.v1. Init of I1 only.
     Call to B.v2 - init of A and B.
 
 Part 11. Init triggering chain for class/interface mix.
-  208. A, I1. Static init in A accesses field in I1.
+  209. A, I1. Static init in A accesses field in I1.
     Static sequence of A: {trace} {access of I1} {trace}
-  209. I4 < (I2,I3) < I1. Each interface calls a field in the superinterface.
-    Init sequence: I1, I2, I3, I4. Call I3-> I1 obserces I1's defauld values.
+  210. I4 < (I2,I3) < I1. Each interface calls a field in the superinterface.
+    Init sequence: I1, I2, I3, I4. Call I3-> I1 observes I1's initialized values.
 
 Part 12. Init triggering loop for interfaces.
-  210. I2, A, I1, I2 triggers init of A, that triggers init of I1, that triggers init of I2, A.
+  211. I2, A, I1. I2 triggers init of A, that triggers init of I1, that triggers init of I2, A.
     Read a field on I2. Default values I2 should be observed in A and I1. Tracing.
-  211. B{f()} < abstract A < I1{f()}. All static and instance inits traced.
+  212. B{f()} < abstract A < I1{f()}. All static and instance inits traced.
     B static accesses A fields, A static accesses I1 fields. A static instantiates B
     (after accessing I1). Observe static init order: A, I1, B. B observes partially
     statically initialized A, but fully instance initialized.
