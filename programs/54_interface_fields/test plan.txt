@@ -1,20 +1,7 @@
 Interfaces with static final fields.
 
-Part 1. Access to an interface field may be done in four ways:
-  11. Through the defining interface.
-  12. Through a subinterface.
-  13. Through a class implementing directly the defined interface.
-  14. Through a class extending a class implementing the defining interface.
-  15. Through a class implementing indirectly the defining interface.
-
-  We will test all cases with all possible expressions.
-
-Part 2. Fields hiding involving an interface:
-  21. I2{v} < I1{v}
-  22. I3 < I2{v} < I1{v}
-  23.  A < I2{v} < I1{v}
-  24. A{v} < I1{v}
-  25. White-box test. An interface field hides fields in one or more superinterfaces.
+todo:
+  26. White-box test. An interface field hides fields in one or more superinterfaces.
     Access the visible field via subinterface or subclass.
     Suppose that interface field resolving algorithm takes the set <implTrans>
     of implemented interfaces of the target class, and checks the presence of the field in them in the
@@ -23,15 +10,39 @@ Part 2. Fields hiding involving an interface:
       order of implemented interface checking?
     This problem don't appear in field hiding inside class, because the collection of superclasses is
       always a list. We have the problem with interfaces, because of multiple inheritance.
-  untested cases:
-    - B < A{v} < I1{v}
 
-  Test using unqualified and class-qualified expression.
+Part 1. Access to an interface field may be done in the following ways:
+  11. Through the defining interface.
+  12. Through a subinterface.
+  13. Through a class implementing directly the defined interface.
+  14. Through a class extending a class implementing the defining interface.
+  15. Through a class implementing indirectly the defining interface.
+    Test all cases with all possible expressions.
 
-Part 3. Multiple inheritance, no subtleties.
-  31. I3{d} < I2{c}, I1{a,b} - access all throuch class qualifiers.
-  32. A{c} < I2{b}, I1{a} - access all through class qualifiers and unqualified in a,
+  16. Interface fields having modifiers:
+    - public static final
+    - final static public
+    - public
+    - static
+    - final
+    - (none)
+
+Part 2. Fields hiding involving an interface:
+  21. I2{v} < I1{v}
+  22. I3 < I2{v} < I1{v}
+  23.  A < I2{v} < I1{v}
+  24. A{v} < I1{v}
+  25. B < A{v} < I1{v}
+
+  Test using unqualified (where possible) and class-qualified expression.
+
+Part 3. Multiple inheritance, no ambiguities.
+  31. I3{d} < I2{c}, I1{a,b} - access all through class qualifiers.
+  32. A{c} < I2{b}, I1{a} - access all through class qualifiers and unqualified in A,
     static and dynamic context.
+  33. Multiple interface inheritance with indirect multi-hiding.
+    I4 < I3{v} < (I2{v}, I1{v}) - I3.v hides both I1.v and I2.v
+    Test using interface-qualified expression.
 
 Part 4. Multiple-inherited field.
   The following cases:
@@ -40,7 +51,7 @@ Part 4. Multiple-inherited field.
   untested cases:
     - I3 < (I2, I1), I2 < I1{v}
     - B < (A, I1), A < I1{v}
-  We will test cases 2 and 4, from b - unqualified and class-qualified.
+  We will test unqualified and class-qualified exp.
 
 Part 5. Ambiguously inherited fields:
   51. A < I3 < I2{v}, I1{v}
@@ -58,31 +69,29 @@ Part 7. Field initializers, no hierarchy.
   reference:
 
 71. Fileds with initializer, all initialized with a constant expression.
-  (static fields 101)
+  (adapt from static field init 101)
 72. Fields with initializer, some initializer exps refer to fields declared above.
-  (static fields 102)
+  (adapt from static field init 102)
 73. Fields with initializer, initializer exps refer to fields declared below. Default values exposed.
-  (static fields 103)
+  (adapt from static field init 103)
 74. Fields with initializer, forward reference, default values for all types tested.
-  (static fields 104)
+  (adapt from static field init 104)
 75. Fields with initializer throwing an exception. Test that all the remaining initializers
-  and the constructor are not executed. Catch StaticInitializationError in main.
-  (static fields 107)
+  are not executed. Catch StaticInitializationError in main.
+  (adapt from static field init 107)
 76. Multifield with init, also methods. Two groups of fields:
   static int a=...;
-  static int d=..., f=...;
+  static int b=..., c=...;
   Test their values. Do not implement the interface. We are interested only in preprocessing.
-
-77. Three field initializers, all with tracing. Test their order.
+  All field iniitalizers have tracing.
 
 Part 8. Field initializers, hierarchy:
 
 81. I2 < I1. Fields with initializer, refering to superclass static fields
   by simple name. Test that superclass fields are initialized.
-82. Hierarchy of type I1 < (I2,I3), Interfaces all with fields with initializer,
-  Fields in I3 refer to I1 then I2 by simple name.
+82. Hierarchy of type I3 < (I1,I2). Interfaces all with fields with initializer,
+  Fields in I3 refer to I2 then I1 by simple name.
   All initializers print a message. Test that the order is correct.
 83. Hierarchy type A < I1. A class init accesses fields in I1 unqualified.
   static sequence in A: {trace} {access to I1} {trace}. Static sequence of I1 is also traced.
-
 
