@@ -73,4 +73,7 @@ Part 8. Field initializers, hierarchy:
 82. Hierarchy of type I1 < (I2,I3), Interfaces all with fields with initializer,
   Fields in I3 refer to I1 then I2 by simple name.
   All initializers print a message. Test that the order is correct.
+83. Hierarchy type A < I1. A class init accesses fields in I1 unqualified.
+  static sequence in A: {trace} {access to I1} {trace}. Static sequence of I1 is also traced.
+
 
