@@ -16,7 +16,7 @@ class A {
   }
 }
 
-public class static_f_111_shadowed_by_local_var {
+public class static_f_109_shadowed_by_local_var {
   public static void main(String[] args) {
     new A().f();
     System.out.println("Done!");

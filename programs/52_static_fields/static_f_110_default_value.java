@@ -14,7 +14,7 @@ class A {
   static RuntimeException re;
 }
 
-public class static_f_112_default_value {
+public class static_f_110_default_value {
   public static void main(String[] args) {
     System.out.println("" + A.b + " " + A.s + " " + A.i + " " + A.l + " " + A.ch + " " + A.bool
                     + " " + A.str + " " + A.re + " ");

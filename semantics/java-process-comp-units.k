@@ -131,7 +131,7 @@ syntax K ::= "checkForStatic" "(" List{K} ")"
 //For now main method is identified by it's static attribute.
 rule <k> checkForStatic('Static(_),,_) => . ...</k>
      <crntClass> Class:Id </crntClass>
-     <mainClass> _ => Class </mainClass>
+     <mainClass> .K => Class </mainClass>
 
 rule checkForStatic((K:K => .List{K}),, _)
 when getKLabel(K) =/=KLabel 'Static

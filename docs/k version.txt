@@ -2,3 +2,5 @@ Version with true xorBool false not working: 8163.
 Anything above don't work. At version 8190 the definition don't kompile.
 
 At xorBool fix version (82xx) wrong maude rules are already present.
+
+Last working version: 8510

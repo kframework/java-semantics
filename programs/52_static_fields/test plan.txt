@@ -48,21 +48,9 @@
   - super() call
   - constructor
 
-109. Main method is executed in static context. Two static and two instance methods inside main class.
-  One static field - instance counter.
-  Call static ones from the static context, all of them from the instance context.
-  Test that class counter is 0 before main instantiation, 1 afterwards.
-
-110. Choosing the main class.
-  A program with three public classes - one with the name before the main class, main class,
-  and the third one after the main class. Classes one and three also have public static
-  methods main, with one argument, but the type is int, respectively Object[].
-  The main class have a method main with type int[]. Test that the main class is correctly
-  choosen.
-
-111. Local var hiding a static field. Class with a static field, method with a local var
+109. Local var hiding a static field. Class with a static field, method with a local var
   with the same name. Access both from within and outside var scope. Also use this.field.
 
-112. Static field default values. Class with static fields of all relevant types,
+110. Static field default values. Class with static fields of all relevant types,
   without initializer. Test their value.
 

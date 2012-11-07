@@ -5,12 +5,12 @@ Main method is executed in static context. One instance and one static method in
   Test that class counter is 0 before main instantiation, 1 afterwards.
 */
 
-public class static_f_109_main_is_static {
+public class main_01_is_static {
 
   static int count;
   int id;
 
-  public static_f_109_main_is_static() {
+  public main_01_is_static() {
     System.out.println("main class constructor");
     id = count;
     count++;
@@ -26,7 +26,7 @@ public class static_f_109_main_is_static {
 
   public static void main(String[] args) {
     System.out.println("count="+count);
-    static_f_109_main_is_static mainObj = new static_f_109_main_is_static();
+    main_01_is_static mainObj = new main_01_is_static();
     System.out.println("count="+count);
     System.out.println("mainObj.getId()="+mainObj.getId());
     System.out.println("Done!");
