@@ -7,10 +7,12 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
-javaFile=$1
+JAVA_FILE=$1
+BASE_JAVA_FILE=`basename $JAVA_FILE`
+MAIN_CLASS=`echo "$BASE_JAVA_FILE" | cut -d'.' -f1`
 TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # The last argument is not used, we put it here just to overcome file presence checking of krun
-# We cannot put $javaFile directly because krun expects only files,
-# and $javaFile may also be a dir
-krun --parser=aux-kjprep.sh $javaFile
+# We cannot put $JAVA_FILE directly because krun expects only files,
+# and $JAVA_FILE may also be a dir
+krun --parser=aux-kjprep.sh -cMainClass="ListItem(\"$MAIN_CLASS\")" $JAVA_FILE

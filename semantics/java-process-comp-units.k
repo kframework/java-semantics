@@ -92,7 +92,7 @@ syntax K ::= "classDecImpl" "("
 rule [classDecImpl]:
     <k>
       classDecImpl(_, Class:Id, BaseClassK:K, setKResult(TypeSet:Set), MetaT:MetaType, CBody:K)
-        => checkForMain(CBody)
+      => .K
       ...
     </k>
     <cuPackage> Pack:Package </cuPackage>
@@ -117,31 +117,6 @@ rule [classDecImpl]:
     </classes>
 
 /*@ \subsection{Method declaration} */
-
-//for now we consider all static methods found to be main
-syntax K ::= "checkForMain" "(" K ")"
-
-rule checkForMain(('ConstrDec(_) => .K) ~> _)
-
-rule (. => checkForStatic(Ks:List{K}) )
-    ~> checkForMain('ListWrap(('MethodDec('MethodDecHead('ListWrap(Ks),,_),,_) => .List{K}) ,,_))
-
-syntax K ::= "checkForStatic" "(" List{K} ")"
-
-//For now main method is identified by it's static attribute.
-rule <k> checkForStatic('Static(_),,_) => . ...</k>
-     <crntClass> Class:Id </crntClass>
-     <mainClass> .K => Class </mainClass>
-
-rule checkForStatic((K:K => .List{K}),, _)
-when getKLabel(K) =/=KLabel 'Static
-
-rule checkForStatic(.List{K}) => .
-
-rule checkForMain('ListWrap((K:K => .List{K}),,_))
-when getKLabel(K) =/=KLabel 'MethodDec
-
-rule checkForMain('ListWrap(.List{K})) => .
 
 syntax K ::= "typesToSet" "(" List{K} //a list of class types "class Id"
                           "," Set     //the result map

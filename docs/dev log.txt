@@ -1,0 +1,14 @@
+Implementing static members.
+
+1. First we need to define precise semantics for main method. Right now
+  main class is any class containing a static method.
+
+1.1 We need to define main class to be the class having the exact main method:
+    public static void main(String[]), with semantically equivalent variations.
+
+1.2 Main method should be called without instantiating the class, in a proper static context.
+  Right now it is called as: new MainClass().main(new String[0])
+  We should call it as: MainClass.main(new String[0])
+
+It seems that the solution is much easier: we simply have to pass to the configuration the main class name
+  from the command line.

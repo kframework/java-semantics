@@ -49,7 +49,7 @@ configuration <T color="red">
                       <instanceInit> .K </instanceInit>
                    </class>
                 </classes>
-                <mainClass> .K </mainClass>
+                <mainClass> $MainClass:ListItem </mainClass>
                 //current compilation unit package
                 <cuPackage> .K </cuPackage>
                 <cuClass> .K </cuClass>

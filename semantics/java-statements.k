@@ -11,7 +11,7 @@ rule [StartExecutionPhase]:
           'Method(
             'NewInstance(
               'None(.List{K}),,
-              class MainClass,,
+              class String2Id(MainClassS),,
               'ListWrap(.List{K}),,
               'None(.List{K})
             ),,
@@ -26,7 +26,7 @@ rule [StartExecutionPhase]:
       )
     </k>
     <env> . </env>
-    <mainClass> MainClass:Id </mainClass>
+    <mainClass> ListItem(MainClassS:String) </mainClass>
     <computationPhase> ProcessClassesPhase => ExecutionPhase </computationPhase>
 
 //@ \section{Program stack}
