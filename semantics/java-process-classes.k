@@ -5,21 +5,29 @@ module JAVA-PROCESS-CLASSES
 //existing semantics for methods covers them too
 syntax KLabel ::= "'Final" | "'ThrowsDec" | "'Abstract" | "'NoMethodBody"
 
-//@process access modes
-rule 'Public(.List{K}) => public        [structural, anywhere]
-rule 'Protected(.List{K}) => protected  [structural, anywhere]
-rule 'Private(.List{K}) => private      [structural, anywhere]
-
 syntax K ::= "getAccessMode" "(" K //'ListWrap(...) - the list of method attributes
                              ")"
-rule getAccessMode('ListWrap(Acc:AccessMode,,_)) => Acc
 
-rule getAccessMode('ListWrap((K:K => .List{K}),, _))
-when        (K =/=K public)
-    andBool (K =/=K protected)
-    andBool (K =/=K private)
+rule getAccessMode('ListWrap('Public(_),,_))    => public     [anywhere]
+rule getAccessMode('ListWrap('Protected(_),,_)) => protected  [anywhere]
+rule getAccessMode('ListWrap('Private(_),,_))   => private    [anywhere]
 
-rule getAccessMode('ListWrap(.List{K})) => package
+rule getAccessMode('ListWrap((KL:KLabel(_) => .List{K}),, _))
+when        (KL =/=KLabel 'Public)
+    andBool (KL =/=KLabel 'Protected)
+    andBool (KL =/=KLabel 'Private)                           [anywhere]
+
+rule getAccessMode('ListWrap(.List{K})) => package            [anywhere]
+
+syntax K ::= "getContextType" "(" K //'ListWrap(...) - the list of method attributes
+                              ")"
+
+rule getContextType('ListWrap('Static(_),,_)) => staticCT   [anywhere]
+
+rule getContextType('ListWrap((KL:KLabel(_) => .List{K}),, _))
+when        KL =/=KLabel 'Static                            [anywhere]
+
+rule getContextType('ListWrap(.List{K}))      => instanceCT [anywhere]
 
 //@ \section{Process type list}
 syntax K ::= "processTypeList" "("
@@ -209,9 +217,14 @@ rule [inherit]:
       ...
     </class>
 
-//returns the access mode of a method in the location L given as argument
+//returns the access mode of a method closure given as argument
 syntax K ::= "getMethodAccessMode" "(" TypedVal ")" [function, strict(1)]
 rule getMethodAccessMode( _ :: methodType(Acc:AccessMode, _ , _ ) ) => Acc [anywhere]
+
+//returns the context type of a method closure given as argument
+syntax K ::= "getMethodContextType" "(" TypedVal ")" [function, strict(1)]
+rule getMethodContextType( methodClosure(_, _, CT:ContextType, _) :: _ ) => CT [anywhere]
+rule getMethodContextType( constrClosure(_,_,_,_) :: _ ) => instanceCT [anywhere]
 
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
@@ -219,18 +232,17 @@ closures, so that their type contract can be checked at invocation
 time.  The rule below is conceptually similar to that of untyped KOOL;
 the only difference is the addition of the types.  */
 
-context 'MethodDec('MethodDecHead((HOLE => getAccessMode(HOLE)),, _),, _)
 context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _),, _)
 
 rule [MethodDec]:
     'MethodDec(
-      'MethodDecHead(Acc:AccessMode,, _:K,, ReturnType:Type,, Name:Id,,
+      'MethodDecHead(Modifiers:K,, _:K,, ReturnType:Type,, Name:Id,,
           'ListWrap(Params:List{K}),, _:K
       ),,
       S:K
     )
-    => storeMethod(Name, typesFromParams(Params), 'ListWrap(Params), S,
-          methodType(Acc, Params, ReturnType))
+    => storeMethod(Name, typesFromParams(Params), 'ListWrap(Params), getContextType(Modifiers), S,
+          methodType(getAccessMode(Modifiers), Params, ReturnType))
         [structural]
 
 rule [AbstractMethodDec]:
@@ -241,11 +253,12 @@ rule [AbstractMethodDec]:
         )
 
 syntax K ::= "storeMethod" "("
-                              Id ","
-                              K "," //will evalute to Types - a syntactic list of types
-                              K ","
-                              K ","
-                              Type
+                              Id ","  //method name
+                              K ","   //will evaluate to Types - a syntactic list of types
+                              K ","   //'ListWrap(Params)
+                              K ","   //will evaluate to ContextType - staticCT or instanceCT
+                              K ","   //S - method body
+                              Type    //method closure type
                            ")"
 
 syntax K     ::= "typesFromParams" "(" List{K} ")"
@@ -260,15 +273,21 @@ rule typesFromParams(KRs:List{K}) => types(KRs)
 when isKResult(KRs)
         [structural, anywhere]
 
-context storeMethod(_, _, _, _,
+context storeMethod(_, _, _, _, _,
     methodType(_, _:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}, _))
 
 rule [storeMethod]:
-    <k> storeMethod(Name:Id, Ts:Types, 'ListWrap(Params:List{K}), S:K, MethodType:Type) =>. ...</k>
+    <k>
+      storeMethod(Name:Id, Ts:Types, 'ListWrap(Params:List{K}), CT:ContextType, S:K,
+          MethodType:Type) => .
+      ...
+    </k>
     <cuClass> Class:Id </cuClass>
     <className> Class </className>
     <methods>
-      Env:Map => Env[ methodClosure(Class, 'ListWrap(Params), S) :: MethodType / sig(Name,Ts) ]
+      Env:Map => Env[
+        methodClosure(Class, 'ListWrap(Params), CT, S) :: MethodType / sig(Name,Ts)
+      ]
     </methods>
 
 //A method signature
@@ -302,14 +321,12 @@ rule [ConstrDecObjectDesugar]:
 when
     Id2String(Name) ==String "Object"
 
-context 'ConstrDec('ConstrDecHead((HOLE => getAccessMode(HOLE)),, _),, _)
-
 rule [ConstrDec]:
-    'ConstrDec('ConstrDecHead(Acc:AccessMode,, _:K,, Name:Id,, 'ListWrap(Params:List{K}),, _),,
+    'ConstrDec('ConstrDecHead(Modifiers:K,, _:K,, Name:Id,, 'ListWrap(Params:List{K}),, _),,
         'ConstrBody(
       'Some(FirstLine:K) ,,S:K))
     => storeConstructor(Name, 'ListWrap(Params), FirstLine,
-        S, methodType(Acc, Params, void))
+        S, methodType(getAccessMode(Modifiers), Params, void))
 
 syntax K ::= "storeConstructor" "(" Id    // Class name
                                 "," K     // 'ListWrap(Params) - formal params

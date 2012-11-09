@@ -91,6 +91,9 @@ syntax Type ::= "methodType" "(" AccessMode ","    // access mode
 
 syntax RefType ::= "class" Id
 
+syntax ContextType ::= "staticCT" | "instanceCT"
+syntax KResult ::= ContextType
+
 syntax RawVal ::= "objectClosure" "(" Int //OL - object location
                                   "," Bag //<envStack> - the object content
                                   ")"
@@ -98,6 +101,7 @@ syntax RawVal ::= "objectClosure" "(" Int //OL - object location
                 | "methodClosure" "("
                     Id ","   // Class - class defining the method
                     K ","    // 'ListWrap(Params) - params
+                    ContextType "," //either staticCT or instanceCT
                     K        // S - method body
                   ")"
                 | "constrClosure" "("

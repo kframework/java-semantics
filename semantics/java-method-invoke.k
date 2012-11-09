@@ -10,14 +10,27 @@ since we need to check that the type of the returned value is an
 instance of the claimed return type of the method.  The first group of
 rules below are identical to those in untyped KOOL. */
 
-rule 'Method('MethodName(Ks:List{K})) => 'MethodName(Ks)  [structural, anywhere]
+rule 'Method('MethodName(Ks:List{K})) => 'MethodName(Ks)    [structural, anywhere]
 rule 'Method(K:K,, _:K,, Name:Id) => 'MethodName(K,, Name)  [structural, anywhere]
 
-rule [MethodNameUnqualified]:
-    'MethodName(Name:Id) => 'MethodName('This(.List{K}),, Name)
+rule [MethodNameUnqInstanceCT]:
+    <k>
+      'MethodName(Name:Id) => 'MethodName('This(.List{K}),, Name)
+      ...
+    </k>
+    <location> _:Int </location>
         [structural]
 
-rule <k> 'MethodName(K:K,, Name:Id) => methodNameImpl(K, Name, getKLabel(K) =/=KLabel 'This) ...</k>
+rule [MethodNameUnqStaticCT]:
+    <k>
+      'MethodName(Name:Id) => 'MethodName('TypeName(Class),, Name)
+      ...
+    </k>
+    <crntClass> Class:Id </crntClass>
+    <location> noValue </location>
+        [structural]
+
+rule 'MethodName(K:K,, Name:Id) => methodNameImpl(K, Name, getKLabel(K) =/=KLabel 'This)
 
 syntax K ::= "methodNameImpl" "("
                                   K ","   //qualifier exp
@@ -33,6 +46,19 @@ rule [MethodNameQualified]:
       methodNameImpl(objectClosure(OL:Int, <envStack> EStack:List </envStack>)::class Class:Id,
           Name:Id, IsQ:Bool)
       => lookupMethodData(OL, Class, Name, <envStack> EStack </envStack>, IsQ)
+      ...
+    </k>
+    <isQualified> _ => IsQ </isQualified>
+when
+    Id2String(Name) =/=String "getClass"
+        [structural]
+
+//Class.X(_)
+rule [MethodNameStatic]:
+    <k>
+      methodNameImpl(class Class:Id, Name:Id, IsQ:Bool)
+      => lookupMethodData(noValue, Class, Name,
+          <envStack> ListItem((Class, <env> . </env>)) </envStack>, IsQ)
       ...
     </k>
     <isQualified> _ => IsQ </isQualified>
@@ -67,7 +93,7 @@ rule [SuperMethod]:
     <extends> BaseClass:Id </extends>
         [structural]
 
-syntax KResult ::= "lookupMethodData" "(" Int     //OL - object location
+syntax KResult ::= "lookupMethodData" "(" K       //OL - object location, or noValue
                                       "," Id      //target ref class name
                                       "," Id      //method name
                                       "," BagItem //target <envLayer> content
@@ -87,7 +113,7 @@ context 'Invoke(_:KResult ,,'ListWrap(_:List{K},,HOLE,,_:List{K}))
 rule [InitSignatureSearchInClassRef]:
     <k>
       'Invoke(lookupMethodData(
-        OL:Int,
+        OLK:K,
         Class:Id,
         MethodName:Id,
         <envStack>
@@ -111,7 +137,7 @@ rule [InitSignatureSearchInClassRef]:
           Env,
           undefined::nullType
         ),
-        OL,
+        OLK,
         'ListWrap(ParamValues)
       )
       ...
@@ -125,7 +151,7 @@ when isKResult(ParamValues)
 rule [InitSignatureSearchInInterfaceRef]:
     <k>
       'Invoke(lookupMethodData(
-        OL:Int,
+        OLK:Int,
         Class:Id,
         MethodName:Id,
         <envStack>
@@ -148,7 +174,7 @@ rule [InitSignatureSearchInInterfaceRef]:
           ActualClassEnv,
           undefined::nullType
         ),
-        OL,
+        OLK,
         'ListWrap(ParamValues)
       )
       ...
@@ -174,7 +200,7 @@ rule getClassList(.) => .List{K}
         [structural, anywhere]
 
 syntax K ::= "invokeImpl" "(" K   //lookupMethod statement, later methodClosure
-                          "," Int //OL - object location
+                          "," K   //OL - object location, or noValue for static methods
                           "," K   //'ListWrap(ParamValues:List{KResult})
                           ")"
         [strict(1)]
@@ -206,7 +232,7 @@ syntax K ::= "lookupSignature" "("  Id    // Class - target reference compile-ti
 rule [lookupSignatureNoAlternatives]:
     (. => isPreferableSig(
             'LazyAnd(
-              isAccessible(Class, getMethodAccessMode(TV)),,
+              isAccessible(Class, getMethodAccessMode(TV), getMethodContextType(TV)),,
               subtype(CallTL, SigTL)
             ),
             sig(MethodName, types(SigTL))
@@ -222,7 +248,7 @@ rule [lookupSignatureNoAlternatives]:
 rule [lookupSignatureWithAlternative]:
     (. => isPreferableSig(
             'LazyAnd(
-              isAccessible(Class, getMethodAccessMode(TV)),,
+              isAccessible(Class, getMethodAccessMode(TV), getMethodContextType(TV)),,
               'LazyAnd(subtype(CallTL, SigTL),, subtype(SigTL, AltTL))
             ),
             sig(MethodName, types(SigTL))
@@ -271,40 +297,33 @@ rule [lookupMethodFirstCandidate]:
       undefined::_ => TV
     )
 
-rule [lookupMethodSignatureFixed]:
+rule [lookupMethodOtherCandidates]:
     lookupMethod(
-      sig(Name:Id,types(SigTL:List{K})),
+      sig(Name:Id, types(SigTL:List{K})),
       (_,, LayerClass:Id),
       (sig(Name, types(SigTL)) |-> TV:TypedVal => .) _:Map,
       MCClosure:RawVal :: methodType(Acc:AccessMode, SigTL, T:Type)
       => 'If(
-            isAccessibleForOverwriting(
-              getMethConsClosureClass(MCClosure), Acc, LayerClass, getMethodAccessMode(TV)
+            'LazyAnd(
+              (getMethodContextType(MCClosure :: methodType(Acc, SigTL, T)) ==K instanceCT)::bool,,
+              isAccessibleForOverwriting(
+                getMethConsClosureClass(MCClosure), Acc, LayerClass, getMethodAccessMode(TV)
+              )
             ),,
             TV,,
             MCClosure :: methodType(Acc, SigTL, T)
           )
     )
 
-rule [lookupMethodSignatureFixedEntryDiscard]:
+rule [lookupMethodEntryDiscard]:
     lookupMethod(
-      sig(Name:Id,types(ChosenSigTL)),
+      sig(Name:Id, types(ChosenSigTL)),
       _,
       (sig(X:Id, types(SigTL:List{K})) |-> _ => .) _:Map,
-      _ :: methodType(_, ChosenSigTL:List{K}, _)
-    )
-when
-    sig(X, types(SigTL)) =/=K sig(Name, types(ChosenSigTL))
-
-rule [lookupMethodOtherNameEntryDiscard]:
-    lookupMethod(
-      sig(Name:Id,_),
-      _,
-      (sig(X:Id, _) |-> _ => .) _:Map,
       _:K
     )
 when
-    X =/=K Name
+    sig(X, types(SigTL)) =/=K sig(Name, types(ChosenSigTL))
 
 rule [lookupMethodLayerDiscard]:
     <k>
@@ -334,33 +353,40 @@ syntax K ::= "getMethConsClosureClass" "(" RawVal ")"
 rule getMethConsClosureClass( (_:KLabel)(Class:Id,, _:List{K}) ) => Class
         [structural, anywhere]
 
-//Tests whether a method from a given class with a given access mode may be called from
-//the current object environment
-syntax K ::= "isAccessible" "(" Id ","      //the method class
-                                AccessMode  //the method access mode
+//Tests whether a method from a given class with a given AccessMode and ContextType
+//may be called from the current object environment
+syntax K ::= "isAccessible" "(" Id ","          //the method class
+                                AccessMode ","  //the method access mode
+                                K               //evaluates to ContextType
                             ")"
         [strict(2)]
 
 rule [isAccessiblePublic]:
-    isAccessible(_, public) => true::bool
+    isAccessible(_, public, _) => true::bool
 
 rule [isAccessibleProtected]:
     <k>
-      isAccessible(Class:Id, protected)
+      isAccessible(Class:Id, protected, CT:ContextType)
       => 'LazyOr(
-            'LazyAnd('Not(isQualifiedMethodCall),, subtype(class CurrentClass, class Class)),,
-            isAccessible(Class, package)
+            'LazyAnd(
+              'LazyOr((CT ==K staticCT)::bool,, 'Not(isQualifiedMethodCall)),,
+              subtype(class CurrentClass, class Class)
+            ),,
+            isAccessible(Class, package, CT)
       )
       ...
     </k>
     <crntClass> CurrentClass:Id </crntClass>
 
 rule [isAccessiblePackage]:
-    <k> isAccessible(Class:Id, package) => kEq(getPackage(Class), getPackage(CurrentClass)) ...</k>
+    <k>
+      isAccessible(Class:Id, package, _) => kEq(getPackage(Class), getPackage(CurrentClass))
+      ...
+    </k>
     <crntClass> CurrentClass:Id </crntClass>
 
 rule [isAccessiblePrivate]:
-    <k> isAccessible(Class:Id, private) => (Class ==K CurrentClass)::bool ...</k>
+    <k> isAccessible(Class:Id, private, _) => (Class ==K CurrentClass)::bool ...</k>
     <crntClass> CurrentClass:Id </crntClass>
 
 syntax K ::= "isQualifiedMethodCall"
@@ -387,10 +413,10 @@ rule isAccessibleForOverwriting(_, public,    _, _) => true::bool
 syntax K ::= "getArgTypes" "(" TypedVal ")" [function]
 rule getArgTypes(_ :: methodType(_, Ks:List{K}, _)) => types(Ks) [anywhere]
 
-rule [invokeImpl]:
+rule [invokeImplInstance]:
     <k>
       invokeImpl(
-        methodClosure(Class:Id, 'ListWrap(Params:List{K}), Body:K)
+        methodClosure(Class:Id, 'ListWrap(Params:List{K}), instanceCT, Body:K)
             :: methodType(_, _, T:Type),
         OL:Int,
         'ListWrap(ParamValues:List{K})
@@ -425,13 +451,46 @@ rule [invokeImpl]:
     </store>
 when isKResult(ParamValues)
 
+rule [invokeImplStatic]:
+    <k>
+      invokeImpl(
+        methodClosure(Class:Id, 'ListWrap(Params:List{K}), staticCT, Body:K)
+            :: methodType(_, _, T:Type),
+        _,
+        'ListWrap(ParamValues:List{K})
+      ) ~> K:K
+       => bindto Params, ParamValues ~> Body ~> 'Return('None(.List{K}))
+    </k>
+    <control>
+      <stack>
+        . =>  ListItem((return,.K,.K,K, Env,
+                  (
+                    <crntObj> OldObj </crntObj>
+                    <return> OldT </return>
+                    C
+                  )
+              ))
+        ...
+      </stack>
+      <crntObj>
+        OldObj:Bag
+        => <crntClass> Class </crntClass>
+           <envStack> .List </envStack>
+           <location> noValue </location>
+      </crntObj>
+      <return> OldT:Type => T </return>
+      C:Bag
+    </control>
+    <env> Env:Map => . </env>
+when isKResult(ParamValues)
+
 rule [invokeConstrClosure]:
     <k>
       invokeImpl( constrClosure(Class:Id, 'ListWrap(Params:List{K}), FirstLine:K, Body:K)
           :: T:Type, OL:Int, K:K
       )
       => invokeImpl(
-            methodClosure(Class, 'ListWrap(Params),
+            methodClosure(Class, 'ListWrap(Params), instanceCT,
               FirstLine
               ~>  #if getKLabel(FirstLine) ==KLabel 'AltConstrInv
                     #then .K

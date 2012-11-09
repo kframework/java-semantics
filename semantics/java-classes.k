@@ -208,7 +208,10 @@ rule [CastRef]:
 
 //@ \subsection{Names}
 
-rule 'AmbName(Ks:List{K}) => 'ExprName(Ks) [structural, anywhere]
+rule [AmbName]:
+    'AmbName(Ks:List{K}) => 'ExprName(Ks) ?? 'TypeName(Ks)
+        [structural, anywhere]
+
 rule 'Field(Ks:List{K}) => 'ExprName(Ks)   [structural, anywhere]
 
 rule [ExprNameLocalVar]:
@@ -244,6 +247,13 @@ rule [This]:
       <location> OL:Int </location>
     </crntObj>
 
+rule [ThisNoValue]:
+    <k>
+      'This(.List{K}) => noValue
+      ...
+    </k>
+    <location> noValue </location>
+
 /*@ \subsection{Object member access} */
 
 //o.x
@@ -258,6 +268,9 @@ rule [ExprNameQualified]:
       ...
     </k>
         [structural]
+
+rule [ExprNameNoValue]:
+    'ExprName( noValue,, X:Id ) => noValue    [structural]
 
 rule [ExprNameQualifiedNull]:
     <k>
@@ -304,6 +317,20 @@ rule lookupField(
   )
 when notBool(X in keys(Env))
         [anywhere]
+
+rule lookupField(<envStack> . </envStack>, _) => noValue
+        [anywhere]
+
+syntax KResult ::= "noValue"
+
+syntax K ::= K "??" K [strict(1)]
+
+rule [chainOfResponsibility1]:
+    KR:KResult ?? _ => KR
+when KR =/=K noValue
+
+rule [chainOfResponsibility2]:
+    noValue ?? K => K
 
 //typed version of lookup
 syntax K ::= "typedLookup" "(" Int ")"

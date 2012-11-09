@@ -1,4 +1,5 @@
-Implementing static members.
+Chapter 1. Main class detection
+
 
 1. First we need to define precise semantics for main method. Right now
   main class is any class containing a static method.
@@ -12,3 +13,207 @@ Implementing static members.
 
 It seems that the solution is much easier: we simply have to pass to the configuration the main class name
   from the command line.
+
+
+Chapter 2. Static methods
+
+
+1. Extend methodClosure to have one more element - ContextType, of type staticCT or instanceCT.
+  This value will be stored into closure during process-classes phase.
+  For now, all static method calls except class-qualified should work in the basic case.
+  (They worked before step 1 too, by simply ignoring static modifier)
+2. Resolve class-qualified static method calls, like A.f().
+  In such expressions A is wrapped in a label 'AmbName. We need to extends 'AmbName so that
+  it may be resolved into one of three - local var, field or class name. In first two cases
+  'AmbName is simply converted into 'ExprName (we will improve this behaviour later)
+  In the third case it is converted into 'TypeName. Precedence is in the described order
+  as for name resolution procedure, JLS $6.
+  For this, we will do the following:
+
+2.1 Add one more rule to lookupField function, for the case when the field is not found:
+
+rule lookupField(<envStack>.  </envStack>, _) => noValue
+
+2.2 Now, a result of a lookupField may be either a lookup(L)::T or noValue
+2.3 We will add a new syntactic construct ?? which will allow us to implement chain of responsibility
+  pattern: K1 ?? K2 will evaluate K1 first, if the result is other than noValue, it will keep it,
+  otherwise it will rewrite into K2 and ultimately evaluate into the result of K2.
+  This pattern could be used in other places of semantics as well, but we'll keep it here for now:
+
+syntax KResult ::= "noValue"
+
+syntax K ::= K "??" K [strict(1)]
+
+rule [chainOfResponsibility1]:
+    KR:KResult ?? _ => KR
+when KR =/=K noValue
+
+rule [chainOfResponsibility2]:
+    noValue ?? K => K
+
+2.4 Now we an use ?? construct to extend the semantics of AmbName (rule updated):
+
+rule [AmbName]:
+    'AmbName(Ks:List{K}) => 'ExprName(Ks) ?? 'TypeName(Ks)
+        [structural, anywhere]
+
+2.5 Implement method call starting from a term like
+    methodNameImpl(class Class:Id, Name:Id, IsQ:Bool)
+  For this, both lookupSignature and lookupMethod functions are applicable.
+  (lookupMethod will be called with just one class as second argument - the target class)
+  We can also implemente conversion form methodNameImpl to lookupMethodData,
+    just OL will be empty.
+
+2.5.1. We add one more rule for conversion methodNameImpl => lookupMethodData
+  for class-qualified method calls:
+
+rule [MethodNameStatic]:
+    <k>
+      methodNameImpl(class Class:Id, Name:Id, IsQ:Bool)
+      => lookupMethodData(noValue, Class, Name,
+          <envStack> ListItem((Class, <env> . </env>)) </envStack>, IsQ)
+      ...
+    </k>
+    <isQualified> _ => IsQ </isQualified>
+
+2.5.2.
+We will add one more rule to actual static method invocation, adapted from [invokeImplInstance]:
+
+rule [invokeImplStatic]:
+    <k>
+      invokeImpl(
+        methodClosure(Class:Id, 'ListWrap(Params:List{K}), staticCT, Body:K)
+            :: methodType(_, _, T:Type),
+        _,
+        'ListWrap(ParamValues:List{K})
+      ) ~> K:K
+       => bindto Params, ParamValues ~> Body ~> 'Return('None(.List{K}))
+    </k>
+    <control>
+      <stack>
+        . =>  ListItem((return,.K,.K,K, Env,
+                  (
+                    <crntObj> OldObj </crntObj>
+                    <return> OldT </return>
+                    C
+                  )
+              ))
+        ...
+      </stack>
+      <crntObj>
+        OldObj:Bag
+        => <crntClass> Class </crntClass>
+           <envStack> .List </envStack>
+           <location> noValue </location>
+      </crntObj>
+      <return> OldT:Type => T </return>
+      C:Bag
+    </control>
+    <env> Env:Map => . </env>
+when isKResult(ParamValues)
+
+2.5.3:
+    We have to add two more rules in field lookup section, to make possible evaluation of 'This,
+    when we are in a static context (required as part of new 'AmbName semantics):
+
+rule [ThisNoValue]:
+    <k>
+      'This(.List{K}) => noValue
+      ...
+    </k>
+    <location> noValue </location>
+
+rule [ExprNameNoValue]:
+    'ExprName( noValue,, X:Id ) => noValue    [structural]
+
+With this steps, static method call qualified by class works.
+
+3. We need to extend semantics for unqualified method name,
+  in order to interpret it in static context. We update the existing rule for
+  method name unqualified to:
+
+rule [MethodNameUnqInstanceCT]:
+    <k>
+      'MethodName(Name:Id) => 'MethodName('This(.List{K}),, Name)
+      ...
+    </k>
+    <location> _:Int </location>
+
+and add a new rule:
+
+rule [MethodNameUnqStaticCT]:
+    <k>
+      'MethodName(Name:Id) => 'MethodName('TypeName(Class),, Name)
+      ...
+    </k>
+    <crntClass> Class:Id </crntClass>
+    <location> noValue </location>
+
+4. Right now just three tests fail, all of them seem related to no overwriting/hiding.
+Another helper method is required to extract ContextType from a method closure:
+
+syntax K ::= "getMethodContextType" "(" TypedVal ")" [function, strict(1)]
+rule getMethodContextType( methodClosure(_, _, CT:ContextType, _) :: _ ) => CT [anywhere]
+rule getMethodContextType( constrClosure(_,_,_,_) :: _ ) => instanceCT [anywhere]
+
+5. Finally we can use the function above to extend one of lookupMethod rules.
+  More precisely, replacement of one version of suitable method closure by other one during
+  method lookup should happen only in instance context. The new rule is:
+
+rule [lookupMethodOtherCandidates]:
+    lookupMethod(
+      sig(Name:Id, types(SigTL:List{K})),
+      (_,, LayerClass:Id),
+      (sig(Name, types(SigTL)) |-> TV:TypedVal => .) _:Map,
+      MCClosure:RawVal :: methodType(Acc:AccessMode, SigTL, T:Type)
+      => 'If(
+            'LazyAnd(
+              (getMethodContextType(MCClosure :: methodType(Acc, SigTL, T)) ==K instanceCT)::bool,,
+              isAccessibleForOverwriting(
+                getMethConsClosureClass(MCClosure), Acc, LayerClass, getMethodAccessMode(TV)
+              )
+            ),,
+            TV,,
+            MCClosure :: methodType(Acc, SigTL, T)
+          )
+    )
+
+With this rule, 17 tests from 18 passed. The only test left is related to protected mode.
+
+6. In order to pass the final test we need to make static protected methods accessible
+  for any calling expression type, not just this.f() or super.f() as for instance methods.
+  For this we will extend the function isAccessible to take three arguments instead of two:
+
+syntax K ::= "isAccessible" "(" Id ","          //the method class
+                                AccessMode ","  //the method access mode
+                                K               //evaluates to ContextType
+                            ")"
+        [strict(2)]
+
+  Now we should extends isaccessible implementation. All rules have to be changed to adapt
+  the new argument. Most notable is the rule for protected that uses the argument:
+
+rule [isAccessibleProtected]:
+    <k>
+      isAccessible(Class:Id, protected, CT:ContextType)
+      => 'LazyOr(
+            'LazyAnd(
+              'LazyOr((CT ==K staticCT)::bool,, 'Not(isQualifiedMethodCall)),,
+              subtype(class CurrentClass, class Class)
+            ),,
+            isAccessible(Class, package, CT)
+      )
+      ...
+    </k>
+    <crntClass> CurrentClass:Id </crntClass>
+
+Now we have to change the two places where isAccessible is used, to pass the new argument.
+
+With this changes all tests for static methods passed.
+
+Final statistics:
+  Syntax constructs added: 5
+  Syntax constructs updated: 5
+  Rules added: 13
+  Rules updated: 18
+  Rules deleted: 1
