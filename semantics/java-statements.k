@@ -8,16 +8,7 @@ rule [StartExecutionPhase]:
       //k-ast for new <MainClass>().main(new String[0]);
       'ExprStm(
         'Invoke(
-          'Method(
-            'NewInstance(
-              'None(.List{K}),,
-              class String2Id(MainClassS),,
-              'ListWrap(.List{K}),,
-              'None(.List{K})
-            ),,
-            'None(.List{K}),,
-            String2Id("main")
-          ),,
+          'MethodName('TypeName(String2Id(MainClassS)),, String2Id("main")),,
           'ListWrap('NewArray(
               rtString,,
               'ListWrap('Dim(0 :: int)),,
