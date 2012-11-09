@@ -55,3 +55,11 @@ Part 3. Overriding, polymorphism.
 11. Calling a method through super qualifier.
 
 12. Return object. Test returning objects in methods and then invoking methods on them.
+
+13. Method with c-like array arguments. Three such arguments.
+
+14. Polymorphism for methods with c-like array arguments.
+  B < A. Both have methods f(int[]), g(int[]).
+  Class A: f(int a[]), g(int[] a)
+  Class B: f(int[] a), g(int a[])
+  Test that polymorphism works for both.
