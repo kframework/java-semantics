@@ -10,13 +10,13 @@
 public class method_05_arg_conv {
 
   public static void main(String[] args) {
-    new main();
+    new test();
     System.out.println("Done!");
   }
 }
 
-class main {
-  main() {
+class test {
+  test() {
     f(12, (short)100000, new RuntimeException("re"), "sss");
     f(12, 13, null, null);
   }
