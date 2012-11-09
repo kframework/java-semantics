@@ -2,7 +2,7 @@
 Static method call unqualified, from an instance method.
 */
 
-public class static_m_102_unqualified {
+public class static_m_103_unqualified {
   public static void main(String[] args) {
     new A().f();
     System.out.println("Done!");

@@ -2,7 +2,7 @@
 Static method overloading, all versions of the method in one class.
 */
 
-public class static_m_105_overloading {
+public class static_m_107_overloading {
   public static void main(String[] args) {
     A.sf((byte) 0);
     A.sf((short) 0);

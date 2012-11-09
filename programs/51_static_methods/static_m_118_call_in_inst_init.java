@@ -7,7 +7,7 @@ Unqualified static method in instance initializing contexts.
   - constructor
 */
 
-public class static_m_116_call_in_inst_init {
+public class static_m_118_call_in_inst_init {
   public static void main(String[] args) {
     new B();
     System.out.println("Done!");

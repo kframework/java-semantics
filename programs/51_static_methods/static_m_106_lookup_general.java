@@ -12,7 +12,7 @@ Static method lookup, all the forms:
   - method inherited. Test all possibilities.
 */
 
-public class static_m_104_lookup_general {
+public class static_m_106_lookup_general {
   public static void main(String[] args) {
     System.out.println("Static method defined in target class:");
     A a = new A();

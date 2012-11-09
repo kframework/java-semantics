@@ -13,7 +13,7 @@ Overloading through a mix of static and instance methods.
     with all param types.
 */
 
-public class static_m_112_overl_static_inst_1 {
+public class static_m_114_overl_static_inst_1 {
   public static void main(String[] args) {
     new A().test();
     System.out.println("Done!");

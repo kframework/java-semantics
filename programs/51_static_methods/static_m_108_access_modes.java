@@ -3,7 +3,7 @@ Static methods access modes - test just public vs private access mode
   in one compilation unit.
 */
 
-public class static_m_106_access_modes {
+public class static_m_108_access_modes {
   public static void main(String[] args) {
     A.privateTest();
 
