@@ -9,6 +9,7 @@ Unqualified static fields in instance initializing contexts.
 
 public class static_f_108_in_inst_init {
   public static void main(String[] args) {
+    A.sv = 14;
     new B();
     System.out.println("Done!");
   }
@@ -19,7 +20,7 @@ class A {
     System.out.println("A.A("+a+")");
   }
 
-  static int sv = 14;
+  static int sv;
 }
 
 class B extends A {

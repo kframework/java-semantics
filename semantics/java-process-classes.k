@@ -20,7 +20,7 @@ when        (KL =/=KLabel 'Public)
 rule getAccessMode('ListWrap(.List{K})) => package            [anywhere]
 
 syntax K ::= "getContextType" "(" K //'ListWrap(...) - the list of method attributes
-                              ")"
+                              ")"                           [function]
 
 rule getContextType('ListWrap('Static(_),,_)) => staticCT   [anywhere]
 
@@ -364,12 +364,14 @@ when
       [structural]
 
 rule [FieldDecToLocalVarDec]:
-    <k> 'FieldDec(_,, TypeK:K,, 'ListWrap('VarDec(X:Id))) => . ...</k>
+    <k> 'FieldDec(Modifiers:K,, TypeK:K,, 'ListWrap('VarDec(X:Id))) => . ...</k>
     <cuClass> Class:Id </cuClass>
     <className> Class </className>
     <fieldDecs>
       'ListWrap(_,, ( .List{K} => 'LocalVarDec(TypeK,, 'ListWrap('VarDec(X,, default(TypeK)))) ))
     </fieldDecs>
+when
+    getContextType(Modifiers) ==K instanceCT
         [structural]
 
 rule [InstanceInitSave]:
@@ -377,6 +379,17 @@ rule [InstanceInitSave]:
     <cuClass> Class:Id </cuClass>
     <className> Class </className>
     <instanceInit>... . => K </instanceInit>
+        [structural]
+
+rule [StaticFieldDecToLocalVarDec]:
+    <k> 'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id))) => . ...</k>
+    <cuClass> Class:Id </cuClass>
+    <className> Class </className>
+    <staticEnv> Env:Map => Env[L/X] </staticEnv>
+    <store>... . => L |-> default(T) ...</store>
+    <nextLoc> L:Int => L +Int 1 </nextLoc>
+when
+    getContextType(Modifiers) ==K staticCT
         [structural]
 
 //@ \subsection{Interplay of fields and arrays}

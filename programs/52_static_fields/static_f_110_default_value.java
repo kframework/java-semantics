@@ -1,6 +1,6 @@
 /*
-Field default values. Class with fields of all relevant types, without initializer.
-Test their value.
+Static fields default values. Class with fields of all relevant types, without initializer.
+Test their values.
 */
 
 class A {

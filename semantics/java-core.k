@@ -47,6 +47,7 @@ configuration <T color="red">
                       <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>
                       <methods color="purple"> .Map </methods>
                       <instanceInit> .K </instanceInit>
+                      <staticEnv> .Map </staticEnv>
                    </class>
                 </classes>
                 <mainClass> $MainClass:ListItem </mainClass>

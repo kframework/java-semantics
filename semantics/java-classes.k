@@ -111,12 +111,13 @@ syntax K ::= "create" "(" K ")"
 rule [create]:
     <k>
       create(Class:Id)
-      => create(BaseClassK) ~> setCrntClass(Class) ~> S ~> addEnvLayer
+      => create(BaseClassK) ~> setCrntClass(Class) ~> env(StaticEnv) ~> S ~> addEnvLayer
       ...
     </k>
     <className> Class </className>
     <extends> BaseClassK:K </extends>
     <fieldDecs> S:K </fieldDecs>
+    <staticEnv> StaticEnv:Map </staticEnv>
         [structural]
 
 rule [createEmptyDiscard]:
@@ -222,10 +223,11 @@ when X in keys(Env)
 
 rule [ExprNameMember]:
     <k>
-      'ExprName(X:Id) => 'ExprName( 'This(.List{K}),, X )
+      'ExprName(X:Id) => 'ExprName( ('This(.List{K}) ?? class Class),, X )
       ...
     </k>
     <env> Env:Map </env>
+    <crntClass> Class:Id </crntClass>
 when
     notBool( (X in keys(Env)) orBool (Id2String(X) ==String "System") )
         [structural]
@@ -346,8 +348,14 @@ rule [lvalueTypedLookup]:
 //@ \texttt{lvalue}
 
 rule [lvalueExprNameMember]:
-    <k> lvalue( 'ExprName(X:Id) => 'ExprName('This(.List{K}),, X) ) ...</k>
+    <k>
+      lvalue(
+        'ExprName(X:Id) => 'ExprName( ('This(.List{K}) ?? class Class),, X )
+      )
+      ...
+    </k>
     <env> Env:Map </env>
+    <crntClass> Class:Id </crntClass>
 when notBool(X in keys(Env))  [structural]
 
 context lvalue('ExprName(HOLE,, _:Id) )
@@ -375,5 +383,59 @@ rule [lvalueSuperField]:
     <crntClass> Class:Id </crntClass>
     <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>
         [structural]
+
+//@Section{lookup static field}
+
+syntax K ::= "lookupStaticField" "("
+                                    K "," // Class - class to search, or .K
+                                    Id    // X - field name
+                                  ")"
+
+rule [ExprNameStaticField]:
+    'ExprName(class Class:Id,, X:Id) => lookupStaticField(Class, X)
+
+rule [lookupStaticField]:
+    <k>
+      lookupStaticField(Class:Id, X:Id) => typedLookup(L)
+      ...
+    </k>
+    <className> Class </className>
+    <staticEnv>... X |-> L ...</staticEnv>
+
+rule [lookupStaticFieldContinue]:
+    <k>
+      lookupStaticField((Class:Id => BaseClassK), X:Id)
+      ...
+    </k>
+    <className> Class </className>
+    <extends> BaseClassK:K </extends>
+    <staticEnv> Env:Map </staticEnv>
+when
+    notBool X in keys(Env)
+
+rule [lookupStaticFieldEmpty]:
+    lookupStaticField(.K, _) => noValue
+
+rule [lvalueExprNameStaticField]:
+    lvalue('ExprName(class Class:Id,, X:Id) => lookupStaticField(Class, X))
+
+rule [lvalueLookupStaticField]:
+    <k>
+      lvalue(lookupStaticField(Class:Id, X:Id) => typedLookup(L))
+      ...
+    </k>
+    <className> Class </className>
+    <staticEnv>... X |-> L ...</staticEnv>
+
+rule [lvalueLookupStaticFieldContinue]:
+    <k>
+      lvalue(lookupStaticField((Class:Id => BaseClassK), X:Id))
+      ...
+    </k>
+    <className> Class </className>
+    <extends> BaseClassK:K </extends>
+    <staticEnv> Env:Map </staticEnv>
+when
+    notBool X in keys(Env)
 
 endmodule

@@ -51,6 +51,6 @@
 109. Local var hiding a static field. Class with a static field, method with a local var
   with the same name. Access both from within and outside var scope. Also use this.field.
 
-110. Static field default values. Class with static fields of all relevant types,
-  without initializer. Test their value.
+110. Static fields default values. Class with static fields of all relevant types,
+  without initializer. Test their values.
 

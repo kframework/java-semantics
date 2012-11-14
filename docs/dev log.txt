@@ -217,3 +217,105 @@ Final statistics:
   Rules added: 13
   Rules updated: 18
   Rules deleted: 1
+
+
+Chapter 3. Static fields.
+
+Todo test:
+  - Field access modes. If in a class we have a private field x in a base class,
+  and a public static field in the same class, we have to check the access mode to
+  decide that it is the static field the one we should access.
+  - C-like static vars decs. Since static vars are processed differently than instance vars,
+    we need this test.
+  - massive refactoring required: we need a wrapper rvalue, similar to lvalue.
+    Anything inside both rvalue and lvalue will evaluate to typedLookup(L),
+    if applicable. Only after that typedLookup will be rewritten into loc(L)
+    for lvalue, and value at location L for rvalue.
+    This will eliminate all redundant rules we have right now for lvalue,
+      as well as a lot of redundant context rules.
+  - investigate the case Class.a.b = val. Maybe we need an extra rule for
+    lvalue('ExprName(noValue, x))
+
+1. In order to implement static fields, we add a cell to the configuration:
+  - <staticEnv>
+    <staticEnv> is the environment of static fields of a class. It contains just the fields
+  declared in this class, not those inherited from superclasses.
+
+2. We add a side condition to the rule [FieldDecToLocalVarDec], so that the
+  rule is only applied to instanceCT fields:
+
+rule [FieldDecToLocalVarDec]:
+    <k> 'FieldDec(Modifiers:K,, TypeK:K,, 'ListWrap('VarDec(X:Id))) => . ...</k>
+    <cuClass> Class:Id </cuClass>
+    <className> Class </className>
+    <fieldDecs>
+      'ListWrap(_,, ( .List{K} => 'LocalVarDec(TypeK,, 'ListWrap('VarDec(X,, default(TypeK)))) ))
+    </fieldDecs>
+when
+    getContextType(Modifiers) ==K instanceCT
+
+3. We add a somewhat similar rule for static fields:
+
+rule [StaticFieldDecToLocalVarDec]:
+    <k> 'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id))) => . ...</k>
+    <cuClass> Class:Id </cuClass>
+    <className> Class </className>
+    <staticEnv> Env:Map => Env[L/X] </staticEnv>
+    <store>... . => L |-> default(T) ...</store>
+    <nextLoc> L:Int => L +Int 1 </nextLoc>
+when
+    getContextType(Modifiers) ==K staticCT
+
+4. Processing of class-qualified variable references, both
+  rvalue and lvalue:
+
+  7 rules in java-classes.k just after
+syntax K ::= lookupStaticField ...
+
+  With those rules we can access static fields for both reading and writing through
+  class-qualified expressions.
+
+5. Accessing static fields through unqualified expressions.
+
+First, we have to change the rule [ExprNameMember] so that a simple var name
+  will be looked up among instance members, and if not found - among static members.
+  This semantics is not correct in all cases, and tests involving field access modes
+  should reveal this. but it should work for existing tests.
+
+5.1
+
+rule [ExprNameMember]:
+    <k>
+      'ExprName(X:Id) => 'ExprName( 'This(.List{K}),, X ) ?? 'ExprName(class Class,, X )
+      ...
+    </k>
+    <env> Env:Map </env>
+    <crntClass> Class:Id </crntClass>
+when
+    notBool( (X in keys(Env)) orBool (Id2String(X) ==String "System") )
+
+5.2. A similar change in the rule [lvalueExprNameMember]
+
+6. Now, in order to support accessing static fields through this, super, unqualified
+  and object-qualified expressions, we will add static fields to the instance-environment
+  of every object.
+    For this we have to update [create] rule and add copying of the static environment into
+  the instance environment of the class being created:
+
+rule [create]:
+    <k>
+      create(Class:Id)
+      => create(BaseClassK) ~> setCrntClass(Class) ~> env(StaticEnv) ~> S ~> addEnvLayer
+      ...
+    </k>
+    <className> Class </className>
+    <extends> BaseClassK:K </extends>
+    <fieldDecs> S:K </fieldDecs>
+    <staticEnv> StaticEnv:Map </staticEnv>
+
+Now 9 tests out of 10 for static fields pass. The failing test is:
+  - Static fields default values.
+
+
+
+
