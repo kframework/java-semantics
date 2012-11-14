@@ -220,4 +220,15 @@ rule [getPackage]:
 syntax K ::= "kEq" "(" K "," K ")" [seqstrict]
 rule kEq(KR1:KResult, KR2:KResult) => (KR1 ==K KR2)::bool
 
+syntax KResult ::= "noValue"
+
+syntax K ::= K "??" K [strict(1)]
+
+rule [chainOfResponsibility1]:
+    KR:KResult ?? _ => KR
+when KR =/=K noValue
+
+rule [chainOfResponsibility2]:
+    noValue ?? K => K
+
 endmodule

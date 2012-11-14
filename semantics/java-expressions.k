@@ -208,46 +208,14 @@ syntax K ::= "castImpl" "(" Type "," K ")" [seqstrict]
 rule [CastNumber]: castImpl(NT:NumericType, I:Int::_) => normalize(I::NT)
 rule [CastBool]: castImpl(bool, B:Bool::bool) => B::bool
 
-/*@ \subsection{lvalue and loc} */
+/*@ \subsection{lvalue and loc syntax} */
 
 syntax K ::= "lvalue" "(" K ")"
 
 //both lookup and loc are RawVal expressions. How will we give lookup context syntax?
 syntax RawVal ::= "loc" "(" Int ")"
 
-rule <k> lvalue(lookup(L:Int)::T:Type) => loc(L)::T ...</k>  [structural]
-
-rule [lvalueExprNameLocal]:
-    <k> lvalue('ExprName(X:Id)) => typedLoc(L) ...</k>
-    <env>... X |-> L:Int ...</env>
-        [structural]
-
-syntax K ::= "typedLoc" "(" Int ")"
-
-rule [typedLoc]:
-    <k> typedLoc(L:Int) => loc(L)::T ...</k>
-    <store>... L |-> _::T:Type ...</store>
-
-rule [lvalueTypedLoc]:
-    <k> lvalue( typedLoc(L:Int) => loc(L)::T ) ...</k>
-    <store>... L |-> _::T:Type ...</store>
-
-/*@ \subsection{lookup} */
-
 //lookup result is of sort RawType
 syntax K ::= "lookup" "(" Int ")"
-
-rule [lookupVarName]:
-    <k> X:Id => TV ...</k>
-    <env>... X |-> L:Int ...</env>
-    <store>... L |-> TV:TypedVal ...</store>
-
-rule [lookupLocation]:
-    <k>
-      lookup(L:Int) :: T1:Type
-      => subtype(T2, T1) ~> true? ~> V::T1
-      ...
-    </k>
-    <store>... L |-> V:RawVal :: T2:Type ...</store>
 
 endmodule

@@ -8,6 +8,7 @@ require "java-expressions.k"
 require "java-statements.k"
 require "java-arrays.k"
 require "java-classes.k"
+require "java-var-lookup.k"
 require "java-method-invoke.k"
 require "java-api-core.k"
 
@@ -22,6 +23,7 @@ module JAVA
     imports JAVA-STATEMENTS
     imports JAVA-ARRAYS
     imports JAVA-CLASSES
+    imports JAVA-VAR-LOOKUP
     imports JAVA-METHOD-INVOKE
     imports JAVA-API-CORE
 
