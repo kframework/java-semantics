@@ -1,10 +1,23 @@
 package java.lang;
 
 class RuntimeException {
-    private String detailMessage = null;
+    private String detailMessage;
+    private RuntimeException cause;
+
+    public RuntimeException() {}
 
     public RuntimeException(String message) {
         detailMessage = message;
+    }
+
+    public RuntimeException(RuntimeException cause) {
+        detailMessage = (cause==null ? null : cause.toString());
+        this.cause = cause;
+    }
+
+    public RuntimeException(String message, RuntimeException cause) {
+        detailMessage = message;
+        this.cause = cause;
     }
 
     public String getMessage() {

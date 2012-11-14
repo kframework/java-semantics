@@ -2,6 +2,7 @@ module JAVA-METHOD-INVOKE
     imports JAVA-PROCESS-CLASSES
     imports JAVA-CLASSES
     imports JAVA-STATEMENTS
+    imports JAVA-STATIC-INIT
 
 /*@\subsection{Method invocation}
 The method lookup is the same as in untyped KOOL.
@@ -451,6 +452,10 @@ rule [invokeImplInstance]:
     </store>
 when isKResult(ParamValues)
 
+//todo report bug: if we remove parentheses around (bindto Params, ParamValues)
+//we'll get compile-time error
+//test with the latest version of K
+//the problem is present in v8518. v8620 compiles but cannot execute the definition.
 rule [invokeImplStatic]:
     <k>
       invokeImpl(
@@ -459,7 +464,7 @@ rule [invokeImplStatic]:
         _,
         'ListWrap(ParamValues:List{K})
       ) ~> K:K
-       => bindto Params, ParamValues ~> Body ~> 'Return('None(.List{K}))
+       => staticInit(Class) ~> (bindto Params, ParamValues) ~> Body ~> 'Return('None(.List{K}))
     </k>
     <control>
       <stack>

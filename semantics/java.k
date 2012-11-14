@@ -7,6 +7,7 @@ require "java-subtyping.k"
 require "java-expressions.k"
 require "java-statements.k"
 require "java-arrays.k"
+require "java-static-init.k"
 require "java-classes.k"
 require "java-var-lookup.k"
 require "java-method-invoke.k"
@@ -22,6 +23,7 @@ module JAVA
     imports JAVA-EXPRESSIONS
     imports JAVA-STATEMENTS
     imports JAVA-ARRAYS
+    imports JAVA-STATIC-INIT
     imports JAVA-CLASSES
     imports JAVA-VAR-LOOKUP
     imports JAVA-METHOD-INVOKE

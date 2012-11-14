@@ -56,14 +56,19 @@ Part 6. Class init triggering a cyclic initialization request.
   115. B < A. A reads static fields of B. B reads static fields of A.
     Call a static method on B. Default values of B should be observed.
 
-Part 7. Interface initialization is triggered once.
+Part 7. Class init triggering block environment separation.
+  116. Class init triggering block environment separation.
+  Class init is triggered in a block with local var x. Class init initializes the field x.
+  Test that the field is assigned to, not the local var.
+
+Part 8. Interface initialization is triggered once.
   201. Interface I1. Read a field twice. Trace.
   202. Interfaces I1, I2. Read a field twice in both, interleaved. Trace.
 
-Part 8. Interface initialization conditions - no tests, we already performed them.
+Part 9. Interface initialization conditions - no tests, we already performed them.
   (It's just field read)
 
-Part 9. Class/interface init do not trigger superinterface init.
+Part 10. Class/interface init do not trigger superinterface init.
   203. A < I1. Class A instantiation. I1 init is not triggered.
     Access a field in I1 - I1 init is triggered.
   204. I3 < I2, I1. Access a field in I3. Then access a field
@@ -72,19 +77,19 @@ Part 9. Class/interface init do not trigger superinterface init.
   206. A < I1{v, getV()} Instantiate A and call getV() that returns v.
     I1 init is triggered.
 
-Part 10. Init is triggered for the interface that declared the member,
+Part 11. Init is triggered for the interface that declared the member,
     not for the qualifier type.
   207. I3 < I2{v} < I1. Access I3.v. Only I2 init is performed.
   208. B{v2} < A < I1{v1}. Call to B.v1. Init of I1 only.
     Call to B.v2 - init of A and B.
 
-Part 11. Init triggering chain for class/interface mix.
+Part 12. Init triggering chain for class/interface mix.
   209. A, I1. Static init in A accesses field in I1.
     Static sequence of A: {trace} {access of I1} {trace}
   210. I4 < (I2,I3) < I1. Each interface calls a field in the superinterface.
     Init sequence: I1, I2, I3, I4. Call I3-> I1 observes I1's initialized values.
 
-Part 12. Init triggering loop for interfaces.
+Part 13. Init triggering loop for interfaces.
   211. I2, A, I1. I2 triggers init of A, that triggers init of I1, that triggers init of I2, A.
     Read a field on I2. Default values I2 should be observed in A and I1. Tracing.
   212. B{f()} < abstract A < I1{f()}. All static and instance inits traced.
@@ -92,3 +97,7 @@ Part 12. Init triggering loop for interfaces.
     (after accessing I1). Observe static init order: A, I1, B. B observes partially
     statically initialized A, but fully instance initialized.
 
+Part 14. Interface init triggering block environment separation.
+  213. Interface init triggering block environment separation.
+  Interface init is triggered in a block with local var x. Interface init initializes the field x.
+  Test that the field is assigned to, not the local var.

@@ -316,6 +316,64 @@ rule [create]:
 Now 9 tests out of 10 for static fields pass. The failing test is:
   - Static fields default values.
 
+Chapter 4. Static initialization.
 
+1. We have to add two new cells to the <class>:
+  - <staticInit> - static initializers, including field initializers
+  - <staticInitDone> false </staticInitDone> - whether static initialization was performed
+  for this class. Is required to ensure that each class is initialized only once.
+
+2. Populate the cell <staticInit> during process-classes phase.
+
+First we need to change field init desugar to limit it to instance fields only:
+
+rule [FieldDecInstanceInitDesugar]:
+    'FieldDec(Modifiers:K,, TypeK:K,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .List{K})) ))
+    ~> (. => 'InstanceInit('ExprStm('Assign('ExprName(X),, InitExp))))
+when
+            (getKLabel(InitExp) =/=KLabel 'ArrayInit)
+    andBool (getContextType(Modifiers) ==K instanceCT)
+
+Second we add rules similar to field init desugar and instance init saving,
+  but for static field initializers / static initializers:
+
+rule [StaticFieldDecToLocalVarDec]:
+    <k> 'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id))) => . ...</k>
+    <cuClass> Class:Id </cuClass>
+    <className> Class </className>
+    <staticEnv> Env:Map => Env[L/X] </staticEnv>
+    <store>... . => L |-> default(T) ...</store>
+    <nextLoc> L:Int => L +Int 1 </nextLoc>
+when
+    getContextType(Modifiers) ==K staticCT
+
+rule [StaticInitSave]:
+    <k> 'StaticInit(K:K) => . ...</k>
+    <cuClass> Class:Id </cuClass>
+    <className> Class </className>
+    <staticInit>... . => K </staticInit>
+
+3. Trigger static init.
+
+3.1. During static method call. For this we change the rule [invokeImplStatic] and add a call to
+  staticInit(Class) in the
+  right-hand side of the rewriting inside <k> cell. For now we will trigger static init
+  just for static method calls.
+
+3.2. During static field class-qualified read. For this we add an invocation to staticInit()
+  in the rule [lookupStaticField]. Note that only class-qualified field access may trigger static
+  init. Object-qualified or unqualified access would have triggered it already through
+  object instantiation or static method call.
+
+3.3 During static field class-qualified read. We update the rule [lvalueLookupStaticField].
+3.4 For object instantiation we update [NewInstance].
+
+4. Implement staticInit(Class) term. For this we created a whole new module: JAVA-STATIC-INIT.
+
+  For now 14 tests of 16 for static fields pass. Also all tests related to class static init
+  trigger also pass. The only failing tests are related to ExceptionInInitializerError.
+
+5. Semantics for ExceptionInInitializerError. Now we wrapped call to static init into a try-catch,
+  in the rule [staticInit]. All tests for static init and class init trigger pass.
 
 

@@ -1,5 +1,6 @@
 module JAVA-VAR-LOOKUP
     imports JAVA-CLASSES
+    imports JAVA-STATIC-INIT
 
 //@ \subsection{Names}
 
@@ -174,7 +175,7 @@ rule [ExprNameStaticField]:
 
 rule [lookupStaticField]:
     <k>
-      lookupStaticField(Class:Id, X:Id) => typedLookup(L)
+      lookupStaticField(Class:Id, X:Id) => staticInit(Class) ~> typedLookup(L)
       ...
     </k>
     <className> Class </className>
@@ -199,7 +200,7 @@ rule [lvalueExprNameStaticField]:
 
 rule [lvalueLookupStaticField]:
     <k>
-      lvalue(lookupStaticField(Class:Id, X:Id) => typedLookup(L))
+      lvalue(lookupStaticField(Class:Id, X:Id)) => staticInit(Class) ~> lvalue(typedLookup(L))
       ...
     </k>
     <className> Class </className>

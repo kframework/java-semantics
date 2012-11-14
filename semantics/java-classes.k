@@ -4,6 +4,7 @@ module JAVA-CLASSES
     imports JAVA-EXPRESSIONS
     imports JAVA-STATEMENTS
     imports JAVA-ARRAYS
+    imports JAVA-STATIC-INIT
 
 //@ \subsection{Unused Labels}
 syntax KLabel ::= "'TypeImportOnDemandDec" | "'PackageName" | "'Native"
@@ -72,7 +73,8 @@ get more from the existing SIMPLE constructs. */
 //@ \texttt{typeOf for raw values of reference type}
 rule typeOf(Str:String) => rtString [anywhere]
 rule typeOf(null) => nullType [anywhere]
-rule typeOf(objectClosure(_, (<envStack>ListItem((Class:Id, _)) _</envStack>))) => class Class [anywhere]
+rule typeOf(objectClosure(_, (<envStack>ListItem((Class:Id, _)) _</envStack>)))
+     => class Class [anywhere]
 rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T [anywhere]
 
 /*@ \subsection{New}
@@ -90,14 +92,15 @@ rule [NewInstance]:
     <k>
       'NewInstance(
         _:K,,
-        class ClassName:Id,,
+        class Class:Id,,
         'ListWrap( Vals:List{K} ),,
         _:K
       )
-      => create(ClassName)
+      => staticInit(Class)
+        ~> create(Class)
         ~> storeObj
         ~> restoreEnvAndObj(Env, Obj)
-        ~> invokeConstr(L, ClassName, Vals)
+        ~> invokeConstr(L, Class, Vals)
         ~> typedLookup(L)
       ...
     </k>
@@ -161,13 +164,6 @@ rule [storeObj]:
       . => L |-> objectClosure(L, Obj) :: class Class
       ...
     </store>
-
-syntax K ::= "restoreEnvAndObj" "(" Map "," Bag ")"
-
-rule [restoreEnvAndObj]:
-    <k> restoreEnvAndObj(Env:Map, Obj:Bag) => . ...</k>
-    <env> _ => Env </env>
-    <crntObj> _ => Obj </crntObj>
 
 syntax K ::= "invokeConstr" "(" Int "," Id "," List{K} ")"
 

@@ -4,7 +4,7 @@ module JAVA-ARRAYS
 
 syntax K ::= RawVal "::" "elem" Type
 
-//@ \subsection{C-style array declarators}
+//@ \subsection{Array declarators with c-style dimensions and inits}
 
 rule [ArrayVarDecIdDesugar]:
     'LocalVarDec(
@@ -19,6 +19,37 @@ rule [ArrayVarDecIdDiscard]:
     'LocalVarDec(T:Type,, 'ListWrap('VarDec(
         ( 'ArrayVarDecId( X:Id,, 'ListWrap(.List{K}) ) => X ),,
         _ //possible initializer
+    )))
+
+rule [VarDecWithArrayInitDesugar]:
+    'LocalVarDec(T:Type,, 'ListWrap('VarDec(
+      X:Id,,
+      ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK)) )
+    )))
+
+//same three rules for fields
+
+rule [ArrayFieldDecIdDesugar]:
+    'FieldDec(
+      _,,
+      (T:Type => arrayOf T),,
+      'ListWrap('VarDec('ArrayVarDecId(
+          X:Id,,
+          'ListWrap(('Dim(.List{K}) => .List{K}) ,,_)
+      ),, _ //possible initializer
+    )))
+
+rule [ArrayFieldDecIdDiscard]:
+    'FieldDec(_,, T:Type,, 'ListWrap('VarDec(
+        ( 'ArrayVarDecId( X:Id,, 'ListWrap(.List{K}) ) => X ),,
+        _:K //possible initializer
+    )))
+
+//desugaring fields with ArrayInit
+rule [FieldDecWithArrayInitDesugar]:
+    'FieldDec(_,, T:Type,, 'ListWrap('VarDec(
+      X:Id,,
+      ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK)) )
     )))
 
 /*@ \subsection{Array access}
@@ -307,13 +338,6 @@ rule [arrayInitImplInnerArrayInit]:
 
 rule [arrayInitImplDiscard]:
     arrayInitImpl(_, _, .List{K}) => .
-
-rule [VarDecWithArrayInitDesugar]:
-    'LocalVarDec(T:Type,, 'ListWrap('VarDec(
-      X:Id,,
-      ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK)) )
-    )))
-
 
 //@ toString
 

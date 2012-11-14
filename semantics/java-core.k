@@ -3,62 +3,64 @@ module JAVA-CORE
 /*@ \section{Configuration}
 The configuration is almost identical to that of typed KOOL.*/
 
-configuration <T color="red">
-                <threads color="orange">
-                  <thread multiplicity="*" color="yellow">
-                    <k color="green"> $PGM:K </k>
-                    <env color="violet"> .Map </env>
-                    <holds color="black"> .Map </holds>
-                    <br/>
-                    <control color="cyan">
-                      <stack color="blue"> .List </stack>
-                      //todo this cell contained originally .K
-                      //why it worked?
-                      <return color="LimeGreen"> void </return>
-                        // holds return type
-                      <br/>
-                      <crntObj color="Fuchsia">
-                        <crntClass> .K </crntClass>
-                        <envStack> .List </envStack>
-                        <location multiplicity="?"> .K </location>
-                      </crntObj>
-                    </control>
-                    <lookupMethod>
-                      <isQualified> false </isQualified>
-                    </lookupMethod>
-                  </thread>
-                </threads>
-                <br/>
-                <store color="white"> .Map </store>
-                <busy color="cyan">.Set</busy>
-                <in color="magenta" stream="stdin"> .List </in>
-                <out color="brown" stream="stdout"> .List </out>
-                <nextLoc color="gray"> 0 </nextLoc>
-                <br/>
-                <classes color="Fuchsia">
-                   <class multiplicity="*" color="Fuchsia">
-                      <package> .K </package>
-                      <className color="Fuchsia"> .K </className>
-                      <extends color="Fuchsia"> .K </extends>
-                      <implements> .Set </implements>
-                      <implTrans> .Set </implTrans>
-                      <declarations color="purple"> .K </declarations>
-                      <metaType> .K </metaType>
-                      <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>
-                      <methods color="purple"> .Map </methods>
-                      <instanceInit> .K </instanceInit>
-                      <staticEnv> .Map </staticEnv>
-                   </class>
-                </classes>
-                <mainClass> $MainClass:ListItem </mainClass>
-                //current compilation unit package
-                <cuPackage> .K </cuPackage>
-                <cuClass> .K </cuClass>
-                <computationPhase> ProcessCompUnitsPhase </computationPhase>
+configuration
+    <T color="red">
+      <threads color="orange">
+        <thread multiplicity="*" color="yellow">
+          <k color="green"> $PGM:K </k>
+          <env color="violet"> .Map </env>
+          <holds color="black"> .Map </holds>
+          <br/>
+          <control color="cyan">
+            <stack color="blue"> .List </stack>
+            //todo this cell contained originally .K
+            //why it worked?
+            <return color="LimeGreen"> void </return> // holds method return type
+            <br/>
+            <crntObj color="Fuchsia">
+              <crntClass> .K </crntClass>
+              <envStack> .List </envStack>
+              <location multiplicity="?"> .K </location>
+            </crntObj>
+          </control>
+          <lookupMethod>
+            <isQualified> false </isQualified>
+          </lookupMethod>
+        </thread>
+      </threads>
+      <br/>
+      <store color="white"> .Map </store>
+      <busy color="cyan">.Set</busy>
+      <in color="magenta" stream="stdin"> .List </in>
+      <out color="brown" stream="stdout"> .List </out>
+      <nextLoc color="gray"> 0 </nextLoc>
+      <br/>
+      <classes color="Fuchsia">
+         <class multiplicity="*" color="Fuchsia">
+            <package> .K </package>
+            <className color="Fuchsia"> .K </className>
+            <extends color="Fuchsia"> .K </extends>
+            <implements> .Set </implements>
+            <implTrans> .Set </implTrans>
+            <declarations color="purple"> .K </declarations>
+            <metaType> .K </metaType>
+            <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>
+            <methods color="purple"> .Map </methods>
+            <instanceInit> .K </instanceInit>
+            <staticEnv> .Map </staticEnv>
+            <staticInit> .K </staticInit>
+            <staticInitDone> false </staticInitDone>
+         </class>
+      </classes>
+      <mainClass> $MainClass:ListItem </mainClass>
+      //current compilation unit package
+      <cuPackage> .K </cuPackage>
+      <cuClass> .K </cuClass>
+      <computationPhase> ProcessCompUnitsPhase </computationPhase>
 
-                <dissolveEmptyK> true </dissolveEmptyK>
-                <dissolveClasses> true </dissolveClasses>
-              </T>
+      <dissolveEmptyK> true </dissolveEmptyK>
+      <dissolveClasses> true </dissolveClasses>
+    </T>
 
 //@ \section{Identifiers}
 
@@ -230,5 +232,12 @@ when KR =/=K noValue
 
 rule [chainOfResponsibility2]:
     noValue ?? K => K
+
+syntax K ::= "restoreEnvAndObj" "(" Map "," Bag ")"
+
+rule [restoreEnvAndObj]:
+    <k> restoreEnvAndObj(Env:Map, Obj:Bag) => . ...</k>
+    <env> _ => Env </env>
+    <crntObj> _ => Obj </crntObj>
 
 endmodule

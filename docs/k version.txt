@@ -3,4 +3,12 @@ Anything above don't work. At version 8190 the definition don't kompile.
 
 At xorBool fix version (82xx) wrong maude rules are already present.
 
-Last working version: 8510
+Last working version: 8510 (8518).
+.maude file size increased, also test time increased. Now the time to rule the whole suite on
+the server is almost 6 min.
+
+Updated to: 8620 - everything fails. Compilation now takes 3 min,
+  and resulting maude is 800k instead of 650k. Good to avoid.
+
+Reverted to 8518.
+

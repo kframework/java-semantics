@@ -356,12 +356,13 @@ rule [FieldDecDesugar]:
     (. => 'FieldDec(SomeK,, TypeK,, 'ListWrap(K1))) ~>
     'FieldDec(SomeK:K,, TypeK:K,, 'ListWrap((K1:K => .List{K}),, K2:K,, Ks:List{K}))
 
-rule [FieldDecInitDesugar]:
-    'FieldDec(_:K,, TypeK:K,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .List{K})) ))
+rule [FieldDecInstanceInitDesugar]:
+    'FieldDec(Modifiers:K,, TypeK:K,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .List{K})) ))
     ~> (. => 'InstanceInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
-    getKLabel(InitExp) =/=KLabel 'ArrayInit
-      [structural]
+            (getKLabel(InitExp) =/=KLabel 'ArrayInit)
+    andBool (getContextType(Modifiers) ==K instanceCT)
+        [structural]
 
 rule [FieldDecToLocalVarDec]:
     <k> 'FieldDec(Modifiers:K,, TypeK:K,, 'ListWrap('VarDec(X:Id))) => . ...</k>
@@ -381,6 +382,14 @@ rule [InstanceInitSave]:
     <instanceInit>... . => K </instanceInit>
         [structural]
 
+rule [FieldDecStaticInitDesugar]:
+    'FieldDec(Modifiers:K,, TypeK:K,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .List{K})) ))
+    ~> (. => 'StaticInit('ExprStm('Assign('ExprName(X),, InitExp))))
+when
+            (getKLabel(InitExp) =/=KLabel 'ArrayInit)
+    andBool (getContextType(Modifiers) ==K staticCT)
+        [structural]
+
 rule [StaticFieldDecToLocalVarDec]:
     <k> 'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id))) => . ...</k>
     <cuClass> Class:Id </cuClass>
@@ -392,35 +401,12 @@ when
     getContextType(Modifiers) ==K staticCT
         [structural]
 
-//@ \subsection{Interplay of fields and arrays}
-
-//The following three rules are copy-paste adaptations from rules related to local vars,
-//from java-statements.
-
-//desugaring of C-style array declarators
-
-rule [ArrayFieldDecIdDesugar]:
-    'FieldDec(
-      _,,
-      (T:Type => arrayOf T),,
-      'ListWrap('VarDec('ArrayVarDecId(
-          X:Id,,
-          'ListWrap(('Dim(.List{K}) => .List{K}) ,,_)
-      ),, _ //possible initializer
-    )))
-
-rule [ArrayFieldDecIdDiscard]:
-    'FieldDec(_,, T:Type,, 'ListWrap('VarDec(
-        ( 'ArrayVarDecId( X:Id,, 'ListWrap(.List{K}) ) => X ),,
-        _:K //possible initializer
-    )))
-
-//desugaring fields with ArrayInit
-rule [FieldDecWithArrayInitDesugar]:
-    'FieldDec(_,, T:Type,, 'ListWrap('VarDec(
-      X:Id,,
-      ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK)) )
-    )))
+rule [StaticInitSave]:
+    <k> 'StaticInit(K:K) => . ...</k>
+    <cuClass> Class:Id </cuClass>
+    <className> Class </className>
+    <staticInit>... . => K </staticInit>
+        [structural]
 
 //get internal constructor name from a class name
 syntax K ::= "getConsName" "(" Id ")" [function]
