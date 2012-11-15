@@ -1,4 +1,6 @@
 module JAVA-VAR-LOOKUP
+    imports JAVA-CORE
+    imports JAVA-SUBTYPING
     imports JAVA-CLASSES
     imports JAVA-STATIC-INIT
 

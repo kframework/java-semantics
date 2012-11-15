@@ -1,5 +1,6 @@
 module JAVA-ARRAYS
     imports JAVA-CORE
+    imports JAVA-SUBTYPING
     imports JAVA-EXPRESSIONS
 
 syntax K ::= RawVal "::" "elem" Type
@@ -12,45 +13,62 @@ rule [ArrayVarDecIdDesugar]:
       'ListWrap('VarDec('ArrayVarDecId(
           X:Id,,
           'ListWrap(('Dim(.List{K}) => .List{K}) ,,_)
-      ),, _ //possible initializer
-    )))
+      ),, _:List{K} //possible initializer
+    )))                                                 [structural, anywhere]
 
 rule [ArrayVarDecIdDiscard]:
     'LocalVarDec(T:Type,, 'ListWrap('VarDec(
         ( 'ArrayVarDecId( X:Id,, 'ListWrap(.List{K}) ) => X ),,
-        _ //possible initializer
-    )))
+        _:List{K} //possible initializer
+    )))                                                 [structural, anywhere]
 
 rule [VarDecWithArrayInitDesugar]:
     'LocalVarDec(T:Type,, 'ListWrap('VarDec(
       X:Id,,
       ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK)) )
-    )))
+    )))                                                 [structural, anywhere]
 
 //same three rules for fields
 
 rule [ArrayFieldDecIdDesugar]:
     'FieldDec(
-      _,,
+      _:K,,
       (T:Type => arrayOf T),,
       'ListWrap('VarDec('ArrayVarDecId(
           X:Id,,
           'ListWrap(('Dim(.List{K}) => .List{K}) ,,_)
-      ),, _ //possible initializer
-    )))
+      ),, _:List{K} //possible initializer
+    )))                                                 [structural, anywhere]
 
 rule [ArrayFieldDecIdDiscard]:
-    'FieldDec(_,, T:Type,, 'ListWrap('VarDec(
+    'FieldDec(_:K,, T:Type,, 'ListWrap('VarDec(
         ( 'ArrayVarDecId( X:Id,, 'ListWrap(.List{K}) ) => X ),,
-        _:K //possible initializer
-    )))
+        _:List{K} //possible initializer
+    )))                                                 [structural, anywhere]
 
-//desugaring fields with ArrayInit
 rule [FieldDecWithArrayInitDesugar]:
-    'FieldDec(_,, T:Type,, 'ListWrap('VarDec(
+    'FieldDec(_:K,, T:Type,, 'ListWrap('VarDec(
       X:Id,,
       ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK)) )
-    )))
+    )))                                                 [structural, anywhere]
+
+//first two rules - desugaring C-like array decs, for params
+
+rule [ArrayParamIdDesugar]:
+    'Param(
+      _:K,,
+      (T:Type => arrayOf T),,
+      'ArrayVarDecId(
+          X:Id,,
+          'ListWrap(('Dim(.List{K}) => .List{K}) ,,_)
+      )
+    )                                                   [structural, anywhere]
+
+rule [ArrayParamIdDiscard]:
+    'Param(
+      _:K,, T:Type,,
+      ( 'ArrayVarDecId( X:Id,, 'ListWrap(.List{K}) ) => X )
+    )                                                   [structural, anywhere]
 
 /*@ \subsection{Array access}
 Check array bounds, as part of the dynamic typing policy. */

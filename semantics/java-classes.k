@@ -1,5 +1,6 @@
 module JAVA-CLASSES
     imports JAVA-CORE
+    imports JAVA-SUBTYPING
     imports JAVA-PROCESS-CLASSES
     imports JAVA-EXPRESSIONS
     imports JAVA-STATEMENTS
@@ -41,9 +42,8 @@ syntax K ::= "bindto" List{K}
 
 rule [bindto]:
     <k>
-      (. => 'ExprStm('Assign('ExprName(X),,TV:TypedVal)))
-      ~> bindto( ('Param(_,, T:Type,, X:Id) => .List{K}),, _:List{K} ),
-          ( (TV => .List{K}),, _:List{K} )
+      bindto 'Param(_:K,, T:Type,, X:Id),, RestP:List{K}, TV:TypedVal,, RestV:List{K}
+      => 'ExprStm('Assign('ExprName(X),,TV:TypedVal)) ~> bindto RestP, RestV
       ...
     </k>
     <env> Env:Map => Env[L/X] </env>
@@ -55,8 +55,6 @@ rule [bindtoEmpty]:
         [structural]
 
 //@ \texttt{typeOf and toString}
-
-rule typeOf('Param(_:K,,K:K,,_)) => K [anywhere]
 
 rule toString(objectClosure(I:Int, Obj:Bag) :: T:Type)
     =>  'Invoke(

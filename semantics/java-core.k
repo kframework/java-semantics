@@ -87,8 +87,8 @@ syntax RawVal ::= Int | Bool | String
                 | "nothing"
                 | "undefined" [latex(\bot_{#1})]
 
-syntax Type ::= "methodType" "(" AccessMode ","    // access mode
-                                 List{K} "," // argument types
+syntax Type ::= "methodType" "(" AccessMode ","    // the access mode
+                                 K ","             // to be processed into Types
                                  Type              // return type
                              ")"
 
@@ -172,10 +172,7 @@ rule toString(rtString) => "java.lang.String"::rtString [anywhere]
 //@ \texttt{typeOf definition}
 
 syntax K ::= "typeOf" "(" K ")" [function]
-rule typeOf(_ :: T:Type) => T [anywhere]
-
-//@ \texttt{subtype definition}
-syntax K ::= "subtype" "(" List{K} "," List{K} ")"
+rule typeOf(_ :: T:Type) => T   [anywhere]
 
 //todo this rule, if used, leads to the error "failed to load IOWrapper".
 syntax K ::= "isNumericType2" "(" Type ")" [function]

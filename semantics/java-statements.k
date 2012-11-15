@@ -1,5 +1,6 @@
 module JAVA-STATEMENTS
     imports JAVA-CORE
+    imports JAVA-SUBTYPING
 
 //@ \section{Initiation of execution}
 

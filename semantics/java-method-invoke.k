@@ -1,4 +1,6 @@
 module JAVA-METHOD-INVOKE
+    imports JAVA-CORE
+    imports JAVA-SUBTYPING
     imports JAVA-PROCESS-CLASSES
     imports JAVA-CLASSES
     imports JAVA-STATEMENTS
@@ -130,7 +132,7 @@ rule [InitSignatureSearchInClassRef]:
           lookupSignature(
             Class,
             MethodName,
-            getTypes(ParamValues),
+            getTypesFromValues(ParamValues),
             Env,
             .K
           ),
@@ -167,7 +169,7 @@ rule [InitSignatureSearchInInterfaceRef]:
           lookupSignature(
             Class,
             MethodName,
-            getTypes(ParamValues),
+            getTypesFromValues(ParamValues),
             Env,
             .K
           ),
@@ -207,17 +209,18 @@ syntax K ::= "invokeImpl" "(" K   //lookupMethod statement, later methodClosure
         [strict(1)]
 
 //converts a List{TypedVal} to Types.
-syntax K ::= "getTypes" "("
+syntax K ::= "getTypesFromValues" "("
                             List{K}     //List{KResult} a list of values
                         ")"
-           | "getTypes" "("
+           | "getTypesFromValues" "("
                             List{K} "," //List{KResult} a list of types
                             List{K}     //List{KResult} a list of values
                         ")"
 
-rule getTypes(Ks:List{K}) => getTypes(.List{K}, Ks)
-rule getTypes(_,, (.List{K} => T), (_::T:Type => .List{K}),, _)
-rule getTypes(Ks:List{K}, .List{K}) => types(Ks)
+rule getTypesFromValues(VKs:List{K}) => getTypesFromValues(.List{K}, VKs)
+rule getTypesFromValues(TKs:List{K}, _::T:Type,, VKs:List{K})
+     => getTypesFromValues(TKs,,T, VKs)
+rule getTypesFromValues(TKs:List{K}, .List{K}) => types(TKs)
 
 //searches for the correct method signature to use
 //when calling a given MethodName with the given argument types
@@ -234,15 +237,15 @@ rule [lookupSignatureNoAlternatives]:
     (. => isPreferableSig(
             'LazyAnd(
               isAccessible(Class, getMethodAccessMode(TV), getMethodContextType(TV)),,
-              subtype(CallTL, SigTL)
+              subtypeList(CallTs, SigTs)
             ),
-            sig(MethodName, types(SigTL))
+            sig(MethodName, SigTs)
           ) )
      ~> lookupSignature(
           Class:Id,
           MethodName:Id,
-          types(CallTL:List{K}),
-          (sig(MethodName, types(SigTL:List{K})) |-> TV:TypedVal => .) _:Map,
+          CallTs:Types,
+          (sig(MethodName, SigTs:Types) |-> TV:TypedVal => .) _:Map,
           .K
         )
 
@@ -250,16 +253,16 @@ rule [lookupSignatureWithAlternative]:
     (. => isPreferableSig(
             'LazyAnd(
               isAccessible(Class, getMethodAccessMode(TV), getMethodContextType(TV)),,
-              'LazyAnd(subtype(CallTL, SigTL),, subtype(SigTL, AltTL))
+              'LazyAnd(subtypeList(CallTs, SigTs),, subtypeList(SigTs, AltTs))
             ),
-            sig(MethodName, types(SigTL))
+            sig(MethodName, SigTs)
           ) )
      ~> lookupSignature(
           Class:Id,
           MethodName:Id,
-          types(CallTL:List{K}),
-          (sig(MethodName, types(SigTL:List{K})) |-> TV:TypedVal => .) _:Map,
-          sig(MethodName, types(AltTL:List{K}))
+          CallTs:Types,
+          (sig(MethodName, SigTs:Types) |-> TV:TypedVal => .) _:Map,
+          sig(MethodName, AltTs:Types)
         )
 
 rule [lookupSignatureSigDiscard]:
@@ -292,39 +295,39 @@ context lookupMethod(_,_,_,HOLE)    //replacement for strict(4)
 
 rule [lookupMethodFirstCandidate]:
     lookupMethod(
-      sig(Name:Id, types(SigTL:List{K})),
+      sig(Name:Id, SigTs:Types),
       _,
-      (sig(Name, types(SigTL)) |-> TV:TypedVal _:Map) => .Map,
+      (sig(Name, SigTs) |-> TV:TypedVal _:Map) => .Map,
       undefined::_ => TV
     )
 
 rule [lookupMethodOtherCandidates]:
     lookupMethod(
-      sig(Name:Id, types(SigTL:List{K})),
+      sig(Name:Id, SigTs:Types),
       (_,, LayerClass:Id),
-      (sig(Name, types(SigTL)) |-> TV:TypedVal => .) _:Map,
-      MCClosure:RawVal :: methodType(Acc:AccessMode, SigTL, T:Type)
+      (sig(Name, SigTs) |-> TV:TypedVal => .) _:Map,
+      MCClosure:RawVal :: methodType(Acc:AccessMode, SigTs, T:Type)
       => 'If(
             'LazyAnd(
-              (getMethodContextType(MCClosure :: methodType(Acc, SigTL, T)) ==K instanceCT)::bool,,
+              (getMethodContextType(MCClosure :: methodType(Acc, SigTs, T)) ==K instanceCT)::bool,,
               isAccessibleForOverwriting(
                 getMethConsClosureClass(MCClosure), Acc, LayerClass, getMethodAccessMode(TV)
               )
             ),,
             TV,,
-            MCClosure :: methodType(Acc, SigTL, T)
+            MCClosure :: methodType(Acc, SigTs, T)
           )
     )
 
 rule [lookupMethodEntryDiscard]:
     lookupMethod(
-      sig(Name:Id, types(ChosenSigTL)),
+      sig(Name:Id, ChosenSigTs:Types),
       _,
-      (sig(X:Id, types(SigTL:List{K})) |-> _ => .) _:Map,
+      (sig(X:Id, SigTs:Types) |-> _ => .) _:Map,
       _:K
     )
 when
-    sig(X, types(SigTL)) =/=K sig(Name, types(ChosenSigTL))
+    sig(X, SigTs) =/=K sig(Name, ChosenSigTs)
 
 rule [lookupMethodLayerDiscard]:
     <k>
@@ -412,7 +415,7 @@ rule isAccessibleForOverwriting(_, protected, _, _) => true::bool
 rule isAccessibleForOverwriting(_, public,    _, _) => true::bool
 
 syntax K ::= "getArgTypes" "(" TypedVal ")" [function]
-rule getArgTypes(_ :: methodType(_, Ks:List{K}, _)) => types(Ks) [anywhere]
+rule getArgTypes(_ :: methodType(_, Ts:Types, _)) => Ts [anywhere]
 
 rule [invokeImplInstance]:
     <k>

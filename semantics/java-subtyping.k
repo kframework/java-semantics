@@ -1,6 +1,20 @@
 module JAVA-SUBTYPING
     imports JAVA-CORE
 
+//Checks whether first type is a subtype of the second
+syntax K ::= "subtype" "("
+                          Type ","
+                          Type
+                       ")"
+
+//Checks whether the each type in the first list of types is a subtype
+//of the type at the same position inthe second list.
+//If lists have different size, the function will evaluate to false.
+//Used in method call overloading resolution.
+            | "subtypeList" "(" Types ","
+                                Types
+                            ")"
+
 rule [subtypeRefTrue]:
     subtype( T:Type, T ) => true :: bool
         [structural]
@@ -161,28 +175,21 @@ rule [subtypeArrayOfArrayRef]:
 
 //Bug. Attempt to write a single rule instead of two below, using side conditions,
 //leads to SUBSORT-TO-WRAPPERS
-rule [subtypeListLeft]:
-    subtype(T1:Type,,T2:Type,,Ts:List{K}, Tp1:Type,,Tps:List{K})
-    => 'LazyAnd( subtype(T1,Tp1),, subtype(T2,,Ts, Tps) )
-when isKResult(Ts) andBool isKResult(Tps)
+rule [subtypeList]:
+    subtypeList(types(T1:Type,,Ts:List{K}), types(Tp1:Type,,Tps:List{K}))
+    => 'LazyAnd( subtype(T1,Tp1),, subtypeList(types(Ts), types(Tps)) )
         [structural]
 
-rule [subtypeListRight]:
-    subtype(T1:Type,,Ts:List{K}, Tp1:Type,,Tp2:Type,,Tps:List{K})
-    => 'LazyAnd( subtype(T1,Tp1),, subtype(Ts, Tp2,,Tps) )
-when isKResult(Ts) andBool isKResult(Tps)
+rule [subtypeListEmptyLeft]:
+    subtypeList(types(.List{K}), types(_:Type,,_)) => false :: bool
         [structural]
 
-rule [subtypeEmptyLeft]:
-    subtype(.List{K}, T:Type,,_) => false :: bool
+rule [subtypeListEmptyRight]:
+    subtypeList(types(_:Type,,_) , types(.List{K})) => false :: bool
         [structural]
 
-rule [subtypeEmptyRight]:
-    subtype(T:Type,,_ , .List{K}) => false :: bool
-        [structural]
-
-rule [subtypeEmpty]:
-    subtype(.List{K}, .List{K}) => true :: bool
+rule [subtypeEmptyBoth]:
+    subtypeList(types(.List{K}), types(.List{K})) => true :: bool
         [structural]
 
 endmodule

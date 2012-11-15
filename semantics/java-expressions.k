@@ -1,5 +1,6 @@
 module JAVA-EXPRESSIONS
     imports JAVA-CORE
+    imports JAVA-SUBTYPING
     imports JAVA-PRIMITIVE-TYPES
 
 //@ \section{Operators}

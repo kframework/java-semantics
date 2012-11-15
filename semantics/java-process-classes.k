@@ -241,8 +241,8 @@ rule [MethodDec]:
       ),,
       S:K
     )
-    => storeMethod(Name, typesFromParams(Params), 'ListWrap(Params), getContextType(Modifiers), S,
-          methodType(getAccessMode(Modifiers), Params, ReturnType))
+    => storeMethod(Name, getTypesFromParams(Params), 'ListWrap(Params), getContextType(Modifiers), S,
+          methodType(getAccessMode(Modifiers), getTypesFromParams(Params), ReturnType))
         [structural]
 
 rule [AbstractMethodDec]:
@@ -261,20 +261,19 @@ syntax K ::= "storeMethod" "("
                               Type    //method closure type
                            ")"
 
-syntax K     ::= "typesFromParams" "(" List{K} ")"
-syntax Types ::= "types" "(" List{K} ")"
+syntax K     ::= "getTypesFromParams" "(" List{K} // list of 'Param terms,
+                                               // to be processed into Type terms
+                                   ")"
+syntax Types ::= "types" "(" List{K} // list of Type elements, when processed
+                         ")"
 syntax KResult ::= Types
 
-rule typesFromParams(Ks:List{K},, ('Param(_:K,,T:Type,,_:K) => T),, _:List{K})
-when isKResult(Ks)
+rule getTypesFromParams(_:List{K},, ('Param(_:K,, T:Type,, _:Id) => T),, _:List{K})
         [structural, anywhere]
 
-rule typesFromParams(KRs:List{K}) => types(KRs)
+rule getTypesFromParams(KRs:List{K}) => types(KRs)
 when isKResult(KRs)
         [structural, anywhere]
-
-context storeMethod(_, _, _, _, _,
-    methodType(_, _:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}, _))
 
 rule [storeMethod]:
     <k>
@@ -326,7 +325,7 @@ rule [ConstrDec]:
         'ConstrBody(
       'Some(FirstLine:K) ,,S:K))
     => storeConstructor(Name, 'ListWrap(Params), FirstLine,
-        S, methodType(getAccessMode(Modifiers), Params, void))
+        S, methodType(getAccessMode(Modifiers), getTypesFromParams(Params), void))
 
 syntax K ::= "storeConstructor" "(" Id    // Class name
                                 "," K     // 'ListWrap(Params) - formal params
@@ -334,9 +333,6 @@ syntax K ::= "storeConstructor" "(" Id    // Class name
                                 "," K     // S - constructor body
                                 "," Type  // MethodType of the constructor
                                 ")"
-
-context storeConstructor(_, _, _, _,
-    methodType(_, _:List{K},, (HOLE => typeOf(HOLE)),, _:List{K}, _))
 
 rule [storeConstructor]:
     <k>
@@ -348,7 +344,7 @@ rule [storeConstructor]:
     <methods>
       Env:Map => Env[
         constrClosure(Class, 'ListWrap(Params), FirstLine, S:K) :: MethodType
-          / sig(getConsName(Name), typesFromParams(Params))
+          / sig(getConsName(Name), getTypesFromParams(Params))
       ]
     </methods>
 

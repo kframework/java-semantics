@@ -14,10 +14,12 @@ public class array_282_init_decl_complex_stm {
 
 class main {
   main() {
-    int[] v = {1, 2}, m[] = {{3,4}, {5+6}, null}, m2[] = {{7}, {}, null};
+    int[] v = {1, 2}, m[] = {{3,4}, {5+6}, null}, m2[] = {{7}, {}, null}, m3[];
+    m3 = null;
     printArray(v);
     printMatrix(m);
     printMatrix(m2);
+    printMatrix(m3);
   }
 
   void printArray(int[] v1) {
@@ -32,9 +34,13 @@ class main {
   }
 
   void printMatrix(int[][] m) {
-    for(int i=0; i<m.length; i++) {
-      printArray(m[i]);
+    if (m == null) {
+      System.out.println(m);
+    } else {
+      for(int i=0; i<m.length; i++) {
+        printArray(m[i]);
+      }
+      System.out.println();
     }
-    System.out.println();
   }
 }
