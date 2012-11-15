@@ -14,7 +14,7 @@ public class array_282_init_decl_complex_stm {
 
 class main {
   main() {
-    int[] v = {1, 2}, m[] = {{3,4}, {5+6}, null}, m2[] = {{7}, {}, null}, m3[];
+    int[] v = {1, 2}, m[] = new int[][]{{3,4}, {5+6}, null}, m2[] = {{7}, {}, null}, m3[];
     m3 = null;
     printArray(v);
     printMatrix(m);
