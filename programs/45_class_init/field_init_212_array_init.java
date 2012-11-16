@@ -6,16 +6,16 @@ Combination of multi field declaration, field with [] in declarator, array initi
 public class field_init_212_array_init {
 
   public static void main(String[] args) {
-    new main();
+    new Test();
     System.out.println("Done!");
   }
 }
 
-class main {
+class Test {
 
-  int[] v = {1, 2}, m[] = {{3,4}, {5+6}, null}, m2[] = {{7}, {}, null}, m3[];
+  int[] v = {1, 2}, m[] = new int[][]{{3,4}, {5+6}, null}, m2[] = {{7}, {}, null}, m3[];
 
-  main() {
+  Test() {
     printArray(v);
     printMatrix(m);
     printMatrix(m2);

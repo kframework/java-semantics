@@ -102,3 +102,10 @@ Part 8. Field initializers, hierarchy:
 83. Hierarchy type A < I1. A class init accesses fields in I1 unqualified.
   static sequence in A: {trace} {access to I1} {trace}. Static sequence of I1 is also traced.
 
+Part 9. Other tests, arised during implementation.
+
+91. Testing various array constructs as interface fields.
+  This test checks taht interface field desugaring is done properly.
+  Array fields with array initializer in the most complex fashion:
+  Combination of multi field declaration, field with [] in declarator, array initializer.
+

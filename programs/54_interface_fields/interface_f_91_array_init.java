@@ -1,10 +1,11 @@
 /*
-Array initializer as part of array var declaration:
-
-Combination of multi var declaration, var with [] in declarator, array initializer.
+Testing various array constructs as interface fields.
+  This test checks taht interface field desugaring is done properly.
+  Array fields with array initializer in the most complex fashion:
+  Combination of multi field declaration, field with [] in declarator, array initializer.
 */
 
-public class array_41_init_decl_complex_stm {
+public class interface_f_91_array_init {
 
   public static void main(String[] args) {
     new Test();
@@ -12,14 +13,17 @@ public class array_41_init_decl_complex_stm {
   }
 }
 
+interface I {
+  int[] v = {1, 2}, m[] = new int[][]{{3,4}, {5+6}, null}, m2[] = {{7}, {}, null}, m3[] = m;
+}
+
 class Test {
+
   Test() {
-    int[] v = {1, 2}, m[] = new int[][]{{3,4}, {5+6}, null}, m2[] = {{7}, {}, null}, m3[];
-    m3 = null;
-    printArray(v);
-    printMatrix(m);
-    printMatrix(m2);
-    printMatrix(m3);
+    printArray(I.v);
+    printMatrix(I.m);
+    printMatrix(I.m2);
+    printMatrix(I.m3);
   }
 
   void printArray(int[] v1) {

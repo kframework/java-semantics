@@ -6,19 +6,20 @@ Combination of multi field declaration, field with [] in declarator, array initi
 public class static_f_init_109_array_init {
 
   public static void main(String[] args) {
-    new test();
+    new Test();
     System.out.println("Done!");
   }
 }
 
-class test {
+class Test {
 
-  static int[] v = {1, 2}, m[] = {{3,4}, {5+6}, null}, m2[] = {{7}, {}, null};
+  static int[] v = {1, 2}, m[] = new int[][]{{3,4}, {5+6}, null}, m2[] = {{7}, {}, null}, m3[];
 
-  test() {
+  Test() {
     printArray(v);
     printMatrix(m);
     printMatrix(m2);
+    printMatrix(m3);
   }
 
   void printArray(int[] v1) {
@@ -33,9 +34,13 @@ class test {
   }
 
   void printMatrix(int[][] m) {
-    for(int i=0; i<m.length; i++) {
-      printArray(m[i]);
+    if (m == null) {
+      System.out.println(m);
+    } else {
+      for(int i=0; i<m.length; i++) {
+        printArray(m[i]);
+      }
+      System.out.println();
     }
-    System.out.println();
   }
 }
