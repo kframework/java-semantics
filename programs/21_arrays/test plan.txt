@@ -2,47 +2,47 @@ Test plan for arrays.
 
 Part 1. Arrays of various types.
 
-011. Array allocation by new, value assignment and value read:
+01. Array allocation by new, value assignment and value read:
   - int
   - short
   - String
   - Object
   - RuntimeException
 
-012. Array element type preservation.
+02. Array element type preservation.
   Check that the type of element of an array of primitives does not change
     after assignment of a literal of narrower type.
   - long[] a; a[0] = 2.000.000.000. print(a[0]*a[0]) - should print 4.000.000.000
   - long[][] m. Same test for two-dim array.
 
-013. Array element ref type preservation.
+03. Array element ref type preservation.
     Check that the type of element of an array of references does not change
     after assigning a value of a narrower reference type.
 
 Part 2. Array allocation.
 
-2. Array allocation. Multidim array allocation in one piece:
+04. Array allocation. Multidim array allocation in one piece:
   - three dims, type int.
 
-3. Array allocation. Various array dims:
+05. Array allocation. Various array dims:
   - positive
   - zero
   - [positive][zero]
   - [zero][positive]
 
-4. Array allocation, NegativeArraySizeException:
+06. Array allocation, NegativeArraySizeException:
   - [negative]
   - [positive][negative]
   - [zero][negative]
 
-5. Various dim expression types: int, short, byte, char (true literal).
+07. Various dim expression types: int, short, byte, char (true literal).
   For each a read and a write.
 
-6. Order of dims during allocation:
+08. Order of dims during allocation:
   - [++i][++i][++i]
   - [negative][2/0] - should throw ArithmeticException.
 
-7. Array variable, [] as part of the declarator (compatibility with C):
+09. Array variable, [] as part of the declarator (compatibility with C):
   - int[] b[]. Assign, access.
   - int[] b[][]. Assign, access.
   - int[][] b[][] = new[][][][]. Assign, access.
@@ -57,9 +57,9 @@ canceled. Normal access:
   - two dims, var index
   Already covered by previous tests.
 
-8. Various index types: int, short, byte, char (true literal).
+10. Various index types: int, short, byte, char (true literal).
 
-9. ArrayOutOfBoundsException.
+11. ArrayOutOfBoundsException.
   - one dim, negative, read & write.
   - one dim, = length
   - one dim > length
@@ -68,31 +68,31 @@ canceled. Normal access:
   - two dims, second dim = length
   - two dims, second dim > length
 
-10. Array access evaluation order:
+12. Array access evaluation order:
   - [++i][++i][++i]
   - [2/0][negative] - throws ArithmeticException.
 
-11. Array access null.
+13. Array access null.
   - null[2] - throws NullPointerException. Read, write.
 
 Part 4. Array assignment (no conversion).
 
-12. Assign among arrays.
+14. Assign among arrays.
   - two one dim arrays, assign one to another. Test an element in the second array.
   Change an element in the first. Element should be changed in both arrays.
 
-13. Assign among arrays.
+15. Assign among arrays.
   - two one dim arrays, both initialized, assign one to another.
     Initialization value of assigned array is rewritten.
 
-14. Assign among arrays. Multidim arrays.
+16. Assign among arrays. Multidim arrays.
   - A[][]. B[]. A[1] = B. Test.
   - A[][][]. B[][], A[1] = B. Test final value.
   - A[1][1] = B[1]. Test
 
 Part 5. Array members.
 
-15. array.length
+17. array.length
   - one dim, positive
   - one dim, zero
   - two dims, positive
@@ -100,7 +100,7 @@ Part 5. Array members.
   - two dims, second dim assigned, zero
   - null.length
 
-161. array.clone
+18. array.clone
   - one dim, array of ints, length = 0, full test
   - two dims, array of ints, [zero][zero], full test
   - int[3], full test
@@ -112,7 +112,7 @@ Part 5. Array members.
   By full test we mean test for ==, and full test on all elements
     (possible recursively).
 
-162 array.clone polymorphism due to different runtime-type and compile-time type
+19. array.clone polymorphism due to different runtime-type and compile-time type
       of cloned object.
   - case when object type is not the actual array type - it is another array
       or just Object. Important for semantics of this method.
@@ -121,7 +121,7 @@ Part 5. Array members.
 
 Part 6. Arrays assignment compatibility and ArrayStoreException.
 
-171. Array instanceof:
+20. Array instanceof:
   Object NPE[] instanceof RE[]
   Object RE[] instanceof NPE[]
   RE[] NPE[] instanceof NPE[]
@@ -129,7 +129,7 @@ Part 6. Arrays assignment compatibility and ArrayStoreException.
   Object int[] instanceof long[]
   Object long[] instanceof int[]
 
-172. Array instanceof complex cases:
+21. Array instanceof complex cases:
   Object Object instanceof int[]
   Object int[] instanceof Object
   Object Object[] instanceof int[]
@@ -145,28 +145,28 @@ Part 6. Arrays assignment compatibility and ArrayStoreException.
   Object RE[] instanceof int[]
   Object int[] instanceof RE[]
 
-173. Polymorphic array assignment.
+22. Polymorphic array assignment.
   NPE[] va; init a.
   RE[] vb = va.
   va == vb?
 
-174. Polymorphic array assignment, element read.
+23. Polymorphic array assignment, element read.
   NPE[] va; init a.
   RE[] vb = va; read vb.
 
-175. Polimorphic array assignment, element read and element write.
+24. Polimorphic array assignment, element read and element write.
   - RuntimeException[] vre = NullPointerException[]. assign. read.
   - O[] RE[0] = new NPE[] - assigning to array element a more derived type than
     aray object type. Permitted.
 
-176. Matrix polymorphism.
+25. Matrix polymorphism.
     Object[][] mo = new RuntimeException[][];
     mo[0] = new NPE[]. read, write element.
 
-177. Compatibility of Object and int[].
+26. Compatibility of Object and int[].
     Object[] vo = new int[][]; Elem read,write.
 
-181. ArrayStoreException.
+27. ArrayStoreException.
   - Example from JLS $10.10, adapted to currently implemented features.
     ColoredPoint[] cpa = new ColoredPoint[10];
     Point[] pa = ColoredPoint[];
@@ -175,7 +175,7 @@ Part 6. Arrays assignment compatibility and ArrayStoreException.
   - additional: P[] CP[0] = new P2(); - assign different type, incompatible with
     array object type.
 
-182. ArrayStoreException on matrixes.
+28. ArrayStoreException on matrixes.
     Object[][] mo = new RuntimeException[][];
     - mo[0] = new Object[] - ASException
     mo[0] = new NullPointerException[] - ok
@@ -183,13 +183,13 @@ Part 6. Arrays assignment compatibility and ArrayStoreException.
     - mo[0][0] = new RuntimeException() - ASException
     mo[0][0] = new NullPointerException() - ok
 
-183. ArrayStoreException on interplay of Object[] and int[][].
+29. ArrayStoreException on interplay of Object[] and int[][].
     Object[] vo = new int[][].
     - assign to vo[0]: array of all primitive types, String[], Object[], int[][].
 
-184. Assignment don't happen when ArrayStoreException is thrown.
+30. Assignment don't happen when ArrayStoreException is thrown.
 
-19. Array cast.
+31. Array cast.
   - cast ok: RuntimeException[] -> NPE[], object is NPE[]
     Print content after cast.
   - ClassCastException: RuntimeException[] -> NPE[], object is RuntimeException[].
@@ -199,13 +199,13 @@ Part 7 Array initializer.
 Subpart 7.1: Array initializer in array creation expression:
   like new int[]{1,2,3}
 
-20. One dim int[] = new int[]{1,3,7}
-21. Two dim ints = new int[][]{{1,2}, {3}, null}
-22. One dim string = new String[]{"abc", "d"+"e"}
-23. Left-to-right eval: {i++,i++,i++}
-24. Array assign compatibility test:
+32. One dim int[] = new int[]{1,3,7}
+33. Two dim ints = new int[][]{{1,2}, {3}, null}
+34. One dim string = new String[]{"abc", "d"+"e"}
+35. Left-to-right eval: {i++,i++,i++}
+36. Array assign compatibility test:
   new Object[][]{new RuntimeException[] {new RuntimeException("re")} }
-25. Inner array type:
+37. Inner array type:
   m = new Object[][]{ {new RuntimeException("re")} }
   (RuntimeException[])m[0] - throws ClassCastException
 
@@ -216,27 +216,20 @@ If an exception is thrown in the initializer evaluation process,
 
 Subpart 7.2: Array initializer as part of array var declaration:
 
-26. One dim int[] = {1,3,7}
-27. Two dim ints = {{1,2}, new int[]{3}, null}
-281. Two dims, dim count cannot be deduced from initializer:
+38. One dim int[] = {1,3,7}
+39. Two dim ints = {{1,2}, new int[]{3}, null}
+40. Two dims, dim count cannot be deduced from initializer:
   - int[][][] m = {null,null}, assign a valid array, test
   - int[] m[][] = {null,null}, assign a valid array, test
-282. Combination of multi var declaration, var with [] in declarator, array initializer.
+41. Combination of multi var declaration, var with [] in declarator, array initializer.
 
 Part 8. Array element default value.
 
-29. Default value of arrays primitive types:
+42. Default value of arrays primitive types:
   byte[], short[], int[], long[], char[], boolean[].
-30. Default value of refs:
+43. Default value of refs:
   Object[], String[], RuntimeException[], Object[][], int[][].
 
-Implemented:
-1. Refactoring.
-  Change compile-time type of array element from actual T to elem T. This type will not be used
-    by array lookup rules, thus no changes there required. (Actually it is used, but only as a
-    redundant type check.) It will be used however by assign.
-    Also we will be able to move assignment for arrays logic from expression module to arrays
-    module.
 
 todo for later:
 1. JLS $10.1: Array types: interface, abstract class.
