@@ -6,14 +6,10 @@ module JAVA-CLASSES
     imports JAVA-STATEMENTS
     imports JAVA-ARRAYS
     imports JAVA-STATIC-INIT
+    imports JAVA-VAR-LOOKUP
 
 //@ \subsection{Unused Labels}
 syntax KLabel ::= "'TypeImportOnDemandDec" | "'PackageName" | "'Native"
-
-//@ \section{aux constructs defined in other modules}
-
-//typed version of lookup
-syntax K ::= "typedLookup" "(" Int ")"
 
 /*@ \section{Object and method closures}
 The only change to untyped KOOL's values is that closures are now typed

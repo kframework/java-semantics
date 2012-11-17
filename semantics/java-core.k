@@ -49,6 +49,9 @@ configuration
             <instanceInit> .K </instanceInit>
             <staticEnv> .Map </staticEnv>
             <staticInit> .K </staticInit>
+
+            //Static fields declared in this class, not inherited. Used by static initialization.
+            <staticInitLocations> .Set </staticInitLocations>
             <staticInitDone> false </staticInitDone>
          </class>
       </classes>

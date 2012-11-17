@@ -22,6 +22,13 @@
   (We will not test the distinction between const and non-const fields,
   but we should use non-const fields when testing init triggers)
 
+todo:
+  - For interfaces, iniitalization may be triggered
+    by a field access of type a, this.a, super.a, i.a, a.a, all in a context of an implementing
+    class, also, it is possible to access an unqualified field from an initializer of a
+    subinterface. In all such cases, initialization should be triggered.
+    Test this triggers.
+
 Part 1 Class initialization is triggered once.
   101. Class A. Call a traced static method twice.
   102. Classes A and B. Call a static traced method in each twice, interleaved.

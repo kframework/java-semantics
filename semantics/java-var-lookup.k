@@ -1,26 +1,25 @@
 module JAVA-VAR-LOOKUP
     imports JAVA-CORE
     imports JAVA-SUBTYPING
-    imports JAVA-CLASSES
+    imports JAVA-PROCESS-CLASSES
     imports JAVA-STATIC-INIT
 
 //@ \subsection{Names}
 
 rule [AmbName]:
     'AmbName(Ks:List{K}) => 'ExprName(Ks) ?? 'TypeName(Ks)
-        [structural, anywhere]
+        [structural]
 
 rule 'Field(Ks:List{K}) => 'ExprName(Ks)   [structural, anywhere]
 
 rule [ExprNameLocalVar]:
-    <k> 'ExprName(X:Id) => X ...</k>
-    <env> Env:Map </env>
-when X in keys(Env)
+    <k> 'ExprName(X:Id) => typedLookup(L) ...</k>
+    <env>... X |-> L ...</env>
         [structural]
 
 rule [ExprNameMember]:
     <k>
-      'ExprName(X:Id) => 'ExprName( ('This(.List{K}) ?? class Class),, X )
+      'ExprName(X:Id) => 'ExprName( 'This(.List{K}),, X ) ?? 'ExprName( class Class,, X )
       ...
     </k>
     <env> Env:Map </env>
@@ -29,7 +28,7 @@ when
     notBool( (X in keys(Env)) orBool (Id2String(X) ==String "System") )
         [structural]
 
-context 'ExprName(HOLE,,_:K)
+context 'ExprName(HOLE,, _:K)
 
 /*@ \subsection{Self reference}
 Like in untyped KOOL. */
@@ -55,8 +54,8 @@ rule [ThisNoValue]:
 
 /*@ \subsection{Object member access} */
 
-//o.x
-rule [ExprNameQualified]:
+//Expressions of type o.x, where o is a reference of type class
+rule [ExprNameClassRefQualified]:
     <k>
       'ExprName(
         objectClosure(_,
@@ -66,6 +65,17 @@ rule [ExprNameQualified]:
       => lookupField(<envStack>ListItem((Class, EnvC)) EStack</envStack>, X)
       ...
     </k>
+        [structural]
+
+//Expressions of type o.x, where o is a reference of type interface
+rule [ExprNameInterfaceRefQualified]:
+    <k>
+      'ExprName(objectClosure(_, _) :: class Intf:Id,, X:Id)
+      => 'ExprName(class Intf,, X)
+      ...
+    </k>
+    <className> Intf </className>
+    <metaType> interfaceMetaT </metaType>
         [structural]
 
 rule [ExprNameNoValue]:
@@ -118,14 +128,6 @@ when notBool(X in keys(Env))
 rule lookupField(<envStack> . </envStack>, _) => noValue
         [anywhere]
 
-rule [typedLookup]:
-    <k> typedLookup(L:Int) => lookup(L)::T ...</k>
-    <store>... L |-> _::T:Type ...</store>
-
-rule [lvalueTypedLookup]:
-    <k> lvalue( typedLookup(L:Int) => lookup(L)::T ) ...</k>
-    <store>... L |-> _::T:Type ...</store>
-
 //@ \texttt{lvalue}
 
 rule [lvalueExprNameMember]:
@@ -177,7 +179,7 @@ rule [ExprNameStaticField]:
 
 rule [lookupStaticField]:
     <k>
-      lookupStaticField(Class:Id, X:Id) => staticInit(Class) ~> typedLookup(L)
+      lookupStaticField(Class:Id, X:Id) => typedLookup(L)
       ...
     </k>
     <className> Class </className>
@@ -202,7 +204,7 @@ rule [lvalueExprNameStaticField]:
 
 rule [lvalueLookupStaticField]:
     <k>
-      lvalue(lookupStaticField(Class:Id, X:Id)) => staticInit(Class) ~> lvalue(typedLookup(L))
+      lvalue(lookupStaticField(Class:Id, X:Id)) => lvalue(typedLookup(L))
       ...
     </k>
     <className> Class </className>
@@ -220,6 +222,25 @@ when
     notBool X in keys(Env)
 
 /*@ \subsection{lvalue and loc} */
+
+//@Typed version of lookup
+syntax K ::= "typedLookup" "(" Int ")"
+
+rule [typedLookup]:
+    <k> typedLookup(L:Int) => lookup(L)::T ...</k>
+    <store>... L |-> _::T:Type ...</store>
+
+rule [lvalueTypedLookup]:
+    <k> lvalue( typedLookup(L:Int) => lookup(L)::T ) ...</k>
+    <store>... L |-> _::T:Type ...</store>
+
+rule [typedLookupUninitialized]:
+    <k> (. => staticInit(Class)) ~> typedLookup(L:Int) ...</k>
+    <store>... L |-> uninitialized(Class:Id, T:Type) ...</store>
+
+rule [lvalueTypedLookupUninitialized]:
+    <k> (. => staticInit(Class)) ~> lvalue(typedLookup(L:Int)) ...</k>
+    <store>... L |-> uninitialized(Class:Id, T:Type) ...</store>
 
 rule <k> lvalue(lookup(L:Int)::T:Type) => loc(L)::T ...</k>  [structural]
 
@@ -239,11 +260,6 @@ rule [lvalueTypedLoc]:
     <store>... L |-> _::T:Type ...</store>
 
 /*@ \subsection{lookup} */
-
-rule [lookupVarName]:
-    <k> X:Id => TV ...</k>
-    <env>... X |-> L:Int ...</env>
-    <store>... L |-> TV:TypedVal ...</store>
 
 rule [lookupLocation]:
     <k>

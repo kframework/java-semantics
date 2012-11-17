@@ -235,6 +235,8 @@ Todo test:
       as well as a lot of redundant context rules.
   - investigate the case Class.a.b = val. Maybe we need an extra rule for
     lvalue('ExprName(noValue, x))
+  - static class initializing triggered by an unqualified / other-way-qualified
+  field access. Happens for interfaces.
 
 1. In order to implement static fields, we add a cell to the configuration:
   - <staticEnv>

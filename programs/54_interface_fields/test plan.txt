@@ -1,7 +1,5 @@
 Interfaces with static final fields.
 
-todo:
-
 Part 1. Access to an interface field may be done in the following ways:
   11. Through the defining interface.
   12. Through a subinterface.
@@ -22,9 +20,11 @@ Part 2. Fields hiding involving an interface:
   21. I2{v} < I1{v}
   22. I3 < I2{v} < I1{v}
   23.  A < I2{v} < I1{v}
-  24. A{v} < I1{v}
-  25. B < A{v} < I1{v}
+
     Test using unqualified (where possible) and class-qualified expression.
+
+  24. A{static v, u} < I1{v,u} Test using all possible expressions.
+  25. B < A{static v, u} < I1{v,u} Test using all possible expressions, from the context B.
 
 Part 3. Multiple inheritance, no ambiguities.
   31. I3{d} < I2{c}, I1{a,b} - access all through class qualifiers.
@@ -109,3 +109,33 @@ Part 9. Other tests, arised during implementation.
   Array fields with array initializer in the most complex fashion:
   Combination of multi field declaration, field with [] in declarator, array initializer.
 
+  Ideas for tests exposing incorrect lookup order.
+
+  A possible incorrect order would be:
+  - instance member this layer,
+  - instance member some superclass layer
+  - class static member,
+  - some superclass static member
+  - inherited interface member.
+
+  This semantics is wrong. Instead, we should search for a field in the following order:
+  - inherited interface member (because those are always public)
+  - instance member or class member, this layer
+  - instance member or class member, some superlayer.
+
+    Another possibility would be to add to the environment of every class/interface
+  the fields of implemented interfaces. In this case, it is important to add interface fields
+  after the class fields and overwrite class fields with the same name. (otherwise tests 91 and 92
+  will fail).
+    In this case the following algorithm will work:
+  - instance member or class member of this layer, or member of an interface inherited by this layer.
+  - instance member or class member of some superlayer,
+    or member of an interface inherited by this layer.
+
+  All we should to to correctly implement interface field access is to add
+    to a class/interface <staticEnv> all the fields inherited from interfaces,
+    before the actual class fields.
+
+  (All additional tests were already made in the test static_f_106_hiding.
+    Other important tests: 24.25 in this suite.
+    So, no more tests to add.)

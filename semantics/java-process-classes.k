@@ -3,7 +3,7 @@ module JAVA-PROCESS-CLASSES
 
 //no semantics for 'Abstract and 'NoMethodBody required
 //existing semantics for methods covers them too
-syntax KLabel ::= "'Final" | "'ThrowsDec" | "'Abstract" | "'NoMethodBody"
+syntax KLabel ::= "'ThrowsDec" | "'Abstract" | "'NoMethodBody"
 
 syntax K ::= "getAccessMode" "(" K //'ListWrap(...) - the list of method attributes
                              ")"
@@ -102,7 +102,9 @@ rule [ProcessType]:
           //interfaces should also contain Object members
           ~> 'If((MetaT ==K interfaceMetaT)::bool,, tryInherit(String2Id("Object")))
 
-          ~> tryInherit(BaseClassK) ~> Decls
+          ~> tryInherit(BaseClassK)
+          ~> inheritInterfaceFields
+          ~> Decls
       ...
     </k>
     <class>
@@ -121,7 +123,7 @@ syntax K ::= "computeImplTrans" "(" Set ")"
 
 rule [computeImplTrans]:
     <k>
-      (. => implTransUnion(ITrans, BaseItfITrans))
+      (. => saveImplTrans(setUnion(ITrans, BaseItfITrans)))
       ~> computeImplTrans( (SetItem(BaseItf:Id) => .) _)
       ...
     </k>
@@ -135,16 +137,33 @@ rule [computeImplTransElemDiscard]: computeImplTrans( (SetItem(.K) => .) _)
 
 rule [computeImplTransDiscard]: computeImplTrans(.) => .
 
-//subsection implTransUnion, union of sets. Remove when +Set will be implemented
-syntax K ::= "implTransUnion" "(" Set "," Set ")"
+//subsection setUnion, union of sets. Remove when +Set will be implemented.
+syntax K ::= "setUnion" "(" Set "," Set ")"
+syntax KResult ::= "setWrap" "(" Set ")"
 
-rule implTransUnion(S1:Set, SetItem(K:K) S2:Set) => implTransUnion(S1 SetItem(K), S2)
+rule setUnion(S1:Set, SetItem(K:K) S2:Set) => setUnion(S1 SetItem(K), S2)
 when notBool(K in S1)
 
-rule implTransUnion(S1:Set, SetItem(K:K) S2:Set) => implTransUnion(S1, S2)
+rule setUnion(S1:Set, SetItem(K:K) S2:Set) => setUnion(S1, S2)
 when K in S1
 
-rule <k> implTransUnion(S1:Set, .Set) => . ...</k>
+rule setUnion(S1:Set, .Set) => setWrap(S1)
+
+//Subsection mapUnion, union of maps. Remove when +Map will be implemented.
+//In this operation, elements of the second map overwrite elements of the first map
+//if they collide. This is not really important for the only application of this function
+//in our definition.
+syntax K ::= "mapUnion" "(" Map "," Map ")"
+syntax KResult ::= "mapWrap" "(" Map ")"
+
+rule mapUnion(M1:Map, K1:K |-> K2:K M2:Map) => mapUnion(M1[K2/K1], M2)
+
+rule mapUnion(M1:Map, .Map) => mapWrap(M1)
+
+syntax K ::= "saveImplTrans" "(" K //setWrap(ISet) - transitive set of inherited interfaces
+                             ")"  [strict]
+
+rule <k> saveImplTrans(setWrap(S1:Set)) => . ...</k>
      <cuClass> Class:Id </cuClass>
      <className> Class </className>
      <implTrans> _ => S1 </implTrans>
@@ -348,6 +367,10 @@ rule [storeConstructor]:
       ]
     </methods>
 
+//@get internal constructor name from a class name
+syntax K ::= "getConsName" "(" Id ")" [function]
+rule getConsName(X:Id) => String2Id("$cons$" +String Id2String(X)) [structural, anywhere]
+
 rule [FieldDecDesugar]:
     (. => 'FieldDec(SomeK,, TypeK,, 'ListWrap(K1))) ~>
     'FieldDec(SomeK:K,, TypeK:K,, 'ListWrap((K1:K => .List{K}),, K2:K,, Ks:List{K}))
@@ -391,7 +414,8 @@ rule [StaticFieldDecToLocalVarDec]:
     <cuClass> Class:Id </cuClass>
     <className> Class </className>
     <staticEnv> Env:Map => Env[L/X] </staticEnv>
-    <store>... . => L |-> default(T) ...</store>
+    <staticInitLocations> _ (. => SetItem(L)) </staticInitLocations>
+    <store>... . => L |-> uninitialized(Class,T) ...</store>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 when
     getContextType(Modifiers) ==K staticCT
@@ -404,8 +428,56 @@ rule [StaticInitSave]:
     <staticInit>... . => K </staticInit>
         [structural]
 
-//get internal constructor name from a class name
-syntax K ::= "getConsName" "(" Id ")" [function]
-rule getConsName(X:Id) => String2Id("$cons$" +String Id2String(X)) [structural, anywhere]
+/*@ The parser represents interface fields as 'ConstantDec labels.
+  This rule desugars them into 'FieldDec labels and adds the modifiers "public static final".
+*/
+rule [ConstantDecDesugar]:
+    'ConstantDec('ListWrap(ModifiersKs:List{K}),, TypeK:K,, VarDecs:K)
+    => 'FieldDec(
+          'ListWrap(ModifiersKs,, 'Public(.List{K}),, 'Static(.List{K}),, 'Final(.List{K})),,
+          TypeK,, VarDecs
+        )
+
+/*@ This procedure adds all the fields in <staticEnv> of all implemented interfaces
+into the <staticEnv> of the current class (<cuClass>), in order to be resolved
+by variable lookup algorithms.
+This procedure is invoked before processing class declarations,
+thus class declarations override declarations inherited from interfaces.
+*/
+syntax K ::= "inheritInterfaceFields"
+           | "inheritInterfaceFields" "(" Set "," //set of interfaces to be inherited
+                                          K       //mapWrap(Env) map of inherited fields,
+                                      ")"         [strict(2)]
+
+rule [inheritInterfaceFieldsStart]:
+    <k> inheritInterfaceFields => inheritInterfaceFields(ISet, mapWrap(.Map)) ...</k>
+    <cuClass> Class:Id </cuClass>
+    <className> Class </className>
+    <implements> ISet:Set </implements>
+
+rule [inheritInterfaceFields]:
+    <k>
+      inheritInterfaceFields(SetItem(Intf:Id) ISet:Set, mapWrap(Env:Map))
+      => inheritInterfaceFields(ISet, mapUnion(Env, IntfEnv))
+      ...
+    </k>
+    <className> Intf </className>
+    <staticEnv> IntfEnv:Map </staticEnv>
+
+rule [inheritInterfaceFieldsEnd]:
+    <k>
+      inheritInterfaceFields(.Set, mapWrap(Env:Map)) => .
+      ...
+    </k>
+    <cuClass> Class:Id </cuClass>
+    <className> Class </className>
+    <staticEnv> _ => Env </staticEnv>
+
+/*@Initial value of static fields. Used to detect the moment when static initialziation
+should be triggered, especially for interfaces.
+*/
+syntax K ::= "uninitialized" "(" Id "," // Class - the declaring class
+                                 Type   // Type of the variable
+                             ")"
 
 endmodule

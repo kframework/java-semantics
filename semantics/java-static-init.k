@@ -8,7 +8,8 @@ syntax K ::= "staticInit" "(" K // Class - the class to be initialized,
 rule [staticInit]:
     <k>
       staticInit(Class:Id)
-      => staticInit(BaseClassK)
+      => preInitLocations(LocSet)
+      ~> staticInit(BaseClassK)
       ~>  'Try(
             StaticInit,,
             'ListWrap(
@@ -41,6 +42,7 @@ rule [staticInit]:
     <className> Class </className>
     <extends> BaseClassK:K </extends>
     <staticInit> StaticInit:K </staticInit>
+    <staticInitLocations> LocSet:Set </staticInitLocations>
     <staticInitDone> false => true </staticInitDone>
 
 rule [staticInitDiscard]:
@@ -53,5 +55,19 @@ rule [staticInitDiscard]:
 
 rule [staticInitEmpty]:
     staticInit(.K) => .K
+
+/*@initialize the given set of locations to their default value.
+First step of the static initializing of a class/interface.
+*/
+syntax K ::= "preInitLocations" "(" Set //The set of locations to be initialized
+                                        //to their default value.
+                                ")"
+
+rule [preInitLocations]:
+    <k> preInitLocations((SetItem(L:Int) => .) _) ...</k>
+    <store>... L |-> (uninitialized(_, T:Type) => default(T)) ...</store>
+
+rule [preInitLocationsDiscard]:
+    preInitLocations(.) => .
 
 endmodule
