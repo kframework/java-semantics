@@ -221,23 +221,6 @@ Final statistics:
 
 Chapter 3. Static fields.
 
-Todo test:
-  - Field access modes. If in a class we have a private field x in a base class,
-  and a public static field in the same class, we have to check the access mode to
-  decide that it is the static field the one we should access.
-  - C-like static vars decs. Since static vars are processed differently than instance vars,
-    we need this test.
-  - massive refactoring required: we need a wrapper rvalue, similar to lvalue.
-    Anything inside both rvalue and lvalue will evaluate to typedLookup(L),
-    if applicable. Only after that typedLookup will be rewritten into loc(L)
-    for lvalue, and value at location L for rvalue.
-    This will eliminate all redundant rules we have right now for lvalue,
-      as well as a lot of redundant context rules.
-  - investigate the case Class.a.b = val. Maybe we need an extra rule for
-    lvalue('ExprName(noValue, x))
-  - static class initializing triggered by an unqualified / other-way-qualified
-  field access. Happens for interfaces.
-
 1. In order to implement static fields, we add a cell to the configuration:
   - <staticEnv>
     <staticEnv> is the environment of static fields of a class. It contains just the fields

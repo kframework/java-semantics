@@ -22,13 +22,6 @@
   (We will not test the distinction between const and non-const fields,
   but we should use non-const fields when testing init triggers)
 
-todo:
-  - For interfaces, iniitalization may be triggered
-    by a field access of type a, this.a, super.a, i.a, a.a, all in a context of an implementing
-    class, also, it is possible to access an unqualified field from an initializer of a
-    subinterface. In all such cases, initialization should be triggered.
-    Test this triggers.
-
 Part 1 Class initialization is triggered once.
   101. Class A. Call a traced static method twice.
   102. Classes A and B. Call a static traced method in each twice, interleaved.
@@ -108,3 +101,18 @@ Part 14. Interface init triggering block environment separation.
   213. Interface init triggering block environment separation.
   Interface init is triggered in a block with local var x. Interface init initializes the field x.
   Test that the field is assigned to, not the local var.
+
+Part 15. Interface init trigger through expressions other than A.a, I.a.
+
+214. Interface init triggered by an unqualified field read from a derived interface.
+    I2{c} < I1{a}, c = a + "..." Traced initializers.
+
+215. Interface init triggered by 5 different expressions, other than class-qualified.
+  A < I0{a}, I1{b}, I2{c}, I3{d}, I4{e}, I5{f}.
+  Triggering expressions:
+  - b,
+  - this.c,
+  - super.d,
+  - ((I4)this).e
+  - (new A()).f
+  All initializers are traced. I0 init is not triggered.

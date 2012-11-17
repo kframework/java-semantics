@@ -54,3 +54,8 @@
 110. Static fields default values. Class with static fields of all relevant types,
   without initializer. Test their values.
 
+111. Composite class-qualified expressions.
+  Class A. Test the expressions:
+  - val = A.b.c
+  - A.b.c = val
+
