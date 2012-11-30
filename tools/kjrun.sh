@@ -2,8 +2,10 @@
 
 # Run a java program with krun.
 
-if [ $# -ne 1 ]; then
+if [ $# -ne 1 ] && [ $# -ne 2 ]; then
     echo "Usage: `basename $0` <javaFile>"
+    echo "or"
+    echo "Usage: `basename $0` <javaFile> --debug"
     exit 1
 fi
 
@@ -15,4 +17,10 @@ TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # The last argument is not used, we put it here just to overcome file presence checking of krun
 # We cannot put $JAVA_FILE directly because krun expects only files,
 # and $JAVA_FILE may also be a dir
-krun --parser=aux-kjprep.sh -cMainClass="ListItem(\"$MAIN_CLASS\")" $JAVA_FILE
+if [ $# == 1 ];
+then
+    krun --parser=aux-kjprep.sh -cMainClass="ListItem(\"$MAIN_CLASS\")" $JAVA_FILE
+else
+    krun --parser=aux-kjprep.sh -cMainClass="ListItem(\"$MAIN_CLASS\")" --debug $JAVA_FILE
+fi
+

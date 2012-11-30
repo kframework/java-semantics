@@ -12,3 +12,10 @@ Updated to: 8620 - everything fails. Compilation now takes 3 min,
 
 Reverted to 8518.
 
+Tried to execute tests 41..45 on the refactored version of java-semantics:
+  complex version of packages. Takes 79s, all 81 tests fail. second run, without parsing: 58s.
+
+On the original version of semantics:
+  - first execution: 50s
+  - second execution: also 50s, but all tests passed.
+  It seems that we should revert to the simple package representation.
