@@ -18,7 +18,7 @@ syntax KResult ::=  "rtSystem"
                   | "rtScannerNextInt"
                   | "methodGetClass" "(" K ")"
                   | "methodHashCode" "(" K ")"
-                  | "classObject" "(" KResult ")"
+                  | "classObject" "(" K ")"         //KResult
                   | "methodClassGetName" "(" K ")"
                   | "methodArrayClone" "(" K ")"
 
