@@ -207,15 +207,15 @@ rule default(RT:RefType) => null :: RT [anywhere]
 
 //@ \subsubsection{Auxiliary constructs for other modules}
 
-syntax Package ::= "package" "(" List{K} ")"
-syntax KResult ::= Package
+syntax PackageId ::= "packageId" "(" String ")"
+syntax KResult ::= PackageId
 
 syntax K ::= "getPackage" "(" Id ")"
 rule [getPackage]:
     <k> getPackage(Class:Id) => Pack ...</k>
     <class>
       <className> Class </className>
-      <package> Pack:Package </package>
+      <package> Pack:PackageId </package>
       ...
     </class>
 

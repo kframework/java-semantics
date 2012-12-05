@@ -10,10 +10,26 @@ rule [DefaultPackageDesugar]:
 
 rule [CompilationUnit]:
     <k>
-      'CompilationUnit('Some('PackageDec(_,, 'PackageName( 'ListWrap(Ks:List{K}) ))),,_,,K:K) => K
+      'CompilationUnit('Some('PackageDec(_,, 'PackageName( 'ListWrap(Ks:List{K}) ))),,_,,K:K)
+      => setCuPackage("", Ks) ~> K
       ...
     </k>
-    <cuPackage> _ => package(Ks) </cuPackage>
+
+//converts a package name from List{K} to String and saves it into <cuPackage> cell.
+syntax K ::= "setCuPackage" "("
+                              String ","  //package converted into String
+                              List{K}     //package in original kast format
+                            ")"
+// package ro.uaic looks in kast like:
+// 'PackageName('ListWrap('Id(# "ro"(.List{K})),,'Id(# "uaic"(.List{K}))))
+rule setCuPackage("", X:Id ,,Ks:List{K}) => setCuPackage(Id2String(X), Ks)
+
+rule setCuPackage(Str:String, X:Id,,Ks:List{K})
+     => setCuPackage(Str +String "." +String Id2String(X), Ks)
+when Str =/=String ""
+
+rule <k> setCuPackage(Str:String, .List{K}) => . ...</k>
+     <cuPackage> _ => packageId(Str) </cuPackage>
 
 /*@ \subsection{Class declaration}
 Like in untyped KOOL. */
@@ -95,7 +111,7 @@ rule [classDecImpl]:
       => .K
       ...
     </k>
-    <cuPackage> Pack:Package </cuPackage>
+    <cuPackage> Pack:PackageId </cuPackage>
     <crntClass> _ => Class </crntClass>
     <classes>
       ...

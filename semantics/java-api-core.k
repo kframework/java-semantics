@@ -172,21 +172,20 @@ rule [fullyQualifiedClassName]:
 rule toString(class Class:Id) => fullyQualifiedClassName(Class) [anywhere]
 
 syntax K ::= "fullyQualifiedClassName" "("
-                    Package //package elements, each of type Id
-                "," Id      //class name
+                    PackageId //the package
+                "," Id        //class name
                 ")"
         [strict(1)]
             | "fullyQualifiedClassName" "(" Id ")"
 
 rule [ClassNamePackage]:
-    fullyQualifiedClassName(package(X:Id,, Ks:List{K}), Class:Id)
-    => 'Plus(
-          (Id2String(X) +String ".") :: rtString,,
-          fullyQualifiedClassName(package(Ks), Class)
-        )
+    fullyQualifiedClassName(packageId(Str:String), Class:Id)
+    => (Str +String "." +String Id2String(Class)) :: rtString
+when
+    Str =/=String ""
 
 rule [ClassNameClass]:
-    fullyQualifiedClassName(package(.List{K}), Class:Id) => Id2String(Class) :: rtString
+    fullyQualifiedClassName(packageId(""), Class:Id) => Id2String(Class) :: rtString
 
 rule [NameHashCode]:
     methodNameImpl(KR:KResult, X:Id, _) => methodHashCode(KR)

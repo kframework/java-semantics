@@ -214,12 +214,12 @@ rule [isInheritablePackage]:
     <class>
       <className> Class </className>
       <extends> BaseClass:Id </extends>
-      <package> P1:K </package>
+      <package> P1:PackageId </package>
       ...
     </class>
     <class>
       <className> BaseClass </className>
-      <package> P2:K </package>
+      <package> P2:PackageId </package>
       ...
     </class>
 
