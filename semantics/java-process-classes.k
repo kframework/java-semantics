@@ -52,7 +52,7 @@ rule [processTypeList]:
     (. => processTypeWithDepends(Class))
     ~>  processTypeList(
           (<class>
-            <className> Class:Id </className>
+            <classSimpleName> Class:Id </classSimpleName>
             ...
           </class> => .Bag)
           _:Bag
@@ -74,7 +74,7 @@ rule [processTypeWithDepends]:
       ...
     </k>
     <class>
-      <className> Class </className>
+      <classSimpleName> Class </classSimpleName>
       <extends> BaseClassK:K </extends>
       <implements> ISet:Set </implements>
       <declarations> Decls:K </declarations>
@@ -86,7 +86,7 @@ when
 rule [processTypeWithDependsDiscard]:
     <k> processTypeWithDepends(Class:Id) => . ...</k>
     <class>
-      <className> Class </className>
+      <classSimpleName> Class </classSimpleName>
       <declarations> .K </declarations>
       ...
     </class>
@@ -108,7 +108,7 @@ rule [ProcessType]:
       ...
     </k>
     <class>
-      <className> Class </className>
+      <classSimpleName> Class </classSimpleName>
       <extends> BaseClassK:K </extends>
       <implements> ISet:Set </implements>
       <implTrans> . => ISet </implTrans>
@@ -128,9 +128,9 @@ rule [computeImplTrans]:
       ...
     </k>
     <cuClass> Class:Id </cuClass>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <implTrans> ITrans:Set </implTrans>
-    <className> BaseItf </className>
+    <classSimpleName> BaseItf </classSimpleName>
     <implTrans> BaseItfITrans:Set </implTrans>
 
 rule [computeImplTransElemDiscard]: computeImplTrans( (SetItem(.K) => .) _)
@@ -165,7 +165,7 @@ syntax K ::= "saveImplTrans" "(" K //setWrap(ISet) - transitive set of inherited
 
 rule <k> saveImplTrans(setWrap(S1:Set)) => . ...</k>
      <cuClass> Class:Id </cuClass>
-     <className> Class </className>
+     <classSimpleName> Class </classSimpleName>
      <implTrans> _ => S1 </implTrans>
 
 //inherits the methods of the base class, based on rules in JLS $8.4.8 paragraph 1
@@ -184,7 +184,7 @@ rule [tryInherit]:
       tryInherit(Class:Id) => tryInheritImpl(Env)
       ...
     </k>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <methods> Env:Map </methods>
 
 rule [tryInheritDiscard]:
@@ -212,13 +212,13 @@ rule [isInheritablePackage]:
     <k> isInheritable(package) => (P1 ==K P2)::bool ...</k>
     <cuClass> Class:Id </cuClass>
     <class>
-      <className> Class </className>
+      <classSimpleName> Class </classSimpleName>
       <extends> BaseClass:Id </extends>
       <package> P1:PackageId </package>
       ...
     </class>
     <class>
-      <className> BaseClass </className>
+      <classSimpleName> BaseClass </classSimpleName>
       <package> P2:PackageId </package>
       ...
     </class>
@@ -231,7 +231,7 @@ rule [inherit]:
     <k> inherit(Sig:K |-> TV:TypedVal) => . ...</k>
     <cuClass> Class:Id </cuClass>
     <class>
-      <className> Class </className>
+      <classSimpleName> Class </classSimpleName>
       <methods> Env:Map => Env[TV/Sig] </methods>
       ...
     </class>
@@ -301,7 +301,7 @@ rule [storeMethod]:
       ...
     </k>
     <cuClass> Class:Id </cuClass>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <methods>
       Env:Map => Env[
         methodClosure(Class, 'ListWrap(Params), CT, S) :: MethodType / sig(Name,Ts)
@@ -359,7 +359,7 @@ rule [storeConstructor]:
       ...
     </k>
     <cuClass> Class:Id </cuClass>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <methods>
       Env:Map => Env[
         constrClosure(Class, 'ListWrap(Params), FirstLine, S:K) :: MethodType
@@ -386,7 +386,7 @@ when
 rule [FieldDecToLocalVarDec]:
     <k> 'FieldDec(Modifiers:K,, TypeK:K,, 'ListWrap('VarDec(X:Id))) => . ...</k>
     <cuClass> Class:Id </cuClass>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <fieldDecs>
       'ListWrap(_,, ( .List{K} => 'LocalVarDec(TypeK,, 'ListWrap('VarDec(X,, default(TypeK)))) ))
     </fieldDecs>
@@ -397,7 +397,7 @@ when
 rule [InstanceInitSave]:
     <k> 'InstanceInit(K:K) => . ...</k>
     <cuClass> Class:Id </cuClass>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <instanceInit>... . => K </instanceInit>
         [structural]
 
@@ -412,7 +412,7 @@ when
 rule [StaticFieldDecToLocalVarDec]:
     <k> 'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id))) => . ...</k>
     <cuClass> Class:Id </cuClass>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <staticEnv> Env:Map => Env[L/X] </staticEnv>
     <staticInitLocations> _ (. => SetItem(L)) </staticInitLocations>
     <store>... . => L |-> uninitialized(Class,T) ...</store>
@@ -424,7 +424,7 @@ when
 rule [StaticInitSave]:
     <k> 'StaticInit(K:K) => . ...</k>
     <cuClass> Class:Id </cuClass>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <staticInit>... . => K </staticInit>
         [structural]
 
@@ -452,7 +452,7 @@ syntax K ::= "inheritInterfaceFields"
 rule [inheritInterfaceFieldsStart]:
     <k> inheritInterfaceFields => inheritInterfaceFields(ISet, mapWrap(.Map)) ...</k>
     <cuClass> Class:Id </cuClass>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <implements> ISet:Set </implements>
 
 rule [inheritInterfaceFields]:
@@ -461,7 +461,7 @@ rule [inheritInterfaceFields]:
       => inheritInterfaceFields(ISet, mapUnion(Env, IntfEnv))
       ...
     </k>
-    <className> Intf </className>
+    <classSimpleName> Intf </classSimpleName>
     <staticEnv> IntfEnv:Map </staticEnv>
 
 rule [inheritInterfaceFieldsEnd]:
@@ -470,7 +470,7 @@ rule [inheritInterfaceFieldsEnd]:
       ...
     </k>
     <cuClass> Class:Id </cuClass>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <staticEnv> _ => Env </staticEnv>
 
 /*@Initial value of static fields. Used to detect the moment when static initialziation

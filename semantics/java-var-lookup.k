@@ -74,7 +74,7 @@ rule [ExprNameInterfaceRefQualified]:
       => 'ExprName(class Intf,, X)
       ...
     </k>
-    <className> Intf </className>
+    <classSimpleName> Intf </classSimpleName>
     <metaType> interfaceMetaT </metaType>
         [structural]
 
@@ -182,7 +182,7 @@ rule [lookupStaticField]:
       lookupStaticField(Class:Id, X:Id) => typedLookup(L)
       ...
     </k>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <staticEnv>... X |-> L ...</staticEnv>
 
 rule [lookupStaticFieldContinue]:
@@ -190,7 +190,7 @@ rule [lookupStaticFieldContinue]:
       lookupStaticField((Class:Id => BaseClassK), X:Id)
       ...
     </k>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <extends> BaseClassK:K </extends>
     <staticEnv> Env:Map </staticEnv>
 when
@@ -207,7 +207,7 @@ rule [lvalueLookupStaticField]:
       lvalue(lookupStaticField(Class:Id, X:Id)) => lvalue(typedLookup(L))
       ...
     </k>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <staticEnv>... X |-> L ...</staticEnv>
 
 rule [lvalueLookupStaticFieldContinue]:
@@ -215,7 +215,7 @@ rule [lvalueLookupStaticFieldContinue]:
       lvalue(lookupStaticField((Class:Id => BaseClassK), X:Id))
       ...
     </k>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <extends> BaseClassK:K </extends>
     <staticEnv> Env:Map </staticEnv>
 when

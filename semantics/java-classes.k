@@ -116,7 +116,7 @@ rule [create]:
       => create(BaseClassK) ~> setCrntClass(Class) ~> env(StaticEnv) ~> S ~> addEnvLayer
       ...
     </k>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <extends> BaseClassK:K </extends>
     <fieldDecs> S:K </fieldDecs>
     <staticEnv> StaticEnv:Map </staticEnv>

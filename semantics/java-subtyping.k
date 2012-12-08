@@ -66,12 +66,12 @@ rule [subtypeClassOfClassRed]:
     <k> subtype( class Class1:Id, class Class:Id )
       => subtype( class Class2:Id, class Class ) ...</k>
     <class>
-      <className> Class1 </className>
+      <classSimpleName> Class1 </classSimpleName>
       <extends> Class2 </extends>
       ...
     </class>
     <class>
-      <className> Class </className>
+      <classSimpleName> Class </classSimpleName>
       <metaType> classMetaT </metaType>
       ...
     </class>
@@ -88,12 +88,12 @@ when
 rule [subtypeInterfaceOfClass]:
     <k> subtype( class Class1:Id, class Class:Id ) => false::bool ...</k>
     <class>
-      <className> Class1 </className>
+      <classSimpleName> Class1 </classSimpleName>
       <metaType> interfaceMetaT </metaType>
       ...
     </class>
     <class>
-      <className> Class </className>
+      <classSimpleName> Class </classSimpleName>
       <metaType> classMetaT </metaType>
       ...
     </class>
@@ -102,9 +102,9 @@ when
         [structural]
 /*
 K Limitation: This way don't seem to work:
-    <className> Class1 </className>
+    <classSimpleName> Class1 </classSimpleName>
     <metaType> interfaceMetaT </metaType>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <metaType> classMetaT </metaType>
 */
 
@@ -117,12 +117,12 @@ when
 rule [subtypeOfInterface]:
     <k> subtype( class Class1:Id, class Class:Id ) => (Class in ISet)::bool ...</k>
     <class>
-      <className> Class1 </className>
+      <classSimpleName> Class1 </classSimpleName>
       <implTrans> ISet:Set </implTrans>
       ...
     </class>
     <class>
-      <className> Class </className>
+      <classSimpleName> Class </classSimpleName>
       <metaType> interfaceMetaT </metaType>
       ...
     </class>

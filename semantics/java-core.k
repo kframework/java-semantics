@@ -37,8 +37,16 @@ configuration
       <br/>
       <classes color="Fuchsia">
          <class multiplicity="*" color="Fuchsia">
+
+            //full class type, as ClassType
+            <classType color="Fuchsia"> .K </classType>
+
+            //package, as PackageId
             <package> .K </package>
-            <className color="Fuchsia"> .K </className>
+
+            //Simple class name, as Id
+            <classSimpleName> .K </classSimpleName>
+
             <extends color="Fuchsia"> .K </extends>
             <implements> .Set </implements>
             <implTrans> .Set </implTrans>
@@ -95,7 +103,8 @@ syntax Type ::= "methodType" "(" AccessMode ","    // the access mode
                                  Type              // return type
                              ")"
 
-syntax RefType ::= "class" Id
+syntax ClassType ::= "class" Id
+syntax RefType ::= ClassType
 
 syntax ContextType ::= "staticCT" | "instanceCT"
 syntax KResult ::= ContextType
@@ -214,7 +223,7 @@ syntax K ::= "getPackage" "(" Id ")"
 rule [getPackage]:
     <k> getPackage(Class:Id) => Pack ...</k>
     <class>
-      <className> Class </className>
+      <classSimpleName> Class </classSimpleName>
       <package> Pack:PackageId </package>
       ...
     </class>

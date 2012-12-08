@@ -92,7 +92,7 @@ rule [SuperMethod]:
     <crntClass> Class:Id </crntClass>
     <location> OL:Int </location>
     <envStack>... ListItem((Class, _)) EStack:List </envStack>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <extends> BaseClass:Id </extends>
         [structural]
 
@@ -146,7 +146,7 @@ rule [InitSignatureSearchInClassRef]:
       ...
     </k>
     <isQualified> _ => IsQ </isQualified>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <methods> Env:Map </methods>
     <metaType> classMetaT </metaType>
 when isKResult(ParamValues)
@@ -184,13 +184,13 @@ rule [InitSignatureSearchInInterfaceRef]:
     </k>
     <isQualified> _ => IsQ </isQualified>
     <class>
-      <className> Class </className>
+      <classSimpleName> Class </classSimpleName>
       <methods> Env:Map </methods>
       <metaType> interfaceMetaT </metaType>
       ...
     </class>
     <class>
-      <className> ActualClass </className>
+      <classSimpleName> ActualClass </classSimpleName>
       <methods> ActualClassEnv:Map </methods>
       ...
     </class>
@@ -340,7 +340,7 @@ rule [lookupMethodLayerDiscard]:
       ...
     </k>
     <class>
-      <className> NewLayerClass </className>
+      <classSimpleName> NewLayerClass </classSimpleName>
       <methods> NewEnv:Map </methods>
       ...
     </class>
@@ -509,7 +509,7 @@ rule [invokeConstrClosure]:
          )
       ...
     </k>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <instanceInit> IInit:K </instanceInit>
 
 //executes the given computation in a fresh environment, then restores the original environment.
@@ -534,7 +534,7 @@ rule [SuperConstrInv]:
       ...
     </k>
     <crntClass> Class:Id </crntClass>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <extends> BaseClass:Id </extends>
 when isKResult(Vals)
 

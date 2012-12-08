@@ -39,7 +39,7 @@ rule [staticInit]:
           <envStack> .List </envStack>
           <location> noValue </location>
     </crntObj>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <extends> BaseClassK:K </extends>
     <staticInit> StaticInit:K </staticInit>
     <staticInitLocations> LocSet:Set </staticInitLocations>
@@ -50,7 +50,7 @@ rule [staticInitDiscard]:
       staticInit(Class:Id) => .
       ...
     </k>
-    <className> Class </className>
+    <classSimpleName> Class </classSimpleName>
     <staticInitDone> true </staticInitDone>
 
 rule [staticInitEmpty]:

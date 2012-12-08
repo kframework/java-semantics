@@ -35,7 +35,7 @@ rule <k> setCuPackage(Str:String, .List{K}) => . ...</k>
 Like in untyped KOOL. */
 
 rule [ClassDecNoExtendsDesugar]:
-    'ClassDec('ClassDecHead(_:K,, Class:Id,, _:K,,
+    'ClassDec('ClassDecHead(_:K,, SimpleClass:Id,, _:K,,
         ( 'None(_)
           => 'Some('SuperDec('ClassType(class String2Id("Object"),, 'None(.List{K}))))
         ),,
@@ -44,26 +44,27 @@ rule [ClassDecNoExtendsDesugar]:
         [structural]
 
 rule [ClassDecNoImplementsDesugar]:
-    'ClassDec('ClassDecHead(_:K,, Class:Id,, _:K,, _:K,,
+    'ClassDec('ClassDecHead(_:K,, SimpleClass:Id,, _:K,, _:K,,
         ( 'None(.List{K}) => 'Some('ImplementsDec('ListWrap(.List{K}))) )
       ),, _:K
     )
         [structural]
 
 rule [ClassDec]:
-      'ClassDec('ClassDecHead('ListWrap(ClassModifiers:List{K}),, Class:Id,, _:K,,
+      'ClassDec('ClassDecHead('ListWrap(ClassModifiers:List{K}),, SimpleClass:Id,, _:K,,
           'Some('SuperDec('ClassType(class BaseClass:Id,, _:K))),,
           'Some('ImplementsDec('ListWrap(ImplTypes:List{K})))
         ),,
         'ClassBody( CBody:K )
-      )  => classDecImpl(ClassModifiers, Class, BaseClass, typesToSet(ImplTypes, .Set), classMetaT,
+      )  => classDecImpl(ClassModifiers, SimpleClass, BaseClass, typesToSet(ImplTypes, .Set),
+              classMetaT,
               //default constructor
               //if there is a no-args constructor in CBody, it will overwrite this one
               'ConstrDec(
                 'ConstrDecHead(
                   'ListWrap('Public(.List{K})),,
                   'None(.List{K}),,
-                  Class,,
+                  SimpleClass,,
                   'ListWrap(.List{K}),,
                   'None(.List{K})
                 ),,
@@ -75,7 +76,7 @@ when isKResult(ImplTypes)
         [structural]
 
 rule [InterfaceDecNoExtendsDesugar]:
-    'InterfaceDec('InterfaceDecHead(_:K,, Class:Id,, _:K,,
+    'InterfaceDec('InterfaceDecHead(_:K,, SimpleClass:Id,, _:K,,
         ( 'None(.List{K}) => 'Some('ExtendsInterfaces('ListWrap(.List{K}))) )
       ),, _:K
     )
@@ -85,19 +86,19 @@ rule [InterfaceDec]:
     'InterfaceDec(
       'InterfaceDecHead(
         'ListWrap(ClassModifiers:List{K}),,
-        Class:Id,,
+        SimpleClass:Id,,
         _:K,,
         'Some('ExtendsInterfaces('ListWrap(ImplTypes:List{K})))
       ),,
       CBody:K
-    ) => classDecImpl(ClassModifiers, Class, .K, typesToSet(ImplTypes, .Set),
+    ) => classDecImpl(ClassModifiers, SimpleClass, .K, typesToSet(ImplTypes, .Set),
             interfaceMetaT, CBody)
 when isKResult(ImplTypes)
         [structural]
 
 syntax K ::= "classDecImpl" "("
                                 List{K}       // ClassModifiers, .List{K} for Object
-                            "," Id            // Class:Id
+                            "," Id            // SimpleClass:Id, simple class name
                             "," K             // BaseClassK, Id for classes or .K for interfaces
                             "," K             // typesToSet(ImplTypes, .Map)
                             "," MetaType      // classCT or interfaceCT
@@ -107,19 +108,20 @@ syntax K ::= "classDecImpl" "("
 
 rule [classDecImpl]:
     <k>
-      classDecImpl(_, Class:Id, BaseClassK:K, setKResult(TypeSet:Set), MetaT:MetaType, CBody:K)
+      classDecImpl(_, SimpleClass:Id, BaseClassK:K, setKResult(TypeSet:Set), MetaT:MetaType, CBody:K)
       => .K
       ...
     </k>
     <cuPackage> Pack:PackageId </cuPackage>
-    <crntClass> _ => Class </crntClass>
+    <crntClass> _ => SimpleClass </crntClass>
     <classes>
       ...
       ( . =>  <class>
+                <classType> getClassType(Pack, SimpleClass) </classType>
                 <package> Pack </package>
-                <className> Class </className>
+                <classSimpleName> SimpleClass </classSimpleName>
                 <extends>
-                  #if Id2String(Class) =/=String "Object"
+                  #if Id2String(SimpleClass) =/=String "Object"
                     #then BaseClassK
                     #else .K
                   #fi
@@ -131,6 +133,21 @@ rule [classDecImpl]:
               </class> )
       ...
     </classes>
+
+//returns the fully qualified class name from given parameters
+syntax K ::= "getClassType" "(" PackageId // the Package Id
+                            "," Id        // Simple class name
+                            ")"                                 [function]
+
+rule [getclassTypePackagePresent]:
+    getClassType(packageId(PackStr:String), Class:Id)
+    => class String2Id(PackStr +String "." +String Id2String(Class))
+when PackStr =/=String ""
+        [structural, anywhere]
+
+rule [getclassTypePackageDefault]:
+    getClassType(packageId(""), Class:Id) => class Class
+        [structural, anywhere]
 
 /*@ \subsection{Method declaration} */
 

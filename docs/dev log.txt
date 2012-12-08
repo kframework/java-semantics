@@ -361,4 +361,23 @@ rule [StaticInitSave]:
 5. Semantics for ExceptionInInitializerError. Now we wrapped call to static init into a try-catch,
   in the rule [staticInit]. All tests for static init and class init trigger pass.
 
+Chapter packages.
+
+First we need a refactoring so that all class types in the program will be represented as
+fully qualified class names. More precisely:
+  - 'TypeName(X) - X may be simple name
+  - class X - X is fully qualified class name, also an Id.
+  For this, each class will have three cells:
+  <className> - fully qualified class name, Id
+  <package> - package name, String
+  <classSimpleName> - simple class name, Id
+
+Implementation:
+  1.ok. Save class type, package and class simple name during process-comp-units.
+  2.ok. (temporary) Change the whole definition so that types are resolved to their simple names,
+    referrign to the cell <classSimpleName>.
+  3. Change again the whole definition. Now instead of referring <classSimpleName>,
+    resolve simple names into fully qualified names and refer to <classType>.
+
+
 
