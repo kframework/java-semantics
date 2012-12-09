@@ -14,3 +14,9 @@
   5.1.ok. Move console output to outside processFile() method.
 6.ok. Multithreaded invocation.
 7.ok. Test timeout.
+
+Program maintenance:
+
+1.ok. When test runner is stopped by ctrl+C,
+  running tests are stopped, then xml output file is properly flushed,
+  and only after that the execution is completed. This is accomplished by using a shutdown hook.

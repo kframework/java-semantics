@@ -30,6 +30,10 @@ public class XmlBuilder {
         TestResult result;
         try {
           result = results.get(i).get();
+        } catch (InterruptedException ie) {
+          System.out.println("interrupted...  ");
+          xml.append("</interrupted>\n\n");
+          break;
         } catch (Exception e) {
           throw new RuntimeException(e);
         }

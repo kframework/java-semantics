@@ -13,12 +13,31 @@ public class Main {
   /**
    * see help.txt
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     if (args.length == 1 && args[0].equals("-help")) {
       showHelp();
     } else {
-      RunnerArgs runnerArgs = new RunnerArgs(args);
-      new TestRunner(runnerArgs).run();
+      final Thread mainThread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+          RunnerArgs runnerArgs = new RunnerArgs(args);
+          new TestRunner(runnerArgs).run();
+        }
+      });
+
+      Runtime.getRuntime().addShutdownHook(new Thread() {
+        @Override
+        public void run() {
+          try {
+            mainThread.interrupt();
+            mainThread.join();
+          } catch (InterruptedException e) {
+            //ignored
+          }
+        }
+      });
+
+      mainThread.start();
     }
   }
 
