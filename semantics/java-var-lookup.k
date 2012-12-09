@@ -19,11 +19,11 @@ rule [ExprNameLocalVar]:
 
 rule [ExprNameMember]:
     <k>
-      'ExprName(X:Id) => 'ExprName( 'This(.List{K}),, X ) ?? 'ExprName( class Class,, X )
+      'ExprName(X:Id) => 'ExprName( 'This(.List{K}),, X ) ?? 'ExprName( Class,, X )
       ...
     </k>
     <env> Env:Map </env>
-    <crntClass> Class:Id </crntClass>
+    <crntClass> Class:ClassType </crntClass>
 when
     notBool( (X in keys(Env)) orBool (Id2String(X) ==String "System") )
         [structural]
@@ -36,12 +36,12 @@ Like in untyped KOOL. */
 rule [This]:
     <k>
       'This(.List{K})
-      => objectClosure(OL, Obj) :: class Class
+      => objectClosure(OL, Obj) :: Class
       ...
     </k>
     <crntObj>
       Obj:Bag
-      <crntClass> Class:Id </crntClass>
+      <crntClass> Class:ClassType </crntClass>
       <location> OL:Int </location>
     </crntObj>
 
@@ -59,8 +59,8 @@ rule [ExprNameClassRefQualified]:
     <k>
       'ExprName(
         objectClosure(_,
-          <envStack>... ListItem((Class:Id, EnvC:BagItem)) EStack:List </envStack>
-        ) :: class Class,, X:Id
+          <envStack>... ListItem((Class:ClassType, EnvC:BagItem)) EStack:List </envStack>
+        ) :: Class,, X:Id
       )
       => lookupField(<envStack>ListItem((Class, EnvC)) EStack</envStack>, X)
       ...
@@ -70,11 +70,11 @@ rule [ExprNameClassRefQualified]:
 //Expressions of type o.x, where o is a reference of type interface
 rule [ExprNameInterfaceRefQualified]:
     <k>
-      'ExprName(objectClosure(_, _) :: class Intf:Id,, X:Id)
-      => 'ExprName(class Intf,, X)
+      'ExprName(objectClosure(_, _) :: Intf:ClassType,, X:Id)
+      => 'ExprName(Intf,, X)
       ...
     </k>
-    <classSimpleName> Intf </classSimpleName>
+    <classType> Intf </classType>
     <metaType> interfaceMetaT </metaType>
         [structural]
 
@@ -96,7 +96,7 @@ rule [ExprNameQualifiedNull]:
 
 rule [SuperField]:
     <k>'SuperField(X:Id) => lookupField(<envStack>EStack</envStack>, X) ...</k>
-    <crntClass> Class:Id </crntClass>
+    <crntClass> Class:ClassType </crntClass>
     <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>
       [structural]
 
@@ -108,16 +108,16 @@ syntax K ::= "lookupField" "(" BagItem "," Id ")" [function]
 
 rule lookupField(
     <envStack>
-      ListItem((_:Id, <env>... X:Id |-> L:Int ...</env>))
+      ListItem((_, <env>... X |-> L:Int ...</env>))
       ...
     </envStack>,
-    X
+    X:Id
   ) => typedLookup(L)
         [anywhere]
 
 rule lookupField(
     <envStack>
-      ListItem((_:Id, <env> Env:Map </env>)) => .
+      ListItem((_, <env> Env:Map </env>)) => .
       ...
     </envStack>,
     X:Id
@@ -133,12 +133,12 @@ rule lookupField(<envStack> . </envStack>, _) => noValue
 rule [lvalueExprNameMember]:
     <k>
       lvalue(
-        'ExprName(X:Id) => 'ExprName( ('This(.List{K}) ?? class Class),, X )
+        'ExprName(X:Id) => 'ExprName( ('This(.List{K}) ?? Class),, X )
       )
       ...
     </k>
     <env> Env:Map </env>
-    <crntClass> Class:Id </crntClass>
+    <crntClass> Class:ClassType </crntClass>
 when notBool(X in keys(Env))  [structural]
 
 context lvalue('ExprName(HOLE,, _:Id) )
@@ -148,8 +148,8 @@ rule [lvalueExprNameQualified]:
       lvalue(
         'ExprName(
           objectClosure(_,
-            <envStack>... ListItem((Class:Id, EnvC:BagItem)) EStack:List </envStack>
-          ) :: class Class,,
+            <envStack>... ListItem((Class:ClassType, EnvC:BagItem)) EStack:List </envStack>
+          ) :: Class,,
           X:Id
         )
         => lookupField(
@@ -163,34 +163,34 @@ rule [lvalueExprNameQualified]:
 
 rule [lvalueSuperField]:
     <k> lvalue('SuperField(X:Id) => lookupField(<envStack>EStack</envStack>, X)) ...</k>
-    <crntClass> Class:Id </crntClass>
+    <crntClass> Class:ClassType </crntClass>
     <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>
         [structural]
 
 //@Section{lookup static field}
 
 syntax K ::= "lookupStaticField" "("
-                                    K "," // Class - class to search, or .K
+                                    K "," // Class - ClassType to search, or .K
                                     Id    // X - field name
                                   ")"
 
 rule [ExprNameStaticField]:
-    'ExprName(class Class:Id,, X:Id) => lookupStaticField(Class, X)
+    'ExprName(Class:ClassType,, X:Id) => lookupStaticField(Class, X)
 
 rule [lookupStaticField]:
     <k>
-      lookupStaticField(Class:Id, X:Id) => typedLookup(L)
+      lookupStaticField(Class:ClassType, X:Id) => typedLookup(L)
       ...
     </k>
-    <classSimpleName> Class </classSimpleName>
+    <classType> Class </classType>
     <staticEnv>... X |-> L ...</staticEnv>
 
 rule [lookupStaticFieldContinue]:
     <k>
-      lookupStaticField((Class:Id => BaseClassK), X:Id)
+      lookupStaticField((Class:ClassType => BaseClassK), X:Id)
       ...
     </k>
-    <classSimpleName> Class </classSimpleName>
+    <classType> Class </classType>
     <extends> BaseClassK:K </extends>
     <staticEnv> Env:Map </staticEnv>
 when
@@ -200,22 +200,22 @@ rule [lookupStaticFieldEmpty]:
     lookupStaticField(.K, _) => noValue
 
 rule [lvalueExprNameStaticField]:
-    lvalue('ExprName(class Class:Id,, X:Id) => lookupStaticField(Class, X))
+    lvalue('ExprName(Class:ClassType,, X:Id) => lookupStaticField(Class, X))
 
 rule [lvalueLookupStaticField]:
     <k>
-      lvalue(lookupStaticField(Class:Id, X:Id)) => lvalue(typedLookup(L))
+      lvalue(lookupStaticField(Class:ClassType, X:Id)) => lvalue(typedLookup(L))
       ...
     </k>
-    <classSimpleName> Class </classSimpleName>
+    <classType> Class </classType>
     <staticEnv>... X |-> L ...</staticEnv>
 
 rule [lvalueLookupStaticFieldContinue]:
     <k>
-      lvalue(lookupStaticField((Class:Id => BaseClassK), X:Id))
+      lvalue(lookupStaticField((Class:ClassType => BaseClassK), X:Id))
       ...
     </k>
-    <classSimpleName> Class </classSimpleName>
+    <classType> Class </classType>
     <extends> BaseClassK:K </extends>
     <staticEnv> Env:Map </staticEnv>
 when
@@ -236,11 +236,11 @@ rule [lvalueTypedLookup]:
 
 rule [typedLookupUninitialized]:
     <k> (. => staticInit(Class)) ~> typedLookup(L:Int) ...</k>
-    <store>... L |-> uninitialized(Class:Id, T:Type) ...</store>
+    <store>... L |-> uninitialized(Class:ClassType, T:Type) ...</store>
 
 rule [lvalueTypedLookupUninitialized]:
     <k> (. => staticInit(Class)) ~> lvalue(typedLookup(L:Int)) ...</k>
-    <store>... L |-> uninitialized(Class:Id, T:Type) ...</store>
+    <store>... L |-> uninitialized(Class:ClassType, T:Type) ...</store>
 
 rule <k> lvalue(lookup(L:Int)::T:Type) => loc(L)::T ...</k>  [structural]
 

@@ -18,9 +18,12 @@ The only change to untyped KOOL's values is that closures are now typed
 //@ \subsection{Type labels}
 //@Here we rewrite java type ast into simple types
 
-rule 'TypeName(X:Id) => class X  [structural, anywhere]
+//todo here the package-related change should occur
+//odo massive refactoring required - 'TypeName resolution cannot be anywhere
+rule [TypeName]:
+    'TypeName(X:Id) => class X  [structural, anywhere]
 
-rule
+rule [rtString]:
     class X:Id => rtString
 when
     Id2String(X) ==String "String"
@@ -67,8 +70,8 @@ get more from the existing SIMPLE constructs. */
 //@ \texttt{typeOf for raw values of reference type}
 rule typeOf(Str:String) => rtString [anywhere]
 rule typeOf(null) => nullType [anywhere]
-rule typeOf(objectClosure(_, (<envStack>ListItem((Class:Id, _)) _</envStack>)))
-     => class Class [anywhere]
+rule typeOf(objectClosure(_, (<envStack>ListItem((Class:ClassType, _)) _</envStack>)))
+     => Class [anywhere]
 rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T [anywhere]
 
 /*@ \subsection{New}
@@ -86,7 +89,7 @@ rule [NewInstance]:
     <k>
       'NewInstance(
         _:K,,
-        class Class:Id,,
+        Class:ClassType,,
         'ListWrap( Vals:List{K} ),,
         _:K
       )
@@ -112,11 +115,11 @@ syntax K ::= "create" "(" K ")"
 
 rule [create]:
     <k>
-      create(Class:Id)
+      create(Class:ClassType)
       => create(BaseClassK) ~> setCrntClass(Class) ~> env(StaticEnv) ~> S ~> addEnvLayer
       ...
     </k>
-    <classSimpleName> Class </classSimpleName>
+    <classType> Class </classType>
     <extends> BaseClassK:K </extends>
     <fieldDecs> S:K </fieldDecs>
     <staticEnv> StaticEnv:Map </staticEnv>
@@ -128,19 +131,19 @@ rule [createEmptyDiscard]:
 syntax K ::= "setCrntClass" "(" Id ")"
 
 rule [setCrntClass]:
-    <k> setCrntClass(Class:Id) => . ...</k>
+    <k> setCrntClass(Class:ClassType) => . ...</k>
     <crntClass> _ => Class </crntClass>
         [structural]
 
 syntax K ::= "addEnvLayer"
 
 //The content of an <envStack> ListItem() </envStack>
-syntax K ::= "(" Id "," BagItem ")"
+syntax K ::= "(" ClassType "," BagItem ")"
 
 rule [addEnvLayer]:
     <k> addEnvLayer => . ...</k>
     <env> Env:Map => . </env>
-    <crntClass> Class:Id </crntClass>
+    <crntClass> Class:ClassType </crntClass>
     <envStack> . => ListItem((Class, <env>Env</env>)) ...</envStack>
         [structural]
 
@@ -150,21 +153,21 @@ rule [storeObj]:
     <k> storeObj => . ...</k>
     <crntObj>
       Obj:Bag
-      <crntClass> Class:Id </crntClass>
+      <crntClass> Class:ClassType </crntClass>
       <location> L:Int </location>
     </crntObj>
     <store>
       ...
-      . => L |-> objectClosure(L, Obj) :: class Class
+      . => L |-> objectClosure(L, Obj) :: Class
       ...
     </store>
 
-syntax K ::= "invokeConstr" "(" Int "," Id "," List{K} ")"
+syntax K ::= "invokeConstr" "(" Int "," ClassType "," List{K} ")"
 
 rule [invokeConstr]:
-    invokeConstr(OL:Int, ClassName:Id, Vals:List{K})
+    invokeConstr(OL:Int, Class:ClassType, Vals:List{K})
     => 'ExprStm('Invoke(
-          'Method('MethodName( typedLookup(OL),, getConsName(ClassName) )),,
+          'Method('MethodName( typedLookup(OL),, getConsName(Class) )),,
           'ListWrap( Vals )
         ))
 when isKResult(Vals)

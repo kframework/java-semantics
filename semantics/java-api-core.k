@@ -150,7 +150,7 @@ when
 
 rule [InvokeClassGetNameObject]:
     'Invoke(
-      methodClassGetName(objectClosure(_, _ <envStack>ListItem((Class:Id, _))...</envStack>)::_),,
+      methodClassGetName(objectClosure(_, _ <envStack>ListItem((Class:ClassType, _))...</envStack>)::_),,
       'ListWrap(.List{K})
     ) => fullyQualifiedClassName(Class)
 
@@ -166,26 +166,31 @@ rule [InvokeClassGetNameArray]:
       'ListWrap(.List{K})
     ) => toString(T)
 
-rule [fullyQualifiedClassName]:
-    fullyQualifiedClassName(Class:Id) => fullyQualifiedClassName(getPackage(Class), Class)
+rule toString(Class:ClassType) => fullyQualifiedClassName(Class) [anywhere]
 
-rule toString(class Class:Id) => fullyQualifiedClassName(Class) [anywhere]
-
-syntax K ::= "fullyQualifiedClassName" "("
-                    PackageId //the package
-                "," Id        //class name
-                ")"
-        [strict(1)]
-            | "fullyQualifiedClassName" "(" Id ")"
+//todo this function will be obsolete once Class itself will be fully qualified
+syntax K ::= "fullyQualifiedClassName" "(" ClassType ")"
 
 rule [ClassNamePackage]:
-    fullyQualifiedClassName(packageId(Str:String), Class:Id)
-    => (Str +String "." +String Id2String(Class)) :: rtString
+    <k>
+      fullyQualifiedClassName(Class:ClassType)
+      => (PackStr +String "." +String Id2String(SimpleName)) :: rtString
+      ...
+    </k>
+    <classType> Class </classType>
+    <package> packageId(PackStr:String) </package>
+    <classSimpleName> SimpleName:Id </classSimpleName>
 when
-    Str =/=String ""
+    PackStr =/=String ""
 
 rule [ClassNameClass]:
-    fullyQualifiedClassName(packageId(""), Class:Id) => Id2String(Class) :: rtString
+    <k>
+      fullyQualifiedClassName(Class:ClassType) => Id2String(SimpleName) :: rtString
+      ...
+    </k>
+    <classType> Class </classType>
+    <package> packageId("") </package>
+    <classSimpleName> SimpleName:Id </classSimpleName>
 
 rule [NameHashCode]:
     methodNameImpl(KR:KResult, X:Id, _) => methodHashCode(KR)
@@ -196,7 +201,7 @@ when
 rule [InvokeHashCode]:
     'Invoke(
       methodHashCode(
-        objectClosure(I:Int, _ <envStack>ListItem((Class:Id, _))...</envStack>)::_
+        objectClosure(I:Int, _ <envStack>ListItem((Class:ClassType, _))...</envStack>)::_
       ),,
       'ListWrap(.List{K})
     ) => I :: int

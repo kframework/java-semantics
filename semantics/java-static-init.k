@@ -1,13 +1,13 @@
 module JAVA-STATIC-INIT
     imports JAVA-CORE
 
-syntax K ::= "staticInit" "(" K // Class - the class to be initialized,
+syntax K ::= "staticInit" "(" K // Class - the ClassType to be initialized,
                                 // or .K if this term should be discarded.
                           ")"
 
 rule [staticInit]:
     <k>
-      staticInit(Class:Id)
+      staticInit(Class:ClassType)
       => preInitLocations(LocSet)
       ~> staticInit(BaseClassK)
       ~>  'Try(
@@ -39,7 +39,7 @@ rule [staticInit]:
           <envStack> .List </envStack>
           <location> noValue </location>
     </crntObj>
-    <classSimpleName> Class </classSimpleName>
+    <classType> Class </classType>
     <extends> BaseClassK:K </extends>
     <staticInit> StaticInit:K </staticInit>
     <staticInitLocations> LocSet:Set </staticInitLocations>
@@ -47,10 +47,10 @@ rule [staticInit]:
 
 rule [staticInitDiscard]:
     <k>
-      staticInit(Class:Id) => .
+      staticInit(Class:ClassType) => .
       ...
     </k>
-    <classSimpleName> Class </classSimpleName>
+    <classType> Class </classType>
     <staticInitDone> true </staticInitDone>
 
 rule [staticInitEmpty]:

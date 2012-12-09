@@ -114,13 +114,13 @@ syntax RawVal ::= "objectClosure" "(" Int //OL - object location
                                   ")"
 
                 | "methodClosure" "("
-                    Id ","   // Class - class defining the method
+                    ClassType ","   // Class - class defining the method
                     K ","    // 'ListWrap(Params) - params
                     ContextType "," //either staticCT or instanceCT
                     K        // S - method body
                   ")"
                 | "constrClosure" "("
-                    Id ","   // Class - class defining the method
+                    ClassType ","   // Class - class defining the method
                     K ","    // 'ListWrap(Params) - params
                     K ","    // first line - either:
                              //   'SuperInv - superclass constructor invocation
@@ -219,11 +219,11 @@ rule default(RT:RefType) => null :: RT [anywhere]
 syntax PackageId ::= "packageId" "(" String ")"
 syntax KResult ::= PackageId
 
-syntax K ::= "getPackage" "(" Id ")"
+syntax K ::= "getPackage" "(" ClassType ")"
 rule [getPackage]:
-    <k> getPackage(Class:Id) => Pack ...</k>
+    <k> getPackage(Class:ClassType) => Pack ...</k>
     <class>
-      <classSimpleName> Class </classSimpleName>
+      <classType> Class </classType>
       <package> Pack:PackageId </package>
       ...
     </class>

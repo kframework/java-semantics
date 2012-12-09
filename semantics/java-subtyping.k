@@ -63,78 +63,78 @@ when T =/=K bool [structural]
 The subclass relation introduces a subtyping relation. */
 
 rule [subtypeClassOfClassRed]:
-    <k> subtype( class Class1:Id, class Class:Id )
-      => subtype( class Class2:Id, class Class ) ...</k>
+    <k> subtype( Class1:ClassType, Class:ClassType )
+      => subtype( Class2:ClassType, Class ) ...</k>
     <class>
-      <classSimpleName> Class1 </classSimpleName>
+      <classType> Class1 </classType>
       <extends> Class2 </extends>
       ...
     </class>
     <class>
-      <classSimpleName> Class </classSimpleName>
+      <classType> Class </classType>
       <metaType> classMetaT </metaType>
       ...
     </class>
 when
-    (Class1 =/=K Class) andBool (Id2String(Class) =/=K "Object")
+    (Class1 =/=K Class) andBool (Class =/=K class String2Id("Object"))
         [structural]
 
 rule [subtypeClassOfClassFalse]:
-    subtype( class X:Id, class Class:Id ) => false :: bool
+    subtype( Class1:ClassType, Class2:ClassType ) => false :: bool
 when
-            (Id2String(X) ==String "Object")
-    andBool (X =/=K Class)
+            (Class1 ==K class String2Id("Object"))
+    andBool (Class1 =/=K Class2)
 
 rule [subtypeInterfaceOfClass]:
-    <k> subtype( class Class1:Id, class Class:Id ) => false::bool ...</k>
+    <k> subtype( Class1:ClassType, Class:ClassType ) => false::bool ...</k>
     <class>
-      <classSimpleName> Class1 </classSimpleName>
+      <classType> Class1 </classType>
       <metaType> interfaceMetaT </metaType>
       ...
     </class>
     <class>
-      <classSimpleName> Class </classSimpleName>
+      <classType> Class </classType>
       <metaType> classMetaT </metaType>
       ...
     </class>
 when
-    Id2String(Class) =/=K "Object"
+    Class =/=K class String2Id("Object")
         [structural]
 /*
 K Limitation: This way don't seem to work:
-    <classSimpleName> Class1 </classSimpleName>
+    <classType> Class1 </classType>
     <metaType> interfaceMetaT </metaType>
-    <classSimpleName> Class </classSimpleName>
+    <classType> Class </classType>
     <metaType> classMetaT </metaType>
 */
 
 rule [subtypeOfObject]:
-    subtype( class _, class Class:Id ) => true::bool
+    subtype( _:ClassType, Class:ClassType ) => true::bool
 when
-    Id2String(Class) ==K "Object"
+    Class ==K class String2Id("Object")
         [structural]
 
 rule [subtypeOfInterface]:
-    <k> subtype( class Class1:Id, class Class:Id ) => (Class in ISet)::bool ...</k>
+    <k> subtype( Class1:ClassType, Class:ClassType ) => (Class in ISet)::bool ...</k>
     <class>
-      <classSimpleName> Class1 </classSimpleName>
+      <classType> Class1 </classType>
       <implTrans> ISet:Set </implTrans>
       ...
     </class>
     <class>
-      <classSimpleName> Class </classSimpleName>
+      <classType> Class </classType>
       <metaType> interfaceMetaT </metaType>
       ...
     </class>
 
 rule [subTypeClassOfOtherFalse]:
-    subtype( class X:Id, T:Type ) => false :: bool
+    subtype( _:ClassType, T:Type ) => false :: bool
 when
     getKLabel(T) =/=KLabel 'class_
 
 rule [subtypeStringOfClass]:
-    subtype( rtString, class Class:Id ) =>
-    #if Id2String(Class) ==String "Object"
+    subtype( rtString, Class:ClassType ) =>
+    #if Class ==K class String2Id("Object")
       #then true::bool
       #else false::bool
     #fi
@@ -146,8 +146,8 @@ when
     andBool getKLabel(T) =/=KLabel 'class_
 
 rule [subtypeArrayOfClass]:
-    subtype( arrayOf _, class Class:Id ) =>
-    #if Id2String(Class) ==String "Object"
+    subtype( arrayOf _, Class:ClassType ) =>
+    #if Class ==K class String2Id("Object")
       #then true::bool
       #else false::bool
     #fi

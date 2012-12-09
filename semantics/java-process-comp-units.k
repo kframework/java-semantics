@@ -50,9 +50,28 @@ rule [ClassDecNoImplementsDesugar]:
     )
         [structural]
 
+//todo - How will we resolve the class definition order problem?
+//What if the base class was not encountered yet?
+
+//Resolving the base class
+context 'ClassDec('ClassDecHead(_:K,, _:K,, _:K,,
+          'Some('SuperDec('ClassType(HOLE,, _:K))),,
+          _:K
+        ),,
+        _:K
+      )
+
+//Resolving superinterfaces
+context 'ClassDec('ClassDecHead(_:K,, _:K,, _:K,, _:K,,
+          'Some('ImplementsDec('ListWrap(KRs:List{K},, HOLE,, _:List{K})))
+        ),,
+        _:K
+      )
+when isKResult(KRs)
+
 rule [ClassDec]:
       'ClassDec('ClassDecHead('ListWrap(ClassModifiers:List{K}),, SimpleClass:Id,, _:K,,
-          'Some('SuperDec('ClassType(class BaseClass:Id,, _:K))),,
+          'Some('SuperDec('ClassType(BaseClass:ClassType,, _:K))),,
           'Some('ImplementsDec('ListWrap(ImplTypes:List{K})))
         ),,
         'ClassBody( CBody:K )
@@ -99,7 +118,7 @@ when isKResult(ImplTypes)
 syntax K ::= "classDecImpl" "("
                                 List{K}       // ClassModifiers, .List{K} for Object
                             "," Id            // SimpleClass:Id, simple class name
-                            "," K             // BaseClassK, Id for classes or .K for interfaces
+                            "," K             // BaseClassK, ClassType for classes or .K for interfaces
                             "," K             // typesToSet(ImplTypes, .Map)
                             "," MetaType      // classCT or interfaceCT
                             "," K             // CBody
@@ -113,7 +132,7 @@ rule [classDecImpl]:
       ...
     </k>
     <cuPackage> Pack:PackageId </cuPackage>
-    <crntClass> _ => SimpleClass </crntClass>
+    <crntClass> _ => getClassType(Pack, SimpleClass) </crntClass>
     <classes>
       ...
       ( . =>  <class>
@@ -121,7 +140,7 @@ rule [classDecImpl]:
                 <package> Pack </package>
                 <classSimpleName> SimpleClass </classSimpleName>
                 <extends>
-                  #if Id2String(SimpleClass) =/=String "Object"
+                  #if getClassType(Pack, SimpleClass) =/=K class String2Id("Object")
                     #then BaseClassK
                     #else .K
                   #fi
@@ -139,24 +158,24 @@ syntax K ::= "getClassType" "(" PackageId // the Package Id
                             "," Id        // Simple class name
                             ")"                                 [function]
 
+//todo uncomment true implementation of this function
+/*
 rule [getclassTypePackagePresent]:
-    getClassType(packageId(PackStr:String), Class:Id)
-    => class String2Id(PackStr +String "." +String Id2String(Class))
-when PackStr =/=String ""
+    getClassType(packageId(PackStr:String), SimpleClass:Id)
+    => class String2Id(PackStr +String "." +String Id2String(SimpleClass))
         [structural, anywhere]
+*/
 
-rule [getclassTypePackageDefault]:
-    getClassType(packageId(""), Class:Id) => class Class
-        [structural, anywhere]
+rule getClassType(_, SimpleClass:Id) => class SimpleClass
 
 /*@ \subsection{Method declaration} */
 
-syntax K ::= "typesToSet" "(" List{K} //a list of class types "class Id"
+syntax K ::= "typesToSet" "(" List{K} //a list of ClassType terms
                           "," Set     //the result map
                           ")"
 syntax KResult ::= "setKResult" "(" Set ")" //set wrapper of type KResult
 
-rule typesToSet((class Class:Id => .List{K}),,_ , (_ (.Set => SetItem(Class) )))
+rule typesToSet((Class:ClassType => .List{K}),,_ , (_ (.Set => SetItem(Class) )))
 rule typesToSet(.List{K}, TypeSet:Set) => setKResult(TypeSet)
 
 endmodule

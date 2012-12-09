@@ -26,10 +26,10 @@ rule [MethodNameUnqInstanceCT]:
 
 rule [MethodNameUnqStaticCT]:
     <k>
-      'MethodName(Name:Id) => 'MethodName('TypeName(Class),, Name)
+      'MethodName(Name:Id) => 'MethodName(Class,, Name)
       ...
     </k>
-    <crntClass> Class:Id </crntClass>
+    <crntClass> Class:ClassType </crntClass>
     <location> noValue </location>
         [structural]
 
@@ -46,7 +46,7 @@ context methodNameImpl(HOLE, _, _)
 //objClos.X(_)
 rule [MethodNameQualified]:
     <k>
-      methodNameImpl(objectClosure(OL:Int, <envStack> EStack:List </envStack>)::class Class:Id,
+      methodNameImpl(objectClosure(OL:Int, <envStack> EStack:List </envStack>)::Class:ClassType,
           Name:Id, IsQ:Bool)
       => lookupMethodData(OL, Class, Name, <envStack> EStack </envStack>, IsQ)
       ...
@@ -59,7 +59,7 @@ when
 //Class.X(_)
 rule [MethodNameStatic]:
     <k>
-      methodNameImpl(class Class:Id, Name:Id, IsQ:Bool)
+      methodNameImpl(Class:ClassType, Name:Id, IsQ:Bool)
       => lookupMethodData(noValue, Class, Name,
           <envStack> ListItem((Class, <env> . </env>)) </envStack>, IsQ)
       ...
@@ -89,18 +89,18 @@ rule [SuperMethod]:
       => lookupMethodData(OL, BaseClass, Name, <envStack> EStack </envStack>, true)
       ...
     </k>
-    <crntClass> Class:Id </crntClass>
+    <crntClass> Class:ClassType </crntClass>
     <location> OL:Int </location>
     <envStack>... ListItem((Class, _)) EStack:List </envStack>
-    <classSimpleName> Class </classSimpleName>
-    <extends> BaseClass:Id </extends>
+    <classType> Class </classType>
+    <extends> BaseClass:ClassType </extends>
         [structural]
 
-syntax KResult ::= "lookupMethodData" "(" K       //OL - object location, or noValue
-                                      "," Id      //target ref class name
-                                      "," Id      //method name
-                                      "," BagItem //target <envLayer> content
-                                      "," Bool    //IsQ - isQualified
+syntax KResult ::= "lookupMethodData" "(" K         //OL - object location, or noValue
+                                      "," ClassType //target ref class name
+                                      "," Id        //method name
+                                      "," BagItem   //target <envLayer> content
+                                      "," Bool      //IsQ - isQualified
                     ")"
 
 /*@ Closure application needs to also set a new return type in the
@@ -117,11 +117,11 @@ rule [InitSignatureSearchInClassRef]:
     <k>
       'Invoke(lookupMethodData(
         OLK:K,
-        Class:Id,
+        Class:ClassType,
         MethodName:Id,
         <envStack>
           Rest:List
-          ListItem((Class:Id, BI:BagItem))
+          ListItem((Class:ClassType, BI:BagItem))
           ...
         </envStack>,
         IsQ:Bool
@@ -134,7 +134,7 @@ rule [InitSignatureSearchInClassRef]:
             MethodName,
             getTypesFromValues(ParamValues),
             Env,
-            .K
+            noValue
           ),
           getClassList(Rest ListItem((Class, BI))),
           Env,
@@ -146,7 +146,7 @@ rule [InitSignatureSearchInClassRef]:
       ...
     </k>
     <isQualified> _ => IsQ </isQualified>
-    <classSimpleName> Class </classSimpleName>
+    <classType> Class </classType>
     <methods> Env:Map </methods>
     <metaType> classMetaT </metaType>
 when isKResult(ParamValues)
@@ -155,10 +155,10 @@ rule [InitSignatureSearchInInterfaceRef]:
     <k>
       'Invoke(lookupMethodData(
         OLK:Int,
-        Class:Id,
+        Class:ClassType,
         MethodName:Id,
         <envStack>
-          ListItem((ActualClass:Id, _))
+          ListItem((ActualClass:ClassType, _))
           ...
         </envStack>,
         IsQ:Bool
@@ -171,7 +171,7 @@ rule [InitSignatureSearchInInterfaceRef]:
             MethodName,
             getTypesFromValues(ParamValues),
             Env,
-            .K
+            noValue
           ),
           ActualClass,
           ActualClassEnv,
@@ -184,20 +184,20 @@ rule [InitSignatureSearchInInterfaceRef]:
     </k>
     <isQualified> _ => IsQ </isQualified>
     <class>
-      <classSimpleName> Class </classSimpleName>
+      <classType> Class </classType>
       <methods> Env:Map </methods>
       <metaType> interfaceMetaT </metaType>
       ...
     </class>
     <class>
-      <classSimpleName> ActualClass </classSimpleName>
+      <classType> ActualClass </classType>
       <methods> ActualClassEnv:Map </methods>
       ...
     </class>
 when isKResult(ParamValues)
 
 syntax K ::= "getClassList" "(" List ")"
-rule (.List{K} => Class),, getClassList((ListItem((Class:Id, _)) => .List) _)
+rule (.List{K} => Class),, getClassList((ListItem((Class:ClassType, _)) => .List) _)
         [structural, anywhere]
 rule getClassList(.) => .List{K}
         [structural, anywhere]
@@ -242,11 +242,11 @@ rule [lookupSignatureNoAlternatives]:
             sig(MethodName, SigTs)
           ) )
      ~> lookupSignature(
-          Class:Id,
+          Class:ClassType,
           MethodName:Id,
           CallTs:Types,
           (sig(MethodName, SigTs:Types) |-> TV:TypedVal => .) _:Map,
-          .K
+          noValue
         )
 
 rule [lookupSignatureWithAlternative]:
@@ -258,7 +258,7 @@ rule [lookupSignatureWithAlternative]:
             sig(MethodName, SigTs)
           ) )
      ~> lookupSignature(
-          Class:Id,
+          Class:ClassType,
           MethodName:Id,
           CallTs:Types,
           (sig(MethodName, SigTs:Types) |-> TV:TypedVal => .) _:Map,
@@ -284,7 +284,8 @@ rule (isPreferableSig(true::bool, K:K) => .) ~> lookupSignature(_,_,_,_, _ => K 
 rule isPreferableSig(false::bool, _) => .
 
 syntax K ::= "lookupMethod" "(" K ","      // sig(Name, SigTL) - Method name
-                                List{K} "," //class list, from derived to base
+                                List{K} "," //class list, elems of type ClassType,
+                                            //from derived to base
                                 Map ","     //methods map of current LayerClass to search
                                 TypedVal    //method closure of the most specific method found so far
                                             //or undefined::nullType if no applicable method
@@ -304,7 +305,7 @@ rule [lookupMethodFirstCandidate]:
 rule [lookupMethodOtherCandidates]:
     lookupMethod(
       sig(Name:Id, SigTs:Types),
-      (_,, LayerClass:Id),
+      (_,, LayerClass:ClassType),
       (sig(Name, SigTs) |-> TV:TypedVal => .) _:Map,
       MCClosure:RawVal :: methodType(Acc:AccessMode, SigTs, T:Type)
       => 'If(
@@ -333,14 +334,14 @@ rule [lookupMethodLayerDiscard]:
     <k>
       lookupMethod(
         _,
-        (_,, NewLayerClass:Id,, (_:Id => .List{K})),
+        (_,, NewLayerClass:ClassType,, (_:ClassType => .List{K})),
         .Map => NewEnv,
         _:K
       )
       ...
     </k>
     <class>
-      <classSimpleName> NewLayerClass </classSimpleName>
+      <classType> NewLayerClass </classType>
       <methods> NewEnv:Map </methods>
       ...
     </class>
@@ -348,13 +349,13 @@ rule [lookupMethodLayerDiscard]:
 rule [lookupMethodEnd]:
     lookupMethod(
       _,
-      (_:Id),
+      (_:ClassType),
       .Map,
      TV:TypedVal
     ) => TV
 
 syntax K ::= "getMethConsClosureClass" "(" RawVal ")"
-rule getMethConsClosureClass( (_:KLabel)(Class:Id,, _:List{K}) ) => Class
+rule getMethConsClosureClass( (_:KLabel)(Class:ClassType,, _:List{K}) ) => Class
         [structural, anywhere]
 
 //Tests whether a method from a given class with a given AccessMode and ContextType
@@ -370,28 +371,28 @@ rule [isAccessiblePublic]:
 
 rule [isAccessibleProtected]:
     <k>
-      isAccessible(Class:Id, protected, CT:ContextType)
+      isAccessible(Class:ClassType, protected, CT:ContextType)
       => 'LazyOr(
             'LazyAnd(
               'LazyOr((CT ==K staticCT)::bool,, 'Not(isQualifiedMethodCall)),,
-              subtype(class CurrentClass, class Class)
+              subtype(CurrentClass, Class)
             ),,
             isAccessible(Class, package, CT)
       )
       ...
     </k>
-    <crntClass> CurrentClass:Id </crntClass>
+    <crntClass> CurrentClass:ClassType </crntClass>
 
 rule [isAccessiblePackage]:
     <k>
-      isAccessible(Class:Id, package, _) => kEq(getPackage(Class), getPackage(CurrentClass))
+      isAccessible(Class:ClassType, package, _) => kEq(getPackage(Class), getPackage(CurrentClass))
       ...
     </k>
-    <crntClass> CurrentClass:Id </crntClass>
+    <crntClass> CurrentClass:ClassType </crntClass>
 
 rule [isAccessiblePrivate]:
-    <k> isAccessible(Class:Id, private, _) => (Class ==K CurrentClass)::bool ...</k>
-    <crntClass> CurrentClass:Id </crntClass>
+    <k> isAccessible(Class:ClassType, private, _) => (Class ==K CurrentClass)::bool ...</k>
+    <crntClass> CurrentClass:ClassType </crntClass>
 
 syntax K ::= "isQualifiedMethodCall"
 rule <k> isQualifiedMethodCall => B :: bool  ...</k>
@@ -408,7 +409,7 @@ syntax K ::= "isAccessibleForOverwriting" "("
 
 rule isAccessibleForOverwriting(_, private, _, _) => false::bool
 
-rule isAccessibleForOverwriting(OldClass:Id, package, NewClass:Id, NewAcc:AccessMode)
+rule isAccessibleForOverwriting(OldClass:ClassType, package, NewClass:ClassType, NewAcc:AccessMode)
     => kEq(getPackage(OldClass), getPackage(NewClass))
 
 rule isAccessibleForOverwriting(_, protected, _, _) => true::bool
@@ -420,7 +421,7 @@ rule getArgTypes(_ :: methodType(_, Ts:Types, _)) => Ts [anywhere]
 rule [invokeImplInstance]:
     <k>
       invokeImpl(
-        methodClosure(Class:Id, 'ListWrap(Params:List{K}), instanceCT, Body:K)
+        methodClosure(Class:ClassType, 'ListWrap(Params:List{K}), instanceCT, Body:K)
             :: methodType(_, _, T:Type),
         OL:Int,
         'ListWrap(ParamValues:List{K})
@@ -462,7 +463,7 @@ when isKResult(ParamValues)
 rule [invokeImplStatic]:
     <k>
       invokeImpl(
-        methodClosure(Class:Id, 'ListWrap(Params:List{K}), staticCT, Body:K)
+        methodClosure(Class:ClassType, 'ListWrap(Params:List{K}), staticCT, Body:K)
             :: methodType(_, _, T:Type),
         _,
         'ListWrap(ParamValues:List{K})
@@ -494,7 +495,7 @@ when isKResult(ParamValues)
 
 rule [invokeConstrClosure]:
     <k>
-      invokeImpl( constrClosure(Class:Id, 'ListWrap(Params:List{K}), FirstLine:K, Body:K)
+      invokeImpl( constrClosure(Class:ClassType, 'ListWrap(Params:List{K}), FirstLine:K, Body:K)
           :: T:Type, OL:Int, K:K
       )
       => invokeImpl(
@@ -509,7 +510,7 @@ rule [invokeConstrClosure]:
          )
       ...
     </k>
-    <classSimpleName> Class </classSimpleName>
+    <classType> Class </classType>
     <instanceInit> IInit:K </instanceInit>
 
 //executes the given computation in a fresh environment, then restores the original environment.
@@ -533,9 +534,9 @@ rule [SuperConstrInv]:
           ))
       ...
     </k>
-    <crntClass> Class:Id </crntClass>
-    <classSimpleName> Class </classSimpleName>
-    <extends> BaseClass:Id </extends>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    <extends> BaseClass:ClassType </extends>
 when isKResult(Vals)
 
 context 'AltConstrInv(_,, 'ListWrap(KRs:List{K},, HOLE,, _) )
@@ -550,7 +551,7 @@ rule [AltConstrInv]:
           ))
       ...
     </k>
-    <crntClass> Class:Id </crntClass>
+    <crntClass> Class:ClassType </crntClass>
 when isKResult(Vals)
 
 endmodule

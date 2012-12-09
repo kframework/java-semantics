@@ -376,8 +376,18 @@ Implementation:
   1.ok. Save class type, package and class simple name during process-comp-units.
   2.ok. (temporary) Change the whole definition so that types are resolved to their simple names,
     referrign to the cell <classSimpleName>.
-  3. Change again the whole definition. Now instead of referring <classSimpleName>,
-    resolve simple names into fully qualified names and refer to <classType>.
+  3.ok. Change again the whole definition. Now instead of referring an Id inisde <classSimpleName>,
+    refer to ClassType inside <classType>.
+    In order to make things work for now, <classType> cell will contain simple class references,
+    like class Exception. This refactoring will assure that the content of <classType>
+      is of type classType, not Id.
+  4. Change the rule [TypeName] to be non-anywhere, and to require heating.
+    Change all the locations in the definition to perform proper heating of 'TypeName terms.
+  5. Now that TypeName terms are processed at the top of computation, we can
+    resolve class references into fully qualified class names, instead of simple name.
+    Test the definition, now it should work again.
+
+
 
 
 
