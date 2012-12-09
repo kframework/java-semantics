@@ -155,6 +155,7 @@ when
 /*In Java current version of semantics only int and boolean primitive
 types are supported*/
 
+//resolve local variable declaration type
 context 'LocalVarDec(HOLE,,_)
 
 rule [LocalVarDec]:
@@ -467,10 +468,10 @@ context 'Throw(HOLE)
 
 rule [Throw]:
     <k>
-      (. => checkCatch(subtype(typeOf(TV:TypedVal), T))) ~> 'Throw(TV) ~> _:K
+      (. => checkCatch(subtype(typeOf(TV), T))) ~> 'Throw(TV:TypedVal) ~> _:K
     </k>
     <stack>
-      ListItem((catch, .K, 'ListWrap('Catch('Param(_:K,, T:Type,, X:Id),, _),,_), _, _, _))
+      ListItem((catch, .K, 'ListWrap(catchImpl(paramImpl(T:Type, X:Id), _),,_), _, _, _))
       ...
     </stack>
 
@@ -486,8 +487,8 @@ rule [ThrowCheckedTrue]:
                 CatchS))
     </k>
     <stack>
-      ListItem((catch, .K, 'ListWrap('Catch(
-          'Param(_:K,, T:Type,, X:Id),, CatchS:K),,_), K:K, Env:Map, C:Bag)) => .
+      ListItem((catch, .K, 'ListWrap(catchImpl(
+          paramImpl(T:Type, X:Id), CatchS:K),,_), K:K, Env:Map, C:Bag)) => .
       ...
     </stack>
 
@@ -504,7 +505,7 @@ rule [ThrowCheckedFalse]:
     <k> (checkCatch(false::bool) => .) ~> 'Throw(TV:TypedVal) ~> _:K </k>
     <stack>
       ListItem((catch, .K,
-        'ListWrap( ('Catch('Param(_:K,, T:Type,, X:Id),, CatchS:K) => .List{K}),, _),
+        'ListWrap( (catchImpl(paramImpl(T:Type, X:Id), CatchS:K) => .List{K}),, _),
       K:K, Env:Map, C:Bag))
       ...
     </stack>
@@ -536,15 +537,26 @@ rule [TryCatchFinallyDesugar]:
 
 //@ \subsection{Execution of try–catch} JLS 14.20.1
 
-//eval the type of catch argument
-context 'Try(_:K,,'ListWrap('Catch('Param(_:K,, HOLE,, _),, _)))
+//resolve the catch clauses of try statement
+context 'Try(_:K,,'ListWrap(_,, HOLE,, _))
+
+//resolve 'Param term of the catch clause
+context 'Catch(HOLE,, _)
+
+rule 'Catch(KR:KResult,, S:K) => catchImpl(KR,S)
+
+//internal representation of a pre-processed catch clause
+syntax KResult ::= "catchImpl" "(" K //paramImpl term
+                               "," K //the code block
+                               ")"
 
 rule [TryCatch]:
     <k>
-      ( 'Try(TryS:K,, 'ListWrap(Ks:List{K}))
-        => saveStackLayer(catch, .K, 'ListWrap(Ks), K) ~> TryS ~> popx )
+      ( 'Try(TryS:K,, 'ListWrap(KRs:List{K}))
+        => saveStackLayer(catch, .K, 'ListWrap(KRs), K) ~> TryS ~> popx )
       ~> K:K
     </k>
+when isKResult(KRs)
 
 //@ \subsection{Execution of try-finally} JLS 14.20.2
 

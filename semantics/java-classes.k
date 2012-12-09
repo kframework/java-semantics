@@ -27,19 +27,18 @@ The only change to untyped KOOL's values is that closures are now typed
 //@ \subsection{Type labels}
 //@Here we rewrite java type ast into simple types
 
-//todo here the package-related change should occur
-//odo massive refactoring required - 'TypeName resolution cannot be anywhere
+rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK [structural]
+rule 'InterfaceType(TypeK:K,, _) => TypeK        [structural]
+rule 'ClassType(TypeK:K,, _) => TypeK            [structural]
+
 rule [TypeName]:
-    'TypeName(X:Id) => class X  [structural, anywhere]
+    'TypeName(X:Id) => class X  [structural]
 
 rule [rtString]:
     class X:Id => rtString
 when
     Id2String(X) ==String "String"
-        [structural, anywhere]
-
-rule 'ClassOrInterfaceType(T:Type,, _) => T [structural, anywhere]
-rule 'InterfaceType(T:Type,, _) => T        [structural, anywhere]
+        [structural]
 
 //@ \subsection{Auxiliary operations}
 
@@ -50,7 +49,7 @@ syntax K ::= "bindto" List{K}
 
 rule [bindto]:
     <k>
-      bindto 'Param(_:K,, T:Type,, X:Id),, RestP:List{K}, TV:TypedVal,, RestV:List{K}
+      bindto paramImpl(T:Type, X:Id),, RestP:List{K}, TV:TypedVal,, RestV:List{K}
       => 'ExprStm('Assign('ExprName(X),,TV:TypedVal)) ~> bindto RestP, RestV
       ...
     </k>
@@ -92,6 +91,10 @@ order to be recovered after the creation of the new object.  Only the
 first rule below needs to be changed; the others are identical to
 those in untyped KOOL. */
 
+//resolve new instance expression target type
+context 'NewInstance(_:K,, HOLE,, _)
+
+//resolve new instance expression parameter values
 context 'NewInstance(_:K,,_:K,, 'ListWrap(_,,HOLE,,_),, _)
 
 rule [NewInstance]:

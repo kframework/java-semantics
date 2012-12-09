@@ -56,24 +56,21 @@ rule [ClassDecNoImplementsDesugar]:
 //What if the base class was not encountered yet?
 
 //Resolving the base class
-context 'ClassDec('ClassDecHead(_:K,, _:K,, _:K,,
-          'Some('SuperDec('ClassType(HOLE,, _:K))),,
-          _:K
-        ),,
-        _:K
-      )
+context 'ClassDec( 'ClassDecHead(_:K,, _:K,, _:K,, 'Some('SuperDec(HOLE)),,_) ,,_)
 
-//Resolving superinterfaces
+//Resolving superinterfaces, order is not important
 context 'ClassDec('ClassDecHead(_:K,, _:K,, _:K,, _:K,,
-          'Some('ImplementsDec('ListWrap(KRs:List{K},, HOLE,, _:List{K})))
-        ),,
-        _:K
-      )
-when isKResult(KRs)
+          'Some('ImplementsDec('ListWrap(_:List{K},, HOLE,, _:List{K})))
+        ),, _:K)
+
+//Resolving superinterfaces of an interface, order is not important
+context 'InterfaceDec('InterfaceDecHead(_:K,, _:K,, _:K,,
+          'Some('ExtendsInterfaces('ListWrap(_:List{K},, HOLE,, _:List{K})))
+        ),, _:K)
 
 rule [ClassDec]:
       'ClassDec('ClassDecHead('ListWrap(ClassModifiers:List{K}),, SimpleClass:Id,, _:K,,
-          'Some('SuperDec('ClassType(BaseClass:ClassType,, _:K))),,
+          'Some('SuperDec(BaseClass:ClassType)),,
           'Some('ImplementsDec('ListWrap(ImplTypes:List{K})))
         ),,
         'ClassBody( CBody:K )

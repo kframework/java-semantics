@@ -253,7 +253,11 @@ closures, so that their type contract can be checked at invocation
 time.  The rule below is conceptually similar to that of untyped KOOL;
 the only difference is the addition of the types.  */
 
+//resolving the return type
 context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _),, _)
+
+//resolving parameters, order is not important
+context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, 'ListWrap(_,, HOLE,, _),, _:K),, _:K)
 
 rule [MethodDec]:
     'MethodDec(
@@ -264,6 +268,7 @@ rule [MethodDec]:
     )
     => storeMethod(Name, getTypesFromParams(Params), 'ListWrap(Params), getContextType(Modifiers), S,
           methodType(getAccessMode(Modifiers), getTypesFromParams(Params), ReturnType))
+when isKResult(Params)
         [structural]
 
 rule [AbstractMethodDec]:
@@ -282,18 +287,25 @@ syntax K ::= "storeMethod" "("
                               Type    //method closure type
                            ")"
 
-syntax K     ::= "getTypesFromParams" "(" List{K} // list of 'Param terms,
-                                               // to be processed into Type terms
-                                   ")"
 syntax Types ::= "types" "(" List{K} // list of Type elements, when processed
                          ")"
 syntax KResult ::= Types
 
-rule getTypesFromParams(_:List{K},, ('Param(_:K,, T:Type,, _:Id) => T),, _:List{K})
+syntax K     ::= "getTypesFromParams" "(" List{K} // list of paramImpl terms,
+                                               // to be processed into Type terms
+                                      ")"
+               | "getTypesFromParams" "(" List{K} "," //resulting types
+                                          List{K}     //source paramImpl terms
+                                      ")"
+
+rule getTypesFromParams(Ks:List{K}) => getTypesFromParams(.List{K}, Ks:List{K})
         [structural, anywhere]
 
-rule getTypesFromParams(KRs:List{K}) => types(KRs)
-when isKResult(KRs)
+rule getTypesFromParams(Ts:List{K}, paramImpl(T:Type, _),, Ks:List{K})
+     => getTypesFromParams(Ts,, T, Ks)
+        [structural, anywhere]
+
+rule getTypesFromParams(Ts:List{K}, .List{K}) => types(Ts)
         [structural, anywhere]
 
 rule [storeMethod]:
@@ -341,12 +353,16 @@ rule [ConstrDecObjectDesugar]:
 when
     Id2String(Name) ==String "Object"
 
+//resolving constructor parameters, order is not important
+context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, 'ListWrap(_,, HOLE,, _),, _),, _:K)
+
 rule [ConstrDec]:
     'ConstrDec('ConstrDecHead(Modifiers:K,, _:K,, Name:Id,, 'ListWrap(Params:List{K}),, _),,
         'ConstrBody(
       'Some(FirstLine:K) ,,S:K))
     => storeConstructor(Name, 'ListWrap(Params), FirstLine,
         S, methodType(getAccessMode(Modifiers), getTypesFromParams(Params), void))
+when isKResult(Params)
 
 syntax K ::= "storeConstructor" "(" Id    // Class name
                                 "," K     // 'ListWrap(Params) - formal params
@@ -377,6 +393,9 @@ rule getConsName(X:Id) => String2Id("$cons$" +String Id2String(X))  [structural,
 
 //todo fix for package refactoring
 rule getConsName(class X:Id) => getConsName(X)                      [structural, anywhere]
+
+//resolve field declaration type
+context 'FieldDec(_:K,, HOLE,, _)
 
 rule [FieldDecDesugar]:
     (. => 'FieldDec(SomeK,, TypeK,, 'ListWrap(K1))) ~>
@@ -486,5 +505,12 @@ should be triggered, especially for interfaces.
 syntax K ::= "uninitialized" "(" Id "," // Class - the declaring class
                                  Type   // Type of the variable
                              ")"
+
+/*@Section process 'Param labels*/
+
+context 'Param(_:K,, HOLE,, _:K)
+rule 'Param(_:K,, T:Type,, X:Id) => paramImpl(T,X)
+
+syntax KResult ::= "paramImpl" "(" Type "," Id ")"  //processed representation of a 'Param label
 
 endmodule

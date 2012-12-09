@@ -381,8 +381,9 @@ Implementation:
     In order to make things work for now, <classType> cell will contain simple class references,
     like class Exception. This refactoring will assure that the content of <classType>
       is of type classType, not Id.
-  4. Change the rule [TypeName] to be non-anywhere, and to require heating.
+  4.ok. Change the rule [TypeName] to be non-anywhere, and to require heating.
     Change all the locations in the definition to perform proper heating of 'TypeName terms.
+
   5. Now that TypeName terms are processed at the top of computation, we can
     resolve class references into fully qualified class names, instead of simple name.
     Test the definition, now it should work again.

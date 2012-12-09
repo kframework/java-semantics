@@ -42,19 +42,19 @@ rule [ArrayFieldDecIdDesugar]:
           X:Id,,
           'ListWrap(('Dim(.List{K}) => .List{K}) ,,_)
       ),, _:List{K} //possible initializer
-    )))                                                 [structural, anywhere]
+    )))                                                 [structural]
 
 rule [ArrayFieldDecIdDiscard]:
     'FieldDec(_:K,, T:Type,, 'ListWrap('VarDec(
         ( 'ArrayVarDecId( X:Id,, 'ListWrap(.List{K}) ) => X ),,
         _:List{K} //possible initializer
-    )))                                                 [structural, anywhere]
+    )))                                                 [structural]
 
 rule [FieldDecWithArrayInitDesugar]:
     'FieldDec(_:K,, T:Type,, 'ListWrap('VarDec(
       X:Id,,
       ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK)) )
-    )))                                                 [structural, anywhere]
+    )))                                                 [structural]
 
 //first two rules - desugaring C-like array decs, for params
 
@@ -66,13 +66,13 @@ rule [ArrayParamIdDesugar]:
           X:Id,,
           'ListWrap(('Dim(.List{K}) => .List{K}) ,,_)
       )
-    )                                                   [structural, anywhere]
+    )                                                   [structural]
 
 rule [ArrayParamIdDiscard]:
     'Param(
       _:K,, T:Type,,
       ( 'ArrayVarDecId( X:Id,, 'ListWrap(.List{K}) ) => X )
-    )                                                   [structural, anywhere]
+    )                                                   [structural]
 
 /*@ \subsection{Array access}
 Check array bounds, as part of the dynamic typing policy. */
@@ -130,7 +130,8 @@ when
 
 //@ \subsection{Array Type}
 
-rule 'ArrayType(T:Type) => arrayOf T [structural, anywhere]
+context 'ArrayType(HOLE)
+rule    'ArrayType(T:Type) => arrayOf T [structural]
 
 //@ \subsection{New array allocation}
 /*@ The dynamic semantics of typed array declarations is

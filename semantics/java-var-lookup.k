@@ -35,6 +35,7 @@ when
     notBool( (X in keys(Env)) orBool (Id2String(X) ==String "System") )
         [structural]
 
+//resolving the qualifier of a qualified expression: either an object or a class reference
 context 'ExprName(HOLE,, _:K)
 
 /*@ \subsection{Self reference}
@@ -148,6 +149,7 @@ rule [lvalueExprNameMember]:
     <crntClass> Class:ClassType </crntClass>
 when notBool(X in keys(Env))  [structural]
 
+//resolving the qualifier of a lvalue qualified expression: either an object or a class reference
 context lvalue('ExprName(HOLE,, _:Id) )
 
 rule [lvalueExprNameQualified]:

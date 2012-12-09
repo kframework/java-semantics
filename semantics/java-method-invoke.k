@@ -48,6 +48,7 @@ syntax K ::= "methodNameImpl" "("
                                   Bool    //IsQ - isQualified
                               ")"
 
+//resolving the qualifier of a qualified method call: either an object or a class reference
 context methodNameImpl(HOLE, _, _)
 
 //objClos.X(_)
