@@ -1,0 +1,11 @@
+Expected output:
+
+for gen and run together
+console input:
+abc
+
+Actual output:
+
+for gen and run together
+console input:
+abcd

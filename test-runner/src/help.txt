@@ -1,0 +1,81 @@
+Executes a batch of tests in parallel. A test is a specifically built shell
+command.
+
+First arguments are runner options, as described below. They always come in
+pairs of type -optionName optionValue. After all options have been
+specified, all the remaining arguments are a list of files/directories
+containing tests. For directories, all test files inside them will be
+executed recursively.
+
+In addition, the following options are supported:
+
+-gen test-generator - Optional. Path to a program used to generate test
+output. Tests will be first executed by test generator, and the output
+produced by test-generator run will be compared to the output produced by
+test-runner. If no generator is provided, only tests which have a
+corresponding ".out" file are run.
+
+-condGen true/false - Optional. Conditional test out generation. If true,
+generator will be executed only for tests which don't have a corresponding
+.out file. If false, generator will be executed for all tests. Default is
+true.
+
+-run test-runner - Optional. Path to a program used to run the tests. At
+least one of -gen and -run should be specified.
+
+-taskExt test-file-extension - Optional. Extension of test files. If not
+specified, all files in the target directory will be considered tests,
+except those having extensions with test input/output. If specified,
+then directories with name ending in .taskExt will be considered individual
+tasks, not directories ith tasks. This allows individual tasks
+to contain an arbitrary number of files and directories.
+
+-timeout test-timeout - Optional. Amount of time to wait, in seconds, until
+test execution is halted. Default is 0, meaning no timeout.
+
+-threads threads-count - Optional. Amount of threads on which tests are
+executed. Default is 1.
+
+-rep report-file - Optional. Name xml file where test suite report will be
+written. Default is test-results.xml .
+
+-inExt input-extension - Optional. Extension of files containing standart
+input for a test. Not all tests should have standart input, in this case no
+input will be redirected to them. Default is "in".
+
+-expectedOutExt expected-out-extension - Optional. Extension of files
+containing expected output for a test. If for a particular test expected
+output is present, actual output will be compared to that expected output.
+If not present, expected output will be generated using test-generator (if
+specified). Default is "out".
+
+-actualOutExt actual-out-extension - Optional. Extension of files where
+actual test output will be stored. Default is "stdout".
+
+-errExt standart-error-extension - Optional. Extension of files where
+standart error stream will be redirected. Default is "stderr".
+
+-generrExt generator-standart-error-extension - Optional. Extension of
+files where generator standart error stream will be stored. Default is
+"generr".
+
+-compExt - comparation-extension - Optional. Extension of files where
+comparation result of expected output and actual output will be stored.
+This file will be generated only for failing tests. Default is "comp".
+
+-testsuiteName - name - Optional. Display name of the test suite, in the
+report xml file. default is "test suite"
+
+-rm - remove script - Optional. Path to the script used to remove temp
+directory. The script should receive one argument - the directory to remove.
+Used to speedup temp dir removal. If not specified, temp removal will be
+performed by test runner.
+
+-clean true/false - Optional. If true, temp directory created at previous
+test suite execution will be deleted before current test suite execution.
+If false, it will be left untouched and any created files will be written over.
+Default is true.
+
+-smartGen true/false - Optional. If true, generator will not be run if
+corresponding .out file already exists either in the same dir as test file,
+or in the temp dir, from earlier test runner runs. Default is true.

@@ -1,0 +1,16 @@
+1.ok. Support for args testMode, generator and forced/cond generator.
+2.ok. Support for multiple target arguments.
+3.ok. Directory targets, with recursive passing.
+4.ok. temp directory for all created files.
+  4.1.ok. Find out why textnoext fails in the test gendir
+  4.2.ok. Finish dirs logic - file-related dirs should contain
+  only temporary files created by gen/run, not files with
+  in/out/err/comp, which are managed by test-runner.
+  4.3.ok. Improve file filter. Tests which are skipped because
+    there's no out and generator, should not reach the processFile() method,
+    and should not have a dir created.
+  4.4.ok. Delete empty .stderr and .generr files.
+5.ok. xml output.
+  5.1.ok. Move console output to outside processFile() method.
+6.ok. Multithreaded invocation.
+7.ok. Test timeout.
