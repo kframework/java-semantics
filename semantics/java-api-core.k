@@ -1,3 +1,7 @@
+require "java-core.k"
+require "java-classes.k"
+require "java-method-invoke.k"
+
 module JAVA-API-CORE
     imports JAVA-CORE
     imports JAVA-CLASSES

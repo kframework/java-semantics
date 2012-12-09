@@ -249,4 +249,7 @@ rule [restoreEnvAndObj]:
     <env> _ => Env </env>
     <crntObj> _ => Obj </crntObj>
 
+//The content of an <envStack> ListItem() </envStack>
+syntax K ::= "(" ClassType "," BagItem ")"
+
 endmodule

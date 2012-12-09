@@ -1,3 +1,12 @@
+require "java-core.k"
+require "java-subtyping.k"
+require "java-process-classes.k"
+require "java-expressions.k"
+require "java-statements.k"
+require "java-arrays.k"
+require "java-static-init.k"
+require "java-var-lookup.k"
+
 module JAVA-CLASSES
     imports JAVA-CORE
     imports JAVA-SUBTYPING
@@ -136,9 +145,6 @@ rule [setCrntClass]:
         [structural]
 
 syntax K ::= "addEnvLayer"
-
-//The content of an <envStack> ListItem() </envStack>
-syntax K ::= "(" ClassType "," BagItem ")"
 
 rule [addEnvLayer]:
     <k> addEnvLayer => . ...</k>

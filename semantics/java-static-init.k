@@ -1,5 +1,9 @@
+require "java-core.k"
+require "java-process-classes.k"
+
 module JAVA-STATIC-INIT
     imports JAVA-CORE
+    imports JAVA-PROCESS-CLASSES
 
 syntax K ::= "staticInit" "(" K // Class - the ClassType to be initialized,
                                 // or .K if this term should be discarded.

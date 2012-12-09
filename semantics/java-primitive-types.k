@@ -1,3 +1,5 @@
+require "java-core.k"
+
 module JAVA-PRIMITIVE-TYPES
     imports JAVA-CORE
 

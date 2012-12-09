@@ -1,3 +1,7 @@
+require "java-core.k"
+require "java-subtyping.k"
+require "java-expressions.k"
+
 module JAVA-ARRAYS
     imports JAVA-CORE
     imports JAVA-SUBTYPING

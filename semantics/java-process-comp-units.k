@@ -1,3 +1,5 @@
+require "java-core.k"
+
 module JAVA-PROCESS-COMP-UNITS
     imports JAVA-CORE
 

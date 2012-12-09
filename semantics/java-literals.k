@@ -1,3 +1,6 @@
+require "java-core.k"
+require "java-primitive-types.k"
+
 module JAVA-LITERALS
     imports JAVA-CORE
     imports JAVA-PRIMITIVE-TYPES

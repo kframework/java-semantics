@@ -1,3 +1,6 @@
+require "java-core.k"
+require "java-subtyping.k"
+
 module JAVA-STATEMENTS
     imports JAVA-CORE
     imports JAVA-SUBTYPING

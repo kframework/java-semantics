@@ -1,3 +1,10 @@
+require "java-core.k"
+require "java-subtyping.k"
+require "java-process-classes.k"
+require "java-classes.k"
+require "java-statements.k"
+require "java-static-init.k"
+
 module JAVA-METHOD-INVOKE
     imports JAVA-CORE
     imports JAVA-SUBTYPING

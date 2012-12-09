@@ -1,3 +1,7 @@
+require "java-core.k"
+require "java-subtyping.k"
+require "java-primitive-types.k"
+
 module JAVA-EXPRESSIONS
     imports JAVA-CORE
     imports JAVA-SUBTYPING
