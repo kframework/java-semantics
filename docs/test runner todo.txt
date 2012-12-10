@@ -11,3 +11,6 @@
 
 5. Flush test-results.xml file after every written result. This way when runner is stopped
   in the middle of execution, xml file will still have the results acquired so far.
+
+6. When I run one single multi-file test, temp files are created directly in the semantics directory,
+  not in .test
