@@ -10,6 +10,7 @@ public class packages_26_java_lang {
     new Test().test();
     System.out.println();
     new pack2.Test().test();
+    System.out.println("Done!");
   }
 }
 

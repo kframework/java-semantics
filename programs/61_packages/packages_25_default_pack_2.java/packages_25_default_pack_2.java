@@ -6,5 +6,6 @@ Main and two classes A and B are in the default package. The same classes are in
 public class packages_25_default_pack_2 {
   public static void main(String[] args) {
     new pack.Test();
+    System.out.println("Done!");
   }
 }

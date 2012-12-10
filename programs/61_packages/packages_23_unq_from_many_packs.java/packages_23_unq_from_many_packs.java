@@ -10,5 +10,6 @@ public class packages_23_unq_from_many_packs {
     new pack.pbb.Test();
     System.out.println();
     new pack.pcc.Test();
+    System.out.println("Done!");
   }
 }
