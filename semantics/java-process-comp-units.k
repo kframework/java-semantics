@@ -131,7 +131,6 @@ rule [classDecImpl]:
       ...
     </k>
     <cuPackage> Pack:PackageId </cuPackage>
-    <crntClass> _ => getClassType(Pack, SimpleClass) </crntClass>
     <classes>
       ...
       ( . =>  <class>

@@ -384,9 +384,12 @@ Implementation:
   4.ok. Change the rule [TypeName] to be non-anywhere, and to require heating.
     Change all the locations in the definition to perform proper heating of 'TypeName terms.
 
-  5. Now that TypeName terms are processed at the top of computation, we can
-    resolve class references into fully qualified class names, instead of simple name.
-    Test the definition, now it should work again.
+  5.ok. Mock implementation of packages, v1: all type names are resolved into simple names.
+    Fully qualified names are also transformed into simple names, by ignoring their qualifier.
+
+  6. Mock implementation of packages, v2: mow all types are resolved into fully qualified names.
+    The first fully qualified name that match the simple name in <classes> cell is used.
+    Imports are ignored. Fully qualified names in the code are correctly resolved.
 
 
 

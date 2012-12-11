@@ -18,7 +18,8 @@ module JAVA-CLASSES
     imports JAVA-VAR-LOOKUP
 
 //@ \subsection{Unused Labels}
-syntax KLabel ::= "'TypeImportOnDemandDec" | "'PackageName" | "'Native"
+syntax KLabel ::= "'TypeImportOnDemandDec" | "'TypeImportDec"
+                | "'PackageOrTypeName" | "'Native"
 
 /*@ \section{Object and method closures}
 The only change to untyped KOOL's values is that closures are now typed
@@ -33,6 +34,10 @@ rule 'ClassType(TypeK:K,, _) => TypeK            [structural]
 
 rule [TypeName]:
     'TypeName(X:Id) => class X  [structural]
+
+//ignore the qualifier of a type - for now
+rule [TypeNameQualified]:
+    'TypeName(_,, X:Id) => class X  [structural]
 
 rule [rtString]:
     class X:Id => rtString
