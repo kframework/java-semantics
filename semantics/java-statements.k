@@ -204,7 +204,7 @@ rule [AssertStmTrueDiscard]:
 rule [AssertStmOneArg]:
     'AssertStm(false::bool) => 'Throw('NewInstance(
       'None(.List{K}),,
-      'class_(String2Id("AssertionError")),,
+      (class String2Id("java.lang.AssertionError")),,
       'ListWrap( null :: nullType ),,
       'None(.List{K})
     ))
@@ -214,7 +214,7 @@ context 'AssertStm(false::bool,, HOLE)
 rule [AssertStmTwoArgs]:
     'AssertStm(false::bool,, TV:TypedVal) => 'Throw('NewInstance(
       'None(.List{K}),,
-      'class_(String2Id("AssertionError")),,
+      (class String2Id("java.lang.AssertionError")),,
       'ListWrap( toString(TV) ),,
       'None(.List{K})
     ))

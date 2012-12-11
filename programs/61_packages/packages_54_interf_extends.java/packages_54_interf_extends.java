@@ -1,13 +1,13 @@
 /*
 Class resolution in interface extends.
-  Interfaces p1.I1, p2.I1.
-  Main CU imports p1.I1.
+  Interfaces p1.I1, p2.I1, p3.I1.
+  Main CU imports p2.I1.
   Interface I2 (same CU) extends I1.
-  Interface I3 (same CU) extends p2.I1.
+  Interface I3 (same CU) extends p3.I1.
   Test the access to some traced static fields.
 */
 
-import p1.I1;
+import p2.I1;
 
 public class packages_54_interf_extends {
   public static void main(String[] args) {
@@ -18,4 +18,4 @@ public class packages_54_interf_extends {
 }
 
 interface I2 extends I1 {}
-interface I3 extends p2.I1 {}
+interface I3 extends p3.I1 {}

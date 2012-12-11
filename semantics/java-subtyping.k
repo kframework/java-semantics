@@ -80,13 +80,13 @@ rule [subtypeClassOfClassRed]:
       ...
     </class>
 when
-    (Class1 =/=K Class) andBool (Class =/=K class String2Id("Object"))
+    (Class1 =/=K Class) andBool (Class =/=K objectClass)
         [structural]
 
 rule [subtypeClassOfClassFalse]:
     subtype( Class1:ClassType, Class2:ClassType ) => false :: bool
 when
-            (Class1 ==K class String2Id("Object"))
+            (Class1 ==K objectClass)
     andBool (Class1 =/=K Class2)
 
 rule [subtypeInterfaceOfClass]:
@@ -102,7 +102,7 @@ rule [subtypeInterfaceOfClass]:
       ...
     </class>
 when
-    Class =/=K class String2Id("Object")
+    Class =/=K objectClass
         [structural]
 /*
 K Limitation: This way don't seem to work:
@@ -115,7 +115,7 @@ K Limitation: This way don't seem to work:
 rule [subtypeOfObject]:
     subtype( _:ClassType, Class:ClassType ) => true::bool
 when
-    Class ==K class String2Id("Object")
+    Class ==K objectClass
         [structural]
 
 rule [subtypeOfInterface]:
@@ -138,7 +138,7 @@ when
 
 rule [subtypeStringOfClass]:
     subtype( rtString, Class:ClassType ) =>
-    #if Class ==K class String2Id("Object")
+    #if Class ==K objectClass
       #then true::bool
       #else false::bool
     #fi
@@ -151,7 +151,7 @@ when
 
 rule [subtypeArrayOfClass]:
     subtype( arrayOf _, Class:ClassType ) =>
-    #if Class ==K class String2Id("Object")
+    #if Class ==K objectClass
       #then true::bool
       #else false::bool
     #fi

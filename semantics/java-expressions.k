@@ -102,7 +102,7 @@ rule /* I1 / I2    */ 'Div(I1:Int :: NT1:NumericType,, I2:Int :: NT2:NumericType
 rule                  'Div(_::_     ,, 0::_)
    => 'Throw('NewInstance(
         'None(.List{K}),,
-        'class_(String2Id("ArithmeticException")),,
+        (class String2Id("java.lang.ArithmeticException")),,
         'ListWrap( "/ by zero" :: rtString ),,
         'None(.List{K})
       ))
@@ -114,7 +114,7 @@ rule /* I1 % I2    */ 'Remain(I1:Int :: NT1:NumericType,, I2:Int :: NT2:NumericT
 rule                  'Remain(_::_     ,, 0::_)
    => 'Throw('NewInstance(
         'None(.List{K}),,
-        'class_(String2Id("ArithmeticException")),,
+        (class String2Id("java.lang.ArithmeticException")),,
         'ListWrap( "/ by zero" :: rtString ),,
         'None(.List{K})
       ))

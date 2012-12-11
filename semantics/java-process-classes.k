@@ -45,6 +45,8 @@ syntax K ::= "processTypeList" "("
                                 ClassType  //the class to be processed
                             ")"
 
+/*@ \subsection{Third pass - processing class members} */
+
 rule [StartProcessClassesPhase]:
     <k> . => processTypeList(Classes) </k>
     <classes> Classes:Bag </classes>
@@ -102,7 +104,7 @@ rule [ProcessType]:
           ~> tryInheritSet(ISet)
 
           //interfaces should also contain Object members
-          ~> 'If((MetaT ==K interfaceMetaT)::bool,, tryInherit(class String2Id("Object")))
+          ~> 'If((MetaT ==K interfaceMetaT)::bool,, tryInherit(objectClass))
 
           ~> tryInherit(BaseClassK)
           ~> inheritInterfaceFields
@@ -156,7 +158,6 @@ rule setUnion(S1:Set, .Set) => setWrap(S1)
 //if they collide. This is not really important for the only application of this function
 //in our definition.
 syntax K ::= "mapUnion" "(" Map "," Map ")"
-syntax KResult ::= "mapWrap" "(" Map ")"
 
 rule mapUnion(M1:Map, K1:K |-> K2:K M2:Map) => mapUnion(M1[K2/K1], M2)
 
@@ -211,17 +212,11 @@ rule isInheritable(protected) => true::bool
 
 //Object class cannot match this rule since it has public access mode
 rule [isInheritablePackage]:
-    <k> isInheritable(package) => (P1 ==K P2)::bool ...</k>
+    <k> isInheritable(package) => kEq(getPackage(Class), getPackage(BaseClass)) ...</k>
     <cuClass> Class:ClassType </cuClass>
     <class>
       <classType> Class </classType>
       <extends> BaseClass:ClassType </extends>
-      <package> P1:PackageId </package>
-      ...
-    </class>
-    <class>
-      <classType> BaseClass </classType>
-      <package> P2:PackageId </package>
       ...
     </class>
 
@@ -327,31 +322,39 @@ rule [storeMethod]:
 syntax KResult ::= "sig" "(" Id "," Types ")"
 
 rule [ConstrDecSuperCallDesugar]:
-    'ConstrDec(
-      'ConstrDecHead(_:K,, _:K,, Name:Id,, _:List{K}),,
-      'ConstrBody(
-        (
-          'None(_)
-          => 'Some('SuperConstrInv( 'None(.List{K}),, 'ListWrap(.List{K}) ))
-        ),,
-        _:K
+    <k>
+      'ConstrDec(
+        'ConstrDecHead(_:K,, _:K,, Name:Id,, _:List{K}),,
+        'ConstrBody(
+          (
+            'None(_)
+            => 'Some('SuperConstrInv( 'None(.List{K}),, 'ListWrap(.List{K}) ))
+          ),,
+          _:K
+        )
       )
-    )
+      ...
+    </k>
+    <cuClass> Class:ClassType </cuClass>
 when
-    Id2String(Name) =/=String "Object"
+    Class =/=K objectClass
 
 rule [ConstrDecObjectDesugar]:
-    'ConstrDec(
-      'ConstrDecHead(_:K,, _:K,, Name:Id,, _:List{K}),,
-      'ConstrBody(
-        (
-          'None(_) => 'Some(.K)
-        ),,
-        _:K
+    <k>
+      'ConstrDec(
+        'ConstrDecHead(_:K,, _:K,, Name:Id,, _:List{K}),,
+        'ConstrBody(
+          (
+            'None(_) => 'Some(.K)
+          ),,
+          _:K
+        )
       )
-    )
+      ...
+    </k>
+    <cuClass> Class:ClassType </cuClass>
 when
-    Id2String(Name) ==String "Object"
+    Class ==K objectClass
 
 //resolving constructor parameters, order is not important
 context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, 'ListWrap(_,, HOLE,, _),, _),, _:K)
@@ -386,13 +389,16 @@ rule [storeConstructor]:
     </methods>
 
 //@get internal constructor name from a class name
-//todo here a package-related refactoring is needed
-syntax K ::= "getConsName" "(" Id ")"         [function]
-           | "getConsName" "(" ClassType ")"  [function]
+syntax K ::= "getConsName" "(" Id ")"                               [function]
+           | "getConsName" "(" ClassType ")"
+
 rule getConsName(X:Id) => String2Id("$cons$" +String Id2String(X))  [structural, anywhere]
 
-//todo fix for package refactoring
-rule getConsName(class X:Id) => getConsName(X)                      [structural, anywhere]
+rule <k> 'MethodName(_,, (getConsName(Class:ClassType) => getConsName(X))) ...</k>
+     <topLevelNamesMap>... _ |-> mapWrap(X:Id |-> Class _) ...</topLevelNamesMap>
+
+rule <k> 'SuperMethod(_,, (getConsName(Class:ClassType) => getConsName(X))) ...</k>
+     <topLevelNamesMap>... _ |-> mapWrap(X:Id |-> Class _) ...</topLevelNamesMap>
 
 //resolve field declaration type
 context 'FieldDec(_:K,, HOLE,, _)

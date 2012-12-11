@@ -100,7 +100,7 @@ rule [ArrayIndexOutOfBoundsException]:
     'ArrayAccess(arrayRef(_,_,M:Int) :: _,, N:Int::_)
     => 'Throw('NewInstance(
       'None(.List{K}),,
-      'class_(String2Id("ArrayIndexOutOfBoundsException")),,
+      (class String2Id("java.lang.ArrayIndexOutOfBoundsException")),,
       'ListWrap( Int2String(N) :: rtString ),,
       'None(.List{K})
     ))
@@ -116,7 +116,7 @@ rule [arrayAccessNull]:
     'ArrayAccess(null::_ ,, _)
     => 'Throw('NewInstance(
       'None(.List{K}),,
-      'class_(String2Id("NullPointerException")),,
+      class String2Id("java.lang.NullPointerException"),,
       'ListWrap( null :: rtString ),,
       'None(.List{K})
     ))
@@ -188,7 +188,7 @@ rule [NegativeArraySizeException]:
     checkNonNegative((NI:Int::_),, _)
     => 'Throw('NewInstance(
       'None(.List{K}),,
-      'class_(String2Id("NegativeArraySizeException")),,
+      class String2Id("java.lang.NegativeArraySizeException"),,
       'ListWrap( null :: rtString ),,
       'None(.List{K})
     ))
@@ -290,7 +290,7 @@ rule [ArrayStoreException]:
     assignImpl( false::bool, _, TV:TypedVal)
     =>  'Throw('NewInstance(
           'None(.List{K}),,
-          'class_(String2Id("ArrayStoreException")),,
+          (class String2Id("java.lang.ArrayStoreException")),,
           'ListWrap(
             //the ArrayStoreException argument is the assigned object type
             'Invoke(

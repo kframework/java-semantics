@@ -19,7 +19,7 @@ module JAVA-CLASSES
 
 //@ \subsection{Unused Labels}
 syntax KLabel ::= "'TypeImportOnDemandDec" | "'TypeImportDec"
-                | "'PackageOrTypeName" | "'Native"
+                | "'Native"
 
 /*@ \section{Object and method closures}
 The only change to untyped KOOL's values is that closures are now typed
@@ -33,14 +33,31 @@ rule 'InterfaceType(TypeK:K,, _) => TypeK        [structural]
 rule 'ClassType(TypeK:K,, _) => TypeK            [structural]
 
 rule [TypeName]:
-    'TypeName(X:Id) => class X  [structural]
+    <k> 'TypeName(X:Id) => Class ...</k>
+    <topLevelNamesMap>... _ |-> mapWrap(X |-> Class:ClassType _) ...</topLevelNamesMap>
 
-//ignore the qualifier of a type - for now
+//resolving fully qualified type names
+// A name pack.p2.A is represented as:
+// 'TypeName('PackageOrTypeName('PackageOrTypeName(pack),,p2),,A)
+
+context 'TypeName(HOLE,, _:K)
+context 'PackageOrTypeName(HOLE,, _:K)
+
+rule 'PackageOrTypeName(X:Id) => packageId(Id2String(X))
+rule 'PackageOrTypeName(packageId(Str:String),, X:Id)
+     => packageId(Str +String "." +String Id2String(X))
+
 rule [TypeNameQualified]:
-    'TypeName(_,, X:Id) => class X  [structural]
+    'TypeName(packageId(Str:String),, X:Id)
+    => class String2Id(Str +String "." +String Id2String(X))
+//end of section
 
+//limitations:
+// - All string types should be referred by simple name "String".
+//    Fully qualified name java.lang.String is not allowed.
+// - No other classes with name "String" are possiblle.
 rule [rtString]:
-    class X:Id => rtString
+    'TypeName(X:Id) => rtString
 when
     Id2String(X) ==String "String"
         [structural]
@@ -213,7 +230,7 @@ rule [CastRef]:
             (V::RT1),,
             'Throw('NewInstance(
                     'None(.List{K}),,
-                    'class_(String2Id("ClassCastException")),,
+                    (class String2Id("java.lang.ClassCastException")),,
                     'ListWrap( 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to "::rtString),,
                         toString(RT1)) ),,
                     'None(.List{K})

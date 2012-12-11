@@ -1,4 +1,5 @@
 require "java-core.k"
+require "java-process-top-level-names.k"
 require "java-process-comp-units.k"
 require "java-process-classes.k"
 require "java-primitive-types.k"
@@ -15,6 +16,7 @@ require "java-api-core.k"
 
 module JAVA
     imports JAVA-CORE
+    imports JAVA-PROCESS-TOP-LEVEL-NAMES
     imports JAVA-PROCESS-COMP-UNITS
     imports JAVA-PROCESS-CLASSES
     imports JAVA-PRIMITIVE-TYPES

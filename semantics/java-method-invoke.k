@@ -82,7 +82,7 @@ rule [MethodNameQualifiedNull]:
       methodNameImpl(null::_ , _,_)
       =>  'Throw('NewInstance(
             'None(.List{K}),,
-            'class_(String2Id("NullPointerException")),,
+            class String2Id("java.lang.NullPointerException"),,
             'ListWrap( null :: nullType ),,
             'None(.List{K})
           ))
@@ -537,7 +537,7 @@ rule [SuperConstrInv]:
     <k>
       'SuperConstrInv(_,, 'ListWrap( Vals:List{K} ))
       => 'ExprStm('Invoke(
-                'Method('MethodName( getConsName(BaseClass) )),,
+                'SuperMethod( getConsName(BaseClass) ),,
                 'ListWrap(Vals)
           ))
       ...

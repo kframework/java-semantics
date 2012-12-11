@@ -19,13 +19,13 @@ rule [staticInit]:
             'ListWrap(
               'Catch(
                 'Param('ListWrap(.List{K}),,
-                  class String2Id("Object"),,
+                  objectClass,,
                   String2Id("e")
                 ),,
                 'Throw(
                   'NewInstance(
                     'None(.List{K}),,
-                    class String2Id("ExceptionInInitializerError"),,
+                    class String2Id("java.lang.ExceptionInInitializerError"),,
                     'ListWrap('ExprName(String2Id("e"))),,
                     'None(.List{K})
                   )

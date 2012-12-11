@@ -1,45 +1,31 @@
 require "java-core.k"
+require "java-process-top-level-names.k"
 
 module JAVA-PROCESS-COMP-UNITS
     imports JAVA-CORE
+    imports JAVA-PROCESS-TOP-LEVEL-NAMES
 
-/*@ \subsection{First pass - processing declarations} */
+/*@ \subsection{Second pass - processing declarations} */
 
-rule [DefaultPackageDesugar]:
-    'CompilationUnit(
-      ( 'None(_) => 'Some('PackageDec(.K,, 'PackageName( 'ListWrap(.List{K}) ))) ),,
-      _,,_)
+rule [StartProcessCompUnitsPhase]:
+    <k> . => Pgm </k>
+    <programBackup> Pgm:K => . </programBackup>
+    <computationPhase> ProcessTopLevelNamesPhase => ProcessCompUnitsPhase </computationPhase>
 
 rule [CompilationUnit]:
     <k>
-      'CompilationUnit('Some('PackageDec(_,, 'PackageName( 'ListWrap(Ks:List{K}) ))),,_,,K:K)
+      'CompilationUnit('Some('PackageDec(_,, 'PackageName( 'ListWrap(Ks:List{K}) ))),,_:K,,K:K)
       => setCuPackage("", Ks) ~> K
       ...
     </k>
+    <computationPhase> ProcessCompUnitsPhase </computationPhase>
 
-//converts a package name from List{K} to String and saves it into <cuPackage> cell.
-syntax K ::= "setCuPackage" "("
-                              String ","  //package converted into String
-                              List{K}     //package in original kast format
-                            ")"
-// package ro.uaic looks in kast like:
-// 'PackageName('ListWrap('Id(# "ro"(.List{K})),,'Id(# "uaic"(.List{K}))))
-rule setCuPackage("", X:Id ,,Ks:List{K}) => setCuPackage(Id2String(X), Ks)
-
-rule setCuPackage(Str:String, X:Id,,Ks:List{K})
-     => setCuPackage(Str +String "." +String Id2String(X), Ks)
-when Str =/=String ""
-
-rule <k> setCuPackage(Str:String, .List{K}) => . ...</k>
-     <cuPackage> _ => packageId(Str) </cuPackage>
-
-/*@ \subsection{Class declaration}
-Like in untyped KOOL. */
+/*@ \subsection{Class declaration processing}*/
 
 rule [ClassDecNoExtendsDesugar]:
     'ClassDec('ClassDecHead(_:K,, SimpleClass:Id,, _:K,,
         ( 'None(_)
-          => 'Some('SuperDec('ClassType(class String2Id("Object"),, 'None(.List{K}))))
+          => 'Some('SuperDec('ClassType(objectClass,, 'None(.List{K}))))
         ),,
         _:K),, _:K
     )
@@ -51,9 +37,6 @@ rule [ClassDecNoImplementsDesugar]:
       ),, _:K
     )
         [structural]
-
-//todo - How will we resolve the class definition order problem?
-//What if the base class was not encountered yet?
 
 //Resolving the base class
 context 'ClassDec( 'ClassDecHead(_:K,, _:K,, _:K,, 'Some('SuperDec(HOLE)),,_) ,,_)
@@ -135,10 +118,8 @@ rule [classDecImpl]:
       ...
       ( . =>  <class>
                 <classType> getClassType(Pack, SimpleClass) </classType>
-                <package> Pack </package>
-                <classSimpleName> SimpleClass </classSimpleName>
                 <extends>
-                  #if getClassType(Pack, SimpleClass) =/=K class String2Id("Object")
+                  #if getClassType(Pack, SimpleClass) =/=K objectClass
                     #then BaseClassK
                     #else .K
                   #fi
@@ -150,23 +131,6 @@ rule [classDecImpl]:
               </class> )
       ...
     </classes>
-
-//returns the fully qualified class name from given parameters
-syntax K ::= "getClassType" "(" PackageId // the Package Id
-                            "," Id        // Simple class name
-                            ")"                                 [function]
-
-//todo uncomment true implementation of this function
-/*
-rule [getclassTypePackagePresent]:
-    getClassType(packageId(PackStr:String), SimpleClass:Id)
-    => class String2Id(PackStr +String "." +String Id2String(SimpleClass))
-        [structural, anywhere]
-*/
-
-rule getClassType(_, SimpleClass:Id) => class SimpleClass
-
-/*@ \subsection{Method declaration} */
 
 syntax K ::= "typesToSet" "(" List{K} //a list of ClassType terms
                           "," Set     //the result map

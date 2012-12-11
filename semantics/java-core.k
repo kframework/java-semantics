@@ -35,39 +35,36 @@ configuration
       <out color="brown" stream="stdout"> .List </out>
       <nextLoc color="gray"> 0 </nextLoc>
       <br/>
+      <topLevelNamesMap> .Map </topLevelNamesMap>
       <classes color="Fuchsia">
-         <class multiplicity="*" color="Fuchsia">
+        <class multiplicity="*" color="Fuchsia">
 
-            //full class type, as ClassType
-            <classType color="Fuchsia"> .K </classType>
+          //sort ClassType. Contains the fully qualified class name.
+          <classType color="Fuchsia"> .K </classType>
 
-            //package, as PackageId
-            <package> .K </package>
+          <extends color="Fuchsia"> .K </extends>
+          <implements> .Set </implements>
+          <implTrans> .Set </implTrans>
+          <declarations color="purple"> .K </declarations>
+          <metaType> .K </metaType>
+          <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>
+          <methods color="purple"> .Map </methods>
+          <instanceInit> .K </instanceInit>
+          <staticEnv> .Map </staticEnv>
+          <staticInit> .K </staticInit>
 
-            //Simple class name, as Id
-            <classSimpleName> .K </classSimpleName>
-
-            <extends color="Fuchsia"> .K </extends>
-            <implements> .Set </implements>
-            <implTrans> .Set </implTrans>
-            <declarations color="purple"> .K </declarations>
-            <metaType> .K </metaType>
-            <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>
-            <methods color="purple"> .Map </methods>
-            <instanceInit> .K </instanceInit>
-            <staticEnv> .Map </staticEnv>
-            <staticInit> .K </staticInit>
-
-            //Static fields declared in this class, not inherited. Used by static initialization.
-            <staticInitLocations> .Set </staticInitLocations>
-            <staticInitDone> false </staticInitDone>
-         </class>
+          //Static fields declared in this class, not inherited. Used by static initialization.
+          <staticInitLocations> .Set </staticInitLocations>
+          <staticInitDone> false </staticInitDone>
+        </class>
       </classes>
       <mainClass> $MainClass:ListItem </mainClass>
       //current compilation unit package
       <cuPackage> .K </cuPackage>
       <cuClass> .K </cuClass>
-      <computationPhase> ProcessCompUnitsPhase </computationPhase>
+      <computationPhase> ProcessTopLevelNamesPhase </computationPhase>
+      //required in ProcessCompUnitsPhase
+      <programBackup> $PGM:K </programBackup>
 
       <dissolveEmptyK> true </dissolveEmptyK>
       <dissolveClasses> true </dissolveClasses>
@@ -75,7 +72,8 @@ configuration
 
 //@ \section{Identifiers}
 
-syntax ComputationPhase ::= "ProcessCompUnitsPhase"
+syntax ComputationPhase ::= "ProcessTopLevelNamesPhase"
+                          | "ProcessCompUnitsPhase"
                           | "ProcessClassesPhase"
                           | "ExecutionPhase"
 
@@ -222,11 +220,7 @@ syntax KResult ::= PackageId
 syntax K ::= "getPackage" "(" ClassType ")"
 rule [getPackage]:
     <k> getPackage(Class:ClassType) => Pack ...</k>
-    <class>
-      <classType> Class </classType>
-      <package> Pack:PackageId </package>
-      ...
-    </class>
+    <topLevelNamesMap>... Pack:PackageId |-> mapWrap(_ |-> Class _) ...</topLevelNamesMap>
 
 syntax K ::= "kEq" "(" K "," K ")" [seqstrict]
 rule kEq(KR1:KResult, KR2:KResult) => (KR1 ==K KR2)::bool
@@ -251,5 +245,12 @@ rule [restoreEnvAndObj]:
 
 //The content of an <envStack> ListItem() </envStack>
 syntax K ::= "(" ClassType "," BagItem ")"
+
+//A wrapper for maps. Allows the usage of multy-level maps.
+//Also used as part of mapUnion operation in java-process-classes
+syntax KResult ::= "mapWrap" "(" Map ")"
+
+syntax K ::= "objectClass"                              [function]
+rule objectClass => class String2Id("java.lang.Object") [structural, anywhere]
 
 endmodule

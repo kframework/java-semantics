@@ -94,7 +94,7 @@ rule [ExprNameQualifiedNull]:
       'ExprName(null::_ ,, X:Id)
       =>  'Throw('NewInstance(
             'None(.List{K}),,
-            'class_(String2Id("NullPointerException")),,
+            class String2Id("java.lang.NullPointerException"),,
             'ListWrap( null :: nullType ),,
             'None(.List{K})
           ))

@@ -29,6 +29,8 @@ syntax KResult ::=  "rtSystem"
 syntax RawVal ::= "rtSymbolicConsoleLine"
                 | "rtScanner"
 
+syntax RefType ::= "rtScannerType"
+
 rule [NameSystem]:
     'ExprName(X:Id) => rtSystem
 when
@@ -113,15 +115,19 @@ rule [NameSystemIn]:
 when
     Id2String(X) ==String "in"
 
+rule [rtScanner]:
+    'TypeName(X:Id) => rtScannerType
+when
+    Id2String(X) ==String "Scanner"
+        [structural]
+
 rule [NewInstanceScanner]:
     'NewInstance('None(.List{K}),,
-      class X:Id,,
+      rtScannerType,,
       'ListWrap(rtSystemIn),,
       'None(.List{K})
     )
-    => rtScanner :: class X
-when
-    Id2String(X) ==String "Scanner"
+    => rtScanner :: rtScannerType
 
 rule [ScannerNextInt]:
     methodNameImpl(rtScanner::_, X:Id, _) => rtScannerNextInt
@@ -177,24 +183,19 @@ syntax K ::= "fullyQualifiedClassName" "(" ClassType ")"
 
 rule [ClassNamePackage]:
     <k>
-      fullyQualifiedClassName(Class:ClassType)
-      => (PackStr +String "." +String Id2String(SimpleName)) :: rtString
+      fullyQualifiedClassName(class ClassId:Id)
+      => Id2String(ClassId) :: rtString
       ...
     </k>
-    <classType> Class </classType>
-    <package> packageId(PackStr:String) </package>
-    <classSimpleName> SimpleName:Id </classSimpleName>
-when
-    PackStr =/=String ""
+when substrString(Id2String(ClassId), 0, 1) =/=String "."
 
-rule [ClassNameClass]:
+rule [ClassNameDefaultPackage]:
     <k>
-      fullyQualifiedClassName(Class:ClassType) => Id2String(SimpleName) :: rtString
+      fullyQualifiedClassName(class ClassId:Id)
+      => substrString(Id2String(ClassId), 1, lengthString(Id2String(ClassId)) -Int 1) :: rtString
       ...
     </k>
-    <classType> Class </classType>
-    <package> packageId("") </package>
-    <classSimpleName> SimpleName:Id </classSimpleName>
+when substrString(Id2String(ClassId), 0, 1) ==String "."
 
 rule [NameHashCode]:
     methodNameImpl(KR:KResult, X:Id, _) => methodHashCode(KR)
