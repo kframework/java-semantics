@@ -52,13 +52,11 @@ Part 3. Overriding, polymorphism.
 
 10. Testing the explicit use of "this" to call a method.
 
-11. Calling a method through super qualifier.
+11. Return object. Test returning objects in methods and then invoking methods on them.
 
-12. Return object. Test returning objects in methods and then invoking methods on them.
+12. Method with c-like array arguments. Three such arguments.
 
-13. Method with c-like array arguments. Three such arguments.
-
-14. Polymorphism for methods with c-like array arguments.
+13. Polymorphism for methods with c-like array arguments.
   B < A. Both have methods f(int[]), g(int[]).
   Class A: f(int a[]), g(int[] a)
   Class B: f(int[] a), g(int a[])

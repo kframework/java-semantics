@@ -426,5 +426,3 @@ Implementation:
 Regression tests:
   4 tests out of 495 fail.
 
-Problem resurfaced:
-  - test the access mdoe of super.method() calls. It seems that we have a problem with it.

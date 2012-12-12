@@ -6,7 +6,7 @@ Polymorphism for methods with c-like array arguments.
   Test that polymorphism works for both.
 */
 
-public class method_14_c_like_arr_poly {
+public class method_13_c_like_arr_poly {
   public static void main(String[] args) {
     A a = new A();
     a.f(null);

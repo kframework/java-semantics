@@ -1,5 +1,5 @@
 /*
-  Calling a method through super qualifier.
+Mix of super.method and polymorphism, borrowed from tests for the language KOOL.
 */
 
 class c1 {
@@ -22,15 +22,9 @@ class c3 extends c2 {
   int m2() { return 33; }
 }
 
-class main {
-  main(String[] args) {
+public class super_m_11_hier_navigating_calls {
+  public static void main(String[] args) {
     System.out.println((new c3()).m3());
     System.out.println("Done!");
-  }
-}
-
-public class method_11_super {
-  public static void main(String[] args) {
-    new main(args);
   }
 }

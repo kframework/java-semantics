@@ -14,3 +14,6 @@
 
 6. When I run one single multi-file test, temp files are created directly in the semantics directory,
   not in .test
+
+7. Write one more script: jdktest.sh that executes only the generator,
+  and writes in test-results.xml the result returned by JDK java.

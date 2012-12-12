@@ -1,0 +1,88 @@
+Test plan for super.method call.
+
+01. Simple super call.
+  B < A
+  - A.f()
+  - B.test(), calls super.f()
+
+02. Super in the context of polymorphism.
+  A4 < A3 < A2 < A1.
+  - f13() - in A1 and A3
+  - f14() - in A1 and A4
+  - f23() - in A2 and A3
+  - f24() - in A2 and A4
+  - f12() - in A1, A2
+  - f123() - in A1, A2, A3
+  - f134() - in A1, A3, A4
+  - f1() - in A1.
+  - test3() - in A3, calls all methods through super.
+  Target object is of type A4.
+
+03. Super in the context of overloading, simple.
+  B < A
+  Methods:
+  - A.f(int)
+  - A.f(long)
+  - B.test() calls super.f(short)
+
+04. Super in the cotext of overloading and polymorphism.
+  B < A
+  - A.f(int)
+  - A.f(long)
+  - B.f(short)
+  - B.test() calls super.f(short)
+
+05. Super and access modes, same package.
+  p1.B < p1.A. Methods:
+  - private A.f(byte)
+  - package A.f(short)
+  - protected A.f(int)
+  - public A.f(long)
+  - B.test(), calls super.f(byte)
+
+06. Super and access modes, other package.
+  p2.B < p1.A. Methods:
+  - private A.f(byte)
+  - package A.f(short)
+  - protected A.f(int)
+  - public A.f(long)
+  - B.test(), calls super.f(byte)
+
+07. Super and access modes, other package,
+  methods in derived class make no difference.
+  p2.B < p1.A. Methods:
+  - private A.f(byte)
+  - package A.f(short)
+  - protected A.f(int)
+  - public A.f(long)
+  - protected B.f(short)
+  - B.test(), calls super.f(byte)
+
+08. Super and access mode, returning hierarchy.
+  p1.C < p2.B < p1.A
+  - private A.f(byte)
+  - package A.f(short)
+  - protected A.f(int)
+  - public A.f(long)
+  - C.test(), calls super.f(byte)
+
+09. Super and access mode, returning hierarchy with polymorphism.
+  p1.C < p2.B < p1.A
+  - private A.f(byte)
+  - package A.f(short)
+  - protected A.f(int)
+  - public A.f(long)
+  - package C.f(short)
+  - C.test(), calls super.f(byte)
+
+10. Super and access mode, returning hierarchy with double-overriding.
+  p1.C < p2.B < p1.A
+  - private A.f(byte)
+  - package A.f(short)
+  - protected A.f(int)
+  - public A.f(long)
+  - protected B.f(short)
+  - C.test(), calls super.f(byte)
+
+11. Mix of super.method and polymorphism, borrowed from tests for the language KOOL.
+
