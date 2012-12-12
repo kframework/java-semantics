@@ -1,4 +1,3 @@
-package test;
 /*
 ClassCastException types.
   - (String) (obj)(UserClass)

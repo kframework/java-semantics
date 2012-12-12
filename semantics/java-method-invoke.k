@@ -93,10 +93,11 @@ rule [MethodNameQualifiedNull]:
 // super.X(_)
 rule [SuperMethod]:
     <k>
-      'SuperMethod(_,, Name:Id)
-      => lookupMethodData(OL, BaseClass, Name, <envStack> EStack </envStack>, true)
+      'SuperMethod(_:K,, Name:Id)
+      => lookupMethodData(OL, BaseClass, Name, <envStack> EStack </envStack>, false)
       ...
     </k>
+    <isQualified> _ => false </isQualified>
     <crntClass> Class:ClassType </crntClass>
     <location> OL:Int </location>
     <envStack>... ListItem((Class, _)) EStack:List </envStack>
@@ -537,7 +538,7 @@ rule [SuperConstrInv]:
     <k>
       'SuperConstrInv(_,, 'ListWrap( Vals:List{K} ))
       => 'ExprStm('Invoke(
-                'SuperMethod( getConsName(BaseClass) ),,
+                'SuperMethod('None(.List{K}),, getConsName(BaseClass) ),,
                 'ListWrap(Vals)
           ))
       ...

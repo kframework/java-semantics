@@ -360,21 +360,15 @@ rule [storeConstructor]:
     <methods>
       Env:Map => Env[
         constrClosure(Class, 'ListWrap(Params), FirstLine, S:K) :: MethodType
-          / sig(getConsName(Name), getTypesFromParams(Params))
+          / sig(getConsName(Class), getTypesFromParams(Params))
       ]
     </methods>
 
-//@get internal constructor name from a class name
-syntax K ::= "getConsName" "(" Id ")"                               [function]
-           | "getConsName" "(" ClassType ")"
+//@get internal constructor name from a class
+syntax K ::= "getConsName" "(" ClassType ")"                               [function]
 
-rule getConsName(X:Id) => String2Id("$cons$" +String Id2String(X))  [structural, anywhere]
-
-rule <k> 'MethodName(_,, (getConsName(Class:ClassType) => getConsName(X))) ...</k>
-     <topLevelNamesMap>... _ |-> mapWrap(X:Id |-> Class _) ...</topLevelNamesMap>
-
-rule <k> 'SuperMethod(_,, (getConsName(Class:ClassType) => getConsName(X))) ...</k>
-     <topLevelNamesMap>... _ |-> mapWrap(X:Id |-> Class _) ...</topLevelNamesMap>
+rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(ClassId))
+        [structural, anywhere]
 
 //resolve field declaration type
 context 'FieldDec(_:K,, HOLE,, _)

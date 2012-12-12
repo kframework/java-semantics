@@ -17,3 +17,7 @@
 
 7. Write one more script: jdktest.sh that executes only the generator,
   and writes in test-results.xml the result returned by JDK java.
+
+8. jdk-run.sh don't delete the temporary directories if the test contains inner directories,
+  or even in any case when packages are used.
+

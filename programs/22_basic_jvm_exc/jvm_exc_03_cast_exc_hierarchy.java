@@ -1,4 +1,3 @@
-package test;
 /*
 ClassCastException.
   Hierarchy: Object -> A B; B -> C; C -> D

@@ -423,6 +423,4 @@ Implementation:
     Class access mode information is in a new cell:
   <classesToAccessModes> of type Map[ClassType -> AccessMode].
 
-Regression tests:
-  4 tests out of 495 fail.
 
