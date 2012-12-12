@@ -7,20 +7,6 @@ module JAVA-PROCESS-CLASSES
 //existing semantics for methods covers them too
 syntax KLabel ::= "'ThrowsDec" | "'Abstract" | "'NoMethodBody"
 
-syntax K ::= "getAccessMode" "(" K //'ListWrap(...) - the list of method attributes
-                             ")"
-
-rule getAccessMode('ListWrap('Public(_),,_))    => public     [anywhere]
-rule getAccessMode('ListWrap('Protected(_),,_)) => protected  [anywhere]
-rule getAccessMode('ListWrap('Private(_),,_))   => private    [anywhere]
-
-rule getAccessMode('ListWrap((KL:KLabel(_) => .List{K}),, _))
-when        (KL =/=KLabel 'Public)
-    andBool (KL =/=KLabel 'Protected)
-    andBool (KL =/=KLabel 'Private)                           [anywhere]
-
-rule getAccessMode('ListWrap(.List{K})) => package            [anywhere]
-
 syntax K ::= "getContextType" "(" K //'ListWrap(...) - the list of method attributes
                               ")"                           [function]
 
@@ -152,16 +138,6 @@ rule setUnion(S1:Set, SetItem(K:K) S2:Set) => setUnion(S1, S2)
 when K in S1
 
 rule setUnion(S1:Set, .Set) => setWrap(S1)
-
-//Subsection mapUnion, union of maps. Remove when +Map will be implemented.
-//In this operation, elements of the second map overwrite elements of the first map
-//if they collide. This is not really important for the only application of this function
-//in our definition.
-syntax K ::= "mapUnion" "(" Map "," Map ")"
-
-rule mapUnion(M1:Map, K1:K |-> K2:K M2:Map) => mapUnion(M1[K2/K1], M2)
-
-rule mapUnion(M1:Map, .Map) => mapWrap(M1)
 
 syntax K ::= "saveImplTrans" "(" K //setWrap(ISet) - transitive set of inherited interfaces
                              ")"  [strict]

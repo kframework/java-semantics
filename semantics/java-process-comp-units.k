@@ -1,9 +1,11 @@
 require "java-core.k"
 require "java-process-top-level-names.k"
+require "java-process-imports.k"
 
 module JAVA-PROCESS-COMP-UNITS
     imports JAVA-CORE
     imports JAVA-PROCESS-TOP-LEVEL-NAMES
+    imports JAVA-PROCESS-IMPORTS
 
 /*@ \subsection{Second pass - processing declarations} */
 
@@ -12,12 +14,16 @@ rule [StartProcessCompUnitsPhase]:
     <programBackup> Pgm:K => . </programBackup>
     <computationPhase> ProcessTopLevelNamesPhase => ProcessCompUnitsPhase </computationPhase>
 
+//Impdecs will be processed in the module JAVA-PROCESS-IMPORTS
 rule [CompilationUnit]:
     <k>
-      'CompilationUnit('Some('PackageDec(_,, 'PackageName( 'ListWrap(Ks:List{K}) ))),,_:K,,K:K)
-      => setCuPackage("", Ks) ~> K
+      'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),,
+          ImpDecs:K,, K:K
+      )
+      => compUnitImportsStart ~> ImpDecs ~> K
       ...
     </k>
+    <cuPackage> _ => Pack </cuPackage>
     <computationPhase> ProcessCompUnitsPhase </computationPhase>
 
 /*@ \subsection{Class declaration processing}*/
@@ -114,6 +120,7 @@ rule [classDecImpl]:
       ...
     </k>
     <cuPackage> Pack:PackageId </cuPackage>
+    <compUnitImports> Imports:Map </compUnitImports>
     <classes>
       ...
       ( . =>  <class>
@@ -127,6 +134,7 @@ rule [classDecImpl]:
                 <implements> TypeSet </implements>
                 <declarations> CBody </declarations>
                 <metaType> MetaT </metaType>
+                <imports> Imports </imports>
                 ...
               </class> )
       ...

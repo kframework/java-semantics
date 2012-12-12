@@ -12,7 +12,7 @@ Class access modes. Packages p1, p2. Classes:
 import p1.*;
 import p2.*;
 
-public class packages_61_class_access_modes {
+public class packages_71_class_access_modes {
 
   public static void main(String[] args) {
     test();

@@ -5,36 +5,39 @@ module JAVA-PROCESS-TOP-LEVEL-NAMES
 
 /*@ \subsection{First pass - processing top level names} */
 
+rule [PackageNameStart]:
+    'PackageName('ListWrap(Ks:List{K})) => 'PackageName("",, 'ListWrap(Ks:List{K}))
+
+rule [PackageNameFirstPack]:
+    'PackageName("",, 'ListWrap(X:Id,, Ks:List{K}))
+    => 'PackageName(Id2String(X),, 'ListWrap(Ks))
+
+rule [PackageNameNextPack]:
+    'PackageName(Str:String,, 'ListWrap(X:Id,, Ks:List{K}))
+    => 'PackageName(Str +String "." +String Id2String(X),, 'ListWrap(Ks))
+when Str =/=String ""
+
+rule [PackageNameEnd]:
+    'PackageName(Str:String,, 'ListWrap(.List{K})) => packageId(Str)
+
 rule [DefaultPackageDesugar]:
     'CompilationUnit(
       ( 'None(_) => 'Some('PackageDec(.K,, 'PackageName( 'ListWrap(.List{K}) ))) ),,
-      _,,_)
+      _
+    )
+
+//resolve the package name
+context 'CompilationUnit('Some('PackageDec(_:K,, HOLE)),, _)
 
 rule [CompilationUnit]:
     <k>
-      'CompilationUnit('Some('PackageDec(_,, 'PackageName( 'ListWrap(Ks:List{K}) ))),, _:K,,
+      'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _:K,,
           'ListWrap(Decs:List{K})
-      )
-      => setCuPackage("", Ks) ~> processTLNames(Decs)
+      ) => processTLNames(Decs)
       ...
     </k>
+    <cuPackage> _ => Pack </cuPackage>
     <computationPhase> ProcessTopLevelNamesPhase </computationPhase>
-
-//converts a package name from List{K} to String and saves it into <cuPackage> cell.
-syntax K ::= "setCuPackage" "("
-                              String ","  //package converted into String
-                              List{K}     //package in original kast format
-                            ")"
-// package ro.uaic looks in kast like:
-// 'PackageName('ListWrap('Id(# "ro"(.List{K})),,'Id(# "uaic"(.List{K}))))
-rule setCuPackage("", X:Id ,,Ks:List{K}) => setCuPackage(Id2String(X), Ks)
-
-rule setCuPackage(Str:String, X:Id,,Ks:List{K})
-     => setCuPackage(Str +String "." +String Id2String(X), Ks)
-when Str =/=String ""
-
-rule <k> setCuPackage(Str:String, .List{K}) => . ...</k>
-     <cuPackage> _ => packageId(Str) </cuPackage>
 
 /*@ \subsection{Class declaration}*/
 
@@ -55,7 +58,8 @@ when notBool PackId in keys(PackMap)
 //  - 'InterfaceDec('InterfaceDecHead(...))
 rule [processTLNames]:
     <k>
-      processTLNames((_:KLabel(_:KLabel(_:K,, SimpleClass:Id,, _),,_ ) => .List{K}) ,,_)
+      processTLNames(_:KLabel(_:KLabel(Modifiers:K,, SimpleClass:Id,, _),,_ ),, Ks:List{K})
+      => processTLNames(Ks)
       ...
     </k>
     <cuPackage> PackId:PackageId </cuPackage>
@@ -66,6 +70,9 @@ rule [processTLNames]:
       )
       ...
     </topLevelNamesMap>
+    <classesToAccessModes>
+      _ (. => getClassType(PackId,SimpleClass) |-> getAccessMode(Modifiers))
+    </classesToAccessModes>
 
 rule [processTLNamesDiscard]:
     processTLNames(.List{K}) => .K

@@ -7,12 +7,13 @@ module JAVA-STATEMENTS
 
 //@ \section{Initiation of execution}
 
+//For now main class may only be placed in the default package.
 rule [StartExecutionPhase]:
     <k> . =>
       //k-ast for new <MainClass>().main(new String[0]);
       'ExprStm(
         'Invoke(
-          'MethodName('TypeName(String2Id(MainClassS)),, String2Id("main")),,
+          'MethodName('TypeName(packageId(""),,String2Id(MainClassS)),, String2Id("main")),,
           'ListWrap('NewArray(
               rtString,,
               'ListWrap('Dim(0 :: int)),,

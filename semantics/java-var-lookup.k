@@ -13,8 +13,16 @@ module JAVA-VAR-LOOKUP
 
 //@ \subsection{Names}
 
+//performance optimization - the qualifier of an AmbName should be always resolved first,
+//no matter how are we going to interpret the AmbName,
+//so why not resolving it now?
+context 'AmbName(HOLE,, _:K)
+
+//this rule covers both unqualified and qualified AmbName
 rule [AmbName]:
-    'AmbName(Ks:List{K}) => 'ExprName(Ks) ?? 'TypeName(Ks)
+    'AmbName(Ks:List{K},, K:K)
+    => 'ExprName(Ks,,K) ?? 'TypeName(Ks,,K) ?? 'PackageName('ListWrap(Ks,,K))
+when isKResult(Ks)
         [structural]
 
 rule 'Field(Ks:List{K}) => 'ExprName(Ks)   [structural, anywhere]
@@ -86,8 +94,11 @@ rule [ExprNameInterfaceRefQualified]:
     <metaType> interfaceMetaT </metaType>
         [structural]
 
+rule [ExprNamePackageQualified]:
+    'ExprName( _:PackageId,, X:Id ) => noValue  [structural]
+
 rule [ExprNameNoValue]:
-    'ExprName( noValue,, X:Id ) => noValue    [structural]
+    'ExprName( noValue,, X:Id ) => noValue      [structural]
 
 rule [ExprNameQualifiedNull]:
     <k>

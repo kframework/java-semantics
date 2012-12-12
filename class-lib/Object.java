@@ -1,6 +1,6 @@
 package java.lang;
 
-class Object {
+public class Object {
     public boolean equals(Object obj) {
         return (this == obj);
     }

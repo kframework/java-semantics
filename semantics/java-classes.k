@@ -18,8 +18,7 @@ module JAVA-CLASSES
     imports JAVA-VAR-LOOKUP
 
 //@ \subsection{Unused Labels}
-syntax KLabel ::= "'TypeImportOnDemandDec" | "'TypeImportDec"
-                | "'Native"
+syntax KLabel ::= "'Native"
 
 /*@ \section{Object and method closures}
 The only change to untyped KOOL's values is that closures are now typed
@@ -32,9 +31,32 @@ rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK [structural]
 rule 'InterfaceType(TypeK:K,, _) => TypeK        [structural]
 rule 'ClassType(TypeK:K,, _) => TypeK            [structural]
 
-rule [TypeName]:
+rule [TypeNameInProcessCompUnitsPhase]:
     <k> 'TypeName(X:Id) => Class ...</k>
-    <topLevelNamesMap>... _ |-> mapWrap(X |-> Class:ClassType _) ...</topLevelNamesMap>
+    <computationPhase> ProcessCompUnitsPhase </computationPhase>
+    <compUnitImports>... X |-> Class:ClassType ...</compUnitImports>
+
+rule [TypeNameInProcessClassesPhase]:
+    <k> 'TypeName(X:Id) => Class ...</k>
+    <computationPhase> ProcessClassesPhase </computationPhase>
+    <cuClass> CuClass:ClassType </cuClass>
+    <classType> CuClass </classType>
+    <imports>... X |-> Class:ClassType ...</imports>
+
+rule [TypeNameInExecutionPhase]:
+    <k> 'TypeName(X:Id) => Class ...</k>
+    <computationPhase> ExecutionPhase </computationPhase>
+    <crntClass> CrntClass:ClassType </crntClass>
+    <classType> CrntClass </classType>
+    <imports>... X |-> Class:ClassType ...</imports>
+
+rule [TypeNameInExecutionPhaseFail]:
+    <k> 'TypeName(X:Id) => noValue ...</k>
+    <computationPhase> ExecutionPhase </computationPhase>
+    <crntClass> CrntClass:ClassType </crntClass>
+    <classType> CrntClass </classType>
+    <imports> Imp:Map </imports>
+when notBool X in keys(Imp)
 
 //resolving fully qualified type names
 // A name pack.p2.A is represented as:

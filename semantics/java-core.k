@@ -36,6 +36,7 @@ configuration
       <nextLoc color="gray"> 0 </nextLoc>
       <br/>
       <topLevelNamesMap> .Map </topLevelNamesMap>
+      <classesToAccessModes> .Map </classesToAccessModes>
       <classes color="Fuchsia">
         <class multiplicity="*" color="Fuchsia">
 
@@ -56,12 +57,14 @@ configuration
           //Static fields declared in this class, not inherited. Used by static initialization.
           <staticInitLocations> .Set </staticInitLocations>
           <staticInitDone> false </staticInitDone>
+          <imports> .Map </imports>
         </class>
       </classes>
       <mainClass> $MainClass:ListItem </mainClass>
       //current compilation unit package
       <cuPackage> .K </cuPackage>
       <cuClass> .K </cuClass>
+      <compUnitImports> .Map </compUnitImports>
       <computationPhase> ProcessTopLevelNamesPhase </computationPhase>
       //required in ProcessCompUnitsPhase
       <programBackup> $PGM:K </programBackup>
@@ -227,7 +230,7 @@ rule kEq(KR1:KResult, KR2:KResult) => (KR1 ==K KR2)::bool
 
 syntax KResult ::= "noValue"
 
-syntax K ::= K "??" K [strict(1)]
+syntax K ::= K "??" K [strict(1), right]
 
 rule [chainOfResponsibility1]:
     KR:KResult ?? _ => KR
@@ -252,5 +255,29 @@ syntax KResult ::= "mapWrap" "(" Map ")"
 
 syntax K ::= "objectClass"                              [function]
 rule objectClass => class String2Id("java.lang.Object") [structural, anywhere]
+
+//Subsection mapUnion, union of maps. Remove when +Map will be implemented.
+//In this operation, elements of the second map overwrite elements of the first map
+//if they collide. This is not really important for the only application of this function
+//in our definition.
+syntax K ::= "mapUnion" "(" Map "," Map ")"
+
+rule mapUnion(M1:Map, K1:K |-> K2:K M2:Map) => mapUnion(M1[K2/K1], M2)
+
+rule mapUnion(M1:Map, .Map) => mapWrap(M1)
+
+syntax K ::= "getAccessMode" "(" K //'ListWrap(...) - the list of class/method attributes
+                             ")"                              [function]
+
+rule getAccessMode('ListWrap('Public(_),,_))    => public     [structural, anywhere]
+rule getAccessMode('ListWrap('Protected(_),,_)) => protected  [structural, anywhere]
+rule getAccessMode('ListWrap('Private(_),,_))   => private    [structural, anywhere]
+
+rule getAccessMode('ListWrap((KL:KLabel(_) => .List{K}),, _))
+when        (KL =/=KLabel 'Public)
+    andBool (KL =/=KLabel 'Protected)
+    andBool (KL =/=KLabel 'Private)                           [structural, anywhere]
+
+rule getAccessMode('ListWrap(.List{K})) => package            [structural, anywhere]
 
 endmodule

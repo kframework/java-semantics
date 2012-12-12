@@ -373,39 +373,58 @@ fully qualified class names. More precisely:
   <classSimpleName> - simple class name, Id
 
 Implementation:
-  1.ok. Save class type, package and class simple name during process-comp-units.
-  2.ok. (temporary) Change the whole definition so that types are resolved to their simple names,
-    referrign to the cell <classSimpleName>.
-  3.ok. Change again the whole definition. Now instead of referring an Id inisde <classSimpleName>,
-    refer to ClassType inside <classType>.
-    In order to make things work for now, <classType> cell will contain simple class references,
-    like class Exception. This refactoring will assure that the content of <classType>
-      is of type classType, not Id.
-  4.ok. Change the rule [TypeName] to be non-anywhere, and to require heating.
-    Change all the locations in the definition to perform proper heating of 'TypeName terms.
 
-  5.ok. Mock implementation of packages, v1: all type names are resolved into simple names.
-    Fully qualified names are also transformed into simple names, by ignoring their qualifier.
+1.ok. Save class type, package and class simple name during process-comp-units.
+2.ok. (temporary) Change the whole definition so that types are resolved to their simple names,
+  referrign to the cell <classSimpleName>.
+3.ok. Change again the whole definition. Now instead of referring an Id inisde <classSimpleName>,
+  refer to ClassType inside <classType>.
+  In order to make things work for now, <classType> cell will contain simple class references,
+  like class Exception. This refactoring will assure that the content of <classType>
+    is of type classType, not Id.
+4.ok. Change the rule [TypeName] to be non-anywhere, and to require heating.
+  Change all the locations in the definition to perform proper heating of 'TypeName terms.
 
-  6.ok. Correct representation of classes as fully qualified names.
-    The first fully qualified name that match the simple name in <classes> cell is used.
-    Imports are ignored. Fully qualified names in the code are correctly resolved.
+5.ok. Mock implementation of packages, v1: all type names are resolved into simple names.
+  Fully qualified names are also transformed into simple names, by ignoring their qualifier.
 
-      For this a new cell was added to the configuration : <topLevelNamesMap>
-    The cell is of type:
-    Map[packageId ->Map[SimpleClassName -> ClassType]].
-      This cell is used to resolve simple names into fully qualified names.
-    It is populated at the very first step of program execution
-    - process-top-level-names, before process-comp-units.
-    Both preprocessing steps take as arguments the whole program as kast.
-      As a result all tests related to fully qualified class names pass.
+6.ok. Correct representation of classes as fully qualified names.
+  The first fully qualified name that match the simple name in <classes> cell is used.
+  Imports are ignored. Fully qualified names in the code are correctly resolved.
+
+    For this a new cell was added to the configuration : <topLevelNamesMap>
+  The cell is of type:
+  Map[packageId ->Map[SimpleClassName -> ClassType]].
+    This cell is used to resolve simple names into fully qualified names.
+  It is populated at the very first step of program execution
+  - process-top-level-names, before process-comp-units.
+  Both preprocessing steps take as arguments the whole program as kast.
+    As a result all tests related to fully qualified class names pass.
 
     A curious problem arose with this implementation:
-      If a base class and a derived class have the same name, base constructor will never be called.
-      Instead, the derived constructor will be called, causing an infinite loop.
-      The solution is to call the base constructor using 'SuperMethod(...) term
-      instead of 'Method(MethodName(...)).
+  If a base class and a derived class have the same name, base constructor will never be called.
+  Instead, the derived constructor will be called, causing an infinite loop.
+  The solution is to call the base constructor using 'SuperMethod(...) term
+  instead of 'Method(MethodName(...)).
 
+7.ok. Import declarations.
+    For this, two more cells are added to the configuration.
+  First one is <compUnitImports> - a Map[SimpleName->FullName] of all classes accessible
+  by simple name in a particular CU. The cell is computed during parsing of import
+  declarations, in process-comp-units phase. The rules for computing <compUnitImports>
+  are separated into a new file - java-process-imports.k.
+    Second cell is <imports> inside <class>. It contains
+  a copy of <compUnitImports> specific for the cmpilation unit of each particular class.
 
+8.ok Class access modes.
+    Now import on demand declarations should import public classes.
+  Since import declarations are resolved before class declarations,
+  class access mode is processed in the very first phase - ProcessTopLevelNamesPhase.
+    Class access mode information is in a new cell:
+  <classesToAccessModes> of type Map[ClassType -> AccessMode].
 
+Regression tests:
+  4 tests out of 495 fail.
 
+Problem resurfaced:
+  - test the access mdoe of super.method() calls. It seems that we have a problem with it.

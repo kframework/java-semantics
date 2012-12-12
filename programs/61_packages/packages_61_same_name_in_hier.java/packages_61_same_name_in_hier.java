@@ -6,7 +6,7 @@ Class name collision in hierarchy.
   Also instantiate p1.B, p2.B.
 */
 
-public class packages_59_same_name_in_hier {
+public class packages_61_same_name_in_hier {
 
   public static void main(String[] args) {
     Object oa1 = new p1.A();

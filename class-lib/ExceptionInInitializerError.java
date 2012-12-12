@@ -1,6 +1,6 @@
 package java.lang;
 
-class ExceptionInInitializerError extends RuntimeException {
+public class ExceptionInInitializerError extends RuntimeException {
 
     public ExceptionInInitializerError(String message) {
         super(message);

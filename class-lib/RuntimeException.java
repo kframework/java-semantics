@@ -1,6 +1,6 @@
 package java.lang;
 
-class RuntimeException {
+public class RuntimeException {
     private String detailMessage;
     private RuntimeException cause;
 
