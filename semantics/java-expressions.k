@@ -36,8 +36,8 @@ syntax KLabel ::=
                 | /* --  */ "'PreDecr"
                 | /* !   */ "'Not"         [strict]
                 | /* ~   */ "'Complement"  [strict]
-                | /* +   */ "'Plus"        // strictness already specified
-                | /* -   */ "'Minus"       // strictness already specified
+                  /* +   */ //"'Plus"   - defined earlier
+                  /* -   */ //"'Minus"  - defined earlier
 
                 //Postfix operators
                 | /* ++  */ "'PostIncr"
