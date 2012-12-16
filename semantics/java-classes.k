@@ -261,4 +261,36 @@ rule [CastRef]:
       ...
     </k>
 
+//\subsection{Class literal}
+
+context 'Lit('Class(HOLE))
+
+rule [ClassLiteralInstantiate]:
+    <k>
+        (. => saveClassLiteral(T, 'NewInstance(
+                'None(.List{K}),,
+                class String2Id("java.lang.Class"),,
+                'ListWrap(toString(T)),,
+                'None(.List{K})
+              ))
+        )
+        ~> 'Lit('Class(T:Type))
+      ...
+    </k>
+    <classLiteralsMap> CLMap:Map </classLiteralsMap>
+when notBool T in keys(CLMap)
+
+// wraps a newly created java.lang.Class object
+syntax K ::= "saveClassLiteral" "(" Type  // The type for this class literal is being instantiated
+                                "," K     // The class literal instantiation expression
+                                ")"         [strict(2)]
+
+rule [saveClassLiteral]:
+    <k> saveClassLiteral(T:Type, TV:TypedVal) => . ...</k>
+    <classLiteralsMap> CLMap:Map => CLMap[TV/T] </classLiteralsMap>
+
+rule [ClassLiteral]:
+    <k> 'Lit('Class(T:Type)) => TV ...</k>
+    <classLiteralsMap>... T |-> TV:TypedVal ...</classLiteralsMap>
+
 endmodule

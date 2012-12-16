@@ -65,6 +65,10 @@ configuration
       <cuPackage> .K </cuPackage>
       <cuClass> .K </cuClass>
       <compUnitImports> .Map </compUnitImports>
+
+      //A map from types to objectClosure() terms that represent their T.class value
+      <classLiteralsMap> .Map </classLiteralsMap>
+
       <computationPhase> ProcessTopLevelNamesPhase </computationPhase>
       //required in ProcessCompUnitsPhase
       <programBackup> $PGM:K </programBackup>
