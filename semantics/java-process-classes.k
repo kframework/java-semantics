@@ -210,11 +210,11 @@ rule [inherit]:
     </class>
 
 //returns the access mode of a method closure given as argument
-syntax K ::= "getMethodAccessMode" "(" TypedVal ")" [function, strict(1)]
+syntax K ::= "getMethodAccessMode" "(" TypedVal ")"   [function]
 rule getMethodAccessMode( _ :: methodType(Acc:AccessMode, _ , _ ) ) => Acc [anywhere]
 
 //returns the context type of a method closure given as argument
-syntax K ::= "getMethodContextType" "(" TypedVal ")" [function, strict(1)]
+syntax K ::= "getMethodContextType" "(" TypedVal ")"  [function]
 rule getMethodContextType( methodClosure(_, _, CT:ContextType, _) :: _ ) => CT [anywhere]
 rule getMethodContextType( constrClosure(_,_,_,_) :: _ ) => instanceCT [anywhere]
 

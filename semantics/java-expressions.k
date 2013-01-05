@@ -68,9 +68,12 @@ rule /* I1 >= I2 */ 'GtEq(I1:Int :: _,, I2:Int :: _) => (I1 >=Int I2) :: bool
 
 //normalization of first argument of bit shift operator
 rule KL:KLabel(I1:Int :: NT1:NumericType,, I2:Int :: NT2:NumericType) => KL(I1 :: normalizeType(NT1),, I2 :: NT2)
-    when    (KL ==KLabel 'LeftShift)
-     orBool (KL ==KLabel 'RightShift)
-     orBool (KL ==KLabel 'URightShift)
+when (NT1 =/=K int) andBool (NT1 =/=K long)
+     andBool (
+               (KL ==KLabel 'LeftShift)
+        orBool (KL ==KLabel 'RightShift)
+        orBool (KL ==KLabel 'URightShift)
+     )
 
 rule /* I1 <<  I2 */ 'LeftShift(I1:Int :: ILT:IntOrLongType,, I2:Int :: _)
     => normalize( (I1 <<Int (I2 &Int (bitCount(ILT) -Int 1))) :: ILT ) //JLS 15.19
