@@ -1,0 +1,12 @@
+    Test plan for static inner classes
+
+Part 1. Instance member visibility/access modes from outer class to inner class.
+Part 2. Instance member visibility/access modes from inner class to outer class.
+Part 3. Static member visibility from outer class to inner class.
+Part 4. Static member visibility from inner class to outer class.
+Part 5. Inner class type resolution - various expressions.
+Part 6. Inner class declaration access modes.
+
+Note: This test suite doesn't cover any shadowing/obscuring cases.
+  Those will be covered in the test suite for Names.
+
