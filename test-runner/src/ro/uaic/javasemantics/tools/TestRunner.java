@@ -36,7 +36,7 @@ public class TestRunner {
 
     try {
       boolean createDir = args.getTargetFileDirs().size() > 1 ||
-          new File(args.getTargetFileDirs().get(0)).isFile();
+          isTest(new File(args.getTargetFileDirs().get(0)));
       for (String testProg : args.getTargetFileDirs()) {
         gatherTasks(runDir, new File(testProg), createDir, results, executor);
       }
@@ -102,26 +102,26 @@ public class TestRunner {
     File targetRunDir;
     if (createDir) {
       String targetDirName =
-          target.isFile() ? "." + getNameWithoutExt(target.getName()) :
+          isTest(target) ? "." + getNameWithoutExt(target.getName()) :
               target.getName();
       targetRunDir = new File(runParent, targetDirName);
     } else {
       targetRunDir = runParent;
     }
-    if (target.isFile()) {
+    if (isTest(target)) {
       results.add(executor.submit(new Task(targetRunDir, target)));
     } else {
-      if (args.getTaskExt() != null &&
-          target.getName().endsWith("." + args.getTaskExt())) {
-        results.add(executor.submit(new Task(targetRunDir, target)));
-      } else {
-        File[] children = target.listFiles(new TestFileFilter());
-        Arrays.sort(children);
-        for (File child : children) {
-          gatherTasks(targetRunDir, child, true, results, executor);
-        }
+      File[] children = target.listFiles(new TestFileFilter());
+      Arrays.sort(children);
+      for (File child : children) {
+        gatherTasks(targetRunDir, child, true, results, executor);
       }
     }
+  }
+
+  private boolean isTest(File target) {
+    return target.isFile() || (args.getTaskExt() != null &&
+        target.getName().endsWith("." + args.getTaskExt()));
   }
 
   private static String getExtension(String name) {
@@ -133,36 +133,6 @@ public class TestRunner {
     boolean lastNameHaveExt = getLastName(name).lastIndexOf('.') != -1;
     return lastNameHaveExt ? name.substring(0, name.lastIndexOf('.')) :
         name;
-  }
-
-  private boolean expectedOutExistsFromStart(File runDir, File testFile) {
-    if (getDefaultOut(testFile).exists()) {
-      return true;
-    }
-    if (args.isSmartGen()) {
-      File outFile = getCachedExpectedOut(runDir, testFile);
-      File inFile = getTestIn(testFile);
-      boolean outExists = outFile.exists();
-      if (outExists) {
-        try {
-          long testTime =
-              Files.getLastModifiedTime(testFile.toPath()).toMillis();
-          long outTime = outExists ?
-              Files.getLastModifiedTime(outFile.toPath()).toMillis() : -1;
-
-          boolean inExists = inFile.exists();
-          long inTime = inExists ? Files
-              .getLastModifiedTime(inFile.toPath()).toMillis() : -1;
-          return testTime < outTime && (!inExists || inTime < outTime);
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
   }
 
   /**
@@ -340,6 +310,36 @@ public class TestRunner {
 
     private long getFutureTimeout() {
       return args.getTimeout() > 0 ? args.getTimeout() : Long.MAX_VALUE;
+    }
+
+    private boolean expectedOutExistsFromStart(File runDir, File testFile) {
+      if (getDefaultOut(testFile).exists()) {
+        return true;
+      }
+      if (args.isSmartGen() && target.isFile()) {
+        File outFile = getCachedExpectedOut(runDir, testFile);
+        File inFile = getTestIn(testFile);
+        boolean outExists = outFile.exists();
+        if (outExists) {
+          try {
+            long testTime =
+                Files.getLastModifiedTime(testFile.toPath()).toMillis();
+            long outTime = outExists ?
+                Files.getLastModifiedTime(outFile.toPath()).toMillis() : -1;
+
+            boolean inExists = inFile.exists();
+            long inTime = inExists ? Files
+                .getLastModifiedTime(inFile.toPath()).toMillis() : -1;
+            return testTime < outTime && (!inExists || inTime < outTime);
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
     }
   }
 
