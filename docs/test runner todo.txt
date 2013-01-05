@@ -1,9 +1,2 @@
-1. Write one more script: jdktest.sh that executes only the generator,
-  and writes in test-results.xml the result returned by JDK java.
-  Useful to verify the tests themselves.
-
-2. jdk-run.sh don't delete the temporary directories if the test contains inner directories,
-  or even in any case when packages are used.
-
-3. Add a timeout of 30s to kjrun.sh, and also show execution time.
+1. Add a timeout of 30s to kjrun.sh, and also show execution time.
 
