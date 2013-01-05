@@ -1,23 +1,14 @@
-1. Bug. Repeated evaluation of programs with compile-time errors without -clean attribute gives error
-  first time, and ok the second one, after we correct the compile-time error.
-  This happens when there is an error in the semantics too and k-java don't output anything.
-
-2. Implement one more status message after running a test: timed out.
-
 3. When multifile tests are run, changes in the test are not detected.
 
 4. Some unexpected files are created in the semantics dir when we run kjtest.sh with argument
   one multi-file test.
 
-5. Flush test-results.xml file after every written result. This way when runner is stopped
-  in the middle of execution, xml file will still have the results acquired so far.
-
-6. When I run one single multi-file test, temp files are created directly in the semantics directory,
+5. When I run one single multi-file test, temp files are created directly in the semantics directory,
   not in .test
 
-7. Write one more script: jdktest.sh that executes only the generator,
+6. Write one more script: jdktest.sh that executes only the generator,
   and writes in test-results.xml the result returned by JDK java.
 
-8. jdk-run.sh don't delete the temporary directories if the test contains inner directories,
+7. jdk-run.sh don't delete the temporary directories if the test contains inner directories,
   or even in any case when packages are used.
 

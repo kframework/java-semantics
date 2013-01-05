@@ -279,10 +279,13 @@ public class TestRunner {
           }
           if (genErr.length() != 0) {
             result.setGenerr(genErr);
+            if (testExpectedOut.equals(getCachedExpectedOut(runDir, testFile))) {
+              delete(testExpectedOut);
+            }
           }
         }
 
-        if (runner != null) {
+        if (result.getGenerr() == null && runner != null) {
           File testActualOut = getTestActualOut(runDir, testFile);
           File testErr = getTestErr(runDir, testFile);
           Future<Integer> future = processExecutor.submit(

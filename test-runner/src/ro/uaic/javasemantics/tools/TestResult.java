@@ -96,4 +96,28 @@ public class TestResult {
       throw new RuntimeException(e);
     }
   }
+
+  public String getHighLevelStatus() {
+    if (containsError()) {
+      return "error";
+    } else if (isSuccess()) {
+      return "ok";
+    } else {
+      return "failed";
+    }
+  }
+
+  public String getStatus() {
+    if (containsError()) {
+      if ("Test generator timed out".equals(getErrorMesage())) {
+        return "generator timeout";
+      } else if ("Test timed out".equals(getErrorMesage())) {
+        return "timeout";
+      } else return "error";
+    } else if (isSuccess()) {
+      return "ok";
+    } else {
+      return "failed";
+    }
+  }
 }
