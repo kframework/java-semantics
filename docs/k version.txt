@@ -24,5 +24,6 @@ Version 9108, the last version before mauve was completely eliminated:
   Compilation - ok in 24s, all tests pass.
 
 Version 9129: Contains a bug related to isKResult. Waiting it to be fixed.
+Version 9136: Bug with isKResult is fixed, but another one with cooling of TypedVal awaits to be fixed.
 
 
