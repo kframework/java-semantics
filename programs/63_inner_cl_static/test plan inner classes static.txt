@@ -7,6 +7,7 @@ Part 4. Inner class declaration access modes.
 Part 5. Inner class type resolution - various inner class identification expressions.
 Part 6. Inner class type resolution - contexts of inner class references.
 Part 7. Three-level class nesting and other.
+Part 8. Inner and outer interfaces.
 
 Note: This test suite doesn't cover any shadowing/obscuring cases.
   Those will be covered in the test suite for Names.
@@ -28,9 +29,9 @@ Note: This test suite doesn't cover any shadowing/obscuring cases.
   - package g()
   - protected h()
   - public k()
-  Instantiate A.B from A and access all members.
+  Instantiate A.B from A and access all the members.
 
-104. Inner class access modes. Classes p1.A, p1.A.B, p1.A.C. p1.A.B members:
+104. Inner class access modes. Classes p1.A, p1.A.B, p1.A.C, p1.Test, Test2. p1.A.B members:
     - private f(byte)
     - package f(short)
     - protected f(int)
@@ -43,26 +44,27 @@ Note: This test suite doesn't cover any shadowing/obscuring cases.
     - <default>.Test2
 
 105. Inner class as derived class.
-  classes A, B, A.C < B.
+  classes A, B, A.Inner < B.
   B members:
     - String a
     - String f()
     - String g()
-  A.C members:
+  A.Inner members:
     - String a
     - String f()
 
-  print a, f(), g() on targets (A.C)A.C and (A)A.C.
+  print a, f(), g() on targets (A.Inner)A.Inner and (B)A.Inner.
 
 106. Inner class implements interface.
   class A, interface I1, class A.C
   I1:
+    - String a;
     - String f();
   A.C:
     - String f()
   Print ((I1)A.C).f().
 
-201. Inner class have reference to outer class.
+201. Inner class have a reference to the outer class.
   A, A.B. Members:
   - A: String id
   - A.B: A parent,
@@ -82,17 +84,18 @@ Note: This test suite doesn't cover any shadowing/obscuring cases.
     - public k()
   Call all from A.B.
 
-203. Inner class to outer class access modes.
-  Classes p1.A < p1.B < p2.C, p1.D, p1.A.E
-  Classes p1.A, p1.B, p2.C, p1.D have overloaded methods f(), g(), h() and k()
-  respectively, with diff access modes. Call all with argument byte from p1.A.E.
-
 301. Static member access from inner class to outer class by simple name.
-  A, A.B.
+  B < A, B.Inner.
   Members:
     - static A.a,
-    - static A.f()
-    Call them as A.a, A.f(), a, f() from A.B.
+    - static B.b,
+    - static B.f()
+  Call them as A.a, B.b, B.f(), a, b, f() from B.Inner.
+
+302. Inner class to outer class access modes.
+  Classes p1.P1A < p1.P1B < p2.P2C, p1.P1D, p1.P1A.Inner
+  Classes p1.P1A, p1.P1B, p2.P2C, p1.P1D have static overloaded methods f(), g(), h() and k()
+  respectively, with diff access modes. Call all with argument byte from p1.P1A.Inner.
 
 401. Inner class declaration access modes.
   Class A. Class A inner classes:
@@ -101,10 +104,11 @@ Note: This test suite doesn't cover any shadowing/obscuring cases.
     - protected A.Prot
     - public A.Pub
     - public A.InnerTest
-  Tests. Instantiate the following classes.
+  Tests. Print a static field from the follwing classes.
     - from main:
       - A.Pack
       - A.Prot
+      - A.Pub
     - from A:
       - A.Pri
       - A.Pack
@@ -117,12 +121,12 @@ Note: This test suite doesn't cover any shadowing/obscuring cases.
       - A.Pub
 
 501. Inner class qualifiers:
-  Classes p1.A, p1.A.B,
-    - p1.A.B.toString().
-  Instantiate A.B from A as:
-    - new p1.A.B()
-    - new A.B()
-    - new B().
+  Classes p1.A, p1.A.Inner,
+    - p1.A.Inner.toString().
+  Instantiate A.Inner from A as:
+    - new p1.A.Inner()
+    - new A.Inner()
+    - new Inner().
 
 502. Inner class qualifiers disambiguation.
   Classes p1.A, p1.B, p2.B, p1.A.C, p1.B.C, p2.B.C
@@ -133,10 +137,10 @@ Note: This test suite doesn't cover any shadowing/obscuring cases.
     - new p2.B.C()
 
 503. Inner class qualifiers disambiguation with imports.
-  classes: C, p1.B, p1.B.C, p2.B, p2.D.C
-  from main import p1.*, p2.D.
+  classes: C, p1.B, p1.B.C, p2.B, p2.B.C
+  from main import p2.*
   Instantiate:
-    - C, B.C, D.C.
+    - C, B.C, p1.B.C.
 
 504. Inner class disambiguation with outer class access modes.
   classes:
@@ -151,19 +155,25 @@ Note: This test suite doesn't cover any shadowing/obscuring cases.
 Places where class names are encountered:
 
 601. Inner classes as types of variables.
-  - class instantiation
-  - local var declaration
-  - field declaration
-  - static field declaration
-  - parameter declaration
-  - C_style array declaration
+  Classes p1.A, p1.A.Inner,
+    - p1.A.Inner.toString().
+  Refer p1.A.Inner from p1.A, as:
+    - p1.A.Inner,
+    - A.Inner,
+    - Inner
+  from:
+    - local var declaration
+    - field declaration
+    - static field declaration
+    - parameter declaration
+    - C_style array declaration
 
 602. Inner classes as part of operators.
   - cast operator
   - instanceof operator
   - .class operator
 
-603. Inner classes as qualifiers for static members.
+603. Inner classes as qualifiers for static members access.
   - qualifier of static field read
   - qualifier of static field write
   - qualifier of static method call
@@ -173,6 +183,11 @@ Places where class names are encountered:
   - class extends clause
   - class implements clause
   - interface extends clause
+  All cases will be tested in the following configurations:
+    - three expression typed for type reference: folly qualified, partially qualified and
+      unqualified (where applicable)
+    - two possible contexts: top-level and nested
+    - modifier static is always listed.
 
 701. Three-level class nesting.
   Classes:
@@ -208,11 +223,46 @@ Places where class names are encountered:
       - Mid
       - Test
 
-702. Inheritance of inner class declarations.
+702. Members in three-level class nesting.
+  Classes:
+    - A
+    - A.Mid
+    - A.Mid.Inner
+  Members:
+    - A.a
+    - A.Mid.b
+    - A.Mid.Inner.c
+  Access a,b,c from Inner
+
+703. Overloading with three-level class nesting.
+  Classes:
+    - A
+    - A.Mid
+    - A.Mid.Inner
+  Members:
+    - A.f(short)
+    - Mid.f(int)
+    - Inner.f(long)
+  Call f(long), f(int), f(byte) from Inner.
+
+704. Overloading with nesting/inheritance mix.
+  Classes:
+    - SuperA
+    - A < SuperA
+    - SuperInner
+    - A.Inner < SuperInner
+  Members:
+    - SuperA.f(byte)
+    - A.f(short)
+    - SuperInner.f(int)
+    - Inner.f(long)
+  Call f(long), f(int), f(short), f(byte) from Inner.
+
+705. Inheritance of inner class declarations.
   class A, A.Inner, B < A.
   Instantiate Inner() from B.
 
-703. Inner class derived from its outer class.
+706. Inner class derived from its outer class.
   Class A, A.Inner < A. Members:
   - A.x,
   - A.f() reads x
@@ -220,10 +270,61 @@ Places where class names are encountered:
   - Inner.f() reads x.
   Print Inner.f(), (A)Inner.f()
 
-704. Outer class derived from its inner class.
+707. Outer class derived from its inner class.
   Class A < A.Inner, A.Inner.
   - A.x,
   - A.f() reads x
   - Inner.x
   - Inner.f() reads x.
   Print A.f(), (A.Inner)A.f()
+
+708. Inner classes hiding.
+  Classes A, A.Inner, B < A, C < A, C.Inner.
+  Access Inner static field from A, B, C.
+
+709. Inner classes name collision with other language sorts.
+  Class A. Members:
+    - field x
+    - method x()
+    - inner type x.
+  Distinguish among them by:
+    - writing x
+    - calling x()
+    - instantiating x a = new x();
+
+801. Inner interface.
+  Class A, interface A.II1, class A.Inner < A.II1.
+  A.Inner implements an interface method and refers to a static field from II1.
+  Tested from main.
+
+802. Outer interface. Interface I1, class I1.InnerC, interface I1.InnerI.
+  Both access a static field from A by simple name.
+
+803. Inner interface implements an outer interface.
+  interffaces I1, I1.IInner < I1, C < I1.Inner
+    - I1.f()
+    - I1.Inner.g()
+  Call both on (i1.Inner)C from main.
+
+804. Outer class and outer interface implement an inner interface.
+  Class C, interface C.IMiddle, C.IMiddle.IInner.
+  C < C.IMiddle < C.IMiddle.IInner
+  Members:
+    - IInner.f()
+    - C.f()
+  Call (IInner)C.f()
+
+805. Inner interfaces are always static.
+  Types C, C.IInner, Impl < C.IInner.
+  IInner is declared without static modifier.
+  Members:
+    - IInner.f()
+    - Impl.f()
+  Call Impl.f() from main.
+
+806. Member types of an interface are static.
+  Types I1, I1.Inner. Inner is declared without static modifier.
+  Members:
+    Inner.f()
+  Instantiate Inner and call f() from main.
+
