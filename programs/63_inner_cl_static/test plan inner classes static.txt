@@ -260,27 +260,28 @@ Places where class names are encountered:
 
 705. Inheritance of inner class declarations.
   class A, A.Inner, B < A.
-  Instantiate Inner() from B.
+  Access Inner from B.
 
 706. Inner class derived from its outer class.
   Class A, A.Inner < A. Members:
   - A.x,
   - A.f() reads x
+  - A.g() reads x
   - Inner.x
   - Inner.f() reads x.
-  Print Inner.f(), (A)Inner.f()
+  Print Inner.f(), Inner.g(), (A)Inner.f()
 
-707. Outer class derived from its inner class.
-  Class A < A.Inner, A.Inner.
+707. Outer class derived from the inner class of another class.
+  Class A, A.Inner, B < A.Inner. Declare A after B.
   - A.x,
-  - A.f() reads x
-  - Inner.x
-  - Inner.f() reads x.
-  Print A.f(), (A.Inner)A.f()
+  - Inner.y
+  - B.z
+  From main print A.x, A.Inner.y, B.y, B.z.
+  From B print y, z.
 
 708. Inner classes hiding.
   Classes A, A.Inner, B < A, C < A, C.Inner.
-  Access Inner static field from A, B, C.
+  Access a static field of Inner from A, B, C.
 
 709. Inner classes name collision with other language sorts.
   Class A. Members:
@@ -291,6 +292,10 @@ Places where class names are encountered:
     - writing x
     - calling x()
     - instantiating x a = new x();
+  Repeat the test from A using name x, and from main using the name A.x.
+
+Note: An outer class or interface cannot be derived from its inner class,
+  either directly or indirectly.
 
 801. Inner interface.
   Class A, interface A.II1, class A.Inner < A.II1.
@@ -300,21 +305,7 @@ Places where class names are encountered:
 802. Outer interface. Interface I1, class I1.InnerC, interface I1.InnerI.
   Both access a static field from A by simple name.
 
-803. Inner interface implements an outer interface.
-  interffaces I1, I1.IInner < I1, C < I1.Inner
-    - I1.f()
-    - I1.Inner.g()
-  Call both on (i1.Inner)C from main.
-
-804. Outer class and outer interface implement an inner interface.
-  Class C, interface C.IMiddle, C.IMiddle.IInner.
-  C < C.IMiddle < C.IMiddle.IInner
-  Members:
-    - IInner.f()
-    - C.f()
-  Call (IInner)C.f()
-
-805. Inner interfaces are always static.
+803. Inner interfaces are always static.
   Types C, C.IInner, Impl < C.IInner.
   IInner is declared without static modifier.
   Members:
@@ -322,9 +313,34 @@ Places where class names are encountered:
     - Impl.f()
   Call Impl.f() from main.
 
-806. Member types of an interface are static.
+804. Member types of an interface are static.
   Types I1, I1.Inner. Inner is declared without static modifier.
   Members:
     Inner.f()
   Instantiate Inner and call f() from main.
+
+805. Inner interface implements an outer interface.
+  interffaces I1, I1.IInner < I1, C < I1.Inner
+    - I1.f()
+    - I1.Inner.g()
+  Call both on (i1.Inner)C from main.
+
+806. Outer class and outer interface implement an inner interface of another class.
+  Class A, interface A.IInner, B < IInner, I2 < IInner.
+  Members:
+    - IInner.f()
+    - IInner.id
+    - B.f()
+  Call (IInner)B.f(), B.id, I2.id
+
+807. Implementing an inner interface and names resolution.
+  Class A, interface A.IInner1, A.IInner2, B < IInner1, IInner2.
+  Members:
+    - A.x
+    - A.y
+    - IInner1.x
+    - IInner1.y
+  Access:
+    - x and y from B
+    - B.x, B.y from main.
 
