@@ -23,9 +23,6 @@ configuration
               <location multiplicity="?"> .K </location>
             </crntObj>
           </control>
-          <lookupMethod>
-            <isQualified> false </isQualified>
-          </lookupMethod>
         </thread>
       </threads>
       <br/>
@@ -37,6 +34,7 @@ configuration
       <br/>
       <topLevelNamesMap> .Map </topLevelNamesMap>
       <classesToAccessModes> .Map </classesToAccessModes>
+      <br/>
       <classes color="Fuchsia">
         <class multiplicity="*" color="Fuchsia">
 
@@ -46,13 +44,16 @@ configuration
           <extends color="Fuchsia"> .K </extends>
           <implements> .Set </implements>
           <implTrans> .Set </implTrans>
+          <br/>
           <declarations color="purple"> .K </declarations>
           <metaType> .K </metaType>
           <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>
           <methods color="purple"> .Map </methods>
+          <br/>
           <instanceInit> .K </instanceInit>
           <staticEnv> .Map </staticEnv>
           <staticInit> .K </staticInit>
+          <br/>
 
           //Static fields declared in this class, not inherited. Used by static initialization.
           <staticInitLocations> .Set </staticInitLocations>
@@ -60,6 +61,7 @@ configuration
           <imports> .Map </imports>
         </class>
       </classes>
+      <br/>
       <mainClass> $MainClass:ListItem </mainClass>
       //current compilation unit package
       <cuPackage> .K </cuPackage>
@@ -68,6 +70,7 @@ configuration
 
       //A map from types to objectClosure() terms that represent their T.class value
       <classLiteralsMap> .Map </classLiteralsMap>
+      <br/>
 
       <computationPhase> ProcessTopLevelNamesPhase </computationPhase>
       //required in ProcessCompUnitsPhase

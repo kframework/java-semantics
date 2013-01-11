@@ -432,6 +432,7 @@ rule [Continue]:
       'Continue(Arg:K) ~> _:K
       => restoreControl(K,Env,C) ~> UpdClause ~> loopImpl(E, S, UpdClause) ~> popx
     </k>
+    <br/>
     <stack>
       ListItem((StackLT:StackLayerType, XK:K, loopImpl(E:K, S:K, UpdClause:K),
                 K:K, Env:Map, C:Bag))

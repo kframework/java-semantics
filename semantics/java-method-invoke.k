@@ -59,7 +59,6 @@ rule [MethodNameQualified]:
       => lookupMethodData(OL, Class, Name, <envStack> EStack </envStack>, IsQ)
       ...
     </k>
-    <isQualified> _ => IsQ </isQualified>
 when
     Id2String(Name) =/=String "getClass"
         [structural]
@@ -72,7 +71,6 @@ rule [MethodNameStatic]:
           <envStack> ListItem((Class, <env> . </env>)) </envStack>, IsQ)
       ...
     </k>
-    <isQualified> _ => IsQ </isQualified>
 when
     Id2String(Name) =/=String "getClass"
         [structural]
@@ -97,7 +95,6 @@ rule [SuperMethod]:
       => lookupMethodData(OL, BaseClass, Name, <envStack> EStack </envStack>, false)
       ...
     </k>
-    <isQualified> _ => false </isQualified>
     <crntClass> Class:ClassType </crntClass>
     <location> OL:Int </location>
     <envStack>... ListItem((Class, _)) EStack:List </envStack>
@@ -143,6 +140,7 @@ rule [InitSignatureSearchInClassRef]:
             MethodName,
             getTypesFromValues(ParamValues),
             Env,
+            IsQ,
             noValue
           ),
           getClassList(Rest ListItem((Class, BI))),
@@ -154,7 +152,6 @@ rule [InitSignatureSearchInClassRef]:
       )
       ...
     </k>
-    <isQualified> _ => IsQ </isQualified>
     <classType> Class </classType>
     <methods> Env:Map </methods>
     <metaType> classMetaT </metaType>
@@ -180,6 +177,7 @@ rule [InitSignatureSearchInInterfaceRef]:
             MethodName,
             getTypesFromValues(ParamValues),
             Env,
+            IsQ,
             noValue
           ),
           ActualClass,
@@ -191,7 +189,6 @@ rule [InitSignatureSearchInInterfaceRef]:
       )
       ...
     </k>
-    <isQualified> _ => IsQ </isQualified>
     <class>
       <classType> Class </classType>
       <methods> Env:Map </methods>
@@ -238,6 +235,7 @@ syntax K ::= "lookupSignature" "("  Id    // Class - target reference compile-ti
                                ","  Id    // MethodName
                                ","  Types // Argument types
                                ","  Map   // Env - methods environment
+                               ","  Bool  // IsQ - whether the original method call was qualified
                                ","  K     // The best signature found so far, or .K if none found
                                ")"
         [strict(3)]
@@ -245,7 +243,7 @@ syntax K ::= "lookupSignature" "("  Id    // Class - target reference compile-ti
 rule [lookupSignatureNoAlternatives]:
     (. => isPreferableSig(
             'LazyAnd(
-              isAccessible(Class, getMethodAccessMode(TV), getMethodContextType(TV)),,
+              isAccessible(Class, getMethodAccessMode(TV), getMethodContextType(TV), IsQ),,
               subtypeList(CallTs, SigTs)
             ),
             sig(MethodName, SigTs)
@@ -255,13 +253,14 @@ rule [lookupSignatureNoAlternatives]:
           MethodName:Id,
           CallTs:Types,
           (sig(MethodName, SigTs:Types) |-> TV:TypedVal => .) _:Map,
+          IsQ:Bool,
           noValue
         )
 
 rule [lookupSignatureWithAlternative]:
     (. => isPreferableSig(
             'LazyAnd(
-              isAccessible(Class, getMethodAccessMode(TV), getMethodContextType(TV)),,
+              isAccessible(Class, getMethodAccessMode(TV), getMethodContextType(TV), IsQ),,
               'LazyAnd(subtypeList(CallTs, SigTs),, subtypeList(SigTs, AltTs))
             ),
             sig(MethodName, SigTs)
@@ -271,6 +270,7 @@ rule [lookupSignatureWithAlternative]:
           MethodName:Id,
           CallTs:Types,
           (sig(MethodName, SigTs:Types) |-> TV:TypedVal => .) _:Map,
+          IsQ:Bool,
           sig(MethodName, AltTs:Types)
         )
 
@@ -280,16 +280,17 @@ rule [lookupSignatureSigDiscard]:
       MethodName:Id,
       _,
       (sig(Name:Id, _) |-> _ => .) _:Map,
+      _,
       _
     )
 when
     Name =/=K MethodName
 
-rule [lookupSignatureEnd]: lookupSignature(_,_,_,.Map,K:K) => K
+rule [lookupSignatureEnd]: lookupSignature(_,_,_,.Map,_,K:K) => K
 
 syntax K ::= "isPreferableSig" "(" K "," K ")"  [strict(1)]
 
-rule (isPreferableSig(true::bool, K:K) => .) ~> lookupSignature(_,_,_,_, _ => K )
+rule (isPreferableSig(true::bool, K:K) => .) ~> lookupSignature(_,_,_,_,_, _ => K )
 rule isPreferableSig(false::bool, _) => .
 
 syntax K ::= "lookupMethod" "(" K ","      // sig(Name, SigTL) - Method name
@@ -371,22 +372,23 @@ rule getMethConsClosureClass( (_:KLabel)(Class:ClassType,, _:List{K}) ) => Class
 //may be called from the current object environment
 syntax K ::= "isAccessible" "(" Id ","          //the method class
                                 AccessMode ","  //the method access mode
-                                K               //evaluates to ContextType
+                                K ","           //evaluates to ContextType
+                                Bool            //IsQ - whether the initial method call expression was qualified
                             ")"
         [strict(2)]
 
 rule [isAccessiblePublic]:
-    isAccessible(_, public, _) => true::bool
+    isAccessible(_, public, _, _) => true::bool
 
 rule [isAccessibleProtected]:
     <k>
-      isAccessible(Class:ClassType, protected, CT:ContextType)
+      isAccessible(Class:ClassType, protected, CT:ContextType, IsQ:Bool)
       => 'LazyOr(
             'LazyAnd(
-              'LazyOr((CT ==K staticCT)::bool,, 'Not(isQualifiedMethodCall)),,
+              'LazyOr((CT ==K staticCT)::bool,, 'Not(IsQ :: bool)),,
               subtype(CurrentClass, Class)
             ),,
-            isAccessible(Class, package, CT)
+            isAccessible(Class, package, CT, IsQ)
       )
       ...
     </k>
@@ -394,18 +396,15 @@ rule [isAccessibleProtected]:
 
 rule [isAccessiblePackage]:
     <k>
-      isAccessible(Class:ClassType, package, _) => kEq(getPackage(Class), getPackage(CurrentClass))
+      isAccessible(Class:ClassType, package, _, _)
+      => kEq(getPackage(Class), getPackage(CurrentClass))
       ...
     </k>
     <crntClass> CurrentClass:ClassType </crntClass>
 
 rule [isAccessiblePrivate]:
-    <k> isAccessible(Class:ClassType, private, _) => (Class ==K CurrentClass)::bool ...</k>
+    <k> isAccessible(Class:ClassType, private, _, _) => (Class ==K CurrentClass)::bool ...</k>
     <crntClass> CurrentClass:ClassType </crntClass>
-
-syntax K ::= "isQualifiedMethodCall"
-rule <k> isQualifiedMethodCall => B :: bool  ...</k>
-     <isQualified> B:Bool </isQualified>
 
 //tests whether a new method in an overwriting chain is accessible to the old method
 syntax K ::= "isAccessibleForOverwriting" "("
