@@ -66,3 +66,12 @@ Postponed features:
   I have no logic implemented specifically for it.
   I cannot implement a test even for char promotion.
 
+Statistics for semantics version 211, all features except inner classes:
+Full size: 136K
+Clean source code size (w/o comments and new lines): 115K
+Clean source lines of code: 3220
+Configuration size: 45 cells
+Auxiliary syntax constructs(not KLabels): 214
+Rules: 533
+Context rules: 53
+Tests: 511
