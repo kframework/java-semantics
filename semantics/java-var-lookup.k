@@ -22,29 +22,33 @@ context 'AmbName(HOLE,, _:K)
 rule [AmbName]:
     'AmbName(Ks:List{K},, K:K)
     => 'ExprName(Ks,,K) ?? 'TypeName(Ks,,K) ?? 'PackageName('ListWrap(Ks,,K))
-when isKResult(Ks)
-        [structural]
+when isKResult(Ks)                          [structural]
 
-rule 'Field(Ks:List{K}) => 'ExprName(Ks)   [structural, anywhere]
+rule [ExprNameSimple]:
+  'ExprName(X) => localVar(X) ?? 'Field(X)
 
-rule [ExprNameLocalVar]:
-    <k> 'ExprName(X:Id) => typedLookup(L) ...</k>
+rule [ExprNameQualified]:
+    'ExprName(K1:K,,K2:K) => 'Field(K1,,K2)
+
+//lookup the given local var by name. Return noValue if none found.
+syntax K ::= "localVar" "(" Id //the var name
+                        ")"
+
+rule [localVarOK]:
+    <k> localVar(X:Id) => typedLookup(L) ...</k>
     <env>... X |-> L ...</env>
-        [structural]
 
-rule [ExprNameMember]:
-    <k>
-      'ExprName(X:Id) => 'ExprName( 'This(.List{K}),, X ) ?? 'ExprName( Class,, X )
-      ...
-    </k>
+rule [localVarNoValue]:
+    <k> localVar(X:Id) => noValue ...</k>
     <env> Env:Map </env>
-    <crntClass> Class:ClassType </crntClass>
-when
-    notBool( (X in keys(Env)) orBool (Id2String(X) ==String "System") )
-        [structural]
+when notBool X in keys(Env)
 
-//resolving the qualifier of a qualified expression: either an object or a class reference
-context 'ExprName(HOLE,, _:K)
+rule [FieldUnqualified]:
+    <k> 'Field(X:Id) => 'Field( 'This(.List{K}),, X ) ?? 'Field( Class,, X ) ...</k>
+    <crntClass> Class:ClassType </crntClass>
+
+//resolving the qualifier of a qualified field access: it is either an object or a class reference
+context 'Field(HOLE,, _:K)
 
 /*@ \subsection{Self reference}
 Like in untyped KOOL. */
@@ -70,10 +74,11 @@ rule [ThisNoValue]:
 
 /*@ \subsection{Object member access} */
 
+//todo bug: this rule and the next one are not mutually exclusive. Expose the problem in a test.
 //Expressions of type o.x, where o is a reference of type class
-rule [ExprNameClassRefQualified]:
+rule [FieldClassRefQualified]:
     <k>
-      'ExprName(
+      'Field(
         objectClosure(_,
           <envStack>... ListItem((Class:ClassType, EnvC:BagItem)) EStack:List </envStack>
         ) :: Class,, X:Id
@@ -84,25 +89,26 @@ rule [ExprNameClassRefQualified]:
         [structural]
 
 //Expressions of type o.x, where o is a reference of type interface
-rule [ExprNameInterfaceRefQualified]:
+rule [FieldInterfaceRefQualified]:
     <k>
-      'ExprName(objectClosure(_, _) :: Intf:ClassType,, X:Id)
-      => 'ExprName(Intf,, X)
+      'Field(objectClosure(_, _) :: Intf:ClassType,, X:Id)
+      => 'Field(Intf,, X)
       ...
     </k>
     <classType> Intf </classType>
     <metaType> interfaceMetaT </metaType>
         [structural]
 
-rule [ExprNamePackageQualified]:
-    'ExprName( _:PackageId,, X:Id ) => noValue  [structural]
+//todo test similar case for lvalue('Field) ?
+rule [FieldOfPackage]:
+    'Field( _:PackageId,, X:Id ) => noValue  [structural, anywhere]
 
-rule [ExprNameNoValue]:
-    'ExprName( noValue,, X:Id ) => noValue      [structural]
+rule [FieldOfNoValue]:
+    'Field( noValue,, X:Id ) => noValue      [structural, anywhere]
 
-rule [ExprNameQualifiedNull]:
+rule [FieldOfNull]:
     <k>
-      'ExprName(null::_ ,, X:Id)
+      'Field(null::_ ,, X:Id)
       =>  'Throw('NewInstance(
             'None(.List{K}),,
             class String2Id("java.lang.NullPointerException"),,
@@ -147,46 +153,6 @@ when notBool(X in keys(Env))
 rule lookupField(<envStack> . </envStack>, _) => noValue
         [anywhere]
 
-//@ \texttt{lvalue}
-
-rule [lvalueExprNameMember]:
-    <k>
-      lvalue(
-        'ExprName(X:Id) => 'ExprName( ('This(.List{K}) ?? Class),, X )
-      )
-      ...
-    </k>
-    <env> Env:Map </env>
-    <crntClass> Class:ClassType </crntClass>
-when notBool(X in keys(Env))  [structural]
-
-//resolving the qualifier of a lvalue qualified expression: either an object or a class reference
-context lvalue('ExprName(HOLE,, _:Id) )
-
-rule [lvalueExprNameQualified]:
-    <k>
-      lvalue(
-        'ExprName(
-          objectClosure(_,
-            <envStack>... ListItem((Class:ClassType, EnvC:BagItem)) EStack:List </envStack>
-          ) :: Class,,
-          X:Id
-        )
-        => lookupField(
-            <envStack> ListItem((Class, EnvC)) EStack:List </envStack>,
-            X
-          )
-      )
-      ...
-    </k>
-        [structural]
-
-rule [lvalueSuperField]:
-    <k> lvalue('SuperField(X:Id) => lookupField(<envStack>EStack</envStack>, X)) ...</k>
-    <crntClass> Class:ClassType </crntClass>
-    <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>
-        [structural]
-
 //@Section{lookup static field}
 
 syntax K ::= "lookupStaticField" "("
@@ -194,8 +160,8 @@ syntax K ::= "lookupStaticField" "("
                                     Id    // X - field name
                                   ")"
 
-rule [ExprNameStaticField]:
-    'ExprName(Class:ClassType,, X:Id) => lookupStaticField(Class, X)
+rule [FieldStaticField]:
+    'Field(Class:ClassType,, X:Id) => lookupStaticField(Class, X)
 
 rule [lookupStaticField]:
     <k>
@@ -219,8 +185,62 @@ when
 rule [lookupStaticFieldEmpty]:
     lookupStaticField(.K, _) => noValue
 
+//@ \texttt{lvalue}
+
+rule [lvalueExprNameSimple]:
+    lvalue('ExprName(X:Id)) => lvalue(localVar(X)) ?? lvalue('Field(X))
+
+rule [lvalueExprNameQualified]:
+    lvalue('ExprName(K1:K,,K2:K)) => lvalue('Field(K1,,K2))
+
+rule [lvalueExprNameLocal]:
+    <k> lvalue(localVar(X:Id)) => typedLoc(L) ...</k>
+    <env>... X |-> L:Int ...</env>            [structural]
+
+rule [lvalueExprNameDiscard]:
+    <k> lvalue(localVar(X:Id)) => noValue ...</k>
+    <env> Env:Map </env>
+when notBool X in keys(Env)                   [structural]
+
+rule [lvalueExprNameMember]:
+    <k>
+      lvalue('Field(X:Id)) => lvalue('Field( 'This(.List{K}),, X )) ?? lvalue('Field( Class,, X ))
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>  [structural]
+
+//resolving the qualifier of a lvalue qualified expression: either an object or a class reference
+context lvalue('Field(HOLE,, _:Id) )
+
+rule [lvalueExprNameQualified]:
+    <k>
+      lvalue(
+        'Field(
+          objectClosure(_,
+            <envStack>... ListItem((Class:ClassType, EnvC:BagItem)) EStack:List </envStack>
+          ) :: Class,,
+          X:Id
+        )
+        => lookupField(
+            <envStack> ListItem((Class, EnvC)) EStack:List </envStack>,
+            X
+          )
+      )
+      ...
+    </k>
+        [structural]
+
+rule [lvalueSuperField]:
+    <k> lvalue('SuperField(X:Id) => lookupField(<envStack>EStack</envStack>, X)) ...</k>
+    <crntClass> Class:ClassType </crntClass>
+    <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>
+        [structural]
+
 rule [lvalueExprNameStaticField]:
-    lvalue('ExprName(Class:ClassType,, X:Id) => lookupStaticField(Class, X))
+    lvalue('Field(Class:ClassType,, X:Id) => lookupStaticField(Class, X))
+
+rule [lvalueOfNoValue]:
+    lvalue(noValue) => noValue
 
 rule [lvalueLookupStaticField]:
     <k>
@@ -263,11 +283,6 @@ rule [lvalueTypedLookupUninitialized]:
     <store>... L |-> uninitialized(Class:ClassType, T:Type) ...</store>
 
 rule <k> lvalue(lookup(L:Int)::T:Type) => loc(L)::T ...</k>  [structural]
-
-rule [lvalueExprNameLocal]:
-    <k> lvalue('ExprName(X:Id)) => typedLoc(L) ...</k>
-    <env>... X |-> L:Int ...</env>
-        [structural]
 
 syntax K ::= "typedLoc" "(" Int ")"
 

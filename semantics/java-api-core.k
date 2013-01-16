@@ -6,17 +6,18 @@ module JAVA-API-CORE
     imports JAVA-CORE
     imports JAVA-CLASSES
     imports JAVA-METHOD-INVOKE
+    imports JAVA-VAR-LOOKUP
 
 // This module contains the minimal part of java API required to perform
 // console read/write operations.
 
-syntax KResult ::=  "rtSystem"
+syntax KResult ::=  "rtSystemType"
                   | "rtSystemOut"
                   | "rtSystemOutPrint"
                   | "rtSystemOutPrintln"
                   | "rtSystemConsole"
                   | "rtSystemConsoleReadLine"
-                  | "rtInteger"
+                  | "rtIntegerType"
                   | "rtIntegerParseInt"
                   | "rtSystemIn"
                   | "rtScannerNextInt"
@@ -32,12 +33,23 @@ syntax RawVal ::= "rtSymbolicConsoleLine"
 syntax RefType ::= "rtScannerType"
 
 rule [NameSystem]:
-    'ExprName(X:Id) => rtSystem
+    'TypeName(X:Id) => rtSystemType
 when
     Id2String(X) ==String "System"
 
+rule [NameInteger]:
+    'TypeName(X:Id) => rtIntegerType
+when
+    Id2String(X) ==String "Integer"
+
+rule [rtScanner]:
+    'TypeName(X:Id) => rtScannerType
+when
+    Id2String(X) ==String "Scanner"
+        [structural]
+
 rule [NameSystemConsole]:
-    methodNameImpl(rtSystem, X:Id, _) => rtSystemConsole
+    methodNameImpl(rtSystemType, X:Id, _) => rtSystemConsole
 when
     Id2String(X) ==String "console"
 
@@ -53,13 +65,8 @@ rule [InvokeSystemConsoleReadLine]:
     'Invoke(rtSystemConsoleReadLine,, 'ListWrap(.List{K}))
     => rtSymbolicConsoleLine :: rtString
 
-rule [NameInteger]:
-    'ExprName(X:Id) => rtInteger
-when
-    Id2String(X) ==String "Integer"
-
 rule [NameIntegerParseInt]:
-    methodNameImpl(rtInteger, X:Id, _) => rtIntegerParseInt
+    methodNameImpl(rtIntegerType, X:Id, _) => rtIntegerParseInt
 when
     Id2String(X) ==String "parseInt"
 
@@ -74,7 +81,7 @@ rule [consoleReadInt]:
 //@ For integers and strings, print their value. For classes, print class type.
 
 rule [NameSystemOut]:
-    'ExprName(rtSystem,, X:Id) => rtSystemOut
+    'Field(rtSystemType,, X:Id) => rtSystemOut
 when
     Id2String(X) ==String "out"
 
@@ -111,15 +118,9 @@ rule [consolePrint]:
     <out>... .=> ListItem(Str) </out>
 
 rule [NameSystemIn]:
-    'ExprName(rtSystem,, X:Id) => rtSystemIn
+    'Field(rtSystemType,, X:Id) => rtSystemIn
 when
     Id2String(X) ==String "in"
-
-rule [rtScanner]:
-    'TypeName(X:Id) => rtScannerType
-when
-    Id2String(X) ==String "Scanner"
-        [structural]
 
 rule [NewInstanceScanner]:
     'NewInstance('None(.List{K}),,

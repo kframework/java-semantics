@@ -94,7 +94,7 @@ syntax K ::= "bindto" List{K}
 rule [bindto]:
     <k>
       bindto paramImpl(T:Type, X:Id),, RestP:List{K}, TV:TypedVal,, RestV:List{K}
-      => 'ExprStm('Assign('ExprName(X),,TV:TypedVal)) ~> bindto RestP, RestV
+      => 'ExprStm('Assign(localVar(X),,TV:TypedVal)) ~> bindto RestP, RestV
       ...
     </k>
     <env> Env:Map => Env[L/X] </env>

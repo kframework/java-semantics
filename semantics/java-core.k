@@ -32,7 +32,9 @@ configuration
       <out color="brown" stream="stdout"> .List </out>
       <nextLoc color="gray"> 0 </nextLoc>
       <br/>
+      //cell type: Map[PackageId->Map[Id->ClassType]], Id = simple name, ClassType = full name
       <topLevelNamesMap> .Map </topLevelNamesMap>
+
       <classesToAccessModes> .Map </classesToAccessModes>
       <br/>
       <classes color="Fuchsia">

@@ -1,9 +1,11 @@
 require "java-core.k"
 require "java-subtyping.k"
+require "java-var-lookup.k"
 
 module JAVA-STATEMENTS
     imports JAVA-CORE
     imports JAVA-SUBTYPING
+    imports JAVA-VAR-LOOKUP
 
 //@ \section{Initiation of execution}
 
@@ -148,7 +150,7 @@ rule [VarListDecDesugar]:
 rule [VarDecWithInitDesugar]:
     'LocalVarDec(TypeK:K,, 'ListWrap('VarDec(X1:Id,,InitExp:K)))
     => 'LocalVarDec(TypeK,, 'ListWrap('VarDec(X1:Id)))
-        ~> 'ExprStm('Assign('ExprName(X1),, InitExp))
+        ~> 'ExprStm('Assign(localVar(X1),, InitExp))
 when
     getKLabel(InitExp) =/=KLabel 'ArrayInit
       [structural]
@@ -521,7 +523,7 @@ rule [ThrowCausesThreadTermination]:
       'Throw(TV:TypedVal) ~> _:K
       =>  'ExprStm('Invoke(
             'Method('MethodName(
-              'AmbName('AmbName(String2Id("System")),, String2Id("out")),,
+              'AmbName('TypeName(String2Id("System")),, String2Id("out")),,
               String2Id("println")
             )),,
             'ListWrap(

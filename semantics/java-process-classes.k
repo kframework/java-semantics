@@ -379,7 +379,7 @@ rule [FieldDecDesugar]:
 
 rule [FieldDecInstanceInitDesugar]:
     'FieldDec(Modifiers:K,, TypeK:K,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .List{K})) ))
-    ~> (. => 'InstanceInit('ExprStm('Assign('ExprName(X),, InitExp))))
+    ~> (. => 'InstanceInit('ExprStm('Assign('Field(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
     andBool (getContextType(Modifiers) ==K instanceCT)
@@ -405,7 +405,7 @@ rule [InstanceInitSave]:
 
 rule [FieldDecStaticInitDesugar]:
     'FieldDec(Modifiers:K,, TypeK:K,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .List{K})) ))
-    ~> (. => 'StaticInit('ExprStm('Assign('ExprName(X),, InitExp))))
+    ~> (. => 'StaticInit('ExprStm('Assign('Field(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
     andBool (getContextType(Modifiers) ==K staticCT)

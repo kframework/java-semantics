@@ -124,7 +124,7 @@ rule [arrayAccessNull]:
 
 //Array length, as defined in JDK
 rule
-    <k> 'ExprName(arrayRef(_,_:Int, N:Int)::_,, X:Id ) => N::int ...</k>
+    <k> 'Field(arrayRef(_,_:Int, N:Int)::_,, X:Id ) => N::int ...</k>
 when
     Id2String(X) ==String "length"
 
