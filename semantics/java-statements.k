@@ -422,8 +422,8 @@ when
 
 //stack consumer stm - Return, Throw, Break or Continue reaches tryFinallySL layer
 rule [StackConsumerStmInTryFinally]:
-    <k> (. => restoreControl(K,Env,C) ~> FinallyS) ~> KL:KLabel(_:List{K}) ...</k>
-    <stack> ListItem((tryFinallySL, _, FinallyS:K, K:K, Env:Map, C:Bag)) => . ...</stack>
+    <k> (. => restoreControl(.K,Env,C) ~> FinallyS) ~> KL:KLabel(_:List{K}) ...</k>
+    <stack> ListItem((tryFinallySL, .K, FinallyS:K, .K, Env:Map, C:Bag)) => . ...</stack>
 when
   isStackConsumer(KL)
 
@@ -586,16 +586,18 @@ rule [ThreadTermination]:
     <dissolveEmptyK> true </dissolveEmptyK>
 
 syntax K ::= "saveStackLayer" "("
-                        StackLayerType ","  // The StackLayerType
-                        K ","               // Id. for labelSL - the label, for tryCatchSL - catch var
-                        K ","               // S - statement to be executed when this layer is consumed
-                        K                   // K - the rest of computation
+                        StackLayerType ","  // StackLT - the StackLayerType
+                        K ","               // Param. for labelSL - the label,
+                                            //    for tryCatchSL - catch var, for others - .K
+                        K ","               // SecondBlock - statement to be executed
+                                            //    when this layer is consumed
+                        K                   // Rest - the rest of computation
               ")"
 
 rule [saveStackLayer]:
-    <k> (saveStackLayer(StackLT:StackLayerType, IdK:K, S:K, K:K) => .) ~> _:K </k>
+    <k> (saveStackLayer(StackLT:StackLayerType, Param:K, SecondBlock:K, Rest:K) => .) ~> _:K </k>
     <control>
-      <stack> . => ListItem((StackLT, IdK, S, K, Env, C)) ...</stack>
+      <stack> . => ListItem((StackLT, Param, SecondBlock, Rest, Env, C)) ...</stack>
       C:Bag
     </control>
     <env> Env:Map </env>
