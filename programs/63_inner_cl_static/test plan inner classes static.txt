@@ -320,10 +320,10 @@ Note: An outer class or interface cannot be derived from its inner class,
   Instantiate Inner and call f() from main.
 
 805. Inner interface implements an outer interface.
-  interffaces I1, I1.IInner < I1, C < I1.Inner
+  interfaces I1, I1.IInner < I1, C < I1.IInner
     - I1.f()
-    - I1.Inner.g()
-  Call both on (i1.Inner)C from main.
+    - I1.IInner.g()
+  Call both on (I1.IInner)C from main.
 
 806. Outer class and outer interface implement an inner interface of another class.
   Class A, interface A.IInner, B < IInner, I2 < IInner.
@@ -331,15 +331,15 @@ Note: An outer class or interface cannot be derived from its inner class,
     - IInner.f()
     - IInner.id
     - B.f()
-  Call (IInner)B.f(), B.id, I2.id
+  Call (IInner)B.f(), B.id, I2.id.
 
-807. Implementing an inner interface and names resolution.
+807. Implementing an inner interface and name resolution.
   Class A, interface A.IInner1, A.IInner2, B < IInner1, IInner2.
   Members:
-    - A.x
-    - A.y
+    - static A.x
+    - static A.y
     - IInner1.x
-    - IInner1.y
+    - IInner2.y
   Access:
     - x and y from B
     - B.x, B.y from main.
