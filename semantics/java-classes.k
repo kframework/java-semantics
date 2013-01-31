@@ -90,27 +90,17 @@ rule [TypeNameQualifiedClass]:
     'TypeName(ClassQ:ClassType,, X:Id) => 'TypeName(toPackage(ClassQ),, X)
 
 rule [TypeNameQualifiedPackage]:
-    <k>
-      'TypeName(Pack:PackageId,, X:Id) => Class
-      ...
-    </k>
-    <typeNamesMap>... Pack |-> mapWrap(X |-> Class:ClassType _) ...</typeNamesMap>
+    'TypeName(Pack:PackageId,, X:Id) => typeNameQualifiedImpl(getNamesMap(Pack), X)
 
-rule [TypeNameQualifiedPackageNoValue]:
-    <k>
-      'TypeName(Pack:PackageId,, X:Id) => noValue
-      ...
-    </k>
-    <typeNamesMap>... Pack |-> mapWrap( PackMap:Map ) ...</typeNamesMap>
-when notBool X in keys(PackMap)
+//Retrieves the ClassType for the given names map and simple class name
+syntax K ::= "typeNameQualifiedImpl" "(" K "," Id ")"                     [strict(1)]
 
-rule [TypeNameQualifiedPackageNoValue2]:
-    <k>
-      'TypeName(Pack:PackageId,, _:Id) => noValue
-      ...
-    </k>
-    <typeNamesMap> NamesMap:Map </typeNamesMap>
-when notBool Pack in keys(NamesMap)
+rule [typeNameQualifiedImplFound]:
+    typeNameQualifiedImpl(mapWrap(X |-> Class:ClassType _), X:Id) => Class
+
+rule [typeNameQualifiedImplNotFound]:
+    typeNameQualifiedImpl(mapWrap(NamesMap:Map), X:Id) => noValue
+when notBool X in keys(NamesMap)
 //end of section
 
 //limitations:

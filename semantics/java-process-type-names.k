@@ -116,4 +116,17 @@ rule [bodyAsListClass]:
 rule [bodyAsListInterface]:
     bodyAsList('ListWrap(Ks:List{K})) => Ks               [structural, anywhere]
 
+//Returns the types map for the given package, or mapWrap(.Map) if there's no such package.
+syntax K ::= "getNamesMap"  "(" PackageId //The package for which we want to retrieve the types map
+                            ")"
+
+rule [getTypesMapFound]:
+    <k> getNamesMap(Pack:PackageId) => mapWrap(NamesMap) ...</k>
+    <typeNamesMap>... Pack |-> mapWrap(NamesMap:Map) ...</typeNamesMap>
+
+rule [getTypesMapNotFound]:
+    <k> getNamesMap(Pack:PackageId) => mapWrap(.Map) ...</k>
+    <typeNamesMap> BigMap:Map </typeNamesMap>
+when notBool Pack in keys(BigMap)
+
 endmodule

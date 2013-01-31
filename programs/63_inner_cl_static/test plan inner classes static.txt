@@ -64,6 +64,17 @@ Note: This test suite doesn't cover any shadowing/obscuring cases.
     - String f()
   Print ((I1)A.C).f().
 
+107. Access inner class from outer one, three level hierarchy.
+  Classes A, A.B, A.B.C.
+  Members:
+  - A.id
+  - B.id
+  - C.id
+  - A.test - calls A.id, B.id
+  - B.test - calls A.id, B.id, C.id
+  - C.test - calls A.id, B.id, C.id
+  All classes are referred by simple name inside A,B,C.
+
 201. Inner class have a reference to the outer class.
   A, A.B. Members:
   - A: String id
