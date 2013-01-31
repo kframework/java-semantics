@@ -286,7 +286,9 @@ rule [lookupSignatureSigDiscard]:
 when
     Name =/=K MethodName
 
-rule [lookupSignatureEnd]: lookupSignature(_,_,_,.Map,_,K:K) => K
+rule [lookupSignatureEnd]:
+    lookupSignature(_,_,_,.Map,_,K:K) => K
+when K =/=K noValue
 
 syntax K ::= "isPreferableSig" "(" K "," K ")"  [strict(1)]
 
