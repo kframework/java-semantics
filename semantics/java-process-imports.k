@@ -7,15 +7,15 @@ module JAVA-PROCESS-IMPORTS
 
 /*@ \section{Second pass - processing imports} */
 
-syntax K ::= "compUnitImportsStart"
+syntax K ::= "compUnitImportsStart" "(" PackageId // The package of the current compilation unit
+                                    ")"
 
 rule [compUnitImportsStart]:
     <k>
-      compUnitImportsStart => 'TypeImportOnDemandDec(packageId("java.lang"))
+      compUnitImportsStart(Pack:PackageId) => 'TypeImportOnDemandDec(packageId("java.lang"))
       ...
     </k>
-    <cuPackage> Pack:PackageId </cuPackage>
-    <topLevelNamesMap>... Pack |-> mapWrap(PackMap:Map) ...</topLevelNamesMap>
+    <typeNamesMap>... Pack |-> mapWrap(PackMap:Map) ...</typeNamesMap>
     <compUnitImports> _ => PackMap </compUnitImports>
 
 //Process kast terms 'TypeImportDec or 'TypeImportOnDemandDec
@@ -24,7 +24,7 @@ context 'TypeImportDec(HOLE)
 
 rule [TypeImportDec]:
     <k> 'TypeImportDec(Class:ClassType) => . ...</k>
-    <topLevelNamesMap>... _ |-> mapWrap(X:Id |-> Class _) ...</topLevelNamesMap>
+    <typeNamesMap>... _ |-> mapWrap(X:Id |-> Class _) ...</typeNamesMap>
     <compUnitImports> Imp:Map => Imp[Class / X] </compUnitImports>
 
 context 'TypeImportOnDemandDec(HOLE)
@@ -34,7 +34,7 @@ rule [TypeImportOnDemandDec]:
       'TypeImportOnDemandDec(Pack:PackageId) => importOnDemandImpl(PackMap)
       ...
     </k>
-    <topLevelNamesMap>... Pack |-> mapWrap(PackMap:Map) ...</topLevelNamesMap>
+    <typeNamesMap>... Pack |-> mapWrap(PackMap:Map) ...</typeNamesMap>
     <compUnitImports> Imp:Map </compUnitImports>
 
 //import to <compUnitImports> cell public packages in the given map.
@@ -60,7 +60,7 @@ rule [TypeImportOnDemandUnexisting]:
       'TypeImportOnDemandDec(Pack:PackageId) => .
       ...
     </k>
-    <topLevelNamesMap> PackMap:Map </topLevelNamesMap>
+    <typeNamesMap> PackMap:Map </typeNamesMap>
 when notBool Pack in keys(PackMap)
 
 endmodule

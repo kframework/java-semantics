@@ -423,4 +423,21 @@ Implementation:
     Class access mode information is in a new cell:
   <classesToAccessModes> of type Map[ClassType -> AccessMode].
 
+Static inner classes.
+
+1.ok.  We have to change the name and meaning of the cell <topLevelNamesMap> into <typeNamesMap>
+  - this cell will store not only top-level names, but inner type names as well.
+  This is required during ProcessCompUnitsPhase, to correctly resolve extends/implements
+  clauses containing inner types.
+    As a result, the phase ProcessTopLevelNamesPhase is renamed into ProcessTypeNamesPhase.
+  Also the module is renamed. The phase is updated to process inner type names as well.
+
+2.ok. Similarly, we need to update ProcessCompUnitsPhase, so that a proper <class>
+  cell is created for each inner class.
+
+In order to distinguish between 'ClassDec here and 'ClassDec in process-classes, we need to
+  wrap K terms containing classes into a wrapper tag.
+
+3. In the same manner, we need to update ProcessClassesPhase, so that each inner class
+could process its extends/implements and members.
 

@@ -1,4 +1,5 @@
 require "java-core.k"
+require "java-process-type-names.k"
 require "java-subtyping.k"
 require "java-process-classes.k"
 require "java-expressions.k"
@@ -9,6 +10,7 @@ require "java-var-lookup.k"
 
 module JAVA-CLASSES
     imports JAVA-CORE
+    imports JAVA-PROCESS-TYPE-NAMES
     imports JAVA-SUBTYPING
     imports JAVA-PROCESS-CLASSES
     imports JAVA-EXPRESSIONS
@@ -36,12 +38,26 @@ rule [TypeNameInProcessCompUnitsPhase]:
     <computationPhase> ProcessCompUnitsPhase </computationPhase>
     <compUnitImports>... X |-> Class:ClassType ...</compUnitImports>
 
+rule [TypeNameInProcessCompUnitsPhaseFail]:
+    <k> 'TypeName(X:Id) => noValue ...</k>
+    <computationPhase> ProcessCompUnitsPhase </computationPhase>
+    <compUnitImports> Imp:Map </compUnitImports>
+when notBool X in keys(Imp)
+
 rule [TypeNameInProcessClassesPhase]:
     <k> 'TypeName(X:Id) => Class ...</k>
     <computationPhase> ProcessClassesPhase </computationPhase>
     <cuClass> CuClass:ClassType </cuClass>
     <classType> CuClass </classType>
     <imports>... X |-> Class:ClassType ...</imports>
+
+rule [TypeNameInProcessClassesPhaseFail]:
+    <k> 'TypeName(X:Id) => noValue ...</k>
+    <computationPhase> ProcessClassesPhase </computationPhase>
+    <cuClass> CuClass:ClassType </cuClass>
+    <classType> CuClass </classType>
+    <imports> Imp:Map </imports>
+when notBool X in keys(Imp)
 
 rule [TypeNameInExecutionPhase]:
     <k> 'TypeName(X:Id) => Class ...</k>
@@ -65,13 +81,36 @@ when notBool X in keys(Imp)
 context 'TypeName(HOLE,, _:K)
 context 'PackageOrTypeName(HOLE,, _:K)
 
-rule 'PackageOrTypeName(X:Id) => packageId(Id2String(X))
-rule 'PackageOrTypeName(packageId(Str:String),, X:Id)
-     => packageId(Str +String "." +String Id2String(X))
+rule 'PackageOrTypeName(KRs:List{K},, K:K) => 'TypeName(KRs,,K) ?? 'PackageName('ListWrap(KRs,,K))
+when isKResult(KRs)
 
-rule [TypeNameQualified]:
-    'TypeName(packageId(Str:String),, X:Id)
-    => class String2Id(Str +String "." +String Id2String(X))
+//When we search for a class qualified by another class, we simply convert
+//the qualifier into a package.
+rule [TypeNameQualifiedClass]:
+    'TypeName(ClassQ:ClassType,, X:Id) => 'TypeName(toPackage(ClassQ),, X)
+
+rule [TypeNameQualifiedPackage]:
+    <k>
+      'TypeName(Pack:PackageId,, X:Id) => Class
+      ...
+    </k>
+    <typeNamesMap>... Pack |-> mapWrap(X |-> Class:ClassType _) ...</typeNamesMap>
+
+rule [TypeNameQualifiedPackageNoValue]:
+    <k>
+      'TypeName(Pack:PackageId,, X:Id) => noValue
+      ...
+    </k>
+    <typeNamesMap>... Pack |-> mapWrap( PackMap:Map ) ...</typeNamesMap>
+when notBool X in keys(PackMap)
+
+rule [TypeNameQualifiedPackageNoValue2]:
+    <k>
+      'TypeName(Pack:PackageId,, _:Id) => noValue
+      ...
+    </k>
+    <typeNamesMap> NamesMap:Map </typeNamesMap>
+when notBool Pack in keys(NamesMap)
 //end of section
 
 //limitations:

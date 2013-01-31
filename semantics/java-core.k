@@ -33,7 +33,7 @@ configuration
       <nextLoc color="gray"> 0 </nextLoc>
       <br/>
       //cell type: Map[PackageId->Map[Id->ClassType]], Id = simple name, ClassType = full name
-      <topLevelNamesMap> .Map </topLevelNamesMap>
+      <typeNamesMap> .Map </typeNamesMap>
 
       <classesToAccessModes> .Map </classesToAccessModes>
       <br/>
@@ -61,6 +61,7 @@ configuration
           <staticInitLocations> .Set </staticInitLocations>
           <staticInitDone> false </staticInitDone>
           <imports> .Map </imports>
+          <isTopLevel> true </isTopLevel> // true = top level class, false = inner class
         </class>
       </classes>
       <br/>
@@ -74,7 +75,7 @@ configuration
       <classLiteralsMap> .Map </classLiteralsMap>
       <br/>
 
-      <computationPhase> ProcessTopLevelNamesPhase </computationPhase>
+      <computationPhase> ProcessTypeNamesPhase </computationPhase>
       //required in ProcessCompUnitsPhase
       <programBackup> $PGM:K </programBackup>
 
@@ -84,7 +85,7 @@ configuration
 
 //@ \section{Identifiers}
 
-syntax ComputationPhase ::= "ProcessTopLevelNamesPhase"
+syntax ComputationPhase ::= "ProcessTypeNamesPhase"
                           | "ProcessCompUnitsPhase"
                           | "ProcessClassesPhase"
                           | "ExecutionPhase"
@@ -232,7 +233,7 @@ syntax KResult ::= PackageId
 syntax K ::= "getPackage" "(" ClassType ")"
 rule [getPackage]:
     <k> getPackage(Class:ClassType) => Pack ...</k>
-    <topLevelNamesMap>... Pack:PackageId |-> mapWrap(_ |-> Class _) ...</topLevelNamesMap>
+    <typeNamesMap>... Pack:PackageId |-> mapWrap(_ |-> Class _) ...</typeNamesMap>
 
 syntax K ::= "kEq" "(" K "," K ")" [seqstrict]
 rule kEq(KR1:KResult, KR2:KResult) => (KR1 ==K KR2)::bool

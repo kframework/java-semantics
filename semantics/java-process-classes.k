@@ -440,6 +440,11 @@ rule [ConstantDecDesugar]:
           TypeK,, VarDecs
         )
 
+//Discard inner class declarations at this phase. They are processed when their
+//respective <class> tag is encountered as part of processTypeList
+rule [ClassDecDiscard]: 'ClassDec(_) => .
+rule [InterfaceDecDiscard]: 'InterfaceDec(_) => .
+
 /*@ This procedure adds all the fields in <staticEnv> of all implemented interfaces
 into the <staticEnv> of the current class (<cuClass>), in order to be resolved
 by variable lookup algorithms.

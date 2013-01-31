@@ -344,3 +344,7 @@ Note: An outer class or interface cannot be derived from its inner class,
     - x and y from B
     - B.x, B.y from main.
 
+808. Static init of an inner class.
+  Classes A, A.Inner1. B, B.Inner2. Static init trace for A, A.Inner1, B, B.Inner2.
+  From main call A.Inner1.x, B.x. See static initialization in classes A.Inner1, B.
+
