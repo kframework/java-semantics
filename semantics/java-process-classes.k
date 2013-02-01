@@ -182,13 +182,17 @@ rule [tryInheritImpl]:
 
 rule [tryInheritImplDiscard]: tryInheritImpl(.) => .
 
-syntax K ::= "isInheritable" "(" K ")" [strict]
+syntax K ::= "isInheritable" "(" K ")"                        [strict]
 rule isInheritable(public) => true::bool
 rule isInheritable(protected) => true::bool
 
 //Object class cannot match this rule since it has public access mode
 rule [isInheritablePackage]:
-    <k> isInheritable(package) => kEq(getPackage(Class), getPackage(BaseClass)) ...</k>
+    <k>
+      isInheritable(package)
+      => kEq(getPackage(getTopLevel(Class)), getPackage(getTopLevel(BaseClass)))
+      ...
+    </k>
     <cuClass> Class:ClassType </cuClass>
     <class>
       <classType> Class </classType>
@@ -211,12 +215,16 @@ rule [inherit]:
 
 //returns the access mode of a method closure given as argument
 syntax K ::= "getMethodAccessMode" "(" TypedVal ")"   [function]
-rule getMethodAccessMode( _ :: methodType(Acc:AccessMode, _ , _ ) ) => Acc [anywhere]
+rule getMethodAccessMode( _ :: methodType(Acc:AccessMode, _,_,_ ) ) => Acc [anywhere]
 
 //returns the context type of a method closure given as argument
 syntax K ::= "getMethodContextType" "(" TypedVal ")"  [function]
 rule getMethodContextType( methodClosure(_, _, CT:ContextType, _) :: _ ) => CT [anywhere]
 rule getMethodContextType( constrClosure(_,_,_,_) :: _ ) => instanceCT [anywhere]
+
+//returns the class in which this method was defined
+syntax K ::= "getMethodDeclaringClass" "(" TypedVal ")"   [function]
+rule getMethodDeclaringClass( _ :: methodType(_, Class:ClassType, _,_ ) ) => Class [anywhere]
 
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
@@ -231,14 +239,19 @@ context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _),, _)
 context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, 'ListWrap(_,, HOLE,, _),, _:K),, _:K)
 
 rule [MethodDec]:
-    'MethodDec(
-      'MethodDecHead(Modifiers:K,, _:K,, ReturnType:Type,, Name:Id,,
-          'ListWrap(Params:List{K}),, _:K
-      ),,
-      S:K
-    )
-    => storeMethod(Name, getTypesFromParams(Params), 'ListWrap(Params), getContextType(Modifiers), S,
-          methodType(getAccessMode(Modifiers), getTypesFromParams(Params), ReturnType))
+    <k>
+      'MethodDec(
+        'MethodDecHead(Modifiers:K,, _:K,, ReturnType:Type,, Name:Id,,
+            'ListWrap(Params:List{K}),, _:K
+        ),,
+        S:K
+      )
+      => storeMethod(Name, getTypesFromParams(Params), 'ListWrap(Params),
+            getContextType(Modifiers), S,
+            methodType(getAccessMode(Modifiers), Class, getTypesFromParams(Params), ReturnType))
+      ...
+    </k>
+    <cuClass> Class:ClassType </cuClass>
 when isKResult(Params)
         [structural]
 
@@ -336,11 +349,15 @@ when
 context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, 'ListWrap(_,, HOLE,, _),, _),, _:K)
 
 rule [ConstrDec]:
-    'ConstrDec('ConstrDecHead(Modifiers:K,, _:K,, Name:Id,, 'ListWrap(Params:List{K}),, _),,
-        'ConstrBody(
-      'Some(FirstLine:K) ,,S:K))
-    => storeConstructor(Name, 'ListWrap(Params), FirstLine,
-        S, methodType(getAccessMode(Modifiers), getTypesFromParams(Params), void))
+    <k>
+      'ConstrDec('ConstrDecHead(Modifiers:K,, _:K,, Name:Id,, 'ListWrap(Params:List{K}),, _),,
+          'ConstrBody(
+        'Some(FirstLine:K) ,,S:K))
+      => storeConstructor(Name, 'ListWrap(Params), FirstLine,
+          S, methodType(getAccessMode(Modifiers), Class, getTypesFromParams(Params), void))
+      ...
+    </k>
+    <cuClass> Class:ClassType </cuClass>
 when isKResult(Params)
 
 syntax K ::= "storeConstructor" "(" Id    // Class name

@@ -111,6 +111,7 @@ syntax RawVal ::= Int | Bool | String
                 | "undefined" [latex(\bot_{#1})]
 
 syntax Type ::= "methodType" "(" AccessMode ","    // the access mode
+                                 ClassType ","     // the declaring class
                                  K ","             // to be processed into Types
                                  Type              // return type
                              ")"
@@ -236,6 +237,25 @@ syntax K ::= "getPackage" "(" K ")"               [strict]
 rule [getPackage]:
     <k> getPackage(Class:ClassType) => Pack ...</k>
     <typeNamesMap>... Pack:PackageId |-> mapWrap(_ |-> Class _) ...</typeNamesMap>
+
+//Returns the top-level class enclosing this class
+syntax K ::= "getTopLevel" "(" ClassType ")"
+
+rule [getTopLevelReduce]:
+    <k>
+      getTopLevel(Class:ClassType) => getTopLevel(EnclosingClass)
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
+
+rule [getTopLevel]:
+    <k>
+      getTopLevel(Class:ClassType) => Class
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> .K </enclosingClass>
 
 syntax K ::= "kEq" "(" K "," K ")" [seqstrict]
 rule kEq(KR1:KResult, KR2:KResult) => (KR1 ==K KR2)::bool

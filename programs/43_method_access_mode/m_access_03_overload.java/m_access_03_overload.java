@@ -18,7 +18,8 @@
     - public call(): calls f(byte) locally
   - b.D:
     - public call(a.A): calls f(byte) on a.A object
-  - call all six call() methods.
+    - public call(b.C): calls f(byte) on b.C object
+  - call all seven call() methods.
 */
 
 import a.*;
@@ -37,6 +38,7 @@ public class m_access_03_overload {
     c.call(arg);
     c.call();
     d.call(arg);
+    d.call(c);
 
     System.out.println("Done!");
   }
