@@ -44,7 +44,11 @@ rule [localVarNoValue]:
 when notBool X in keys(Env)
 
 rule [FieldUnqualified]:
-    <k> 'Field(X:Id) => 'Field( 'This(.List{K}),, X ) ?? 'Field( Class,, X ) ...</k>
+    <k>
+      'Field(X:Id)
+      => 'Field( 'This(.List{K}),, X ) ?? 'Field( Class,, X ) ?? outerStaticField(Class, X)
+      ...
+    </k>
     <crntClass> Class:ClassType </crntClass>
 
 //resolving the qualifier of a qualified field access: it is either an object or a class reference
@@ -101,10 +105,10 @@ rule [FieldInterfaceRefQualified]:
 
 //todo test similar case for lvalue('Field) ?
 rule [FieldOfPackage]:
-    'Field( _:PackageId,, X:Id ) => noValue  [structural, anywhere]
+    'Field( _:PackageId,, _:Id ) => noValue  [structural, anywhere]
 
 rule [FieldOfNoValue]:
-    'Field( noValue,, X:Id ) => noValue      [structural, anywhere]
+    'Field( noValue,, _:Id ) => noValue      [structural, anywhere]
 
 rule [FieldOfNull]:
     <k>
@@ -204,7 +208,9 @@ when notBool X in keys(Env)                   [structural]
 
 rule [lvalueExprNameMember]:
     <k>
-      lvalue('Field(X:Id)) => lvalue('Field( 'This(.List{K}),, X )) ?? lvalue('Field( Class,, X ))
+      lvalue('Field(X:Id))
+      => lvalue('Field( 'This(.List{K}),, X )) ?? lvalue('Field( Class,, X ))
+         ?? lvalue(outerStaticField(Class, X ))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>  [structural]
@@ -261,6 +267,9 @@ rule [lvalueLookupStaticFieldContinue]:
 when
     notBool X in keys(Env)
 
+rule [lvalueLookupStaticFieldEmpty]:
+    lvalue(lookupStaticField(.K, _)) => noValue
+
 /*@ \subsection{lvalue and loc} */
 
 //@Typed version of lookup
@@ -303,5 +312,45 @@ rule [lookupLocation]:
       ...
     </k>
     <store>... L |-> V:RawVal :: T2:Type ...</store>
+
+//Search for fields with this name in the outer classes of the given class, if any.
+syntax K ::= "outerStaticField" "(" ClassType //The original class. We will search in
+                                              //its outer classes
+                                "," Id        //The field name
+                                ")"
+
+rule [outerStaticField]:
+    <k>
+      outerStaticField(Class:ClassType, X:Id)
+      => lookupStaticField(EnclosingClass, X) ?? outerStaticField(EnclosingClass, X)
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
+
+rule [outerStaticFieldDiscard]:
+    <k>
+      outerStaticField(Class:ClassType, X:Id) => noValue
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> .K </enclosingClass>
+
+rule [lvalueOuterStaticField]:
+    <k>
+      lvalue(outerStaticField(Class:ClassType, X:Id))
+      => lvalue(lookupStaticField(EnclosingClass, X)) ?? lvalue(outerStaticField(EnclosingClass, X))
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
+
+rule [lvalueOuterStaticFieldDiscard]:
+    <k>
+      lvalue(outerStaticField(Class:ClassType, X:Id)) => noValue
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> .K </enclosingClass>
 
 endmodule

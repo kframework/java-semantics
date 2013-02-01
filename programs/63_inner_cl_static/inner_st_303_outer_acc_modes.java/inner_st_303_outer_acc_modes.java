@@ -5,7 +5,7 @@ Inner class to outer class access modes.
   respectively, with diff access modes. Call all with argument byte from p1.P1A.Inner.
 */
 
-public class inner_st_302_outer_acc_modes {
+public class inner_st_303_outer_acc_modes {
 
   public static void main(String[] args) {
     p1.P1A.Inner.test();

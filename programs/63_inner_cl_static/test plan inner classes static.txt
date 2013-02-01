@@ -136,7 +136,9 @@ Note: This test suite doesn't cover any shadowing/obscuring cases.
     - static A.a,
     - static B.b,
     - static B.f()
-  Call them as A.a, B.b, B.f(), a, b, f() from B.Inner.
+  Call them as A.a, B.b, a, b from B.Inner from static and instance context.
+  In both contexts read the values, write them by simple name
+  and then read again by simple name.
 
 302. Inner class to outer class access modes.
   Classes p1.P1A < p1.P1B < p2.P2C, p1.P1D, p1.P1A.Inner
@@ -230,7 +232,7 @@ Places where class names are encountered:
   - class implements clause
   - interface extends clause
   All cases will be tested in the following configurations:
-    - three expression typed for type reference: folly qualified, partially qualified and
+    - three expression typed for type reference: fully qualified, partially qualified and
       unqualified (where applicable)
     - two possible contexts: top-level and nested
     - modifier static is always listed.
