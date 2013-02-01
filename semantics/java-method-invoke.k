@@ -374,7 +374,7 @@ rule getMethConsClosureClass( (_:KLabel)(Class:ClassType,, _:List{K}) ) => Class
 //may be called from the current object environment
 syntax K ::= "isAccessible" "(" Id ","          //the method class
                                 AccessMode ","  //the method access mode
-                                K ","           //evaluates to ContextType
+                                K ","           //evaluates to ContextType - staticCT or instanceCT
                                 Bool            //IsQ - whether the initial method call expression was qualified
                             ")"
         [strict(2)]
@@ -398,15 +398,40 @@ rule [isAccessibleProtected]:
 
 rule [isAccessiblePackage]:
     <k>
-      isAccessible(Class:ClassType, package, _, _)
-      => kEq(getPackage(Class), getPackage(CurrentClass))
+      isAccessible(Class:ClassType, package, _,_)
+      => kEq(getPackage(getTopLevel(Class)), getPackage(getTopLevel(CurrentClass)))
       ...
     </k>
     <crntClass> CurrentClass:ClassType </crntClass>
 
+//A private method is accessible if the class where it is declared lies
+//in the same top-level class as the class that accesses the method
 rule [isAccessiblePrivate]:
-    <k> isAccessible(Class:ClassType, private, _, _) => (Class ==K CurrentClass)::bool ...</k>
+    <k>
+      isAccessible(Class:ClassType, private, _,_)
+      => kEq(getTopLevel(Class), getTopLevel(CurrentClass))
+      ...
+    </k>
     <crntClass> CurrentClass:ClassType </crntClass>
+
+//Returns the top-level class enclosing this class
+syntax K ::= "getTopLevel" "(" ClassType ")"
+
+rule [getTopLevelReduce]:
+    <k>
+      getTopLevel(Class:ClassType) => getTopLevel(EnclosingClass)
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
+
+rule [getTopLevel]:
+    <k>
+      getTopLevel(Class:ClassType) => Class
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> .K </enclosingClass>
 
 //tests whether a new method in an overwriting chain is accessible to the old method
 syntax K ::= "isAccessibleForOverwriting" "("

@@ -61,7 +61,8 @@ configuration
           <staticInitLocations> .Set </staticInitLocations>
           <staticInitDone> false </staticInitDone>
           <imports> .Map </imports>
-          <isTopLevel> true </isTopLevel> // true = top level class, false = inner class
+          <enclosingClass> .K </enclosingClass> //.K if this is a top-level class,
+                                                //ClassType of the enclosing class otherwise
         </class>
       </classes>
       <br/>
@@ -230,7 +231,8 @@ rule default(RT:RefType) => null :: RT [anywhere]
 syntax PackageId ::= "packageId" "(" String ")"
 syntax KResult ::= PackageId
 
-syntax K ::= "getPackage" "(" ClassType ")"
+//The argument should evaluatge to ClassType
+syntax K ::= "getPackage" "(" K ")"               [strict]
 rule [getPackage]:
     <k> getPackage(Class:ClassType) => Pack ...</k>
     <typeNamesMap>... Pack:PackageId |-> mapWrap(_ |-> Class _) ...</typeNamesMap>

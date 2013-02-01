@@ -166,6 +166,7 @@ rule [classDecImpl]:
                 <implements> TypeSet </implements>
                 <declarations> CBody </declarations>
                 <metaType> MetaT </metaType>
+                <enclosingClass> OuterClassK </enclosingClass>
                 ...
               </class> )
       ...

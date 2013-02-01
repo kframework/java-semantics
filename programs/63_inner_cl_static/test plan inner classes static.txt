@@ -31,17 +31,20 @@ Note: This test suite doesn't cover any shadowing/obscuring cases.
   - public k()
   Instantiate A.B from A and access all the members.
 
-104. Inner class access modes. Classes p1.A, p1.A.B, p1.A.C, p1.Test, Test2. p1.A.B members:
+104. Inner class access modes. Classes p1.A, p1.A.B, p1.A.C, p1.P1Test, p1.P1Test.D,
+  DefTest, DefTest.E. p1.A.B members:
     - private f(byte)
     - package f(short)
     - protected f(int)
     - public f(long)
   Call f(byte) from:
-    - p1.A.B()
-    - p1.A.C()
-    - p1.A()
-    - p1.Test1
-    - <default>.Test2
+    - p1.A
+    - p1.A.B
+    - p1.A.C
+    - p1.P1Test
+    - p1.P1Test.D
+    - <default>.DefTest
+    - DefTest.E
 
 105. Inner class as derived class.
   classes A, B, A.Inner < B.
