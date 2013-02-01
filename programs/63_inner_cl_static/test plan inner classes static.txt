@@ -100,6 +100,16 @@ Note: This test suite doesn't cover any shadowing/obscuring cases.
     - Inner1, ... Inner6
     - from main on targets Inner1, ... Inner6.
 
+109. Inner class derived from a to-pevel class. Call an overwritten method
+    through the base class ref.
+  Classes A, B, A.Inner < B.
+  B members:
+    - String f()
+  A.Inner members:
+    - String f()
+
+  Print f() on target (B)A.Inner.
+
 201. Inner class have a reference to the outer class.
   A, A.B. Members:
   - A: String id

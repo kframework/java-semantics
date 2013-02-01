@@ -291,9 +291,13 @@ syntax K ::= "isPreferableSig" "(" K "," K ")"  [strict(1)]
 rule (isPreferableSig(true::bool, K:K) => .) ~> lookupSignature(_,_,_,_, _ => K )
 rule isPreferableSig(false::bool, _) => .
 
-syntax K ::= "lookupMethod" "(" K ","      // sig(Name, SigTL) - Method name
+//The right signature is already found.
+//Search for the right implementation is performed from the compile-time type of the target
+//to more derived types, up to the object type of the target.
+syntax K ::= "lookupMethod" "(" K ","      // sig(Name, SigTL) - Method signature
                                 List{K} "," //class list, elems of type ClassType,
                                             //from derived to base
+                                            //The last one is always the current one.
                                 Map ","     //methods map of current LayerClass to search
                                 TypedVal    //method closure of the most specific method found so far
                                             //or noValue if no applicable method
@@ -424,7 +428,7 @@ syntax K ::= "isAccessibleForOverwriting" "("
 rule isAccessibleForOverwriting(_, private, _, _) => false::bool
 
 rule isAccessibleForOverwriting(OldClass:ClassType, package, NewClass:ClassType, NewAcc:AccessMode)
-    => kEq(getPackage(OldClass), getPackage(NewClass))
+    => kEq(getPackage(getTopLevel(OldClass)), getPackage(getTopLevel(NewClass)))
 
 rule isAccessibleForOverwriting(_, protected, _, _) => true::bool
 rule isAccessibleForOverwriting(_, public,    _, _) => true::bool
