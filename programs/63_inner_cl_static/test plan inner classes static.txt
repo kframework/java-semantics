@@ -402,3 +402,14 @@ Note: An outer class or interface cannot be derived from its inner class,
   Classes A, A.Inner1. B, B.Inner2. Static init trace for A, A.Inner1, B, B.Inner2.
   From main call A.Inner1.id, B.id. See static initialization in classes A.Inner1, B.
 
+809. Inner interface refers to a field and a method from the outer class by simple name,
+  during field init.
+  Class A, interface A.IInner.
+  members:
+    - static A.trace()
+    - static A.id calls trace
+    - static A.f() calls trace
+    - A.IInner.x calls A.id
+    - A.IInner.y calls A.f()
+  Main prints A.IInner.x and A.IInner.y
+

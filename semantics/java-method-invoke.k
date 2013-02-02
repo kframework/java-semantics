@@ -168,16 +168,21 @@ rule [lookupMethodInClassRef]:
           ...
         </envStack>
       ) =>  lookupMethodSigKnown(
-              lookupSignature(MethodName, CallTs, Env, IsQ, noValue),
+              lookupSignature(MethodName, CallTs, Env, IsQ, noValue, Class),
               getClassList(Rest ListItem((Class, BI))),
-              Env,
+              mapWrap(Env),
               noValue
             )
+            //Lookup for the same method in the enclosing class, if not found in Class.
+            ?? lookupMethod(EnclosingClass, MethodName, CallTs, false,
+                  <envStack> ListItem((EnclosingClass, <env> . </env>)) </envStack>
+               )
       ...
     </k>
     <classType> Class </classType>
     <methods> Env:Map </methods>
     <metaType> classMetaT </metaType>
+    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
 
 rule [lookupMethodInInterfaceRef]:
     <k>
@@ -191,24 +196,32 @@ rule [lookupMethodInInterfaceRef]:
           ...
         </envStack>
       ) =>  lookupMethodSigKnown(
-              lookupSignature(MethodName, CallTs, Env, IsQ, noValue),
+              lookupSignature(MethodName, CallTs, Env, IsQ, noValue, Class),
               ActualClass,
-              ActualClassEnv,
+              getMethods(ActualClass),
               noValue
             )
+            //Lookup for the same method in the enclosing class, if not found in Class.
+            ?? lookupMethod(EnclosingClass, MethodName, CallTs, false,
+                  <envStack> ListItem((EnclosingClass, <env> . </env>)) </envStack>
+               )
       ...
     </k>
-    <class>
-      <classType> Class </classType>
-      <methods> Env:Map </methods>
-      <metaType> interfaceMetaT </metaType>
-      ...
-    </class>
-    <class>
-      <classType> ActualClass </classType>
-      <methods> ActualClassEnv:Map </methods>
-      ...
-    </class>
+    <classType> Class </classType>
+    <methods> Env:Map </methods>
+    <metaType> interfaceMetaT </metaType>
+    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
+
+//returns a mapWrap(Env) with <methods> content of the given class
+syntax K ::= "getMethods" "(" ClassType ")"
+
+rule [getMethods]:
+    <k> getMethods(Class:ClassType) => mapWrap(Env) ...</k>
+    <classType> Class </classType>
+    <methods> Env:Map </methods>
+
+rule [lookupMethodDiscard]:
+    lookupMethod(noClass,_,_,_,_) => noValue
 
 syntax K ::= "getClassList" "(" List ")"
 rule (.List{K} => Class),, getClassList((ListItem((Class:ClassType, _)) => .List) _)
@@ -245,6 +258,7 @@ syntax K ::= "lookupSignature" "("  Id     // MethodName
                                ","  Bool   // IsQ - whether the original method call was qualified
                                ","  K      // The best signature found so far,
                                            // or noValue if none found
+                               ","  ClassType //target class
                                ")"
 
 rule [lookupSignatureNoAlternatives]:
@@ -252,7 +266,7 @@ rule [lookupSignatureNoAlternatives]:
             'LazyAnd(
               subtypeList(CallTs, SigTs),,
               isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
-                  getMethodDeclaringClass(TV), IsQ)
+                  getMethodDeclaringClass(TV), IsQ, Class)
             ),
             sig(MethodName, SigTs)
           ) )
@@ -261,7 +275,8 @@ rule [lookupSignatureNoAlternatives]:
           CallTs:Types,
           (sig(MethodName, SigTs:Types) |-> TV:TypedVal => .) _:Map,
           IsQ:Bool,
-          noValue
+          noValue,
+          Class:ClassType
         )
 
 rule [lookupSignatureWithAlternative]:
@@ -269,7 +284,7 @@ rule [lookupSignatureWithAlternative]:
             'LazyAnd(
               'LazyAnd(subtypeList(CallTs, SigTs),, subtypeList(SigTs, AltTs)),,
               isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
-                  getMethodDeclaringClass(TV), IsQ)
+                  getMethodDeclaringClass(TV), IsQ, Class)
             ),
             sig(MethodName, SigTs)
           ) )
@@ -278,7 +293,8 @@ rule [lookupSignatureWithAlternative]:
           CallTs:Types,
           (sig(MethodName, SigTs:Types) |-> TV:TypedVal => .) _:Map,
           IsQ:Bool,
-          sig(MethodName, AltTs:Types)
+          sig(MethodName, AltTs:Types),
+          Class:ClassType
         )
 
 rule [lookupSignatureSigDiscard]:
@@ -286,19 +302,17 @@ rule [lookupSignatureSigDiscard]:
       MethodName:Id,
       _,
       (sig(Name:Id, _) |-> _ => .) _:Map,
-      _,
-      _
+      _,_,_
     )
 when
     Name =/=K MethodName
 
 rule [lookupSignatureEnd]:
-    lookupSignature(_,_,.Map,_,K:K) => K
-when K =/=K noValue
+    lookupSignature(_,_,.Map,_,K:K,_) => K
 
 syntax K ::= "isPreferableSig" "(" K "," K ")"  [strict(1)]
 
-rule (isPreferableSig(true::bool, K:K) => .) ~> lookupSignature(_,_,_,_, _ => K )
+rule (isPreferableSig(true::bool, K:K) => .) ~> lookupSignature(_,_,_,_, _ => K, _ )
 rule isPreferableSig(false::bool, _) => .
 
 //The right signature is already found.
@@ -309,25 +323,25 @@ syntax K ::= "lookupMethodSigKnown" "("
                               List{K} "," //class list, elems of type ClassType,
                                           //from derived to base
                                           //The last one is always the current one.
-                              Map ","     //methods map of current LayerClass to search
+                              K ","       //mapWrap(Map) - methods map of current LayerClass
                               TypedVal    //method closure of the most specific method found so far
                                           //or noValue if no applicable method
                                           //was found yet
-                            ")"           [strict(1,4)]
+                            ")"           [strict(1,3,4)]
 
-rule [lookupMethodFirstCandidate]:
+rule [lookupMethodSigKnownFirstCandidate]:
     lookupMethodSigKnown(
       sig(Name:Id, SigTs:Types),
       _,
-      (sig(Name, SigTs) |-> TV:TypedVal _:Map) => .Map,
+      mapWrap( (sig(Name, SigTs) |-> TV:TypedVal _:Map) => .Map ),
       noValue => TV
     )
 
-rule [lookupMethodOtherCandidates]:
+rule [lookupMethodSigKnownOtherCandidates]:
     lookupMethodSigKnown(
       sig(Name:Id, SigTs:Types),
       (_,, LayerClass:ClassType),
-      (sig(Name, SigTs) |-> TV:TypedVal => .) _:Map,
+      mapWrap( (sig(Name, SigTs) |-> TV:TypedVal => .) _:Map ),
       MCClosure:RawVal :: methodType(Acc:AccessMode, DeclClass:ClassType, SigTs, T:Type)
       => 'If(
             'LazyAnd(
@@ -343,22 +357,22 @@ rule [lookupMethodOtherCandidates]:
           )
     )
 
-rule [lookupMethodEntryDiscard]:
+rule [lookupMethodSigKnownEntryDiscard]:
     lookupMethodSigKnown(
       sig(Name:Id, ChosenSigTs:Types),
       _,
-      (sig(X:Id, SigTs:Types) |-> _ => .) _:Map,
+      mapWrap( (sig(X:Id, SigTs:Types) |-> _ => .) _:Map ),
       _:K
     )
 when
     sig(X, SigTs) =/=K sig(Name, ChosenSigTs)
 
-rule [lookupMethodLayerDiscard]:
+rule [lookupMethodSigKnownLayerDiscard]:
     <k>
       lookupMethodSigKnown(
         _,
         (_,, NewLayerClass:ClassType,, (_:ClassType => .List{K})),
-        .Map => NewEnv,
+        mapWrap( .Map => NewEnv ),
         _:K
       )
       ...
@@ -369,13 +383,16 @@ rule [lookupMethodLayerDiscard]:
       ...
     </class>
 
-rule [lookupMethodEnd]:
+rule [lookupMethodSigKnownEnd]:
     lookupMethodSigKnown(
       _,
       (_:ClassType),
-      .Map,
+      mapWrap(.Map),
      TV:TypedVal
     ) => TV
+
+rule [lookupMethodSigKnownNoSig]:
+    lookupMethodSigKnown(noValue,_,_,_) => noValue
 
 syntax K ::= "getMethConsClosureClass" "(" RawVal ")"
 rule getMethConsClosureClass( (_:KLabel)(Class:ClassType,, _:List{K}) ) => Class
@@ -386,22 +403,28 @@ rule getMethConsClosureClass( (_:KLabel)(Class:ClassType,, _:List{K}) ) => Class
 syntax K ::= "isAccessible" "(" AccessMode ","  //the method access mode
                                 K ","           //evaluates to ContextType - staticCT or instanceCT
                                 K ","           //evaluates to ClassType - the method declaring class
-                                Bool            //IsQ - whether the initial method call expression was qualified
+                                Bool ","        //IsQ - whether the initial method call expression was qualified
+                                ClassType       //target class, used by protected mode in inner classes
                             ")"
         [strict(2)]
 
 rule [isAccessiblePublic]:
-    isAccessible(public, _,_,_) => true::bool
+    isAccessible(public, _,_,_,_) => true::bool
 
 rule [isAccessibleProtected]:
     <k>
-      isAccessible(protected, CT:ContextType, DeclaringClass:ClassType, IsQ:Bool)
+      isAccessible(protected, CT:ContextType, DeclaringClass:ClassType, IsQ:Bool,
+          TargetClass:ClassType
+      )
       => 'LazyOr(
             'LazyAnd(
               'LazyOr((CT ==K staticCT)::bool,, 'Not(IsQ :: bool)),,
-              subtype(CurrentClass, DeclaringClass)
+              subtype(
+                'If(IsQ::bool,, CurrentClass,, TargetClass),
+                DeclaringClass
+              )
             ),,
-            isAccessible(package, CT, DeclaringClass, IsQ)
+            isAccessible(package, CT, DeclaringClass, IsQ, TargetClass)
       )
       ...
     </k>
@@ -409,7 +432,7 @@ rule [isAccessibleProtected]:
 
 rule [isAccessiblePackage]:
     <k>
-      isAccessible(package, _, DeclaringClass:ClassType, _)
+      isAccessible(package, _, DeclaringClass:ClassType, _,_)
       => kEq(getPackage(getTopLevel(DeclaringClass)), getPackage(getTopLevel(CurrentClass)))
       ...
     </k>
@@ -419,7 +442,7 @@ rule [isAccessiblePackage]:
 //in the same top-level class as the class that accesses the method
 rule [isAccessiblePrivate]:
     <k>
-      isAccessible(private, _, DeclaringClass:ClassType, _)
+      isAccessible(private, _, DeclaringClass:ClassType, _,_)
       => kEq(getTopLevel(DeclaringClass), getTopLevel(CurrentClass))
       ...
     </k>

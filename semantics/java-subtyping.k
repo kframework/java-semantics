@@ -9,7 +9,7 @@ module JAVA-SUBTYPING
 syntax K ::= "subtype" "("
                           Type ","
                           Type
-                       ")"
+                       ")"                      [strict]
 
 //Checks whether the each type in the first list of types is a subtype
 //of the type at the same position inthe second list.
