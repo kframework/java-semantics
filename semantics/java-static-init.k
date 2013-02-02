@@ -5,15 +5,15 @@ module JAVA-STATIC-INIT
     imports JAVA-CORE
     imports JAVA-PROCESS-CLASSES
 
-syntax K ::= "staticInit" "(" K // Class - the ClassType to be initialized,
-                                // or .K if this term should be discarded.
+syntax K ::= "staticInit" "(" ClassType // Class - the ClassType to be initialized,
+                                        // or noClass if this term should be discarded.
                           ")"
 
 rule [staticInit]:
     <k>
       staticInit(Class:ClassType)
       => preInitLocations(LocSet)
-      ~> staticInit(BaseClassK)
+      ~> staticInit(BaseClass)
       ~>  'Try(
             StaticInit,,
             'ListWrap(
@@ -45,7 +45,7 @@ rule [staticInit]:
           <location> noValue </location>
     </crntObj>
     <classType> Class </classType>
-    <extends> BaseClassK:K </extends>
+    <extends> BaseClass:ClassType </extends>
     <staticInit> StaticInit:K </staticInit>
     <staticInitLocations> LocSet:Set </staticInitLocations>
     <staticInitDone> false => true </staticInitDone>
@@ -59,7 +59,7 @@ rule [staticInitDiscard]:
     <staticInitDone> true </staticInitDone>
 
 rule [staticInitEmpty]:
-    staticInit(.K) => .K
+    staticInit(noClass) => .K
 
 /*@initialize the given set of locations to their default value.
 First step of the static initializing of a class/interface.

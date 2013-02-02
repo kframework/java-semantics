@@ -103,9 +103,9 @@ rule [SuperMethod]:
         [structural]
 
 syntax KResult ::= "lookupMethodData" "(" K         //OL - object location, or noValue
-                                      "," ClassType //target ref class name
+                                      "," ClassType //target ref class
                                       "," Id        //method name
-                                      "," BagItem   //target <envLayer> content
+                                      "," BagItem   //target <envStack> content
                                       "," Bool      //IsQ - isQualified
                     ")"
 
@@ -119,72 +119,83 @@ and then pop it when the method returns. */
 context 'Invoke(HOLE,, _)
 context 'Invoke(_:KResult ,,'ListWrap(_:List{K},,HOLE,,_:List{K}))
 
-rule [InitSignatureSearchInClassRef]:
-    <k>
-      'Invoke(lookupMethodData(
+rule [InvokeToInvokeImpl]:
+    'Invoke(lookupMethodData(
         OLK:K,
         Class:ClassType,
         MethodName:Id,
+        EnvStack:BagItem,
+        IsQ:Bool
+      ),,
+      'ListWrap(ParamValues:List{K})
+    ) => invokeImpl(
+      lookupMethod(
+        Class,
+        MethodName,
+        getTypesFromValues(ParamValues),
+        IsQ,
+        EnvStack
+      ),
+      OLK,
+      'ListWrap(ParamValues)
+    )
+when isKResult(ParamValues)
+
+//Lookup the right methodClosure based on supplied parameters.
+//If the method is not found in the supplied class list, we should search for it in the
+//class list corresponding to the enclosing class of the caller class.
+//First we search for the signature - lookupSignature construct.
+//Afterwards we search for the right implementation in the hierarchy, once the signature is known
+// - lookupMethodSigKnown.
+syntax K ::= "lookupMethod" "(" ClassType //target ref class
+                            "," Id        //method name
+                            "," Types     //List of actual param types
+                            "," Bool      //IsQ - isQualified
+                            "," BagItem   //target <envStack> content
+                            ")"
+        [strict(3)]
+
+rule [lookupMethodInClassRef]:
+    <k>
+      lookupMethod(
+        Class:ClassType,
+        MethodName:Id,
+        CallTs:Types,
+        IsQ:Bool,
         <envStack>
           Rest:List
           ListItem((Class:ClassType, BI:BagItem))
           ...
-        </envStack>,
-        IsQ:Bool
-      ),,
-        'ListWrap(ParamValues:List{K})
-      ) => invokeImpl(
-        lookupMethod(
-          lookupSignature(
-            MethodName,
-            getTypesFromValues(ParamValues),
-            Env,
-            IsQ,
-            noValue
-          ),
-          getClassList(Rest ListItem((Class, BI))),
-          Env,
-          noValue
-        ),
-        OLK,
-        'ListWrap(ParamValues)
-      )
+        </envStack>
+      ) =>  lookupMethodSigKnown(
+              lookupSignature(MethodName, CallTs, Env, IsQ, noValue),
+              getClassList(Rest ListItem((Class, BI))),
+              Env,
+              noValue
+            )
       ...
     </k>
     <classType> Class </classType>
     <methods> Env:Map </methods>
     <metaType> classMetaT </metaType>
-when isKResult(ParamValues)
 
-rule [InitSignatureSearchInInterfaceRef]:
+rule [lookupMethodInInterfaceRef]:
     <k>
-      'Invoke(lookupMethodData(
-        OLK:Int,
+      lookupMethod(
         Class:ClassType,
         MethodName:Id,
+        CallTs:Types,
+        IsQ:Bool,
         <envStack>
           ListItem((ActualClass:ClassType, _))
           ...
-        </envStack>,
-        IsQ:Bool
-      ),,
-        'ListWrap(ParamValues:List{K})
-      ) => invokeImpl(
-        lookupMethod(
-          lookupSignature(
-            MethodName,
-            getTypesFromValues(ParamValues),
-            Env,
-            IsQ,
-            noValue
-          ),
-          ActualClass,
-          ActualClassEnv,
-          noValue
-        ),
-        OLK,
-        'ListWrap(ParamValues)
-      )
+        </envStack>
+      ) =>  lookupMethodSigKnown(
+              lookupSignature(MethodName, CallTs, Env, IsQ, noValue),
+              ActualClass,
+              ActualClassEnv,
+              noValue
+            )
       ...
     </k>
     <class>
@@ -198,7 +209,6 @@ rule [InitSignatureSearchInInterfaceRef]:
       <methods> ActualClassEnv:Map </methods>
       ...
     </class>
-when isKResult(ParamValues)
 
 syntax K ::= "getClassList" "(" List ")"
 rule (.List{K} => Class),, getClassList((ListItem((Class:ClassType, _)) => .List) _)
@@ -206,7 +216,7 @@ rule (.List{K} => Class),, getClassList((ListItem((Class:ClassType, _)) => .List
 rule getClassList(.) => .List{K}
         [structural, anywhere]
 
-syntax K ::= "invokeImpl" "(" K   //lookupMethod statement, later methodClosure
+syntax K ::= "invokeImpl" "(" K   //lookupMethodSigKnown statement, later methodClosure
                           "," K   //OL - object location, or noValue for static methods
                           "," K   //'ListWrap(ParamValues:List{KResult})
                           ")"
@@ -229,20 +239,20 @@ rule getTypesFromValues(TKs:List{K}, .List{K}) => types(TKs)
 //searches for the correct method signature to use
 //when calling a given MethodName with the given argument types
 //computes into a signature
-syntax K ::= "lookupSignature" "("  Id    // MethodName
-                               ","  Types // Argument types
-                               ","  Map   // Env - methods environment
-                               ","  Bool  // IsQ - whether the original method call was qualified
-                               ","  K     // The best signature found so far, or .K if none found
+syntax K ::= "lookupSignature" "("  Id     // MethodName
+                               ","  Types  // Argument types
+                               ","  Map    // Env - methods environment
+                               ","  Bool   // IsQ - whether the original method call was qualified
+                               ","  K      // The best signature found so far,
+                                           // or noValue if none found
                                ")"
-        [strict(2)]
 
 rule [lookupSignatureNoAlternatives]:
     (. => isPreferableSig(
             'LazyAnd(
+              subtypeList(CallTs, SigTs),,
               isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
-                  getMethodDeclaringClass(TV), IsQ),,
-              subtypeList(CallTs, SigTs)
+                  getMethodDeclaringClass(TV), IsQ)
             ),
             sig(MethodName, SigTs)
           ) )
@@ -257,9 +267,9 @@ rule [lookupSignatureNoAlternatives]:
 rule [lookupSignatureWithAlternative]:
     (. => isPreferableSig(
             'LazyAnd(
+              'LazyAnd(subtypeList(CallTs, SigTs),, subtypeList(SigTs, AltTs)),,
               isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
-                  getMethodDeclaringClass(TV), IsQ),,
-              'LazyAnd(subtypeList(CallTs, SigTs),, subtypeList(SigTs, AltTs))
+                  getMethodDeclaringClass(TV), IsQ)
             ),
             sig(MethodName, SigTs)
           ) )
@@ -294,20 +304,19 @@ rule isPreferableSig(false::bool, _) => .
 //The right signature is already found.
 //Search for the right implementation is performed from the compile-time type of the target
 //to more derived types, up to the object type of the target.
-syntax K ::= "lookupMethod" "(" K ","      // sig(Name, SigTL) - Method signature
-                                List{K} "," //class list, elems of type ClassType,
-                                            //from derived to base
-                                            //The last one is always the current one.
-                                Map ","     //methods map of current LayerClass to search
-                                TypedVal    //method closure of the most specific method found so far
-                                            //or noValue if no applicable method
-                                            //was found yet
-                            ")"           [strict(1)]
-
-context lookupMethod(_,_,_,HOLE)    //replacement for strict(4)
+syntax K ::= "lookupMethodSigKnown" "("
+                              K ","       // sig(Name, SigTL) - Method signature
+                              List{K} "," //class list, elems of type ClassType,
+                                          //from derived to base
+                                          //The last one is always the current one.
+                              Map ","     //methods map of current LayerClass to search
+                              TypedVal    //method closure of the most specific method found so far
+                                          //or noValue if no applicable method
+                                          //was found yet
+                            ")"           [strict(1,4)]
 
 rule [lookupMethodFirstCandidate]:
-    lookupMethod(
+    lookupMethodSigKnown(
       sig(Name:Id, SigTs:Types),
       _,
       (sig(Name, SigTs) |-> TV:TypedVal _:Map) => .Map,
@@ -315,7 +324,7 @@ rule [lookupMethodFirstCandidate]:
     )
 
 rule [lookupMethodOtherCandidates]:
-    lookupMethod(
+    lookupMethodSigKnown(
       sig(Name:Id, SigTs:Types),
       (_,, LayerClass:ClassType),
       (sig(Name, SigTs) |-> TV:TypedVal => .) _:Map,
@@ -335,7 +344,7 @@ rule [lookupMethodOtherCandidates]:
     )
 
 rule [lookupMethodEntryDiscard]:
-    lookupMethod(
+    lookupMethodSigKnown(
       sig(Name:Id, ChosenSigTs:Types),
       _,
       (sig(X:Id, SigTs:Types) |-> _ => .) _:Map,
@@ -346,7 +355,7 @@ when
 
 rule [lookupMethodLayerDiscard]:
     <k>
-      lookupMethod(
+      lookupMethodSigKnown(
         _,
         (_,, NewLayerClass:ClassType,, (_:ClassType => .List{K})),
         .Map => NewEnv,
@@ -361,7 +370,7 @@ rule [lookupMethodLayerDiscard]:
     </class>
 
 rule [lookupMethodEnd]:
-    lookupMethod(
+    lookupMethodSigKnown(
       _,
       (_:ClassType),
       .Map,
@@ -423,7 +432,7 @@ syntax K ::= "isAccessibleForOverwriting" "("
                                               Id ","          //NewMethodClass
                                               AccessMode      //NewMethodAccessMode
                                           ")"
-        [strict(4)] //strict(2) also makes sense ut is not used by the construct creation rule
+        [strict(4)] //strict(2) also makes sense but is not used by the construct creation rule
 
 rule isAccessibleForOverwriting(_, private, _, _) => false::bool
 

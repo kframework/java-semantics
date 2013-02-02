@@ -196,22 +196,22 @@ rule [NewInstance]:
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 when isKResult(Vals)
 
-syntax K ::= "create" "(" K ")"
+syntax K ::= "create" "(" ClassType ")"
 
 rule [create]:
     <k>
       create(Class:ClassType)
-      => create(BaseClassK) ~> setCrntClass(Class) ~> env(StaticEnv) ~> S ~> addEnvLayer
+      => create(BaseClass) ~> setCrntClass(Class) ~> env(StaticEnv) ~> S ~> addEnvLayer
       ...
     </k>
     <classType> Class </classType>
-    <extends> BaseClassK:K </extends>
+    <extends> BaseClass:ClassType </extends>
     <fieldDecs> S:K </fieldDecs>
     <staticEnv> StaticEnv:Map </staticEnv>
         [structural]
 
 rule [createEmptyDiscard]:
-    <k> create( .K ) => . ...</k> [structural]
+    <k> create( noClass ) => . ...</k> [structural]
 
 syntax K ::= "setCrntClass" "(" Id ")"
 

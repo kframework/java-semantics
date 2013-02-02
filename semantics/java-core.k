@@ -43,7 +43,7 @@ configuration
           //sort ClassType. Contains the fully qualified class name.
           <classType color="Fuchsia"> .K </classType>
 
-          <extends color="Fuchsia"> .K </extends>
+          <extends color="Fuchsia"> noClass </extends>
           <implements> .Set </implements>
           <implTrans> .Set </implTrans>
           <br/>
@@ -61,8 +61,8 @@ configuration
           <staticInitLocations> .Set </staticInitLocations>
           <staticInitDone> false </staticInitDone>
           <imports> .Map </imports>
-          <enclosingClass> .K </enclosingClass> //.K if this is a top-level class,
-                                                //ClassType of the enclosing class otherwise
+          <enclosingClass> noClass </enclosingClass> //noClass if this is a top-level class,
+                                                     //ClassType of the enclosing class otherwise
         </class>
       </classes>
       <br/>
@@ -117,6 +117,7 @@ syntax Type ::= "methodType" "(" AccessMode ","    // the access mode
                              ")"
 
 syntax ClassType ::= "class" Id
+                   | "noClass"
 syntax RefType ::= ClassType
 
 syntax ContextType ::= "staticCT" | "instanceCT"
@@ -248,6 +249,7 @@ rule [getTopLevelReduce]:
     </k>
     <classType> Class </classType>
     <enclosingClass> EnclosingClass:ClassType </enclosingClass>
+when EnclosingClass =/=K noClass
 
 rule [getTopLevel]:
     <k>
@@ -255,7 +257,7 @@ rule [getTopLevel]:
       ...
     </k>
     <classType> Class </classType>
-    <enclosingClass> .K </enclosingClass>
+    <enclosingClass> noClass </enclosingClass>
 
 syntax K ::= "kEq" "(" K "," K ")" [seqstrict]
 rule kEq(KR1:KResult, KR2:KResult) => (KR1 ==K KR2)::bool

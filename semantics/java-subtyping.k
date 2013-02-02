@@ -72,6 +72,7 @@ rule [subtypeClassOfClassRed]:
     <class>
       <classType> Class1 </classType>
       <extends> Class2 </extends>
+      <metaType> classMetaT </metaType>
       ...
     </class>
     <class>
@@ -80,17 +81,14 @@ rule [subtypeClassOfClassRed]:
       ...
     </class>
 when
-    (Class1 =/=K Class) andBool (Class =/=K objectClass)
+    Class1 =/=K Class
         [structural]
 
 rule [subtypeClassOfClassFalse]:
-    subtype( Class1:ClassType, Class2:ClassType ) => false :: bool
-when
-            (Class1 ==K objectClass)
-    andBool (Class1 =/=K Class2)
+    subtype( noClass, _ ) => false :: bool
 
 rule [subtypeInterfaceOfClass]:
-    <k> subtype( Class1:ClassType, Class:ClassType ) => false::bool ...</k>
+    <k> subtype( Class1:ClassType, Class:ClassType ) => (Class ==K objectClass)::bool ...</k>
     <class>
       <classType> Class1 </classType>
       <metaType> interfaceMetaT </metaType>
@@ -101,9 +99,6 @@ rule [subtypeInterfaceOfClass]:
       <metaType> classMetaT </metaType>
       ...
     </class>
-when
-    Class =/=K objectClass
-        [structural]
 /*
 K Limitation: This way don't seem to work:
     <classType> Class1 </classType>
@@ -111,12 +106,6 @@ K Limitation: This way don't seem to work:
     <classType> Class </classType>
     <metaType> classMetaT </metaType>
 */
-
-rule [subtypeOfObject]:
-    subtype( _:ClassType, Class:ClassType ) => true::bool
-when
-    Class ==K objectClass
-        [structural]
 
 rule [subtypeOfInterface]:
     <k> subtype( Class1:ClassType, Class:ClassType ) => (Class in ISet)::bool ...</k>
@@ -137,11 +126,7 @@ when
     getKLabel(T) =/=KLabel 'class_
 
 rule [subtypeStringOfClass]:
-    subtype( rtString, Class:ClassType ) =>
-    #if Class ==K objectClass
-      #then true::bool
-      #else false::bool
-    #fi
+    subtype( rtString, Class:ClassType ) => (Class ==K objectClass)::bool
 
 rule [subtypeStringOfOtherFalse]:
     subtype( rtString, T:Type ) => false::bool
@@ -150,11 +135,7 @@ when
     andBool getKLabel(T) =/=KLabel 'class_
 
 rule [subtypeArrayOfClass]:
-    subtype( arrayOf _, Class:ClassType ) =>
-    #if Class ==K objectClass
-      #then true::bool
-      #else false::bool
-    #fi
+    subtype( arrayOf _, Class:ClassType ) => (Class ==K objectClass)::bool
 
 rule [subtypeArrayOfOtherFalse]:
     subtype( arrayOf _, T:Type ) => false::bool
@@ -177,8 +158,6 @@ rule [subtypeArrayOfArrayRef]:
 
 /*@ \subsubsection{Subtyping lists of types}*/
 
-//Bug. Attempt to write a single rule instead of two below, using side conditions,
-//leads to SUBSORT-TO-WRAPPERS
 rule [subtypeList]:
     subtypeList(types(T1:Type,,Ts:List{K}), types(Tp1:Type,,Tps:List{K}))
     => 'LazyAnd( subtype(T1,Tp1),, subtypeList(types(Ts), types(Tps)) )

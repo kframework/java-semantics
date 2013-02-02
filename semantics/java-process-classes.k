@@ -25,7 +25,8 @@ syntax K ::= "processTypeList" "("
                                   Set   // the set of Ids - implemented interface names
                               ")"
            | "processTypeWithDepends" "("
-                                K  //the class to be processed, or .K if no processing is required
+                                ClassType  //the class to be processed,
+                                           //or noClass if no processing is required
                             ")"
            | "processType" "("
                                 ClassType  //the class to be processed
@@ -33,8 +34,10 @@ syntax K ::= "processTypeList" "("
 
 /*@ \subsection{Third pass - processing class members} */
 
+//We need to process Object first. Thus when we will process any interfaces,
+//Object class will be already processed.
 rule [StartProcessClassesPhase]:
-    <k> . => processTypeList(Classes) </k>
+    <k> . => processTypeWithDepends(objectClass) ~> processTypeList(Classes) </k>
     <classes> Classes:Bag </classes>
     <computationPhase> ProcessCompUnitsPhase => ProcessClassesPhase </computationPhase>
 
@@ -60,12 +63,12 @@ rule [processTypeSetDiscard]:
 rule [processTypeWithDepends]:
     <k>
       processTypeWithDepends(Class:ClassType)
-      => processTypeWithDepends(BaseClassK) ~> processTypeSet(ISet) ~> processType(Class)
+      => processTypeWithDepends(BaseClass) ~> processTypeSet(ISet) ~> processType(Class)
       ...
     </k>
     <class>
       <classType> Class </classType>
-      <extends> BaseClassK:K </extends>
+      <extends> BaseClass:ClassType </extends>
       <implements> ISet:Set </implements>
       <declarations> Decls:K </declarations>
       ...
@@ -82,24 +85,24 @@ rule [processTypeWithDependsDiscard]:
     </class>
 
 rule [processTypeWithDependsDiscard2]:
-    processTypeWithDepends(.K) => .K
+    processTypeWithDepends(noClass) => .K
 
 rule [ProcessType]:
     <k>
-      processType(Class:ClassType) => computeImplTrans(SetItem(BaseClassK) ISet)
+      processType(Class:ClassType) => computeImplTrans(SetItem(BaseClass) ISet)
           ~> tryInheritSet(ISet)
 
           //interfaces should also contain Object members
           ~> 'If((MetaT ==K interfaceMetaT)::bool,, tryInherit(objectClass))
 
-          ~> tryInherit(BaseClassK)
+          ~> tryInherit(BaseClass)
           ~> inheritInterfaceFields
           ~> Decls
       ...
     </k>
     <class>
       <classType> Class </classType>
-      <extends> BaseClassK:K </extends>
+      <extends> BaseClass:ClassType </extends>
       <implements> ISet:Set </implements>
       <implTrans> . => ISet </implTrans>
       <declarations> Decls:K => . </declarations>
@@ -123,7 +126,7 @@ rule [computeImplTrans]:
     <classType> BaseItf </classType>
     <implTrans> BaseItfITrans:Set </implTrans>
 
-rule [computeImplTransElemDiscard]: computeImplTrans( (SetItem(.K) => .) _)
+rule [computeImplTransElemDiscard]: computeImplTrans( (SetItem(noClass) => .) _)
 
 rule [computeImplTransDiscard]: computeImplTrans(.) => .
 
@@ -149,7 +152,7 @@ rule <k> saveImplTrans(setWrap(S1:Set)) => . ...</k>
 
 //inherits the methods of the base class, based on rules in JLS $8.4.8 paragraph 1
 syntax K ::= "tryInheritSet" "(" Set ")"
-           | "tryInherit" "(" K ")"
+           | "tryInherit" "(" ClassType ")"
            | "tryInheritImpl" "(" Map ")"
            | "inherit" "(" Map ")"  //when checks are made, we are inheriting the method
 
@@ -167,7 +170,7 @@ rule [tryInherit]:
     <methods> Env:Map </methods>
 
 rule [tryInheritDiscard]:
-    tryInherit(.K) => .K
+    tryInherit(noClass) => .K
 
 rule [tryInheritImplUnfold]:
     <k> (. => tryInheritImpl(MI)) ~> tryInheritImpl( (MI:MapItem => .) _:MapItem _) ...</k>

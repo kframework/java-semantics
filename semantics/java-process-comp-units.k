@@ -20,7 +20,7 @@ rule [CompilationUnit]:
       'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),,
           ImpDecs:K,, 'ListWrap(Ks:List{K})
       )
-      => compUnitImportsStart(Pack) ~> ImpDecs ~> processTypeDecs(Ks, Pack, .K)
+      => compUnitImportsStart(Pack) ~> ImpDecs ~> processTypeDecs(Ks, Pack, noClass)
       ...
     </k>
     <computationPhase> ProcessCompUnitsPhase </computationPhase>
@@ -31,8 +31,8 @@ rule [CompilationUnit]:
 syntax K ::= "processTypeDecs"  "(" List{K} //The list of terms from which we will
                                             //process just type declarations
                                 "," PackageId // the package of the processed types
-                                "," K         // The outer class of this class, if any,
-                                              // or .K if this is a top-level class
+                                "," ClassType // The outer class of this class, if any,
+                                              // or noClass if this is a top-level class
                                 ")"
 
 /*@ \subsection{Class declaration processing}*/
@@ -73,7 +73,7 @@ rule [ClassDec]:
           'Some('ImplementsDec('ListWrap(ImplTypes:List{K})))
         ),,
         'ClassBody( 'ListWrap(Decls:List{K}) )
-      ),, Ks:List{K}, Pack:PackageId, OuterClassK:K)
+      ),, Ks:List{K}, Pack:PackageId, OuterClass:ClassType)
       => classDecImpl(ClassModifiers, SimpleClass, BaseClass, typesToSet(ImplTypes, .Set),
               classMetaT,
               //default constructor
@@ -91,9 +91,9 @@ rule [ClassDec]:
                 ),,
                 Decls
               ),
-              Pack, OuterClassK
+              Pack, OuterClass
             )
-      ~> processTypeDecs(Ks, Pack, OuterClassK)
+      ~> processTypeDecs(Ks, Pack, OuterClass)
 when isKResult(ImplTypes)
         [structural]
 
@@ -113,22 +113,23 @@ rule [InterfaceDec]:
         'Some('ExtendsInterfaces('ListWrap(ImplTypes:List{K})))
       ),,
       CBody:K
-    ),, Ks:List{K}, Pack:PackageId, OuterClassK:K)
-    => classDecImpl(ClassModifiers, SimpleClass, .K, typesToSet(ImplTypes, .Set),
-            interfaceMetaT, CBody, Pack, OuterClassK)
-    ~> processTypeDecs(Ks, Pack, OuterClassK)
+    ),, Ks:List{K}, Pack:PackageId, OuterClass:ClassType)
+    => classDecImpl(ClassModifiers, SimpleClass, noClass, typesToSet(ImplTypes, .Set),
+            interfaceMetaT, CBody, Pack, OuterClass)
+    ~> processTypeDecs(Ks, Pack, OuterClass)
 when isKResult(ImplTypes)
         [structural]
 
 syntax K ::= "classDecImpl" "(" List{K}       // ClassModifiers, .List{K} for Object
                             "," Id            // SimpleClass:Id, simple class name
-                            "," K             // BaseClassK, ClassType for classes or .K for interfaces
+                            "," ClassType     // BaseClass, ClassType for classes
+                                              // or noClass for interfaces
                             "," K             // typesToSet(ImplTypes, .Map)
                             "," MetaType      // classCT or interfaceCT
                             "," K             // CBody
                             "," PackageId     // The package (outer class) of this class
-                            "," K             // The outer class of this class, if any,
-                                              // or .K if this is a top-level class
+                            "," ClassType     // The outer class of this class, if any,
+                                              // or noClass if this is a top-level class
                           ")"
         [strict(4)]
 
@@ -146,9 +147,9 @@ rule [processTypeDecsDiscard]:
 //todo the imports algorithm is very simple and will be updated soon.
 rule [classDecImpl]:
     <k>
-      classDecImpl(_, SimpleClass:Id, BaseClassK:K, setKResult(TypeSet:Set), MetaT:MetaType,
-          CBody:K, Pack:PackageId, OuterClassK:K)
-      => saveImports(Pack, SimpleClass, OuterClassK, .K, .K, noValue, noValue)
+      classDecImpl(_, SimpleClass:Id, BaseClass:ClassType, setKResult(TypeSet:Set), MetaT:MetaType,
+          CBody:K, Pack:PackageId, OuterClass:ClassType)
+      => saveImports(Pack, SimpleClass, OuterClass, .K, .K, noValue, noValue)
       ~> processTypeDecs(bodyAsList(CBody), toPackage(getClassType(Pack, SimpleClass)),
           getClassType(Pack, SimpleClass))
       ...
@@ -159,14 +160,14 @@ rule [classDecImpl]:
                 <classType> getClassType(Pack, SimpleClass) </classType>
                 <extends>
                   #if getClassType(Pack, SimpleClass) =/=K objectClass
-                    #then BaseClassK
-                    #else .K
+                    #then BaseClass
+                    #else noClass
                   #fi
                 </extends>
                 <implements> TypeSet </implements>
                 <declarations> CBody </declarations>
                 <metaType> MetaT </metaType>
-                <enclosingClass> OuterClassK </enclosingClass>
+                <enclosingClass> OuterClass </enclosingClass>
                 ...
               </class> )
       ...
@@ -183,8 +184,8 @@ rule typesToSet(.List{K}, TypeSet:Set) => setKResult(TypeSet)
 //computes and saves the imports map for a class
 syntax K ::= "saveImports"  "(" PackageId //The package of the class
                             "," Id        //The simple name of the class
-                            "," K         //The outer class of this class, if any,
-                                          //or .K if this is a top-level class
+                            "," ClassType //The outer class of this class, if any,
+                                          //or noClass if this is a top-level class
                             "," K         //The ClassType of the class, to be computed
                             "," K         //The toPackage(ClassType), to be computed
                             "," K         //The inner types map of the given class
@@ -209,7 +210,7 @@ rule [saveImportsComputeInnerMap]:
 //Compute the imports map for the ClassType computed at part 1
 rule [saveImportsComputeImportsTop]:
     <k>
-      saveImports(_,_, .K, _,_, mapWrap(InnerTypesMap:Map),
+      saveImports(_,_, noClass, _,_, mapWrap(InnerTypesMap:Map),
         noValue => mapUnion(Imports, InnerTypesMap)
       )
       ...

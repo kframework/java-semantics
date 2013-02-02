@@ -159,10 +159,9 @@ rule lookupField(<envStack> . </envStack>, _) => noValue
 
 //@Section{lookup static field}
 
-syntax K ::= "lookupStaticField" "("
-                                    K "," // Class - ClassType to search, or .K
-                                    Id    // X - field name
-                                  ")"
+syntax K ::= "lookupStaticField" "(" ClassType // Class - ClassType to search, or noClass
+                                 "," Id        // X - field name
+                                 ")"
 
 rule [FieldStaticField]:
     'Field(Class:ClassType,, X:Id) => lookupStaticField(Class, X)
@@ -177,17 +176,17 @@ rule [lookupStaticField]:
 
 rule [lookupStaticFieldContinue]:
     <k>
-      lookupStaticField((Class:ClassType => BaseClassK), X:Id)
+      lookupStaticField((Class:ClassType => BaseClass), X:Id)
       ...
     </k>
     <classType> Class </classType>
-    <extends> BaseClassK:K </extends>
+    <extends> BaseClass:ClassType </extends>
     <staticEnv> Env:Map </staticEnv>
 when
     notBool X in keys(Env)
 
 rule [lookupStaticFieldEmpty]:
-    lookupStaticField(.K, _) => noValue
+    lookupStaticField(noClass, _) => noValue
 
 //@ \texttt{lvalue}
 
@@ -258,17 +257,17 @@ rule [lvalueLookupStaticField]:
 
 rule [lvalueLookupStaticFieldContinue]:
     <k>
-      lvalue(lookupStaticField((Class:ClassType => BaseClassK), X:Id))
+      lvalue(lookupStaticField((Class:ClassType => BaseClass), X:Id))
       ...
     </k>
     <classType> Class </classType>
-    <extends> BaseClassK:K </extends>
+    <extends> BaseClass:ClassType </extends>
     <staticEnv> Env:Map </staticEnv>
 when
     notBool X in keys(Env)
 
 rule [lvalueLookupStaticFieldEmpty]:
-    lvalue(lookupStaticField(.K, _)) => noValue
+    lvalue(lookupStaticField(noClass, _)) => noValue
 
 /*@ \subsection{lvalue and loc} */
 
@@ -329,12 +328,7 @@ rule [outerStaticField]:
     <enclosingClass> EnclosingClass:ClassType </enclosingClass>
 
 rule [outerStaticFieldDiscard]:
-    <k>
-      outerStaticField(Class:ClassType, X:Id) => noValue
-      ...
-    </k>
-    <classType> Class </classType>
-    <enclosingClass> .K </enclosingClass>
+    outerStaticField(noClass, _) => noValue
 
 rule [lvalueOuterStaticField]:
     <k>
@@ -346,11 +340,6 @@ rule [lvalueOuterStaticField]:
     <enclosingClass> EnclosingClass:ClassType </enclosingClass>
 
 rule [lvalueOuterStaticFieldDiscard]:
-    <k>
-      lvalue(outerStaticField(Class:ClassType, X:Id)) => noValue
-      ...
-    </k>
-    <classType> Class </classType>
-    <enclosingClass> .K </enclosingClass>
+    lvalue(outerStaticField(noClass, _)) => noValue
 
 endmodule
