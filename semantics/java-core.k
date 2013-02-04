@@ -71,6 +71,8 @@ configuration
       <cuPackage> .K </cuPackage>
       <cuClass> .K </cuClass>
       <compUnitImports> .Map </compUnitImports>
+      //A stack of nested enclosing classes during ProcessCompUnitsPhase
+      <processCUStack> .List </processCUStack>
 
       //A map from types to objectClosure() terms that represent their T.class value
       <classLiteralsMap> .Map </classLiteralsMap>

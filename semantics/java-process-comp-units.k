@@ -24,6 +24,7 @@ rule [CompilationUnit]:
       ...
     </k>
     <computationPhase> ProcessCompUnitsPhase </computationPhase>
+    <processCUStack> .List => ListItem(noClass) </processCUStack>
 
 //Wrapper over a list of type decs and possible other terms, required to distinguish
 //this phase from other pre-processing phases
@@ -140,7 +141,8 @@ when notBool( Label ==KLabel 'ClassDec orBool Label ==KLabel 'InterfaceDec
             )
 
 rule [processTypeDecsDiscard]:
-    processTypeDecs(.List{K}, _,_) => .K
+    <k> processTypeDecs(.List{K}, _,_) => .K ...</k>
+    <processCUStack> _:ListItem => .List ...</processCUStack>
 
 //For now, the imports map of a class will consist the imports map of the compilation unit +
 // direct inner types.
@@ -172,6 +174,7 @@ rule [classDecImpl]:
               </class> )
       ...
     </classes>
+    <processCUStack> .List => ListItem(getClassType(Pack, SimpleClass)) ...</processCUStack>
 
 syntax K ::= "typesToSet" "(" List{K} //a list of ClassType terms
                           "," Set     //the result map

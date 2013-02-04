@@ -33,15 +33,32 @@ rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK [structural]
 rule 'InterfaceType(TypeK:K,, _) => TypeK        [structural]
 rule 'ClassType(TypeK:K,, _) => TypeK            [structural]
 
-rule [TypeNameInProcessCompUnitsPhase]:
+rule [TypeNameInProcessCompUnitsPhaseTop]:
     <k> 'TypeName(X:Id) => Class ...</k>
     <computationPhase> ProcessCompUnitsPhase </computationPhase>
+    <processCUStack> ListItem(noClass) ...</processCUStack>
     <compUnitImports>... X |-> Class:ClassType ...</compUnitImports>
 
-rule [TypeNameInProcessCompUnitsPhaseFail]:
+rule [TypeNameInProcessCompUnitsPhaseTopFail]:
     <k> 'TypeName(X:Id) => noValue ...</k>
     <computationPhase> ProcessCompUnitsPhase </computationPhase>
+    <processCUStack> ListItem(noClass) ...</processCUStack>
     <compUnitImports> Imp:Map </compUnitImports>
+when notBool X in keys(Imp)
+
+rule [TypeNameInProcessCompUnitsPhaseInner]:
+    <k> 'TypeName(X:Id) => Class ...</k>
+    <computationPhase> ProcessCompUnitsPhase </computationPhase>
+    <processCUStack> ListItem(class Outer:Id) ...</processCUStack>
+    <classType> class Outer </classType>
+    <imports>... X |-> Class:ClassType ...</imports>
+
+rule [TypeNameInProcessCompUnitsPhaseInnerFail]:
+    <k> 'TypeName(X:Id) => noValue ...</k>
+    <computationPhase> ProcessCompUnitsPhase </computationPhase>
+    <processCUStack> ListItem(class Outer:Id) ...</processCUStack>
+    <classType> class Outer </classType>
+    <imports> Imp:Map </imports>
 when notBool X in keys(Imp)
 
 rule [TypeNameInProcessClassesPhase]:

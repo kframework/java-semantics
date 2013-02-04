@@ -441,3 +441,7 @@ In order to distinguish between 'ClassDec here and 'ClassDec in process-classes,
 3. In the same manner, we need to update ProcessClassesPhase, so that each inner class
 could process its extends/implements and members.
 
+Apparently the phase ProcessCompUnits for inner classes should be executed after the phase ProcessClasses
+for the outer class. Otherwise inner classes won't have the right <imports> content,
+and won't be able to see inner classes inherited by the outer class by simple name.
+
