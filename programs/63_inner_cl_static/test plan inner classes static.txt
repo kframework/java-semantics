@@ -233,7 +233,17 @@ Places where class names are encountered:
   - qualifier of static method call
   - qualifier of interface field read
 
-604. Inner classes as part of type declarations.
+604. Inner class in extends clause.
+  Two inner classes. One inherits the other.
+  Classes A, A.Inner1, A.Inner2 < Inner1.
+  Extends clause refers Inner1 by simple name.
+
+605. Inner class in extends clause, with forward reference.
+  Two inner classes. One inherits the other.
+  Classes A, A.Inner1 < Inner2, A.Inner2.
+  Extends clause refers Inner2 by simple name.
+
+606. Inner classes as part of type declarations, all class name expression types.
   - class extends clause
   - class implements clause
   - interface extends clause
@@ -347,6 +357,13 @@ Places where class names are encountered:
     - calling x()
     - instantiating x a = new x();
   Repeat the test from A using name x, and from main using the name A.x.
+
+710. Inner class in extends clause, it's base class is inherited
+  by the outer class.
+  Classes A, A.InnerA, B < A, B.InnerB < InnerA (referred by simple name).
+
+711. Twisted inheritance among outer and inner classes.
+  Classes A, A.InnerA < B.InnerB, B < A, B.InnerB.
 
 Note: An outer class or interface cannot be derived from its inner class,
   either directly or indirectly.

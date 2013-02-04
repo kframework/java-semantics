@@ -7,7 +7,7 @@ Inner classes as part of type declarations.
 
 import p1.*;
 
-public class inner_st_604_type_decl {
+public class inner_st_606_type_decl {
 
   public static void main(String[] args) {
     System.out.println(C1.id + " " + C1.iid);
