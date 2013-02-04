@@ -181,7 +181,8 @@ syntax KResult ::= "setKResult" "(" Set ")" //set wrapper of type KResult
 rule typesToSet((Class:ClassType => .List{K}),,_ , (_ (.Set => SetItem(Class) )))
 rule typesToSet(.List{K}, TypeSet:Set) => setKResult(TypeSet)
 
-//computes and saves the imports map for a class
+//Computes the full names map used to resolve
+//classes by simple name inside the class specified by the arg 4.
 syntax K ::= "saveImports"  "(" PackageId //The package of the class
                             "," Id        //The simple name of the class
                             "," ClassType //The outer class of this class, if any,
@@ -208,6 +209,7 @@ rule [saveImportsComputeInnerMap]:
     )
 
 //Compute the imports map for the ClassType computed at part 1
+//when this class is a top-level class
 rule [saveImportsComputeImportsTop]:
     <k>
       saveImports(_,_, noClass, _,_, mapWrap(InnerTypesMap:Map),
@@ -218,6 +220,7 @@ rule [saveImportsComputeImportsTop]:
     <compUnitImports> Imports:Map </compUnitImports>
 
 //Compute the imports map for the ClassType computed at part 1
+//when this class is an inner class
 rule [saveImportsComputeImportsInner]:
     <k>
       saveImports(_,_, OuterClass:ClassType, _,_, mapWrap(InnerTypesMap:Map),

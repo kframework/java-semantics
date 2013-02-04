@@ -182,21 +182,38 @@ rule toString(Class:ClassType) => fullyQualifiedClassName(Class) [anywhere]
 //todo this function will be obsolete once Class itself will be fully qualified
 syntax K ::= "fullyQualifiedClassName" "(" ClassType ")"
 
-rule [ClassNamePackage]:
+rule [ClassNameTopLevelWithPackage]:
     <k>
       fullyQualifiedClassName(class ClassId:Id)
       => Id2String(ClassId) :: rtString
       ...
     </k>
+    <classType> class ClassId </classType>
+    <enclosingClass> noClass </enclosingClass>
 when substrString(Id2String(ClassId), 0, 1) =/=String "."
 
-rule [ClassNameDefaultPackage]:
+rule [ClassNameTopLevelWithDefaultPackage]:
     <k>
       fullyQualifiedClassName(class ClassId:Id)
       => substrString(Id2String(ClassId), 1, lengthString(Id2String(ClassId)) -Int 1) :: rtString
       ...
     </k>
+    <classType> class ClassId </classType>
+    <enclosingClass> noClass </enclosingClass>
 when substrString(Id2String(ClassId), 0, 1) ==String "."
+
+rule [ClassNameInner]:
+    <k>
+      fullyQualifiedClassName(class ClassId:Id)
+      => 'Plus(
+            fullyQualifiedClassName(class OuterClassId),,
+            ("$" +String Id2String(SimpleName))::rtString
+         )
+      ...
+    </k>
+    <classType> class ClassId </classType>
+    <enclosingClass> class OuterClassId:Id </enclosingClass>
+    <typeNamesMap>... _ |-> mapWrap(SimpleName:Id |-> class ClassId) ...</typeNamesMap>
 
 rule [NameHashCode]:
     methodNameImpl(KR:KResult, X:Id, _) => methodHashCode(KR)
