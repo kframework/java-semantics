@@ -431,7 +431,7 @@ Note: An outer class or interface cannot be derived from its inner class,
   Main prints A.IInner.x and A.IInner.y
 
 810. Accessing inherited inner interfaces by simple name.
-  Class A, interface A.IInner1, A.IInner2, B < A.
+  Interfaces IA, IA.IInner1, IA.IInner2, class B < IA.
   Members:
     - IInner1.id
     - IInner2.id
@@ -440,7 +440,8 @@ Note: An outer class or interface cannot be derived from its inner class,
     - IInner2.id from B
 
 811. Inner interfaces in implements clause, by simple name, inherited.
-  Class A, interface A.IInner1, A.IInner2, B < A, B.InnerB < IInner1, IInner2 (by simple name)
+  Interfaces IA, IA.IInner1, IA.IInner2, class B < IA,
+  interfaces B.InnerB < IInner1, IInner2 (by simple name).
   Members:
     - IInner1.x
     - IInner2.y
@@ -457,7 +458,8 @@ Note: An outer class or interface cannot be derived from its inner class,
     - IInner2.id from IB
 
 813. Inner interfaces in implements clause, by simple name, inherited, inside an outer interface.
-  Interfaces IA, IA.IInner1, IA.IInner2, IB < IA, IB.InnerB < IInner1, IInner2 (by simple name)
+  Interfaces IA, IA.IInner1, IA.IInner2, IB < IA, IB.IInnerB < IInner1, IInner2 (by simple name).
+
   Members:
     - IInner1.x
     - IInner2.y
