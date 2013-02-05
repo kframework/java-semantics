@@ -1,6 +1,6 @@
 /*
 Implementing an inner interface and name resolution.
-  Class A, interface A.IInner1, A.IInner2, B < IInner1, IInner2.
+  Class A, interface A.IInner1, A.IInner2, B < A.IInner1, A.IInner2.
   Members:
     - static A.x
     - static A.y

@@ -405,7 +405,7 @@ Note: An outer class or interface cannot be derived from its inner class,
   Call (IInner)B.f(), B.id, I2.id.
 
 807. Implementing an inner interface and name resolution.
-  Class A, interface A.IInner1, A.IInner2, B < IInner1, IInner2.
+  Class A, interface A.IInner1, A.IInner2, B < A.IInner1, A.IInner2.
   Members:
     - static A.x
     - static A.y
@@ -430,3 +430,36 @@ Note: An outer class or interface cannot be derived from its inner class,
     - A.IInner.y calls A.f()
   Main prints A.IInner.x and A.IInner.y
 
+810. Accessing inherited inner interfaces by simple name.
+  Class A, interface A.IInner1, A.IInner2, B < A.
+  Members:
+    - IInner1.id
+    - IInner2.id
+  Access:
+    - IInner1.id from B
+    - IInner2.id from B
+
+811. Inner interfaces in implements clause, by simple name, inherited.
+  Class A, interface A.IInner1, A.IInner2, B < A, B.InnerB < IInner1, IInner2 (by simple name)
+  Members:
+    - IInner1.x
+    - IInner2.y
+  Access:
+    - x, y from IInnerB.toString()
+
+812. Accessing inherited inner interfaces by simple name, inside an interface.
+  interfaces IA, IA.IInner1, IA.IInner2, IB < IA.
+  Members:
+    - IInner1.id
+    - IInner2.id
+  Access:
+    - IInner1.id from IB
+    - IInner2.id from IB
+
+813. Inner interfaces in implements clause, by simple name, inherited, inside an outer interface.
+  Interfaces IA, IA.IInner1, IA.IInner2, IB < IA, IB.InnerB < IInner1, IInner2 (by simple name)
+  Members:
+    - IInner1.x
+    - IInner2.y
+  Access:
+    - x, y from IInnerB.toString()
