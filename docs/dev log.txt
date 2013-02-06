@@ -441,7 +441,136 @@ In order to distinguish between 'ClassDec here and 'ClassDec in process-classes,
 3. In the same manner, we need to update ProcessClassesPhase, so that each inner class
 could process its extends/implements and members.
 
+The great dilemma of <imports> inside inner classes.
+
 Apparently the phase ProcessCompUnits for inner classes should be executed after the phase ProcessClasses
 for the outer class. Otherwise inner classes won't have the right <imports> content,
 and won't be able to see inner classes inherited by the outer class by simple name.
 
+
+  Steps of processTypeDecs(Class) (ProcessCompUnits):
+1. Resolve extends and implements classes
+2. Save <class> cell.
+3. Save <imports> inside <class>. ImportsMap(Class) = ImportsMap of outer + types defined in Class.
+4. processTypeDecs(Inner classes)
+
+  Steps of processTypeWithDepends(Class) (ProcessClasses):
+1. processTypeWithDepends(BaseClass)
+2. processTypeWithDepends(base interfaces)
+3. Compute transitive closure of implemented interfaces.
+4. Inherit the methods of base interfaces.
+5. Inherit the methods of base class.
+6. Inherit interface fields.
+7. Process this class declarations.
+
+  The problem is that <imports> map computed on phase processTypeDecs step 3
+don't contain types inherited from the base class. It should be computed
+somehow after phase processTypeWithDepends step 5, and imports
+should be computed at the same time as inherited methods (approximately).
+
+Restrictions on the order of computation:
+Relevant steps of processing a class:
+  - base (meaning extends/implements) - resolving the type of base classes.
+  - transitive closure
+  - imports
+
+Restrictions:
+    ( > means computed later).
+1. transitive_closure(X) > base(X), by definition of transitive closure.
+2. base(X) > imports(outer), so that extends/implements(X) may use classes from
+    outer by simple name.
+3. imports(X) > imports(outer) - simple class names within X include simple class names within outer.
+4. imports(X) > imports(transitive_closure(X)) - simple name within X include simple names
+  inherited directly or indirectly from base classes. <=>
+  4.1. imports(X) > imports(base(X))
+  4.2. imports(X) > transitive_closure(X)
+
+As a result we have to check the following relations before computing imports(X):
+R1. imports(outer) < imports(X).
+R2. imports(base) < imports(X).
+R3. transitive_closure(X) < imports(X).
+
+The two tree-relations: nesting and inheritance, when combined, define an topological graph.
+the order in which <imports> is computed should be in agreement with the partial order defined
+by this graph. The graph is guaranteed to be topological according to JLS, definition
+of dependent classes( JLS3 $8.1.4 p185).
+
+We should process classes in the following order (supposedly):
+
+  Steps of processTypeDecs(Class) (ProcessCompUnits):
+1. Resolve extends and implements classes
+2. processTypeDecs(BaseClass) (if not processed)
+3. processTypeDecs(base interfaces) (if not processed)
+4. Compute transitive closure of implemented interfaces.
+5. Save <class> cell.
+6. Compute <imports> inside <class>. ImportsMap(Class) = ImportsMap of outer + types defined in Class.
+7. processTypeDecs(Inner classes)
+
+That's not possible. In order to process classes in the order of their dependency graph,
+we need to have all classes - both top-level and inner, available in one single big map.
+(or maybe not?)
+
+We need to process something for the top-level classes first, and to leave the inference engine
+to process the rest.
+
+It is clear that we cannot process top-level classes first, and inner casses next. Also there is no order
+in which CU's could be processed entirely one by one. We could have several CUs cyclically
+dependent of each other.
+
+A question is still open: can we process top-level classes entirely with their inner classes,
+  triggering here and there processing of dependent top-level classes? Answer: NO:
+
+Important limitation: A request to process an inner class out-of-order cannot be reduced to
+the request of processing it's top-level class with all its content. Example:
+A{InA < B.InB1}, B < A{ InB1, InB2 < InA}
+Correct order of processing: A, B, InB1, InA, InB2.
+B, InB1, InB2 cannot be processed entirely, without processing InA between InB1 and InB2.
+
+Apparently, we need to implement the following algorithm:
+
+ProcessCompUnitsPhase:
+  For each CU:
+1. Process imports. Save them in a separate <compUnitImports> cell.
+2. For each class save the <class> cell with just the following:
+  - <classType> - since we process CU content recursively, should be available
+  - <enclosingClass>
+  - <imports> - just for top-level classes, imports are taken from the <compUnitImports>.
+              For inner classes this cell is still empty.
+  - <classDec> - content of its 'ClassDec term. When this term is non-empty
+    then the class has not been preprocessed yet.
+  This way we will have fast access to the declaration of a class, and will be able to
+  process declarations in a less-restricted order. Do this by recursively processing the content
+  of the current CU.
+
+ProcessTypesPhase:
+3. For each CU, for each top-level class X, processTypeWithDepends(X).
+4. processTypeWithDepends(X) =>
+    processTypeWithDepends(outer)
+    ~> resolveBase(X) - will transform <extendsSimple> into <extends> and <implementsSimple> into <implements>
+    ~> processBaseWithDepends(X)
+    ~> processType(X)
+when unprocessed(X)
+5. processBaseWithDepends(X) => processTypeWithDepends(base(X))
+6. processType(X) =>
+    computeImplTrans(X)
+    ~> computeImports(X)
+    ~> processTypesWithDepends(inner(X))
+when unprocessed(X)
+
+The next phase will be called ProcessMembersPhase.
+
+First we will do a refactoring which will enable us to define the final ProcessCompUnitsPhase,
+and to implement the ProcessTypesPhase in a way maximally compatible with the current implementation.
+
+We need to write down the plan for the following three phases of implementation:
+  1. Current implementation.
+  2. After refactoring. correct ProcessCompUnitsPhase,
+    ProcessTypesPhase doing the remaining job of the old ProcessCompUnitsPhase.
+  3. Final implementation.
+
+  Also I need to write a technical report on this matter, necessarily.
+
+Another important property: dependency relation in JLS
+  is not the same as inheritance + enclosing relation we use in semantics,
+  but they both lead to the same semantic restrictions. We need to prove this,
+  if possible.
