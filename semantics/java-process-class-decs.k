@@ -12,13 +12,14 @@ rule [StartProcessClassDecsPhase]:
     <classes> Classes:Bag </classes>
     <computationPhase> ProcessCompUnitsPhase => ProcessClassDecsPhase </computationPhase>
 
+//todo use getAllClasses instead of <classes> bag
 syntax K ::= "processClassesBag" "(" Bag //the content of <classes> cell after ProcessCompUnits
                                  ")"
 
 //Process a top-level class at any time.
 rule [processClassesBagTopLevel]:
     <k>
-      (. => processTypeDecs(ClassDec, getPackage(Class), noClass))
+      (. => processClassDec(Class, ClassDec))
       ~> processClassesBag(
         (<class>
           <classType> Class:ClassType </classType>
@@ -35,7 +36,7 @@ rule [processClassesBagTopLevel]:
 //Process an inner class only after its OuterClass have reached DecsProcessedCPP phase.
 rule [processClassesBagInner]:
     <k>
-      (. => processTypeDecs(ClassDec, getPackage(Class), OuterClass))
+      (. => processClassDec(Class, ClassDec))
       ~> processClassesBag(
         (<class>
           <classType> Class:ClassType </classType>
@@ -54,99 +55,104 @@ rule [processClassesBagInner]:
 rule [processClassesBagDiscard]:
     processClassesBag(.) => .K
 
-//Wrapper over a list of type decs and possible other terms, required to distinguish
-//this phase from other pre-processing phases
-//Type declarations are processed in this phase wrapped in a processTypeDecs
-syntax K ::= "processTypeDecs"  "(" List{K} //The list of terms from which we will
-                                            //process just type declarations
-                                "," PackageId // the package of the processed types
-                                "," ClassType // The outer class of this class, if any,
-                                              // or noClass if this is a top-level class
-                                ")"   [strict(2)]
+//Process a type from phase CreatedCPP to DecsProcessedCPP
+syntax K ::= "processClassDec"  "(" ClassType // The class to be processed
+                                "," K         // an original 'ClassDec or 'InterfaceDec term
+                                ")"
 
 /*@ \subsection{Class declaration processing}*/
 
 rule [ClassDecNoExtendsDesugar]:
-    processTypeDecs('ClassDec('ClassDecHead(_:K,, SimpleClass:Id,, _:K,,
+    processClassDec(_, 'ClassDec('ClassDecHead(_:K,, SimpleClass:Id,, _:K,,
         ( 'None(_)
           => 'Some('SuperDec('ClassType(objectClass,, 'None(.List{K}))))
         ),,
         _:K),, _:K
-    ),, _, _,_)
+    ))
         [structural]
 
 rule [ClassDecNoImplementsDesugar]:
-    processTypeDecs('ClassDec('ClassDecHead(_:K,, SimpleClass:Id,, _:K,, _:K,,
+    processClassDec(_, 'ClassDec('ClassDecHead(_:K,, SimpleClass:Id,, _:K,, _:K,,
         ( 'None(.List{K}) => 'Some('ImplementsDec('ListWrap(.List{K}))) )
       ),, _:K
-    ),, _, _,_)
+    ))
         [structural]
 
 //Resolving the base class
-context processTypeDecs(
-    'ClassDec( 'ClassDecHead(_:K,, _:K,, _:K,, 'Some('SuperDec(HOLE)),,_) ,,_),, _, _,_)
+context processClassDec(_,
+    'ClassDec( 'ClassDecHead(_:K,, _:K,, _:K,, 'Some('SuperDec(HOLE)),,_) ,,_))
 
 //Resolving superinterfaces, order is not important
-context processTypeDecs('ClassDec('ClassDecHead(_:K,, _:K,, _:K,, _:K,,
+context processClassDec(_, 'ClassDec('ClassDecHead(_:K,, _:K,, _:K,, _:K,,
           'Some('ImplementsDec('ListWrap(_:List{K},, HOLE,, _:List{K})))
-        ),, _:K),, _, _,_)
+        ),, _:K))
 
 //Resolving superinterfaces of an interface, order is not important
-context processTypeDecs('InterfaceDec('InterfaceDecHead(_:K,, _:K,, _:K,,
+context processClassDec(_, 'InterfaceDec('InterfaceDecHead(_:K,, _:K,, _:K,,
           'Some('ExtendsInterfaces('ListWrap(_:List{K},, HOLE,, _:List{K})))
-        ),, _:K),, _, _,_)
+        ),, _:K))
 
 rule [ClassDec]:
-      processTypeDecs('ClassDec('ClassDecHead('ListWrap(ClassModifiers:List{K}),, SimpleClass:Id,, _:K,,
-          'Some('SuperDec(BaseClass:ClassType)),,
-          'Some('ImplementsDec('ListWrap(ImplTypes:List{K})))
-        ),,
-        'ClassBody( 'ListWrap(Decls:List{K}) )
-      ),, Ks:List{K}, Pack:PackageId, OuterClass:ClassType)
-      => classDecImpl(ClassModifiers, getClassType(Pack, SimpleClass), BaseClass,
-              kListToSet(ImplTypes, .Set),
-              classMetaT, OuterClass,
-              //default constructor
-              //if there is a no-args constructor in Decls, it will overwrite this one
-              'ListWrap(
-                'ConstrDec(
-                  'ConstrDecHead(
-                    'ListWrap('Public(.List{K})),,
-                    'None(.List{K}),,
-                    SimpleClass,,
-                    'ListWrap(.List{K}),,
-                    'None(.List{K})
-                  ),,
-                  'ConstrBody('None(.List{K}),, 'ListWrap(.List{K}))
+    <k>
+      processClassDec(
+        Class:ClassType,
+        'ClassDec('ClassDecHead('ListWrap(ClassModifiers:List{K}),, SimpleClass:Id,, _:K,,
+            'Some('SuperDec(BaseClass:ClassType)),,
+            'Some('ImplementsDec('ListWrap(ImplTypes:List{K})))
+          ),,
+          'ClassBody( 'ListWrap(Decls:List{K}) )
+      ))
+      =>  classDecImpl(ClassModifiers, Class, BaseClass,
+            kListToSet(ImplTypes, .Set),
+            classMetaT, OuterClass,
+            //default constructor
+            //if there is a no-args constructor in Decls, it will overwrite this one
+            'ListWrap(
+              'ConstrDec(
+                'ConstrDecHead(
+                  'ListWrap('Public(.List{K})),,
+                  'None(.List{K}),,
+                  SimpleClass,,
+                  'ListWrap(.List{K}),,
+                  'None(.List{K})
                 ),,
-                Decls
-              )
+                'ConstrBody('None(.List{K}),, 'ListWrap(.List{K}))
+              ),,
+              Decls
             )
-      ~> processTypeDecs(Ks, Pack, OuterClass)
+          )
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> OuterClass:ClassType </enclosingClass>
 when isKResult(ImplTypes)
         [structural]
 
 rule [InterfaceDecNoExtendsDesugar]:
-    processTypeDecs('InterfaceDec('InterfaceDecHead(_:K,, SimpleClass:Id,, _:K,,
+    processClassDec(_, 'InterfaceDec('InterfaceDecHead(_:K,, SimpleClass:Id,, _:K,,
         ( 'None(.List{K}) => 'Some('ExtendsInterfaces('ListWrap(.List{K}))) )
       ),, _:K
-    ),, _, _,_)
+    ))
         [structural]
 
 rule [InterfaceDec]:
-    processTypeDecs('InterfaceDec(
-      'InterfaceDecHead(
-        'ListWrap(ClassModifiers:List{K}),,
-        SimpleClass:Id,,
-        _:K,,
-        'Some('ExtendsInterfaces('ListWrap(ImplTypes:List{K})))
-      ),,
-      CBody:K
-    ),, Ks:List{K}, Pack:PackageId, OuterClass:ClassType)
-    => classDecImpl(ClassModifiers, getClassType(Pack, SimpleClass),
-            noClass, kListToSet(ImplTypes, .Set),
-            interfaceMetaT, OuterClass, CBody)
-    ~> processTypeDecs(Ks, Pack, OuterClass)
+    <k>
+      processClassDec(Class:ClassType, 'InterfaceDec(
+        'InterfaceDecHead(
+          'ListWrap(ClassModifiers:List{K}),,
+          SimpleClass:Id,,
+          _:K,,
+          'Some('ExtendsInterfaces('ListWrap(ImplTypes:List{K})))
+        ),,
+        CBody:K
+      ))
+      => classDecImpl(ClassModifiers, Class,
+              noClass, kListToSet(ImplTypes, .Set),
+              interfaceMetaT, OuterClass, CBody)
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> OuterClass:ClassType </enclosingClass>
 when isKResult(ImplTypes)
         [structural]
 
@@ -161,15 +167,6 @@ syntax K ::= "classDecImpl" "(" List{K}       // ClassModifiers, .List{K} for Ob
                             "," K             // CBody
                           ")"
         [strict(4)]
-
-rule [processTypeDecsElemDiscard]:
-    processTypeDecs((Label:KLabel(_) => .List{K}),,_ ,_,_)
-when notBool( Label ==KLabel 'ClassDec orBool Label ==KLabel 'InterfaceDec
-              orBool Label ==KLabel 'bodyAsList
-            )
-
-rule [processTypeDecsDiscard]:
-    processTypeDecs(.List{K}, _,_) => .K
 
 //For now, the imports map of a class will consist the imports map of the compilation unit +
 // direct inner types.
@@ -263,5 +260,18 @@ rule [saveImports]:
     <classType> Class </classType>
     <imports> _ => Imports </imports>
     (<cuImports> _ </cuImports> => .Bag)
+
+//evaluates into a setWrap(S), containing all the classes in the program.
+//uses <typeNamesMap> to compute the result
+syntax K ::= "getAllClasses"
+           | "getAllClasses" "(" Map "," Set ")"
+
+rule [getAllClassesStart]:
+    <k> getAllClasses => getAllClasses(NamesMap, .Set) ...</k>
+    <typeNamesMap> NamesMap:Map </typeNamesMap>
+
+rule getAllClasses(_ _ |-> mapWrap(_ (_ |-> Class:ClassType => .Map)), _ (.Set => SetItem(Class)))
+rule getAllClasses(_ (_ |-> mapWrap(.Map) => .Map), _)
+rule getAllClasses(.Map, ClassesSet:Set) => setWrap(ClassesSet)
 
 endmodule
