@@ -6,22 +6,25 @@ module JAVA-PROCESS-TYPE-NAMES
 /*@ \subsection{First pass - processing top level names} */
 
 rule [PackageNameStart]:
-    'PackageName('ListWrap(Ks:List{K})) => 'PackageName("",, 'ListWrap(Ks:List{K}))
+    'PackageName('ListWrap(Ks:List{K})) => packageNameImpl("", Ks:List{K})
+
+//Aux construct for processing packages
+syntax K ::= "packageNameImpl" "(" String "," List{K} ")"
 
 rule [PackageNameFirstInnerDesugar]:
-    'PackageName(_:String,, 'ListWrap((X:Id => packageId(Id2String(X))),, Ks:List{K}))
+    packageNameImpl(_:String, (X:Id => packageId(Id2String(X))),, Ks:List{K})
 
 rule [PackageNameFirstPack]:
-    'PackageName("",, 'ListWrap(packageId(NextStr:String),, Ks:List{K}))
-    => 'PackageName(NextStr,, 'ListWrap(Ks))
+    packageNameImpl("", packageId(NextStr:String),, Ks:List{K})
+    => packageNameImpl(NextStr, Ks)
 
 rule [PackageNameNextPack]:
-    'PackageName(Str:String,, 'ListWrap(packageId(NextStr:String),, Ks:List{K}))
-    => 'PackageName(Str +String "." +String NextStr,, 'ListWrap(Ks))
+    packageNameImpl(Str:String, packageId(NextStr:String),, Ks:List{K})
+    => packageNameImpl(Str +String "." +String NextStr, Ks)
 when Str =/=String ""
 
 rule [PackageNameEnd]:
-    'PackageName(Str:String,, 'ListWrap(.List{K})) => packageId(Str)
+    packageNameImpl(Str:String, .List{K}) => packageId(Str)
 
 rule [DefaultPackageDesugar]:
     'CompilationUnit(

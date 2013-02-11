@@ -26,6 +26,7 @@ rule [StartExecutionPhase]:
     <env> . </env>
     <mainClass> ListItem(MainClassS:String) </mainClass>
     <computationPhase> ProcessClassesPhase => ExecutionPhase </computationPhase>
+    (<cuClass> _ </cuClass> => .Bag)
 
 //@ \section{Program stack}
 

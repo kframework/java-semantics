@@ -42,7 +42,7 @@ syntax K ::= "importOnDemandImpl" "(" Map ")"
 
 rule [importOnDemandImplPublic]:
     <k> importOnDemandImpl((X:Id |-> Class:ClassType => .) _) ...</k>
-    <compUnitImports> _ (. => X |-> Class) </compUnitImports>
+    <compUnitImports> Imp:Map => Imp[Class / X] </compUnitImports>
     <classesToAccessModes>... Class |-> public ...</classesToAccessModes>
 
 rule [importOnDemandImplPackage]:

@@ -43,10 +43,12 @@ configuration
           //sort ClassType. Contains the fully qualified class name.
           <classType color="Fuchsia"> .K </classType>
 
-          <extends color="Fuchsia"> noClass </extends>
+          <extends color="Fuchsia"> .K </extends>
           <implements> .Set </implements>
           <implTrans> .Set </implTrans>
           <br/>
+          <classDec> .K </classDec> //the 'ClassDec() or 'InterfaceDec() term, after
+                                    //ProcessCompUnitsPhase
           <declarations color="purple"> .K </declarations>
           <metaType> .K </metaType>
           <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>
@@ -60,9 +62,12 @@ configuration
           //Static fields declared in this class, not inherited. Used by static initialization.
           <staticInitLocations> .Set </staticInitLocations>
           <staticInitDone> false </staticInitDone>
+          <cuImports> .Map </cuImports> //imports of the enclosing CU, for top-level classes only.
           <imports> .Map </imports>
           <enclosingClass> noClass </enclosingClass> //noClass if this is a top-level class,
                                                      //ClassType of the enclosing class otherwise
+          <preprocessingPhase> .K </preprocessingPhase> //The major phase of <class> lifetime.
+                                                        //see ClassPreprocessingPhase definition
         </class>
       </classes>
       <br/>
@@ -71,8 +76,6 @@ configuration
       <cuPackage> .K </cuPackage>
       <cuClass> .K </cuClass>
       <compUnitImports> .Map </compUnitImports>
-      //A stack of nested enclosing classes during ProcessCompUnitsPhase
-      <processCUStack> .List </processCUStack>
 
       //A map from types to objectClosure() terms that represent their T.class value
       <classLiteralsMap> .Map </classLiteralsMap>
@@ -90,8 +93,13 @@ configuration
 
 syntax ComputationPhase ::= "ProcessTypeNamesPhase"
                           | "ProcessCompUnitsPhase"
+                          | "ProcessClassDecsPhase"
                           | "ProcessClassesPhase"
                           | "ExecutionPhase"
+
+syntax ClassPreprocessingPhase ::= "CreatedCPP"
+                                 | "DecsProcessedCPP"
+                                 | "MembersProcessedCPP"
 
 rule 'Id(Str:String) => String2Id(Str)     [anywhere]
 
@@ -288,6 +296,7 @@ syntax K ::= "(" ClassType "," BagItem ")"
 //A wrapper for maps. Allows the usage of multy-level maps.
 //Also used as part of mapUnion operation in java-process-classes
 syntax KResult ::= "mapWrap" "(" Map ")"
+                 | "setWrap" "(" Set ")"
 
 syntax K ::= "objectClass"                              [function]
 rule objectClass => class String2Id("java.lang.Object") [structural, anywhere]
@@ -297,10 +306,15 @@ rule objectClass => class String2Id("java.lang.Object") [structural, anywhere]
 //if they collide. This is not really important for the only application of this function
 //in our definition.
 syntax K ::= "mapUnion" "(" Map "," Map ")"
-
-rule mapUnion(M1:Map, K1:K |-> K2:K M2:Map) => mapUnion(M1[K2/K1], M2)
-
+rule mapUnion(M1:Map, M2:Map K1:K |-> K2:K) => mapUnion(M1[K2/K1], M2)
 rule mapUnion(M1:Map, .Map) => mapWrap(M1)
+
+//subsection setUnion, union of sets. Remove when +Set will be implemented.
+syntax K ::= "setUnion" "(" Set "," Set ")"
+rule setUnion(S1:Set, S2:Set SetItem(K:K)) => setUnion(S1 SetItem(K), S2)
+    when notBool(K in S1)
+rule setUnion(S1:Set SetItem(K), S2:Set SetItem(K:K)) => setUnion(S1 SetItem(K), S2)
+rule setUnion(S1:Set, .Set) => setWrap(S1)
 
 syntax K ::= "getAccessMode" "(" K //'ListWrap(...) - the list of class/method attributes
                              ")"                              [function]

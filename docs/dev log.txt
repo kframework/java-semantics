@@ -542,7 +542,7 @@ ProcessCompUnitsPhase:
   process declarations in a less-restricted order. Do this by recursively processing the content
   of the current CU.
 
-ProcessTypesPhase:
+ProcessClassesPhase:
 3. For each CU, for each top-level class X, processTypeWithDepends(X).
 4. processTypeWithDepends(X) =>
     processTypeWithDepends(outer)
@@ -560,17 +560,170 @@ when unprocessed(X)
 The next phase will be called ProcessMembersPhase.
 
 First we will do a refactoring which will enable us to define the final ProcessCompUnitsPhase,
-and to implement the ProcessTypesPhase in a way maximally compatible with the current implementation.
+and to implement the ProcessClassesPhase in a way maximally compatible with the current implementation.
 
 We need to write down the plan for the following three phases of implementation:
   1. Current implementation.
   2. After refactoring. correct ProcessCompUnitsPhase,
-    ProcessTypesPhase doing the remaining job of the old ProcessCompUnitsPhase.
+    ProcessClassesPhase doing the remaining job of the old ProcessCompUnitsPhase.
   3. Final implementation.
 
   Also I need to write a technical report on this matter, necessarily.
 
 Another important property: dependency relation in JLS
   is not the same as inheritance + enclosing relation we use in semantics,
-  but they both lead to the same semantic restrictions. We need to prove this,
+  but they both lead to th e same semantic restrictions. We need to prove this,
   if possible.
+
+        ALG 1. CURRENT IMPLEMENTATION OF PREPROCESSING PHASES
+
+Part 1. ProcessCompUnitsPhase.
+
+  For each CompUnit separately:
+1. Process import decs. Build <compUnitImports>.
+  For each class in CompUnit separately:
+2. Desugar noExtends, noImplements
+3. Resolve extends/implements clauses by context rules.
+4. Add a default constructor to all classes.
+5. Save the following content:
+    <class>
+      <classType> getClassType(Pack, SimpleClass) </classType>
+      <extends> BaseClass </extends>
+      <implements> TypeSet </implements>
+      <declarations> CBody </declarations>
+      <metaType> MetaT </metaType>
+      <enclosingClass> OuterClass </enclosingClass>
+      ...
+    </class>
+
+6. Process imports for the saved class - the <imports> cell.
+7. Process inner classes.
+
+  Since we do not know whether classes in extends/implements clauses were processed,
+    we cannot import inner types from those classes, and as a result <imports> content generated
+    by this algorithm will be incomplete.
+
+Part 2. ProcessClassesPhase:
+8. For each class in <classes>, processTypeWithDepends(class)
+  - processTypeWithDepends(class) => .K if class already processed.
+9. processTypeWithDepends(C) => processTypeWithDepends(extends class, implements classes)
+  ~> processType(C)
+  processType(C):
+10. Mark C as processed
+11. computeImplTrans(base class and interfaces)
+12. tryInherit(interfaces)            (inherit methods)
+13. tryInherit(Object), if interface  (inherit methods)
+14. tryInherit(BaseClass)             (inherit methods)
+15. inheritInterfaceFields
+16. process members
+
+        ALG 2. VERSION 1 OF DESIRED PREPROCESSING PHASES
+
+Part 1. ProcessCompUnitsPhase:
+  For each CompUnit separately:
+1. Process import decs. Build <compUnitImports>.
+  For each class in CompUnit separately:
+
+2. For each class save the <class> cell with just the following:
+  - <classType> - since we process CU content recursively, should be available
+  - <enclosingClass>
+  - <imports> - just for top-level classes, imports are taken from the <compUnitImports>.
+              For inner classes this cell is still empty.
+  - <classDec> - content of its 'ClassDec term. When this term is non-empty
+    then the class has not been preprocessed yet.
+  This way we will have fast access to the declaration of a class, and will be able to
+  process declarations in a less-restricted order. Do this by recursively processing the content
+  of the current CU.
+
+Part 2. ProcessClassDecsPhase:
+3. For each CU, for each top-level class X, processTypeWithDepends(X).
+4. processTypeWithDepends(X) =>
+    processTypeWithDepends(outer)
+    ~> resolveBase(X) - will compute <extends> and <implements> cells for X.
+    ~> processBaseWithDepends(X)
+    ~> processType(X)
+when unprocessed(X)
+5. resolveBase(X): desugar noExtends, noImplements
+6. resolveBase(X): Resolve extends/implements clauses by context rules.
+7. resolveBase(X): save <extends> and <implements> cells.
+8. processBaseWithDepends(X) => processTypeWithDepends(base(X))
+9. processType(X) =>
+    addDefaultConstructor(X)
+    ~> computeImplTrans(X)
+    ~> computeImports(X)
+    ~> processTypesWithDepends(inner(X))
+when unprocessed(X)
+10. addDefaultConstructor(X)
+11. computeImplTrans(X)
+12. computeImports(X)
+13. processTypesWithDepends(inner(X))
+
+Part 3. ProcessClassesPhase:
+    For each class C in <classes>:
+14. tryInherit(interfaces)            (inherit methods)
+15. tryInherit(Object), if interface  (inherit methods)
+16. tryInherit(BaseClass)             (inherit methods)
+17. inheritInterfaceFields
+18. process members
+
+        ALG 3. PREPROCESSING PHASES AFTER FIRST REFACTORING - DESIRED PHASE 1.
+
+Part 1. ProcessCompUnitsPhase:
+  For each CompUnit separately:
+1. Process import decs. Build <compUnitImports>.
+
+  For each class C in CompUnit separately:
+2. For each class save the <class> cell with just the following:
+  - <classType> - since we process CU content recursively, should be available
+  - <enclosingClass>
+  - <classDec> - content of its 'ClassDec term. When this term is non-empty
+      then the class has not been preprocessed yet.
+  - <imports> - just for top-level classes, imports are taken from the <compUnitImports>.
+              For inner classes this cell is still empty.
+
+3. Process inner classes of C.
+
+  This way we will have fast access to the declaration of a class, and will be able to
+process declarations in a less-restricted order.
+
+Part 2. ProcessClassDecsPhase.
+
+  For each class in <classes> separately:
+4. Desugar noExtends, noImplements
+5. Resolve extends/implements clauses by context rules.
+6. Add a default constructor to all classes.
+7. Save the following content:
+    <class>
+      <extends> BaseClass </extends>
+      <implements> TypeSet </implements>
+      <declarations> CBody </declarations>
+      ...
+    </class>
+
+8. Process imports for the saved class - the <imports> cell.
+9. Process inner classes.
+
+  Since we do not know whether classes in extends/implements clauses were processed,
+    we cannot import inner types from those classes, and as a result <imports> content generated
+    by this algorithm will be incomplete.
+
+Part 3. ProcessClassesPhase:
+10. For each class in <classes>, processTypeWithDepends(class)
+  - processTypeWithDepends(class) => .K if class already processed.
+11. processTypeWithDepends(C) => processTypeWithDepends(extends class, implements classes)
+  ~> processType(C)
+  processType(C):
+12. Mark C as processed
+13. computeImplTrans(base class and interfaces)
+14. tryInherit(interfaces)            (inherit methods)
+15. tryInherit(Object), if interface  (inherit methods)
+16. tryInherit(BaseClass)             (inherit methods)
+17. inheritInterfaceFields
+18. process members
+
+    It seems that this refactoring consists from the following:
+1. Separate the old ProcessCompUnitsPhase into two phases -
+  new ProcessCompUnitsPhase and new ProcessClassDecsPhase.
+2. Save the initial content of <class> cell after first step, recursively.
+3. Starting from step 3, classes are taked from processing from their <classes>
+  cell, not from raw CompUnits.

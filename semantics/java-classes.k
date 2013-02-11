@@ -33,32 +33,57 @@ rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK [structural]
 rule 'InterfaceType(TypeK:K,, _) => TypeK        [structural]
 rule 'ClassType(TypeK:K,, _) => TypeK            [structural]
 
-rule [TypeNameInProcessCompUnitsPhaseTop]:
-    <k> 'TypeName(X:Id) => Class ...</k>
-    <computationPhase> ProcessCompUnitsPhase </computationPhase>
-    <processCUStack> ListItem(noClass) ...</processCUStack>
-    <compUnitImports>... X |-> Class:ClassType ...</compUnitImports>
-
-rule [TypeNameInProcessCompUnitsPhaseTopFail]:
+//Hapens during process-imports sub-phase. This is of course an approximation.
+rule [TypeNameInProcessCompUnitsPhase]:
     <k> 'TypeName(X:Id) => noValue ...</k>
     <computationPhase> ProcessCompUnitsPhase </computationPhase>
-    <processCUStack> ListItem(noClass) ...</processCUStack>
-    <compUnitImports> Imp:Map </compUnitImports>
+
+rule [TypeNameInProcessClassDecsPhaseTop]:
+    <k> 'TypeName(X:Id) => Class ...</k>
+    <computationPhase> ProcessClassDecsPhase </computationPhase>
+    <cuClass> CuClass:ClassType </cuClass>
+    <classType> CuClass </classType>
+    <enclosingClass> noClass </enclosingClass>
+    <cuImports>... X |-> Class:ClassType ...</cuImports>
+
+rule [TypeNameInProcessClassDecsPhaseTopFail]:
+    <k> 'TypeName(X:Id) => noValue ...</k>
+    <computationPhase> ProcessClassDecsPhase </computationPhase>
+    <cuClass> CuClass:ClassType </cuClass>
+    <classType> CuClass </classType>
+    <enclosingClass> noClass </enclosingClass>
+    <cuImports> Imp:Map </cuImports>
 when notBool X in keys(Imp)
 
-rule [TypeNameInProcessCompUnitsPhaseInner]:
+rule [TypeNameInProcessClassDecsPhaseInner]:
     <k> 'TypeName(X:Id) => Class ...</k>
-    <computationPhase> ProcessCompUnitsPhase </computationPhase>
-    <processCUStack> ListItem(class Outer:Id) ...</processCUStack>
-    <classType> class Outer </classType>
-    <imports>... X |-> Class:ClassType ...</imports>
+    <computationPhase> ProcessClassDecsPhase </computationPhase>
+    <cuClass> CuClass:ClassType </cuClass>
+    <class>
+      <classType> CuClass </classType>
+      <enclosingClass> class Outer </enclosingClass>
+      ...
+    </class>
+    <class>
+      <classType> class Outer </classType>
+      <imports>... X |-> Class:ClassType ...</imports>
+      ...
+    </class>
 
-rule [TypeNameInProcessCompUnitsPhaseInnerFail]:
+rule [TypeNameInProcessClassDecsPhaseInnerFail]:
     <k> 'TypeName(X:Id) => noValue ...</k>
-    <computationPhase> ProcessCompUnitsPhase </computationPhase>
-    <processCUStack> ListItem(class Outer:Id) ...</processCUStack>
-    <classType> class Outer </classType>
-    <imports> Imp:Map </imports>
+    <computationPhase> ProcessClassDecsPhase </computationPhase>
+    <cuClass> CuClass:ClassType </cuClass>
+    <class>
+      <classType> CuClass </classType>
+      <enclosingClass> class Outer </enclosingClass>
+      ...
+    </class>
+    <class>
+      <classType> class Outer </classType>
+      <imports> Imp:Map </imports>
+      ...
+    </class>
 when notBool X in keys(Imp)
 
 rule [TypeNameInProcessClassesPhase]:

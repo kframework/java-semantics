@@ -39,7 +39,7 @@ syntax K ::= "processTypeList" "("
 rule [StartProcessClassesPhase]:
     <k> . => processTypeWithDepends(objectClass) ~> processTypeList(Classes) </k>
     <classes> Classes:Bag </classes>
-    <computationPhase> ProcessCompUnitsPhase => ProcessClassesPhase </computationPhase>
+    <computationPhase> ProcessClassDecsPhase => ProcessClassesPhase </computationPhase>
 
 rule [processTypeList]:
     (. => processTypeWithDepends(Class))
@@ -107,6 +107,7 @@ rule [ProcessType]:
       <implTrans> . => ISet </implTrans>
       <declarations> Decls:K => . </declarations>
       <metaType> MetaT:MetaType </metaType>
+      <preprocessingPhase> DecsProcessedCPP => MembersProcessedCPP </preprocessingPhase>
       ...
     </class>
     <cuClass> _ => Class </cuClass>
@@ -129,18 +130,6 @@ rule [computeImplTrans]:
 rule [computeImplTransElemDiscard]: computeImplTrans( (SetItem(noClass) => .) _)
 
 rule [computeImplTransDiscard]: computeImplTrans(.) => .
-
-//subsection setUnion, union of sets. Remove when +Set will be implemented.
-syntax K ::= "setUnion" "(" Set "," Set ")"
-syntax KResult ::= "setWrap" "(" Set ")"
-
-rule setUnion(S1:Set, SetItem(K:K) S2:Set) => setUnion(S1 SetItem(K), S2)
-when notBool(K in S1)
-
-rule setUnion(S1:Set, SetItem(K:K) S2:Set) => setUnion(S1, S2)
-when K in S1
-
-rule setUnion(S1:Set, .Set) => setWrap(S1)
 
 syntax K ::= "saveImplTrans" "(" K //setWrap(ISet) - transitive set of inherited interfaces
                              ")"  [strict]

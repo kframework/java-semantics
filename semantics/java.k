@@ -1,6 +1,7 @@
 require "java-core.k"
 require "java-process-type-names.k"
 require "java-process-comp-units.k"
+require "java-process-class-decs.k"
 require "java-process-imports.k"
 require "java-process-classes.k"
 require "java-primitive-types.k"
@@ -19,6 +20,7 @@ module JAVA
     imports JAVA-CORE
     imports JAVA-PROCESS-TYPE-NAMES
     imports JAVA-PROCESS-COMP-UNITS
+    imports JAVA-PROCESS-CLASS-DECS
     imports JAVA-PROCESS-IMPORTS
     imports JAVA-PROCESS-CLASSES
     imports JAVA-PRIMITIVE-TYPES

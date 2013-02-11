@@ -19,7 +19,7 @@ TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # and $JAVA_FILE may also be a dir
 if [ $# == 1 ];
 then
-    krun --parser=aux-kjprep.sh -cMainClass="ListItem(\"$MAIN_CLASS\")" $JAVA_FILE
+    time krun --parser=aux-kjprep.sh -cMainClass="ListItem(\"$MAIN_CLASS\")" $JAVA_FILE
 else
     krun --parser=aux-kjprep.sh -cMainClass="ListItem(\"$MAIN_CLASS\")" --debug $JAVA_FILE
 fi
