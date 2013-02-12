@@ -98,6 +98,7 @@ syntax ComputationPhase ::= "ProcessTypeNamesPhase"
                           | "ExecutionPhase"
 
 syntax ClassPreprocessingPhase ::= "CreatedCPP"
+                                 | "BasesResolvedCPP"
                                  | "DecsProcessedCPP"
                                  | "MembersProcessedCPP"
 

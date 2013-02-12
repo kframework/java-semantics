@@ -66,23 +66,15 @@ rule [processTypeWithDepends]:
       => processTypeWithDepends(BaseClass) ~> processTypeSet(ISet) ~> processType(Class)
       ...
     </k>
-    <class>
-      <classType> Class </classType>
-      <extends> BaseClass:ClassType </extends>
-      <implements> ISet:Set </implements>
-      <declarations> Decls:K </declarations>
-      ...
-    </class>
-when
-    Decls =/=K .K
+    <classType> Class </classType>
+    <extends> BaseClass:ClassType </extends>
+    <implements> ISet:Set </implements>
+    <preprocessingPhase> DecsProcessedCPP </preprocessingPhase>
 
 rule [processTypeWithDependsDiscard]:
     <k> processTypeWithDepends(Class:ClassType) => . ...</k>
-    <class>
-      <classType> Class </classType>
-      <declarations> .K </declarations>
-      ...
-    </class>
+    <classType> Class </classType>
+    <preprocessingPhase> MembersProcessedCPP </preprocessingPhase>
 
 rule [processTypeWithDependsDiscard2]:
     processTypeWithDepends(noClass) => .K
@@ -105,7 +97,7 @@ rule [ProcessType]:
       <extends> BaseClass:ClassType </extends>
       <implements> ISet:Set </implements>
       <implTrans> . => ISet </implTrans>
-      <declarations> Decls:K => . </declarations>
+      ( <declarations> Decls:K </declarations> => .Bag)
       <metaType> MetaT:MetaType </metaType>
       <preprocessingPhase> DecsProcessedCPP => MembersProcessedCPP </preprocessingPhase>
       ...

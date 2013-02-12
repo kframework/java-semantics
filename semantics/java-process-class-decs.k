@@ -11,31 +11,23 @@ rule [StartProcessClassDecsPhase]:
     <k> . => processClassesSet(getAllClasses) </k>
     <computationPhase> ProcessCompUnitsPhase => ProcessClassDecsPhase </computationPhase>
 
+//Processes all classes from CreatedCPP to DecsProcessedCPP.
 syntax K ::= "processClassesSet" "(" K //setwrap(Set) - the set of all classes
                                  ")"  [strict]
 
-//Process a top-level class at any time.
-rule [processClassesSetTopLevel]:
-    <k>
-      (. => processClassDec(Class))
-      ~> processClassesSet(setWrap( (SetItem(Class:ClassType) => .) _ ))
-      ...
-    </k>
-    <cuClass> _ => Class </cuClass>
+rule [resolveBasesTopLevelStart]:
+    <k> (. => resolveBases(Class)) ~> processClassesSet(_) ...</k>
     <classType> Class:ClassType </classType>
     <enclosingClass> noClass </enclosingClass>
-
-//Process an inner class only after its OuterClass have reached DecsProcessedCPP phase.
-rule [processClassesSetInner]:
-    <k>
-      (. => processClassDec(Class))
-      ~> processClassesSet(setWrap( (SetItem(Class:ClassType) => .) _ ))
-      ...
-    </k>
+    <preprocessingPhase> CreatedCPP </preprocessingPhase>
     <cuClass> _ => Class </cuClass>
+
+rule [resolveBasesInnerStart]:
+    <k> (. => resolveBases(Class)) ~> processClassesSet(_) ...</k>
     <class>
       <classType> Class:ClassType </classType>
-      <enclosingClass> OuterClass </enclosingClass>
+      <enclosingClass> OuterClass:ClassType </enclosingClass>
+      <preprocessingPhase> CreatedCPP </preprocessingPhase>
       ...
     </class>
     <class>
@@ -43,89 +35,69 @@ rule [processClassesSetInner]:
       <preprocessingPhase> DecsProcessedCPP </preprocessingPhase>
       ...
     </class>
+    <cuClass> _ => Class </cuClass>
 
-rule [processClassesSetDiscard]:
-    processClassesSet(setWrap(.)) => .K
+//Process the given class from CreatedCPP to BasesResolvedCPP.
+syntax K ::= "resolveBases" "(" ClassType ")"
 
-//Process a type from phase CreatedCPP to DecsProcessedCPP
-syntax K ::= "processClassDec"  "(" ClassType // The class to be processed
-                                ")"
-
-//The preprocessing hole, used for custom heating/cooling rules across multiple cells
-syntax K ::= "PREP$HOLE"
+//The hole used for resolving class bases - extends/implements clauses.
+syntax K ::= "BASES$HOLE"
 
 //Resolving the base class
-//Todo this rule should be applied and is not.
 rule [heatRawExtends]:
-    <k> (. => BaseClassRaw) ~> processClassDec(Class:ClassType) ...</k>
+    <k> (. => BaseClassRaw) ~> resolveBases(Class:ClassType) ...</k>
     <classType> Class </classType>
-    <rawExtends> BaseClassRaw:K => PREP$HOLE </rawExtends>
+    <rawExtends> BaseClassRaw:K => BASES$HOLE </rawExtends>
 //todo bug - this one don't work, let's try an alternative
 //when notBool isKResult(BaseClassRaw)
 when        getKLabel(BaseClassRaw) =/=KLabel 'class_
     andBool getKLabel(BaseClassRaw) =/=KLabel 'noClass
 
 rule [coolRawExtends]:
-    <k> (BaseClass:ClassType => .) ~> processClassDec(Class:ClassType) ...</k>
+    <k> (BaseClass:ClassType => .) ~> resolveBases(Class:ClassType) ...</k>
     <classType> Class </classType>
-    <rawExtends> PREP$HOLE => BaseClass </rawExtends>
+    <rawExtends> BASES$HOLE => BaseClass </rawExtends>
 
 //Resolving superinterfaces of both classes and interfaces, order is not important
 rule [heatRawImplements]:
-    <k> (. => BaseInterfaceRaw) ~> processClassDec(Class:ClassType) ...</k>
+    <k> (. => BaseInterfaceRaw) ~> resolveBases(Class:ClassType) ...</k>
     <classType> Class </classType>
-    <rawImplements> 'ListWrap(_,, (BaseInterfaceRaw:K => PREP$HOLE),, _) </rawImplements>
+    <rawImplements> 'ListWrap(_,, (BaseInterfaceRaw:K => BASES$HOLE),, _) </rawImplements>
 //todo same bug as for heatRawExtends
 //when notBool isKResult(BaseInterfaceRaw)
 when getKLabel(BaseInterfaceRaw) =/=KLabel 'class_
 
 rule [coolRawImplements]:
-    <k> (BaseInterface:ClassType => .) ~> processClassDec(Class:ClassType) ...</k>
+    <k> (BaseInterface:ClassType => .) ~> resolveBases(Class:ClassType) ...</k>
     <classType> Class </classType>
-    <rawImplements> 'ListWrap(_,, (PREP$HOLE => BaseInterface),, _) </rawImplements>
+    <rawImplements> 'ListWrap(_,, (BASES$HOLE => BaseInterface),, _) </rawImplements>
 
-rule [processClassDec]:
-    <k>
-      processClassDec(Class:ClassType)
-      =>  classDecImpl(.List{K}, Class, BaseClass,
-            kListToSet(ImplTypes, .Set),
-            MetaT, OuterClass, CBody
-          )
-      ...
-    </k>
+rule [resolveBasesEnd]:
+    <k> resolveBases(Class:ClassType) => . ...</k>
     <classType> Class </classType>
-    <enclosingClass> OuterClass:ClassType </enclosingClass>
-    <declarations> CBody:K </declarations>
-    <metaType> MetaT:MetaType </metaType>
-    ( <rawExtends> BaseClass:ClassType </rawExtends>
-      <rawImplements> 'ListWrap(ImplTypes:List{K}) </rawImplements> => .Bag)
+    <rawExtends> BaseClass:ClassType </rawExtends>
+    <rawImplements> 'ListWrap(ImplTypes:List{K}) </rawImplements>
+    <preprocessingPhase> CreatedCPP => BasesResolvedCPP </preprocessingPhase>
 when isKResult(ImplTypes)
-
-syntax K ::= "classDecImpl" "(" List{K}       // ClassModifiers, .List{K} for Object
-                            "," ClassType     // Class - the actual class
-                            "," ClassType     // BaseClass, ClassType for classes
-                                              // or noClass for interfaces
-                            "," K             // kListToSet(ImplTypes, .Map)
-                            "," MetaType      // classCT or interfaceCT
-                            "," ClassType     // The outer class of this class, if any,
-                                              // or noClass if this is a top-level class
-                            "," K             // CBody
-                          ")"
-        [strict(4)]
 
 //For now, the imports map of a class will consist the imports map of the compilation unit +
 // direct inner types.
 //todo the imports algorithm is very simple and will be updated soon.
 //We cannot distinguish between Class == objectClass and others earlier,
 //because we don't have Class:ClassType back then.
-rule [classDecImpl]:
+rule [processClassDecEnd]:
     <k>
-      classDecImpl(_, Class:ClassType, BaseClass:ClassType, setWrap(TypeSet:Set),
-          MetaT:MetaType, OuterClass:ClassType, CBody:K)
-      => saveImports(Class, OuterClass, .K, noValue, noValue)
+      (. => saveImplements(Class, kListToSet(ImplTypes, .Set))
+         ~> saveImports(Class, OuterClass, .K, noValue, noValue)
+      )
+      ~> processClassesSet(setWrap( (SetItem(Class:ClassType) => .Set) _:Set ))
       ...
     </k>
     <classType> Class </classType>
+    <enclosingClass> OuterClass:ClassType </enclosingClass>
+    <declarations> CBody:K </declarations>
+    <metaType> MetaT:MetaType </metaType>
+    <preprocessingPhase> BasesResolvedCPP => DecsProcessedCPP </preprocessingPhase>
     <extends>
       .K =>
       #if Class =/=K objectClass
@@ -133,8 +105,11 @@ rule [classDecImpl]:
         #else noClass
       #fi
     </extends>
-    <implements> .Set => TypeSet </implements>
-    <preprocessingPhase> CreatedCPP => DecsProcessedCPP </preprocessingPhase>
+    ( <rawExtends> BaseClass:ClassType </rawExtends>
+      <rawImplements> 'ListWrap(ImplTypes:List{K}) </rawImplements> => .Bag)
+
+rule [processClassesSetDiscard]:
+    processClassesSet(setWrap(.)) => .K
 
 //Converts a term of type List{K} into a Set
 syntax K ::= "kListToSet" "(" List{K} //a list of some K Terms
@@ -143,6 +118,14 @@ syntax K ::= "kListToSet" "(" List{K} //a list of some K Terms
 
 rule kListToSet((K:K => .List{K}),,_ , (_ (.Set => SetItem(K) )))
 rule kListToSet(.List{K}, TypeSet:Set) => setWrap(TypeSet)
+
+//receives a kListToSet term ans saves the resulting set into <imports>
+syntax K ::= "saveImplements" "(" ClassType "," K ")" [strict(2)]
+
+rule [saveImplements]:
+    <k> saveImplements(Class:ClassType, setWrap(ImplSet:Set)) => . ...</k>
+    <classType> Class </classType>
+    <implements> .Set => ImplSet </implements>
 
 //Computes the full names map used to resolve
 //classes by simple name inside the class specified by the arg 4.
