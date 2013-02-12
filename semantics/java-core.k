@@ -49,6 +49,8 @@ configuration
           <br/>
           <rawExtends> .K </rawExtends>
           <rawImplements> .K </rawImplements>
+          <unprocessedBases> .K </unprocessedBases>//base classes that didn't
+                                                   //reached the state DecsProcessedCPP yet.
           <declarations color="purple"> .K </declarations>
           <metaType> .K </metaType>
           <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>

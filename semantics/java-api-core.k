@@ -213,7 +213,7 @@ rule [ClassNameInner]:
     </k>
     <classType> class ClassId </classType>
     <enclosingClass> class OuterClassId:Id </enclosingClass>
-    <typeNamesMap>... _ |-> mapWrap(SimpleName:Id |-> class ClassId) ...</typeNamesMap>
+    <typeNamesMap>... _ |-> mapWrap(SimpleName:Id |-> class ClassId _:Map) ...</typeNamesMap>
 
 rule [NameHashCode]:
     methodNameImpl(KR:KResult, X:Id, _) => methodHashCode(KR)

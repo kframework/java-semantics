@@ -35,9 +35,10 @@ with methods with same name and return type void.
 18. Static members, both in classes and final fields in interfaces.
   Including proper rules for static initialization triggering for both classes and interfaces.
 19. Packages, fully qualified class names and imports. JLS $7.
+20. Static inner classes.
 
 Major features yet to be implemented:
-1. Inner classes (including nested, local and anonymous classes).
+1. Inner classes (other types - nested, local and anonymous classes).
 2. Advanced names resolution, shadowing and obscuring. JLS $6.
 
 

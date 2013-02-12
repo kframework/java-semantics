@@ -77,18 +77,31 @@ rule [resolveBasesEnd]:
     <classType> Class </classType>
     <rawExtends> BaseClass:ClassType </rawExtends>
     <rawImplements> 'ListWrap(ImplTypes:List{K}) </rawImplements>
+    <unprocessedBases> .K => 'ListWrap(BaseClass,,ImplTypes) </unprocessedBases>
     <preprocessingPhase> CreatedCPP => BasesResolvedCPP </preprocessingPhase>
 when isKResult(ImplTypes)
 
-//For now, the imports map of a class will consist the imports map of the compilation unit +
-// direct inner types.
-//todo the imports algorithm is very simple and will be updated soon.
-//We cannot distinguish between Class == objectClass and others earlier,
-//because we don't have Class:ClassType back then.
+rule [markBaseProcessed]:
+    <k> processClassesSet(_) ...</k>
+    <class>
+      <unprocessedBases> 'ListWrap((BaseClass:ClassType => .List{K}) ,,_) </unprocessedBases>
+      ...
+    </class>
+    <class>
+      <classType> BaseClass </classType>
+      <preprocessingPhase> DecsProcessedCPP </preprocessingPhase>
+      ...
+    </class>
+
+//this one is for class Object
+rule [markNoClassProcessed]:
+    <k> processClassesSet(_) ...</k>
+    <unprocessedBases> 'ListWrap((noClass => .List{K}) ,,_) </unprocessedBases>
+
 rule [processClassDecEnd]:
     <k>
       (. => saveImplements(Class, kListToSet(ImplTypes, .Set))
-         ~> saveImports(Class, OuterClass, .K, noValue, noValue)
+         ~> saveImports(Class, OuterClass, (BaseClass,,ImplTypes), .K, noValue, noValue)
       )
       ~> processClassesSet(setWrap( (SetItem(Class:ClassType) => .Set) _:Set ))
       ...
@@ -100,7 +113,8 @@ rule [processClassDecEnd]:
     <preprocessingPhase> BasesResolvedCPP => DecsProcessedCPP </preprocessingPhase>
     <extends> .K => BaseClass </extends>
     ( <rawExtends> BaseClass:ClassType </rawExtends>
-      <rawImplements> 'ListWrap(ImplTypes:List{K}) </rawImplements> => .Bag)
+      <rawImplements> 'ListWrap(ImplTypes:List{K}) </rawImplements>
+      <unprocessedBases> 'ListWrap(.List{K}) </unprocessedBases> => .Bag)
 
 rule [processClassesSetDiscard]:
     processClassesSet(setWrap(.)) => .K
@@ -126,30 +140,45 @@ rule [saveImplements]:
 syntax K ::= "saveImports"  "(" ClassType //Class - the actual class
                             "," ClassType //The outer class of this class, if any,
                                           //or noClass if this is a top-level class
+                            "," List{K}   //The list of base classes
                             "," K         //The toPackage(ClassType), to be computed
                             "," K         //The inner types map of the given class
                             "," K         //The mapWrap(Imports), containing in the end
                                           //the desired Imports map
-                            ")"   [strict(4,5)]
+                            ")"   [strict(5,6)]
 
 //Compute the ClassType and the Package representing the given class
 rule [saveImportsComputePackage]:
-    saveImports(Class:ClassType, _,
+    saveImports(Class:ClassType, _,_,
         .K => toPackage(Class),
         noValue, noValue
     )
 
-rule [saveImportsComputeInnerMap]:
-    saveImports(_,_, Pack:PackageId,
+rule [saveImportsComputeOwnInnerMap]:
+    saveImports(_,_,_, Pack:PackageId,
       noValue => getNamesMap(Pack),
       noValue
     )
+
+rule [saveImportsInheritTypes]:
+    <k>
+      saveImports(_,_, ((BaseClass:ClassType => .List{K}),, _), Pack:PackageId,
+        mapWrap(InnerTypesMap:Map) => mapUnion(BaseClassMap, InnerTypesMap),
+        noValue
+      )
+      ...
+    </k>
+    <classType> BaseClass </classType>
+    <imports> BaseClassMap:Map </imports>
+
+rule [saveImportsDiscardNoClass]:
+    saveImports(_,_, ((noClass => .List{K}),, _), _,_,_)
 
 //Compute the imports map for the ClassType computed at part 1
 //when this class is a top-level class
 rule [saveImportsComputeImportsTop]:
     <k>
-      saveImports(Class:ClassType, noClass, _, mapWrap(InnerTypesMap:Map),
+      saveImports(Class:ClassType, noClass, .List{K}, _, mapWrap(InnerTypesMap:Map),
         noValue => mapUnion(Imports, InnerTypesMap)
       )
       ...
@@ -161,7 +190,7 @@ rule [saveImportsComputeImportsTop]:
 //when this class is an inner class
 rule [saveImportsComputeImportsInner]:
     <k>
-      saveImports(_, OuterClass:ClassType, _, mapWrap(InnerTypesMap:Map),
+      saveImports(_, OuterClass:ClassType, .List{K}, _, mapWrap(InnerTypesMap:Map),
         noValue => mapUnion(Imports, InnerTypesMap)
       )
       ...
@@ -173,7 +202,7 @@ when OuterClass =/=K noClass
 //Save the computed Imports map into the <imports> cell of the given class
 rule [saveImports]:
     <k>
-      saveImports(Class:ClassType, _, _, _, mapWrap(Imports:Map)) => .
+      saveImports(Class:ClassType, _,_,_,_, mapWrap(Imports:Map)) => .
       ...
     </k>
     <classType> Class </classType>

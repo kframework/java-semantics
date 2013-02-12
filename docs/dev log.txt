@@ -727,3 +727,5 @@ Part 3. ProcessClassesPhase:
 2. Save the initial content of <class> cell after first step, recursively.
 3. Starting from step 3, classes are taked from processing from their <classes>
   cell, not from raw CompUnits.
+
+Now inheritance of inner types is fully implemented.
