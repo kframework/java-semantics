@@ -47,8 +47,8 @@ configuration
           <implements> .Set </implements>
           <implTrans> .Set </implTrans>
           <br/>
-          <classDec> .K </classDec> //the 'ClassDec() or 'InterfaceDec() term, after
-                                    //ProcessCompUnitsPhase
+          <rawExtends> .K </rawExtends>
+          <rawImplements> .K </rawImplements>
           <declarations color="purple"> .K </declarations>
           <metaType> .K </metaType>
           <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>

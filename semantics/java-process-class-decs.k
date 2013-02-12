@@ -17,26 +17,24 @@ syntax K ::= "processClassesSet" "(" K //setwrap(Set) - the set of all classes
 //Process a top-level class at any time.
 rule [processClassesSetTopLevel]:
     <k>
-      (. => processClassDec(Class, ClassDec))
+      (. => processClassDec(Class))
       ~> processClassesSet(setWrap( (SetItem(Class:ClassType) => .) _ ))
       ...
     </k>
     <cuClass> _ => Class </cuClass>
     <classType> Class:ClassType </classType>
-    <classDec> ClassDec:K </classDec>
     <enclosingClass> noClass </enclosingClass>
 
 //Process an inner class only after its OuterClass have reached DecsProcessedCPP phase.
 rule [processClassesSetInner]:
     <k>
-      (. => processClassDec(Class, ClassDec))
+      (. => processClassDec(Class))
       ~> processClassesSet(setWrap( (SetItem(Class:ClassType) => .) _ ))
       ...
     </k>
     <cuClass> _ => Class </cuClass>
     <class>
       <classType> Class:ClassType </classType>
-      <classDec> ClassDec:K </classDec>
       <enclosingClass> OuterClass </enclosingClass>
       ...
     </class>
@@ -51,62 +49,63 @@ rule [processClassesSetDiscard]:
 
 //Process a type from phase CreatedCPP to DecsProcessedCPP
 syntax K ::= "processClassDec"  "(" ClassType // The class to be processed
-                                "," K         // an original 'ClassDec or 'InterfaceDec term
                                 ")"
 
+//The preprocessing hole, used for custom heating/cooling rules across multiple cells
+syntax K ::= "PREP$HOLE"
+
 //Resolving the base class
-context processClassDec(_,
-    'ClassDec( 'ClassDecHead(_:K,, _:K,, _:K,, 'Some('SuperDec(HOLE)),,_) ,,_))
+//Todo this rule should be applied and is not.
+rule [heatRawExtends]:
+    <k> (. => BaseClassRaw) ~> processClassDec(Class:ClassType) ...</k>
+    <classType> Class </classType>
+    <rawExtends> BaseClassRaw:K => PREP$HOLE </rawExtends>
+//todo bug - this one don't work, let's try an alternative
+//when notBool isKResult(BaseClassRaw)
+when getKLabel(BaseClassRaw) =/=KLabel 'class_
 
-//Resolving superinterfaces, order is not important
-context processClassDec(_, 'ClassDec('ClassDecHead(_:K,, _:K,, _:K,, _:K,,
-          'Some('ImplementsDec('ListWrap(_:List{K},, HOLE,, _:List{K})))
-        ),, _:K))
+rule [coolRawExtends]:
+    <k> (BaseClass:ClassType => .) ~> processClassDec(Class:ClassType) ...</k>
+    <classType> Class </classType>
+    <rawExtends> PREP$HOLE => BaseClass </rawExtends>
 
-//Resolving superinterfaces of an interface, order is not important
-context processClassDec(_, 'InterfaceDec('InterfaceDecHead(_:K,, _:K,, _:K,,
-          'Some('ExtendsInterfaces('ListWrap(_:List{K},, HOLE,, _:List{K})))
-        ),, _:K))
+//Resolving superinterfaces of both classes and interfaces, order is not important
+rule [heatRawImplements]:
+    <k> (. => BaseInterfaceRaw) ~> processClassDec(Class:ClassType) ...</k>
+    <classType> Class </classType>
+    <rawImplements> 'ListWrap(_,, (BaseInterfaceRaw:K => PREP$HOLE),, _) </rawImplements>
+//todo same bug as for heatRawExtends
+//when notBool isKResult(BaseInterfaceRaw)
+when getKLabel(BaseInterfaceRaw) =/=KLabel 'class_
+        [transition]
 
-rule [ClassDec]:
+rule [coolRawImplements]:
+    <k> (BaseInterface:ClassType => .) ~> processClassDec(Class:ClassType) ...</k>
+    <classType> Class </classType>
+    <rawImplements> 'ListWrap(_,, (PREP$HOLE => BaseInterface),, _) </rawImplements>
+        [transition]
+
+rule [processClassDec]:
     <k>
-      processClassDec(
-        Class:ClassType,
-        'ClassDec('ClassDecHead('ListWrap(ClassModifiers:List{K}),, SimpleClass:Id,, _:K,,
-            'Some('SuperDec(BaseClass:ClassType)),,
-            'Some('ImplementsDec('ListWrap(ImplTypes:List{K})))
-          ),,
-          CBody:K
-      ))
-      =>  classDecImpl(ClassModifiers, Class, BaseClass,
+      processClassDec(Class:ClassType)
+      =>  classDecImpl(.List{K}, Class, BaseClass,
             kListToSet(ImplTypes, .Set),
-            classMetaT, OuterClass, CBody
+            MetaT, OuterClass, CBody
           )
       ...
     </k>
     <classType> Class </classType>
     <enclosingClass> OuterClass:ClassType </enclosingClass>
-when isKResult(ImplTypes)
-        [structural]
 
-rule [InterfaceDec]:
-    <k>
-      processClassDec(Class:ClassType, 'InterfaceDec(
-        'InterfaceDecHead(
-          'ListWrap(ClassModifiers:List{K}),, SimpleClass:Id,, _:K,,
-          'Some('ExtendsInterfaces('ListWrap(ImplTypes:List{K})))
-        ),,
-        CBody:K
-      ))
-      => classDecImpl(ClassModifiers, Class,
-              noClass, kListToSet(ImplTypes, .Set),
-              interfaceMetaT, OuterClass, CBody)
-      ...
-    </k>
-    <classType> Class </classType>
-    <enclosingClass> OuterClass:ClassType </enclosingClass>
+    //(<rawExtends> BaseClass:ClassType </rawExtends>
+    //<rawImplements> 'ListWrap(ImplTypes:List{K}) </rawImplements> => .Bag)
+    <rawExtends> BaseClass:ClassType </rawExtends>
+    <rawImplements> 'ListWrap(ImplTypes:List{K}) </rawImplements>
+
+    <declarations> CBody:K </declarations>
+    <metaType> MetaT:MetaType </metaType>
 when isKResult(ImplTypes)
-        [structural]
+        [transition]
 
 syntax K ::= "classDecImpl" "(" List{K}       // ClassModifiers, .List{K} for Object
                             "," ClassType     // Class - the actual class
@@ -141,10 +140,7 @@ rule [classDecImpl]:
       #fi
     </extends>
     <implements> .Set => TypeSet </implements>
-    <declarations> .K => CBody </declarations>
-    <metaType> .K => MetaT </metaType>
     <preprocessingPhase> CreatedCPP => DecsProcessedCPP </preprocessingPhase>
-    (<classDec> _ </classDec> => .Bag)
 
 //Converts a term of type List{K} into a Set
 syntax K ::= "kListToSet" "(" List{K} //a list of some K Terms

@@ -91,12 +91,9 @@ rule [processTypeDecsInPCUPhaseClassDec]:
     <k>
       processTypeDecsInPCUPhase(
         'ClassDec(
-          'ClassDecHead(
-            Modifiers:K,,
-            SimpleClass:Id,,
-            TypeParams:K,,
+          'ClassDecHead( _:K,, SimpleClass:Id,, _:K,,
             'Some('SuperDec(BaseClassRaw:K)),,
-            'Some('ImplementsDec('ListWrap(ImplTypesRaw:List{K})))
+            'Some('ImplementsDec(ImplTypesRaw:K))
           ),,
           'ClassBody( 'ListWrap(Decls:List{K}) )
         ),,
@@ -108,51 +105,39 @@ rule [processTypeDecsInPCUPhaseClassDec]:
       ~> processTypeDecsInPCUPhase(Ks, Pack, OuterClass)
       ...
     </k>
-    <classes>
-      ...
-      ( . =>  <class>
-                <classType> getClassType(Pack, SimpleClass) </classType>
-                <enclosingClass> OuterClass </enclosingClass>
-                <classDec>
-                  'ClassDec(
-                    'ClassDecHead(
-                      Modifiers,,
-                      SimpleClass,,
-                      TypeParams,,
-                      'Some('SuperDec(BaseClassRaw)),,
-                      'Some('ImplementsDec('ListWrap(ImplTypesRaw)))
-                    ),,
-                    'ListWrap(
-                      //default constructor
-                      //if there is a no-args constructor in Decls, it will overwrite this one
-                      'ConstrDec(
-                        'ConstrDecHead(
-                          'ListWrap('Public(.List{K})),,
-                          'None(.List{K}),,
-                          SimpleClass,,
-                          'ListWrap(.List{K}),,
-                          'None(.List{K})
-                        ),,
-                        'ConstrBody('None(.List{K}),, 'ListWrap(.List{K}))
+    ( . =>  <class>
+              <classType> getClassType(Pack, SimpleClass) </classType>
+              <enclosingClass> OuterClass </enclosingClass>
+              <rawExtends> BaseClassRaw </rawExtends>
+              <rawImplements> ImplTypesRaw </rawImplements>
+              <declarations>
+                'ListWrap(
+                    //default constructor
+                    //if there is a no-args constructor in Decls, it will overwrite this one
+                    'ConstrDec(
+                      'ConstrDecHead(
+                        'ListWrap('Public(.List{K})),,
+                        'None(.List{K}),,
+                        SimpleClass,,
+                        'ListWrap(.List{K}),,
+                        'None(.List{K})
                       ),,
-                      Decls
-                  ))
-                </classDec>
-                <preprocessingPhase> CreatedCPP </preprocessingPhase>
-                ...
-              </class> )
-      ...
-    </classes>
+                      'ConstrBody('None(.List{K}),, 'ListWrap(.List{K}))
+                    ),,
+                    Decls
+                )
+              </declarations>
+              <metaType> classMetaT </metaType>
+              <preprocessingPhase> CreatedCPP </preprocessingPhase>
+              ...
+            </class> )
 
 rule [processTypeDecsInPCUPhaseInterfaceDec]:
     <k>
       processTypeDecsInPCUPhase(
         'InterfaceDec(
-          'InterfaceDecHead(
-            Modifiers:K,,
-            SimpleClass:Id,,
-            TypeParams:K,,
-            'Some('ExtendsInterfaces('ListWrap(ImplTypesRaw:List{K})))
+          'InterfaceDecHead( _:K,, SimpleClass:Id,, _:K,,
+            'Some('ExtendsInterfaces(ImplTypesRaw:K))
           ),,
           'ListWrap(Decls:List{K})
         ),,
@@ -164,27 +149,16 @@ rule [processTypeDecsInPCUPhaseInterfaceDec]:
       ~> processTypeDecsInPCUPhase(Ks, Pack, OuterClass)
       ...
     </k>
-    <classes>
-      ...
-      ( . =>  <class>
-                <classType> getClassType(Pack, SimpleClass) </classType>
-                <enclosingClass> OuterClass </enclosingClass>
-                <classDec>
-                  'InterfaceDec(
-                    'InterfaceDecHead(
-                      Modifiers,,
-                      SimpleClass,,
-                      TypeParams,,
-                      'Some('ExtendsInterfaces('ListWrap(ImplTypesRaw)))
-                    ),,
-                    'ListWrap(Decls)
-                  )
-                </classDec>
-                <preprocessingPhase> CreatedCPP </preprocessingPhase>
-                ...
-              </class> )
-      ...
-    </classes>
+    ( . =>  <class>
+              <classType> getClassType(Pack, SimpleClass) </classType>
+              <enclosingClass> OuterClass </enclosingClass>
+              <rawExtends> noClass </rawExtends>
+              <rawImplements> ImplTypesRaw </rawImplements>
+              <declarations> 'ListWrap(Decls) </declarations>
+              <metaType> interfaceMetaT </metaType>
+              <preprocessingPhase> CreatedCPP </preprocessingPhase>
+              ...
+            </class> )
 
 //If the given type is top-level, then save <imports> from the <compUnitImports> cell.
 //Otherwise do nothing.
