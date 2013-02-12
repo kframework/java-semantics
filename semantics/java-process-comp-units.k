@@ -64,21 +64,46 @@ when notBool( Label ==KLabel 'ClassDec orBool Label ==KLabel 'InterfaceDec
 rule [processTypeDecsInPCUPhaseDiscard]:
     processTypeDecsInPCUPhase(.List{K}, _,_) => .K
 
-rule [processTypeDecsInPCUPhase]:
+
+/*@ \subsection{Class declaration processing}*/
+
+rule [ClassDecNoExtendsDesugar]:
+    processTypeDecsInPCUPhase('ClassDec('ClassDecHead(_:K,, SimpleClass:Id,, _:K,,
+        ( 'None(_)
+          => 'Some('SuperDec('ClassType(objectClass,, 'None(.List{K}))))
+        ),,
+        _:K),, _:K
+    ),,_, _,_)                [structural]
+
+rule [ClassDecNoImplementsDesugar]:
+    processTypeDecsInPCUPhase('ClassDec('ClassDecHead(_:K,, SimpleClass:Id,, _:K,, _:K,,
+        ( 'None(.List{K}) => 'Some('ImplementsDec('ListWrap(.List{K}))) )
+      ),, _:K
+    ),,_, _,_)                [structural]
+
+rule [InterfaceDecNoExtendsDesugar]:
+    processTypeDecsInPCUPhase('InterfaceDec('InterfaceDecHead(_:K,, SimpleClass:Id,, _:K,,
+        ( 'None(.List{K}) => 'Some('ExtendsInterfaces('ListWrap(.List{K}))) )
+      ),, _:K
+    ),,_, _,_)                [structural]
+
+rule [processTypeDecsInPCUPhaseClassDec]:
     <k>
       processTypeDecsInPCUPhase(
-        DecLabel:KLabel(
-          DecHeadLabel:KLabel(
+        'ClassDec(
+          'ClassDecHead(
             Modifiers:K,,
             SimpleClass:Id,,
-            HeadRest:List{K}
+            TypeParams:K,,
+            'Some('SuperDec(BaseClassRaw:K)),,
+            'Some('ImplementsDec('ListWrap(ImplTypesRaw:List{K})))
           ),,
-          CBody:K
+          'ClassBody( 'ListWrap(Decls:List{K}) )
         ),,
         Ks:List{K}, Pack:PackageId, OuterClass:ClassType
       )
       => saveImportsInPCUPhase(getClassType(Pack, SimpleClass))
-      ~> processTypeDecsInPCUPhase(bodyAsList(CBody), toPackage(getClassType(Pack, SimpleClass)),
+      ~> processTypeDecsInPCUPhase(Decls, toPackage(getClassType(Pack, SimpleClass)),
           getClassType(Pack, SimpleClass))
       ~> processTypeDecsInPCUPhase(Ks, Pack, OuterClass)
       ...
@@ -89,7 +114,71 @@ rule [processTypeDecsInPCUPhase]:
                 <classType> getClassType(Pack, SimpleClass) </classType>
                 <enclosingClass> OuterClass </enclosingClass>
                 <classDec>
-                  DecLabel(DecHeadLabel( Modifiers,, SimpleClass,, HeadRest ),, CBody)
+                  'ClassDec(
+                    'ClassDecHead(
+                      Modifiers,,
+                      SimpleClass,,
+                      TypeParams,,
+                      'Some('SuperDec(BaseClassRaw)),,
+                      'Some('ImplementsDec('ListWrap(ImplTypesRaw)))
+                    ),,
+                    'ListWrap(
+                      //default constructor
+                      //if there is a no-args constructor in Decls, it will overwrite this one
+                      'ConstrDec(
+                        'ConstrDecHead(
+                          'ListWrap('Public(.List{K})),,
+                          'None(.List{K}),,
+                          SimpleClass,,
+                          'ListWrap(.List{K}),,
+                          'None(.List{K})
+                        ),,
+                        'ConstrBody('None(.List{K}),, 'ListWrap(.List{K}))
+                      ),,
+                      Decls
+                  ))
+                </classDec>
+                <preprocessingPhase> CreatedCPP </preprocessingPhase>
+                ...
+              </class> )
+      ...
+    </classes>
+
+rule [processTypeDecsInPCUPhaseInterfaceDec]:
+    <k>
+      processTypeDecsInPCUPhase(
+        'InterfaceDec(
+          'InterfaceDecHead(
+            Modifiers:K,,
+            SimpleClass:Id,,
+            TypeParams:K,,
+            'Some('ExtendsInterfaces('ListWrap(ImplTypesRaw:List{K})))
+          ),,
+          'ListWrap(Decls:List{K})
+        ),,
+        Ks:List{K}, Pack:PackageId, OuterClass:ClassType
+      )
+      => saveImportsInPCUPhase(getClassType(Pack, SimpleClass))
+      ~> processTypeDecsInPCUPhase(Decls, toPackage(getClassType(Pack, SimpleClass)),
+          getClassType(Pack, SimpleClass))
+      ~> processTypeDecsInPCUPhase(Ks, Pack, OuterClass)
+      ...
+    </k>
+    <classes>
+      ...
+      ( . =>  <class>
+                <classType> getClassType(Pack, SimpleClass) </classType>
+                <enclosingClass> OuterClass </enclosingClass>
+                <classDec>
+                  'InterfaceDec(
+                    'InterfaceDecHead(
+                      Modifiers,,
+                      SimpleClass,,
+                      TypeParams,,
+                      'Some('ExtendsInterfaces('ListWrap(ImplTypesRaw)))
+                    ),,
+                    'ListWrap(Decls)
+                  )
                 </classDec>
                 <preprocessingPhase> CreatedCPP </preprocessingPhase>
                 ...
