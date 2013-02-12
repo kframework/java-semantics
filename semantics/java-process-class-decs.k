@@ -62,7 +62,8 @@ rule [heatRawExtends]:
     <rawExtends> BaseClassRaw:K => PREP$HOLE </rawExtends>
 //todo bug - this one don't work, let's try an alternative
 //when notBool isKResult(BaseClassRaw)
-when getKLabel(BaseClassRaw) =/=KLabel 'class_
+when        getKLabel(BaseClassRaw) =/=KLabel 'class_
+    andBool getKLabel(BaseClassRaw) =/=KLabel 'noClass
 
 rule [coolRawExtends]:
     <k> (BaseClass:ClassType => .) ~> processClassDec(Class:ClassType) ...</k>
@@ -77,13 +78,11 @@ rule [heatRawImplements]:
 //todo same bug as for heatRawExtends
 //when notBool isKResult(BaseInterfaceRaw)
 when getKLabel(BaseInterfaceRaw) =/=KLabel 'class_
-        [transition]
 
 rule [coolRawImplements]:
     <k> (BaseInterface:ClassType => .) ~> processClassDec(Class:ClassType) ...</k>
     <classType> Class </classType>
     <rawImplements> 'ListWrap(_,, (PREP$HOLE => BaseInterface),, _) </rawImplements>
-        [transition]
 
 rule [processClassDec]:
     <k>
@@ -96,16 +95,11 @@ rule [processClassDec]:
     </k>
     <classType> Class </classType>
     <enclosingClass> OuterClass:ClassType </enclosingClass>
-
-    //(<rawExtends> BaseClass:ClassType </rawExtends>
-    //<rawImplements> 'ListWrap(ImplTypes:List{K}) </rawImplements> => .Bag)
-    <rawExtends> BaseClass:ClassType </rawExtends>
-    <rawImplements> 'ListWrap(ImplTypes:List{K}) </rawImplements>
-
     <declarations> CBody:K </declarations>
     <metaType> MetaT:MetaType </metaType>
+    ( <rawExtends> BaseClass:ClassType </rawExtends>
+      <rawImplements> 'ListWrap(ImplTypes:List{K}) </rawImplements> => .Bag)
 when isKResult(ImplTypes)
-        [transition]
 
 syntax K ::= "classDecImpl" "(" List{K}       // ClassModifiers, .List{K} for Object
                             "," ClassType     // Class - the actual class
