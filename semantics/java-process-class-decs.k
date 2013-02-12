@@ -98,13 +98,7 @@ rule [processClassDecEnd]:
     <declarations> CBody:K </declarations>
     <metaType> MetaT:MetaType </metaType>
     <preprocessingPhase> BasesResolvedCPP => DecsProcessedCPP </preprocessingPhase>
-    <extends>
-      .K =>
-      #if Class =/=K objectClass
-        #then BaseClass
-        #else noClass
-      #fi
-    </extends>
+    <extends> .K => BaseClass </extends>
     ( <rawExtends> BaseClass:ClassType </rawExtends>
       <rawImplements> 'ListWrap(ImplTypes:List{K}) </rawImplements> => .Bag)
 

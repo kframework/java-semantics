@@ -70,10 +70,15 @@ rule [processTypeDecsInPCUPhaseDiscard]:
 rule [ClassDecNoExtendsDesugar]:
     processTypeDecsInPCUPhase('ClassDec('ClassDecHead(_:K,, SimpleClass:Id,, _:K,,
         ( 'None(_)
-          => 'Some('SuperDec('ClassType(objectClass,, 'None(.List{K}))))
+          => 'Some('SuperDec(
+                #if (getClassType(Pack,SimpleClass) =/=K objectClass)
+                  #then 'ClassType(objectClass,, 'None(.List{K}))
+                  #else noClass
+                #fi
+              ))
         ),,
         _:K),, _:K
-    ),,_, _,_)                [structural]
+    ),,_, Pack:PackageId,_)                [structural]
 
 rule [ClassDecNoImplementsDesugar]:
     processTypeDecsInPCUPhase('ClassDec('ClassDecHead(_:K,, SimpleClass:Id,, _:K,, _:K,,
