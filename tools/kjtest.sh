@@ -31,6 +31,7 @@ echo
 java -jar $TOOLS_DIR/test-runner.jar \
   -gen $TOOLS_DIR/aux-jdk-run.sh -run $TOOLS_DIR/aux-kjrun.sh \
   -taskExt java -threads 22 -timeout 120 -testsuiteName java-semantics \
+  -classnameStyle simple \
   -clean $CLEAN ${@:STARTARG}
 
 END=$(date +%s)

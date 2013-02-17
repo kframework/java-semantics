@@ -123,6 +123,9 @@ public class XmlBuilder {
     statusCountMap.put(highLevelStatus, statusCountMap.get(highLevelStatus) + 1);
     if (previousResult == null
         || !previousResult.getDirName(true).equals(result.getDirName(true))) {
+      if (previousResult != null) {
+        System.out.println();
+      }
       System.out.println(result.getDirName(true) + ":");
     }
     System.out.println("    " + result.getFileName() + "...  " + status);
