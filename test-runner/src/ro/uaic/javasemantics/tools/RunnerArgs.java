@@ -27,6 +27,7 @@ public class RunnerArgs {
   private String removeScript;
   private boolean clean;
   private boolean smartGen;
+  private final boolean classnameStyleComplete;
 
   public RunnerArgs(String[] args) {
     if (args.length == 0) {
@@ -47,7 +48,8 @@ public class RunnerArgs {
     argsMap.put("-errExt", "stderr");
     argsMap.put("-generrExt", "generr");
     argsMap.put("-compExt", "comp");
-    argsMap.put("-testsuiteName", "test suite");
+    argsMap.put("-testsuiteName", "");
+    argsMap.put("-classnameStyle", "complete");
     argsMap.put("-rm", null);
     argsMap.put("-clean", "true");
     argsMap.put("-smartGen", "true");
@@ -92,6 +94,7 @@ public class RunnerArgs {
     generrExt = argsMap.get("-generrExt");
     compExt = argsMap.get("-compExt");
     testsuiteName = argsMap.get("-testsuiteName");
+    classnameStyleComplete = "complete".equals(argsMap.get("-classnameStyle"));
     removeScript = argsMap.get("-rm");
     clean = Boolean.parseBoolean(argsMap.get("-clean"));
     smartGen = Boolean.parseBoolean(argsMap.get("-smartGen"));
@@ -159,6 +162,10 @@ public class RunnerArgs {
 
   public String getTestsuiteName() {
     return testsuiteName;
+  }
+
+  public boolean isClassnameStyleComplete() {
+    return classnameStyleComplete;
   }
 
   public String getRemoveScript() {

@@ -1,0 +1,9 @@
+1.ok. In the test report add attributes errors="?" failures="?"
+2.ok. In the test report add attributes classname="dir" name="test file" to each test.
+3.ok. Add a parameter to the test runner to specify classname style: simple or complete.
+4.ok. Improved console output for the executed tests. For each test directory,
+  print the directory name once, then for each test inside print
+  just the simple name, indented, followed by the test status.
+5. Add to kjtest.sh the ability to pass many parameters using linux style
+  -p1=v1, -p2=v2 or something similar. There should be some framework facilitating that.
+6. Add a timeout of 30s to kjrun.sh, and also show execution time.

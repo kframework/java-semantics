@@ -16,6 +16,7 @@ import java.util.concurrent.Future;
 public class XmlBuilder {
   private RunnerArgs args;
   private List<Future<TestResult>> results;
+  private long startTime;
   private Map<String, Integer> statusCountMap = new HashMap<String, Integer>();
 
   {
@@ -26,19 +27,18 @@ public class XmlBuilder {
 
   private Formatter out = new Formatter(System.out);
 
-  public XmlBuilder(RunnerArgs args, List<Future<TestResult>> results) {
+  public XmlBuilder(RunnerArgs args, List<Future<TestResult>> results, long startTime) {
     this.args = args;
     this.results = results;
+    this.startTime = startTime;
   }
 
   @SuppressWarnings("StringConcatenationInsideStringBufferAppend")
   public void buildXml() {
+    StringBuilder xml = new StringBuilder();
+    TestResult previousResult = null, result;
     try {
-      FileWriter xml = new FileWriter(args.getReportFile());
-      xml.append("<?xml version='1.0' encoding='UTF-8' ?>\n");
-      xml.append("<testsuite name='" + args.getTestsuiteName() + "'>\n\n");
       for (int i = 0, resultsSize = results.size(); i < resultsSize; i++) {
-        TestResult result;
         try {
           result = results.get(i).get();
         } catch (InterruptedException ie) {
@@ -49,10 +49,14 @@ public class XmlBuilder {
           throw new RuntimeException(e);
         }
         results.set(i, null);
-        writeConsoleMessage(result);
+        writeConsoleMessage(result, previousResult);
 
-        xml.append("<testcase name='" + result.getName() + "' time='" +
-            result.getTime() / 1000.0 + "'>\n");
+        xml.append("<testcase")
+            .append(" classname='").append(result.getDirName(args.isClassnameStyleComplete()))
+            .append("'")
+            .append(" name='").append(result.getFileName()).append("'")
+            .append(" time='").append(result.getTime() / 1000.0).append("'")
+            .append(">\n");
 
         if (result.containsError()) {
           xml.append("<error>\n");
@@ -66,34 +70,65 @@ public class XmlBuilder {
         }
 
         xml.append("</testcase>\n\n");
-      }
-      xml.append("</testsuite>\n");
-      xml.close();
 
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+        previousResult = result;
+      }
+      StringBuilder xmlStart = new StringBuilder();
+      xmlStart
+          .append("<?xml version='1.0' encoding='UTF-8' ?>\n")
+          .append("<testsuite")
+          .append(" name='").append(args.getTestsuiteName()).append("'")
+          .append(" tests='").append(getNrTests()).append("'")
+          .append(" errors='").append(statusCountMap.get("error")).append("'")
+          .append(" failures='").append(statusCountMap.get("failed")).append("'")
+          .append(" time='").append(getTotalTime()).append("'")
+          .append(">\n\n");
+      xml.insert(0, xmlStart);
+      xml.append("</testsuite>\n");
+
     } finally {
+      try {
+        FileWriter xmlFile = new FileWriter(args.getReportFile());
+        xmlFile.append(xml);
+        xmlFile.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
       printSummary();
     }
   }
 
+  private int getNrTests() {
+    int nrTests = 0;
+    for (Integer val : statusCountMap.values()) {
+      nrTests += val;
+    }
+    return nrTests;
+  }
+
   private void printSummary() {
     System.out.println();
-    int total = 0;
     for (String status : statusCountMap.keySet()) {
       int count = statusCountMap.get(status);
       if (count > 0) {
         out.format("%-6s:  %d\n", status, count);
-        total += count;
       }
     }
-    out.format("%-6s:  %d\n", "total", total);
+    out.format("%-6s:  %d\n", "total", getNrTests());
   }
 
-  private void writeConsoleMessage(TestResult result) {
+  private void writeConsoleMessage(TestResult result, TestResult previousResult) {
     String highLevelStatus = result.getHighLevelStatus();
     String status = result.getStatus();
     statusCountMap.put(highLevelStatus, statusCountMap.get(highLevelStatus) + 1);
-    System.out.println(result.getName() + "...  " + status);
+    if (previousResult == null
+        || !previousResult.getDirName(true).equals(result.getDirName(true))) {
+      System.out.println(result.getDirName(true) + ":");
+    }
+    System.out.println("    " + result.getFileName() + "...  " + status);
+  }
+
+  public String getTotalTime() {
+    return String.format("%.3f", (System.currentTimeMillis() - startTime) / 1000.0);
   }
 }

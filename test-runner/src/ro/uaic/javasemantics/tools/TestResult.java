@@ -24,6 +24,23 @@ public class TestResult {
     return name;
   }
 
+  /**
+   * The name of the directory where the test is contained, if any.
+   * Empty string otherwise.
+   */
+  public String getDirName(boolean complete) {
+    String parent = new File(name).getParent();
+    if (parent != null && !complete) {
+      parent = new File(parent).getName();
+    }
+    return parent != null ? parent : "";
+  }
+
+  public String getFileName() {
+    String fileName = new File(name).getName();
+    return fileName != null ? fileName : "";
+  }
+
   public void setName(String name) {
     this.name = name;
   }

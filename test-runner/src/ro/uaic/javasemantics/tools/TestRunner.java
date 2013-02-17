@@ -23,6 +23,7 @@ public class TestRunner {
   }
 
   public void run() {
+    long start = System.currentTimeMillis();
     String userDir = System.getProperty("user.dir");
     File runDir = new File(userDir, ".test").getAbsoluteFile();
     if (args.isClean()) {
@@ -41,7 +42,7 @@ public class TestRunner {
         gatherTasks(runDir, new File(testProg), createDir, results, executor);
       }
 
-      new XmlBuilder(args, results).buildXml();
+      new XmlBuilder(args, results, start).buildXml();
     } finally {
       executor.shutdown();
       processExecutor.shutdown();

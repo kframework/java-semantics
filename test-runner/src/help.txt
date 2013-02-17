@@ -66,6 +66,10 @@ This file will be generated only for failing tests. Default is "comp".
 -testsuiteName - name - Optional. Display name of the test suite, in the
 report xml file. default is "test suite"
 
+-classnameStyle - Optional. Available values: simple, complete.
+  Whether classname tag should name the complete name of the directories
+  that contain tests, or just their simple name. Default is complete.
+
 -rm - remove script - Optional. Path to the script used to remove temp
 directory. The script should receive one argument - the directory to remove.
 Used to speedup temp dir removal. If not specified, temp removal will be

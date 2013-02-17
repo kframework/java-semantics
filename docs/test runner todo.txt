@@ -1,2 +1,0 @@
-1. Add a timeout of 30s to kjrun.sh, and also show execution time.
-
