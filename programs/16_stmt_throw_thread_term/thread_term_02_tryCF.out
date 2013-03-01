@@ -1,2 +1,2 @@
 finally after uncaught exception
-Thread terminated with exception: Exception2
+Thread terminated with exception: Exception2: ex2

@@ -8,7 +8,7 @@ public class return_14_ret_ref_exact {
 
 class test {
   test() {
-    System.out.println("f() = " + f());
+    System.out.println("f() = " + f().toString());
   }
 
   RuntimeException f() {

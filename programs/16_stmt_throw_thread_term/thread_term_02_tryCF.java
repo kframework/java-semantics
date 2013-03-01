@@ -2,7 +2,7 @@
 
 class Exception2 extends RuntimeException {
   Exception2() {
-    super(null);
+    super("ex2");
   }
 }
 
