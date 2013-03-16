@@ -313,7 +313,7 @@ Unlike in untyped KOOL, in typed KOOL we actually check that the object
 can indeed be cast to the claimed type. */
 
 syntax KLabel ::= "'CastRef"
-rule 'CastRef(K1:K,, K2:K) => castImpl(K1,K2)   [structural]
+rule 'CastRef(K1:K,, K2:K) => castImpl(K1,K2)   [structural, anywhere]
 
 rule [CastRef]:
     <k>

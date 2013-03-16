@@ -147,8 +147,43 @@ context 'PostDecr(HOLE => lvalue(HOLE))
 rule /* loc(L)-- => (loc(L) = lookup(L) - 1) + 1 */
   'PostDecr(loc(L:Int) :: NT:NumericType) => 'Plus( 'PreDecr(loc(L)::NT),, 1::NT)
 
-//semantically if and ?: are equivalent
-rule 'Cond(Ks:List{K}) => 'If(Ks)
+//Conditional expression : ?: . Desugared into an if with cast.
+//The biggest difficulty is computing the expression type, according to JLS1 $15.24
+rule 'Cond(CondExp:K,, TrueExp:K,, FalseExp:K)
+    => castImpl(getCondType(getExpType(TrueExp), getExpType(FalseExp)),
+                'If(CondExp,, TrueExp,, FalseExp))
+
+//computes the type of a conditional expression
+//Operands evaluate into types
+syntax K ::= "getCondType" "(" K "," K ")" [strict]
+
+rule [getCondTypeNoChar]:
+    getCondType(T1:Type,T2:Type) => 'If(subtype(T1,T2),, T2,, T1)
+when
+    T1 =/=K char andBool T2 =/=K char
+
+rule [getCondTypeSecondChar]:
+    getCondType(T1:Type, char) => getCondType(char, T1)
+when
+    T1 =/=K char
+
+rule [getCondTypeFirstChar]:
+    getCondType(char, T2:Type) => 'If(subtype(char, T2),, T2,, int)
+
+//Get the compile-time type of the given expression
+//todo test for all expressions
+syntax K ::= "getExpType" "(" K ")"
+
+rule [getExpTypeValue]:
+    getExpType(_::T) => T
+
+rule [getExpTypeCastImpl]:
+    getExpType(castImpl(TypeK:K, _)) => TypeK
+
+//getExpTypeExprName
+context getExpType(HOLE)
+when
+    getKLabel(HOLE) ==KLabel 'ExprName
 
 /*@ \subsubsection{Assignment operators}
 Typed KOOL allows to assign subtype instance values to supertype lvalues.
@@ -210,7 +245,7 @@ rule getOpLabel('AssignURightShift) => 'URightShift [anywhere]
 /*@ \subsection{primitive types cast} */
 
 syntax KLabel ::= "'CastPrim"
-rule 'CastPrim(K1:K,, K2:K) => castImpl(K1,K2)
+rule 'CastPrim(K1:K,, K2:K) => castImpl(K1,K2)      [structural, anywhere]
 
 syntax K ::= "castImpl" "(" Type "," K ")" [seqstrict]
 rule [CastNumber]: castImpl(NT:NumericType, I:Int::_) => normalize(I::NT)

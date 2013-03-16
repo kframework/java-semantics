@@ -36,6 +36,7 @@ with methods with same name and return type void.
   Including proper rules for static initialization triggering for both classes and interfaces.
 19. Packages, fully qualified class names and imports. JLS $7.
 20. Static inner classes.
+21. Support for conditional operator, arguments are just simplest expressions.
 
 Major features yet to be implemented:
 1. Inner classes (other types - nested, local and anonymous classes).
@@ -56,6 +57,11 @@ Non-related to java semantics:
   So far, the most adequate for this project is jacks/tests/runtime/jls,
   part of mauve.
 
+Related to java semantics:
+1. In order to support all possible expressions for the conditional operator,
+  we need the full preprocessing of expression types, just like the compilator does.
+  This will be a significant refactoring. Right now just a few expressions used in the test
+  are supported: literals, variable lookups and cast.
 
 Postponed features:
 1. After NPE will be implemented, all seqstrict constructs should be reviewed.
