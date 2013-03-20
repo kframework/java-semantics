@@ -59,13 +59,17 @@ public class XmlBuilder {
             .append(">\n");
 
         if (result.containsError()) {
-          xml.append("<error>\n");
+          xml.append("<error>");
+          xml.append("<![CDATA[\n");
           xml.append(result.getError());
+          xml.append("]]>");
           xml.append("</error>\n");
         }
         if (result.getComp() != null) {
-          xml.append("<failure>\n");
+          xml.append("<failure>");
+          xml.append("<![CDATA[\n");
           xml.append(result.getComp());
+          xml.append("]]>");
           xml.append("</failure>\n");
         }
 
