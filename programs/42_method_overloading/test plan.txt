@@ -108,6 +108,11 @@ Part 3.  Multiple potentially applicable methods - same name, same number
     - C < B < A
     - Call targets: A a, B b, C c
     - call arguments: null
+	
+39. Multi applicable, inheritance simple.	
+	A more specific version of the method in the base class.
+	- A: f(int)
+	- B < A: f(long)	
 
 Done:
   Refactor current overloading implementation so that we have just one level
