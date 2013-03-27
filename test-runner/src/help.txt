@@ -33,6 +33,10 @@ to contain an arbitrary number of files and directories.
 -timeout test-timeout - Optional. Amount of time to wait, in seconds, until
 test execution is halted. Default is 0, meaning no timeout.
 
+-killProcessTreeOnTimeout true/false - Optional. If false, in case of timeout
+just the direct subprocess is killed. If true, the whole subprocess tree is
+killed. Option true is supported only on Windows OS. Default is false.
+
 -threads threads-count - Optional. Amount of threads on which tests are
 executed. Default is 1.
 
@@ -67,8 +71,8 @@ This file will be generated only for failing tests. Default is "comp".
 report xml file. default is "test suite"
 
 -classnameStyle - Optional. Available values: simple, complete.
-  Whether classname tag should name the complete name of the directories
-  that contain tests, or just their simple name. Default is complete.
+Whether classname tag should name the complete name of the directories
+that contain tests, or just their simple name. Default is complete.
 
 -rm - remove script - Optional. Path to the script used to remove temp
 directory. The script should receive one argument - the directory to remove.

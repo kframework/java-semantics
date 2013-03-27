@@ -15,6 +15,7 @@ public class RunnerArgs {
   private String runner;
   private String taskExt;
   private int timeout;
+  private boolean killProcessTreeOnTimeout;
   private int threads;
   private String reportFile;
   private String inExt;
@@ -40,6 +41,7 @@ public class RunnerArgs {
     argsMap.put("-run", null);
     argsMap.put("-taskExt", null);
     argsMap.put("-timeout", "0");
+    argsMap.put("-killProcessTreeOnTimeout", "false");
     argsMap.put("-threads", "1");
     argsMap.put("-rep", "test-results.xml");
     argsMap.put("-inExt", "in");
@@ -85,6 +87,7 @@ public class RunnerArgs {
     runner = argsMap.get("-run");
     taskExt = argsMap.get("-taskExt");
     timeout = Integer.parseInt(argsMap.get("-timeout"));
+    killProcessTreeOnTimeout = Boolean.parseBoolean(argsMap.get("-killProcessTreeOnTimeout"));
     threads = Integer.parseInt(argsMap.get("-threads"));
     reportFile = argsMap.get("-rep");
     inExt = argsMap.get("-inExt");
@@ -126,6 +129,10 @@ public class RunnerArgs {
 
   public int getTimeout() {
     return timeout;
+  }
+
+  public boolean isKillProcessTreeOnTimeout() {
+    return killProcessTreeOnTimeout;
   }
 
   public int getThreads() {

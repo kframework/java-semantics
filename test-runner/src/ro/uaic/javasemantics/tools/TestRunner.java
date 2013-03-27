@@ -380,7 +380,11 @@ public class TestRunner {
         process.waitFor();
         return process.exitValue();
       } catch (InterruptedException e) {
-        process.destroy();
+        if (args.isKillProcessTreeOnTimeout()) {
+          ProcessUtil.killProcessTree(process, true);
+        } else {
+          process.destroy();
+        }
         return null;
       }
     }
