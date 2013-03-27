@@ -31,7 +31,7 @@ public class TestRunner {
     }
     mkdirs(runDir);
 
-    ExecutorService executor = newExecutorService();
+    ExecutorService taskExecutor = newExecutorService();
     processExecutor = newExecutorService();
     List<Future<TestResult>> results = new ArrayList<Future<TestResult>>();
 
@@ -39,13 +39,22 @@ public class TestRunner {
       boolean createDir = args.getTargetFileDirs().size() > 1 ||
           isTest(new File(args.getTargetFileDirs().get(0)));
       for (String testProg : args.getTargetFileDirs()) {
-        gatherTasks(runDir, new File(testProg), createDir, results, executor);
+        gatherTasks(runDir, new File(testProg), createDir, results, taskExecutor);
       }
 
       new XmlBuilder(args, results, start).buildXml();
     } finally {
-      executor.shutdown();
-      processExecutor.shutdown();
+      //Required to shutdown executor threads. Otherwise the runner will not terminate.
+      //Calling shutdownNow() instead of shutdown() guarantees that child processes are properly
+      //terminated.
+      taskExecutor.shutdownNow();
+      processExecutor.shutdownNow();
+      try {
+        taskExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+        processExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        System.out.println("executors shutdown interrupted...");
+      }
     }
   }
 
@@ -381,7 +390,7 @@ public class TestRunner {
         return process.exitValue();
       } catch (InterruptedException e) {
         if (args.isKillProcessTreeOnTimeout()) {
-          ProcessUtil.killProcessTree(process, true);
+          ProcessUtil.forcedKillProcessTree(process, true);
         } else {
           process.destroy();
         }

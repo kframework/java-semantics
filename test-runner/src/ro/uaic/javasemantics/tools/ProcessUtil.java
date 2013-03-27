@@ -22,23 +22,23 @@ public class ProcessUtil {
     public int GetProcessId(Long hProcess);
   }
 
-  public static int getPid(Process p) {
-    Field f;
+  public static int getPid(Process process) {
+    Field handleField;
 
     if (Platform.isWindows()) {
       try {
-        f = p.getClass().getDeclaredField("handle");
-        f.setAccessible(true);
-        int pid = Kernel32.INSTANCE.GetProcessId((Long) f.get(p));
+        handleField = process.getClass().getDeclaredField("handle");
+        handleField.setAccessible(true);
+        int pid = Kernel32.INSTANCE.GetProcessId((Long) handleField.get(process));
         return pid;
       } catch (Exception ex) {
         Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
       }
     } else if (Platform.isLinux()) {
       try {
-        f = p.getClass().getDeclaredField("pid");
-        f.setAccessible(true);
-        int pid = (Integer) f.get(p);
+        handleField = process.getClass().getDeclaredField("pid");
+        handleField.setAccessible(true);
+        int pid = (Integer) handleField.get(process);
         return pid;
       } catch (Exception ex) {
         Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
@@ -51,9 +51,13 @@ public class ProcessUtil {
   public static void forcedKillProcessTree(Process process, boolean waitForCompletion)
       throws IOException, InterruptedException {
     int pid = getPid(process);
-    Process killProcess = Runtime.getRuntime().exec("taskkill /pid " + pid + " /f /t");
-    if (waitForCompletion) {
-      killProcess.waitFor();
+    if (Platform.isWindows()) {
+      Process killProcess = Runtime.getRuntime().exec("taskkill /pid " + pid + " /f /t");
+      if (waitForCompletion) {
+        killProcess.waitFor();
+      }
+    } else {
+      throw new UnsupportedOperationException("Unsupported for the current operating system");
     }
   }
 
