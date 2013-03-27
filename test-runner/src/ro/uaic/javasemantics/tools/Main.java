@@ -14,7 +14,7 @@ public class Main {
    * see help.txt
    */
   public static void main(final String[] args) {
-    if (args.length == 1 && args[0].equals("-help")) {
+    if (args.length == 0 || args.length == 1 && args[0].equals("-help")) {
       showHelp();
     } else {
       final Thread mainThread = new Thread(new Runnable() {
