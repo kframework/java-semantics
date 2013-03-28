@@ -7,7 +7,7 @@ public class Operators_JBook {
 
 		//Infix operators
 		lb = true || false;
-		lb = true && false;
+		//lb = true && false;
 		//li = 1 | 2;
 		//li = 1 ^ 2;
 		//li = 1 & 2;
