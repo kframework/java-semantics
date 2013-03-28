@@ -9,7 +9,7 @@ public class sumInWhile {
 			s = s + i;
 			i = i + 1;
 		}
-		System.out.println("sum 1.."+ n+ "="+ s);
+		System.out.println("sum 1.." + n + "=" + s);
     System.out.println("Done!");
 	}
 }

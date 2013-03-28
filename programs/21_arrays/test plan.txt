@@ -230,6 +230,14 @@ Part 8. Array element default value.
 43. Default value of refs:
   Object[], String[], RuntimeException[], Object[][], int[][].
 
+Part 9. Other.
+
+44. Array expressions with side effects.
+  v[0]++;
+  v[1]--;
+  ++v[2];
+  --v[3];
+  v[4]+=5;
 
 todo for later:
 1. JLS $10.1: Array types: interface, abstract class.

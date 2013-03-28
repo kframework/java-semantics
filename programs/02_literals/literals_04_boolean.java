@@ -1,6 +1,9 @@
 public class literals_04_boolean {
 	public static void main(String[] args) {
-		System.out.println(true + " " + false);
+    boolean t = true;
+    boolean f = false;
+		System.out.println(t);
+    System.out.println(f);
 		System.out.println("Done!");
 	}
 }

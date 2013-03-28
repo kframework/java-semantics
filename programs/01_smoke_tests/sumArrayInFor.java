@@ -5,12 +5,12 @@ public class sumArrayInFor {
 		int s,i;
 
 		int[] v = new int[n + 1];
-		for(i=0; i<v.length; ++i) {
+		for(i=0; i<v.length; i++) {
 			v[i] = i;
 		}
 
 		s=0;
-		for(i=0; i<v.length; ++i) {
+		for(i=0; i<v.length; i++) {
 			s = s + v[i];
 		}
 		System.out.println("sum 1.."+ n+ "="+ s);

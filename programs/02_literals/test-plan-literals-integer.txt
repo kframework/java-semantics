@@ -1,12 +1,12 @@
 Test plan for integer literals:
-1. Decimal int:
+01. Decimal int:
   -zero
   -positive
   - negative (unary minus applied  correctly),
   - smallest negative (proof that normalization don't happen before application of unary minus)
   - sum of two large positives that generates overflow - proof that literals are actually of type int.
 
-  2. Decimal long:
+011. Decimal long:
   - zero
   - positive
   - large positive with "l"
@@ -15,14 +15,14 @@ Test plan for integer literals:
   - sum of same numbers as the last test for decimal int,
   without overflow - proof that literals are of type long.
 
-3. Hex int:
+02. Hex int:
   - zero
   - positive starting with 0x , lowercase characters.
   - positive starting with 0X , uppercase characters.
   - negative
   - sum of two large positives, overflow.
 
-4. Hex long:
+02. Hex long:
   - zero
   - large positive, lowercase characters, ends with "L"
   - large positive, uppercase characters, ends with "l"
@@ -31,13 +31,13 @@ Test plan for integer literals:
   - sum of same numbers as in last test for hex int,
   without overflow.
 
-5. Octal int:
+03. Octal int:
   - zero,
   - positive,
   - negative
   - sum of two large positives, overflow.
 
-5. Octal long:
+03. Octal long:
   - zero
   - positive (would be negative if int)
   - negative

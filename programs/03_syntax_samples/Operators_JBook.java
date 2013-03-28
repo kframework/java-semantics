@@ -1,5 +1,5 @@
-class main {
-	main(String[] args) {
+public class Operators_JBook {
+  public static void main(String[] args) {
     int li;
     boolean lb;
 
@@ -8,18 +8,18 @@ class main {
 		//Infix operators
 		lb = true || false;
 		lb = true && false;
-		li = 1 | 2;
-		li = 1 ^ 2;
-		li = 1 & 2;
+		//li = 1 | 2;
+		//li = 1 ^ 2;
+		//li = 1 & 2;
 		lb = 1 == 2;
 		lb = 1 != 2;
 		lb = 1 < 2;
 		lb = 1 > 2;
 		lb = 1 <= 2;
 		lb = 1 >= 2;
-		li = 1 << 2;
-		li = 1 >> 2;
-		li = 1 >>> 2;
+		//li = 1 << 2;
+		//li = 1 >> 2;
+		//li = 1 >>> 2;
 		li = 1 + 2;
 		li = 1 - 2;
 		li = 1 * 2;
@@ -27,10 +27,10 @@ class main {
 		li = 1 % 2;
 
 		//Prefix operators
-		++ i;
-		-- i;
+		//++ i;
+		//-- i;
 		lb = ! true;
-		li = ~ 1;
+		//li = ~ 1;
 		li = + 1;
 		li = - 1;
 
@@ -43,24 +43,18 @@ class main {
 
 		//Assignment operators
 		a = i;
-		a += i;
-		a -= i;
-		a *= i;
-		a /= i;
-		a &= i;
-		a |= i;
-		a ^= i;
-		a %= i;
-		a <<= i;
-		a >>= i;
-		a >>>= i;
+		//a += i;
+		//a -= i;
+		//a *= i;
+		//a /= i;
+    //a %= i;
+		//a &= i;
+		//a |= i;
+		//a ^= i;
+		//a <<= i;
+		//a >>= i;
+		//a >>>= i;
 
     System.out.println("Done!");
-	}
-}
-
-public class Operators {
-  public static void main(String[] args) {
-    new main(args);
   }
 }
