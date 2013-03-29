@@ -1,0 +1,22 @@
+After studying JBook semantics, now it is clear that the semantics of statements could be implemented in a similar way in K. The new semantics have the potential to be much shorter and simpler. The most notable difference is that in JBook the stack is homogenous - it stores just contexts of method calls. Not try/catch blocks, loops or labels. In K, navigation on the ast tree from ASM will be replaced by custom expanding/consuming rules - a variety of heating/cooling rules.
+
+More precisely, this refactoring will imply the following changes:
+
+- Block producing statements except loops will have an "expansion" rule like:
+try X ... => X ~> try EXPANDED ...
+Expansion is not the same as heating. After a heating, we expect that after a certain amount of rewrites a symmetric cooling rule will follow. Here, we never expect to replace EXPANDED with something else. This word is just a message that the try body was already expanded, thus it don't need to be expanded any more. This rule will be present for try/catch, try/finally, labeled.
+
+- Loop statements don't need expansion rules. Loop unrolling is good enough to replace expansion.
+
+- Once and expanded try/catch or labeled reacehs the top of computation it is discarded - it's body did not produced a control-interrupting statement that interacts with the block in any special way.
+
+- Once try/finally reaches the top of computation, finally block is executed.
+
+- A control-disrupting statement like return, throw, break, continue will always be matched in pair with the next statement. There are several cases.
+-- If control-disruptor is matched with a statement that don't interact with control, that statement is discarded.
+-- If control disruptor is matched with appropriate consumer statement, both statements are discarded and appropriate rewrite occurs. Example: throw and matching try/catch.
+-- If control disruptor is followed by a try-finally, finally block is expanded, without deleting the control disruptor. One possibility would be to move finally block before the control disruptor.
+--a return or throw statement that consumed every other statement in the computation reads the stack and is propagated to the caller method. Return statement should interact with stack only if it is the only statement left in <k>, to ensure that it properly itneracted with all finally blocks.
+-- a labeled break/continue will match the next two statements: The second could be the loop, and the third one the labeled statement with appropriate label.
+
+There are some cases where special care should be taken. For example for statements for or try/catch, when the statement may declare local varibles and alter the environment.
