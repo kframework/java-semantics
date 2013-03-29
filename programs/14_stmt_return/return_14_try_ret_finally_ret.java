@@ -1,4 +1,4 @@
-public class return_09_try_catch_finally_ret {
+public class return_14_try_ret_finally_ret {
 
   public static void main(String[] args) {
     new test();
@@ -14,14 +14,10 @@ class test {
   int f() {
     try {
       System.out.println("try");
-    } catch (RuntimeException e) {
-      System.out.println(e.toString());
-      return 2;
+      return 1;
     } finally {
       System.out.println("finally");
       if (true) return 3;
     }
-    System.out.println("unreachable");
-    return 4;
   }
 }

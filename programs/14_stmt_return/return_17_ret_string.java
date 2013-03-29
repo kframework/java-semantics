@@ -1,4 +1,4 @@
-public class return_13_ret_string {
+public class return_17_ret_string {
 
   public static void main(String[] args) {
     new test();

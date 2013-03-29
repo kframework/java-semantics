@@ -1,15 +1,16 @@
-// Testing break inside try/catch inside for. Try/catch should not affect
+// Testing labeled break inside try/catch inside for. Try/catch should not affect
 // break behavior, even if both interact with the same stack.
 
-public class break_04_catch_for {
+public class break_label_6_catch_in_for {
 
   public static void main(String[] args) {
     int i;
+    label_1:
     for(i=0; i<10; i++) {
       try {
-        if (i >= 5) break;
+        if (i >= 5) break label_1;
       } catch(RuntimeException ex) {
-        System.out.print("never reached");
+        System.out.print("never reached ");
       }
       System.out.print(i+" ");
     }

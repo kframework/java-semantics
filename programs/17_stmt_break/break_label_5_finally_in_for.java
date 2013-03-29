@@ -1,7 +1,7 @@
 // Testing break with label inside try/finally inside for (the labeled statement).
 // Finally block should execute after break was executed
 
-public class break_label_4_finally {
+public class break_label_5_finally_in_for {
 
   public static void main(String[] args) {
     int i;
@@ -14,7 +14,8 @@ public class break_label_4_finally {
         System.out.print("-"+ i+ " ");
       }
     }
-    System.out.println("\n"+ "final i = "+ i);
+    System.out.println();
+    System.out.println("final i = "+ i);
     System.out.println("Done!");
   }
 }

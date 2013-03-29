@@ -1,7 +1,7 @@
 // Test with one label, one labeled break, all inside while.
 // Due to a bug in k definition, there was a strange interaction
 // between labeled break and loops.
-public class break_label_3 {
+public class break_label_3_block_in_while {
   public static void main(String[] args) {
     int i=0, a=0;
     while(i<3) {

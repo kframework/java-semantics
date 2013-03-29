@@ -1,3 +1,5 @@
+//Exception var hiding local vars with the same name
+
 class main {
 
   int b = 10;
@@ -11,7 +13,7 @@ class main {
         System.out.print(2);     // should not print this
       }
       System.out.println(b);
-      throw new RuntimeException("re");
+      throw new RuntimeException();
     } catch(RuntimeException b) {
       System.out.println(b.toString());  // should print this
     }

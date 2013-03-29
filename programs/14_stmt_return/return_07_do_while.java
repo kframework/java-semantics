@@ -1,4 +1,6 @@
-public class return_06_for {
+//return in do-while
+
+public class return_07_do_while {
 
   public static void main(String[] args) {
     new test();
@@ -13,12 +15,15 @@ class test {
     System.out.println("isPrime(7) = " + isPrime(7));
   }
 
-  boolean isPrime(int n) {
-    for(int i=2; i<n;i++) {
+  //JBook semantics don't support operator String + boolean, that's why we need String here
+  String isPrime(int n) {
+    int i = 2;
+    do {
       if (n % i == 0) {
-        return false;
+        return "false";
       }
-    }
-    return true;
+      i++;
+    } while(i < n);
+    return "true";
   }
 }

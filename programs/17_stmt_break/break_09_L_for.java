@@ -9,7 +9,8 @@ public class break_09_L_for {
       if (i >= 5) break;
       System.out.print(i+" ");
     }
-    System.out.println("\n"+ "final i = "+ i);
+    System.out.println();
+    System.out.println("final i = "+ i);
     System.out.println("Done!");
   }
 }

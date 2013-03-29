@@ -1,11 +1,12 @@
-// Testing break inside for loop
+// Testing labeled break inside for loop
 
-public class break_03_for {
+public class break_label_4_for {
 
   public static void main(String[] args) {
     int i;
+    label_1:
     for(i=0; i<10; i++) {
-      if (i >= 5) break;
+      if (i >= 5) break label_1;
       System.out.print(i+" ");
     }
     System.out.println();

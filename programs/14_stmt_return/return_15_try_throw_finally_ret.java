@@ -1,4 +1,4 @@
-public class return_11_try_throw_finally_ret {
+public class return_15_try_throw_finally_ret {
 
   public static void main(String[] args) {
     new test();
@@ -14,7 +14,9 @@ class test {
   int f() {
     try {
       System.out.println("try");
-      throw new RuntimeException("abc");
+      //JBook semantics don't support constructor with arg for exceptions
+      //throw new RuntimeException("abc");
+      throw new RuntimeException();
     } finally {
       System.out.println("finally");
       if (true) return 3;

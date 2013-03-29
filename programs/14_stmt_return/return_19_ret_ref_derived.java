@@ -1,4 +1,10 @@
-public class return_14_ret_ref_exact {
+class Ex extends RuntimeException {
+  Ex() {
+    super();
+  }
+}
+
+public class return_19_ret_ref_derived {
 
   public static void main(String[] args) {
     new test();
@@ -12,6 +18,6 @@ class test {
   }
 
   RuntimeException f() {
-    return new RuntimeException("abc");
+    return new Ex();
   }
 }

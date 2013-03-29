@@ -1,10 +1,4 @@
-class Ex extends RuntimeException {
-  Ex(String s) {
-    super(s);
-  }
-}
-
-public class return_15_ret_ref_derived {
+public class return_18_ret_ref_exact {
 
   public static void main(String[] args) {
     new test();
@@ -18,6 +12,8 @@ class test {
   }
 
   RuntimeException f() {
-    return new Ex("abc");
+    return new RuntimeException();
+    //JBook semantics don't support constructor with arg for exceptions
+    //return new RuntimeException("abc");
   }
 }

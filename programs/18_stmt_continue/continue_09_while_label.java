@@ -12,7 +12,8 @@ public class continue_09_while_label {
       if (j % 2 != 0) continue;
       System.out.print(j+" ");
     }
-    System.out.println("\n"+ "Done!");
+    System.out.println();
+    System.out.println("Done!");
   }
 }
 

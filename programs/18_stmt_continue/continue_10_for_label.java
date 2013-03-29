@@ -9,7 +9,8 @@ public class continue_10_for_label {
       if (i % 2 != 0) continue;
       System.out.print(i+" ");
     }
-    System.out.println("\n"+ "Done!");
+    System.out.println();
+    System.out.println("Done!");
   }
 }
 

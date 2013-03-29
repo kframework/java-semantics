@@ -10,7 +10,8 @@ public class break_07_L_while {
       System.out.print(i+" ");
       i++;
     }
-    System.out.println("\n"+ "final i = "+ i);
+    System.out.println();
+    System.out.println("final i = "+ i);
     System.out.println("Done!");
   }
 }

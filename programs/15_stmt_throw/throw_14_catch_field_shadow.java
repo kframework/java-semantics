@@ -1,12 +1,15 @@
-// Testing that exception propagates through method calls
+// Testing interplay of fields and catch clause vars with the same name
+
+class ExField extends RuntimeException {}
+class ExThrown extends RuntimeException {}
 
 class test {
 
-  RuntimeException e = new RuntimeException("field");
+  RuntimeException e = new ExField();
 
   test() {
     try {
-      throw new RuntimeException("thrown");
+      throw new ExThrown();
     } catch (RuntimeException e) {
       System.out.println("caught exception: " + e.toString());
     }

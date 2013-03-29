@@ -14,7 +14,8 @@ public class continue_label_09_for_L_w {
       }
       System.out.print(j+" ");
     }
-    System.out.println("\n"+ "Done!");
+    System.out.println();
+    System.out.println("Done!");
   }
 }
 

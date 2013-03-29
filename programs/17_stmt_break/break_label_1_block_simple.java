@@ -1,6 +1,6 @@
 // Simple test with labeled break
 
-public class break_label_1 {
+public class break_label_1_block_simple {
   public static void main(String[] args) {
     label_1: {
       System.out.println("Before break");

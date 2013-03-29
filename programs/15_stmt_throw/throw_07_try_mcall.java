@@ -17,7 +17,7 @@ class test {
   }
 
   void throwEx() {
-    throw new RuntimeException("");
+    throw new RuntimeException();
   }
 }
 

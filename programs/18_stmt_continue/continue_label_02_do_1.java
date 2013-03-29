@@ -13,7 +13,8 @@ public class continue_label_02_do_1 {
       if (j % 2 != 0) continue label_1;
       System.out.print(j+" ");
     } while (i<10);
-    System.out.println("\n"+ "Done!");
+    System.out.println();
+    System.out.println("Done!");
   }
 }
 

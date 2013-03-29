@@ -15,7 +15,8 @@ public class continue_label_08_L_while_L_w {
       }
       System.out.print(j+" ");
     }
-    System.out.println("\n"+ "Done!");
+    System.out.println();
+    System.out.println("Done!");
   }
 }
 

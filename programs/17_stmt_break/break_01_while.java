@@ -9,7 +9,8 @@ public class break_01_while {
       System.out.print(i+" ");
       i++;
     }
-    System.out.println("\n"+ "final i = "+ i);
+    System.out.println();
+    System.out.println("final i = "+ i);
     System.out.println("Done!");
   }
 }

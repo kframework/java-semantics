@@ -7,7 +7,8 @@ public class continue_04_for {
       if (i % 2 != 0) continue;
       System.out.print(i+" ");
     }
-    System.out.println("\n"+ "Done!");
+    System.out.println();
+    System.out.println("Done!");
   }
 }
 

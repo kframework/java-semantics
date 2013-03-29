@@ -8,7 +8,8 @@ public class continue_label_04_for {
       if (i % 2 != 0) continue label_1;
       System.out.print(i+" ");
     }
-    System.out.println("\n"+ "Done!");
+    System.out.println();
+    System.out.println("Done!");
   }
 }
 

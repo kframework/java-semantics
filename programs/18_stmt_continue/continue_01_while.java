@@ -10,7 +10,8 @@ public class continue_01_while {
       if (j % 2 != 0) continue;
       System.out.print(j+" ");
     }
-    System.out.println("\n"+ "Done!");
+    System.out.println();
+    System.out.println("Done!");
   }
 }
 
