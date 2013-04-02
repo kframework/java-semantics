@@ -1,0 +1,1659 @@
+***************************************************
+*** Java specification based on rewriting logic ***
+*** Author: Feng Chen (fengchen@uiuc.edu)       ***
+***************************************************
+---in java-rl-preprocess.maude
+
+-----------------------------------
+------ Java Semantics -------------
+-----------------------------------
+
+fmod NAME is
+  ex QID .
+  sorts Name NameList .
+  subsort Qid < Name < NameList .
+  op empty : -> NameList .
+  op _;_ : NameList NameList -> NameList [assoc id: empty] .
+endfm
+
+fmod LOCATION is
+  pr INT .
+  sorts Location LocationList LocationSet .
+  subsort Location < LocationList LocationSet .
+  op noLoc : -> LocationList .
+  op nil : -> LocationSet .
+  op _,_ : LocationList LocationList -> LocationList [assoc id: noLoc] .
+  op __ : LocationSet LocationSet -> LocationSet [comm assoc id: nil] .
+  op l : Nat -> Location .
+  op l : Nat Nat -> LocationList .
+  vars N # : Nat .
+  eq l(N,0) = noLoc .
+  eq l(N,#) = l(N), l(N + 1, # - 1) .
+endfm
+
+fmod BASICVALUE is
+  ex VALUE .
+  pr JAVAINT .
+  pr FLOAT .
+  pr STRING .
+  pr BOOL .
+  
+  op byte : JavaByte -> Value .
+  op short : JavaShort -> Value .  
+  op int : JavaInt -> Value .
+  op long : JavaLong -> Value .
+  op fl : Float -> Value .
+  op str : String -> Value .
+  op bool : Bool -> Value .  
+  op nullv : -> Value . --- to distinguished from the null expression
+endfm
+
+fmod ENVIRONMENT is 
+  pr NAME .
+  pr LOCATION .
+  ex VALUE .
+  sort Env .
+---  subsort Env < Value .
+  op noEnv : -> Env .
+  op [_,_] : Qid Location -> Env .
+  op __ : Env Env -> Env [assoc comm id: noEnv] .
+  op _[_<-_] : Env NameList LocationList -> Env .
+
+  var X : Name .  vars Env : Env .  vars L L' : Location .
+  var Xl : NameList .  var Ll : LocationList .
+  eq Env[empty <- noLoc] = Env .
+  eq ([X,L] Env)[X ; Xl <- L',Ll] = ([X,L'] Env)[Xl <- Ll] .
+  eq Env[X ; Xl <- L,Ll] = (Env [X,L])[Xl <- Ll] [owise] .
+endfm
+
+fmod ARRAY-OBJ is 
+  pr LOCATION .
+  pr TYPE .
+  ex JAVAINT .
+  ex VALUE .
+  sort ArrayEnv Array .
+  subsort Array < Value .
+  op anil : -> ArrayEnv .
+  op [_,_] : JavaInt Location -> ArrayEnv .
+  op __ : ArrayEnv ArrayEnv -> ArrayEnv [assoc comm id: anil] .
+  op a : Type ArrayEnv -> Array .
+endfm
+
+fmod OBJECT is
+  pr TYPE .
+  ex VALUE .
+  pr ENVIRONMENT .
+  sorts ObjEnvItem ObjEnv Object ObjectAttribute .
+  subsort Object < Value .
+  
+  op onil : -> ObjEnv .
+  op t : Type -> ObjEnvItem . 
+  op enc : Object -> ObjEnvItem . --- the enclosing object
+  op f : Env -> ObjEnvItem . 
+  op inil : -> ObjEnvItem .
+  op _,_ : ObjEnvItem ObjEnvItem -> ObjEnvItem [comm assoc id: inil] .
+  op [_] : ObjEnvItem -> ObjEnv .
+  op __ : ObjEnv ObjEnv -> ObjEnv [comm assoc id: onil] .
+  op noAttr : -> ObjectAttribute .
+  op f : ObjEnv -> ObjectAttribute .
+  op curr : Type -> ObjectAttribute .
+  op orig : Type -> ObjectAttribute .
+  op encEnv : Env -> ObjectAttribute . --- the env of the enclosing block. note that we assume the program passes the java compiler
+  op __ : ObjectAttribute ObjectAttribute -> ObjectAttribute [comm assoc id: noAttr] .
+  op o : ObjectAttribute -> Object .
+  op nullo : -> Object .
+endfm
+
+fmod STORE is
+  pr LOCATION .
+  pr VALUE .
+  sort Store .
+  op noStore : -> Store .
+  op [_,_,_] : Location Value Int -> Store . --- the last bit is used to store the thread id, needed for fine grained concurrency
+  op __ : Store Store -> Store [assoc comm id: noStore] .
+endfm
+
+fmod CONTINUATION is
+  sort Continuation .
+  op stop : -> Continuation .
+  op noop : -> Continuation .
+  op _->_ : Continuation Continuation -> Continuation [assoc] .
+
+  var K : Continuation .
+  eq noop -> K = K .  
+endfm
+
+fmod LOCK-DEF is
+  pr JAVAINT .
+  ex OBJECT .
+  sorts Lock LockSet ObjectSet .
+  subsort Object < ObjectSet .
+  subsort Lock < LockSet .
+  op [_,_] : Object Int -> Lock .
+  op nil : -> LockSet .
+  op _,_ : LockSet LockSet -> LockSet [comm assoc id: nil] .
+  op noObj : -> ObjectSet .
+  op _;_ : ObjectSet ObjectSet -> ObjectSet [comm assoc id: noObj] .
+endfm
+
+fmod THREADCTRL is
+  pr CONTINUATION .
+  pr OBJECT .
+  pr LOCATION .
+  pr LOCK-DEF .
+  
+  sorts ThreadCtrl FlowStackItem FlowStack .
+  op id : Int -> ThreadCtrl . --- the thread id
+  op k : Continuation -> ThreadCtrl .
+  op obj : Object -> ThreadCtrl .
+  op fstack : FlowStack -> ThreadCtrl . --- function stack
+  op xstack : FlowStack -> ThreadCtrl . --- exception stack
+  op lstack : FlowStack -> ThreadCtrl . --- loop stack
+  op finalblocks : FlowStack -> ThreadCtrl . --- final blocks
+  op env : Env -> ThreadCtrl .
+  op holds : LockSet -> ThreadCtrl . --- the locks held by the thread
+  op __ : ThreadCtrl ThreadCtrl -> ThreadCtrl [comm assoc] .
+  
+  subsort FlowStackItem < FlowStack .
+  op noItem : -> FlowStackItem .
+  op fsi : Continuation ThreadCtrl -> FlowStackItem .
+  op __ : FlowStack FlowStack -> FlowStack [assoc id: noItem] . 
+  op getStackDepth : FlowStack -> Int .
+  
+endfm
+
+fmod OUTPUT is
+  pr STORE .
+  
+  sort Output .
+  op pl : -> Output .  --- println
+  op pl : Value -> Output . --- println(..)
+  op p : Value -> Output . --- print(..)
+  op ex : Value -> Output . --- thrown exception
+  op r : Value -> Output . --- final return value
+  op noOutput : -> Output .
+  op _,_ : Output Output -> Output [assoc id: noOutput] .
+endfm
+
+fmod STATE is  
+  pr CLASSES .
+  pr STORE .
+  pr OBJECT .
+  pr THREADCTRL .
+  pr OUTPUT .
+  sort JavaState .
+  
+  op out : Output -> JavaState .
+  op in : ValueList -> JavaState .
+  op t : ThreadCtrl -> JavaState .
+  op store : Store -> JavaState .
+  op code : Classes -> JavaState .
+  op static : ObjEnv -> JavaState . --- the static fields of classes
+  op busy : ObjectSet -> JavaState . --- the locks are in use
+  op nextLoc : Int -> JavaState . --- the next available location
+  op nextTid : Int -> JavaState . --- the next thread id
+  op __ : JavaState JavaState -> JavaState [comm assoc] .
+endfm
+
+fmod RUN is
+  pr STATE .
+  
+  op run : JavaState -> Output .
+  
+endfm
+
+fmod GENERIC-EXP-SEMANTICS is 
+  ex CONTINUATION .
+  pr BASICVALUE .
+  pr GENERIC-EXP-SYNTAX .
+  pr STATE .
+  op _->_ : ExpList Continuation -> Continuation .
+  op _->_ : ValueList Continuation -> Continuation .
+
+  var I : JavaInt . var f : Float . var str : String .
+  var B : Bool . var K : Continuation . var obj : Object .
+  
+  eq k(i(I) -> K) = k(int(I) -> K) .
+  eq k(f(f) -> K) = k(fl(f) -> K) .
+  eq k(s(str) -> K) = k(str(str) -> K) .
+  eq k(b(B) -> K) = k(bool(B) -> K) .
+  eq k(this -> K) obj(obj) = k(obj -> K) obj(obj) .
+  **** how to handle super? need to check out the spec ***
+
+  op [_|_] : ExpList ValueList -> Continuation .
+  
+  vars E E' : Exp . var El : ExpList . var V : Value . var Vl : ValueList .
+  
+  eq k((E, E', El) -> K) = k(E -> ([ E', El | noVal ] -> K)) [owise] .
+  eq k(null -> K) = k(nullo -> K) .
+  eq k(V -> ([noExp | Vl] -> K)) = k((Vl,V) -> K) .
+  eq k(V -> ([E,El | Vl] -> K)) = k(E -> ([El | Vl,V] -> K)) [owise] .
+  eq k(noExp -> K) = k(noVal -> K) .
+endfm
+
+fmod STOP-SEMANTICS is
+  ex CONTINUATION .
+  pr GENERIC-EXP-SEMANTICS .
+  pr STATE .
+  
+  var K : Continuation . var V : Value . var Vl : ValueList .
+  var tc : ThreadCtrl . var state : JavaState . var output : Output .
+  
+  eq t(k(V -> stop) tc) out(output) = out(output, r(V)) .
+  eq t(k(stop) tc) state = state .
+  
+endfm
+
+************************************************
+*****  The operations to read/write store ******
+*****  Need to handle concurrency         ******
+************************************************
+
+mod STORE-ACCESS is
+  pr GENERIC-EXP-SEMANTICS .
+  pr ARRAY-OBJ .
+  
+  op # : Location -> Continuation .
+  op [_->_] : Value Location -> Continuation .
+
+  vars I I' : Int . var K : Continuation . vars V V' : Value . vars L L' : Location .
+  var tc : ThreadCtrl . var st : Store .
+
+  --- a location has the tid of -2 only when it is created but has not been assigned to a variable in any thread, e.g., a newly created object
+  
+  eq t(k(#(L) -> K) id(I) tc) store([L, V, -2] st) = t(k(V -> K) id(I) tc) store([L, V, -2] st) .
+  rl t(k(#(L) -> K) id(I) tc) store([L, V, -1] st) => t(k(V -> K) id(I) tc) store([L, V, -1] st) .
+  eq t(k(#(L) -> K) id(I) tc) store([L, V, I] st) = t(k(V -> K) id(I) tc) store([L, V, I] st) .
+
+  eq t(k([V -> L] -> K) id(I) tc) store([L, V', -2] st) = t(k(K) id(I) tc) store([L, V, -2] st) .
+  rl t(k([V -> L] -> K) id(I) tc) store([L, V', -1] st) => t(k(K) id(I) tc) store([L, shared(V), -1] st) .
+  eq t(k([V -> L] -> K) id(I) tc) store([L, V', I] st) = t(k(K) id(I) tc) store([L, setTid(V, I), I] st) .
+  
+  op setTid : Value Int -> Value .
+  op setTid : ArrayEnv Int -> ArrayEnv .
+  op setTid : ObjEnv Int -> ObjEnv .
+  op setTid : Env Int -> Env .
+  op shared : Value -> Value .
+  
+  vars aEnv aEnv' : ArrayEnv . var oEnv : ObjEnv . vars I'' I''' : Int . var oeitem : ObjEnvItem .
+  vars env env' : Env . vars T T' T'' : Type . var X : Qid . var oattr : ObjectAttribute .
+  vars jI : JavaInt . 
+  
+  ceq setTid(a(T, aEnv), I') = a(T, setTid(aEnv, I')) if I' > -2 .
+  ceq setTid(o(f(oEnv) oattr), I') = o(f(setTid(oEnv, I')) oattr) if I' > -2 .
+  eq setTid(V, I) = V [owise] .
+  
+  --- note that in these equations, I' is either I'' or -1, and in the third equation, I''' can only be I', -1, or -2(values just generated)
+  
+  --- if the array already in the same thread, then stop
+  eq [L, a(T, setTid(([jI, L'] aEnv), I')), I''] [L', V, I'] = [L, a(T, ([jI, L'] aEnv)), I''] [L', V, I'] .
+  --- if the array is shared, stop
+  eq [L, a(T, setTid(([jI, L'] aEnv), I')), I''] [L', V, -1] = [L, a(T, ([jI, L'] aEnv)), I''] [L', V, -1] .
+  --- otherwise, go through every elements
+  eq [L, a(T, (setTid(([jI, L'] aEnv), I') aEnv')), I''] [L', V, -2] = [L, a(T, ([jI, L'] setTid(aEnv, I') aEnv')), I''] [L', setTid(V, I'), I'] .
+  --- this happens only when a new thread starts and set Tid to the fields of the new thread object
+  eq [L, a(T, (setTid(([jI, L'] aEnv), I') aEnv')), I''] [L', V, I'''] = [L, a(T, ([jI, L'] setTid(aEnv, I') aEnv')), I''] [L', setTid(V, -1), -1] [owise] .
+  eq setTid(anil, I) = anil .
+
+  eq setTid(([f(env), oeitem] oEnv), I) = [oeitem, f(setTid(env, I))] setTid(oEnv, I) .
+  eq setTid(onil, I) = onil .
+  eq setTid(noEnv, I) = noEnv .
+  
+  eq [L, o(oattr f([oeitem, f(setTid(([X, L'] env), I))] oEnv)), I'] [L', V, I] = [L, o(oattr f([oeitem, f([X, L'] env)] oEnv)), I'] [L', V, I] .
+  eq [L, o(oattr f([oeitem, f(setTid(([X, L'] env), I))] oEnv)), I'] [L', V, -1] = [L, o(oattr f([oeitem, f([X, L'] env)] oEnv)), I'] [L', V, -1] .
+  eq [L, o(oattr f([oeitem, f((setTid(([X, L'] env), I) env'))] oEnv)), I'] [L', V, -2] = [L, o(oattr f([oeitem, f(([X,L'] setTid(env, I) env'))] oEnv)), I'] [L', setTid(V, I), I] .
+  --- this happens only when a new thread starts and set Tid to the fields of the new thread object
+  eq [L, o(oattr f([oeitem, f((setTid(([X, L'] env), I) env'))] oEnv)), I'] [L', V, I''] = [L, o(oattr f([oeitem, f(([X,L'] setTid(env, I) env'))] oEnv)), I'] [L', setTid(V, -1), -1] [owise] .
+  
+  eq shared(V) = setTid(V, -1) .
+endm
+
+fmod GETTYPES is
+  pr TYPE .
+  pr ARRAY-SYNTAX .
+  pr BASICVALUE .
+  pr ARRAY-OBJ .
+  pr OBJECT .
+  
+  op getTypes : ValueList -> TypeList .
+  op getType : Value -> Type .
+  
+  var V : Value . var Vl : ValueList . var I : JavaInt . var f : Float . var s : String . var B : Bool .
+  vars T1 T2 : Type . var aenv : ArrayEnv . var oenv : ObjEnv . var oattr : ObjectAttribute .
+  
+  eq getTypes(noVal) = nil .
+  eq getTypes(V, Vl) = getType(V) ; getTypes(Vl) .
+  eq getType(int(I)) = int .
+  eq getType(fl(f)) = float .
+  eq getType(str(s)) = string .
+  eq getType(bool(B)) = boolean .
+  eq getType(a(T1, aenv)) = T1[] .
+  eq getType(o(curr(T1) oattr)) = T1 .
+endfm
+
+fmod SUPEROF is
+  pr CLASSES .
+  op superOf : Type Type Classes -> Bool . --- return true when the first type is the subclass of the second type
+  op superOf : Types Type Classes -> Bool .
+  
+  vars C C' : Qid . var Cl : Classes . var md : Modifier . var CB : ClassBody .
+  var sp : Types . vars T T' T'' : Type .
+  
+  eq superOf(T, T', ((md class T extends T' implements sp CB) Cl)) = true .
+  eq superOf(T, T', ((md class T extends T'' implements (T', sp) CB) Cl)) = true .
+  eq superOf(T, T', ((md class T extends T'' implements sp CB) Cl)) = superOf((T'', sp), T', Cl) [owise] .
+  eq superOf(T, T', ((md interface T extends (T', sp) CB) Cl)) = true .
+  eq superOf(T, T', ((md interface T extends sp CB) Cl)) = superOf(sp, T', Cl) [owise] .
+  eq superOf((T, sp), T', Cl) = if (superOf(T, T', Cl)) then true else superOf(sp, T', Cl) fi .
+  eq superOf(noType, T', Cl) = false .
+  eq superOf(Object, T', Cl) = false .
+  
+  op getSuper : Type Classes -> Type .
+  
+  eq getSuper(T, ((md class T extends T' implements sp CB) Cl)) = T' .
+  eq getSuper(T, Cl) = Object [owise] .
+endfm
+
+fmod COMPATIBLETYPE is
+  pr TYPE .
+  pr SUPEROF .
+  
+  op compatible : Type Type Classes -> Bool . --- ugly for the classes information 
+  op convertable : Type Type Classes -> Bool . --- check if the first type can be casted into the second type
+  
+  vars T T' : Type . var Cl : Classes .
+  eq compatible(T, T, Cl) = true .
+  eq compatible(T, T', Cl) = superOf(T, T', Cl) [owise] .
+  ceq convertable(T, T', Cl) = true if ((T == int) or (T == long) or (T == short) or (T == byte)) and ((T' == int) or (T' == long) or (T' == short) or (T' == byte)) .
+  ceq convertable(T, T', Cl) = true if ((T == float) or (T == double)) and ((T' == float) or (T' == double)) .
+  ceq convertable(T, T', Cl) = true if (compatible(T, T', Cl)) .
+  eq convertable(T, T', Cl) = false [owise] .
+  
+endfm
+
+fmod GETLOCATION is
+  pr GENERIC-EXP-SEMANTICS .
+  
+  op getLoc : Exp -> Continuation .
+  op _->_ : Location Continuation -> Continuation .
+endfm
+
+mod UNARY-EXP is
+  pr GENERIC-EXP-SEMANTICS .
+  pr UNARY-EXP-SYNTAX .
+  pr COMPATIBLETYPE .
+  pr STORE-ACCESS .
+  pr GETLOCATION .
+  ex CONTINUATION .
+  pr GETTYPES .
+  
+  ops ++ -- ++' --' neg : -> Continuation .
+  ops ++ -- ++' --' : Location -> Continuation .
+  op cast : Type -> Continuation .
+  
+  **** need to check the spec to see if this is correct: if fetching and storing value are seperated or not ***
+  
+  var E : Exp . var K : Continuation . var I : JavaInt . var L : Location . var f : Float .
+  var tc : ThreadCtrl . var Cl : Classes . var T : Type . var V : Value .
+  
+  eq k((++ E) -> K) = k(getLoc(E) -> ++ -> K) .
+  eq k(L -> ++ -> K) = k(#(L) -> ++(L) -> K) .
+  eq k(int(I) -> ++(L) -> K) = k([int(I + 1) -> L] -> (int(I + 1) -> K)) .
+  
+  eq k((-- E) -> K) = k(getLoc(E) -> -- -> K) .
+  eq k(L -> -- -> K) = k(#(L) -> --(L) -> K) .
+  eq k(int(I) -> --(L) -> K) = k([int(I - 1) -> L] -> (int(I - 1) -> K)) .
+  
+  eq k((E ++) -> K) = k(getLoc(E) -> ++' -> K) .
+  eq k(L -> ++' -> K) = k(#(L) -> ++'(L) -> K) .
+  eq k(int(I) -> ++'(L) -> K) = k([int(I + 1) -> L] -> (int(I) -> K)) .
+  
+  eq k((E --) -> K) = k(getLoc(E) -> --' -> K) .
+  eq k(L -> --' -> K) = k(#(L) -> --'(L) -> K) .
+  eq k(int(I) -> --'(L) -> K) = k([int(I - 1) -> L] -> (int(I) -> K)) .
+  
+  eq k((+ E) -> K) = k(E -> K) .
+  eq k((- E) -> K) = k(E -> (neg -> K)) .
+  eq k(int(I) -> (neg -> K)) = k(int(- I) -> K) .
+  eq k(fl(f) -> (neg -> K)) = k(fl(- f) -> K) .
+  
+  eq k(({T} E) -> K) = k(E -> (cast(T) -> K)) .
+  ceq t(k(V -> (cast(T) -> K)) tc) code(Cl) = t(k(V -> K) tc) code(Cl) if convertable(getType(V), T, Cl) .
+  
+endm
+
+fmod ARITH-EXP is
+  pr ARITH-EXP-SYNTAX .
+  pr GENERIC-EXP-SEMANTICS .
+  ex CONTINUATION .
+
+  ops + - * / % : -> Continuation .
+  
+  vars E E' : Exp . var K : Continuation . vars I I' : JavaInt .  vars f f' : Float . vars s s' : String .
+    
+  eq k((E + E') -> K) = k((E, E') -> (+ -> K)) .
+  eq k((int(I), int(I')) -> (+ -> K)) = k(int(I + I') -> K) .
+  eq k((fl(f), fl(f')) -> (+ -> K)) = k(fl(f + f') -> K) .
+  eq k((str(s), str(s')) -> (+ -> K)) = k(str(s + s') -> K) .
+  
+  eq k((E - E') -> K) = k((E, E') -> (- -> K)) .
+  eq k((int(I), int(I')) -> (- -> K)) = k(int(I - I') -> K) .
+  eq k((fl(f), fl(f')) -> (- -> K)) = k(fl(f - f') -> K) .
+  
+  eq k((E * E') -> K) = k((E, E') -> (* -> K)) .
+  eq k((int(I), int(I')) -> (* -> K)) = k(int(I * I') -> K) .
+  eq k((fl(f), fl(f')) -> (* -> K)) = k(fl(f * f') -> K) .
+  
+  eq k((E / E') -> K) = k((E, E') -> (/ -> K)) .
+  eq k((int(I), int(I')) -> (/ -> K)) = k(int(I quo I') -> K) .
+  eq k((fl(f), fl(f')) -> (/ -> K)) = k(fl(f / f') -> K) .
+  
+  eq k((E % E') -> K) = k((E, E') -> (% -> K)) .
+  eq k((int(I), int(I')) -> (% -> K)) = k(int(I rem I') -> K) .
+  eq k((fl(f), fl(f')) -> (% -> K)) = k(fl(f rem f') -> K) .
+endfm
+
+fmod REXP is
+  pr REXP-SYNTAX .
+  pr GENERIC-EXP-SEMANTICS .
+  ex CONTINUATION .
+
+  ops == != < <= > >= : -> Continuation .
+  
+  vars E E' : Exp . var K : Continuation . vars V V' : Value .
+  vars I I' : JavaInt . vars f f' : Float .
+  
+  eq k((E == E') -> K) = k((E, E') -> (== -> K)) .
+  eq k((V, V) -> (== -> K)) = k(bool(true) -> K) .
+  eq k((V, V') -> (== -> K)) = k(bool(false) -> K) [owise] .
+  
+  eq k((E != E') -> K) = k((E, E') -> (!= -> K)) .
+  eq k((V, V) -> (!= -> K)) = k(bool(false) -> K) .
+  eq k((V, V') -> (!= -> K)) = k(bool(true) -> K) [owise] .
+  
+  eq k((E < E') -> K) = k((E, E') -> (< -> K)) .
+  eq k((int(I), int(I')) -> (< -> K)) = k(bool(I < I') -> K) .
+  eq k((fl(f), fl(f')) -> (< -> K)) = k(bool(f < f') -> K) .
+  
+  eq k((E <= E') -> K) = k((E, E') -> (<= -> K)) .
+  eq k((int(I), int(I')) -> (<= -> K)) = k(bool(I <= I') -> K) .
+  eq k((fl(f), fl(f')) -> (<= -> K)) = k(bool(f <= f') -> K) .
+  
+  eq k((E > E') -> K) = k((E, E') -> (> -> K)) .
+  eq k((int(I), int(I')) -> (> -> K)) = k(bool(I > I') -> K) .
+  eq k((fl(f), fl(f')) -> (> -> K)) = k(bool(f > f') -> K) .
+  
+  eq k((E >= E') -> K) = k((E, E') -> (>= -> K)) .
+  eq k((int(I), int(I')) -> (>= -> K)) = k(bool(I >= I') -> K) .
+  eq k((fl(f), fl(f')) -> (>= -> K)) = k(bool(f >= f') -> K) .
+  
+endfm
+
+fmod BEXP is
+  pr BEXP-SYNTAX .
+  pr GENERIC-EXP-SEMANTICS .
+  ex CONTINUATION .
+  
+  op ! : -> Continuation .
+  ops && || : Exp -> Continuation .
+  
+  vars E E' : Exp . var K : Continuation . vars B B' : Bool .
+  
+  eq k((! E) -> K) = k(E -> (! -> K)) .
+  eq k(bool(B) -> (! -> K)) = k(bool(not B) -> K) .
+  
+  eq k((E && E') -> K) = k(E -> (&&(E') -> K)) .
+  eq k(bool(true) -> (&&(E) -> K)) = k(E -> K) .
+  eq k(bool(false) -> (&&(E) -> K)) = k(bool(false) -> K) .
+  
+  eq k((E || E') -> K) = k(E -> (||(E') -> K)) .
+  eq k(bool(true) -> (||(E) -> K)) = k(bool(true) -> K) .
+  eq k(bool(false) -> (||(E) -> K)) = k(E -> K) .
+
+endfm
+
+**** how to handle shift and bitwise operations ? ****
+
+fmod CEXP is 
+  pr CEXP-SYNTAX .
+  pr GENERIC-EXP-SEMANTICS .
+  ex CONTINUATION .
+
+  op ? : Exp Exp -> Continuation .
+  
+  vars E E' E'' : Exp . var K : Continuation .
+  
+  eq k((E ? E' : E'') -> K) = k(E -> (?(E', E'') -> K)) .
+  eq k(bool(true) -> (?(E, E') -> K)) = k(E -> K) .
+  eq k(bool(false) -> (?(E, E') -> K)) = k(E' -> K) .
+endfm
+
+mod ARRAY-EXP is
+  pr ARRAY-OBJ .
+  pr ARRAY-SYNTAX .
+  pr STORE-ACCESS .
+  pr GENERIC-EXP-SEMANTICS .
+  ex CONTINUATION .
+  ex GETLOCATION .
+  
+  op [] : -> Continuation .
+  op loc[] : -> Continuation .
+  
+  vars E E' : Exp . var K : Continuation . var I : JavaInt . var T : Type . var L : Location . var aEnv : ArrayEnv .  
+  
+  eq k(E[E'] -> K) = k((E, E') -> ([] -> K)) .
+  eq k((a(T, ([I, L] aEnv)), int(I)) -> ([] -> K)) = k(#(L) -> K) . 
+
+  eq k(getLoc(E[E']) -> K) = k((E, E') -> (loc[] -> K)) .
+  eq k((a(T, ([I, L] aEnv)), int(I)) -> (loc[] -> K)) = k(L -> K) . 
+endm
+
+fmod ARRAY-INIT-EXP is
+  pr ARRAY-INIT .
+  pr GETTYPES .
+  pr GENERIC-EXP-SEMANTICS .
+  ex CONTINUATION .
+  
+  op {-} : -> Continuation .
+  op {}_ : Type -> Continuation .
+  op buildAEnv : ValueList JavaInt ArrayEnv -> Continuation .
+  op _->_ : ArrayEnv Continuation -> Continuation .
+  
+  var El : ExpList . var K : Continuation . var V : Value . var Vl : ValueList . var aEnv : ArrayEnv . var T : Type . var I : JavaInt .
+  vars I' I'' : Int . var tc : ThreadCtrl . var store : Store .
+
+**** not sure if this is enough, or need to handle some special cases...    
+  eq k(({ El }) -> K) = k(El -> ({-} -> K)) .
+  eq k((V, Vl) -> ({-} -> K)) = k(buildAEnv((V, Vl), 0, anil) -> ({}(getType(V) []) -> K)) .
+  eq k(aEnv -> ({}(T) -> K)) = k(a(T, aEnv) -> K) .
+  
+  eq t(k(buildAEnv((V, Vl), I, aEnv) -> K) id(I'') tc) store(store) nextLoc(I') = t(k(buildAEnv(Vl, I + 1, ([I, l(I')] aEnv)) -> K) id(I'') tc) store([l(I'), V, I''] store) nextLoc(I' + 1) .
+  eq k(buildAEnv(noVal, I, aEnv) -> K) = k(aEnv -> K) .
+endfm
+
+fmod INSTANCEOF is
+  pr INSTANCEOF-SYNTAX .
+  pr GENERIC-EXP-SEMANTICS .
+  pr GETTYPES .
+  pr COMPATIBLETYPE .
+  ex CONTINUATION .
+  
+  op instanceOf : Type -> Continuation .
+  
+  var E : Exp . var T : Type . var K : Continuation . var tc : ThreadCtrl . var Cl : Classes . var V : Value .
+    
+  eq k(instanceOf(E, T) -> K) = k(E -> (instanceOf(T) -> K)) .
+  eq t(k(V -> (instanceOf(T) -> K)) tc) code(Cl) = t(k(bool(compatible(getType(V), T, Cl)) -> K) tc) code(Cl) .
+endfm
+
+mod CLASS-FIELD is
+  pr CLASS-MEMBER-ACCESS .
+  pr GENERIC-EXP-SEMANTICS .
+  pr OBJECT .
+  ex CONTINUATION .
+  ex GETLOCATION .
+  pr STORE-ACCESS .
+  pr SUPEROF .
+  
+  op . : Qid -> Continuation .
+  op loc. : Qid -> Continuation .
+  op . : Qid Type -> Continuation .
+  op loc. : Qid Type -> Continuation .
+---  op getSys : Exp -> Continuation .
+  
+  var E : Exp . var X : Qid . var K : Continuation . vars T T' : Type . var oEnv : ObjEnv . var L : Location . var env : Env . var tc : ThreadCtrl .
+  var oattr : ObjectAttribute . var obj : Object . var Cl : Classes . var oeitem : ObjEnvItem . 
+  
+---  eq k((E . X) -> K) = k(getSys(E . X) -> ((E . X) -> K)) .
+---  eq k(V -> ((E . X) -> K)) = k(V -> K) .
+  eq k((E . X) -> K) = k(E -> (.(X) -> K)) [owise] . --- the owise option allows the system object take effect first, like system . out
+  eq k(o(oattr curr(T)) -> (.(X) -> K)) = k(o(oattr curr(T)) -> (.(X, T) -> K)) .
+  eq k(o(oattr curr(T) f([oeitem, t(T), f(([X, L] env))] oEnv)) -> (.(X, T') -> K)) = k(#(L) -> K) .
+  eq t(k(o(oattr curr(T)) -> (.(X, T') -> K)) tc) static([t(T), f([X, L] env)] oEnv) = 
+     t(k(#(L) -> K) tc) static([t(T), f([X, L] env)] oEnv) .
+  eq t(k(o(curr(T) oattr) -> (.(X, T') -> K)) tc) code(Cl) = t(k(o(curr(getSuper(T, Cl)) oattr) -> (.(X, T') -> K)) tc) code(Cl) [owise] .
+  eq k(o(curr(Object) encEnv([X, L] env) oattr) -> (.(X, T) -> K)) = k(#(L) -> K) .
+  eq k(o(oattr curr(Object) f([enc(obj), t(T), oeitem] oEnv)) -> (.(X, T) -> K)) = k(obj -> (.(X) -> K)) [owise] .
+  
+  eq k(getLoc(E . X) -> K) = k(E -> (loc.(X) -> K)) .
+  eq k(o(curr(T) oattr) -> (loc.(X) -> K)) = k(o(curr(T) oattr) -> (loc.(X, T) -> K)) .
+  eq k(o(curr(T) oattr f([oeitem, f(([X, L] env))] oEnv)) -> (loc.(X, T') -> K)) = k(L -> K) .
+  eq t(k(o(oattr curr(T)) -> (loc.(X, T') -> K)) tc) static([t(T), f([X, L] env)] oEnv) code(Cl) = 
+     t(k(L -> K) tc) static([t(T), f([X, L] env)] oEnv) code(Cl) .
+  eq t(k(o(curr(T) oattr) -> (loc.(X, T') -> K)) tc) static(oEnv) code(Cl) = 
+     t(k(o(curr(getSuper(T, Cl)) oattr) -> (loc.(X, T') -> K)) tc) static(oEnv) code(Cl) [owise] .
+  eq k(o(curr(Object) encEnv([X, L] env) oattr) -> (loc.(X, T) -> K)) = k(L -> K) .
+  eq k(o(curr(Object) f([enc(obj), t(T), oeitem] oEnv) oattr) -> (loc.(X, T) -> K)) = k(obj -> (loc.(X) -> K)) [owise] .
+  
+  **** we don't support references to static fields via object instances. This has been dropped in Java Spec 2, 
+  **** but Java still supports it for back-compatibility (warnings are produced though).
+  eq t(k((T . X) -> K) tc) static([oeitem, t(T), f([X, L] env)] oEnv) = t(k(#(L) -> K) tc) static([oeitem, t(T), f([X, L] env)] oEnv) .
+  eq t(k((T . X) -> K) tc) static(oEnv) code(Cl) = t(k(getLoc(getSuper(T, Cl) . X) -> K) tc) static(oEnv) code(Cl) [owise] .
+  eq t(k(getLoc(T . X) -> K) tc) static([oeitem, t(T), f([X, L] env)] oEnv) = t(k(L -> K) tc) static([oeitem, t(T), f([X, L] env)] oEnv) .
+  eq t(k(getLoc(T . X) -> K) tc) static(oEnv) code(Cl) = t(k(getLoc(getSuper(T, Cl) . X) -> K) tc) static(oEnv) code(Cl) [owise] .
+endm
+
+mod VAR-EXP is
+  pr CLASS-FIELD .
+  ex GETLOCATION .
+  ex CONTINUATION .
+  
+  var X : Qid . var K : Continuation . var L : Location . var env : Env . var obj : Object .
+
+  eq k(X -> K) env([X, L] env) obj(obj) = k(#(L) -> K) env([X, L] env) obj(obj) .
+  eq k(X -> K) env(env) obj(obj) = k(obj -> (.(X) -> K)) env(env) obj(obj) [owise] .
+  
+  eq k(getLoc(X) -> K) env([X, L] env) obj(obj) = k(L -> K) env([X, L] env) obj(obj) .
+  eq k(getLoc(X) -> K) env(env) obj(obj) = k(obj -> (loc.(X) -> K)) env(env) obj(obj) [owise] .
+endm
+
+mod ASSIGNM-EXP is
+  pr ASSIGNM-EXP-SYNTAX .
+  pr GENERIC-EXP-SEMANTICS .
+  pr STORE-ACCESS .
+  pr GETLOCATION .
+  ex CONTINUATION .
+  
+  ops = += -= *= /= %= : Exp -> Continuation .
+  ops = += -= *= /= %= : Location -> Continuation .
+  
+  var Var : Var . var E : Exp . var K : Continuation . var L : Location . var V : Value .
+  vars I I' : JavaInt . vars f f' : Float .
+  
+  eq k((Var = E) -> K) = k(getLoc(Var) -> (=(E) -> K)) .
+  eq k(L -> (=(E) -> K)) = k(E -> (=(L) -> K)) .
+  eq k(V -> (=(L) -> K)) = k([V -> L] -> (V -> K)) .
+  
+  eq k((Var += E) -> K) = k(getLoc(Var) -> (+=(E) -> K)) .
+  eq k(L -> (+=(E) -> K)) = k(#(L) -> [E | noVal] -> (+=(L) -> K)) .
+  eq k((int(I), int(I')) -> (+=(L) -> K)) = k([int(I + I') -> L] -> (int(I + I') -> K)) .
+  eq k((fl(f), fl(f')) -> (+=(L) -> K)) = k([fl(f +  f') -> L] -> (fl(f +  f') -> K)) .
+    
+  eq k((Var -= E) -> K) = k(getLoc(Var) -> (-=(E) -> K)) .
+  eq k(L -> (-=(E) -> K)) = k(#(L) -> [E | noVal] -> (-=(L) -> K)) .
+  eq k((int(I), int(I')) -> (-=(L) -> K)) = k([int(I - I') -> L] -> (int(I - I') -> K)) .
+  eq k((fl(f), fl(f')) -> (-=(L) -> K)) = k([fl(f - f') -> L] -> (fl(f - f') -> K)) .    
+
+  eq k((Var *= E) -> K) = k(getLoc(Var) -> (*=(E) -> K)) .
+  eq k(L -> (*=(E) -> K)) = k(#(L) -> [E | noVal] -> (*=(L) -> K)) .
+  eq k((int(I), int(I')) -> (*=(L) -> K)) = k([int(I * I') -> L] -> (int(I * I') -> K)) .
+  eq k((fl(f), fl(f')) -> (*=(L) -> K)) = k([fl(f * f') -> L] -> (fl(f * f') -> K)) .    
+
+  eq k((Var /= E) -> K) = k(getLoc(Var) -> (/=(E) -> K)) .
+  eq k(L -> (/=(E) -> K)) = k(#(L) -> [E | noVal] -> (/=(L) -> K)) .
+  eq k((int(I), int(I')) -> (/=(L) -> K)) = k([int(I quo I') -> L] -> (int(I quo I') -> K)) .
+  eq k((fl(f), fl(f')) -> (/=(L) -> K)) = k([fl(f / f') -> L] -> (fl(f / f') -> K)) .    
+
+  eq k((Var %= E) -> K) = k(getLoc(Var) -> (%=(E) -> K)) .
+  eq k(L -> (%=(E) -> K)) = k(#(L) -> [E | noVal] -> (%=(L) -> K)) .
+  eq k((int(I), int(I')) -> (%=(L) -> K)) = k([int(I rem I') -> L] -> (int(I rem I') -> K)) .
+  eq k((fl(f), fl(f')) -> (%=(L) -> K)) = k([fl(f rem f') -> L] -> (fl(f rem f') -> K)) .    
+  
+  **** shift and bitwise operations? ****
+endm
+
+fmod INIT-VALUE is
+  pr TYPE .
+  pr BASICVALUE .
+  pr ARRAY-SYNTAX .
+  
+  op initV : Type -> Value .
+  
+  eq initV(int) = int(0) .
+  eq initV(boolean) = bool(true) .
+  eq initV(string) = nullv .
+  eq initV(float) = fl(0.) .
+  eq initV(double) = fl(0.) .
+  eq initV(short) = int(0) .
+  eq initV(long) = int(0) .
+  eq initV(byte) = int(0) .
+  ***** how about char ? ****
+  
+  var T : Type .
+  
+  eq initV(T []) = nullv .
+  eq initV(T) = nullv [owise] .
+endfm
+
+mod BUILDENV is
+  pr PGM-SYNTAX .
+  pr STATE .
+  pr STORE-ACCESS .
+  op buildEnv : ParameterList ValueList -> Continuation . 
+  
+  var K : Continuation . var T : Type . var X : Qid . vars V V' : Value . var Vl : ValueList . var Pl : ParameterList .
+  var tc : ThreadCtrl . vars I I' : Int . var store : Store . var Env : Env . var L : Location .
+  eq k(buildEnv(noPara, noVal) -> K) = k(K) .
+  
+  ******** when id is -2, it is to create the fields for new object, don't need to propogate the ownership ... *****
+  
+  ******** look for an used location first ********
+---  eq t(k(buildEnv(((T d(X)), Pl), (V, Vl)) -> K) env(Env) id(-2) tc) store([L, V', -3] store) nextLoc(I') = 
+---     t(k(buildEnv(Pl, Vl) -> K) env([X, l(I' + 1)] Env) id(-2) tc) store([L, V, -2] store) nextLoc(I') .
+---  eq t(k(buildEnv(((T d(X)), Pl), (V, Vl)) -> K) env(Env) id(-2) tc) store(store) nextLoc(I') = 
+---     t(k(buildEnv(Pl, Vl) -> K) env([X, l(I' + 1)] Env) id(-2) tc) store([l(I' + 1), V, -2] store) nextLoc(I' + 1) .
+     
+  eq t(k(buildEnv(((T d(X)), Pl), (V, Vl)) -> K) env(Env) id(I) tc) store([L, V', -3] store) nextLoc(I') = 
+     t(k(buildEnv(Pl, Vl) -> K) env([X, L] Env) id(I) tc) store([L, setTid(V, I), I] store) nextLoc(I') .
+  eq t(k(buildEnv(((T d(X)), Pl), (V, Vl)) -> K) env(Env) id(I) tc) store(store) nextLoc(I') = 
+     t(k(buildEnv(Pl, Vl) -> K) env([X, l(I' + 1)] Env) id(I) tc) store([l(I' + 1), setTid(V, I), I] store) nextLoc(I' + 1) [owise] .
+endm
+
+fmod BLOCK is
+  pr PGM-SYNTAX .
+  ex CONTINUATION .
+  pr THREADCTRL .
+  pr GENERIC-EXP-SEMANTICS .
+  
+  op _->_ : Block Continuation -> Continuation . 
+  op _->_ : StatementList Continuation -> Continuation .
+  op _->_ : Statement Continuation -> Continuation .
+  op e : Env -> Continuation .
+  
+  var St : Statement . var Sl : StatementList . vars Env Env' : Env . var tc : ThreadCtrl .
+  var K : Continuation . var V : Value . var i : Int .
+  eq k({ Sl } -> K) env(Env) = k(Sl -> (e(Env) -> K)) env(Env) .
+  eq k((St Sl) -> K) = k(St -> (Sl -> K)) .
+  eq k((i @ St) -> K) = k(St -> K) .
+  eq k(; -> K) = k(K) .
+  eq k(nop -> K) = k(K) .
+  eq k(e(Env) -> K) env(Env') = k(K) env(Env) .
+  eq k(V -> (e(Env) -> K)) env(Env') = k(V -> K) env(Env) .
+  
+endfm
+
+mod DECLARATION is
+  ex CONTINUATION .
+  pr BLOCK .
+  pr DECLARATION-STATEMENT .
+  pr BUILDENV .
+  pr GENERIC-EXP-SEMANTICS .
+  pr ARRAY-SYNTAX .
+  pr INIT-VALUE .
+  
+  op _->_ : Declaration Continuation -> Continuation .
+  op init : Type -> Continuation .
+  
+  var T : Type . var dc : Declarator . var ds : Declarators . var K : Continuation .
+  var E : Exp . var X : Qid . var V : Value .
+  
+  eq k((T ds ;) -> K) = k((T ds) -> K) .
+  eq k((T (dc , ds)) -> K) = k(reform(T dc) -> ((T ds) -> K)) .
+  eq k((T dc) -> K) = k(initV(T) -> (reform(T dc) -> K)) .
+  eq k((T ((dc = E) , ds)) -> K) = k(E -> (reform(T dc) -> ((T ds) -> K))) .
+  eq k((T (dc = E) ) -> K) = k(E -> (reform(T dc) -> K)) .
+  eq k( V -> ((T d(X)) -> K)) = k(buildEnv((T d(X)), V) -> K) .
+  
+endm
+
+fmod EXP-STATEMENT is 
+  pr BLOCK .
+  pr EXP-STATEMENT-SYNTAX .
+  pr GENERIC-EXP-SEMANTICS .
+  
+  var StExp : StExp . var K : Continuation . var Vl : ValueList .
+  
+  eq k((StExp ;) -> K) = k(StExp -> ( ; -> K)) .
+  eq k(Vl -> (; -> K)) = k(K) .
+endfm
+
+fmod IF-STATEMENT is
+  pr BLOCK .
+  pr IF-SYNTAX .
+  ex CONTINUATION .
+  pr GENERIC-EXP-SEMANTICS .
+  
+  op if : Statement Statement -> Continuation .
+  
+  var E : Exp . vars S S' : Statement . var K : Continuation .
+  
+  eq k((if E S else S' fi) -> K) = k(E -> (if(S, S') -> K)) .
+  eq k(bool(true) -> (if(S, S') -> K)) = k(S -> K) .
+  eq k(bool(false) -> (if(S, S') -> K)) = k(S' -> K) .
+endfm
+
+fmod WHILE-STATEMENT is
+  pr WHILE-SYNTAX .
+  ex CONTINUATION .
+  pr GENERIC-EXP-SEMANTICS .
+  pr THREADCTRL .
+  pr BLOCK .
+  
+  op while : Exp ExpList Statement -> Continuation .
+  op while : Qid Exp Statement ExpList -> Continuation .
+  op popLStack : -> Continuation .
+  
+  var E : Exp . var S : Statement . var K : Continuation . var lstack : FlowStack . var tc : ThreadCtrl . var X : Qid .
+  var El : ExpList . var lItem : FlowStackItem .
+  
+  eq t(k((while E S) -> K) lstack(lstack) tc) = t(k(E -> (while(E, noExp, S) -> popLStack -> K)) lstack(fsi((while(E, noExp, S) -> K), tc) lstack) tc) .
+---  eq k(bool(false) -> (while(E, nil, S) -> K)) = k(K) .
+---  eq k(bool(true) -> (while(E, nil, S) -> K)) = k(S -> (E -> (while(E, nil, S) -> K))) .
+  eq t(k((X : (while E S)) -> K) lstack(lstack) tc) = t(k(E -> (while(X, E, S, noExp) -> popLStack -> K)) lstack(fsi((while(X, E, S, noExp) -> K), tc) lstack) tc) .
+
+  eq k(bool(true) -> (while(E, El, S) -> K)) = k(S -> (El -> ; -> (E -> (while(E, El, S) -> K)))) .
+  eq k(bool(false) -> (while(E, El, S) -> K)) = k(K) .
+  eq k(bool(false) -> (while(X, E, S, El) -> K)) = k(K) .
+  eq k(bool(true) -> (while(X, E, S, El) -> K)) = k(S -> (El -> ; -> (E -> (while(X, E, S, El) -> K)))) .
+  
+  eq k(popLStack -> K) lstack(lItem lstack) = k(K) lstack(lstack) .
+endfm
+
+fmod DO-STATEMENT is
+  pr DO-SYNTAX .
+  pr WHILE-STATEMENT .
+
+  var S : Statement . var E : Exp . var K : Continuation . var lstack : FlowStack . var tc : ThreadCtrl . var X : Qid .  
+  eq t(k((do S while E ;) -> K) lstack(lstack) tc) = t(k(S -> (E -> (while(E, noExp, S) -> popLStack -> K))) lstack(fsi((while(E, noExp, S) -> K), tc) lstack) tc) .
+  eq t(k((X : (do S while E ;)) -> K) lstack(lstack) tc) = t(k(S -> (E -> (while(X, E, S, noExp) -> popLStack -> K))) lstack(fsi((while(X, E, S, noExp) -> K), tc) lstack) tc) .
+
+endfm
+
+mod FOR-STATEMENT is
+  pr FOR-SYNTAX .
+  pr WHILE-STATEMENT .
+  pr DECLARATION .
+  ex CONTINUATION .
+
+  vars El El' : ExpList . var E : Exp . var S : Statement . var K K' : Continuation . var lstack : FlowStack . var tc : ThreadCtrl . var X : Qid .
+  var dc : Declaration . vars Env Env' : Env .
+  eq t(k((for(El ; E ; El') S) -> K) lstack(lstack) tc) = t(k(El -> ; -> (E -> (while(E, El', S) -> popLStack -> K))) lstack(fsi((while(E, El', S) -> K), tc) lstack) tc) .
+  eq t(k((for(dc ; E ; El') S) -> K) lstack(lstack) env(Env) tc) = t(k(dc -> changeEnv -> (E -> (while(E, El', S) -> popLStack -> e(Env) -> K))) lstack(fsi((while(E, El', S) -> e(Env) -> K), (env(Env) tc)) lstack) env(Env) tc) .
+  eq t(k((X : (for(El ; E ; El') S)) -> K) lstack(lstack) tc) = t(k(El -> ; -> (E -> (while(X, E, S, El') -> popLStack -> K))) lstack(fsi((while(X, E, S, El') -> K), tc) lstack) tc) .
+  eq t(k((X : (for(dc ; E ; El') S)) -> K) lstack(lstack) env(Env) tc) = t(k(dc -> changeEnv -> (E -> (while(X, E, S, El') -> popLStack -> e(Env) -> K))) lstack(fsi((while(X, E, S, El') -> e(Env) -> K), (env(Env) tc)) lstack) env(Env) tc) .
+  
+--- the following is used to handle the environment change caused by declaration in the for statement. 
+--- note that when continue, the environment is the one after the declaration occurs; but after break, it will return the one before the for statement.
+  op changeEnv : -> Continuation . 
+  
+  eq k(changeEnv -> K) lstack(fsi(K', (env(Env) tc)) lstack) env(Env') tc = k(K) lstack(fsi(K', (env(Env') tc)) lstack) env(Env') tc .
+  
+endm
+
+fmod SWITCH-STATEMENT is
+  pr SWITCH-SYNTAX .
+  ex CONTINUATION .
+  pr GENERIC-EXP-SEMANTICS .
+  pr BLOCK .
+  pr WHILE-STATEMENT . --- need to adjust the structure to remove this dependency caused by popLStack
+  
+  op switch : SwitchItems -> Continuation .
+  op switch : Value StatementList SwitchItems -> Continuation .
+  op test : Value SwitchLabels -> Continuation .
+  op test : Value -> Continuation .
+  
+  var E : Exp . var V V' : Value . var swi : SwitchItems . var K : Continuation .
+  var labels : SwitchLabels . var label : SwitchLabel . vars Sl Sl' : StatementList .
+  var tc : ThreadCtrl . var lstack : FlowStack .
+  
+  eq k((switch E { swi }) -> K) = k(E -> (switch(swi) -> K)) .
+  eq k(V -> (switch(noSw) -> K)) = k(K) .
+  eq k(V -> (switch(((labels Sl) swi)) -> K)) = k(test(V, labels) -> switch(V, Sl, swi) -> K) .
+  eq t(k(bool(true) -> (switch(V, Sl, swi) -> K)) lstack(lstack) tc) = t(k(merge(Sl, swi) -> (popLStack -> K)) lstack(fsi(K, tc) lstack) tc) .
+  eq k(bool(false) -> (switch(V, Sl, swi) -> K)) = k(V -> (switch(swi) -> K)) .
+  
+  eq k(test(V, (label labels)) -> K) = k(test(V, label) -> test(V, labels) -> K) .
+  eq k(bool(true) -> (test(V, labels) -> K)) = k(bool(true) -> K) .
+  eq k(bool(false) -> (test(V, labels) -> K)) = k(test(V, labels) -> K) .
+  eq k(test(V, default:) -> K) = k(bool(true) -> K) .
+  eq k(test(V, (case E :)) -> K) = k(E -> test(V) -> K) .
+  eq k(V -> (test(V) -> K)) = k(bool(true) -> K) .
+  eq k(V -> (test(V') -> K)) = k(bool(false) -> K) [owise] .
+  
+  op merge : StatementList SwitchItems -> Block .
+  
+  eq merge(Sl, noSw) = { Sl } .
+  eq merge(Sl, ((labels Sl') swi)) = merge((Sl Sl'), swi) .
+endfm
+
+fmod BREAK-STATEMENT is
+  pr BREAK-SYNTAX .
+  pr WHILE-STATEMENT .
+  
+  vars K K' : Continuation . vars lstack lstack' : FlowStack . vars tc tc' : ThreadCtrl . var E : Exp . var El : ExpList . 
+  var X : Qid . var S : Statement .
+  eq t(k(break; -> K) lstack(fsi((while(E, El, S) -> K'), tc) lstack) tc') = t(k(K') lstack(lstack) tc) .
+  eq t(k(break; -> K) lstack(fsi(K', tc) lstack) tc') = t(k(K') lstack(lstack) tc) [owise] . --- for break in switch statement
+  eq t(k(break X ; -> K) lstack(lstack fsi((while(X, E, S, El) -> K'), tc) lstack') tc') = t(k(K') lstack(lstack') tc) .
+endfm
+
+fmod CONTINUE-STATEMENT is
+  pr CONTINUE-SYNTAX .
+  pr WHILE-STATEMENT .
+  
+  vars K K' : Continuation . vars lstack lstack' : FlowStack . vars tc tc' : ThreadCtrl . var E : Exp . var El : ExpList . var X : Qid . 
+  var S : Statement . var lItem : FlowStackItem .
+
+  eq t(k(continue; -> K) lstack(fsi((while(E, El, S) -> K'), tc) lstack) tc') = t(k(El -> (; -> (E -> (while(E, El, S) -> popLStack -> K')))) lstack(fsi((while(E, El, S) -> K'), tc) lstack) tc) .
+  eq k(continue; -> K) lstack(lItem lstack) = k(continue; -> K) lstack(lstack) [owise] . --- to remove items for switch statments
+  eq t(k(continue X ; -> K) lstack(lstack fsi((while(X, E, S, El) -> K'), tc) lstack') tc') = t(k(El -> (; -> (E -> (while(X, E, S, El) -> popLStack -> K')))) lstack(fsi((while(X, E, S, El) -> K'), tc) lstack') tc) .
+endfm
+
+fmod RELEASE-LOCK is
+  ex STATE .
+  pr LOCK-DEF .
+  op release : LockSet LockSet -> Continuation .
+  op getLocks : LockSet -> ObjectSet .
+  op removeLocks : ObjectSet -> ObjectSet .
+  
+  var obj : Object . vars I I' : Int . vars Ll Ll' Ll'' : LockSet . var K : Continuation .
+  vars OS OS' : ObjectSet . var tc : ThreadCtrl .
+  
+  ceq k(release(([obj, I], Ll), ([obj, I'], Ll')) -> K) = k(release(([obj, I], Ll), ([obj, I], Ll')) -> K) if I =/= I' .
+  eq t(k(release(Ll, (Ll, Ll')) -> K) holds(Ll'') tc) busy(OS) = t(k(K) holds(Ll) tc) busy(removeLocks(OS, getLocks(Ll'))) [owise] .
+  eq getLocks([obj, I], Ll) = obj ; getLocks(Ll) .
+  eq getLocks(nil) = noObj .
+  eq removeLocks((OS ; OS'), OS) = OS' .
+endfm
+
+fmod RELEASE-ENV is
+  ex STATE .
+  op release : Env Env -> Continuation .
+  op releaseEnv : Env -> Continuation .
+  
+  vars Env Env' : Env . var K : Continuation . var X : Qid . var L : Location . var tc : ThreadCtrl . var V : Value . var I : Int . var store : Store .
+  
+  eq k(release(Env, (Env' Env)) -> K) = k(releaseEnv(Env') -> K) .
+  eq k(releaseEnv(noEnv) -> K) = k(K) .
+  eq t(k(releaseEnv([X, L] Env) -> K) tc) store([L, V, I] store) = t(k(releaseEnv(Env) -> K) tc) store([L, V, -3] store) .
+endfm
+
+fmod RETURN-STATEMENT is
+  pr BLOCK .
+  pr RETURN-SYNTAX .
+  pr STOP-SEMANTICS .
+  pr GENERIC-EXP-SEMANTICS .
+  pr RELEASE-LOCK .
+  pr RELEASE-ENV .
+  ex CONTINUATION .
+  
+  op return : -> Continuation .
+
+  var E : Exp . vars K K' : Continuation . var V : Value . vars tc tc' : ThreadCtrl . var fstack : FlowStack .
+  vars Ll Ll' : LockSet . vars Env Env' : Env .
+  
+  eq k(return E ; -> K) = k(E -> return -> K) .
+  eq t(k(V -> return -> K) fstack(fsi(K', (holds(Ll) env(Env) tc)) fstack) holds(Ll') env(Env') tc') = t(k(releaseEnv(Env') -> release(Ll, Ll') -> (V -> K')) fstack(fstack) holds(Ll) env(Env) tc) .
+  eq k(return; -> (K -> stop)) = k(stop) .
+  eq t(k(return; -> K) fstack(fsi(K', (holds(Ll) env(Env) tc)) fstack) holds(Ll') env(Env') tc') = t(k(releaseEnv(Env') -> release(Ll, Ll') -> K') fstack(fstack) holds(Ll) env(Env) tc) [owise] . --- owise is caused by the constructor return
+endfm
+
+fmod ASSERT-STATEMENT is
+  pr BLOCK .
+  pr ASSERT-SYNTAX .
+  pr GENERIC-EXP-SEMANTICS .
+  ex CONTINUATION .
+  
+  op assert : -> Continuation .
+  
+  var E : Exp . var K : Continuation .
+  
+  eq k((assert E ;) -> K) = k(E -> assert -> K) .
+  eq k(bool(true) -> assert -> K) = k(K) .
+------- there is another version of assert statements : assert E1 : E2; I will try to implement it after I implement the system level exceptions -------  
+endfm
+
+fmod EXCEPTION-ITEM is
+  ex THREADCTRL .
+  op exi : Type Qid Continuation ThreadCtrl -> FlowStackItem . --- exception item
+endfm
+
+fmod TRY-CATCH is
+  ex CONTINUATION .
+  pr TRY-SYNTAX .
+  pr GENERIC-EXP-SEMANTICS .
+  pr BLOCK .
+  pr EXCEPTION-ITEM .
+  
+  op buildEx : Catches Continuation ThreadCtrl -> Continuation .
+  op popFBlock : -> Continuation .
+  op restoreXStack : FlowStack -> Continuation .
+  
+  var catches : Catches . vars block block' : Block . vars K K' : Continuation .
+  var T : Type . var X : Qid . vars xstack xstack' fblocks : FlowStack . 
+  var tc : ThreadCtrl . var sItem : FlowStackItem . var Env : Env .
+  eq t(k((try block catches) -> K) xstack(xstack) tc)= t(k(buildEx(catches, K, (xstack(xstack) tc)) -> (block -> restoreXStack(xstack) -> K)) xstack(xstack) tc) .
+  eq t(k((try block finally block') -> K) finalblocks(fblocks) tc) = t(k(block -> (block' -> (popFBlock -> K))) finalblocks(fsi((block' -> noop), tc ) fblocks) tc) .
+  eq t(k((try block catches finally block' ) -> K) xstack(xstack) finalblocks(fblocks) tc) = t(k(buildEx(catches, K, (xstack(xstack) finalblocks(fblocks) tc)) -> (block -> (block' -> (popFBlock -> restoreXStack(xstack) -> K)))) xstack(xstack) finalblocks(fsi((block' -> noop), tc) fblocks) tc) .
+  
+  eq k(buildEx((catches (catch (T d(X)) block)), K, (env(Env) tc)) -> K') xstack(xstack) = k(buildEx(catches, K, tc) -> K') xstack(exi(T, X, (block -> (e(Env) -> K)), (env(Env) tc)) xstack) . --- the environment restore is needed because the catch will bind a new variable.
+  eq k(buildEx(noCatch, K, tc) -> K') = k(K') .
+  
+  eq k(popFBlock -> K) finalblocks(sItem fblocks) = k(K) finalblocks(fblocks) .
+  eq k(restoreXStack(xstack) -> K) xstack(xstack') = k(K) xstack(xstack) .
+endfm
+
+fmod DO-FINAL is
+  ex CONTINUATION .
+  pr THREADCTRL .
+  pr RELEASE-LOCK .
+  
+  op doFinal : FlowStack -> Continuation .  
+  
+  vars K K' : Continuation . vars Ll Ll' : LockSet . var fblocks : FlowStack . vars tc tc' : ThreadCtrl .
+  
+  eq t(k(doFinal(fsi(K, (holds(Ll) tc)) fblocks) -> K') holds(Ll') tc') = t(k(release(Ll, Ll') -> K -> doFinal(fblocks) -> K') holds(Ll') tc) . 
+  eq k(doFinal(noItem) -> K) = k(K) .
+endfm
+
+mod EXCEPTION-THROWING is
+  ex CONTINUATION .
+  pr GENERIC-EXP-SEMANTICS .
+  pr THROW-SYNTAX .
+  pr BLOCK .
+  pr OBJECT .
+  pr COMPATIBLETYPE .
+  pr BUILDENV .
+  pr EXCEPTION-ITEM .
+  pr DO-FINAL .
+  pr RELEASE-LOCK .
+  
+  op throw : Value -> Continuation .
+  op throw : -> Continuation .
+  
+  var E : Exp . vars K K' K'' : Continuation . var V : Value . var Vl : ValueList .
+  vars T T' T'' : Type . var Cl : Classes . var oEnv : ObjEnv . vars env env' env'' : Env .  
+  vars tc tc' : ThreadCtrl . vars xstack fblocks fblocks' : FlowStack .
+  vars Ll Ll' Ll'' : LockSet . vars obj obj' : Object . var X : Qid . var oattr : ObjectAttribute . var output : Output .
+  
+  eq k((throw E ;) -> K) = k(E -> throw -> K) . 
+  eq t(k(V -> throw -> K) xstack(xstack) tc) code(Cl) = t(k(throw(V) -> K) xstack(match(V, xstack, Cl)) tc) code(Cl) .
+  
+  op match : Value FlowStack Classes -> FlowStack .
+  eq match(o(curr(T) oattr), (exi(T'', X, K, tc) xstack), Cl) = 
+     if compatible(T, T'', Cl) then pop(exi(T'', X, K, tc) xstack) else match(o(curr(T) oattr), xstack, Cl) fi .
+  eq t(xstack(match(obj, noItem, Cl)) tc) out(output) = out(output, ex(obj)) . --- what happen when the main thread throws a system exception or returns?
+     
+  op pop : FlowStack -> FlowStack . 
+  eq t(k(throw(V) -> K) xstack(pop(exi(T, X, K', (finalblocks(fblocks) tc)) xstack)) finalblocks(fblocks' fblocks) tc) = 
+     t(k(doFinal(fblocks') -> ex(V, exi(T, X, K', (finalblocks(fblocks) tc)))) xstack(xstack) finalblocks(noItem) tc) .
+     
+  op ex : Value FlowStackItem -> Continuation .
+  eq t(k(ex(V, exi(T, X, K, (holds(Ll) tc)))) holds(Ll') tc') = t(k(release(Ll, Ll') -> (buildEnv((T d(X)), V) -> K)) holds(Ll) tc) .
+  
+endm
+
+mod LOCK-ACCESS is
+  pr BLOCK .
+  pr OBJECT .
+  pr GENERIC-EXP-SEMANTICS .
+  ex CONTINUATION .
+  
+  op sync : -> Continuation .
+  op release : Object -> Continuation .  
+  
+  var E : Exp . var K : Continuation . var obj : Object . var I : Int . var Ll : LockSet . var tc : ThreadCtrl . var Os : ObjectSet .
+
+  eq k(obj -> (sync -> K)) holds([obj, I], Ll) = k(K) holds([obj, I + 1], Ll) .
+  crl t(k(obj -> (sync -> K)) holds(Ll) tc) busy(Os) => t(k(K) holds([obj, 1], Ll) tc) busy(obj ; Os) if (not (in(obj, Ll))) and (not (in(obj, Os))) .
+  eq t(k(release(obj) -> K) holds([obj, 1], Ll) tc) busy(obj ; Os) = t(k(K) holds(Ll) tc) busy(Os) .
+  ceq k(release(obj) -> K) holds([obj, I], Ll) = k(K) holds([obj, I - 1], Ll) if (I > 1) .
+  
+  op in : Object LockSet -> Bool .
+  op in : Object ObjectSet -> Bool .
+  
+  eq in(obj, ([obj, I], Ll)) = true .
+  eq in(obj, Ll) = false [owise] .
+  eq in(obj, (obj ; Os)) = true .
+  eq in(obj, Os) = false [owise] . 
+ 
+endm
+
+mod SYNCHRONIZED-STATEMENT is
+  pr SYNCHRONIZED-SYNTAX .
+  pr GENERIC-EXP-SEMANTICS .
+  pr LOCK-ACCESS .
+  
+  op sync : Block -> Continuation .
+  
+  var E : Exp . var B : Block . var K : Continuation . var obj : Object . var I : Int . var Ll : LockSet . var tc : ThreadCtrl . var Os : ObjectSet .
+  
+  eq k((synchronized E B) -> K) = k(E -> (sync(B) -> K)) .
+  eq k(obj -> (sync(B) -> K)) = k(obj -> (sync -> (B -> (release(obj) -> K)))) .
+endm
+
+fmod METHODINFO is
+  pr PGM-SYNTAX .
+  ex CONTINUATION .
+  sorts MethodInfo MethodInfoList SystemCall .
+  subsort MethodInfo < MethodInfoList .
+  subsort MethodInfo < Continuation .
+  
+  op noMethod : -> MethodInfo .
+  op m : Modifier ParameterList Block -> MethodInfo .
+  op m : Modifier ParameterList Block Type -> MethodInfo .
+  op sys : SystemCall -> MethodInfo .
+  op _,_ : MethodInfoList MethodInfoList -> MethodInfoList [assoc id: noMethod] .
+  op isStatic : Modifier -> Bool .
+  op isSync : Modifier -> Bool .
+  
+  var md : Modifier . 
+  eq isStatic(static md) = true .
+  eq isStatic(static) = true .
+  eq isStatic(md) = false [owise] .
+  
+  eq isSync(synchronized md) = true .
+  eq isSync(synchronized) = true .
+  eq isSync(md) = false [owise] .
+endfm
+
+fmod FINDMETHOD is
+  pr METHODINFO .
+  pr COMPATIBLETYPE .
+  pr OBJECT .
+  pr CONTINUATION .
+  
+  op findMethod : Type Qid TypeList Classes -> MethodInfo .
+  op findMethod : Qid TypeList ClassMembers Classes -> MethodInfo . --- the Classes info has to be carried on for checking the type compatibility
+  op wait : MethodInfo Type Type Qid TypeList Classes -> MethodInfo .
+  op getMethodList : Qid ClassMembers -> MethodInfoList .
+  op getCompatibleMethod : TypeList MethodInfoList Classes -> MethodInfo . --- the Classes info has to be carried on for checking the type compatibility
+  op callSys : Object ValueList -> Continuation .
+  op callSys : Type ValueList -> Continuation .
+  
+  vars C M : Qid . vars Tl' Tl sp : TypeList . var Cl : Classes . vars T T' : Type .
+  var CMs : ClassMembers . vars mi mi' : MethodInfo . var md : Modifier .
+  var Pl : ParameterList . var block : Block . var Ml : MethodInfoList .
+  var throws : Throws . 
+  
+  eq findMethod(T, M, Tl, ((md class T extends T' implements sp { CMs }) Cl)) = 
+       wait(findMethod(M, Tl, CMs, ((md class T extends T' implements sp { CMs }) Cl)), T, T', M, Tl, Cl) .
+  eq findMethod(M, Tl, CMs, Cl) = getCompatibleMethod(Tl, getMethodList(M, CMs), Cl) .
+  
+  eq wait(m(md, Pl, block), T, sp, M, Tl, Cl) = m(md, Pl, block, T) .
+  eq wait(noMethod, T, noType, M, Tl, Cl) = noMethod .
+---  eq wait(noMethod, T, Object, M, Tl, Cl) = noMethod .
+  eq wait(noMethod, T, sp, M, Tl, Cl) = findMethod(sp, M, Tl, Cl) [owise] .
+  
+  eq getMethodList(M, ((md T M (Pl) throws block) CMs)) = m(md, Pl, block), getMethodList(M, CMs) .
+  eq getMethodList(M, CMs) = noMethod [owise] .
+  
+  eq getCompatibleMethod(Tl, noMethod, Cl) = noMethod .
+  eq getCompatibleMethod(Tl, (m(md, Pl, block), Ml), Cl) = if compatible(Tl, Pl, Cl) then m(md, Pl, block) else getCompatibleMethod(Tl, Ml, Cl) fi .
+  
+  op compatible : TypeList ParameterList Classes -> Bool .
+  
+  var d : Declarator .
+  eq compatible(nil, noPara, Cl) = true .
+  ceq compatible(nil, Pl, Cl) = false if Pl =/= noPara .
+  ceq compatible(Tl, noPara, Cl) = false if Tl =/= nil .
+  eq compatible((T ; Tl), ((T' d), Pl), Cl) = if compatible(T, T', Cl) then compatible(Tl, Pl, Cl) else false fi .
+endfm
+
+mod METHOD-CALL is
+  ex GENERIC-EXP-SEMANTICS .
+  pr PGM-SYNTAX .
+  pr GETTYPES .
+  pr OBJECT .
+  pr STATE .
+  pr BLOCK .
+  pr BUILDENV .
+  pr LOCK-DEF .
+  pr RETURN-STATEMENT .
+  pr LOCK-ACCESS .
+  ex FINDMETHOD .  
+  
+  -------------------------- static Method Call ---------------------------------------  
+  op call : Type Qid -> Continuation .
+  op call : Type Qid ValueList -> Continuation .
+    
+  var K : Continuation . var M : Qid . var Vl : ValueList . vars C C' T T' : Type .
+  var tc : ThreadCtrl . var Cl : Classes . var El : ExpList . var sys : SystemCall .
+  vars obj obj' : Object . vars fstack xstack lstack : FlowStack .
+  var Env : Env . var oEnv : ObjEnv . var md : Modifier .  var E : Exp . var Pl : ParameterList .
+  var block : Block . var Ll : LockSet . var oattr : ObjectAttribute . var oeitem : ObjEnvItem .
+
+  eq k((C . (M < El >)) -> K) = k(El -> (call(C, M) -> K)) .
+  eq t(k(Vl -> (call(C, M) -> K)) tc) code(Cl)  = t(k(findMethod(C, M, getTypes(Vl), Cl) -> (call(C, M, Vl) -> K)) tc) code(Cl) .
+  
+  eq k(sys(sys) -> call(T, M, Vl) -> K) = k(sys(sys) -> callSys(T, Vl) -> K) . --- system calls
+  
+  **** the main entry *****
+  eq k(m(md, Pl, block, T) -> (call(C, M, Vl) -> stop)) obj(nullo)  = k(buildEnv(Pl, Vl) -> (block -> stop)) obj(o(curr(C) orig(C) f(onil))) . 
+  
+  eq t(k(m(md, Pl, block, T) -> (call(C, M, Vl) -> K)) fstack(fstack) lstack(lstack) obj(obj) env(Env) tc) = 
+     t(k(buildEnv(Pl, Vl) -> (block -> (return; -> noop))) obj(o(curr(T) orig(T) f(onil))) fstack(fsi(K, (obj(obj) env(Env) lstack(lstack) tc)) fstack)
+          lstack(noItem) env(noEnv) tc) .
+	  
+  -------------------------- instance method call -------------------------------------
+
+  op call : Object Qid -> Continuation .
+  op call : Object Qid ValueList -> Continuation .
+  
+  eq k((E . (M < El >)) -> K) = k(E -> ((M < El >) -> K)) .
+  eq k(obj -> ((M < El >) -> K)) = k(El -> (call(obj, M) -> K)) .
+  *** the mothed should be found from the original class (java spec 2, 15.12.4.9) ***
+  eq t(k(Vl -> (call(o(orig(C') oattr), M) -> K)) tc) code(Cl)  = 
+     t(k(findMethod(C', M, getTypes(Vl), Cl) -> (call(o(orig(C') oattr), M, Vl) -> K)) tc) code(Cl) . 
+  ***** note that the method in the enclosing object of o cannot be invoked using o.m, so this equation is over-relaxing ******
+  ***** we assume that the compiler has filtered the wrong usage of enclosing objects *****
+  eq k(noMethod -> (call(o(curr(T) f([oeitem, t(T), enc(obj)] oEnv) oattr), M, Vl) -> K)) = k(Vl -> (call(obj, M) -> K)) .
+  
+  eq k(sys(sys) -> call(obj, M, Vl) -> K) = k(sys(sys) -> callSys(obj, Vl) -> K) . --- system calls
+  ceq t(k(m(md, Pl, block, T) -> (call(o(curr(T') oattr), M, Vl) -> K)) obj(obj') fstack(fstack) lstack(lstack) env(Env) tc) = 
+     t(k(buildEnv(Pl, Vl) -> (block -> (return; -> noop))) obj(o(curr(T) oattr)) fstack(fsi(K, (obj(obj') lstack(lstack) env(Env) tc)) fstack) 
+       lstack(noItem) env(noEnv) tc) if not isSync(md) .
+  ceq t(k(m(md, Pl, block, T) -> (call(o(curr(T') oattr), M, Vl) -> K)) obj(obj') fstack(fstack) lstack(lstack) env(Env) tc) = 
+     t(k(o(curr(T) oattr) -> (sync -> buildEnv(Pl, Vl) -> (block -> (return; -> noop)))) obj(o(curr(T) oattr)) 
+     fstack(fsi(K, (obj(obj') lstack(lstack) env(Env) tc)) fstack) lstack(noItem) env(noEnv) tc) if isSync(md) . --- the lock will be release at return
+  ---------------------------- default method call -------------------------------------------
+  op call : Qid -> Continuation .
+  op call : Qid ValueList -> Continuation .
+  
+  eq k((M < El >) -> K) = k(El -> (call(M) -> K)) .
+  eq t(k(Vl -> (call(M) -> K)) obj(o(orig(C') oattr)) tc) code(Cl)  = 
+     t(k(findMethod(C', M, getTypes(Vl), Cl) -> (call(M, Vl) -> K)) obj(o(orig(C') oattr)) tc) code(Cl) .
+  ****** it is possible that this method is declared in the enclosing method ****** 
+  eq k(noMethod -> (call(M, Vl) -> K)) obj(o(curr(T) f([oeitem, t(T), enc(obj)] oEnv) oattr)) = 
+       k(Vl -> (call(obj, M) -> K)) obj(o(curr(T) f([oeitem, t(T), enc(obj)] oEnv)  oattr)) .
+  eq k(sys(sys) -> call(M, Vl) -> K) obj(obj) = k(sys(sys) -> callSys(obj, Vl) -> K) obj(obj) . --- system calls
+  ceq t(k(m(md, Pl, block, T) -> (call(M, Vl) -> K)) fstack(fstack) lstack(lstack) env(Env) obj(o(curr(T') oattr)) tc) = 
+      t(k(buildEnv(Pl, Vl) -> (block -> (return; -> noop))) fstack(fsi(K, (obj(o(curr(T') oattr)) lstack(lstack) env(Env) tc)) fstack) 
+      lstack(noItem) env(noEnv) obj(o(curr(T) oattr)) tc)
+      if (not isStatic(md)) and (not isSync(md)) .
+  ****** note the type T which contains the sync method is used for the lock acquiring, ******
+  ****** otherwise, the spec may treat lock acuqirings on the same object with different current types as different locks, which is wrong ******
+  ceq t(k(m(md, Pl, block, T) -> (call(M, Vl) -> K)) fstack(fstack) lstack(lstack) env(Env) obj(o(curr(T') oattr)) tc) = 
+      t(k(o(curr(T) oattr) -> (sync -> buildEnv(Pl, Vl) -> (block -> (return; -> noop)))) 
+      fstack(fsi(K, (lstack(lstack) env(Env) obj(o(curr(T') oattr)) tc)) fstack) lstack(noItem) env(noEnv) obj(o(curr(T) oattr)) tc) 
+      if (not isStatic(md)) and isSync(md) .
+  ceq t(k(m(md, Pl, block, T) -> (call(M, Vl) -> K)) obj(o(oattr f(oEnv))) fstack(fstack) lstack(lstack) env(Env) tc) = 
+      t(k(buildEnv(Pl, Vl) -> (block -> (return; -> noop))) obj(o(oattr curr(T) orig(T) f(onil))) 
+      fstack(fsi(K, (obj(o(oattr f(oEnv))) lstack(lstack) env(Env) tc)) fstack) lstack(noItem) env(noEnv) tc) if (isStatic(md)) .
+
+endm
+
+mod STATIC-INIT is
+  ex CONTINUATION .
+  pr PGM-SYNTAX .
+  pr STATE .
+  pr DECLARATION .
+  pr RUN .
+  
+  op loadClass : Type -> Continuation .
+  op waitforLoad : Type -> Continuation .
+  op loadDone : Type -> Continuation .
+  op buildS : Type -> Continuation .
+  op buildS : Classes -> Continuation .
+  op buildS : Type ClassMembers StatementList -> Continuation .
+  op setStatic : Type -> Continuation .
+
+  vars CT CT' : Type . var El : Exp . vars K K' : Continuation .
+  var Env : Env . var obj : Object . var Cl : Classes .
+  var Xc Xc' : Qid . var m : Modifier .  var B : Block .
+  var sp : Types . var oEnv : ObjEnv . var CMs : ClassMembers . 
+  var md : Method . var cnstr : Constructor . var dc : Declaration . var Vl : ValueList . 
+  vars tc tc' : ThreadCtrl . var Sl : StatementList . var Tl : TypeList .
+  var state : JavaState .
+
+  eq run(t(k(loadClass(CT) -> K) tc) static([t(CT), f(Env)] oEnv) state) = 
+     run(t(k(K) tc) static([t(CT), f(Env)] oEnv) state) .
+  eq run(t(k(loadClass(CT) -> K) tc) t(k(waitforLoad(CT) -> K') tc') state) = 
+     run(t(k(waitforLoad(CT) -> K) tc) t(k(waitforLoad(CT) -> K') tc') state) .
+  eq run(t(k(loadClass(CT) -> K) tc) state) = 
+     run(t(k(buildS(CT) -> loadDone(CT)) obj(nullo) fstack(noItem) xstack(noItem) lstack(noItem) finalblocks(noItem) 
+         env(noEnv) id(-1) holds(nil)) t(k(waitforLoad(CT) -> K) tc) state) [owise] .
+  eq t(k(buildS(CT) -> K) tc) code(((m class CT extends CT' implements sp { CMs }) Cl)) = 
+     t(k(buildS(CT, CMs, nop) -> K) tc) code(((m class CT extends CT' implements sp { CMs }) Cl)) .
+  eq run(t(k(loadDone(CT)) tc) t(k(waitforLoad(CT) -> K) tc') state)= run(t(k(loadDone(CT)) tc) t(k(K) tc') state) .
+  eq run(t(k(loadDone(CT)) tc) t(k(K) tc') state) = run(t(k(K) tc') state) [owise] .
+  
+  ---- the first equation ends the static initialization and starts the main thread ----
+  eq k(buildS(noClass) -> K) id(-1) = k(K) id(0) .
+  eq k(buildS(((m class CT extends CT' implements sp { CMs }) Cl)) -> K) =
+     k(buildS(CT, CMs, nop) -> buildS(Cl) -> K) .
+  eq k(buildS(((m interface CT extends sp { CMs }) Cl)) -> K) =
+     k(buildS(CT, CMs, nop) -> buildS(Cl) -> K) .
+  eq k(buildS(CT, (md CMs), Sl) -> K) = k(buildS(CT, CMs, Sl) -> K) .
+  eq k(buildS(CT, (cnstr CMs), Sl) -> K) = k(buildS(CT, CMs, Sl) -> K) .
+  eq k(buildS(CT, (((static m) dc ;) CMs), Sl) -> K) = k(dc -> buildS(CT, CMs, Sl) -> K) .
+  eq k(buildS(CT, ((static dc ;) CMs), Sl) -> K) = k(dc -> buildS(CT, CMs, Sl) -> K) .
+  eq k(buildS(CT, ((m dc ;) CMs), Sl) -> K) = k(buildS(CT, CMs, Sl) -> K) [owise] .
+  eq k(buildS(CT, (static(B) CMs), Sl) -> K) = k(buildS(CT, CMs, (Sl B)) -> K) .
+  eq k(buildS(CT, (init(B) CMs), Sl) -> K) = k(buildS(CT, CMs, Sl) -> K) .
+  eq k(buildS(CT, noMember, Sl) -> K) = k(Sl -> (setStatic(CT) -> K)) .
+  eq t(k(setStatic(CT) -> K) tc env(Env)) static(oEnv) = t(k(K) env(noEnv) tc) static([t(CT), f(Env)] oEnv) .
+  
+endm
+
+mod NEW-EXP is
+  pr NEW-SYNTAX .
+  pr GENERIC-EXP-SEMANTICS .
+  pr ARRAY-INIT-EXP .
+  pr INIT-VALUE .
+  pr CLASS-MEMBER .  
+  pr FIELD-SYNTAX .
+  pr CLASS-INIT .
+  pr METHOD-SYNTAX .
+  pr CLASSES .
+  pr BLOCK .
+  pr BUILDENV .
+  pr DECLARATION .
+  pr SUPEROF .
+  pr FINDMETHOD .
+  pr CLASS-SYNTAX .
+  pr RETURN-STATEMENT .
+  pr STATIC-INIT .
+  ex CONTINUATION .
+  
+  op new : Type ArrayDims ExpList -> Continuation .
+  op inita : Type -> Continuation .
+  op inita : Type ValueList -> Continuation .
+  op inita : Type JavaInt JavaInt ValueList ArrayEnv -> Continuation .
+  
+  vars T T' CT : Type . var dims : Dims . var El : ExpList . var K K' : Continuation . var aDims : ArrayDims . var cnstr : Constructor .
+  var E : Exp . var Vl : ValueList . vars I I' : JavaInt . vars id I'' : Int . var aEnv : ArrayEnv . vars tc tc' : ThreadCtrl . var dc : Declaration .
+  var store : Store . var V : Value . var C : Qid . var Cl : Classes . var Pl : ParameterList . var md : Modifier . var m : Method .
+  vars oEnv oEnv' : ObjEnv . vars Tl Tl' : TypeList . vars obj obj' : Object . vars B block : Block . vars oattr oattr' : ObjectAttribute . 
+  var CMs : ClassMembers . var Sl : StatementList . vars env env' : Env . vars lstack fstack : FlowStack . var sp : Types . var throwExp : Throws .
+  var oeitem : ObjEnvItem .
+  
+  eq k((new T (dims { El })) -> K) = k({ El } -> K) .
+  eq k((new T (aDims [])) -> K) = k((new (T []) aDims) -> K) .
+  eq k((new T [ E ] ) -> K) = k(E -> (inita(T []) -> K)) .
+  eq k((new T ([ E ] aDims)) -> K) = k(new((T []), aDims, E) -> K) [owise] .
+  eq k(new(T, ([ E ] aDims), El) -> K) = k(new((T []), aDims, (El, E)) -> K) .
+  eq k(new(T, [ E ], El) -> K) = k((El, E) -> (inita(T []) -> K)) .
+  eq k(Vl -> (inita(T) -> K)) = k(inita(T, Vl) -> K) .
+  eq k(inita((T []), (int(I), Vl)) -> K) = k(inita((T []), 0, I, Vl, anil) -> K) .
+  eq k(inita((T []), I, I, Vl, aEnv) -> K) = k(a(T, aEnv) -> K) .
+  eq k(inita((T []), I, I', Vl, aEnv) -> K) = k(inita(T, Vl) -> inita((T []), I, I', Vl, aEnv) -> K) [owise] .
+  eq t(k(V -> (inita((T []), I, I', Vl, aEnv) -> K)) id(id) tc) store(store) nextLoc(I'') = t(k(inita((T []), (I + 1), I', Vl, ([I, l(I'' + 1)] aEnv)) -> K) id(id) tc) store([l(I'' + 1), V, id] store) nextLoc(I'' + 1) .
+  
+  eq k(inita(T, noVal) -> K) = k(initV(T) -> K) .
+  
+  op createObj : Type -> Continuation .
+  op createObj : Type ValueList -> Continuation .
+  
+  op createInnerObje : Type Object Env -> Continuation . --- with env
+  op createInnerObj : Type Object -> Continuation .
+  op createInnerObjev : Type Object Env ValueList -> Continuation . --- with env and vl
+  op createInnerObjv : Type Object ValueList -> Continuation . --- with vl
+  
+  op constrReturn : -> Continuation .
+  op this : ParameterList ExpList Block -> Continuation .
+  op super : ParameterList ExpList Block -> Continuation .
+  op super : Exp ParameterList ExpList Block -> Continuation .
+  op initObj : Type -> Continuation .
+  op createObjByClass : Type ClassMembers StatementList -> Continuation .
+  
+  --- when to do the static initialization? ---
+  eq k((E . (new t(C) < El >)) -> K) = k(E -> ((new t(C) < El >) -> K)) .
+  eq k(obj -> ((new t(C) < El >) -> K)) env(env) = k(El -> (createInnerObje(t(C), obj, env) -> K)) env(env) .
+  ceq t(k((new t(C) < El >) -> K) obj(obj) env(env) tc) code(Cl) = 
+        t(k(El -> (createInnerObje(t(C), obj, env) -> K)) obj(obj) env(env) tc) code(Cl) if isInner(t(C), Cl) .
+  eq k((new t(C) < El >) -> K) = k(El -> (createObj(t(C)) -> K)) [owise] .
+  
+  eq k(noVal -> (createObj(Object) -> K)) = k(o(curr(Object) orig(Object) f(onil)) -> K) .  
+  eq k(noVal -> (createObj(t('Thread)) -> K)) = k(o(curr(t('Thread)) orig(t('Thread)) f(onil)) -> K) .  
+  eq k(Vl -> (createObj(T) -> K)) = k(getConstr(T, getTypes(Vl)) -> createObj(T, Vl) -> K) [owise] .
+  
+  eq k(Vl -> (createInnerObje(T, obj, env) -> K)) = k(getConstr(T, getTypes(Vl)) -> (createInnerObjev(T, obj, env, Vl) -> K)) .
+  eq k(Vl -> (createInnerObj(T, obj) -> K)) = k(getConstr(T, getTypes(Vl)) -> (createInnerObjv(T, obj, Vl) -> K)) .
+  
+  op getConstr : Type TypeList -> Continuation .
+  op getConstr : ClassMembers TypeList -> Continuation .
+  
+  eq t(k(getConstr(T, Tl) -> K) tc) code(((md class T extends CT implements sp { CMs }) Cl)) = 
+       t(k(getConstr(CMs, Tl) -> K) tc) code(((md class T extends CT implements sp { CMs }) Cl)) .
+  eq t(k(getConstr(((md T (Pl) throwExp this(El) block) CMs), Tl) -> K) tc) code(Cl) = 
+      if (compatible(Tl, Pl, Cl)) then t(k(this(Pl, El, block) -> K) tc) code(Cl) else t(k(getConstr(CMs, Tl) -> K) tc) code(Cl) fi .
+  eq t(k(getConstr(((md T (Pl) throwExp super(El) block) CMs), Tl) -> K) tc) code(Cl)  = 
+      if (compatible(Tl, Pl, Cl)) then t(k(super(Pl, El, block) -> K) tc) code(Cl) else t(k(getConstr(CMs, Tl) -> K) tc) code(Cl) fi .
+  eq t(k(getConstr(((md T (Pl) throwExp E .super(El) block) CMs), Tl) -> K) tc) code(Cl)  = 
+      if (compatible(Tl, Pl, Cl)) then t(k(super(E, Pl, El, block) -> K) tc) code(Cl) else t(k(getConstr(CMs, Tl) -> K) tc) code(Cl) fi .
+      
+  eq t(k(this(Pl, El, block) -> createObj(T, Vl) -> K) env(env) obj(obj) fstack(fstack) lstack(lstack) tc) = 
+      t(k(buildEnv(Pl, Vl) -> (El -> createObj(T) -> (block -> constrReturn))) 
+	env(noEnv) obj(o(curr(T) orig(T) f(onil))) fstack(fsi(K, (env(env) obj(obj) lstack(lstack) tc)) fstack) lstack(noItem) tc) .
+  eq t(k(super(Pl, El, block) -> createObj(T, Vl) -> K) env(env) obj(obj) fstack(fstack) lstack(lstack) tc) code(Cl) = 
+      t(k(buildEnv(Pl, Vl) -> (El -> (createObj(getSuper(T, Cl)) -> initObj(T) -> (block -> constrReturn))))
+        env(noEnv) obj(o(curr(T) orig(T) f([t(T)]))) fstack(fsi(K, (env(env) obj(obj) lstack(lstack) tc)) fstack) lstack(noItem) tc) code(Cl) .
+  eq t(k(super(E, Pl, El, block) -> createObj(T, Vl) -> K) env(env) obj(obj) fstack(fstack) lstack(lstack) tc) code(Cl) = 
+      t(k(buildEnv(Pl, Vl) -> E -> ((El -> (createObj(getSuper(T, Cl)) -> initObj(T) -> (block -> constrReturn)))))
+        env(noEnv) obj(o(curr(T) orig(T) f([t(T)]))) fstack(fsi(K, (env(env) obj(obj) lstack(lstack) tc)) fstack) lstack(noItem) tc) code(Cl) .
+  eq k(obj -> (El -> (createObj(T) -> K))) = k(El -> (createInnerObj(T, obj) -> K)) .
+
+  eq t(k(this(Pl, El, block) -> createInnerObjev(T, obj', env', Vl) -> K) env(env) obj(obj) fstack(fstack) lstack(lstack) tc) = 
+     t(k(buildEnv(Pl, Vl) -> (El -> (createInnerObje(T, obj', env') -> (block -> constrReturn)))) 
+     env(noEnv) obj(o(curr(T) orig(T) f(onil) encEnv(env'))) fstack(fsi(K, (env(env) obj(obj) lstack(lstack) tc)) fstack) lstack(noItem) tc) .
+  ceq t(k(super(Pl, El, block) -> createInnerObjev(T, obj', env', Vl) -> K) env(env) obj(obj) fstack(fstack) lstack(lstack) tc) code(Cl) = 
+      t(k(buildEnv(Pl, Vl) -> (El -> (createInnerObj(getSuper(T, Cl), obj') -> initObj(T) -> (block -> constrReturn))))
+      env(noEnv) obj(o(curr(T) orig(T) f([t(T), enc(obj')]) encEnv(env'))) fstack(fsi(K, (env(env) obj(obj) lstack(lstack) tc)) fstack) lstack(noItem) tc) 
+      code(Cl) if isInner(getSuper(T, Cl), Cl) .
+  eq t(k(super(Pl, El, block) -> createInnerObjev(T, obj', env', Vl) -> K) env(env) obj(obj) fstack(fstack) lstack(lstack) tc) code(Cl) = 
+     t(k(buildEnv(Pl, Vl) -> (El -> (createObj(getSuper(T, Cl)) -> initObj(T) -> (block -> constrReturn))))
+     env(noEnv) obj(o(curr(T) orig(T) f([t(T), enc(obj')]) encEnv(env'))) 
+     fstack(fsi(K, (env(env) obj(obj) lstack(lstack) tc)) fstack) lstack(noItem) tc) code(Cl) [owise] .
+  eq t(k(super(E, Pl, El, block) -> createInnerObjev(T, obj', env', Vl) -> K) env(env) obj(obj) fstack(fstack) lstack(lstack) tc) code(Cl) = 
+      t(k(buildEnv(Pl, Vl) -> (E -> (El -> (createObj(getSuper(T, Cl)) -> initObj(T) -> (block -> constrReturn)))))
+      env(noEnv) obj(o(curr(T) orig(T) f([t(T), enc(obj')]) encEnv(env'))) fstack(fsi(K, (env(env) obj(obj) lstack(lstack) tc)) fstack) lstack(noItem) tc) 
+      code(Cl) . 
+
+  eq t(k(this(Pl, El, block) -> createInnerObjv(T, obj', Vl) -> K) env(env) obj(obj) fstack(fstack) lstack(lstack) tc) = 
+     t(k(buildEnv(Pl, Vl) -> (El -> (createInnerObj(T, obj') -> (block -> constrReturn))))
+     env(noEnv) obj(o(curr(T) orig(T) f(onil))) fstack(fsi(K, (env(env) obj(obj) lstack(lstack) tc)) fstack) lstack(noItem) tc) .
+  ceq t(k(super(Pl, El, block) -> createInnerObjv(T, obj', Vl) -> K) env(env) obj(obj) fstack(fstack) lstack(lstack) tc) code(Cl) = 
+      t(k(buildEnv(Pl, Vl) -> (El -> (createInnerObj(getSuper(T, Cl), obj') -> initObj(T) -> (block -> constrReturn))))
+      env(noEnv) obj(o(curr(T) orig(T) f([t(T), enc(obj')]))) fstack(fsi(K, (env(env) obj(obj) lstack(lstack) tc)) fstack) lstack(noItem) tc) 
+      code(Cl) if isInner(getSuper(T, Cl), Cl) .
+  eq t(k(super(Pl, El, block) -> createInnerObjv(T, obj', Vl) -> K) env(env) obj(obj) fstack(fstack) lstack(lstack) tc) code(Cl) = 
+     t(k(buildEnv(Pl, Vl) -> (El -> (createObj(getSuper(T, Cl)) -> initObj(T) -> (block -> constrReturn))))
+     env(noEnv) obj(o(curr(T) orig(T) f([t(T), enc(obj')]))) 
+     fstack(fsi(K, (env(env) obj(obj) lstack(lstack) tc)) fstack) lstack(noItem) tc) code(Cl) [owise] .
+  eq t(k(super(E, Pl, El, block) -> createInnerObjv(T, obj', Vl) -> K) env(env) obj(obj) fstack(fstack) lstack(lstack) tc) code(Cl) = 
+     t(k(buildEnv(Pl, Vl) -> (E -> (El -> (createObj(getSuper(T, Cl)) -> initObj(T) -> (block -> constrReturn)))))
+     env(noEnv) obj(o(curr(T) orig(T) f([t(T), enc(obj')]))) fstack(fsi(K, (env(env) obj(obj) lstack(lstack) tc)) fstack) lstack(noItem) tc) 
+     code(Cl) .
+      
+  eq t(k(constrReturn) obj(obj) fstack(fsi(K, tc) fstack) tc') = t(k(obj -> K) fstack(fstack) tc) .
+  eq t(k(return; -> (K -> constrReturn)) obj(obj) fstack(fsi(K', tc) fstack) tc') = t(k(obj -> K') fstack(fstack) tc) . --- the contructor can have return
+  eq k(o(f(oEnv) oattr) -> initObj(T') -> K) obj(o(f(oEnv') oattr')) = k(initObj(T') -> K) obj(o(f((oEnv oEnv')) oattr')) .  
+  
+  ****** this is fine because at this moment env contains only the parameters of the constructor ***** 
+  eq t(k(initObj(T) -> K) env(env) tc) code(((md class T extends CT implements sp { CMs }) Cl)) = 
+      t(k(createObjByClass(T, CMs, nop) -> e(env) -> K) env(noEnv) tc) code(((md class T extends CT implements sp { CMs }) Cl)) .
+    
+  eq k(createObjByClass(CT, (m CMs), Sl) -> K) = k(createObjByClass(CT, CMs, Sl) -> K) .
+  eq k(createObjByClass(CT, (cnstr CMs), Sl) -> K) = k(createObjByClass(CT, CMs, Sl) -> K) .
+  eq k(createObjByClass(CT, (((static md) dc ;) CMs), Sl) -> K) = k(createObjByClass(CT, CMs, Sl) -> K) .
+  eq k(createObjByClass(CT, ((static dc ;) CMs), Sl) -> K) id(id) = k(createObjByClass(CT, CMs, Sl) -> K) id(id) .
+  eq k(createObjByClass(CT, ((md dc ;) CMs), Sl) -> K) id(id) = k(dc -> (tid(id) -> createObjByClass(CT, CMs, Sl) -> K))  id(-2) [owise] .
+  eq k(createObjByClass(CT, (static(B) CMs), Sl) -> K) = k(createObjByClass(CT, CMs, Sl) -> K) .
+  eq k(createObjByClass(CT, (init(B) CMs), Sl) -> K) = k(createObjByClass(CT, CMs, (Sl B)) -> K) .
+  
+  op tid : Int -> Continuation .
+  eq k(tid(id) -> K) id(I'') = k(K) id(id) .
+  
+  op addOEnv : Type -> Continuation .  
+  
+  eq k(createObjByClass(CT, noMember, Sl) -> K) = k(Sl -> (addOEnv(CT) -> K)) .
+  eq k(addOEnv(T) -> K) env(env) obj(o(curr(T) orig(T) f([t(T), oeitem] oEnv) oattr)) = 
+     k(K) env(noEnv) obj(o(curr(T) orig(T) f([t(T), oeitem, f(env)] oEnv) oattr)) .
+  
+  op isInner : Type Classes -> Bool .
+  eq isInner(T, (((inner md) class T extends CT implements sp { CMs }) Cl)) = true .
+  eq isInner(T, ((md class T extends CT implements sp { CMs }) Cl)) = false [owise] .
+endm
+
+mod SYS-OBJECT is
+  ex METHODINFO .
+  ex CONTINUATION .
+  pr THREADCTRL .
+  pr STATE .
+  pr FINDMETHOD .
+  pr LOCK-ACCESS .
+  pr RUN .
+  
+  op notify : -> SystemCall .
+  op notifyAll : -> SystemCall .
+  op wait : -> SystemCall .
+  
+  op wait : Object Int -> Continuation .
+  op sync : Int -> Continuation .
+  
+  var Tl : TypeList . var Cl : Classes . var obj : Object . vars K K' : Continuation . vars tc tc' : ThreadCtrl . var st : JavaState .
+  var Ll : LockSet . var Os : ObjectSet . var I : Int .
+  
+  eq findMethod(Object, 'notify, Tl, Cl) = sys(notify) .
+  eq findMethod(Object, 'notifyAll, Tl, Cl) = sys(notifyAll) .
+  eq findMethod(Object, 'wait, Tl, Cl) = sys(wait) .  
+  
+  eq t(k(sys(wait) -> callSys(obj, noVal) -> K) holds([obj, I], Ll) tc) busy(obj ; Os) = t(k(wait(obj, I) -> K) holds(Ll) tc) busy(Os) .
+  
+  rl t(k(sys(notify) -> callSys(obj, noVal) -> K) tc) t(k(wait(obj, I) -> K') tc') => t(k(K) tc) t(k(obj -> (sync(I) -> K')) tc') .
+  ceq run(t(k(sys(notify) -> callSys(obj, noVal) -> K) tc) st) = run(t(k(K) tc) st) if noWait(obj, st) .
+  eq run(t(k(sys(notifyAll) -> callSys(obj, noVal) -> K) tc) t(k(wait(obj, I) -> K') tc') st) = run(t(k(sys(notifyAll) -> callSys(obj, noVal) -> K) tc) t(k(obj -> (sync(I) -> K')) tc') st) .
+  eq run(t(k(sys(notifyAll) -> callSys(obj, noVal) -> K) tc) st) = run(t(k(K) tc) st) [owise] .
+  
+  crl t(k(obj -> (sync(I) -> K)) holds(Ll) tc) busy(Os) => t(k(K) holds([obj, I], Ll) tc) busy(obj ; Os) if (not (in(obj, Ll))) and (not (in(obj, Os))) .  
+  
+  op noWait : Object JavaState -> Bool .
+  
+  eq noWait(obj, (t(k(wait(obj, I) -> K) tc) st)) = false .
+  eq noWait(obj, st) = true [owise] .
+
+  op random : -> SystemCall .
+  eq findMethod(Object, 'random, Tl, Cl) = sys(random) . 
+  
+  rl [randomtrue] : k(sys(random) -> callSys(obj, noVal) -> K)  => k(bool(true) -> K) [label randomtrue].
+
+  rl [randomfalse] : k(sys(random) -> callSys(obj, noVal) -> K)  => k(bool(false) -> K) [label randomfalse].
+  
+endm
+
+mod SYS-IO is
+  ex CLASS-FIELD .
+  ex METHODINFO .
+  ex CONTINUATION .
+  pr THREADCTRL .
+  pr STATE .
+  pr FINDMETHOD .
+  ex TYPE .
+  
+  op System : -> Type .
+  op println : -> SystemCall .  
+  op print : -> SystemCall .
+  
+  var K : Continuation . var Tl : TypeList . var Cl : Classes . var obj : Object . var tc : ThreadCtrl .
+  vars Vl Vl' : ValueList . var V : Value . var output : Output .
+  
+  eq k('System . 'out -> K) = k(o(curr(System) orig(System)) -> K) .
+  eq findMethod(System, 'print, Tl, Cl) = sys(print) .
+  eq findMethod(System, 'println, Tl, Cl) = sys(println) .
+  rl t(k(sys(print) -> callSys(obj, V) -> K) tc) out(output) => t(k(K) tc) out(output, p(V)) .
+  rl t(k(sys(println) -> callSys(obj, V) -> K) tc) out(output) => t(k(K) tc) out(output, pl(V)) .
+endm
+
+mod SYS-THREADSTART is
+  ex METHODINFO .
+  pr FINDMETHOD .
+  pr METHOD-CALL .
+  pr STORE-ACCESS .
+  
+  op newThread : -> SystemCall .
+  op changeTid : Object Int -> Value .
+  op changeTid : ObjEnv Int -> ObjEnv .
+  op changeTid : Env Int -> Env .
+  op ct : Object -> Continuation .  
+  
+  var Tl : TypeList . var Cl : Classes .
+  
+  eq findMethod(t('Thread), 'start, Tl, Cl) = sys(newThread) .
+  
+  var obj : Object . var K : Continuation . var tc : ThreadCtrl . vars T T' T'' : Type . var oEnv : ObjEnv . vars I I' : Int .
+  var env : Env . var L : Location . var store : Store . var V : Value . var oattr : ObjectAttribute . var X : Qid . var oeitem : ObjEnvItem .
+  
+  --- need to update all the fields of the thread object!
+  
+  eq t(k(sys(newThread) -> callSys(obj, noVal) -> K) tc) nextTid(I) = t(k(K) tc) t(k(changeTid(obj, I) -> (call(obj, 'run) -> stop)) obj(obj) fstack(noItem) xstack(noItem) lstack(noItem) finalblocks(noItem) env(noEnv) id(I) holds(nil)) nextTid(I + 1) .
+  eq k(changeTid(o(oattr f(oEnv)), I) -> K) = k(ct(o(oattr f(changeTid(oEnv, I)))) -> K) .
+  eq changeTid(([oeitem, f(env)] oEnv), I) = [oeitem, f(changeTid(env, I))] changeTid(oEnv, I) .
+  eq changeTid(onil, I) = onil .
+  eq [oeitem, f(changeTid(noEnv, I))] = onil .
+  eq t(k(ct(o(oattr f([oeitem, f(changeTid(([X, L] env), I))] oEnv))) -> K) tc) store([L, V, -2] store) = 
+        t(k(ct(o(oattr f([oeitem, f(changeTid(env, I))] oEnv))) -> K) tc) store([L, setTid(V, I), I] store) .
+  eq t(k(ct(o(oattr f([oeitem, f(changeTid(([X, L] env), I))] oEnv))) -> K) tc) store([L, V, -1] store) = 
+        t(k(ct(o(oattr f(oEnv))) -> K) tc) store([L, V, -1] store) .
+  eq t(k(ct(o(oattr f([oeitem, f(changeTid(([X, L] env), I))] oEnv))) -> K) tc) store([L, V, I'] store) = 
+        t(k(ct(o(oattr f([oeitem, f(changeTid(env, I))] oEnv))) -> K) tc) store([L, shared(V), -1] store) [owise] .
+  eq k(ct(o(oattr f(onil))) -> K) = k(noVal -> K) .
+endm
+
+mod PGM-SEMANTICS is 
+  pr PROCESS-CLASSES .  
+  pr NAME .
+  pr LOCATION .
+  pr BASICVALUE .
+  pr ENVIRONMENT .
+  pr ARRAY-OBJ .
+  pr OBJECT .
+  pr STORE .
+  pr CONTINUATION .
+  pr LOCK-DEF .
+  pr THREADCTRL .
+  pr STATE .
+  pr RUN .
+  pr GENERIC-EXP-SEMANTICS .
+  pr STOP-SEMANTICS .
+  pr STORE-ACCESS .
+  pr GETTYPES .
+  pr SUPEROF .
+  pr COMPATIBLETYPE .
+  pr GETLOCATION .
+  pr UNARY-EXP .
+  pr ARITH-EXP .
+  pr REXP .
+  pr BEXP .
+  pr CEXP .
+  pr ARRAY-EXP .
+  pr ARRAY-INIT-EXP .
+  pr INSTANCEOF .
+  pr CLASS-FIELD .
+  pr VAR-EXP .
+  pr ASSIGNM-EXP .
+  pr INIT-VALUE .
+  pr BUILDENV .
+  pr BLOCK .
+  pr DECLARATION .
+  pr EXP-STATEMENT .
+  pr IF-STATEMENT .
+  pr WHILE-STATEMENT .
+  pr DO-STATEMENT .
+  pr FOR-STATEMENT .
+  pr SWITCH-STATEMENT .
+  pr BREAK-STATEMENT .
+  pr CONTINUE-STATEMENT .
+  pr RETURN-STATEMENT .
+  pr ASSERT-STATEMENT .
+  pr EXCEPTION-ITEM .
+  pr TRY-CATCH .
+  pr RELEASE-LOCK .
+  pr DO-FINAL .
+  pr EXCEPTION-THROWING .
+  pr LOCK-ACCESS .
+  pr SYNCHRONIZED-STATEMENT .
+  pr METHODINFO .
+  pr FINDMETHOD .
+  pr METHOD-CALL .
+  pr NEW-EXP .
+  pr SYS-OBJECT .
+  pr SYS-IO .
+  pr SYS-THREADSTART .
+  pr STATIC-INIT .
+  
+
+  var Cl : Classes . var E : Exp . vars Vl Vl' : ValueList . var objEnv : ObjEnv . vars I I' : Int .
+  var st : Store . var Ll : LocationSet . var OS : ObjectSet . var output : Output . vars md md' : Modifier .
+  vars T CT : Type . var sp : Types . var CMs : ClassMembers . var Pl : ParameterList . var throwExp : Throws .
+  var Sl : StatementList . 
+  
+  op java : Pgm -> Output .
+
+  eq java((((md class T extends CT implements sp { (md' void 'main (Pl) throwExp {Sl}) CMs }) Cl) (noType . E) Vl)) = 
+     java((((md class T extends CT implements sp { (md' void 'main (Pl) throwExp {Sl}) CMs }) Cl) (T . E) Vl)) .
+  ---- the thread id to initialize the static fields is -1, meaning that all static fields are shared ----
+  eq java((Cl E Vl)) = run(t(k(buildS(Cl) -> (E -> stop)) obj(nullo) fstack(noItem) xstack(noItem) lstack(noItem) finalblocks(noItem) env(noEnv) id(-1) holds(nil)) out(noOutput) in(Vl) store(noStore) code(Cl) static(onil) busy(noObj) nextLoc(0) nextTid(1)) .
+  eq run((out(output) in(Vl') store(st) code(Cl) static(objEnv) busy(OS) nextLoc(I) nextTid(I'))) = output .
+endm
+

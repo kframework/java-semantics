@@ -8,7 +8,8 @@ class main {
 	main(String[] args) {
     for(int i=0; i<5; i++)
       System.out.print(i+" ");
-    System.out.println("\n"+ "After for i = "+ i);
+    System.out.println();
+    System.out.println("After for i = "+ i);
     System.out.println("Done!");
   }
 }

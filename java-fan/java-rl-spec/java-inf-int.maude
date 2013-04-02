@@ -1,0 +1,39 @@
+fmod JAVAINT is 
+ex INT .
+sorts JavaByte JavaShort JavaInt JavaLong .
+subsorts Int < JavaByte JavaShort JavaInt JavaLong .
+
+endfm
+
+eof
+
+op _/_ : JavaByte JavaByte -> JavaByte .
+op _%_ : JavaByte JavaByte -> JavaByte .
+
+vars B B' : JavaByte .
+eq B / B' = B quo B' .
+eq B % B' = B rem B' .
+
+op _/_ : JavaShort JavaShort -> JavaShort .
+op _%_ : JavaShort JavaShort -> JavaShort .
+
+vars S S' : JavaShort .
+eq S / S' = S quo S' .
+eq S % S' = S rem S' .
+
+op _/_ : JavaInt JavaInt -> JavaInt .
+op _%_ : JavaInt JavaInt -> JavaInt .
+
+vars I I' : JavaInt .
+eq I / I' = I quo I' .
+eq I % I' = I rem I' .
+
+op _/_ : JavaLong JavaLong -> JavaLong .
+op _%_ : JavaLong JavaLong -> JavaLong .
+
+vars L L' : JavaLong .
+eq L / L' = L quo L' .
+eq L % L' = L rem L' .
+
+
+endfm

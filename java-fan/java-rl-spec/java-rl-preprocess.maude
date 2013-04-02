@@ -1,0 +1,430 @@
+***************************************************
+*** Java specification based on rewriting logic ***
+*** Author: Feng Chen (fengchen@uiuc.edu)       ***
+***************************************************
+---in java-inf-int.maude
+---in java-rl-syntax.maude
+
+-----------------------------------
+------ Java Semantics -------------
+-----------------------------------
+
+fmod REFORMAT-CONSTR is 
+  pr PGM-SYNTAX .
+------------ standardize the constructors ------------
+  
+  var md : Modifier . vars C M id : Qid . vars CT T : Type . var sp : Types . var CMs : ClassMembers . var Cl : Classes .
+  var Pl : ParameterList . var El : ExpList . var Sl : StatementList . vars E E' : Exp . var throwExp : Throws .
+  var cnstr : Constructor . var dc : Declarator . var Tl : TypeList .  
+
+  op reformatConstr : Classes -> Classes .
+  op reformatConstr : ClassMembers -> ClassMembers .
+  op reformatConstr : ParameterList -> ParameterList .
+  
+  eq reformatConstr(noClass) = noClass .
+  eq reformatConstr(((md class T imports Tl extends CT implements sp { cnstr CMs }) Cl)) = 
+     (md class T imports Tl extends CT implements sp { reformatConstr((cnstr CMs)) }) reformatConstr(Cl) .
+  eq reformatConstr(((md class T imports Tl extends CT implements sp { CMs }) Cl)) = 
+     (md class T imports Tl extends CT implements sp { (public T (noPara) throws(noType) super(noExp) { nop } ) reformatConstr(CMs) }) reformatConstr(Cl) [owise] .
+  eq reformatConstr(((md CT (Pl) throwExp {(this(El) ;) Sl}) CMs)) = (md CT (reformatConstr(Pl)) throwExp this(El) {Sl}) reformatConstr(CMs) .
+  eq reformatConstr(((md CT (Pl) throwExp {(super(El) ;) Sl}) CMs)) = (md CT (reformatConstr(Pl)) throwExp super(El) {Sl}) reformatConstr(CMs) .
+  eq reformatConstr(((md CT (Pl) throwExp {(E . (super(El)) ;) Sl}) CMs)) = (md CT (reformatConstr(Pl)) throwExp E .super (El) {Sl}) reformatConstr(CMs) .
+  eq reformatConstr(((md CT (Pl) throwExp {Sl}) CMs)) = (md CT (reformatConstr(Pl)) throwExp super(noExp) {Sl}) reformatConstr(CMs) [owise] .
+  eq reformatConstr(((md T M (Pl) throwExp {Sl}) CMs)) = (md T M (reformatConstr(Pl)) throwExp {Sl}) reformatConstr(CMs) .
+  eq reformatConstr(CMs) = CMs [owise] .
+  
+  eq reformatConstr(((T dc), Pl)) = reform(T dc), reformatConstr(Pl) .
+  eq reformatConstr(noPara) = noPara .
+  
+endfm
+
+fmod REMOVE-IMPORTS is 
+  pr PGM-SYNTAX .
+--------------- remove imports from class declaration -------------
+  
+  var md : Modifier . vars C M id : Qid . vars CT T : Type . var sp : Types . var CMs : ClassMembers . var Cl : Classes . var Tl : TypeList .
+
+  op removeImports : Classes -> Classes .
+  eq removeImports(noClass) = noClass .
+  eq removeImports(((md class T imports Tl extends CT implements sp { CMs }) Cl)) = 
+     (md class T extends CT implements sp { CMs }) removeImports(Cl) .
+  eq removeImports(((md interface T imports Tl extends CT { CMs }) Cl)) = 
+     (md interface T extends CT { CMs }) removeImports(Cl) .
+  
+endfm
+
+fmod CHANGETYPE is 
+  pr PGM-SYNTAX .
+
+-------------- change relative types into full types ------------  
+  
+  var md : Modifier . vars C M id : Qid . vars CT T T' : Type . var sp : Types . var CMs : ClassMembers . vars Cl Cl' : Classes .
+  var Pl : ParameterList . var El : ExpList . var Sl : StatementList . vars E E' : Exp . var throwExp : Throws .
+  var cnstr : Constructor . var dc : Declarator . vars Tl Tl' : TypeList .  var declaration : Declaration .
+  vars block block' : Block . var declarators : Declarators . vars St St' : Statement . 
+  var sItems : SwitchItems . var sLabels : SwitchLabels . var catches : Catches . var i : Int .
+  
+  op changeType : Classes -> Classes .
+  op changeType : Classes Classes -> Classes .
+  
+  eq changeType(Cl) = changeType(Cl, Cl) .
+  eq changeType(noClass, Cl) = noClass .
+  eq changeType(((md class T imports Tl extends CT implements sp { CMs }) Cl), Cl') =
+     (md class T imports Tl extends changeType(CT, getFullType(CT, Tl, Cl')) implements changeType(sp, Tl, Cl') 
+           { changeType(CMs, Tl, Cl') }) changeType(Cl, Cl') [owise] .
+  
+  op changeType : ClassMembers TypeList Classes -> ClassMembers .
+  eq changeType(noMember, Tl, Cl) = noMember .
+  eq changeType((init(block) CMs), Tl, Cl) = 
+     init(changeType(block, Tl, Cl)) changeType(CMs, Tl, Cl) .
+  eq changeType((static(block) CMs), Tl, Cl) = 
+     static(changeType(block, Tl, Cl)) changeType(CMs, Tl, Cl) .
+  eq changeType(((md declaration ;) CMs), Tl, Cl) = (md changeType(declaration, Tl, Cl) ;) changeType(CMs, Tl, Cl) .
+  eq changeType(((md T M (Pl) throws(sp) block) CMs), Tl, Cl) = 
+     (md changeType(T, getFullType(T, Tl, Cl)) M (changeType(Pl, Tl, Cl)) throws(changeType(sp, Tl, Cl)) 
+         changeType(block, Tl, Cl)) changeType(CMs, Tl, Cl) .
+  eq changeType(((md T (Pl) throws(sp) block) CMs), Tl, Cl) = 
+     (md changeType(T, getFullType(T, Tl, Cl)) (changeType(Pl, Tl, Cl)) throws(changeType(sp, Tl, Cl)) 
+         changeType(block, Tl, Cl)) changeType(CMs, Tl, Cl) .
+  eq changeType(((md T (Pl) throws(sp) this(El) block) CMs), Tl, Cl) = 
+     (md changeType(T, getFullType(T, Tl, Cl)) (changeType(Pl, Tl, Cl)) throws(changeType(sp, Tl, Cl)) 
+         this(changeTypeEl(El, Tl, Cl)) changeType(block, Tl, Cl)) changeType(CMs, Tl, Cl) .
+  eq changeType(((md T (Pl) throws(sp) super(El) block) CMs), Tl, Cl) = 
+     (md changeType(T, getFullType(T, Tl, Cl)) (changeType(Pl, Tl, Cl)) throws(changeType(sp, Tl, Cl)) 
+         super(changeTypeEl(El, Tl, Cl)) changeType(block, Tl, Cl)) changeType(CMs, Tl, Cl) .
+  eq changeType(((md T (Pl) throws(sp) E .super(El) block) CMs), Tl, Cl) = 
+     (md changeType(T, getFullType(T, Tl, Cl)) (changeType(Pl, Tl, Cl)) throws(changeType(sp, Tl, Cl)) 
+         changeType(E, Tl, Cl) .super(changeTypeEl(El, Tl, Cl)) changeType(block, Tl, Cl)) changeType(CMs, Tl, Cl) .
+  
+  op changeType : Block TypeList Classes -> Block .
+  eq changeType(;, Tl, Cl) = ; .
+  eq changeType({ Sl }, Tl, Cl) = { changeType(Sl, Tl, Cl) } .
+  
+  op changeType : StatementList TypeList Classes -> StatementList .
+  op changeType : Statement TypeList Classes -> StatementList .
+  eq changeType((St Sl), Tl, Cl) = changeType(St, Tl, Cl) changeType(Sl, Tl, Cl) .
+  eq changeType(nop, Tl, Cl) = nop .
+  eq changeType((id : St), Tl, Cl) = id : changeType(St, Tl, Cl) .
+  eq changeType((i @ St), Tl, Cl) = i @ changeType(St, Tl, Cl) .
+  
+  op changeType : Declaration TypeList Classes -> Declaration .
+  op changeType : Declarators TypeList Classes -> Declarators .
+  eq changeType((T declarators), Tl, Cl) = changeType(T, getFullType(T, Tl, Cl)) changeType(declarators, Tl, Cl) .
+  eq changeType(((dc = E) , declarators), Tl, Cl) = (dc = changeType(E, Tl, Cl)), changeType(declarators, Tl, Cl) .
+  eq changeType((dc, declarators), Tl, Cl) = dc, changeType(declarators, Tl, Cl) [owise] .
+  eq changeType((dc = E), Tl, Cl) = (dc = changeType(E, Tl, Cl)) .
+  eq changeType(dc, Tl, Cl) = dc [owise] .
+  
+  op changeType : ParameterList TypeList Classes -> ParameterList .
+  eq changeType(noPara, Tl, Cl) = noPara .
+  eq changeType((declaration, Pl), Tl, Cl) = changeType(declaration, Tl, Cl), changeType(Pl, Tl, Cl) .
+  
+  ----- use changeTypeEl here to avoid infinite loop ------
+  op changeTypeEl : ExpList TypeList Classes -> ExpList .  
+  op changeType : Exp TypeList Classes -> Exp .  
+  eq changeTypeEl(noExp, Tl, Cl) = noExp .
+  eq changeTypeEl((E, El), Tl, Cl) = changeType(E, Tl, Cl), changeTypeEl(El, Tl, Cl) [owise] . 
+  
+  op changeType : Types TypeList Classes -> Types .
+  eq changeType(noType, Tl, Cl) = noType .
+  eq changeType((T, sp), Tl, Cl) = changeType(T, getFullType(T, Tl, Cl)), changeType(sp, Tl, Cl) [owise] .
+  
+  op changeType : Type Type -> Type .
+  eq changeType(T, nil) = notFound(T) .
+  eq changeType(T, CT) = CT [owise] .
+  
+  op getFullType : Type TypeList Classes -> Type .
+  op getFullType2 : Type TypeList Classes -> Type .
+  
+  eq getFullType(T [], Tl, Cl) = getFullType(T, Tl, Cl) [] .
+  eq getFullType(T, Tl, ((md class T imports Tl' extends CT implements sp { CMs }) Cl)) = T .
+  eq getFullType(T, Tl, ((md interface T imports Tl' extends CT { CMs }) Cl)) = T .
+  eq getFullType(t('Thread), Tl, Cl) = t('Thread) .
+  eq getFullType((T . T'), Tl, Cl) = notFound [owise] .
+  eq getFullType(t(C), Tl, Cl) = getFullType2(t(C), Tl, Cl) [owise] .
+  eq getFullType(T, Tl, Cl) = T [owise] .
+  eq getFullType2(T, nil, Cl) = notFound .
+  
+  ----- import the class explicitly -----
+  eq getFullType2(T, ((T' . T) ; Tl), ((md class (T' . T) imports Tl' extends CT implements sp { CMs }) Cl)) = T' . T .
+  eq getFullType2(T, ((T' . T) ; Tl), ((md interface (T' . T) imports Tl' extends CT { CMs }) Cl)) = T' . T .
+  ----- import the pakcage containing the class ------
+  eq getFullType2(T, (T' ; Tl), ((md class (T' . T) imports Tl' extends CT implements sp { CMs }) Cl)) = T' . T .
+  eq getFullType2(T, (T' ; Tl), ((md interface (T' . T) imports Tl' extends CT { CMs }) Cl)) = T' . T .
+  
+  eq getFullType2(T, (T' ; Tl), Cl) = getFullType2(T, Tl, Cl) [owise] .
+  
+  eq notFound [] = notFound .
+
+endfm
+
+fmod CT-STATEMENT is 
+  ex CHANGETYPE .
+
+  var md : Modifier . vars C M id : Qid . vars CT T : Type . var sp : Types . var CMs : ClassMembers . var Cl : Classes .
+  var Pl : ParameterList . vars El El' : ExpList . var Sl : StatementList . vars E E' : Exp . var throwExp : Throws .
+  var cnstr : Constructor . var dc : Declarator . var Tl : TypeList .  var declaration : Declaration .
+  vars block block' : Block . var declarators : Declarators . vars St St' : Statement . 
+  var sItems : SwitchItems . var sLabels : SwitchLabels . var catches : Catches . 
+  
+  eq changeType((declaration ;), Tl, Cl) = changeType(declaration, Tl, Cl) ; .
+  eq changeType((E ;), Tl, Cl) = changeType(E, Tl, Cl) ; .
+  eq changeType((if E St else St' fi), Tl, Cl) = 
+     if changeType(E, Tl, Cl) changeType(St, Tl, Cl) else changeType(St', Tl, Cl) fi .
+  eq changeType((if E St fi), Tl, Cl) = 
+     if changeType(E, Tl, Cl) changeType(St, Tl, Cl) fi .
+  eq changeType((switch E { sItems }), Tl, Cl) = 
+     switch changeType(E, Tl, Cl) { changeType(sItems, Tl, Cl) } .
+  eq changeType((while E St), Tl, Cl) = while changeType(E, Tl, Cl) changeType(St, Tl, Cl) .
+  eq changeType((do St while E ;), Tl, Cl) = do changeType(St, Tl, Cl) while changeType(E, Tl, Cl) ; .
+  eq changeType((for(El ; E ; El') St), Tl, Cl) = 
+     for(changeTypeEl(El, Tl, Cl) ; changeType(E, Tl, Cl) ; changeTypeEl(El', Tl, Cl)) changeType(St, Tl, Cl) .
+  eq changeType((for(declaration ; E ; El) St), Tl, Cl) = 
+     for(changeType(declaration, Tl, Cl) ; changeType(E, Tl, Cl) ; changeTypeEl(El, Tl, Cl)) changeType(St, Tl, Cl) .
+  eq changeType((return E ;), Tl, Cl) = return changeType(E, Tl, Cl) ; .
+  eq changeType((throw E ;), Tl, Cl) = throw changeType(E, Tl, Cl) ; .
+  eq changeType((synchronized E block), Tl, Cl) = synchronized changeType(E, Tl, Cl) changeType(block, Tl, Cl) .
+  eq changeType((try block finally block'), Tl, Cl) = try changeType(block, Tl, Cl) finally changeType(block', Tl, Cl) .
+  eq changeType((try block catches finally block'), Tl, Cl) = 
+     try changeType(block, Tl, Cl) changeType(catches, Tl, Cl) finally changeType(block', Tl, Cl) .
+  eq changeType((try block catches), Tl, Cl) = 
+     try changeType(block, Tl, Cl) changeType(catches, Tl, Cl) .
+  eq changeType((assert E ;), Tl, Cl) = assert changeType(E, Tl, Cl) ; .
+  eq changeType((assert E : E' ;), Tl, Cl) = assert changeType(E, Tl, Cl) : changeType(E', Tl, Cl) ; .
+  eq changeType(St, Tl, Cl) = St [owise] .
+  
+  op changeType : Catches TypeList Classes -> Catches .
+  eq changeType(noCatch, Tl, Cl) = noCatch .
+  eq changeType(((catch(declaration) block) catches), Tl, Cl) = 
+     (catch(changeType(declaration, Tl, Cl)) changeType(block, Tl, Cl)) changeType(catches, Tl, Cl) .
+  
+  op changeType : SwitchItems TypeList Classes -> SwitchItems .
+  eq changeType(noSw, Tl, Cl) = noSw .
+  eq changeType(((sLabels Sl) sItems), Tl, Cl) = (sLabels changeType(Sl, Tl, Cl)) changeType(sItems, Tl, Cl) .
+
+endfm
+
+fmod CT-UNARY-EXP-SYNTAX is ex UNARY-EXP-SYNTAX .
+  ex CHANGETYPE .
+  
+  var E : Exp . var Tl : TypeList . var Cl : Classes . var T : Type .
+  
+  eq changeType((++ E), Tl, Cl)= ++ changeType(E, Tl, Cl) .
+  eq changeType((-- E), Tl, Cl)= -- changeType(E, Tl, Cl) .
+  eq changeType((E ++), Tl, Cl)= changeType(E, Tl, Cl) ++ .
+  eq changeType((E --), Tl, Cl)= changeType(E, Tl, Cl) -- .
+  eq changeType(({ T } E), Tl, Cl)= { changeType(T, Tl, Cl) } changeType(E, Tl, Cl) .
+  eq changeType((+ E), Tl, Cl)= + changeType(E, Tl, Cl) .
+  eq changeType((- E), Tl, Cl)= - changeType(E, Tl, Cl) .
+  
+endfm
+
+fmod CT-ARITH-EXP-SYNTAX is ex ARITH-EXP-SYNTAX .
+  ex CHANGETYPE .
+  
+  vars E E' : Exp . var Tl : TypeList . var Cl : Classes .
+  
+  eq changeType((E + E'), Tl, Cl) = changeType(E, Tl, Cl) + changeType(E', Tl, Cl) .
+  eq changeType((E - E'), Tl, Cl) = changeType(E, Tl, Cl) - changeType(E', Tl, Cl) .
+  eq changeType((E * E'), Tl, Cl) = changeType(E, Tl, Cl) * changeType(E', Tl, Cl) .
+  eq changeType((E / E'), Tl, Cl) = changeType(E, Tl, Cl) / changeType(E', Tl, Cl) .
+  eq changeType((E % E'), Tl, Cl) = changeType(E, Tl, Cl) % changeType(E', Tl, Cl) .
+
+endfm
+
+fmod CT-REXP-SYNTAX is ex REXP-SYNTAX .
+  ex CHANGETYPE .
+  
+  vars E E' : Exp . var Tl : TypeList . var Cl : Classes .
+  
+  eq changeType((E == E'), Tl, Cl) = changeType(E, Tl, Cl) == changeType(E', Tl, Cl) .
+  eq changeType((E != E'), Tl, Cl) = changeType(E, Tl, Cl) != changeType(E', Tl, Cl) .
+  eq changeType((E < E'), Tl, Cl) = changeType(E, Tl, Cl) < changeType(E', Tl, Cl) .
+  eq changeType((E <= E'), Tl, Cl) = changeType(E, Tl, Cl) <= changeType(E', Tl, Cl) .
+  eq changeType((E > E'), Tl, Cl) = changeType(E, Tl, Cl) > changeType(E', Tl, Cl) .
+  eq changeType((E >= E'), Tl, Cl) = changeType(E, Tl, Cl) >= changeType(E', Tl, Cl) .
+
+endfm
+
+fmod CT-BEXP-SYNTAX is ex BEXP-SYNTAX .
+  ex CHANGETYPE .
+  
+  vars E E' : Exp . var Tl : TypeList . var Cl : Classes .
+  
+  eq changeType((! E), Tl, Cl) = ! changeType(E, Tl, Cl) .
+  eq changeType((E && E'), Tl, Cl) = changeType(E, Tl, Cl) && changeType(E', Tl, Cl) .
+  eq changeType((E || E'), Tl, Cl) = changeType(E, Tl, Cl) || changeType(E', Tl, Cl) .
+
+endfm
+
+fmod CT-SHIFTEXP-SYNTAX is ex SHIFTEXP-SYNTAX .
+  ex CHANGETYPE .
+  
+  vars E E' : Exp . var Tl : TypeList . var Cl : Classes .
+  
+  eq changeType((E << E'), Tl, Cl) = changeType(E, Tl, Cl) << changeType(E', Tl, Cl) .
+  eq changeType((E >> E'), Tl, Cl) = changeType(E, Tl, Cl) >> changeType(E', Tl, Cl) .
+  eq changeType((E >>> E'), Tl, Cl) = changeType(E, Tl, Cl) >>> changeType(E', Tl, Cl) .
+
+endfm
+
+fmod CT-BITEXP-SYNTAX is ex BITEXP-SYNTAX .
+  ex CHANGETYPE .
+  
+  vars E E' : Exp . var Tl : TypeList . var Cl : Classes .
+  
+  eq changeType((E & E'), Tl, Cl) = changeType(E, Tl, Cl) & changeType(E', Tl, Cl) .
+  eq changeType((E ^ E'), Tl, Cl) = changeType(E, Tl, Cl) ^ changeType(E', Tl, Cl) .
+  eq changeType((E | E'), Tl, Cl) = changeType(E, Tl, Cl) | changeType(E', Tl, Cl) .
+
+endfm
+
+fmod CT-CEXP-SYNTAX is ex CEXP-SYNTAX .
+  ex CHANGETYPE .
+  
+  vars E E' E'' : Exp . var Tl : TypeList . var Cl : Classes .
+  
+  eq changeType((E ? E' : E''), Tl, Cl) = changeType(E, Tl, Cl) ? changeType(E', Tl, Cl) : changeType(E'', Tl, Cl) .
+
+endfm
+
+fmod CT-ARRAY-SYNTAX is ex ARRAY-SYNTAX .
+  ex CHANGETYPE .
+  
+  vars E E' : Exp . var Tl : TypeList . var Cl : Classes .
+  
+  eq changeType((E [ E' ]), Tl, Cl) = changeType(E, Tl, Cl) [ changeType(E', Tl, Cl) ] .
+endfm
+
+fmod CT-ARRAY-INIT is ex ARRAY-INIT .
+  ex CHANGETYPE .
+  
+  var El : ExpList . var Tl : TypeList . var Cl : Classes .
+  
+  eq changeType(({ El }), Tl, Cl) = { changeTypeEl(El, Tl, Cl) } .
+endfm
+
+fmod CT-INSTANCEOF-SYNTAX is ex INSTANCEOF-SYNTAX .
+  ex CHANGETYPE .
+  
+  var E : Exp . var T : Type . var Tl : TypeList . var Cl : Classes .
+  
+  eq changeType((instanceOf(E, T)), Tl, Cl) = instanceOf(changeType(E, Tl, Cl), changeType(T, getFullType(T, Tl, Cl))) .
+
+endfm
+
+fmod CT-CLASS-MEMBER-ACCESS is ex CLASS-MEMBER-ACCESS .
+  ex CHANGETYPE .
+  var T : Type . vars E E' : Exp . var SE : StExp . var V : Var . var id : Qid . var Tl : TypeList . var Cl : Classes .
+  
+  ceq changeType((E . E'), Tl, Cl) = 
+     if (T =/= notFound) then (T . changeType(E', Tl, Cl)) else (changeType(E, Tl, Cl) . changeType(E', Tl, Cl)) fi
+     if T := mapToType(E, Tl, Cl) .
+  eq changeType((T . E), Tl, Cl) = changeType(T, getFullType(T, Tl, Cl)) . changeType(E, Tl, Cl) .
+  
+  op isAllQid : Exp -> Bool .
+  eq isAllQid((E . id)) = isAllQid(E) .
+  eq isAllQid(id) = true .
+  eq isAllQid(E) = false [owise] .
+  
+  op mapToType : Exp TypeList Classes -> Type .
+  
+  eq mapToType(E, Tl, Cl) = 
+     if isAllQid(E) then getFullType(mapToType(E), Tl, Cl) else notFound fi .
+  
+  op mapToType : Var -> Type .
+  eq mapToType(V . id) = mapToType(V) . t(id) .
+  eq mapToType(id) = t(id) .
+  
+endfm
+
+fmod CT-METHOD-CALL-SYNTAX is ex METHOD-CALL-SYNTAX .
+  ex CHANGETYPE .
+  
+  var El : ExpList . var M : Qid . var Tl : TypeList . var Cl : Classes .
+  
+  eq changeType((M < El >), Tl, Cl) = M < changeTypeEl(El, Tl, Cl) > .
+  eq changeType((this(El)), Tl, Cl) = this(changeTypeEl(El, Tl, Cl)) .
+  eq changeType((super(El)), Tl, Cl) = super(changeTypeEl(El, Tl, Cl)) .
+  
+endfm
+
+fmod CT-ASSIGNM-EXP-SYNTAX is ex ASSIGNM-EXP-SYNTAX .
+  ex CHANGETYPE .
+  
+  var var : Var . var E : Exp . var Tl : TypeList . var Cl : Classes .
+  
+  eq changeType((var = E), Tl, Cl) = (changeType(var, Tl, Cl) = changeType(E, Tl, Cl)) .
+  eq changeType((var += E), Tl, Cl) = changeType(var, Tl, Cl) += changeType(E, Tl, Cl) .
+  eq changeType((var -= E), Tl, Cl) = changeType(var, Tl, Cl) -= changeType(E, Tl, Cl) .
+  eq changeType((var *= E), Tl, Cl) = changeType(var, Tl, Cl) *= changeType(E, Tl, Cl) .
+  eq changeType((var /= E), Tl, Cl) = changeType(var, Tl, Cl) /= changeType(E, Tl, Cl) .
+  eq changeType((var %= E), Tl, Cl) = changeType(var, Tl, Cl) %= changeType(E, Tl, Cl) .
+  eq changeType((var &= E), Tl, Cl) = changeType(var, Tl, Cl) &= changeType(E, Tl, Cl) .
+  eq changeType((var ^= E), Tl, Cl) = changeType(var, Tl, Cl) ^= changeType(E, Tl, Cl) .
+  eq changeType((var |= E), Tl, Cl) = changeType(var, Tl, Cl) |= changeType(E, Tl, Cl) .
+  eq changeType((var <<= E), Tl, Cl) = changeType(var, Tl, Cl) <<= changeType(E, Tl, Cl) .
+  eq changeType((var >>= E), Tl, Cl) = changeType(var, Tl, Cl) >>= changeType(E, Tl, Cl) .
+  eq changeType((var >>>= E), Tl, Cl) = changeType(var, Tl, Cl) >>>= changeType(E, Tl, Cl) .
+
+endfm
+
+fmod CT-NEW-SYNTAX is ex NEW-SYNTAX .
+  ex CHANGETYPE .
+  
+  var T : Type . var Tl : TypeList . var Cl : Classes . var aDimInit : ArrayDimsAndInits . var aInit : ArrayInit .
+  var dims : Dims . var E : Exp . var aDims : ArrayDims . var CMs : ClassMembers . var El : ExpList .
+  
+  eq changeType((new T aDimInit), Tl, Cl) = new changeType(T, getFullType(T, Tl, Cl)) changeType(aDimInit, Tl, Cl) .
+  eq changeType((new T < El >), Tl, Cl) = new changeType(T, getFullType(T, Tl, Cl)) < changeTypeEl(El, Tl, Cl) > .
+  eq changeType((new T < El > ({ CMs })), Tl, Cl) = 
+     new changeType(T, getFullType(T, Tl, Cl)) < changeTypeEl(El, Tl, Cl) > ({ changeType(CMs, Tl, Cl) }) .
+  
+  op changeType : ArrayDimsAndInits TypeList Classes -> ArrayDimsAndInits .
+  op changeType : ArrayDims TypeList Classes -> ArrayDimsAndInits .
+  
+  eq changeType((dims aInit), Tl, Cl) = dims changeType(aInit, Tl, Cl) .
+  eq changeType(([ E ] aDims), Tl, Cl) = [ changeType(E, Tl, Cl) ] changeType(aDims, Tl, Cl) .
+  eq changeType(([ E ]), Tl, Cl) = [ changeType(E, Tl, Cl) ] .
+  eq changeType((aDims []), Tl, Cl) = changeType(aDims, Tl, Cl) [] .
+  
+endfm
+
+fmod CT-OTHER-EXP is ex CHANGETYPE .
+
+  var E : Exp . var Tl : TypeList . var Cl : Classes .
+  
+  eq changeType(E, Tl, Cl) = E [owise] .
+endfm
+
+fmod PROCESS-CLASSES is
+  pr REFORMAT-CONSTR .
+  pr REMOVE-IMPORTS .
+  pr CHANGETYPE .
+  pr CT-STATEMENT .
+  pr CT-UNARY-EXP-SYNTAX .
+  pr CT-ARITH-EXP-SYNTAX .
+  pr CT-REXP-SYNTAX .
+  pr CT-BEXP-SYNTAX .
+  pr CT-SHIFTEXP-SYNTAX .
+  pr CT-BITEXP-SYNTAX .
+  pr CT-CEXP-SYNTAX .
+  pr CT-ARRAY-SYNTAX .
+  pr CT-ARRAY-INIT .
+  pr CT-INSTANCEOF-SYNTAX .
+  pr CT-INSTANCEOF-SYNTAX .
+  pr CT-CLASS-MEMBER-ACCESS .
+  pr CT-METHOD-CALL-SYNTAX .
+  pr CT-ASSIGNM-EXP-SYNTAX .
+  pr CT-NEW-SYNTAX .
+  pr CT-OTHER-EXP .
+  
+  eq t('String) = string .
+
+  var Cl : Classes .
+  
+  op preprocess : Classes -> Classes .
+  eq preprocess(Cl) = removeImports(reformatConstr(changeType(Cl))) .
+  
+endfm
+

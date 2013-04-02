@@ -1,0 +1,440 @@
+***************************************************
+*** Java specification based on rewriting logic ***
+*** Author: Feng Chen (fengchen@uiuc.edu)       ***
+***************************************************
+
+--------------
+--- Syntax ---
+--------------
+
+fmod TYPE is pr QID .
+  sorts Type Types TypeList .
+  subsort Type < Types TypeList .
+  ops int boolean string float double short long byte char : -> Type .
+  op Object : -> Type .
+  op noType : -> Types .
+  op nil : -> TypeList .
+  op void : -> Type .
+  op notFound : Type -> Type .
+  op notFound : -> Type .
+  op t : Qid -> Type .
+  op _._ : Type Type -> Type [assoc] .
+  op _,_ : Types Types -> Types [assoc prec 80 id: noType] .
+  op _;_ : TypeList TypeList -> TypeList [assoc id: nil] .
+endfm
+
+fmod MODIFIER is
+  sorts Modifier .
+  ops inner default public protected private abstract static final synchronized native strictfp : -> Modifier .
+  op __ : Modifier Modifier -> Modifier [assoc comm] .
+endfm
+
+fmod VAR-SYNTAX is 
+  ex QID .
+  sorts Var .
+  subsort Qid < Var .
+endfm
+
+*** Note that Maude does not support characters and hex Integers.
+*** The outside paser has to convert those constants to strings and octal integers respectively
+
+fmod GENERIC-EXP-SYNTAX is ex VAR-SYNTAX .
+  pr JAVAINT .
+  pr FLOAT .
+  pr STRING .
+  pr BOOL .
+  sorts Exp ExpList StExp .
+  subsort Var StExp < Exp < ExpList .
+  op i : JavaInt -> Exp .
+  op f : Float -> Exp .
+  op s : String -> Exp .
+  op b : Bool -> Exp .
+  op this : -> Exp .
+  op super : -> Exp .
+  op null : -> Exp .
+  op class : -> Exp .
+  op noExp : -> ExpList .
+  op _,_ : ExpList ExpList -> ExpList [assoc id: noExp] .
+endfm
+
+fmod UNARY-EXP-SYNTAX is ex GENERIC-EXP-SYNTAX .
+  pr TYPE .
+  op ++_ : Exp -> StExp [prec 33] .
+  op --_ : Exp -> StExp [prec 33] .
+  op _++ : Exp -> StExp [prec 34] .
+  op _-- : Exp -> StExp [prec 34] .
+  op {_}_ : Type Exp -> Exp [prec 20] .
+  op +_ : Exp -> Exp [prec 33] .
+  op -_ : Exp -> Exp [prec 33] .
+endfm
+
+fmod ARITH-EXP-SYNTAX is ex GENERIC-EXP-SYNTAX .
+  op _+_ : Exp Exp -> Exp [prec 40 gather(e E)] .
+  op _-_ : Exp Exp -> Exp [prec 40 gather(e E)] .
+  op _*_ : Exp Exp -> Exp [prec 35 gather(e E)] .
+  op _/_ : Exp Exp -> Exp [prec 35 gather(e E)] .
+  op _%_ : Exp Exp -> Exp [prec 35 gather(e E)] .
+endfm
+
+fmod REXP-SYNTAX is ex GENERIC-EXP-SYNTAX .
+  op _==_ : Exp Exp -> Exp [prec 42] .
+  op _!=_ : Exp Exp -> Exp [prec 42] .
+  op _<_  : Exp Exp -> Exp [prec 42] .
+  op _<=_ : Exp Exp -> Exp [prec 42] .
+  op _>_  : Exp Exp -> Exp [prec 42] .
+  op _>=_ : Exp Exp -> Exp [prec 42] .
+endfm
+
+fmod BEXP-SYNTAX is ex GENERIC-EXP-SYNTAX .
+  op !_ : Exp -> Exp [prec 47] .
+  op _&&_ : Exp Exp -> Exp [prec 49] .
+  op _||_ : Exp Exp -> Exp [prec 51] .
+endfm
+
+fmod SHIFTEXP-SYNTAX is ex GENERIC-EXP-SYNTAX .
+  op _<<_ : Exp Exp -> Exp [prec 47] .
+  op _>>_ : Exp Exp -> Exp [prec 49] .
+  op _>>>_ : Exp Exp -> Exp [prec 51] .
+endfm
+
+fmod BITEXP-SYNTAX is ex GENERIC-EXP-SYNTAX .
+  op _&_ : Exp Exp -> Exp [prec 44] .
+  op _^_ : Exp Exp -> Exp [prec 55] .
+  op _|_ : Exp Exp -> Exp [prec 46] .
+endfm
+
+fmod CEXP-SYNTAX is ex GENERIC-EXP-SYNTAX .
+  op _?_:_ : Exp Exp Exp -> Exp [prec 55] .
+endfm
+
+fmod ARRAY-SYNTAX is ex TYPE .
+  ex GENERIC-EXP-SYNTAX .
+  op _[] : Type -> Type [prec 20] .
+  op _[_] : Type Exp -> Type [prec 20] .
+  op _[_] : Exp Exp -> Var [prec 30] .
+endfm
+
+fmod ARRAY-INIT is
+  ex GENERIC-EXP-SYNTAX .
+  sort ArrayInit .
+  subsort ArrayInit < Exp .
+  op {} : -> ArrayInit .
+  op {_} : ExpList -> ArrayInit .
+endfm
+
+fmod INSTANCEOF-SYNTAX is
+  ex GENERIC-EXP-SYNTAX .
+  pr TYPE .
+  op instanceOf : Exp Type -> Exp .
+endfm
+
+fmod CLASS-MEMBER-ACCESS is ex TYPE .
+  ex GENERIC-EXP-SYNTAX .
+  ---- StExp is a method call ----
+  op _._ : Exp StExp -> StExp [prec 25 gather(E e)] .
+  op _._ : Exp Var -> Var [prec 25 gather(E e)] .
+  op _._ : Type StExp -> StExp [prec 25] .
+  op _._ : Type Var -> Var [prec 25] .
+  op _._ : Exp Exp -> Exp [prec 25 gather(E e)] .
+  op _._ : Type Exp -> Exp [prec 25] .
+endfm
+
+fmod ASSIGNM-EXP-SYNTAX is ex GENERIC-EXP-SYNTAX .
+  op _=_ : Var Exp -> StExp [prec 60] .
+  op _+=_ : Var Exp -> StExp [prec 60] .
+  op _-=_ : Var Exp -> StExp [prec 60] .
+  op _*=_ : Var Exp -> StExp [prec 60] .
+  op _/=_ : Var Exp -> StExp [prec 60] .
+  op _%=_ : Var Exp -> StExp [prec 60] .
+  op _&=_ : Var Exp -> StExp [prec 60] .
+  op _^=_ : Var Exp -> StExp [prec 60] .
+  op _|=_ : Var Exp -> StExp [prec 60] .
+  op _<<=_ : Var Exp -> StExp [prec 60] .
+  op _>>=_ : Var Exp -> StExp [prec 60] .
+  op _>>>=_ : Var Exp -> StExp [prec 60] .
+endfm
+
+fmod BLOCK-SYNTAX is
+  pr QID .
+  pr INT .
+  sorts Block Statement StatementList .
+  subsorts Block < Statement < StatementList .
+  op ; : -> Block .
+  op {_} : StatementList -> Block .
+  op nop : -> Statement .
+  op _:_ : Qid Statement -> Statement .
+  op _@_ : Int Statement -> Statement .
+  op __ : StatementList StatementList -> StatementList [assoc] .
+endfm
+
+fmod METHOD-CALL-SYNTAX is ex TYPE .
+  ex GENERIC-EXP-SYNTAX .
+  ex BLOCK-SYNTAX .
+  op _<_> : Qid ExpList -> StExp [prec 23] .
+--- this() and super() may only be called as the first statement in a constructor
+  op this_ : ExpList -> StExp [prec 23] .
+  op super_ : ExpList -> StExp [prec 23] .
+endfm
+
+fmod DECLARATION-SYNTAX is 
+  ex QID .
+  pr TYPE .
+  pr GENERIC-EXP-SYNTAX .
+  pr ARRAY-SYNTAX .
+  sort Declaration Declarator Declarators .
+  subsorts Declarator < Declarators .
+  op d : Qid -> Declarator .
+  op _[] : Declarator -> Declarator [prec 45] .
+  op __ : Type Declarators -> Declaration [prec 70] .
+  op _=_ : Declarator Exp -> Declarators  [prec 60] .
+  op _,_ : Declarators Declarators -> Declarators [assoc prec 65] .
+
+  op reform : Declaration -> Declaration .
+  
+  var T : Type . var X : Qid . var dc : Declarator .
+  
+  eq reform(T d(X)) = (T d(X)) .
+  eq reform(T (dc [])) = reform ((T []) dc) .  
+    
+endfm
+
+fmod DECLARATION-STATEMENT is
+  ex BLOCK-SYNTAX .
+  pr DECLARATION-SYNTAX .
+  op _; : Declaration -> Statement [prec 75] .
+endfm
+
+fmod EXP-STATEMENT-SYNTAX is ex BLOCK-SYNTAX .
+  ex GENERIC-EXP-SYNTAX .
+  op _; : StExp -> Statement [prec 110] .
+endfm
+
+fmod IF-SYNTAX is ex BLOCK-SYNTAX .
+  ex GENERIC-EXP-SYNTAX .
+  op if__else_fi : Exp Statement Statement -> Statement [prec 110] .
+  op if__fi : Exp Statement -> Statement [prec 110] .
+endfm
+
+fmod SWITCH-SYNTAX is ex BLOCK-SYNTAX .
+  ex GENERIC-EXP-SYNTAX .
+  sorts SwitchLabel SwitchLabels SwitchItem SwitchItems .
+  subsort SwitchLabel < SwitchLabels .
+  subsort SwitchItem < SwitchItems .
+  op noSw : -> SwitchItem .
+  op case_: : Exp -> SwitchLabel .
+  op default: : -> SwitchLabel .
+  op __ : SwitchLabels SwitchLabels -> SwitchLabels [assoc] .
+  op __ : SwitchLabels StatementList -> SwitchItem [prec 115] .
+  op __ : SwitchItems SwitchItems -> SwitchItems [assoc prec 120 id: noSw] .
+  op switch_{_} : Exp SwitchItems -> Statement [prec 110] .
+endfm
+
+fmod WHILE-SYNTAX is ex BLOCK-SYNTAX .
+  ex GENERIC-EXP-SYNTAX .
+  op while__ : Exp Statement -> Statement [prec 110] .
+endfm
+
+fmod DO-SYNTAX is ex BLOCK-SYNTAX .
+  ex GENERIC-EXP-SYNTAX .
+  op do_while_; : Statement Exp -> Statement [prec 110] .
+endfm
+
+fmod FOR-SYNTAX is ex BLOCK-SYNTAX .
+  ex GENERIC-EXP-SYNTAX .
+  ex DECLARATION-SYNTAX .
+  op for`(_;_;_`)_ : ExpList Exp ExpList Statement -> Statement [prec 110] .
+  op for`(_;_;_`)_ : Declaration Exp ExpList Statement -> Statement [prec 110] .
+endfm
+
+fmod BREAK-SYNTAX is ex BLOCK-SYNTAX .
+  ex GENERIC-EXP-SYNTAX .
+  op break; : -> Statement .
+  op break_; : Qid -> Statement .
+endfm
+
+fmod CONTINUE-SYNTAX is ex BLOCK-SYNTAX .
+  ex GENERIC-EXP-SYNTAX .
+  op continue; : -> Statement .
+  op continue_; : Qid -> Statement .
+endfm
+
+fmod RETURN-SYNTAX is ex BLOCK-SYNTAX .
+  ex GENERIC-EXP-SYNTAX .
+  op return; : -> Statement .
+  op return_; : Exp -> Statement .
+endfm
+
+fmod THROW-SYNTAX is ex BLOCK-SYNTAX .
+  ex GENERIC-EXP-SYNTAX .
+  op throw_; : Exp -> Statement .
+endfm
+
+fmod SYNCHRONIZED-SYNTAX is ex BLOCK-SYNTAX .
+  ex GENERIC-EXP-SYNTAX .
+  op synchronized__ : Exp Block -> Statement [prec 110] .
+endfm
+
+fmod TRY-SYNTAX is ex BLOCK-SYNTAX .
+  ex GENERIC-EXP-SYNTAX .
+  pr TYPE .
+  pr DECLARATION-SYNTAX .
+  sorts CatchClause Catches .
+  subsort CatchClause < Catches .
+  op catch`(_`)_ : Declaration Block -> CatchClause [prec 95] .
+  op noCatch : -> Catches .
+  op __ : Catches Catches -> Catches [assoc id: noCatch prec 100] .
+  op try__finally_ : Block Catches Block -> Statement [prec 110] .
+  op try__ : Block Catches -> Statement [prec 110] .
+  op try_finally_ : Block Block -> Statement [prec 110] .
+endfm
+
+fmod ASSERT-SYNTAX is
+  ex BLOCK-SYNTAX .
+  pr GENERIC-EXP-SYNTAX .
+  op assert_; : Exp -> Statement .
+  op assert_:_; : Exp Exp -> Statement .
+endfm
+
+fmod CLASS-MEMBER is
+  sort ClassMember ClassMembers .
+  subsort ClassMember < ClassMembers .
+  op noMember : -> ClassMembers .
+  op __ : ClassMembers ClassMembers -> ClassMembers [assoc comm prec 100 id: noMember] .
+endfm
+
+fmod CLASS-INIT is
+  ex CLASS-MEMBER .
+  pr BLOCK-SYNTAX .
+  op init : Block -> ClassMember .
+  op static : Block -> ClassMember .
+endfm
+
+fmod FIELD-SYNTAX is
+  ex CLASS-MEMBER .
+  pr TYPE .
+  pr MODIFIER .
+  pr DECLARATION-SYNTAX .
+  sort Field .
+  subsort Field < ClassMember .  
+  op __; : Modifier Declaration -> Field .
+endfm
+
+fmod METHOD-SYNTAX is
+  ex CLASS-MEMBER .
+  ex DECLARATION-SYNTAX .
+  pr TYPE .
+  pr BLOCK-SYNTAX .
+  pr MODIFIER .
+  sorts Method Constructor ParameterList Throws .
+  subsort Method Constructor < ClassMember .
+  subsort Declaration < ParameterList .
+  
+  op ___`(_`)__ : Modifier Type Qid ParameterList Throws Block -> Method .
+  op __`(_`)__ : Modifier Type ParameterList Throws Block -> Constructor . --- this won't be appeared after preprocessing
+  op __`(_`)_this(_)_ : Modifier Type ParameterList Throws ExpList Block -> Constructor .
+  op __`(_`)_super(_)_ : Modifier Type ParameterList Throws ExpList Block -> Constructor .
+  op __`(_`)__.super(_)_ : Modifier Type ParameterList Throws Exp ExpList Block -> Constructor .
+  op noPara : -> ParameterList .
+  op _,_ : ParameterList ParameterList -> ParameterList [assoc id: noPara] .
+  op throws : Types -> Throws .
+  
+endfm
+
+fmod CLASS-SYNTAX is 
+  pr QID .
+  pr TYPE .
+  pr MODIFIER .
+  pr CLASS-MEMBER .  
+  sorts ClassBody Class .
+  op _class_extends_implements__ : Modifier Type Type Types ClassBody -> Class [prec 90] .
+  op _interface_extends__ : Modifier Type Types ClassBody -> Class [prec 90] .
+  op _class_imports_extends_implements__ : Modifier Type TypeList Type Types ClassBody -> Class [prec 90] .
+  op _interface_imports_extends__ : Modifier Type TypeList Types ClassBody -> Class [prec 90] .
+  op none : -> Type . --- for empty interface
+  op {} : -> ClassBody .
+  op {_} : ClassMembers -> ClassBody [prec 80] .
+  op _; : Class -> ClassMember [prec 95] .  
+endfm
+
+fmod NEW-SYNTAX is ex ARRAY-SYNTAX .
+  ex GENERIC-EXP-SYNTAX .
+  pr ARRAY-INIT .
+  pr CLASS-SYNTAX .
+  sort ArrayDimsAndInits ArrayDims Dims .
+  subsort ArrayDims < ArrayDimsAndInits .
+  op new__ : Type ArrayDimsAndInits -> StExp [prec 25] .
+  op new_<_> : Type ExpList -> StExp [prec 25] .
+  op new_<_>_ : Type ExpList ClassBody -> StExp [prec 25] .
+  op [] : -> Dims .
+  op _[] : Dims -> Dims .
+  op __ : Dims ArrayInit -> ArrayDimsAndInits .
+  op [_] : Exp -> ArrayDims .
+  op __ : ArrayDims ArrayDims -> ArrayDims [assoc] .
+--- Note that this is more general than the Java specification, which only allows (([exp])+([])*)
+  op _[] : ArrayDims -> ArrayDims .
+endfm
+
+fmod CLASSES is
+  ex CLASS-SYNTAX .
+  sort Classes .
+  subsort Class < Classes .
+  op noClass : -> Classes .
+  op __ : Classes Classes -> Classes [assoc comm prec 110 id: noClass] .
+endfm
+
+fmod VALUE is
+  sorts Value ValueList .
+  subsort Value < ValueList .
+
+  op noVal : -> ValueList .
+  op _,_ : ValueList ValueList -> ValueList [assoc id: noVal] .
+  op [_] : ValueList -> Value .
+  
+endfm
+
+fmod PGM-SYNTAX is 
+  pr TYPE .
+  pr MODIFIER .
+  pr VAR-SYNTAX .
+  pr GENERIC-EXP-SYNTAX .
+  pr UNARY-EXP-SYNTAX .
+  pr ARITH-EXP-SYNTAX .
+  pr REXP-SYNTAX .
+  pr BEXP-SYNTAX .
+  pr SHIFTEXP-SYNTAX .
+  pr BITEXP-SYNTAX .
+  pr CEXP-SYNTAX .
+  pr ARRAY-SYNTAX .
+  pr ARRAY-INIT .
+  pr INSTANCEOF-SYNTAX .
+  pr CLASS-MEMBER-ACCESS .
+  pr METHOD-CALL-SYNTAX .
+  pr ASSIGNM-EXP-SYNTAX .
+  pr BLOCK-SYNTAX .
+  pr DECLARATION-SYNTAX .
+  pr DECLARATION-STATEMENT .
+  pr EXP-STATEMENT-SYNTAX .
+  pr IF-SYNTAX .
+  pr SWITCH-SYNTAX .
+  pr WHILE-SYNTAX .
+  pr DO-SYNTAX .
+  pr FOR-SYNTAX .
+  pr BREAK-SYNTAX .
+  pr CONTINUE-SYNTAX .
+  pr RETURN-SYNTAX .
+  pr THROW-SYNTAX .
+  pr SYNCHRONIZED-SYNTAX .
+  pr TRY-SYNTAX .
+  pr ASSERT-SYNTAX .
+  pr CLASS-MEMBER .
+  pr CLASS-INIT .
+  pr FIELD-SYNTAX .
+  pr METHOD-SYNTAX .
+  pr CLASS-SYNTAX .
+  pr NEW-SYNTAX .
+  pr CLASSES .
+  pr VALUE .
+  sort Pgm .
+  op ___ : Classes Exp ValueList -> Pgm [prec 120] .
+  
+endfm
