@@ -1,0 +1,668 @@
+Running tests for
+.programs/
+
+.programs/01_smoke_tests:
+    array.java...  failed
+    helloWorld.java...  failed
+    read.java...  error
+    sumArrayInFor.java...  failed
+    sumInWhile.java...  failed
+
+.programs/02_literals:
+    literals_011_long_decimal.java...  failed
+    literals_01_integer_decimal.java...  failed
+    literals_02_integer_hexa.java...  failed
+    literals_03_integer_octa.java...  failed
+    literals_04_boolean.java...  failed
+    literals_05_char.java...  failed
+    literals_06_char_escape.java...  failed
+    literals_07_string.java...  failed
+    literals_08_string_escapes_adv.java...  failed
+    literals_09_null.java...  error
+
+.programs/03_syntax_samples:
+    DotOperator1.java...  failed
+    DotOperator2.java...  failed
+    DotOperator3.java...  failed
+    Operators_JBook.java...  failed
+    Operators_non_JBook.java...  failed
+
+.programs/04_prim_operators:
+    op_01_int_to_int.java...  failed
+    op_02_int_to_bool.java...  failed
+    op_03_int_bit_shift.java...  failed
+    op_04_int_assign.java...  failed
+    op_05_int_to_int_overflow.java...  failed
+    op_06_long_to_long.java...  failed
+    op_07_long_to_bool.java...  failed
+    op_08_long_bit_shift.java...  failed
+    op_09_long_assign.java...  failed
+    op_10_long_to_long_overflow.java...  failed
+    op_11_bool_to_bool.java...  failed
+    op_12_bool_compound_assign.java...  failed
+    op_13_compound_assign_jls.java...  failed
+
+.programs/05_prim_conversions:
+    exp_conv_01_primitive_cast.java...  failed
+    exp_conv_02_primitive_var_init_cast.java...  failed
+    imp_conv_01_assing_widening.java...  failed
+    imp_conv_02_assing_narrowing.java...  failed
+    imp_conv_03_primitive_var_init.java...  failed
+    imp_conv_04_mcall_widening.java...  failed
+    imp_conv_05_unary_num_prom.java...  error
+    imp_conv_06_unary_prom_array.java...  failed
+    imp_conv_07_bin_prom_to_int_all_op.java...  failed
+    imp_conv_08_bin_prom_selections.java...  failed
+    imp_conv_09_bin_prom_cond_op.java...  failed
+    imp_conv_10_short_inc_dec.java...  failed
+    imp_conv_11_compound_assign.java...  error
+    imp_conv_12_compound_assign_sel.java...  error
+
+.programs/06_string_plus:
+    str_conv_01_String_plus.java...  error
+    str_conv_02_String_assign_plus.java...  error
+    str_conv_03_Object_assign_plus.java...  error
+
+.programs/07_ref_operators:
+    ref_op_01_assign_to_object.java...  failed
+    ref_op_02_assign_from_null.java...  failed
+    ref_op_03_assign_f_null_t_obj.java...  failed
+    ref_op_04_eq_true_same_type.java...  failed
+    ref_op_05_eq_true_diff_type.java...  failed
+    ref_op_06_eq_false_same_type.java...  failed
+    ref_op_07_eq_false_diff_type.java...  failed
+    ref_op_08_neq_false.java...  failed
+    ref_op_09_neq_true.java...  failed
+    ref_op_10_cast_from_obj.java...  failed
+    ref_op_11_cast_from_obj_null.java...  failed
+    ref_op_12_cast_base_derived_1.java...  failed
+    ref_op_13_cast_base_derived_2.java...  failed
+    ref_op_14_instanceof_true_types.java...  failed
+    ref_op_151_instanceof_String.java...  failed
+    ref_op_15_instanceof_false_types.java...  failed
+    ref_op_16_instanceof_null_types.java...  failed
+    ref_op_17_instanceof_true.java...  failed
+    ref_op_18_instanceof_false.java...  failed
+    ref_op_19_conditional.java...  failed
+
+.programs/08_op_cond_type:
+    op_cond_type_01_eq.java...  failed
+    op_cond_type_02_numeric.java...  failed
+    op_cond_type_03_null_ref.java...  failed
+    op_cond_type_04_null_null.java...  failed
+    op_cond_type_05_ref_ref.java...  failed
+
+.programs/11_stmt_basic:
+    assert_statement.java...  failed
+    emptyStatement.java...  failed
+
+.programs/12_stmt_loop:
+    doWhile_1.java...  failed
+    doWhile_2_field_shadowing.java...  failed
+    for_decl.java...  failed
+    for_field_shadowing.java...  failed
+    for_simple.java...  failed
+    for_two_decls.java...  failed
+
+.programs/13_stmt_switch:
+    switch_01_simple.java...  failed
+    switch_02_multicase.java...  failed
+    switch_03_default.java...  failed
+    switch_04_break.java...  failed
+    switch_05_break_loops.java...  failed
+    switch_06_continue.java...  failed
+    switch_07_break_label.java...  failed
+
+.programs/14_stmt_return:
+    return_01_no_return.java...  failed
+    return_02_ret_nothing.java...  failed
+    return_03_ret_number.java...  failed
+    return_04_ret_sum.java...  failed
+    return_05_if_then_else.java...  failed
+    return_06_while.java...  failed
+    return_07_do_while.java...  failed
+    return_08_for.java...  failed
+    return_09_switch.java...  failed
+    return_10_labeled.java...  failed
+    return_11_try_ret_catch_finally.java...  failed
+    return_12_try_catch_ret_finally.java...  failed
+    return_13_try_catch_finally_ret.java...  failed
+    return_14_try_ret_finally_ret.java...  failed
+    return_15_try_throw_finally_ret.java...  failed
+    return_16_try_catch_ret_finally_ret.java...  failed
+    return_17_ret_string.java...  failed
+    return_18_ret_ref_exact.java...  failed
+    return_19_ret_ref_derived.java...  failed
+
+.programs/15_stmt_throw:
+    throw_01_try_catch.java...  failed
+    throw_02_try_catch_finally.java...  failed
+    throw_03_tryCF_tryC.java...  failed
+    throw_04_tryF_tryCF.java...  failed
+    throw_05_try_catch_base.java...  failed
+    throw_06_try_CCCF.java...  failed
+    throw_07_try_mcall.java...  failed
+    throw_08_stack_stmts.java...  failed
+    throw_09_try_rethrow_try.java...  failed
+    throw_10_tryC_throw_F_tryC.java...  failed
+    throw_11_tryCF_throw_tryC.java...  failed
+    throw_12_tryC_throw_C_tryC.java...  failed
+    throw_13_try_CF_no_throw.java...  failed
+    throw_14_catch_field_shadow.java...  failed
+    throw_15_catch_env_restore.java...  failed
+
+.programs/16_stmt_throw_thread_term:
+    thread_term_01_throw.java...  error
+    thread_term_02_tryCF.java...  error
+    thread_term_03_mcall.java...  error
+
+.programs/17_stmt_break:
+    break_01_while.java...  failed
+    break_02_do.java...  failed
+    break_03_for.java...  failed
+    break_04_catch_for.java...  failed
+    break_05_finally_for.java...  failed
+    break_06_for_field_shadowing.java...  failed
+    break_07_L_while.java...  failed
+    break_08_L_do.java...  failed
+    break_09_L_for.java...  failed
+    break_10_L_block_while.java...  failed
+    break_label_1_block_simple.java...  failed
+    break_label_2_nested_labeled.java...  failed
+    break_label_3_block_in_while.java...  failed
+    break_label_4_for.java...  failed
+    break_label_5_finally_in_for.java...  failed
+    break_label_6_catch_in_for.java...  failed
+    graph_break.java...  failed
+    label_propagation_01_block.java...  failed
+    label_propagation_02_while.java...  failed
+    label_propagation_03_for.java...  failed
+
+.programs/18_stmt_continue:
+    continue_01_while.java...  failed
+    continue_02_do_1.java...  failed
+    continue_03_do_2.java...  failed
+    continue_04_for.java...  failed
+    continue_05_two_loops.java...  failed
+    continue_06_catch_for.java...  failed
+    continue_07_finally_for.java...  failed
+    continue_08_for_field_shadowing.java...  failed
+    continue_09_while_label.java...  failed
+    continue_10_for_label.java...  failed
+    continue_label_01_while.java...  failed
+    continue_label_02_do_1.java...  failed
+    continue_label_03_do_2.java...  failed
+    continue_label_04_for.java...  failed
+    continue_label_05_catch_for.java...  failed
+    continue_label_06_finally_for.java...  failed
+    continue_label_07_while_L_w.java...  failed
+    continue_label_08_L_while_L_w.java...  failed
+    continue_label_09_for_L_w.java...  failed
+    continue_label_10_L_for_L_w.java...  failed
+    continue_label_11_L_block_L_w.java...  failed
+    graph_continue.java...  failed
+
+.programs/21_arrays:
+    array_01_overview.java...  failed
+    array_02_assign_type_preserv.java...  failed
+    array_03_ref_assign_type_preserv.java...  failed
+    array_04_alloc_multidim.java...  failed
+    array_05_alloc_boundary.java...  failed
+    array_06_alloc_NASException.java...  failed
+    array_07_alloc_dim_expr_types.java...  failed
+    array_08_alloc_order_of_dims.java...  failed
+    array_09_decl_C_style.java...  failed
+    array_10_access_index_types.java...  failed
+    array_11_access_AOOBException.java...  failed
+    array_12_access_eval_order.java...  failed
+    array_13_access_null.java...  failed
+    array_14_assign_one_dim_1.java...  failed
+    array_15_assign_one_dim_2.java...  failed
+    array_16_assign_multidim.java...  failed
+    array_17_length.java...  failed
+    array_18_clone.java...  failed
+    array_19_clone_polymorphism.java...  failed
+    array_20_instanceof.java...  failed
+    array_21_instanceof_complex.java...  failed
+    array_22_polymorph_array_assign.java...  failed
+    array_23_polymorph_elem_read.java...  failed
+    array_24_polymorph_elem_write.java...  failed
+    array_25_polymorph_matrix.java...  failed
+    array_26_polymorph_obj_array.java...  failed
+    array_27_ASException.java...  failed
+    array_28_ASException_matrix.java...  failed
+    array_29_ASException_obj_array.java...  failed
+    array_30_ASException_no_assign.java...  failed
+    array_31_cast.java...  failed
+    array_32_init_one_dim.java...  failed
+    array_33_init_multidim.java...  failed
+    array_34_init_string.java...  failed
+    array_35_init_seqstrict.java...  failed
+    array_36_init_polymorph.java...  failed
+    array_37_init_inner_array_type.java...  failed
+    array_38_init_decl_one_dim.java...  failed
+    array_39_init_decl_multidim_1.java...  failed
+    array_40_init_decl_multidim_2.java...  failed
+    array_41_init_decl_complex_stm.java...  failed
+    array_42_default_val_primitive.java...  failed
+    array_43_default_val_ref.java...  failed
+    array_44_side_effect_exp.java...  failed
+
+.programs/22_basic_jvm_exc:
+    jvm_exc_01_arith_exc.java...  failed
+    jvm_exc_02_NPE.java...  failed
+    jvm_exc_03_cast_exc_hierarchy.java...  failed
+    jvm_exc_04_cast_exc_types.java...  failed
+
+.programs/31_diverse:
+    all_sorting.java...  error
+    bubble.java...  error
+    collatz.java...  error
+    factorial.java...  error
+    heap.java...  error
+    insertion1.java...  failed
+    insertion2.java...  failed
+    matrixMul.java...  failed
+    odd_even.java...  failed
+    point.java...  failed
+    tree_sum.java...  failed
+
+.programs/32_java_api_core:
+    Object_equals.java...  failed
+    exception_toString.java...  failed
+
+.programs/32_java_api_core/obj_getClass_getName:
+    className_01.java...  failed
+    className_02.java...  failed
+    className_03_user_classes.java...  failed
+    className_04_package.java...  failed
+    className_05_array_primitive.java...  failed
+    className_06_array_ref.java...  failed
+    className_07_array_multidim.java...  failed
+
+.programs/32_java_api_core:
+    obj_method_03_toString.java...  failed
+
+.programs/41_method_basic:
+    method_01_return_void.java...  failed
+    method_02_return_types.java...  failed
+    method_03_arg_types.java...  failed
+    method_04_multi.java...  failed
+    method_05_arg_conv.java...  failed
+    method_06_inheritance.java...  failed
+    method_071_overriding_2.java...  failed
+    method_07_overriding.java...  failed
+    method_08_throws.java...  failed
+    method_09_final.java...  failed
+    method_10_this_explicit.java...  failed
+    method_11_return_object.java...  failed
+    method_12_c_like_arr_args.java...  failed
+    method_13_c_like_arr_poly.java...  failed
+
+.programs/42_method_overloading:
+    overload_11_diff_arg_num.java...  failed
+    overload_12_two_methods.java...  failed
+    overload_13_arg_conv.java...  failed
+    overload_14_null_conv.java...  failed
+    overload_15_inherit_and_others.java...  failed
+    overload_21_one_arg_diff_type.java...  failed
+    overload_22_one_arg_conv.java...  failed
+    overload_23_one_arg_mixed.java...  failed
+    overload_24_one_arg_null.java...  failed
+    overload_25_multi_arg.java...  failed
+    overload_26_multi_arg_semiamb.java...  failed
+    overload_27_one_arg_inherit.java...  failed
+    overload_28_one_arg_polymorph.java...  failed
+    overload_31_multi_appl.java...  failed
+    overload_32_multi_appl_conv.java...  failed
+    overload_33_multi_appl_multi_arg.java...  failed
+    overload_34_multi_appl_inherit.java...  failed
+    overload_35_multi_appl_poly.java...  failed
+    overload_36_multi_appl_other.java...  failed
+    overload_37_big_subtyping.java...  failed
+    overload_38_null_subtyping.java...  failed
+    overload_39_base_more_specific.java...  failed
+
+.programs/43_method_access_mode:
+    m_access_01_override_1.java...  failed
+    m_access_02_override_2.java...  failed
+    m_access_03_overload.java...  failed
+    m_access_04_acc_modes.java...  failed
+    m_access_05_protected.java...  failed
+    m_access_06_acc_mode_specified.java...  failed
+    m_access_07_acc_mode_not_spec.java...  failed
+    overl_overw_interplay_01.java...  failed
+    overl_overw_interplay_02.java...  failed
+    overl_overw_interplay_03.java...  failed
+    overl_overw_interplay_04.java...  failed
+    overl_overw_interplay_05.java...  failed
+
+.programs/44_fields:
+    fields_101_local_access.java...  failed
+    fields_102_of_type_ref.java...  failed
+    fields_11_one_class.java...  failed
+    fields_12_inheritance.java...  failed
+    fields_131_hiding_local_access.java...  failed
+    fields_132_hiding_super_access.java...  error
+    fields_133_hiding_super_2.java...  failed
+    fields_134_hiding_acc_modes.java...  failed
+    fields_13_hiding.java...  failed
+    fields_14_hiding_by_local_var.java...  failed
+    fields_15_hiding_by_param.java...  failed
+    fields_16_default_value.java...  failed
+    fields_17_multifield.java...  failed
+    fields_18_final.java...  failed
+    fields_19_hiding_acc_modes.java...  failed
+
+.programs/45_class_init:
+    field_init_201_const.java...  failed
+    field_init_202_backward_ref.java...  failed
+    field_init_203_forward_ref.java...  failed
+    field_init_204_forward_all_defaults.java...  failed
+    field_init_205_forward_assign.java...  failed
+    field_init_206_forward_method_ref.java...  failed
+    field_init_207_inheritance.java...  failed
+    field_init_208_overriding.java...  failed
+    field_init_209_exc.java...  failed
+    field_init_210_super.java...  failed
+    field_init_211_multifield.java...  failed
+    field_init_212_array_init.java...  failed
+    inst_init_31.java...  failed
+    inst_init_32.java...  failed
+    inst_init_33.java...  failed
+    inst_init_34_exc.java...  failed
+    inst_init_35_hiding.java...  failed
+    inst_init_41_hier_order.java...  failed
+
+.programs/46_constructors:
+    constr_50_basic.java...  failed
+    constr_51_implicit_noarg.java...  failed
+    constr_52_explicit_noarg.java...  failed
+    constr_53_explicit_args.java...  failed
+    constr_54_args_tracing.java...  failed
+    constr_55_init_tracing.java...  failed
+    constr_56_init_hiding_tracing.java...  failed
+    constr_57_init_exc.java...  failed
+    constr_61_this_chain.java...  failed
+    constr_62_this_chain_w_i_init.java...  failed
+    constr_71_default_constr.java...  failed
+    constr_81_overload_simple.java...  failed
+    constr_82_overload_multicontext.java...  failed
+    constr_83_acc_modes_super.java...  failed
+    constr_84_acc_modes_new.java...  failed
+    constr_91_name_collision.java...  failed
+
+.programs/47_abstract:
+    abstract_01_simple.java...  failed
+    abstract_02_overload.java...  failed
+    abstract_03_acc_modes.java...  failed
+
+.programs/48_interfaces:
+    interface_11_instof.java...  failed
+    interface_12_instof_chain.java...  failed
+    interface_13_instof_multi_impl.java...  failed
+    interface_14_instof_interf_extends.java...  failed
+    interface_15_instof_interf_multi_ext.java...  failed
+    interface_16_instof_hierarchy_tree.java...  failed
+    interface_21_basic.java...  failed
+    interface_22_poly.java...  failed
+    interface_23_abstract_propagation.java...  failed
+    interface_24_decl_impl_diff_paths.java...  failed
+    interface_25_one_intf_overload.java...  failed
+    interface_31_multi_impl.java...  failed
+    interface_32_multi_i_common_method.java...  failed
+    interface_33_intf_multi_extends.java...  failed
+    interface_34_class_and_intf_hier.java...  failed
+    interface_35_diamond_hier.java...  failed
+    interface_36_multi_i_overload.java...  failed
+    interface_41_methods_from_cl_object.java...  failed
+    interface_51_access_modes.java...  failed
+    interface_61_class_subtype_of_intf_diamond.java...  failed
+    interface_62_intf_subtype_of_other.java...  failed
+    interface_63_any_subtype_of_intf.java...  failed
+    interface_64_null_subtype_of_intf.java...  failed
+
+.programs/49_super_method:
+    super_m_01_simple.java...  failed
+    super_m_02_poly.java...  failed
+    super_m_03_overload.java...  failed
+    super_m_04_overload_poly.java...  failed
+    super_m_05_acc_modes_same_pack.java...  failed
+    super_m_06_acc_modes_other_pack.java...  failed
+    super_m_07_acc_modes_other_pack_2.java...  failed
+    super_m_08_acc_m_return_hier.java...  failed
+    super_m_09_acc_m_return_hier_poly.java...  failed
+    super_m_10_acc_m_double_overriding.java...  failed
+    super_m_11_hier_navigating_calls.java...  failed
+
+.programs/51_static_methods:
+    static_m_101_qualified.java...  failed
+    static_m_102_nested.java...  failed
+    static_m_103_unqualified.java...  failed
+    static_m_104_unq_static_c.java...  failed
+    static_m_105_multi_unqualified.java...  failed
+    static_m_106_lookup_general.java...  failed
+    static_m_107_overloading.java...  failed
+    static_m_108_access_modes.java...  failed
+    static_m_109_protected_mode.java...  failed
+    static_m_110_overload_hier.java...  failed
+    static_m_111_no_overwrite.java...  failed
+    static_m_112_hiding.java...  failed
+    static_m_113_hiding_overl_indep.java...  failed
+    static_m_114_overl_static_inst_1.java...  failed
+    static_m_115_overl_static_inst_2.java...  failed
+    static_m_116_overl_static_inst_3.java...  failed
+    static_m_117_overl_vs_hiding.java...  failed
+    static_m_118_call_in_inst_init.java...  failed
+
+.programs/52_static_fields:
+    static_f_101_qualified.java...  failed
+    static_f_102_unqualified.java...  failed
+    static_f_103_multi_fields.java...  failed
+    static_f_104_instance_counter.java...  failed
+    static_f_105_lookup_general.java...  failed
+    static_f_106_hiding.java...  failed
+    static_f_107_no_overwriting.java...  failed
+    static_f_108_in_inst_init.java...  failed
+    static_f_109_shadowed_by_local_var.java...  failed
+    static_f_110_default_value.java...  failed
+    static_f_111_class_qual_composite.java...  failed
+
+.programs/53_static_init:
+    static_f_init_101_const.java...  failed
+    static_f_init_102_backward_ref.java...  failed
+    static_f_init_103_forward_ref.java...  failed
+    static_f_init_104_forward_all_defaults.java...  failed
+    static_f_init_105_forward_assign.java...  failed
+    static_f_init_106_forward_method_ref.java...  failed
+    static_f_init_107_exc.java...  failed
+    static_f_init_108_multifield.java...  failed
+    static_f_init_109_array_init.java...  failed
+    static_init_21_f_i_then_s_i.java...  failed
+    static_init_22_s_i_then_f_i.java...  failed
+    static_init_23_init_interleaved.java...  failed
+    static_init_24_exc.java...  failed
+    static_init_25_shadowing.java...  failed
+    static_init_31_inheritance.java...  failed
+    static_init_32_hier_order.java...  failed
+
+.programs/54_interface_fields:
+    interface_f_11_interface_target.java...  failed
+    interface_f_12_sub_interface_target.java...  failed
+    interface_f_13_class_target.java...  failed
+    interface_f_14_subclass_target.java...  failed
+    interface_f_15_class_sub_i_target.java...  failed
+    interface_f_16_modifiers.java...  failed
+    interface_f_21_hiding_direct_interf.java...  failed
+    interface_f_22_hiding_indirect_interf.java...  failed
+    interface_f_23_hiding_class_sub_i.java...  failed
+    interface_f_24_hiding_direct_class.java...  failed
+    interface_f_25_hiding_indirect_class.java...  failed
+    interface_f_31_multi_inh_no_hiding.java...  failed
+    interface_f_32_multi_inh_hiding.java...  failed
+    interface_f_33_multi_inh_multi_hiding.java...  failed
+    interface_f_34_multi_inh_giga_hiding.java...  failed
+    interface_f_41_multi_inh_multi_path_1.java...  failed
+    interface_f_42_multi_inh_multi_path_2.java...  failed
+    interface_f_51_amb_inherited_1.java...  failed
+    interface_f_52_amb_inherited_2.java...  failed
+    interface_f_61_amb_inherited_super_1.java...  failed
+    interface_f_62_amb_inherited_super_2.java...  failed
+    interface_f_71_init_const.java...  failed
+    interface_f_72_init_backward_ref.java...  failed
+    interface_f_73_init_forward_ref.java...  failed
+    interface_f_74_init_forward_all_defaults.java...  failed
+    interface_f_75_init_exc.java...  failed
+    interface_f_76_init_multifield.java...  failed
+    interface_f_81_hier_inheritance.java...  failed
+    interface_f_82_hier_multi_inheritance.java...  failed
+    interface_f_83_hier_class_impl_interf.java...  failed
+    interface_f_91_array_init.java...  failed
+
+.programs/55_static_init_trigger:
+    static_i_trig_101_class_init_simple.java...  failed
+    static_i_trig_102_two_classes.java...  failed
+    static_i_trig_103_instantiation.java...  failed
+    static_i_trig_104_static_f_read.java...  failed
+    static_i_trig_105_static_f_write.java...  failed
+    static_i_trig_106_all_triggers.java...  failed
+    static_i_trig_107_both_init.java...  failed
+    static_i_trig_108_hier_instantiate.java...  failed
+    static_i_trig_109_hier_s_meth_call.java...  failed
+    static_i_trig_110_hier_common_base.java...  failed
+    static_i_trig_111_actual_init_class_1.java...  failed
+    static_i_trig_112_actual_init_class_2.java...  failed
+    static_i_trig_113_init_chain.java...  failed
+    static_i_trig_114_init_loop_no_hier.java...  failed
+    static_i_trig_115_init_loop_hier.java...  failed
+    static_i_trig_116_env_separation.java...  failed
+    static_i_trig_201_i_init_simple.java...  failed
+    static_i_trig_202_two_i.java...  failed
+    static_i_trig_203_c_i_no_init.java...  failed
+    static_i_trig_204_i_ii_no_init.java...  failed
+    static_i_trig_205_intf_m_call_no_init.java...  failed
+    static_i_trig_206_intf_f_call_init.java...  failed
+    static_i_trig_207_actual_init_intf_1.java...  failed
+    static_i_trig_208_actual_init_intf_2.java...  failed
+    static_i_trig_209_init_chain_c_i.java...  failed
+    static_i_trig_210_init_chain_i_diam.java...  failed
+    static_i_trig_211_init_loop_c_ii.java...  failed
+    static_i_trig_212_init_loop_intf_hier.java...  failed
+    static_i_trig_213_i_env_separation.java...  failed
+    static_i_trig_214_trigger_by_unq_exp.java...  failed
+    static_i_trig_215_trigger_by_oth_exp.java...  failed
+
+.programs/56_main_method:
+    main_01_is_static.java...  failed
+    main_02_arg_type.java...  failed
+    main_03_return_type.java...  failed
+    main_04_modifiers.java...  failed
+    main_05_modifiers_order.java...  failed
+    main_06_c_like_arg.java...  failed
+
+.programs/57_field_access_mode:
+    f_access_01_instance_all_pairs.java...  failed
+    f_access_02_static_all_pairs.java...  failed
+    f_access_03_multi_inh_priv_pub_1.java...  failed
+    f_access_04_multi_inh_priv_pub_2.java...  failed
+    f_access_05_interf_fields_public.java...  failed
+
+.programs/61_packages:
+    packages_11_fullyqual_simple.java...  failed
+    packages_12_two_packs.java...  failed
+    packages_13_class_name_amb.java...  failed
+    packages_14_nested_packs.java...  failed
+    packages_21_unq_one_pack.java...  failed
+    packages_22_unq_one_pack_2.java...  failed
+    packages_23_unq_from_many_packs.java...  failed
+    packages_24_default_pack.java...  failed
+    packages_25_default_pack_2.java...  failed
+    packages_26_java_lang.java...  failed
+    packages_31_single_t_imp_simple.java...  failed
+    packages_32_single_t_imp_typical.java...  failed
+    packages_33_single_t_imp_multi.java...  failed
+    packages_34_single_t_imp_same_cu.java...  failed
+    packages_35_single_t_imp_vs_local.java...  failed
+    packages_41_multi_t_imp_simple.java...  failed
+    packages_42_multi_t_imp_typical.java...  failed
+    packages_43_multi_t_imp_multi.java...  failed
+    packages_44_multi_t_imp_same_cu.java...  failed
+    packages_45_multi_t_imp_vs_local.java...  failed
+    packages_46_import_types_mix.java...  failed
+    packages_47_multi_t_imp_nested_p.java...  failed
+    packages_51_fullyqual_in_qualifiers.java...  failed
+    packages_52_pack_res_in_qualifiers.java...  failed
+    packages_53_class_ext_impl.java...  failed
+    packages_54_interf_extends.java...  failed
+    packages_55_var_method_types.java...  failed
+    packages_56_array_types.java...  failed
+    packages_57_fullyqual_instanceof.java...  failed
+    packages_58_fullyqual_cast.java...  failed
+    packages_61_same_name_in_hier.java...  failed
+    packages_62_same_n_w_cons_overl.java...  failed
+    packages_71_class_access_modes.java...  failed
+    packages_72_acc_modes_vs_local.java...  failed
+
+.programs/62_class_literals:
+    class_lit_01_no_packages.java...  failed
+    class_lit_02_packages.java...  failed
+    class_lit_03_interface.java...  failed
+    class_lit_04_arrays.java...  failed
+    class_lit_05_ref_equality.java...  failed
+
+.programs/63_inner_cl_static:
+    inner_st_101_simple.java...  failed
+    inner_st_102_decl_order.java...  failed
+    inner_st_103_members.java...  failed
+    inner_st_104_access_modes.java...  failed
+    inner_st_105_inner_hier.java...  failed
+    inner_st_106_inner_impl_intf.java...  failed
+    inner_st_107_simple_names_3_lvl.java...  failed
+    inner_st_108_access_modes_hier.java...  failed
+    inner_st_109_inner_poly.java...  failed
+    inner_st_201_inner_to_outer.java...  failed
+    inner_st_202_outer_members.java...  failed
+    inner_st_301_simple_outer_field.java...  failed
+    inner_st_302_simple_outer_method.java...  failed
+    inner_st_303_outer_acc_modes.java...  failed
+    inner_st_401_inner_dec_acc_modes.java...  failed
+    inner_st_501_qualifiers.java...  failed
+    inner_st_502_qualifiers_disamb.java...  failed
+    inner_st_503_qual_disamb_import.java...  failed
+    inner_st_504_qual_disamb_acc_m.java...  failed
+    inner_st_601_var_types.java...  failed
+    inner_st_602_operators.java...  failed
+    inner_st_603_static_access.java...  failed
+    inner_st_604_unq_inner_in_extends.java...  failed
+    inner_st_605_unq_inner_in_extends_fw.java...  failed
+    inner_st_606_type_decl.java...  failed
+    inner_st_701_three_levels.java...  failed
+    inner_st_702_3_lvl_members.java...  failed
+    inner_st_703_3_lvl_overload.java...  failed
+    inner_st_704_nesting_inher_overl.java...  failed
+    inner_st_705_inherit_inner_decl.java...  failed
+    inner_st_706_in_derives_out.java...  failed
+    inner_st_707_out_derives_in.java...  failed
+    inner_st_708_in_decl_hiding.java...  failed
+    inner_st_709_sorts_name_collision.java...  failed
+    inner_st_710_unq_in_ext_inherit.java...  failed
+    inner_st_711_twisted_inherit.java...  failed
+    inner_st_801_inner_interf.java...  failed
+    inner_st_802_outer_interf.java...  failed
+    inner_st_803_in_intf_are_static.java...  failed
+    inner_st_804_intf_member_t_are_static.java...  failed
+    inner_st_805_in_intf_impl_out_intf.java...  failed
+    inner_st_806_intf_impl_in_intf.java...  failed
+    inner_st_807_impl_in_intf_and_names.java...  failed
+    inner_st_808_static_init.java...  failed
+    inner_st_809_inner_intf_outer_m_call.java...  failed
+    inner_st_810_inherit_in_unq.java...  failed
+    inner_st_811_inherit_in_unq_in_impl.java...  failed
+    inner_st_812_inherit_in_unq_in_intf.java...  failed
+    inner_st_813_inherit_in_unq_in_intf_ext.java...  failed
+
+error :  17
+failed:  561
+total :  578
+
+It took 51 seconds
