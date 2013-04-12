@@ -1,0 +1,160 @@
+  Testing static expression type for all possible expressions.
+
+All tests follow this pattern:
+  main() {
+    println(f(true ? ExprTypeA : ExprTypeB))
+    println(f(false ? ExprTypeA : ExprTypeB))
+  }
+  f(TypeA) {...}
+  f(TypeB) {...}
+
+  The type of conditional expression should be TypeB, but the chosen value shoudl be ExprTypeA. This way
+we test that TypeB is correctly inferred although the expression is not evaluated at runtime.
+
+    Tests:
+
+1. "abc" : null . f(Object), f(String)
+
+2. new class expression:
+  B < A,
+  new B() : new A()
+  Constructors with side effects
+
+3. new array expression:
+  B < A,
+  new B[1] : new A[2]
+  f(): print array length
+
+4. Field access expression
+  B < A
+  C{ B x; A y;}
+  C.x : C.y
+
+5. Method invocation expression
+  B < A
+  fB() : fA()
+  B fB(){}
+  A fA(){}
+  Methods with side effects
+
+6. Array access expression
+  B < A
+  B[] vb; A[] va;
+  vb[0] : va[0]
+
+7. Postfix  ++ / --
+  int b = 1; long a = 10;
+  b++ : a++
+  b-- : a--
+  Print the values after each operator.
+
+8. Prefix ++ / --
+  int b = 1; long a = 10;
+  ++b : ++a
+  --b : --a
+  Print the values after each operator.
+
+9. Unary  + / -
+  int b = 1; long a = 10;
+  +b : +a
+  -b : -a
+
+10. ~
+  int b = 1; long a = 10;
+  ~b : ~a
+
+11. !
+  boolean b = false, a = true;
+  !b : !a
+
+12. Cast primitive
+  long a = 10;
+  (byte)a : int(a)
+
+13. Cast reference
+  B < A
+  Object o1 = new B();
+  Object o2 = null;
+  (B) o1 : (A) o2
+
+14. Multiplicative operators: * / %
+  int b = 10; long a = 100;
+  b * b : a * b
+  b / b : a / b
+  b % b : a % b
+
+15. Additive numeric: +  -
+  int b = 1; long a = 10;
+  b + b : a + b
+  b - b : a - b
+
+16. String additive
+  B < A
+  A : "abc " + A
+
+17. Shift operators: << >> >>>
+  int b = 10; long a = 100;
+  b << 1 : a << 1
+  b >> 1 : a >> 1
+  b >>> 1 : a >>> 1
+
+18. Relational numeric operators: < > <= >=
+  int b = 1; long a = 10;
+  b < b : a < b
+  b > b : a > b
+  b <= b : a <= b
+  b >= b : a >= b
+
+19. instanceof
+  B < A
+  Object o = new A
+  o instanceof A : o instanceof B
+
+20. Equality: numeric
+  int b = 1; long a = 10;
+  b == b : a == b
+  b != b : a != b
+
+21. Equality: boolean
+  boolean b = true; boolean a = false;
+  b == b : a == b
+  b != b : a != b
+
+23. Equality: reference
+  B < A
+  B b = new B(); A a = new A();
+  b == b : a == b
+  b != b : a != b
+
+24. Bitwise operators: & ^ |
+  int b = 1; long a = 10;
+  b & b : a & b
+  b ^ b : a ^ b
+  b | b : a | b
+
+25. Logical operators: & ^ |
+  boolean b = true; boolean a = false;
+  b & b : a & b
+  b ^ b : a ^ b
+  b | b : a | b
+
+26. Conditional and/or: && ||
+  boolean fTrue() {} boolean fFalse() - with side effects
+  fTrue() && fFalse() : fTrue() && fTrue()
+  fTrue() || fFalse() : fTrue() || fTrue()
+
+27. Conditional ternary operator ?:
+  boolean fTrue() {} boolean fFalse() - with side effects
+  fTrue() ? fTrue() : fFalse() : fFalse() ? fTrue() : fFalse()
+
+28. Assignment operator simple
+  int b = 1; long a = 10;
+  b = 2 : a = 20
+
+29. Assignment: some compound
+  int b = 1; long a = 10;
+  b += 200 : a += 200
+  b -= 2 : a -= 2
+
+30. Compound numeric ops.
+  1 + (10 + 100) : 1 + (10 + 100L)
