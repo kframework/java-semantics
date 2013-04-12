@@ -2,15 +2,15 @@
 Conditional ternary operator ?:
 B < A
 boolean fTrue() {} boolean fFalse() {} - with side effects
-fTrue() ? B : A : fFalse() ? B : B
+fTrue() ? A : A : fFalse() ? B : B
 */
 
 public class exp_type_26_cond_op {
   public static void main(String[] args) {
      B b = new B(); A a = new A();
 
-    System.out.println("f(true  ? fTrue() ? b : a : fFalse() ? b : b): " + f(true  ? fTrue() ? b : a : fFalse() ? b : b));
-    System.out.println("f(false ? fTrue() ? b : a : fFalse() ? b : b): " + f(false ? fTrue() ? b : a : fFalse() ? b : b));
+    System.out.println("f(true  ? fTrue() ? a : a : fFalse() ? b : b): " + f(true  ? fTrue() ? a : a : fFalse() ? b : b));
+    System.out.println("f(false ? fTrue() ? a : a : fFalse() ? b : b): " + f(false ? fTrue() ? a : a : fFalse() ? b : b));
 
     System.out.println("Done!");
   }
@@ -30,7 +30,7 @@ public class exp_type_26_cond_op {
 
   static boolean fFalse() {
     System.out.println("fFalse()");
-    return true;
+    return false;
   }
 }
 

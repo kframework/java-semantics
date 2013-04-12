@@ -9,10 +9,10 @@ public class exp_type_25_logical_cond_ops {
   public static void main(String[] args) {
      boolean b = true; boolean a = false;
 
-    System.out.println("f(true  ? fTrue() && fFalse() : fTrue() && fTrue()): " + f(true  ? fTrue() && fFalse() : fTrue() && fTrue()));
-    System.out.println("f(false ? fTrue() && fFalse() : fTrue() && fTrue()): " + f(false ? fTrue() && fFalse() : fTrue() && fTrue()));
-    System.out.println("f(true  ? fTrue() || fFalse() : fTrue() || fTrue()): " + f(true  ? fTrue() || fFalse() : fTrue() || fTrue()));
-    System.out.println("f(false ? fTrue() || fFalse() : fTrue() || fTrue()): " + f(false ? fTrue() || fFalse() : fTrue() || fTrue()));
+    System.out.println("f(true  ? fFalse() && fTrue() : fTrue() && fTrue()): " + f(true  ? fFalse() && fTrue() : fTrue() && fTrue()));
+    System.out.println("f(false ? fFalse() && fTrue() : fTrue() && fTrue()): " + f(false ? fFalse() && fTrue() : fTrue() && fTrue()));
+    System.out.println("f(true  ? fFalse() || fFalse() : fTrue() || fFalse()): " + f(true  ? fFalse() || fFalse() : fTrue() || fFalse()));
+    System.out.println("f(false ? fFalse() || fFalse() : fTrue() || fFalse()): " + f(false ? fFalse() || fFalse() : fTrue() || fFalse()));
 
     System.out.println("Done!");
   }
@@ -28,6 +28,6 @@ public class exp_type_25_logical_cond_ops {
 
   static boolean fFalse() {
     System.out.println("fFalse()");
-    return true;
+    return false;
   }
 }

@@ -21,12 +21,21 @@ public class exp_type_02_new_class {
 }
 
 class A {
+  A() {
+    System.out.println("A()");
+  }
+
   public String toString() {
     return "A";
   }
 }
 
 class B extends A {
+
+  B() {
+    System.out.println("B()");
+  }
+
   public String toString() {
     return "B";
   }

@@ -11,6 +11,10 @@ All tests follow this pattern:
   The type of conditional expression should be TypeB, but the chosen value shoudl be ExprTypeA. This way
 we test that TypeB is correctly inferred although the expression is not evaluated at runtime.
 
+  Operands 2 and 3 of ?: should always contain side effects. Usually in the form of some method call,
+in the case when the side effect don't occur naturally, such as for ++ operator.
+  (At least one operand should have a side effect, when the other one is a constant.)
+
     Tests:
 
 01. A
@@ -26,9 +30,8 @@ we test that TypeB is correctly inferred although the expression is not evaluate
   f(): print array length
 
 04. Field access expression
-  B < A
-  C{ B x; A y;}
-  C.x : C.y
+C{ int x; long y;}
+C.x : C.y
 
 05. Method invocation expression
   B < A
@@ -146,7 +149,7 @@ we test that TypeB is correctly inferred although the expression is not evaluate
 26. Conditional ternary operator ?:
   B < A
   boolean fTrue() {} boolean fFalse() {} - with side effects
-  fTrue() ? B : A : fFalse() ? B : B
+  fTrue() ? A : A : fFalse() ? B : B
 
 27. Assignment operator simple
   int b = 1; long a = 10;

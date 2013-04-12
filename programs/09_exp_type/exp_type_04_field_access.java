@@ -1,39 +1,32 @@
 /*
 Field access expression
-B < A
-C{ B x; A y;}
+C{ int x; long y;}
 C.x : C.y
 */
 
 public class exp_type_04_field_access {
   public static void main(String[] args) {
-    System.out.println("f(true  ? C.x : C.y): " + f(true  ? C.x : C.y));
-    System.out.println("f(false ? C.x : C.y): " + f(false ? C.x : C.y));
+    System.out.println("f(true  ? C.x : C.y): " + f(true  ? new C(1).x : new C(2).y));
+    System.out.println("f(false ? C.x : C.y): " + f(false ? new C(3).x : new C(4).y));
     System.out.println("Done!");
   }
 
-  static String f(B b) {
-    return "f(B): " + b;
+  static String f(int b) {
+    return "f(int): " + b;
   }
 
-  static String f(A a) {
-    return "f(A): " + a;
-  }
-}
-
-class A {
-  public String toString() {
-    return "A";
-  }
-}
-
-class B extends A {
-  public String toString() {
-    return "B";
+  static String f(long a) {
+    return "f(long): " + a;
   }
 }
 
 class C {
-  static B x = new B();
-  static A y = new A();
+  int x;
+  long y;
+
+  C(int a) {
+    System.out.println("C(" + a + ")");
+    x = 10 * a;
+    y = 100 * a;
+  }
 }

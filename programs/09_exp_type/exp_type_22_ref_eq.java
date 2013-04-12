@@ -10,16 +10,21 @@ public class exp_type_22_ref_eq {
   public static void main(String[] args) {
     B b = new B(); A a = new A();
 
-    System.out.println("f(true  ? b == b : a == b): " + f(true  ? b == b : a == b));
-    System.out.println("f(false ? b == b : a == b): " + f(false ? b == b : a == b));
-    System.out.println("f(true  ? b != b : a != b): " + f(true  ? b != b : a != b));
-    System.out.println("f(false ? b != b : a != b): " + f(false ? b != b : a != b));
+    System.out.println("f(true  ? get(b) == b : get(a) == b): " + f(true  ? get(b) == b : get(a) == b));
+    System.out.println("f(false ? get(b) == b : get(a) == b): " + f(false ? get(b) == b : get(a) == b));
+    System.out.println("f(true  ? get(b) != b : get(a) != b): " + f(true  ? get(b) != b : get(a) != b));
+    System.out.println("f(false ? get(b) != b : get(a) != b): " + f(false ? get(b) != b : get(a) != b));
 
     System.out.println("Done!");
   }
 
   static String f(boolean b) {
     return "f(boolean): " + b;
+  }
+
+  static Object get(Object o) {
+    System.out.println("get(" + o + ")");
+    return o;
   }
 }
 
