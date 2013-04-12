@@ -13,49 +13,48 @@ we test that TypeB is correctly inferred although the expression is not evaluate
 
     Tests:
 
-   A
-1. A : null . f(Object), f(A)
+01. A
+  A : null . f(Object), f(A)
 
-2. new class expression:
+02. new class expression:
   B < A,
   new B() : new A()
-  Constructors with side effects
 
-3. new array expression:
+03. new array expression:
   B < A,
   new B[1] : new A[2]
   f(): print array length
 
-4. Field access expression
+04. Field access expression
   B < A
   C{ B x; A y;}
   C.x : C.y
 
-5. Method invocation expression
+05. Method invocation expression
   B < A
   fB() : fA()
   B fB(){}
   A fA(){}
   Methods with side effects
 
-6. Array access expression
+06. Array access expression
   B < A
   B[] vb; A[] va;
   vb[0] : va[0]
 
-7. Postfix  ++ / --
+07. Postfix  ++ / --
   int b = 1; long a = 10;
   b++ : a++
   b-- : a--
   Print the values after each operator.
 
-8. Prefix ++ / --
+08. Prefix ++ / --
   int b = 1; long a = 10;
   ++b : ++a
   --b : --a
   Print the values after each operator.
 
-9. Unary  + / -
+09. Unary  + / -
   int b = 1; long a = 10;
   +b : +a
   -b : -a
@@ -70,12 +69,12 @@ we test that TypeB is correctly inferred although the expression is not evaluate
 
 12. Cast primitive
   long a = 10;
-  (byte)a : int(a)
+  (byte)a : (int)a
 
 13. Cast reference
   B < A
   Object o1 = new B();
-  Object o2 = null;
+  Object o2 = new A();
   (B) o1 : (A) o2
 
 14. Multiplicative operators: * / %
@@ -91,7 +90,7 @@ we test that TypeB is correctly inferred although the expression is not evaluate
 
 16. String additive
   B < A
-  A : "abc " + A
+  (Object)A : "abc " + A
 
 17. Shift operators: << >> >>>
   int b = 10; long a = 100;
@@ -121,41 +120,44 @@ we test that TypeB is correctly inferred although the expression is not evaluate
   b == b : a == b
   b != b : a != b
 
-23. Equality: reference
+22. Equality: reference
   B < A
   B b = new B(); A a = new A();
   b == b : a == b
   b != b : a != b
 
-24. Bitwise operators: & ^ |
+23. Bitwise operators: & ^ |
   int b = 1; long a = 10;
   b & b : a & b
   b ^ b : a ^ b
   b | b : a | b
 
-25. Logical operators: & ^ |
+24. Logical operators: & ^ |
   boolean b = true; boolean a = false;
   b & b : a & b
   b ^ b : a ^ b
   b | b : a | b
 
-26. Conditional and/or: && ||
-  boolean fTrue() {} boolean fFalse() - with side effects
+25. Conditional and/or: && ||
+  boolean fTrue() {} boolean fFalse() {} - with side effects
   fTrue() && fFalse() : fTrue() && fTrue()
   fTrue() || fFalse() : fTrue() || fTrue()
 
-27. Conditional ternary operator ?:
-  boolean fTrue() {} boolean fFalse() - with side effects
-  fTrue() ? fTrue() : fFalse() : fFalse() ? fTrue() : fFalse()
+26. Conditional ternary operator ?:
+  B < A
+  boolean fTrue() {} boolean fFalse() {} - with side effects
+  fTrue() ? B : A : fFalse() ? B : B
 
-28. Assignment operator simple
+27. Assignment operator simple
   int b = 1; long a = 10;
   b = 2 : a = 20
+  Print a, b after assign.
 
-29. Assignment: some compound
+28. Assignment: some compound
   int b = 1; long a = 10;
   b += 200 : a += 200
   b -= 2 : a -= 2
+  Print a, b after each assign.
 
-30. Compound numeric ops.
+29. Composite numeric expression.
   1 + (10 + 100) : 1 + (10 + 100L)
