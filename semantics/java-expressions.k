@@ -80,7 +80,7 @@ rule /* I1 <<  I2 */ 'LeftShift(I1:Int :: ILT:IntOrLongType,, I2:Int :: _)
 rule /* I1 >>  I2 */ 'RightShift(I1:Int :: ILT:IntOrLongType,, I2:Int :: _)
     => normalize( (I1 >>Int (I2 &Int (bitCount(ILT) -Int 1))) :: ILT )
 rule /* I1 >>> I2 */ 'URightShift(I1:Int :: ILT:IntOrLongType,, I2:Int :: NT:NumericType)
-  => 'Cond(
+  => 'If(
     (I1 >=Int 0)::bool,,
     'RightShift(I1 :: ILT,, I2 :: NT),,
     'Plus('RightShift(I1::ILT,, I2::NT),, 'LeftShift(2::ILT,, 'Complement(I2::NT)))
@@ -175,15 +175,17 @@ rule [getCondTypeFirstChar]:
 syntax K ::= "getExpType" "(" K ")"
 
 rule [getExpTypeValue]:
-    getExpType(_::T) => T
+    getExpType(_::T:Type) => T
 
 rule [getExpTypeCastImpl]:
     getExpType(castImpl(TypeK:K, _)) => TypeK
 
+//todo replace with correct implementation. Here is a temporary hack to make all old tests to work.
 //getExpTypeExprName
 context getExpType(HOLE)
 when
-    getKLabel(HOLE) ==KLabel 'ExprName
+//    getKLabel(HOLE) ==KLabel 'ExprName
+    getKLabel(HOLE) =/=KLabel '_::_ andBool getKLabel(HOLE) =/=KLabel 'castImpl
 
 /*@ \subsubsection{Assignment operators}
 Typed KOOL allows to assign subtype instance values to supertype lvalues.
