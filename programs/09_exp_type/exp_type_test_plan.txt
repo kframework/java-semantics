@@ -13,7 +13,8 @@ we test that TypeB is correctly inferred although the expression is not evaluate
 
     Tests:
 
-1. "abc" : null . f(Object), f(String)
+   A
+1. A : null . f(Object), f(A)
 
 2. new class expression:
   B < A,
