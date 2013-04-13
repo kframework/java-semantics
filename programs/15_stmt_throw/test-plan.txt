@@ -24,6 +24,8 @@ Programming constructs with which exception interacts:
   Another try/catch.
 13. Ex inside try-catch, catch argument shadows a field with the same name.
 14. try/catch/finally, no throw inside.
+15. Test that environment is restored after try/catch. Field b, var b in try{}, print b after try/catch.
+  Should print the field.
 
 Thread term:
 

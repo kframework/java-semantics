@@ -61,7 +61,6 @@ syntax StackLayerType ::=
 syntax K ::= "isStackConsumer" "(" KLabel ")" [function]
 rule isStackConsumer (KL:KLabel) =>
            (KL ==KLabel 'Return)
-    orBool (KL ==KLabel 'Throw)
     orBool (KL ==KLabel 'Break)
     orBool (KL ==KLabel 'Continue) [anywhere]
 
@@ -70,14 +69,6 @@ syntax K ::= "interactsWithStack" "(" K   // S - the stack consumer statement, s
                               "," K       // XK - second argument in stack layer after StackLayerType
                               ")" //-> Bool  true if statement interacts with the layer,
                                           // false if layer if layer is simply deleted
-
-rule interactsWithStack('Return(_), StackLT:StackLayerType, _) =>
-           (StackLT ==K methodSL)
-    orBool (StackLT ==K tryFinallySL) [anywhere]
-
-rule interactsWithStack('Throw(_), StackLT:StackLayerType, _) =>
-           (StackLT ==K tryCatchSL)
-    orBool (StackLT ==K tryFinallySL) [anywhere]
 
 rule interactsWithStack('Break('None(_)), StackLT:StackLayerType, _) =>
            (StackLT ==K loopSL)
@@ -97,6 +88,21 @@ rule interactsWithStack('Continue('Some(X:Id)), StackLT:StackLayerType, StackArg
            ( (StackLT ==K loopSL)    andBool (X ==K StackArg2))
     orBool ( (StackLT ==K forBodySL) andBool (X ==K StackArg2))
     orBool   (StackLT ==K tryFinallySL) [anywhere]
+
+syntax K ::= "interactsWithNext" "(" K   // S - the stack consumer statement, see above
+                                 "," K   // NextS - next statement
+                                 ")"      [function]
+
+rule interactsWithNext('Return(_), 'Try(.K,,_:K,,_:K)) => true
+rule interactsWithNext('Return(_), env(_)) => true
+rule interactsWithNext('Return(_), 'Try(.K,,_:K)) => false
+
+rule interactsWithNext('Return(_), 'Try(K:K,,_)) => false
+when K =/=K .K
+
+rule interactsWithNext('Return(_), KL:KLabel(_)) => false
+when        KL =/=KLabel 'Try
+    andBool KL =/=KLabel 'env`(_`)
 
 syntax K ::= "popx" //discard the top stack layer
 
@@ -457,9 +463,21 @@ rule [ReturnNothingDesugar]:
     'Return('None(.List{K}) => 'Some(nothing :: void))
         [structural]
 
-rule [Return]:
+rule [ReturnInTryFinally]:
+    'Return('Some(TV:TypedVal)) ~> 'Try(.K ,,'ListWrap(.List{K}),,FinallyS:K)
+    => FinallyS ~> 'Return('Some(TV:TypedVal))
+
+rule [ReturnRestoreEnv]:
+    'Return('Some(TV:TypedVal)) ~> env(Env:Map) => env(Env) ~> 'Return('Some(TV))   [structural]
+
+rule [ReturnPropagate]:
+    'Return('Some(TV:TypedVal)) ~> (KL:KLabel(Ks:List{K}) => .K)
+when
+    notBool interactsWithNext('Return('Some(TV:TypedVal)), KL(Ks))
+
+rule [ReturnMethodEnd]:
     <k>
-      'Return('Some(V:RawVal :: T2:Type)) ~> _
+      'Return('Some(V:RawVal :: T2:Type))
       => restoreControl(K,Env,C) ~> subtype(T2, T1) ~> true? ~> V::T1
     </k>
     <stack> ListItem((methodSL,_,_, K:K, Env:Map, C:Bag)) => . ...</stack>
@@ -472,56 +490,46 @@ encountered. */
 context 'Throw(HOLE)
 
 rule [Throw]:
-    <k>
-      (. => checkCatch(subtype(typeOf(TV), T))) ~> 'Throw(TV:TypedVal) ~> _:K
-    </k>
-    <stack>
-      ListItem((tryCatchSL, .K, 'ListWrap(catchImpl(paramImpl(T:Type, X:Id), _),,_), _, _, _))
-      ...
-    </stack>
+    (. => checkCatch(subtype(typeOf(TV), T)))
+    ~> 'Throw(TV:TypedVal)
+    ~> 'Try(.K,, 'ListWrap(catchImpl(paramImpl(T:Type, X:Id),_),, _))
 
 syntax K ::= "checkCatch" "(" K ")"
 context checkCatch(HOLE)
 
 rule [ThrowCheckedTrue]:
-    <k>
-      checkCatch(true::bool) ~> 'Throw(TV:TypedVal) ~> _:K
-      =>  restoreControl(K,Env,C)
-          ~> 'Block('ListWrap('LocalVarDecStm('LocalVarDec(
-                'ListWrap(.List{K}),, T,, 'ListWrap('VarDec(X,, TV)))),,
-                CatchS))
-    </k>
-    <stack>
-      ListItem((tryCatchSL, .K, 'ListWrap(catchImpl(
-          paramImpl(T:Type, X:Id), CatchS:K),,_), K:K, Env:Map, C:Bag)) => .
-      ...
-    </stack>
-
-syntax K ::= "restoreControl" "(" K "," Map "," Bag ")"
-rule [restoreControl]:
-    <k> ( restoreControl(K:K, Env:Map, C:Bag) => .) ~> _:K ~> (. => K) </k>
-    <control>
-      <stack> _:List </stack>
-      (_ => C)
-    </control>
-    <env> _ => Env </env>
+    checkCatch(true::bool) ~> 'Throw(TV:TypedVal)
+    ~> 'Try(.K,, 'ListWrap(catchImpl(paramImpl(T:Type, X:Id), CatchS),, _))
+    => 'Block('ListWrap(
+          'LocalVarDecStm('LocalVarDec('ListWrap(.List{K}),, T,, 'ListWrap('VarDec(X,, TV)))),,
+            CatchS
+        ))
 
 rule [ThrowCheckedFalse]:
-    <k> (checkCatch(false::bool) => .) ~> 'Throw(TV:TypedVal) ~> _:K </k>
-    <stack>
-      ListItem((tryCatchSL, .K,
-        'ListWrap( (catchImpl(paramImpl(T:Type, X:Id), CatchS:K) => .List{K}),, _),
-      K:K, Env:Map, C:Bag))
-      ...
-    </stack>
+    (checkCatch(false::bool) => .)
+    ~> 'Throw(TV:TypedVal) ~> 'Try(.K,, 'ListWrap((catchImpl(_,_) => .List{K}),, _))
 
 rule [ThrowCatchEmptyDiscard]:
-    <k> 'Throw(TV:TypedVal) ~> _:K </k>
-    <stack> ListItem((tryCatchSL, .K, 'ListWrap(.List{K}), K:K, Env:Map, C:Bag)) => . ...</stack>
+    'Throw(TV:TypedVal) ~> ('Try(.K,, 'ListWrap(.List{K})) => .)
+
+rule [ThrowRestoreEnv]:
+    'Throw(TV:TypedVal) ~> env(Env:Map) => env(Env) ~> 'Throw(TV)   [structural]
+
+rule [ThrowPropagate]:
+    'Throw(TV:TypedVal) ~> (KL:KLabel(_) => .)
+when
+    KL =/=KLabel 'Try
+    andBool KL =/=KLabel 'env`(_`)
+
+rule [ThrowMethodEnd]:
+    <k>
+      (. => restoreControl(K,Env,C)) ~> 'Throw(TV:TypedVal)
+    </k>
+    <stack> ListItem((methodSL,_,_, K:K, Env:Map, C:Bag)) => . ...</stack>
 
 rule [ThrowCausesThreadTermination]:
     <k>
-      'Throw(TV:TypedVal) ~> _:K
+      'Throw(TV:TypedVal)
       =>  'ExprStm('Invoke(
             'Method('MethodName(
               'AmbName('TypeName(String2Id("System")),, String2Id("out")),,
@@ -532,6 +540,15 @@ rule [ThrowCausesThreadTermination]:
           ))
     </k>
     <stack> .List </stack>
+
+syntax K ::= "restoreControl" "(" K "," Map "," Bag ")"
+rule [restoreControl]:
+    <k> ( restoreControl(K:K, Env:Map, C:Bag) => .) ~> _:K ~> (. => K) </k>
+    <control>
+      <stack> _:List </stack>
+      (_ => C)
+    </control>
+    <env> _ => Env </env>
 
 //@ \section{Try statement}
 
@@ -557,20 +574,26 @@ syntax KResult ::= "catchImpl" "(" K //paramImpl term
 
 rule [TryCatch]:
     <k>
-      ( 'Try(TryS:K,, 'ListWrap(KRs:List{K}))
-        => saveStackLayer(tryCatchSL, .K, 'ListWrap(KRs), K) ~> TryS ~> popx )
-      ~> K:K
+      (. => TryS) ~> 'Try((TryS:K => .K),, 'ListWrap(KRs:List{K}))
+      ...
     </k>
-when isKResult(KRs)
+when (TryS =/=K .K) andBool isKResult(KRs)
+
+rule [TryCatchDiscard]:
+    'Try(.K,, _:K) => .K
 
 //@ \subsection{Execution of try-finally} JLS 14.20.2
 
 rule [TryFinally]:
-    <k>
-      ( 'Try(TryS:K ,,'ListWrap(.List{K}),,FinallyS:K)
-        => saveStackLayer(tryFinallySL, .K, FinallyS, .K) ~> TryS ~> popx ~> FinallyS )
-      ...
-    </k>
+    (. => TryS) ~> 'Try((TryS:K => .K) ,,'ListWrap(.List{K}),,FinallyS:K)
+when TryS =/=K .K
+
+rule [TryFinallyNormalEnd]:
+    'Try(.K ,,'ListWrap(.List{K}),,FinallyS:K) => FinallyS
+
+rule [ThrowInTryFinally]:
+    'Throw(TV:TypedVal) ~> 'Try(.K ,,'ListWrap(.List{K}),,FinallyS:K)
+    => FinallyS ~> 'Throw(TV)
 
 //@ \section{Auxiliary operations}
 

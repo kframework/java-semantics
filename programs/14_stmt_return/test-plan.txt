@@ -17,3 +17,5 @@
 17. return String
 18. return-ref - exact val
 19. return derived val, return type is base val
+20. Test that environment is restored when return exits a block. Field b, var b in try/finally,
+  Return after b declaration, in try. Print b inside finally. Should print the field.
