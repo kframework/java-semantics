@@ -1,5 +1,9 @@
 package ro.uaic.javasemantics.tools;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
+import org.apache.commons.lang3.text.translate.LookupTranslator;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Formatter;
@@ -36,6 +40,8 @@ public class XmlBuilder {
   @SuppressWarnings("StringConcatenationInsideStringBufferAppend")
   public void buildXml() {
     StringBuilder xml = new StringBuilder();
+    CharSequenceTranslator translator =
+        StringEscapeUtils.ESCAPE_XML.with(new LookupTranslator(new CharSequence[][]{{"\0", ""}}));
     TestResult previousResult = null, result;
     try {
       for (int i = 0, resultsSize = results.size(); i < resultsSize; i++) {
@@ -59,18 +65,14 @@ public class XmlBuilder {
             .append(">\n");
 
         if (result.containsError()) {
-          xml.append("<error>");
-          xml.append("<![CDATA[\n");
-          xml.append(result.getError());
-          xml.append("]]>");
-          xml.append("</error>\n");
+          xml.append("<error>\n")
+              .append(translator.translate(result.getError()))
+              .append("</error>\n");
         }
         if (result.getComp() != null) {
-          xml.append("<failure>");
-          xml.append("<![CDATA[\n");
-          xml.append(result.getComp());
-          xml.append("]]>");
-          xml.append("</failure>\n");
+          xml.append("<failure>\n")
+              .append(translator.translate(result.getComp()))
+              .append("</failure>\n");
         }
 
         xml.append("</testcase>\n\n");
