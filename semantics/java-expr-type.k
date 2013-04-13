@@ -35,36 +35,62 @@ when
 rule [getExpTypeArrayAccess]:
     getExpType('ArrayAccess(arrayOf T:Type,, _)) => T
 
-rule [getExpTypeUnaryNumericHeat]:
-    (. => getExpType(TargetK)) ~> getExpType(KL:KLabel((TargetK:K => EXPHOLE)))
+rule [getExpTypeNumToNumHeat]:
+    (. => getExpType(TargetK)) ~> getExpType(KL:KLabel(_,,(TargetK:K => EXPHOLE),,_))
 when
-    isUnaryNumeric(KL)
-    andBool notBool (isKResult(TargetK) ==K true)
+    isNumToNum(KL)
+    andBool notBool (isType(TargetK) ==K true)
 
-rule [getExpTypeUnaryNumeric]:
+rule [getExpTypeUnary]:
     getExpType(KL:KLabel(T:Type)) => T
 when
-    isUnaryNumeric(KL)
+    isNumToNum(KL)
 
-syntax K ::= "isUnaryNumeric" "(" KLabel ")"    [function]
+rule [getExpTypeBinaryNum]:
+    getExpType(KL:KLabel(T1:Type,, T2:Type)) => normalizeType(T1,T2)
+when
+    isBinaryNum(KL)
 
-rule isUnaryNumeric(KL:KLabel) =>
+rule [getExpTypeShiftOp]:
+    getExpType(KL:KLabel(T:Type,, _)) => normalizeType(T)
+when
+    isShiftOp(KL)
+
+syntax K ::= "isNumToNum" "(" KLabel ")"        [function]
+
+rule isNumToNum(KL:KLabel) =>
          KL ==KLabel 'PostIncr
   orBool KL ==KLabel 'PostDecr
   orBool KL ==KLabel 'PreIncr
   orBool KL ==KLabel 'PreDecr
-  orBool KL ==KLabel 'Plus
+  orBool KL ==KLabel 'Complement
+  orBool isBinaryNum(KL)
+  orBool isShiftOp(KL)                         [anywhere]
+
+syntax K ::= "isBinaryNum" "(" KLabel ")"      [function]
+
+rule isBinaryNum(KL:KLabel) =>
+         KL ==KLabel 'Plus
   orBool KL ==KLabel 'Minus
-  orBool KL ==KLabel 'Complement                [anywhere]
+  orBool KL ==KLabel 'Mul
+  orBool KL ==KLabel 'Div
+  orBool KL ==KLabel 'Remain                    [anywhere]
+
+syntax K ::= "isShiftOp" "(" KLabel ")"         [function]
+
+rule isShiftOp(KL:KLabel) =>
+         KL ==KLabel 'LeftShift
+  orBool KL ==KLabel 'RightShift
+  orBool KL ==KLabel 'URightShift               [anywhere]
 
 rule [getExpTypeBooleanOnly]:
     getExpType(KL:KLabel(_)) => bool
 when
-    isBooleanOnly(KL)
+    isAnyToBool(KL)
 
-syntax K ::= "isBooleanOnly" "(" KLabel ")"     [function]
+syntax K ::= "isAnyToBool" "(" KLabel ")"     [function]
 
-rule isBooleanOnly(KL:KLabel) =>
+rule isAnyToBool(KL:KLabel) =>
          KL ==KLabel 'Not
   orBool KL ==KLabel 'LazyOr
   orBool KL ==KLabel 'LazyAnd
@@ -100,8 +126,8 @@ rule isCoveredExprTypeKLabel(KL:KLabel) =>
   orBool KL ==KLabel 'newArrayImpl`(_`,_`,_`)
   orBool KL ==KLabel 'ExprName
   orBool KL ==KLabel 'ArrayAccess
-  orBool isUnaryNumeric(KL)
-  orBool isBooleanOnly(KL)
+  orBool isNumToNum(KL)
+  orBool isAnyToBool(KL)
   orBool KL ==KLabel 'castImpl`(_`,_`)                  [anywhere]
 
 endmodule

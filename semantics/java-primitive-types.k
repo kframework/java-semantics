@@ -84,13 +84,16 @@ rule normalizeType(ILT:IntOrLongType) => ILT [anywhere]
 rule normalizeType(NT:NumericType) => int
 when (NT =/=K int) andBool (NT =/=K long) [anywhere]
 
-//todo debug changes
-syntax K ::= "normalizeType" "(" NumericType "," NumericType ")" [function]
+syntax K ::= "normalizeType" "(" Type "," Type ")" [function]
 
 rule normalizeType(NT1:NumericType, NT2:NumericType) => int
 when (NT1 =/=K long) andBool (NT2 =/=K long) [anywhere]
 
 rule normalizeType(NT1:NumericType, NT2:NumericType) => long
 when (NT1 ==K long) orBool (NT2 ==K long) [anywhere]
+
+//not technically primitive types, but here is the most appropriate place to put the rules
+rule normalizeType(rtString, _) => rtString
+rule normalizeType(_, rtString) => rtString
 
 endmodule
