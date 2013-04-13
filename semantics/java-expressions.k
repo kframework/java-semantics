@@ -171,21 +171,8 @@ rule [getCondTypeFirstChar]:
     getCondType(char, T2:Type) => 'If(subtype(char, T2),, T2,, int)
 
 //Get the compile-time type of the given expression
-//todo test for all expressions
+//The implementation for the above construct is given in the module JAVA-EXPR-TYPE
 syntax K ::= "getExpType" "(" K ")"
-
-rule [getExpTypeValue]:
-    getExpType(_::T:Type) => T
-
-rule [getExpTypeCastImpl]:
-    getExpType(castImpl(TypeK:K, _)) => TypeK
-
-//todo replace with correct implementation. Here is a temporary hack to make all old tests to work.
-//getExpTypeExprName
-context getExpType(HOLE)
-when
-//    getKLabel(HOLE) ==KLabel 'ExprName
-    getKLabel(HOLE) =/=KLabel '_::_ andBool getKLabel(HOLE) =/=KLabel 'castImpl
 
 /*@ \subsubsection{Assignment operators}
 Typed KOOL allows to assign subtype instance values to supertype lvalues.

@@ -144,11 +144,11 @@ context 'NewArray(HOLE,, _:List{K})
 rule [NewArrayEmptyDims]:
     'NewArray( (T:Type => arrayOf T),, _:List{K},,
         'ListWrap( ( 'Dim(.List{K}) => .List{K} ) ,,_:List{K}) )
-        [structural]
+        [structural, anywhere]
 
 rule [NewArray]:
     'NewArray(T:Type,, K:K,, 'ListWrap(.List{K})) => newArrayImpl(T, K, default(T))
-        [structural]
+        [structural, anywhere]
 
 syntax K ::= "newArrayImpl" "("
                 Type ","  // T - element type
