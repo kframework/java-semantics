@@ -61,54 +61,9 @@ syntax StackLayerType ::=
 syntax K ::= "isStackConsumer" "(" KLabel ")" [function]
 rule isStackConsumer (KL:KLabel) =>
            (KL ==KLabel 'Return)
+    orBool (KL ==KLabel 'Throw)
     orBool (KL ==KLabel 'Break)
     orBool (KL ==KLabel 'Continue) [anywhere]
-
-syntax K ::= "interactsWithStack" "(" K   // S - the stack consumer statement, see above
-                              "," StackLayerType
-                              "," K       // XK - second argument in stack layer after StackLayerType
-                              ")" //-> Bool  true if statement interacts with the layer,
-                                          // false if layer if layer is simply deleted
-
-rule interactsWithStack('Break('None(_)), StackLT:StackLayerType, _) =>
-           (StackLT ==K loopSL)
-    orBool (StackLT ==K switchSL)
-    orBool (StackLT ==K tryFinallySL) [anywhere]
-
-rule interactsWithStack('Break('Some(X:Id)), StackLT:StackLayerType, StackArg2:K) =>
-         ( (StackLT ==K labelSL)   andBool (X ==K StackArg2))
-    orBool (StackLT ==K tryFinallySL) [anywhere]
-
-rule interactsWithStack('Continue('None(_)), StackLT:StackLayerType, _) =>
-           (StackLT ==K loopSL)
-    orBool (StackLT ==K forBodySL)
-    orBool (StackLT ==K tryFinallySL) [anywhere]
-
-rule interactsWithStack('Continue('Some(X:Id)), StackLT:StackLayerType, StackArg2:K) =>
-           ( (StackLT ==K loopSL)    andBool (X ==K StackArg2))
-    orBool ( (StackLT ==K forBodySL) andBool (X ==K StackArg2))
-    orBool   (StackLT ==K tryFinallySL) [anywhere]
-
-syntax K ::= "interactsWithNext" "(" K   // S - the stack consumer statement, see above
-                                 "," K   // NextS - next statement
-                                 ")"      [function]
-
-rule interactsWithNext('Return(_), 'Try(.K,,_:K,,_:K)) => true
-rule interactsWithNext('Return(_), env(_)) => true
-rule interactsWithNext('Return(_), 'Try(.K,,_:K)) => false
-
-rule interactsWithNext('Return(_), 'Try(K:K,,_)) => false
-when K =/=K .K
-
-rule interactsWithNext('Return(_), KL:KLabel(_)) => false
-when        KL =/=KLabel 'Try
-    andBool KL =/=KLabel 'env`(_`)
-
-syntax K ::= "popx" //discard the top stack layer
-
-rule [popx]:
-    <k> popx => . ...</k>
-    <stack> _:ListItem => . ...</stack>
 
 //@ \section{Blocks} JLS $14.2
 
@@ -182,11 +137,27 @@ rule [Empty]:
 //@ \section{Labeled statements} JLS $14.7
 
 rule [Labeled]:
-    <k> ('Labeled(X:Id,, S:K) => saveStackLayer(labelSL,X,S,K) ~> S ~> popx) ~> K:K </k>
+    'Labeled(X:Id,, S:K) => S ~> labeledImpl(X)
+
+rule [labeledImplDiscard]:
+    labeledImpl(_) => .K
+
+//processed version of the labeled statement
+syntax K ::= "labeledImpl" "(" Id ")"
 
 //@ \section{Expression statements} JLS $14.8
 
-context 'ExprStm(HOLE)
+//todo Strange problem: the cooling rule for the following no longer work:
+//context 'ExprStm(HOLE)
+//syntax KLabel ::= "'ExprStm" [strict]
+
+//custom heating/cooling
+syntax K ::= "STMHOLE"
+rule [ExprStmHeat]: 'ExprStm(K:K) => K ~> 'ExprStm(STMHOLE)
+when notBool (isKResult(K) ==K true)    [structural]
+
+rule [ExprStmCoolGeneral]: KR:KResult ~> 'ExprStm(STMHOLE) => 'ExprStm(KR)                  [structural]
+rule [ExprStmCoolNothing]: <k> nothing::void ~> 'ExprStm(STMHOLE) => 'ExprStm(nothing::void) ...</k>   [structural]
 
 rule [ExprStm]:
     'ExprStm(_:TypedVal) => .
@@ -231,32 +202,32 @@ rule [AssertStmTwoArgs]:
 
 //@ \section{Switch statement}
 
-syntax K ::= "switchImpl"
+syntax K ::= "switchImpl" "("
                 TypedVal "," // TV - switch param
                 List{K} ","  // switch body - list of 'SwitchGroup labels
                 K            // DefaultStm - default block, if any
+              ")"
+            | "switchEnd"
 
 context 'Switch(HOLE,,_)
 
+//The switchEnd in the right-hand side of => is required to properly interact with break.
 rule [Switch]:
-    <k>
-      ( 'Switch(TV:TypedVal,, 'SwitchBlock('ListWrap(Ks:List{K}),, TrailingLabels:K))
-        => saveStackLayer(switchSL, .K, .K, K)
-      ~> switchImpl TV, (Ks,, 'SwitchGroup(TrailingLabels,, .K)), .K )
-      ~> K:K
-    </k>
+    'Switch(TV:TypedVal,, 'SwitchBlock('ListWrap(Ks:List{K}),, TrailingLabels:K))
+    => switchImpl(TV, (Ks,, 'SwitchGroup(TrailingLabels,, .K)), .K)
+    ~> switchEnd
 
-context switchImpl _,
-          ( 'SwitchGroup('ListWrap('Case(HOLE),,_:List{K}),,_),, _:List{K} ), _
+context switchImpl( _,
+          ( 'SwitchGroup('ListWrap('Case(HOLE),,_:List{K}),,_),, _:List{K} ), _)
 
 //the type associated to V and V2 is not important for match, only the value.
 //JLS3 $14.11, page 377: Every case constant expression associated with
 //a switch statement must be assignable (§5.2) to the type of the switch Expression.
 
 rule [SwitchCaseNotMatch]:
-    switchImpl V:RawVal :: _, ( 'SwitchGroup('ListWrap(
+    switchImpl( V:RawVal :: _, ( 'SwitchGroup('ListWrap(
         ( 'Case(V2:RawVal :: _) => .List{K} ),,
-        _:List{K} ),,_),, _), _
+        _:List{K} ),,_),, _), _)
 when
     V =/=K V2
 
@@ -265,85 +236,48 @@ by it's block. The execution rules for switch will discard switch-related
 constructs and will execute the statements. */
 
 rule [SwitchCaseMatch]:
-    ( switchImpl V:RawVal :: _, ('SwitchGroup('ListWrap('Case(V :: _),,_:List{K}),,S:K),,Ks:List{K}), _ )
+    switchImpl( V:RawVal :: _, ('SwitchGroup('ListWrap('Case(V :: _),,_:List{K}),,S:K),,Ks:List{K}), _)
     => 'ListWrap(S,,Ks)
 
 rule [SwitchDefaultSave]:
-    switchImpl TV:TypedVal, (
+    switchImpl( TV:TypedVal, (
       'SwitchGroup('ListWrap(
           ( 'Default(_) => .List{K} ),,
           _:List{K}),, S:K),, Ks:List{K}
-    ),
-    ( _:K => 'ListWrap(S,, Ks) )
+      ),
+      ( _:K => 'ListWrap(S,, Ks) )
+    )
 
 rule [SwitchGroupDiscard]:
-    switchImpl TV:TypedVal, (
-        ( 'SwitchGroup('ListWrap( .List{K} ),,_) => .List{K} ),,
-    _), _
+    switchImpl( TV:TypedVal,
+      (( 'SwitchGroup('ListWrap( .List{K} ),,_) => .List{K} ),,_),
+    _)
 
 rule [SwitchDefaultExec]:
-    switchImpl _, .List{K}, DefaultStm:K => DefaultStm
+    switchImpl( _, .List{K}, DefaultStm:K) => DefaultStm
 
 rule [SwitchGroupExec]:
     'SwitchGroup(_:K,, S:K) => S
 
+rule [SwitchEndDiscard]:
+    switchEnd => .K
+
 //@ \section{While statement} and loop infrastructure.
 
 rule [While]:
-    <k> ( 'While(E:K,,S:K)
-          => saveLoop(loopImpl(E, S, .K),K) ~> loopImpl(E, S, .K) ~> popx )
-        ~> K:K
-    </k>
-        [structural]
+    'While(E:K,,S:K) => whileImpl(E, S)         [structural]
 
-syntax K ::= "loopImpl" "("
-                K ","  // E - test expression
-                K ","  // S - loop body
-                K      // UpdClause - present for For, empty for other loops.
+syntax K ::= "whileImpl" "("
+                K ","  // E - test expression. In For loop, it is UpdClause ~> testExp
+                K      // S - while body
              ")"
 
-rule [loopImpl]:
-    <k> loopImpl(E:K, S:K, UpdClause:K)
-        => 'If(E,, 'Block(S ~> UpdClause ~> loopImpl(E, S, UpdClause)),, .K)
-      ...
-    </k>
-        [structural]
-
-syntax K ::= "saveLoop" "("
-                K "," // LoopStm - the whole while / do / for statement
-                K     // K - rest of computation
-             ")"
-
-rule [saveLoop]:
-    <k>
-      saveLoop(LoopStm:K, K:K) => saveStackLayer(loopSL, getLoopLabel(ParentLayer), LoopStm, K)
-      ...
-    </k>
-    <stack> ListItem(ParentLayer:K) ...</stack>
-
-/*@ \texttt{Label propagation} through stack layers, used by
-continue statement with label.*/
-
-syntax K ::= "getLoopLabel" "(" K ")" [function]
-
-rule getLoopLabel((StackLT:StackLayerType, K:K, KL:KLabel(_), _,_,_)) =>
-    #if StackLT ==K labelSL
-        andBool (        (KL ==KLabel 'While)
-                  orBool (KL ==KLabel 'DoWhile)
-                  orBool (KL ==KLabel 'For) )
-
-      #then K
-      #else .K
-    #fi [anywhere]
+rule [whileImpl]:
+    whileImpl(E:K, S:K) => 'If(E,, 'Block(S ~> whileImpl(E, S)),, .K)     [structural]
 
 //@ \section{Do statement}
 rule
-    <k> ( 'DoWhile(S:K,,E:K)
-          => saveLoop(loopImpl(E, S, .K), K) ~> S ~> loopImpl(E, S, .K) ~> popx
-        )
-        ~> K:K
-    </k>
-        [structural]
+    'DoWhile(S:K,,E:K) => S ~> whileImpl(E, S)  [structural]
 
 //@ \section{For statement}
 
@@ -388,68 +322,93 @@ rule [ForThirdArgRed]:
 
 //this form of resulting while is required for compatibility with continue statement
 rule [For]:
-    <k> ( 'For(stm(InitClause:K),, 'Some(TestExp:K),, stm(UpdClause:K),, S:K)
-          => saveLoop(loopImpl(TestExp, S, stm(UpdClause)), K) ~> 'Block(stm(InitClause)
-              ~> saveForBody ~> loopImpl(TestExp, S, stm(UpdClause))) ~> popx
-        )
-        ~> K:K
-    </k>
-        [structural]
-
-syntax K ::= "saveForBody"
-
-rule [saveForBody]:
-    <k>
-      (saveForBody
-          => saveStackLayer(forBodySL, getForBodyLabel(ParentLayer), loopImpl(E, S, UpdClause), K))
-      ~> loopImpl(E:K, S:K, UpdClause:K) ~> (. => popx) ~> K:K
-    </k>
-    <stack> ListItem(ParentLayer:K) ...</stack>
-
-syntax K ::= "getForBodyLabel" "(" K ")" [function]
-
-//the parent layer of forBodySL is always loopSL
-rule getForBodyLabel((loopSL, K:K, _,_,_,_:Bag)) => K [anywhere]
-
-//@ \section{Break statement}
-
-rule [Break]:
-    <k> 'Break(Arg:K) ~> _:K => restoreControl(K,Env,C) </k>
-    <stack> ListItem((StackLT:StackLayerType, XK:K, _, K:K, Env:Map, C:Bag)) => . ...</stack>
-when
-    interactsWithStack('Break(Arg), StackLT, XK)
-    andBool (StackLT =/=K tryFinallySL)
-
-rule [StackConsumerStmPassThrough]:
-    <k> KL:KLabel(Ks:List{K}) ...</k>
-    <stack> ListItem((StackLT:StackLayerType, XK:K, _,_,_,_)) => . ...</stack>
-when
-    isStackConsumer(KL)
-    andBool notBool interactsWithStack(KL(Ks), StackLT, XK)
+    'For(stm(InitClause:K),, 'Some(TestExp:K),, stm(UpdClause:K),, S:K)
+     => 'Block(stm(InitClause)
+        ~> 'If(TestExp,, 'Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S),, .K))  [structural]
 
 //stack consumer stm - Return, Throw, Break or Continue reaches tryFinallySL layer
+//todo test whether KL argument might be not KResult at the moment of this rule
 rule [StackConsumerStmInTryFinally]:
-    <k> (. => restoreControl(.K,Env,C) ~> FinallyS) ~> KL:KLabel(_:List{K}) ...</k>
-    <stack> ListItem((tryFinallySL, .K, FinallyS:K, .K, Env:Map, C:Bag)) => . ...</stack>
+    KL:KLabel(Ks:List{K}) ~> finallyBlock(FinallyS:K)
+    => FinallyS ~> KL(Ks)
 when
   isStackConsumer(KL)
 
+rule [StackConsumerStmRestoreEnv]:
+    KL:KLabel(Ks:List{K}) ~> env(Env:Map)
+    => env(Env:Map) ~> KL(Ks)
+when
+  isStackConsumer(KL)
+
+//@ \section{Break statement}
+
+rule [BreakUnlabeledPropagate]:
+    'Break('None(_)) ~> (KL:KLabel(_) => .)
+when
+            KL =/=KLabel 'env`(_`)
+    andBool KL =/=KLabel 'finallyBlock`(_`)
+    andBool KL =/=KLabel 'whileImpl`(_`,_`)
+    andBool KL =/=KLabel 'switchEnd
+
+rule [BreakUnlabeled]:
+    'Break('None(_)) ~> KL:KLabel(_) => .
+when
+           KL ==KLabel 'whileImpl`(_`,_`)
+    orBool KL ==KLabel 'switchEnd
+
+rule [BreakLabeledPropagate]:
+    'Break('Some(X:Id)) ~> (KL:KLabel(_) => .)
+when
+            KL =/=KLabel 'env`(_`)
+    andBool KL =/=KLabel 'finallyBlock`(_`)
+    andBool KL =/=KLabel 'labeledImpl`(_`)
+
+rule [BreakLabeledNotMatch]:
+    'Break('Some(X1:Id)) ~> (labeledImpl(X2:Id) => .)
+when
+    X1 =/=K X2
+
+rule [BreakLabeledMatch]:
+    'Break('Some(X:Id)) ~> labeledImpl(X:Id) => .
+
 //@ \section{Continue statement}
 
-rule [Continue]:
-    <k>
-      'Continue(Arg:K) ~> _:K
-      => restoreControl(K,Env,C) ~> UpdClause ~> loopImpl(E, S, UpdClause) ~> popx
-    </k>
-    <br/>
-    <stack>
-      ListItem((StackLT:StackLayerType, XK:K, loopImpl(E:K, S:K, UpdClause:K),
-                K:K, Env:Map, C:Bag))
-      ...
-    </stack>
+rule [ContinuePropagate]:
+    'Continue(_) ~> (KL:KLabel(_) => .)
 when
-    interactsWithStack('Continue(Arg), StackLT, XK)
-    andBool (StackLT =/=K tryFinallySL)
+            KL =/=KLabel 'env`(_`)
+    andBool KL =/=KLabel 'finallyBlock`(_`)
+    andBool KL =/=KLabel 'whileImpl`(_`,_`)
+
+rule [ContinueUnlabeled]:
+    ('Continue('None(_)) => .) ~> whileImpl(_,_)
+
+rule [ContinueLabeledMeetsWhile]:
+    <k>
+      (. => getWhileLabel(Rest)) ~> 'Continue('Some(X:Id)) ~> whileImpl(_,_) ~> Rest:K
+    </k>
+
+rule [ContinueLabeledNotMatch]:
+    (whileLabel(LabelK:K) => .) ~> 'Continue('Some(X:Id)) ~> (whileImpl(_,_) => .)
+when
+    LabelK =/=K X
+
+rule [ContinueLabeledMatch]:
+    whileLabel(X) ~> 'Continue('Some(X:Id)) => .
+
+//Auxiliary constructs used in the semantics of continue.
+//Search for the label associated with the last encountered while statement
+syntax K ::= "getWhileLabel" "(" K ")"
+           | "whileLabel" "(" K ")"
+
+rule getWhileLabel((env(_) => .) ~> _)
+rule getWhileLabel(.K) => whileLabel(.K)
+rule getWhileLabel(labeledImpl(X:Id) ~> _) => whileLabel(X)
+
+rule getWhileLabel(KL:KLabel(_) ~> _) => whileLabel(.K)
+when
+            KL =/=KLabel 'env`(_`)
+    andBool KL =/=KLabel 'labeledImpl`(_`)
 
 /*@\section{Return} At method return, we have to check that the type
 of the returned
@@ -463,25 +422,23 @@ rule [ReturnNothingDesugar]:
     'Return('None(.List{K}) => 'Some(nothing :: void))
         [structural]
 
-rule [ReturnInTryFinally]:
-    'Return('Some(TV:TypedVal)) ~> 'Try(.K ,,'ListWrap(.List{K}),,FinallyS:K)
-    => FinallyS ~> 'Return('Some(TV:TypedVal))
-
-rule [ReturnRestoreEnv]:
-    'Return('Some(TV:TypedVal)) ~> env(Env:Map) => env(Env) ~> 'Return('Some(TV))   [structural]
-
 rule [ReturnPropagate]:
     'Return('Some(TV:TypedVal)) ~> (KL:KLabel(Ks:List{K}) => .K)
 when
-    notBool interactsWithNext('Return('Some(TV:TypedVal)), KL(Ks))
+            KL =/=KLabel 'env`(_`)
+    andBool KL =/=KLabel 'finallyBlock`(_`)
 
 rule [ReturnMethodEnd]:
     <k>
       'Return('Some(V:RawVal :: T2:Type))
-      => restoreControl(K,Env,C) ~> subtype(T2, T1) ~> true? ~> V::T1
+      => subtype(T2, T1) ~> true? ~> V::T1 ~> K
     </k>
-    <stack> ListItem((methodSL,_,_, K:K, Env:Map, C:Bag)) => . ...</stack>
-    <return> T1:Type </return>
+    <control>
+      <stack> ListItem((methodSL,_,_, K:K, Env:Map, C:Bag)) => . ...</stack>
+      (<return> T1:Type </return>
+       _:Bag => C)
+    </control>
+    <env> _ => Env </env>
 
 /*@ \section{Throw statement}
 Exceptions are propagated now until a catch that can bind them is
@@ -492,14 +449,14 @@ context 'Throw(HOLE)
 rule [Throw]:
     (. => checkCatch(subtype(typeOf(TV), T)))
     ~> 'Throw(TV:TypedVal)
-    ~> 'Try(.K,, 'ListWrap(catchImpl(paramImpl(T:Type, X:Id),_),, _))
+    ~> catchBlocks(catchImpl(paramImpl(T:Type, X:Id),_),, _)
 
 syntax K ::= "checkCatch" "(" K ")"
 context checkCatch(HOLE)
 
 rule [ThrowCheckedTrue]:
     checkCatch(true::bool) ~> 'Throw(TV:TypedVal)
-    ~> 'Try(.K,, 'ListWrap(catchImpl(paramImpl(T:Type, X:Id), CatchS),, _))
+    ~> catchBlocks(catchImpl(paramImpl(T:Type, X:Id), CatchS),, _)
     => 'Block('ListWrap(
           'LocalVarDecStm('LocalVarDec('ListWrap(.List{K}),, T,, 'ListWrap('VarDec(X,, TV)))),,
             CatchS
@@ -507,25 +464,27 @@ rule [ThrowCheckedTrue]:
 
 rule [ThrowCheckedFalse]:
     (checkCatch(false::bool) => .)
-    ~> 'Throw(TV:TypedVal) ~> 'Try(.K,, 'ListWrap((catchImpl(_,_) => .List{K}),, _))
+    ~> 'Throw(TV:TypedVal) ~> catchBlocks((catchImpl(_,_) => .List{K}),, _)
 
 rule [ThrowCatchEmptyDiscard]:
-    'Throw(TV:TypedVal) ~> ('Try(.K,, 'ListWrap(.List{K})) => .)
-
-rule [ThrowRestoreEnv]:
-    'Throw(TV:TypedVal) ~> env(Env:Map) => env(Env) ~> 'Throw(TV)   [structural]
+    'Throw(TV:TypedVal) ~> (catchBlocks(.List{K}) => .)
 
 rule [ThrowPropagate]:
     'Throw(TV:TypedVal) ~> (KL:KLabel(_) => .)
 when
-    KL =/=KLabel 'Try
-    andBool KL =/=KLabel 'env`(_`)
+            KL =/=KLabel 'env`(_`)
+    andBool KL =/=KLabel 'finallyBlock`(_`)
+    andBool KL =/=KLabel 'catchBlocks`(_`)
 
 rule [ThrowMethodEnd]:
     <k>
-      (. => restoreControl(K,Env,C)) ~> 'Throw(TV:TypedVal)
+      'Throw(TV:TypedVal) ~> (. => K)
     </k>
-    <stack> ListItem((methodSL,_,_, K:K, Env:Map, C:Bag)) => . ...</stack>
+    <control>
+      <stack> ListItem((methodSL,_,_, K:K, Env:Map, C:Bag)) => . ...</stack>
+      (_ => C)
+    </control>
+    <env> _ => Env </env>
 
 rule [ThrowCausesThreadTermination]:
     <k>
@@ -540,15 +499,6 @@ rule [ThrowCausesThreadTermination]:
           ))
     </k>
     <stack> .List </stack>
-
-syntax K ::= "restoreControl" "(" K "," Map "," Bag ")"
-rule [restoreControl]:
-    <k> ( restoreControl(K:K, Env:Map, C:Bag) => .) ~> _:K ~> (. => K) </k>
-    <control>
-      <stack> _:List </stack>
-      (_ => C)
-    </control>
-    <env> _ => Env </env>
 
 //@ \section{Try statement}
 
@@ -572,28 +522,25 @@ syntax KResult ::= "catchImpl" "(" K //paramImpl term
                                "," K //the code block
                                ")"
 
-rule [TryCatch]:
-    <k>
-      (. => TryS) ~> 'Try((TryS:K => .K),, 'ListWrap(KRs:List{K}))
-      ...
-    </k>
-when (TryS =/=K .K) andBool isKResult(KRs)
+//The auxiliary constructs that hold catch clauses / finally clause
+//after try clause has been moved to the top of computation
+syntax K ::= "catchBlocks" "(" List{K} ")" //arg - list of catchImpl
+           | "finallyBlock" "(" K ")"      //arg - finally block
 
-rule [TryCatchDiscard]:
-    'Try(.K,, _:K) => .K
+rule [TryCatch]:
+    'Try(TryS:K,, 'ListWrap(KRs:List{K})) => TryS ~> catchBlocks(KRs)
+when isKResult(KRs)
+
+rule [TryBlocksDiscard]:
+    catchBlocks(_) => .K
 
 //@ \subsection{Execution of try-finally} JLS 14.20.2
 
 rule [TryFinally]:
-    (. => TryS) ~> 'Try((TryS:K => .K) ,,'ListWrap(.List{K}),,FinallyS:K)
-when TryS =/=K .K
+    'Try(TryS:K ,,'ListWrap(.List{K}),,FinallyS:K) => TryS ~> finallyBlock(FinallyS)
 
 rule [TryFinallyNormalEnd]:
-    'Try(.K ,,'ListWrap(.List{K}),,FinallyS:K) => FinallyS
-
-rule [ThrowInTryFinally]:
-    'Throw(TV:TypedVal) ~> 'Try(.K ,,'ListWrap(.List{K}),,FinallyS:K)
-    => FinallyS ~> 'Throw(TV)
+    finallyBlock(FinallyS:K) => FinallyS
 
 //@ \section{Auxiliary operations}
 
@@ -608,23 +555,6 @@ rule [ThreadTermination]:
     <busy> Busy:Set => Busy -Set keys(H) </busy>
     <computationPhase> ExecutionPhase </computationPhase>
     <dissolveEmptyK> true </dissolveEmptyK>
-
-syntax K ::= "saveStackLayer" "("
-                        StackLayerType ","  // StackLT - the StackLayerType
-                        K ","               // Param. for labelSL - the label,
-                                            //    for tryCatchSL - catch var, for others - .K
-                        K ","               // SecondBlock - statement to be executed
-                                            //    when this layer is consumed
-                        K                   // Rest - the rest of computation
-              ")"
-
-rule [saveStackLayer]:
-    <k> (saveStackLayer(StackLT:StackLayerType, Param:K, SecondBlock:K, Rest:K) => .) ~> _:K </k>
-    <control>
-      <stack> . => ListItem((StackLT, Param, SecondBlock, Rest, Env, C)) ...</stack>
-      C:Bag
-    </control>
-    <env> Env:Map </env>
 
 //Debug aid. Dissolves classes cell so that configuration is not overbloated, at the end
 //of the execution.

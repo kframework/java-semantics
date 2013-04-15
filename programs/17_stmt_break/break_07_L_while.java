@@ -5,11 +5,11 @@ public class break_07_L_while {
   public static void main(String[] args) {
     int i=0;
     label_1:
-    while (i<10) {
-      if (i >= 5) break;
-      System.out.print(i+" ");
-      i++;
-    }
+      while (i<10) {
+        if (i >= 5) break;
+        System.out.print(i+" ");
+        i++;
+      }
     System.out.println();
     System.out.println("final i = "+ i);
     System.out.println("Done!");
