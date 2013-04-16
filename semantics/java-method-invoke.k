@@ -480,7 +480,7 @@ rule [invokeImplInstance]:
     </k>
     <control>
       <stack>
-        . =>  ListItem((methodSL,.K,.K,K, Env,
+        . =>  ListItem((K, Env,
                   (
                     <crntObj> OldObj </crntObj>
                     <return> OldT </return>
@@ -522,7 +522,7 @@ rule [invokeImplStatic]:
     </k>
     <control>
       <stack>
-        . =>  ListItem((methodSL,.K,.K,K, Env,
+        . =>  ListItem((K, Env,
                   (
                     <crntObj> OldObj </crntObj>
                     <return> OldT </return>
