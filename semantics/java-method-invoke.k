@@ -450,9 +450,9 @@ rule [isAccessiblePrivate]:
 
 //tests whether a new method in an overwriting chain is accessible to the old method
 syntax K ::= "isAccessibleForOverwriting" "("
-                                              Id ","          //OldMethodClass
+                                              ClassType ","   //OldMethodClass
                                               AccessMode ","  //OldMethodAccessMode
-                                              Id ","          //NewMethodClass
+                                              ClassType ","   //NewMethodClass
                                               AccessMode      //NewMethodAccessMode
                                           ")"
         [strict(4)] //strict(2) also makes sense but is not used by the construct creation rule

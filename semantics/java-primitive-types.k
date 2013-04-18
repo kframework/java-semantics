@@ -78,7 +78,7 @@ rule normalize(I:Int, NT1:NumericType, NT2:NumericType )
      => normalize(I :: normalizeType(NT1,NT2))
         [anywhere]
 
-syntax K ::= "normalizeType" "(" NumericType ")" [function]
+syntax K ::= "normalizeType" "(" Type ")" [function]
 rule normalizeType(ILT:IntOrLongType) => ILT [anywhere]
 
 rule normalizeType(NT:NumericType) => int

@@ -255,7 +255,7 @@ rule [create]:
 rule [createEmptyDiscard]:
     <k> create( noClass ) => . ...</k> [structural]
 
-syntax K ::= "setCrntClass" "(" Id ")"
+syntax K ::= "setCrntClass" "(" ClassType ")"
 
 rule [setCrntClass]:
     <k> setCrntClass(Class:ClassType) => . ...</k>

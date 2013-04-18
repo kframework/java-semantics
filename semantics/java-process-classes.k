@@ -484,8 +484,8 @@ rule [inheritInterfaceFieldsEnd]:
 /*@Initial value of static fields. Used to detect the moment when static initialziation
 should be triggered, especially for interfaces.
 */
-syntax K ::= "uninitialized" "(" Id "," // Class - the declaring class
-                                 Type   // Type of the variable
+syntax K ::= "uninitialized" "(" ClassType "," // Class - the declaring class
+                                 Type          // Type of the variable
                              ")"
 
 /*@Section process 'Param labels*/
