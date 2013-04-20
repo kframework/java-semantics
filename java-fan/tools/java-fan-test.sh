@@ -4,4 +4,6 @@
 # if several arguments are provided as directories - running
 # tests inside that directories.
 
-~/java-semantics/java-fan/tools/aux-jftest.sh -threads 22 -clean false ${@}
+TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+$TOOLS_DIR/java-fan-aux-test.sh -threads 22 -clean true ${@}

@@ -1,14 +1,14 @@
 Running tests for
-.programs/
+.
 
-.programs/01_smoke_tests:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/01_smoke_tests:
     array.java...  failed
     helloWorld.java...  failed
-    read.java...  error
+    read.java...  failed
     sumArrayInFor.java...  failed
     sumInWhile.java...  failed
 
-.programs/02_literals:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/02_literals:
     literals_011_long_decimal.java...  failed
     literals_01_integer_decimal.java...  failed
     literals_02_integer_hexa.java...  failed
@@ -18,52 +18,65 @@ Running tests for
     literals_06_char_escape.java...  failed
     literals_07_string.java...  failed
     literals_08_string_escapes_adv.java...  failed
-    literals_09_null.java...  error
+    literals_09_null.java...  failed
 
-.programs/03_syntax_samples:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/03_syntax_samples:
     DotOperator1.java...  failed
     DotOperator2.java...  failed
     DotOperator3.java...  failed
     Operators_JBook.java...  failed
     Operators_non_JBook.java...  failed
 
-.programs/04_prim_operators:
-    op_01_int_to_int.java...  failed
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/04_prim_operators:
+    op_011_int_to_int_prefix.java...  failed
+    op_012_int_to_int_pre_inc_dec.java...  failed
+    op_013_int_to_int_postfix.java...  failed
+    op_014_int_to_int_bin_arith.java...  failed
+    op_015_int_to_int_bitwise.java...  failed
+    op_016_int_to_int_cond.java...  failed
     op_02_int_to_bool.java...  failed
     op_03_int_bit_shift.java...  failed
-    op_04_int_assign.java...  failed
+    op_041_int_assign_plus.java...  failed
+    op_042_int_assign_all.java...  failed
     op_05_int_to_int_overflow.java...  failed
     op_06_long_to_long.java...  failed
     op_07_long_to_bool.java...  failed
     op_08_long_bit_shift.java...  failed
     op_09_long_assign.java...  failed
     op_10_long_to_long_overflow.java...  failed
-    op_11_bool_to_bool.java...  failed
+    op_111_bool_to_bool_not_lazy.java...  failed
+    op_112_lazy_and.java...  failed
+    op_113_lazy_or.java...  failed
     op_12_bool_compound_assign.java...  failed
     op_13_compound_assign_jls.java...  failed
 
-.programs/05_prim_conversions:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/05_prim_conversions:
     exp_conv_01_primitive_cast.java...  failed
     exp_conv_02_primitive_var_init_cast.java...  failed
     imp_conv_01_assing_widening.java...  failed
     imp_conv_02_assing_narrowing.java...  failed
     imp_conv_03_primitive_var_init.java...  failed
     imp_conv_04_mcall_widening.java...  failed
-    imp_conv_05_unary_num_prom.java...  error
+    imp_conv_05_unary_num_prom.java...  failed
     imp_conv_06_unary_prom_array.java...  failed
     imp_conv_07_bin_prom_to_int_all_op.java...  failed
     imp_conv_08_bin_prom_selections.java...  failed
     imp_conv_09_bin_prom_cond_op.java...  failed
     imp_conv_10_short_inc_dec.java...  failed
-    imp_conv_11_compound_assign.java...  error
-    imp_conv_12_compound_assign_sel.java...  error
+    imp_conv_11_compound_assign.java...  failed
+    imp_conv_12_compound_assign_sel.java...  failed
 
-.programs/06_string_plus:
-    str_conv_01_String_plus.java...  error
-    str_conv_02_String_assign_plus.java...  error
-    str_conv_03_Object_assign_plus.java...  error
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/06_string_plus:
+    str_conv_011_String_plus_str.java...  failed
+    str_conv_012_String_plus_int.java...  failed
+    str_conv_013_String_plus_bool.java...  failed
+    str_conv_014_String_plus_obj.java...  failed
+    str_conv_015_String_plus_int_types.java...  failed
+    str_conv_016_String_plus_null.java...  failed
+    str_conv_02_String_assign_plus.java...  failed
+    str_conv_03_Object_assign_plus.java...  failed
 
-.programs/07_ref_operators:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/07_ref_operators:
     ref_op_01_assign_to_object.java...  failed
     ref_op_02_assign_from_null.java...  failed
     ref_op_03_assign_f_null_t_obj.java...  failed
@@ -83,20 +96,51 @@ Running tests for
     ref_op_16_instanceof_null_types.java...  failed
     ref_op_17_instanceof_true.java...  failed
     ref_op_18_instanceof_false.java...  failed
-    ref_op_19_conditional.java...  failed
+    ref_op_19_conditional_simple.java...  failed
 
-.programs/08_op_cond_type:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/08_op_cond_type:
     op_cond_type_01_eq.java...  failed
     op_cond_type_02_numeric.java...  failed
     op_cond_type_03_null_ref.java...  failed
     op_cond_type_04_null_null.java...  failed
     op_cond_type_05_ref_ref.java...  failed
 
-.programs/11_stmt_basic:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/09_exp_type:
+    exp_type_01_null.java...  failed
+    exp_type_02_new_class.java...  failed
+    exp_type_03_new_array.java...  failed
+    exp_type_04_field_access.java...  failed
+    exp_type_05_method_inv.java...  failed
+    exp_type_06_array_access.java...  failed
+    exp_type_07_postfix_inc_dec.java...  failed
+    exp_type_08_prefix_inc_dec.java...  failed
+    exp_type_09_unary_plus_min.java...  failed
+    exp_type_10_bit_neg.java...  failed
+    exp_type_11_bool_not.java...  failed
+    exp_type_12_cast_prim.java...  failed
+    exp_type_13_cast_ref.java...  failed
+    exp_type_14_int_multi.java...  failed
+    exp_type_15_int_add.java...  failed
+    exp_type_16_string_plus.java...  failed
+    exp_type_17_int_bit_shift.java...  failed
+    exp_type_18_int_relational.java...  failed
+    exp_type_19_instanceof.java...  failed
+    exp_type_20_int_eq.java...  failed
+    exp_type_21_bool_eq.java...  failed
+    exp_type_22_ref_eq.java...  failed
+    exp_type_23_bitwise_ops.java...  failed
+    exp_type_24_logical_ops.java...  failed
+    exp_type_25_logical_cond_ops.java...  failed
+    exp_type_26_cond_op.java...  failed
+    exp_type_27_assign.java...  failed
+    exp_type_28_assign_comp.java...  failed
+    exp_type_29_composite_exp.java...  failed
+
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/11_stmt_basic:
     assert_statement.java...  failed
     emptyStatement.java...  failed
 
-.programs/12_stmt_loop:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/12_stmt_loop:
     doWhile_1.java...  failed
     doWhile_2_field_shadowing.java...  failed
     for_decl.java...  failed
@@ -104,7 +148,7 @@ Running tests for
     for_simple.java...  failed
     for_two_decls.java...  failed
 
-.programs/13_stmt_switch:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/13_stmt_switch:
     switch_01_simple.java...  failed
     switch_02_multicase.java...  failed
     switch_03_default.java...  failed
@@ -112,8 +156,9 @@ Running tests for
     switch_05_break_loops.java...  failed
     switch_06_continue.java...  failed
     switch_07_break_label.java...  failed
+    switch_08_default_break.java...  failed
 
-.programs/14_stmt_return:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/14_stmt_return:
     return_01_no_return.java...  failed
     return_02_ret_nothing.java...  failed
     return_03_ret_number.java...  failed
@@ -133,8 +178,9 @@ Running tests for
     return_17_ret_string.java...  failed
     return_18_ret_ref_exact.java...  failed
     return_19_ret_ref_derived.java...  failed
+    return_20_block_env_restore.java...  failed
 
-.programs/15_stmt_throw:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/15_stmt_throw:
     throw_01_try_catch.java...  failed
     throw_02_try_catch_finally.java...  failed
     throw_03_tryCF_tryC.java...  failed
@@ -150,13 +196,14 @@ Running tests for
     throw_13_try_CF_no_throw.java...  failed
     throw_14_catch_field_shadow.java...  failed
     throw_15_catch_env_restore.java...  failed
+    throw_16_followed_by_try.java...  failed
 
-.programs/16_stmt_throw_thread_term:
-    thread_term_01_throw.java...  error
-    thread_term_02_tryCF.java...  error
-    thread_term_03_mcall.java...  error
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/16_stmt_throw_thread_term:
+    thread_term_01_throw.java...  failed
+    thread_term_02_tryCF.java...  failed
+    thread_term_03_mcall.java...  failed
 
-.programs/17_stmt_break:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/17_stmt_break:
     break_01_while.java...  failed
     break_02_do.java...  failed
     break_03_for.java...  failed
@@ -167,6 +214,7 @@ Running tests for
     break_08_L_do.java...  failed
     break_09_L_for.java...  failed
     break_10_L_block_while.java...  failed
+    break_11_block_env_restore.java...  failed
     break_label_1_block_simple.java...  failed
     break_label_2_nested_labeled.java...  failed
     break_label_3_block_in_while.java...  failed
@@ -178,7 +226,7 @@ Running tests for
     label_propagation_02_while.java...  failed
     label_propagation_03_for.java...  failed
 
-.programs/18_stmt_continue:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/18_stmt_continue:
     continue_01_while.java...  failed
     continue_02_do_1.java...  failed
     continue_03_do_2.java...  failed
@@ -189,6 +237,7 @@ Running tests for
     continue_08_for_field_shadowing.java...  failed
     continue_09_while_label.java...  failed
     continue_10_for_label.java...  failed
+    continue_11_block_env_restore.java...  failed
     continue_label_01_while.java...  failed
     continue_label_02_do_1.java...  failed
     continue_label_03_do_2.java...  failed
@@ -202,7 +251,7 @@ Running tests for
     continue_label_11_L_block_L_w.java...  failed
     graph_continue.java...  failed
 
-.programs/21_arrays:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/21_arrays:
     array_01_overview.java...  failed
     array_02_assign_type_preserv.java...  failed
     array_03_ref_assign_type_preserv.java...  failed
@@ -248,18 +297,18 @@ Running tests for
     array_43_default_val_ref.java...  failed
     array_44_side_effect_exp.java...  failed
 
-.programs/22_basic_jvm_exc:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/22_basic_jvm_exc:
     jvm_exc_01_arith_exc.java...  failed
     jvm_exc_02_NPE.java...  failed
     jvm_exc_03_cast_exc_hierarchy.java...  failed
     jvm_exc_04_cast_exc_types.java...  failed
 
-.programs/31_diverse:
-    all_sorting.java...  error
-    bubble.java...  error
-    collatz.java...  error
-    factorial.java...  error
-    heap.java...  error
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/31_diverse:
+    all_sorting.java...  failed
+    bubble.java...  failed
+    collatz.java...  failed
+    factorial.java...  failed
+    heap.java...  failed
     insertion1.java...  failed
     insertion2.java...  failed
     matrixMul.java...  failed
@@ -267,23 +316,23 @@ Running tests for
     point.java...  failed
     tree_sum.java...  failed
 
-.programs/32_java_api_core:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/32_java_api_core:
     Object_equals.java...  failed
     exception_toString.java...  failed
 
-.programs/32_java_api_core/obj_getClass_getName:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/32_java_api_core/obj_getClass_getName:
     className_01.java...  failed
     className_02.java...  failed
     className_03_user_classes.java...  failed
-    className_04_package.java...  failed
+    className_04_package.java...  generator error
     className_05_array_primitive.java...  failed
     className_06_array_ref.java...  failed
     className_07_array_multidim.java...  failed
 
-.programs/32_java_api_core:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/32_java_api_core:
     obj_method_03_toString.java...  failed
 
-.programs/41_method_basic:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/41_method_basic:
     method_01_return_void.java...  failed
     method_02_return_types.java...  failed
     method_03_arg_types.java...  failed
@@ -299,7 +348,7 @@ Running tests for
     method_12_c_like_arr_args.java...  failed
     method_13_c_like_arr_poly.java...  failed
 
-.programs/42_method_overloading:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/42_method_overloading:
     overload_11_diff_arg_num.java...  failed
     overload_12_two_methods.java...  failed
     overload_13_arg_conv.java...  failed
@@ -323,27 +372,27 @@ Running tests for
     overload_38_null_subtyping.java...  failed
     overload_39_base_more_specific.java...  failed
 
-.programs/43_method_access_mode:
-    m_access_01_override_1.java...  failed
-    m_access_02_override_2.java...  failed
-    m_access_03_overload.java...  failed
-    m_access_04_acc_modes.java...  failed
-    m_access_05_protected.java...  failed
-    m_access_06_acc_mode_specified.java...  failed
-    m_access_07_acc_mode_not_spec.java...  failed
-    overl_overw_interplay_01.java...  failed
-    overl_overw_interplay_02.java...  failed
-    overl_overw_interplay_03.java...  failed
-    overl_overw_interplay_04.java...  failed
-    overl_overw_interplay_05.java...  failed
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/43_method_access_mode:
+    m_access_01_override_1.java...  generator error
+    m_access_02_override_2.java...  generator error
+    m_access_03_overload.java...  generator error
+    m_access_04_acc_modes.java...  generator error
+    m_access_05_protected.java...  generator error
+    m_access_06_acc_mode_specified.java...  generator error
+    m_access_07_acc_mode_not_spec.java...  generator error
+    overl_overw_interplay_01.java...  generator error
+    overl_overw_interplay_02.java...  generator error
+    overl_overw_interplay_03.java...  generator error
+    overl_overw_interplay_04.java...  generator error
+    overl_overw_interplay_05.java...  generator error
 
-.programs/44_fields:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/44_fields:
     fields_101_local_access.java...  failed
     fields_102_of_type_ref.java...  failed
     fields_11_one_class.java...  failed
     fields_12_inheritance.java...  failed
     fields_131_hiding_local_access.java...  failed
-    fields_132_hiding_super_access.java...  error
+    fields_132_hiding_super_access.java...  failed
     fields_133_hiding_super_2.java...  failed
     fields_134_hiding_acc_modes.java...  failed
     fields_13_hiding.java...  failed
@@ -354,7 +403,7 @@ Running tests for
     fields_18_final.java...  failed
     fields_19_hiding_acc_modes.java...  failed
 
-.programs/45_class_init:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/45_class_init:
     field_init_201_const.java...  failed
     field_init_202_backward_ref.java...  failed
     field_init_203_forward_ref.java...  failed
@@ -374,7 +423,7 @@ Running tests for
     inst_init_35_hiding.java...  failed
     inst_init_41_hier_order.java...  failed
 
-.programs/46_constructors:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/46_constructors:
     constr_50_basic.java...  failed
     constr_51_implicit_noarg.java...  failed
     constr_52_explicit_noarg.java...  failed
@@ -388,16 +437,16 @@ Running tests for
     constr_71_default_constr.java...  failed
     constr_81_overload_simple.java...  failed
     constr_82_overload_multicontext.java...  failed
-    constr_83_acc_modes_super.java...  failed
-    constr_84_acc_modes_new.java...  failed
+    constr_83_acc_modes_super.java...  generator error
+    constr_84_acc_modes_new.java...  generator error
     constr_91_name_collision.java...  failed
 
-.programs/47_abstract:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/47_abstract:
     abstract_01_simple.java...  failed
     abstract_02_overload.java...  failed
-    abstract_03_acc_modes.java...  failed
+    abstract_03_acc_modes.java...  generator error
 
-.programs/48_interfaces:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/48_interfaces:
     interface_11_instof.java...  failed
     interface_12_instof_chain.java...  failed
     interface_13_instof_multi_impl.java...  failed
@@ -416,26 +465,26 @@ Running tests for
     interface_35_diamond_hier.java...  failed
     interface_36_multi_i_overload.java...  failed
     interface_41_methods_from_cl_object.java...  failed
-    interface_51_access_modes.java...  failed
+    interface_51_access_modes.java...  generator error
     interface_61_class_subtype_of_intf_diamond.java...  failed
     interface_62_intf_subtype_of_other.java...  failed
     interface_63_any_subtype_of_intf.java...  failed
     interface_64_null_subtype_of_intf.java...  failed
 
-.programs/49_super_method:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/49_super_method:
     super_m_01_simple.java...  failed
     super_m_02_poly.java...  failed
     super_m_03_overload.java...  failed
     super_m_04_overload_poly.java...  failed
-    super_m_05_acc_modes_same_pack.java...  failed
-    super_m_06_acc_modes_other_pack.java...  failed
-    super_m_07_acc_modes_other_pack_2.java...  failed
-    super_m_08_acc_m_return_hier.java...  failed
-    super_m_09_acc_m_return_hier_poly.java...  failed
-    super_m_10_acc_m_double_overriding.java...  failed
+    super_m_05_acc_modes_same_pack.java...  generator error
+    super_m_06_acc_modes_other_pack.java...  generator error
+    super_m_07_acc_modes_other_pack_2.java...  generator error
+    super_m_08_acc_m_return_hier.java...  generator error
+    super_m_09_acc_m_return_hier_poly.java...  generator error
+    super_m_10_acc_m_double_overriding.java...  generator error
     super_m_11_hier_navigating_calls.java...  failed
 
-.programs/51_static_methods:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/51_static_methods:
     static_m_101_qualified.java...  failed
     static_m_102_nested.java...  failed
     static_m_103_unqualified.java...  failed
@@ -444,7 +493,7 @@ Running tests for
     static_m_106_lookup_general.java...  failed
     static_m_107_overloading.java...  failed
     static_m_108_access_modes.java...  failed
-    static_m_109_protected_mode.java...  failed
+    static_m_109_protected_mode.java...  generator error
     static_m_110_overload_hier.java...  failed
     static_m_111_no_overwrite.java...  failed
     static_m_112_hiding.java...  failed
@@ -455,7 +504,7 @@ Running tests for
     static_m_117_overl_vs_hiding.java...  failed
     static_m_118_call_in_inst_init.java...  failed
 
-.programs/52_static_fields:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/52_static_fields:
     static_f_101_qualified.java...  failed
     static_f_102_unqualified.java...  failed
     static_f_103_multi_fields.java...  failed
@@ -468,7 +517,7 @@ Running tests for
     static_f_110_default_value.java...  failed
     static_f_111_class_qual_composite.java...  failed
 
-.programs/53_static_init:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/53_static_init:
     static_f_init_101_const.java...  failed
     static_f_init_102_backward_ref.java...  failed
     static_f_init_103_forward_ref.java...  failed
@@ -486,7 +535,7 @@ Running tests for
     static_init_31_inheritance.java...  failed
     static_init_32_hier_order.java...  failed
 
-.programs/54_interface_fields:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/54_interface_fields:
     interface_f_11_interface_target.java...  failed
     interface_f_12_sub_interface_target.java...  failed
     interface_f_13_class_target.java...  failed
@@ -519,7 +568,7 @@ Running tests for
     interface_f_83_hier_class_impl_interf.java...  failed
     interface_f_91_array_init.java...  failed
 
-.programs/55_static_init_trigger:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/55_static_init_trigger:
     static_i_trig_101_class_init_simple.java...  failed
     static_i_trig_102_two_classes.java...  failed
     static_i_trig_103_instantiation.java...  failed
@@ -552,91 +601,91 @@ Running tests for
     static_i_trig_214_trigger_by_unq_exp.java...  failed
     static_i_trig_215_trigger_by_oth_exp.java...  failed
 
-.programs/56_main_method:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/56_main_method:
     main_01_is_static.java...  failed
-    main_02_arg_type.java...  failed
-    main_03_return_type.java...  failed
-    main_04_modifiers.java...  failed
+    main_02_arg_type.java...  generator error
+    main_03_return_type.java...  generator error
+    main_04_modifiers.java...  generator error
     main_05_modifiers_order.java...  failed
     main_06_c_like_arg.java...  failed
 
-.programs/57_field_access_mode:
-    f_access_01_instance_all_pairs.java...  failed
-    f_access_02_static_all_pairs.java...  failed
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/57_field_access_mode:
+    f_access_01_instance_all_pairs.java...  generator error
+    f_access_02_static_all_pairs.java...  generator error
     f_access_03_multi_inh_priv_pub_1.java...  failed
     f_access_04_multi_inh_priv_pub_2.java...  failed
-    f_access_05_interf_fields_public.java...  failed
+    f_access_05_interf_fields_public.java...  generator error
 
-.programs/61_packages:
-    packages_11_fullyqual_simple.java...  failed
-    packages_12_two_packs.java...  failed
-    packages_13_class_name_amb.java...  failed
-    packages_14_nested_packs.java...  failed
-    packages_21_unq_one_pack.java...  failed
-    packages_22_unq_one_pack_2.java...  failed
-    packages_23_unq_from_many_packs.java...  failed
-    packages_24_default_pack.java...  failed
-    packages_25_default_pack_2.java...  failed
-    packages_26_java_lang.java...  failed
-    packages_31_single_t_imp_simple.java...  failed
-    packages_32_single_t_imp_typical.java...  failed
-    packages_33_single_t_imp_multi.java...  failed
-    packages_34_single_t_imp_same_cu.java...  failed
-    packages_35_single_t_imp_vs_local.java...  failed
-    packages_41_multi_t_imp_simple.java...  failed
-    packages_42_multi_t_imp_typical.java...  failed
-    packages_43_multi_t_imp_multi.java...  failed
-    packages_44_multi_t_imp_same_cu.java...  failed
-    packages_45_multi_t_imp_vs_local.java...  failed
-    packages_46_import_types_mix.java...  failed
-    packages_47_multi_t_imp_nested_p.java...  failed
-    packages_51_fullyqual_in_qualifiers.java...  failed
-    packages_52_pack_res_in_qualifiers.java...  failed
-    packages_53_class_ext_impl.java...  failed
-    packages_54_interf_extends.java...  failed
-    packages_55_var_method_types.java...  failed
-    packages_56_array_types.java...  failed
-    packages_57_fullyqual_instanceof.java...  failed
-    packages_58_fullyqual_cast.java...  failed
-    packages_61_same_name_in_hier.java...  failed
-    packages_62_same_n_w_cons_overl.java...  failed
-    packages_71_class_access_modes.java...  failed
-    packages_72_acc_modes_vs_local.java...  failed
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/61_packages:
+    packages_11_fullyqual_simple.java...  generator error
+    packages_12_two_packs.java...  generator error
+    packages_13_class_name_amb.java...  generator error
+    packages_14_nested_packs.java...  generator error
+    packages_21_unq_one_pack.java...  generator error
+    packages_22_unq_one_pack_2.java...  generator error
+    packages_23_unq_from_many_packs.java...  generator error
+    packages_24_default_pack.java...  generator error
+    packages_25_default_pack_2.java...  generator error
+    packages_26_java_lang.java...  generator error
+    packages_31_single_t_imp_simple.java...  generator error
+    packages_32_single_t_imp_typical.java...  generator error
+    packages_33_single_t_imp_multi.java...  generator error
+    packages_34_single_t_imp_same_cu.java...  generator error
+    packages_35_single_t_imp_vs_local.java...  generator error
+    packages_41_multi_t_imp_simple.java...  generator error
+    packages_42_multi_t_imp_typical.java...  generator error
+    packages_43_multi_t_imp_multi.java...  generator error
+    packages_44_multi_t_imp_same_cu.java...  generator error
+    packages_45_multi_t_imp_vs_local.java...  generator error
+    packages_46_import_types_mix.java...  generator error
+    packages_47_multi_t_imp_nested_p.java...  generator error
+    packages_51_fullyqual_in_qualifiers.java...  generator error
+    packages_52_pack_res_in_qualifiers.java...  generator error
+    packages_53_class_ext_impl.java...  generator error
+    packages_54_interf_extends.java...  generator error
+    packages_55_var_method_types.java...  generator error
+    packages_56_array_types.java...  generator error
+    packages_57_fullyqual_instanceof.java...  generator error
+    packages_58_fullyqual_cast.java...  generator error
+    packages_61_same_name_in_hier.java...  generator error
+    packages_62_same_n_w_cons_overl.java...  generator error
+    packages_71_class_access_modes.java...  generator error
+    packages_72_acc_modes_vs_local.java...  generator error
 
-.programs/62_class_literals:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/62_class_literals:
     class_lit_01_no_packages.java...  failed
-    class_lit_02_packages.java...  failed
+    class_lit_02_packages.java...  generator error
     class_lit_03_interface.java...  failed
     class_lit_04_arrays.java...  failed
-    class_lit_05_ref_equality.java...  failed
+    class_lit_05_ref_equality.java...  generator error
 
-.programs/63_inner_cl_static:
+/home/denis.bogdanas/java-semantics/java-fan/tools/../../programs/63_inner_cl_static:
     inner_st_101_simple.java...  failed
     inner_st_102_decl_order.java...  failed
     inner_st_103_members.java...  failed
-    inner_st_104_access_modes.java...  failed
+    inner_st_104_access_modes.java...  generator error
     inner_st_105_inner_hier.java...  failed
     inner_st_106_inner_impl_intf.java...  failed
     inner_st_107_simple_names_3_lvl.java...  failed
-    inner_st_108_access_modes_hier.java...  failed
+    inner_st_108_access_modes_hier.java...  generator error
     inner_st_109_inner_poly.java...  failed
     inner_st_201_inner_to_outer.java...  failed
     inner_st_202_outer_members.java...  failed
     inner_st_301_simple_outer_field.java...  failed
     inner_st_302_simple_outer_method.java...  failed
-    inner_st_303_outer_acc_modes.java...  failed
+    inner_st_303_outer_acc_modes.java...  generator error
     inner_st_401_inner_dec_acc_modes.java...  failed
-    inner_st_501_qualifiers.java...  failed
-    inner_st_502_qualifiers_disamb.java...  failed
-    inner_st_503_qual_disamb_import.java...  failed
-    inner_st_504_qual_disamb_acc_m.java...  failed
-    inner_st_601_var_types.java...  failed
-    inner_st_602_operators.java...  failed
-    inner_st_603_static_access.java...  failed
+    inner_st_501_qualifiers.java...  generator error
+    inner_st_502_qualifiers_disamb.java...  generator error
+    inner_st_503_qual_disamb_import.java...  generator error
+    inner_st_504_qual_disamb_acc_m.java...  generator error
+    inner_st_601_var_types.java...  generator error
+    inner_st_602_operators.java...  generator error
+    inner_st_603_static_access.java...  generator error
     inner_st_604_unq_inner_in_extends.java...  failed
     inner_st_605_unq_inner_in_extends_fw.java...  failed
-    inner_st_606_type_decl.java...  failed
-    inner_st_701_three_levels.java...  failed
+    inner_st_606_type_decl.java...  generator error
+    inner_st_701_three_levels.java...  generator error
     inner_st_702_3_lvl_members.java...  failed
     inner_st_703_3_lvl_overload.java...  failed
     inner_st_704_nesting_inher_overl.java...  failed
@@ -661,8 +710,8 @@ Running tests for
     inner_st_812_inherit_in_unq_in_intf.java...  failed
     inner_st_813_inherit_in_unq_in_intf_ext.java...  failed
 
-error :  17
-failed:  561
-total :  578
+failed:  547
+generator error:  78
+total :  625
 
-It took 51 seconds
+It took 56 seconds

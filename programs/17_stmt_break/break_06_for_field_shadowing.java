@@ -12,7 +12,8 @@ class main {
       System.out.print(i+" ");
       if (i == 3) break;
     }
-    System.out.println("\n"+ "After for i = "+ i);
+    System.out.println();
+    System.out.println("After for i = "+ i);
     System.out.println("Done!");
   }
 }

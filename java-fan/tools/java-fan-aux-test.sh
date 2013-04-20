@@ -14,7 +14,7 @@ if [ $# -le 3 ]; then
 fi
 
 if [ $# == 4 ]; then
-    $TOOLS_DIR/aux-jftest.sh ${@} $TOOLS_DIR/../.programs/
+    $TOOLS_DIR/java-fan-aux-test.sh ${@} $TOOLS_DIR/../../programs/
     exit
 fi
 
@@ -31,7 +31,7 @@ echo
 # We don't use external script for deleting temp dir,
 # since it have the same performance as standart delete from java.
 java -jar $TOOLS_DIR/../../tools/test-runner.jar \
-  -gen $TOOLS_DIR/../../tools/aux-jdk-run.sh -run $TOOLS_DIR/jfrun.sh \
+  -gen $TOOLS_DIR/java-fan-jdk-run.sh -run $TOOLS_DIR/java-fan-run.sh \
   -taskExt java -threads $THREADS -timeout 30 -testsuiteName java-semantics \
   -classnameStyle simple \
   -clean $CLEAN ${@}

@@ -1,3 +1,9 @@
+public class op_042_int_assign_all {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}
+
 class main {
 
 	void printAll(String[] vs, int[] v) {
@@ -55,8 +61,3 @@ class main {
 	}
 }
 
-public class op_04_int_assign {
-  public static void main(String[] args) {
-    new main(args);
-  }
-}

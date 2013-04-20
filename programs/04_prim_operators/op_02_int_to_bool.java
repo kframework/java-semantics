@@ -6,7 +6,7 @@ class main {
 		}
 	}
 
-  int nrOps = 14;
+  int nrOps = 6;
 
   String[] initVS() {
     String[] vs = new String[nrOps];

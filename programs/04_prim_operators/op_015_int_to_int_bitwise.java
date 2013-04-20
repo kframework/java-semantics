@@ -1,3 +1,9 @@
+public class op_015_int_to_int_bitwise {
+  public static void main(String[] args) {
+    new main(args);
+  }
+}
+
 class main {
 
 	void printAll(String[] vs, int[] v) {
@@ -6,7 +12,7 @@ class main {
 		}
 	}
 
-  int nrOps = 30;
+  int nrOps = 10;
 
   String[] initVS() {
     String[] vs = new String[nrOps];
@@ -22,28 +28,9 @@ class main {
 		vs[i++] = "-10 | 3      ";
 		vs[i++] = "-10 ^ 3      ";
 		vs[i++] = "-10 & 3      ";
-		vs[i++] = "9 << 3       ";
-		vs[i++] = "9 >> 3       ";
-		vs[i++] = "9 >>> 3      ";
-		vs[i++] = "9 + 3        ";
-		vs[i++] = "9 - 3        ";
-		vs[i++] = "9 * 3        ";
-		vs[i++] = "9 / 3        ";
-		vs[i++] = "9 % 3        ";
 
 		//Prefix operators
-		vs[i++] = "++9          ";
-		vs[i++] = "--9          ";
 		vs[i++] = "~ 9          ";
-		vs[i++] = "+ 9          ";
-		vs[i++] = "- 9          ";
-
-		//Postfix operators
-		vs[i++] = "9++          ";
-		vs[i++] = "9--          ";
-
-    //Ternary operator
-    vs[i++] = "9 > 3 ? 9 : 3";
 
     nrOps = i;
     return vs;
@@ -68,36 +55,11 @@ class main {
 		v[i++] = -10 | 3;
 		v[i++] = -10 ^ 3;
 		v[i++] = -10 & 3;
-		v[i++] = 9 << 3;
-		v[i++] = 9 >> 3;
-		v[i++] = 9 >>> 3;
-		v[i++] = 9 + 3;
-		v[i++] = 9 - 3;
-		v[i++] = 9 * 3;
-		v[i++] = 9 / 3;
-		v[i++] = 9 % 3;
 
 		//Prefix operators
-		++v[i++];
-		--v[i++];
 		v[i++] = ~ 9;
-		v[i++] = + 9;
-		v[i++] = - 9;
-
-		//Postfix operators
-		v[i] = v[i++]++;
-		v[i] = v[i++]--;
-
-    //Ternary operator
-    v[i++] = 9 > 3 ? 9 : 3;
 
     printAll(vs,v);
     System.out.println("Done!");
 	}
-}
-
-public class op_01_int_to_int {
-  public static void main(String[] args) {
-    new main(args);
-  }
 }

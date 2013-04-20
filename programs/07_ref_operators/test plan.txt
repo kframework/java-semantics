@@ -35,6 +35,6 @@ Part 5: operator instanceof
     instanceof false: base class is first derived class, but not second, more derived class.
     instanceof false: base class is one derived class, but not another one, unrelated.
 
-Part 6: conditional operator ?:
-19. obj = (?) string : userClass => string
-    obj = (?) string : userClass => userClass
+Part 6: conditional operator ?: simple case.
+19. obj = true ? "abc" : "def"
+    obj = false ? "abc" : "def"
