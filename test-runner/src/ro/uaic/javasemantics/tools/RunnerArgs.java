@@ -28,7 +28,8 @@ public class RunnerArgs {
   private String removeScript;
   private boolean clean;
   private boolean smartGen;
-  private final boolean classnameStyleComplete;
+  private boolean classnameStyleComplete;
+  private boolean encodeXML;
 
   public RunnerArgs(String[] args) {
     if (args.length == 0) {
@@ -52,6 +53,7 @@ public class RunnerArgs {
     argsMap.put("-compExt", "comp");
     argsMap.put("-testsuiteName", "");
     argsMap.put("-classnameStyle", "complete");
+    argsMap.put("-encodeXML", "false");
     argsMap.put("-rm", null);
     argsMap.put("-clean", "true");
     argsMap.put("-smartGen", "true");
@@ -98,6 +100,7 @@ public class RunnerArgs {
     compExt = argsMap.get("-compExt");
     testsuiteName = argsMap.get("-testsuiteName");
     classnameStyleComplete = "complete".equals(argsMap.get("-classnameStyle"));
+    encodeXML = Boolean.parseBoolean(argsMap.get("-encodeXML"));
     removeScript = argsMap.get("-rm");
     clean = Boolean.parseBoolean(argsMap.get("-clean"));
     smartGen = Boolean.parseBoolean(argsMap.get("-smartGen"));
@@ -173,6 +176,10 @@ public class RunnerArgs {
 
   public boolean isClassnameStyleComplete() {
     return classnameStyleComplete;
+  }
+
+  public boolean isEncodeXML() {
+    return encodeXML;
   }
 
   public String getRemoveScript() {

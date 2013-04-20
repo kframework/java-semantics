@@ -65,13 +65,17 @@ public class XmlBuilder {
             .append(">\n");
 
         if (result.containsError()) {
+          String errorMsg
+              = args.isEncodeXML() ? translator.translate(result.getError()) : result.getError();
           xml.append("<error>\n")
-              .append(translator.translate(result.getError()))
+              .append(errorMsg)
               .append("</error>\n");
         }
         if (result.getComp() != null) {
+          String failureMsg
+              = args.isEncodeXML() ? translator.translate(result.getComp()) : result.getComp();
           xml.append("<failure>\n")
-              .append(translator.translate(result.getComp()))
+              .append(failureMsg)
               .append("</failure>\n");
         }
 
