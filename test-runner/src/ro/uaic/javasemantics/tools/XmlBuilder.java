@@ -23,12 +23,6 @@ public class XmlBuilder {
   private long startTime;
   private Map<String, Integer> statusCountMap = new HashMap<String, Integer>();
 
-  {
-    statusCountMap.put("ok", 0);
-    statusCountMap.put("failed", 0);
-    statusCountMap.put("error", 0);
-  }
-
   private Formatter out = new Formatter(System.out);
 
   public XmlBuilder(RunnerArgs args, List<Future<TestResult>> results, long startTime) {
@@ -128,9 +122,11 @@ public class XmlBuilder {
   }
 
   private void writeConsoleMessage(TestResult result, TestResult previousResult) {
-    String highLevelStatus = result.getHighLevelStatus();
     String status = result.getStatus();
-    statusCountMap.put(highLevelStatus, statusCountMap.get(highLevelStatus) + 1);
+    if (!statusCountMap.containsKey(status)) {
+      statusCountMap.put(status, 0);
+    }
+    statusCountMap.put(status, statusCountMap.get(status) + 1);
     if (previousResult == null
         || !previousResult.getDirName(true).equals(result.getDirName(true))) {
       if (previousResult != null) {
