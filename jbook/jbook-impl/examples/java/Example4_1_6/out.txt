@@ -1,0 +1,1 @@
+class A:method 'B.m(int)' and method 'I.m(int)' have different public modifier

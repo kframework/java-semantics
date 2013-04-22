@@ -1,0 +1,1 @@
+class B (method main):The field 'B.j' is not visible

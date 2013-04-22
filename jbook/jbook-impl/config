@@ -1,0 +1,10 @@
+[Font]
+#Tcl/Tk font-specification: {Windows fontname} fontsize
+font {Arial} 10
+[Color]
+label   lightgreen
+button  lightblue
+info    lightblue
+frame   lightblue
+window  lightblue
+listbox lightblue

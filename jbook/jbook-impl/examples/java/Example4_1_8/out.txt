@@ -1,0 +1,1 @@
+class A (method m):method 'A.m(int,int)' is ambiguous

@@ -1,0 +1,1 @@
+class A (method m):The field 'B.i' is not visible

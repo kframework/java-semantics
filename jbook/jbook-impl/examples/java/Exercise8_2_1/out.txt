@@ -1,0 +1,5 @@
+Note: 
+=====
+The catcher is not reachable. However, our implementation
+doesn't analyze which statements can throw which
+exceptions.

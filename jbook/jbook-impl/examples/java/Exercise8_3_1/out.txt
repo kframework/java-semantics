@@ -1,0 +1,1 @@
+class Test (method main):local Variable 'a' may not have been initialized

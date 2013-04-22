@@ -1,0 +1,4466 @@
+-- ===================================================================
+-- TkGofer Prelude
+-- Created on Tue Apr 24 16:02:28 CEST 2001 by joe.
+-- ===================================================================
+
+-- this prelude uses: guiMonad.gs widget.gs time.gs io.gs concurrent.gs asmvar.gs --
+
+----------------------------------------------------------------------
+-- TkGofer v. 2.0
+-- Ton Vullinghs, Koen Claessen, July 1997
+----------------------------------------------------------------------
+-- prelude.gs
+
+-- The majority of this file is taken from the Gofer cc prelude:
+
+--         __________   __________   __________   __________   ________
+--        /  _______/  /  ____   /  /  _______/  /  _______/  /  ____  \
+--       /  / _____   /  /   /  /  /  /______   /  /______   /  /___/  /
+--      /  / /_   /  /  /   /  /  /  _______/  /  _______/  /  __   __/
+--     /  /___/  /  /  /___/  /  /  /         /  /______   /  /  \  \ 
+--    /_________/  /_________/  /__/         /_________/  /__/    \__\
+--
+--    Functional programming environment, Version 2.30
+--    Copyright Mark P Jones 1991-1994.
+
+help = "press :? for a list of commands"
+
+-- Operator precedence table: -----------------------------------------------
+
+infixl 9 !!
+infixr 9 ., @@
+infixr 8 ^
+infixl 7 *
+infix  7 /, `div`, `quot`, `rem`, `mod`
+infixl 6 +, -
+infix  5 \\
+infixl 5 `union`
+infixr 5 ++, :
+infix  4 ==, /=, <, <=, >=, >
+infix  4 `elem`, `notElem`
+infixr 3 &&
+infixr 2 ||
+infixr 0 $
+
+-- Standard combinators: ----------------------------------------------------
+
+primitive strict "primStrict" :: (a -> b) -> a -> b
+
+const          :: a -> b -> a
+const k x       = k
+
+id             :: a -> a
+id    x         = x
+
+curry          :: ((a,b) -> c) -> a -> b -> c
+curry f a b     =  f (a,b)
+
+uncurry        :: (a -> b -> c) -> (a,b) -> c
+uncurry f (a,b) = f a b
+
+fst            :: (a,b) -> a
+fst (x,_)       = x
+
+snd            :: (a,b) -> b
+snd (_,y)       = y
+
+fst3           :: (a,b,c) -> a
+fst3 (x,_,_)    = x
+
+snd3           :: (a,b,c) -> b
+snd3 (_,x,_)    = x
+
+thd3           :: (a,b,c) -> c
+thd3 (_,_,x)    = x
+
+(.)	       :: (b -> c) -> (a -> b) -> (a -> c)
+(f . g) x       = f (g x)
+
+flip           :: (a -> b -> c) -> b -> a -> c
+flip  f x y     = f y x
+
+($)            :: (a -> b) -> a -> b     -- pronounced as `apply' elsewhere
+f $ x           = f x
+
+-- Boolean functions: -------------------------------------------------------
+
+(&&), (||)     :: Bool -> Bool -> Bool
+False && x      = False
+True  && x      = x
+
+False || x      = x
+True  || x      = True
+
+not            :: Bool -> Bool
+not True        = False
+not False       = True
+
+and, or        :: [Bool] -> Bool
+and             = foldr (&&) True
+or              = foldr (||) False
+
+any, all       :: Expr2List c => (a -> Bool) -> c a -> Bool
+any p           = or  . map p . expr2list
+all p           = and . map p . expr2list
+
+otherwise      :: Bool
+otherwise       = True
+
+-- Character functions: -----------------------------------------------------
+
+primitive ord "primCharToInt" :: Char -> Int
+primitive chr "primIntToChar" :: Int -> Char
+
+isAscii, isControl, isPrint, isSpace            :: Char -> Bool
+isUpper, isLower, isAlpha, isDigit, isAlphanum  :: Char -> Bool
+
+isAscii c     =  ord c < 128
+
+isControl c   =  c < ' '    ||  c == '\DEL'
+
+isPrint c     =  c >= ' '   &&  c <= '~'
+
+isSpace c     =  c == ' '   || c == '\t'  || c == '\n'  || c == '\r'  ||
+                               c == '\f'  || c == '\v'
+
+isUpper c     =  c >= 'A'   &&  c <= 'Z'
+isLower c     =  c >= 'a'   &&  c <= 'z'
+
+isAlpha c     =  isUpper c  ||  isLower c
+isDigit c     =  c >= '0'   &&  c <= '9'
+isAlphanum c  =  isAlpha c  ||  isDigit c
+
+
+toUpper, toLower      :: Char -> Char
+
+toUpper c | isLower c  = chr (ord c - ord 'a' + ord 'A')
+          | otherwise  = c
+
+toLower c | isUpper c  = chr (ord c - ord 'A' + ord 'a')
+          | otherwise  = c
+
+minChar, maxChar      :: Char
+minChar                = chr 0
+maxChar                = chr 255
+
+-- Standard type classes: ---------------------------------------------------
+
+class Eq a where
+    (==), (/=) :: a -> a -> Bool
+    x /= y      = not (x == y)
+
+class Eq a => Ord a where
+    (<), (<=), (>), (>=) :: a -> a -> Bool
+    max, min             :: a -> a -> a
+
+    x <  y            = x <= y && x /= y
+    x >= y            = y <= x
+    x >  y            = y < x
+
+    max x y | x >= y  = x
+            | y >= x  = y
+    min x y | x <= y  = x
+            | y <= x  = y
+
+class Ord a => Ix a where
+    range   :: (a,a) -> [a]
+    index   :: (a,a) -> a -> Int
+    inRange :: (a,a) -> a -> Bool
+
+class Ord a => Enum a where
+    enumFrom       :: a -> [a]              -- [n..]
+    enumFromThen   :: a -> a -> [a]         -- [n,m..]
+    enumFromTo     :: a -> a -> [a]         -- [n..m]
+    enumFromThenTo :: a -> a -> a -> [a]    -- [n,n'..m]
+
+    enumFromTo n m        = takeWhile (m>=) (enumFrom n)
+    enumFromThenTo n n' m = takeWhile ((if n'>=n then (>=) else (<=)) m)
+                                      (enumFromThen n n')
+
+class (Eq a, Text a) => Num a where         -- simplified numeric class
+    (+), (-), (*), (/) :: a -> a -> a
+    negate             :: a -> a
+    fromInteger	       :: Int -> a
+
+-- Type class instances: ----------------------------------------------------
+
+primitive primEqInt    "primEqInt",
+	  primLeInt    "primLeInt"   :: Int -> Int -> Bool
+primitive primPlusInt  "primPlusInt",
+	  primMinusInt "primMinusInt",
+	  primDivInt   "primDivInt",
+	  primMulInt   "primMulInt"  :: Int -> Int -> Int
+primitive primNegInt   "primNegInt"  :: Int -> Int
+
+instance Eq ()  where () == () = True
+instance Ord () where () <= () = True
+
+instance Eq Int  where (==) = primEqInt
+
+instance Ord Int where (<=) = primLeInt
+
+instance Ix Int where
+    range (m,n)      = [m..n]
+    index b@(m,n) i
+       | inRange b i = i - m
+       | otherwise   = error "index out of range"
+    inRange (m,n) i  = m <= i && i <= n
+
+instance Enum Int where
+    enumFrom n       = fiterate (1+) n
+    enumFromThen n m = fiterate ((m-n)+) n
+
+instance Num Int where
+    (+)           = primPlusInt
+    (-)           = primMinusInt
+    (*)           = primMulInt
+    (/)           = primDivInt
+    negate        = primNegInt
+    fromInteger x = x
+
+{- PC version off -}
+primitive primEqFloat    "primEqFloat",
+          primLeFloat    "primLeFloat"    :: Float -> Float -> Bool
+primitive primPlusFloat  "primPlusFloat", 
+          primMinusFloat "primMinusFloat", 
+          primDivFloat   "primDivFloat",
+          primMulFloat   "primMulFloat"   :: Float -> Float -> Float 
+primitive primNegFloat   "primNegFloat"   :: Float -> Float
+primitive primIntToFloat "primIntToFloat" :: Int -> Float
+
+instance Eq Float where (==) = primEqFloat
+
+instance Ord Float where (<=) = primLeFloat
+
+instance Enum Float where
+    enumFrom n       = fiterate (1.0+) n
+    enumFromThen n m = fiterate ((m-n)+) n
+
+instance Num Float where
+    (+)         = primPlusFloat
+    (-)         = primMinusFloat
+    (*)         = primMulFloat
+    (/)         = primDivFloat 
+    negate      = primNegFloat
+    fromInteger = primIntToFloat
+
+primitive sin "primSinFloat",  asin  "primAsinFloat",
+          cos "primCosFloat",  acos  "primAcosFloat",
+	  tan "primTanFloat",  atan  "primAtanFloat",
+          log "primLogFloat",  log10 "primLog10Float",
+	  exp "primExpFloat",  sqrt  "primSqrtFloat" :: Float -> Float
+primitive atan2    "primAtan2Float" :: Float -> Float -> Float
+primitive truncate "primFloatToInt" :: Float -> Int
+
+pi :: Float
+pi  = 3.1415926535
+
+{- PC version on -}
+
+primitive primEqChar   "primEqChar",
+	  primLeChar   "primLeChar"  :: Char -> Char -> Bool
+
+instance Eq Char  where (==) = primEqChar   -- c == d  =  ord c == ord d
+
+instance Ord Char where (<=) = primLeChar   -- c <= d  =  ord c <= ord d
+
+instance Ix Char where
+    range (c,c')      = [c..c']
+    index b@(m,n) i
+       | inRange b i  = ord i - ord m
+       | otherwise    = error "index out of range"
+    inRange (c,c') ci = ord c <= i && i <= ord c' where i = ord ci
+
+instance Enum Char where
+    enumFrom c        = map chr [ord c .. ord maxChar]
+    enumFromThen c c' = map chr [ord c, ord c' .. ord lastChar]
+                        where lastChar = if c' < c then minChar else maxChar
+
+instance Eq a => Eq [a] where
+    []     == []     =  True
+    []     == (y:ys) =  False
+    (x:xs) == []     =  False
+    (x:xs) == (y:ys) =  x==y && xs==ys
+
+instance Ord a => Ord [a] where
+    []     <= _      =  True
+    (_:_)  <= []     =  False
+    (x:xs) <= (y:ys) =  x<y || (x==y && xs<=ys)
+
+instance (Eq a, Eq b) => Eq (a,b) where
+    (x,y) == (u,v)  =  x==u && y==v
+
+instance (Ord a, Ord b) => Ord (a,b) where
+    (x,y) <= (u,v)  = x<u  ||  (x==u && y<=v)
+
+instance Eq Bool where
+    True  == True   =  True
+    False == False  =  True
+    _     == _      =  False
+
+instance Ord Bool where
+    False <= x      = True
+    True  <= x      = x
+
+-- Standard numerical functions: --------------------------------------------
+
+primitive div    "primDivInt",
+	  quot   "primQuotInt",
+          rem    "primRemInt",
+          mod    "primModInt"    :: Int -> Int -> Int
+
+subtract  :: Num a => a -> a -> a
+subtract   = flip (-)
+
+even, odd :: Int -> Bool
+even x     = x `rem` 2 == 0
+odd        = not . even
+
+gcd       :: Int -> Int -> Int
+gcd x y    = gcd' (abs x) (abs y)
+             where gcd' x 0 = x
+                   gcd' x y = gcd' y (x `rem` y)
+
+lcm       :: Int -> Int -> Int
+lcm _ 0    = 0
+lcm 0 _    = 0
+lcm x y    = abs ((x `quot` gcd x y) * y)
+
+(^)       :: Num a => a -> Int -> a
+x ^ 0      = fromInteger 1
+x ^ (n+1)  = f x n x
+             where f _ 0 y = y
+                   f x n y = g x n where
+                             g x n | even n    = g (x*x) (n`quot`2)
+                                   | otherwise = f x (n-1) (x*y)
+
+abs                     :: (Num a, Ord a) => a -> a
+abs x | x>=fromInteger 0 = x
+      | otherwise        = -x
+
+signum			:: (Num a, Ord a) => a -> Int
+signum x
+      | x==fromInteger 0 = 0
+      | x> fromInteger 0 = 1
+      | otherwise        = -1
+
+sum, product    :: Num a => [a] -> a
+sum              = foldl' (+) (fromInteger 0)
+product          = foldl' (*) (fromInteger 1)
+
+sums, products	:: Num a => [a] -> [a]
+sums             = scanl (+) (fromInteger 0)
+products         = scanl (*) (fromInteger 1)
+
+-- Constructor classes: -----------------------------------------------------
+
+class Functor f where
+    map :: (a -> b) -> (f a -> f b)
+
+class Functor m => Monad m where
+    result    :: a -> m a
+    join      :: m (m a) -> m a
+    bind      :: m a -> (a -> m b) -> m b
+
+    join x     = bind x id
+    x `bind` f = join (map f x)
+
+class Monad m => Monad0 m where
+    zero   :: m a
+
+class Monad0 c => MonadPlus c where
+    (++) :: c a -> c a -> c a
+
+class (Functor left, Functor right) => Adjoint left right where
+    univ    :: (a -> right b) -> (left a -> b)
+    unit    :: a -> right (left a)
+    couniv  :: (left a -> b) -> (a -> right b)
+    counit  :: left (right a) -> a
+
+    unit     = couniv id
+    counit   = univ id
+    univ g   = counit . map g
+    couniv g = map g . unit
+
+class (Functor f, Functor g) => NatTransf f g where
+    eta :: f a -> g a
+
+-- Monad based utilities: ---------------------------------------------------
+
+apply            :: Monad m => (a -> m b) -> (m a -> m b)
+apply             = flip bind
+
+(@@)             :: Monad m => (a -> m b) -> (c -> m a) -> (c -> m b)
+f @@ g            = join . map f . g
+
+concat		 :: MonadPlus c => [c a] -> c a
+concat		  = foldr (++) zero
+
+filter		 :: Monad0 m => (a -> Bool) -> m a -> m a
+filter p xs       = [ x | x<-xs, p x ]
+
+mfoldl           :: Monad m => (a -> b -> m a) -> a -> [b] -> m a
+mfoldl f a []     = result a
+mfoldl f a (x:xs) = f a x `bind` (\fax -> mfoldl f fax xs)
+
+mfoldr           :: Monad m => (a -> b -> m b) -> b -> [a] -> m b
+mfoldr f a []     = result a
+mfoldr f a (x:xs) = mfoldr f a xs `bind` (\y -> f x y)
+
+mapl             :: Monad m => (a -> m b) -> ([a] -> m [b])
+mapl f []         = [ [] ]
+mapl f (x:xs)     = [ y:ys | y <- f x, ys <- mapl f xs ]
+
+mapr             :: Monad m => (a -> m b) -> ([a] -> m [b])
+mapr f []         = [ [] ]
+mapr f (x:xs)     = [ y:ys | ys <- mapr f xs, y <- f x ]
+
+-- The monad of lists: ------------------------------------------------------
+
+instance Functor   [] where map f []     = []
+			    map f (x:xs) = f x : map f xs
+
+instance Monad     [] where result x        = [x]
+			    []     `bind` f = []
+			    (x:xs) `bind` f = f x ++ (xs `bind` f)
+
+instance Monad0    [] where zero         = []
+
+instance MonadPlus [] where []     ++ ys = ys
+			    (x:xs) ++ ys = x : (xs ++ ys)
+
+-- Standard list processing functions: --------------------------------------
+
+head             :: [a] -> a
+head (x:_)        = x
+
+last             :: [a] -> a
+last [x]          = x
+last (_:xs)       = last xs
+
+tail             :: [a] -> [a]
+tail (_:xs)       = xs
+
+init             :: [a] -> [a]
+init [x]          = []
+init (x:xs)       = x : init xs
+
+genericLength    :: Num a => [b] -> a    -- calculate length of list
+genericLength     = foldl' (\n _ -> n + fromInteger 1) (fromInteger 0)
+
+length		 :: [a] -> Int
+length            = foldl' (\n _ -> n + 1) 0
+
+(!!)             :: [a] -> Int -> a      -- xs!!n selects the nth element of
+(x:_)  !! 0       = x                    -- the list xs (first element xs!!0)
+(_:xs) !! (n+1)   = xs !! n              -- for any n < length xs.
+
+fiterate         :: (a -> a) -> a -> [a] -- generate the infinite list
+fiterate f x      = x : fiterate f (f x)  -- [x, f x, f (f x), ...
+
+repeat           :: a -> [a]             -- generate the infinite list
+repeat x          = xs where xs = x:xs   -- [x, x, x, x, ...
+
+cycle            :: [a] -> [a]           -- generate the infinite list
+cycle xs          = xs' where xs'=xs++xs'-- xs ++ xs ++ xs ++ ...
+
+copy             :: Int -> a -> [a]      -- make list of n copies of x
+copy n x          = take n xs where xs = x:xs
+
+nub              :: Eq a => [a] -> [a]   -- remove duplicates from list
+nub []            = []
+nub (x:xs)        = x : nub (filter (x/=) xs)
+
+reverse          :: [a] -> [a]           -- reverse elements of list
+reverse           = foldl (flip (:)) []
+
+elem, notElem   :: (Expr2List c, Eq a) => a -> c a -> Bool
+elem x           = any (== x) . expr2list    -- test for membership in list
+notElem x        = all (/= x) . expr2list    -- test for non-membership
+
+maximum, minimum :: (Ord a, Expr2List c) => c a -> a
+maximum           = foldl1 max . expr2list   -- max element in non-empty list
+minimum           = foldl1 min . expr2list   -- min element in non-empty list
+
+transpose        :: [[a]] -> [[a]]      -- transpose list of lists
+transpose         = foldr
+                      (\xs xss -> zipWith (:) xs (xss ++ repeat []))
+                      []
+
+-- null provides a simple and efficient way of determining whether a given
+-- list is empty, without using (==) and hence avoiding a constraint of the
+-- form Eq [a].
+
+null             :: [a] -> Bool
+null []           = True
+null (_:_)        = False
+
+-- (\\) is used to remove the first occurrence of each element in the second
+-- list from the first list.  It is a kind of inverse of (++) in the sense
+-- that  (xs ++ ys) \\ xs = ys for any finite list xs of proper values xs.
+
+(\\)             :: Eq a => [a] -> [a] -> [a]
+(\\)              = foldl del
+                    where []     `del` _  = []
+                          (x:xs) `del` y
+                             | x == y     = xs
+                             | otherwise  = x : xs `del` y
+
+-- Fold primitives:  The foldl and scanl functions, variants foldl1 and
+-- scanl1 for non-empty lists, and strict variants foldl' scanl' describe
+-- common patterns of recursion over lists.  Informally:
+--
+--  foldl f a [x1, x2, ..., xn]  = f (...(f (f a x1) x2)...) xn
+--                               = (...((a `f` x1) `f` x2)...) `f` xn
+-- etc...
+--
+-- The functions foldr, scanr and variants foldr1, scanr1 are duals of these
+-- functions:
+-- e.g.  foldr f a xs = foldl (flip f) a (reverse xs)  for finite lists xs.
+
+foldl            :: (a -> b -> a) -> a -> [b] -> a
+foldl f z []      = z
+foldl f z (x:xs)  = foldl f (f z x) xs
+
+foldl1           :: (a -> a -> a) -> [a] -> a
+foldl1 f (x:xs)   = foldl f x xs
+
+foldl'           :: (a -> b -> a) -> a -> [b] -> a
+foldl' f a []     =  a
+foldl' f a (x:xs) =  strict (foldl' f) (f a x) xs
+
+scanl            :: (a -> b -> a) -> a -> [b] -> [a]
+scanl f q xs      = q : (case xs of
+                         []   -> []
+                         x:xs -> scanl f (f q x) xs)
+
+scanl1           :: (a -> a -> a) -> [a] -> [a]
+scanl1 f (x:xs)   = scanl f x xs
+
+scanl'           :: (a -> b -> a) -> a -> [b] -> [a]
+scanl' f q xs     = q : (case xs of
+                         []   -> []
+                         x:xs -> strict (scanl' f) (f q x) xs)
+
+foldr            :: (a -> b -> b) -> b -> [a] -> b
+foldr f z []      = z
+foldr f z (x:xs)  = f x (foldr f z xs)
+
+foldr1           :: (a -> a -> a) -> [a] -> a
+foldr1 f [x]      = x
+foldr1 f (x:xs)   = f x (foldr1 f xs)
+
+scanr            :: (a -> b -> b) -> b -> [a] -> [b]
+scanr f q0 []     = [q0]
+scanr f q0 (x:xs) = f x q : qs
+                    where qs@(q:_) = scanr f q0 xs
+
+scanr1           :: (a -> a -> a) -> [a] -> [a]
+scanr1 f [x]      = [x]
+scanr1 f (x:xs)   = f x q : qs
+                    where qs@(q:_) = scanr1 f xs
+
+-- List breaking functions:
+--
+--   take n xs       returns the first n elements of xs
+--   drop n xs       returns the remaining elements of xs
+--   splitAt n xs    = (take n xs, drop n xs)
+--
+--   takeWhile p xs  returns the longest initial segment of xs whose
+--                   elements satisfy p
+--   dropWhile p xs  returns the remaining portion of the list
+--   span p xs       = (takeWhile p xs, dropWhile p xs)
+--
+--   takeUntil p xs  returns the list of elements upto and including the
+--                   first element of xs which satisfies p
+
+take                :: Int -> [a] -> [a]
+take 0     _         = []
+take _     []        = []
+take (n+1) (x:xs)    = x : take n xs
+
+drop                :: Int -> [a] -> [a]
+drop 0     xs        = xs
+drop _     []        = []
+drop (n+1) (_:xs)    = drop n xs
+
+splitAt             :: Int -> [a] -> ([a], [a])
+splitAt 0     xs     = ([],xs)
+splitAt _     []     = ([],[])
+splitAt (n+1) (x:xs) = (x:xs',xs'') where (xs',xs'') = splitAt n xs
+
+takeWhile           :: (a -> Bool) -> [a] -> [a]
+takeWhile p []       = []
+takeWhile p (x:xs)
+         | p x       = x : takeWhile p xs
+         | otherwise = []
+
+takeUntil           :: (a -> Bool) -> [a] -> [a]
+takeUntil p []       = []
+takeUntil p (x:xs)
+       | p x         = [x]
+       | otherwise   = x : takeUntil p xs
+
+dropWhile           :: (a -> Bool) -> [a] -> [a]
+dropWhile p []       = []
+dropWhile p xs@(x:xs')
+         | p x       = dropWhile p xs'
+         | otherwise = xs
+
+span, break         :: (a -> Bool) -> [a] -> ([a],[a])
+span p []            = ([],[])
+span p xs@(x:xs')
+         | p x       = let (ys,zs) = span p xs' in (x:ys,zs)
+         | otherwise = ([],xs)
+break p              = span (not . p)
+
+-- Text processing:
+--   lines s     returns the list of lines in the string s.
+--   words s     returns the list of words in the string s.
+--   unlines ls  joins the list of lines ls into a single string
+--               with lines separated by newline characters.
+--   unwords ws  joins the list of words ws into a single string
+--               with words separated by spaces.
+
+lines     :: String -> [String]
+lines ""   = []
+lines s    = l : (if null s' then [] else lines (tail s'))
+             where (l, s') = break ('\n'==) s
+
+words     :: String -> [String]
+words s    = case dropWhile isSpace s of
+                  "" -> []
+                  s' -> w : words s''
+                        where (w,s'') = break isSpace s'
+
+unlines   :: [String] -> String
+unlines    = concat . map (\l -> l ++ "\n")
+
+unwords   :: [String] -> String
+unwords [] = []
+unwords ws = foldr1 (\w s -> w ++ ' ':s) ws
+
+-- Merging and sorting lists:
+
+merge               :: Ord a => [a] -> [a] -> [a] 
+merge []     ys      = ys
+merge xs     []      = xs
+merge (x:xs) (y:ys)
+        | x <= y     = x : merge xs (y:ys)
+        | otherwise  = y : merge (x:xs) ys
+
+sort                :: Ord a => [a] -> [a]
+sort                 = foldr insert []
+
+insert              :: Ord a => a -> [a] -> [a]
+insert x []          = [x]
+insert x (y:ys)
+        | x <= y     = x:y:ys
+        | otherwise  = y:insert x ys
+
+qsort               :: Ord a => [a] -> [a]
+qsort []             = []
+qsort (x:xs)         = qsort [ u | u<-xs, u<x ] ++
+                             [ x ] ++
+                       qsort [ u | u<-xs, u>=x ]
+
+-- zip and zipWith families of functions:
+
+zip  :: [a] -> [b] -> [(a,b)]
+zip   = zipWith  (\a b -> (a,b))
+
+zip3 :: [a] -> [b] -> [c] -> [(a,b,c)]
+zip3  = zipWith3 (\a b c -> (a,b,c))
+
+zip4 :: [a] -> [b] -> [c] -> [d] -> [(a,b,c,d)]
+zip4  = zipWith4 (\a b c d -> (a,b,c,d))
+
+zip5 :: [a] -> [b] -> [c] -> [d] -> [e] -> [(a,b,c,d,e)]
+zip5  = zipWith5 (\a b c d e -> (a,b,c,d,e))
+
+zip6 :: [a] -> [b] -> [c] -> [d] -> [e] -> [f] -> [(a,b,c,d,e,f)]
+zip6  = zipWith6 (\a b c d e f -> (a,b,c,d,e,f))
+
+zip7 :: [a] -> [b] -> [c] -> [d] -> [e] -> [f] -> [g] -> [(a,b,c,d,e,f,g)]
+zip7  = zipWith7 (\a b c d e f g -> (a,b,c,d,e,f,g))
+
+
+zipWith                  :: (a->b->c) -> [a]->[b]->[c]
+zipWith z (a:as) (b:bs)   = z a b : zipWith z as bs
+zipWith _ _      _        = []
+
+zipWith3                 :: (a->b->c->d) -> [a]->[b]->[c]->[d]
+zipWith3 z (a:as) (b:bs) (c:cs)
+                          = z a b c : zipWith3 z as bs cs
+zipWith3 _ _ _ _          = []
+
+zipWith4                 :: (a->b->c->d->e) -> [a]->[b]->[c]->[d]->[e]
+zipWith4 z (a:as) (b:bs) (c:cs) (d:ds)
+                          = z a b c d : zipWith4 z as bs cs ds
+zipWith4 _ _ _ _ _        = []
+
+zipWith5                 :: (a->b->c->d->e->f) -> [a]->[b]->[c]->[d]->[e]->[f]
+zipWith5 z (a:as) (b:bs) (c:cs) (d:ds) (e:es)
+                          = z a b c d e : zipWith5 z as bs cs ds es
+zipWith5 _ _ _ _ _ _      = []
+
+zipWith6                 :: (a->b->c->d->e->f->g)
+                            -> [a]->[b]->[c]->[d]->[e]->[f]->[g]
+zipWith6 z (a:as) (b:bs) (c:cs) (d:ds) (e:es) (f:fs)
+                          = z a b c d e f : zipWith6 z as bs cs ds es fs
+zipWith6 _ _ _ _ _ _ _    = []
+
+zipWith7                 :: (a->b->c->d->e->f->g->h)
+                             -> [a]->[b]->[c]->[d]->[e]->[f]->[g]->[h]
+zipWith7 z (a:as) (b:bs) (c:cs) (d:ds) (e:es) (f:fs) (g:gs)
+                          = z a b c d e f g : zipWith7 z as bs cs ds es fs gs
+zipWith7 _ _ _ _ _ _ _ _  = []
+
+unzip                    :: [(a,b)] -> ([a],[b])
+unzip                     = foldr (\(a,b) ~(as,bs) -> (a:as, b:bs)) ([], [])
+
+-- Formatted output: --------------------------------------------------------
+
+primitive primPrint "primPrint"  :: Int -> a -> String -> String
+
+show'       :: a -> String
+show' x      = primPrint 0 x []
+
+cjustify, ljustify, rjustify :: Int -> String -> String
+
+cjustify n s = space halfm ++ s ++ space (m - halfm)
+               where m     = n - length s
+                     halfm = m `div` 2
+ljustify n s = s ++ space (n - length s)
+rjustify n s = space (n - length s) ++ s
+
+space       :: Int -> String
+space n      = copy n ' '
+
+layn        :: [String] -> String
+layn         = lay 1 where lay _ []     = []
+                           lay n (x:xs) = rjustify 4 (show n) ++ ") "
+                                           ++ x ++ "\n" ++ lay (n+1) xs
+
+-- Miscellaneous: -----------------------------------------------------------
+
+until                  :: (a -> Bool) -> (a -> a) -> a -> a
+until p f x | p x       = x
+            | otherwise = until p f (f x)
+
+until'                 :: (a -> Bool) -> (a -> a) -> a -> [a]
+until' p f              = takeUntil p . fiterate f
+
+primitive error "primError" :: String -> a
+
+undefined              :: a
+undefined | False       = undefined
+
+asTypeOf               :: a -> a -> a
+x `asTypeOf` _          = x
+
+-- A trimmed down version of the Haskell Text class: ------------------------
+
+type  ShowS   = String -> String
+
+class Text a where 
+    showsPrec      :: Int -> a -> ShowS
+    showList       :: [a] -> ShowS
+
+    showsPrec       = primPrint
+    showList []     = showString "[]"
+    showList (x:xs) = showChar '[' . shows x . showl xs
+                      where showl []     = showChar ']'
+                            showl (x:xs) = showChar ',' . shows x . showl xs
+
+shows      :: Text a => a -> ShowS
+shows       = showsPrec 0
+
+show       :: Text a => a -> String
+show x      = shows x ""
+
+showChar   :: Char -> ShowS
+showChar    = (:)
+
+showString :: String -> ShowS
+showString  = (++)
+
+instance Text () where
+    showsPrec d ()    = showString "()"
+
+instance Text Bool where
+    showsPrec d True  = showString "True"
+    showsPrec d False = showString "False"
+
+primitive primShowsInt "primShowsInt" :: Int -> Int -> String -> String
+instance Text Int where showsPrec = primShowsInt
+
+{- PC version off -}
+primitive primShowsFloat "primShowsFloat" :: Int -> Float -> String -> String
+instance Text Float where showsPrec = primShowsFloat
+{- PC version on -}
+
+instance Text Char where
+    showsPrec p c = showString [q, c, q] where q = '\''
+    showList cs   = showChar '"' . showl cs
+                    where showl ""       = showChar '"'
+                          showl ('"':cs) = showString "\\\"" . showl cs
+                          showl (c:cs)   = showChar c . showl cs
+			  -- Haskell has   showLitChar c . showl cs
+
+instance Text a => Text [a]  where
+    showsPrec p = showList
+
+instance (Text a, Text b) => Text (a,b) where
+    showsPrec p (x,y) = showChar '(' . shows x . showChar ',' .
+                                       shows y . showChar ')'
+
+-- (Dialogue functions removed) --------------------------------------------
+
+primitive primFopen "primFopen" :: String -> a -> (String -> a) -> a
+
+openfile        :: String -> String
+openfile f       = primFopen f (error ("can't open file "++f)) id
+
+-- End of Gofer standard prelude --------------------------------------------
+
+----------------------------------------------------------------------
+-- Basic extensions
+
+--------------------------------------------------------------------------
+-- General Functions
+ 
+-- numbers
+
+numval :: String -> Int
+numval (' ':xs) = numval xs
+numval ('+':xs) = numval xs
+numval ('-':xs) = - (numval xs)
+numval xs       = foldl (\n x -> 10 * n + ord x - ord '0') 0 xs
+
+-- strings
+
+infix 4 `isPrefix`, `isRealPrefix`
+
+isPrefix :: Eq a => [a] -> [a] -> Bool
+[]    `isPrefix` _     = True
+(a:s) `isPrefix` (b:t) = a == b && s `isPrefix` t
+_     `isPrefix` []    = False
+
+isRealPrefix :: Eq a => [a] -> [a] -> Bool
+_     `isRealPrefix` []    = False
+(a:s) `isRealPrefix` (b:t) = a == b && s `isRealPrefix` t
+[]    `isRealPrefix` _     = True
+
+-- self
+
+self :: (a -> a -> b) -> a -> b
+self f x = f x x
+
+-- grouping
+
+groupn :: Int -> [a] -> [[a]]
+groupn n = takeWhile (not.null) . map (take n) . fiterate (drop n)
+
+--------------------------------------------------------------------------
+-- General Monadic Functions
+ 
+
+done :: Monad m => m ()
+done = result ()
+ 
+infixr 1 ==>
+
+(==>) :: Monad m => m Bool -> m a -> m ()
+b ==> a = do { c <- b; if c then void a else done }
+ 
+sequence :: Monad m => m a -> m b -> m b
+sequence am bm = do { am; bm }
+
+void :: Monad m => m a -> m ()
+void m = do { m; done }
+ 
+binds :: Monad m => [m a] -> m [a]
+binds = mapl id
+
+seqs :: Monad m => [m ()] -> m ()
+seqs = foldr sequence done
+
+exitM :: Monad m => String -> m a
+exitM s = error (copy 15 '\b' ++ s ++ copy (max 0 (15 - length s)) ' ')
+
+ifM :: Monad m => Bool -> m () -> m ()
+ifM b m = if b then m else done
+
+--------------------------------------------------------------------------
+-- type Maybe
+
+data Maybe a = Just a | Nothing
+
+instance Functor Maybe where
+  map f (Just a) = Just (f a)
+  map f Nothing  = Nothing
+
+instance Monad Maybe where
+  result a = Just a
+  Just a  `bind` k = k a
+  Nothing `bind` k = Nothing
+
+instance Monad0 Maybe where
+  zero = Nothing
+
+instance MonadPlus Maybe where
+  Nothing ++ m = m
+  m       ++ _ = m
+
+maybe :: (a -> c) -> c -> Maybe a -> c
+maybe just nothing (Just a) = just a
+maybe just nothing Nothing  = nothing
+
+--------------------------------------------------------------------------
+-- type Either
+
+data Either a b = Left a | Right b
+
+either :: (a -> c) -> (b -> c) -> Either a b -> c
+either left right (Left a)  = left a
+either left right (Right b) = right b
+
+--------------------------------------------------------------------------
+-- type RoseTree
+
+data RoseTree a = Rose a [RoseTree a]
+
+instance Functor RoseTree where
+  map f (Rose a ts) = Rose (f a) (map (map f) ts)
+
+roseTree :: (a -> [b] -> b) -> RoseTree a -> b
+roseTree f (Rose a rs) = f a (map (roseTree f) rs)
+
+--------------------------------------------------------------------------
+-- IO monad
+
+primitive bindIO       "primIOBind"    :: IO a -> (a -> IO b) -> IO b
+primitive resultIO     "primSTReturn"  :: a -> ST s a
+primitive primGetCh    "primIOGetch"   :: IO Char
+primitive primPutChar  "primIOPutchar" :: Char -> IO ()
+primitive interleaveIO "primSTInter" :: IO a -> IO a
+
+
+instance Monad IO where
+  bind   = bindIO
+  result = resultIO
+
+instance Monad0 IO where
+  zero = error "Pattern match failed in IO-monad."
+
+instance Functor IO where
+  map f m = [ f x | x <- m ]
+
+class Monad m => IOMonad m where
+  getCh       :: m Char
+  getContents :: m String
+
+  getChar :: m Char
+  getChar = do c <- getCh; putChar c; result c
+
+  putChar :: Char -> m ()
+  putChar c = putStr [c]
+  
+  putStr  :: String -> m ()
+  putStr s = seqs [ putChar c | c <- s ]
+  
+instance IOMonad IO where
+  getCh   = primGetCh
+  putChar = primPutChar
+
+  getContents = interleaveIO $
+    do c <- getCh
+       s <- getContents
+       result (c:s)
+
+print :: (Text a, IOMonad m) => a -> m ()
+print x = putStrLn (show x)
+
+putStrLn :: IOMonad m => String -> m ()
+putStrLn s = do putStr s; putChar '\n'
+
+getLine :: IOMonad m => m String
+getLine  = do c <- getChar
+              if c=='\n' then result ""
+			 else do cs <- getLine
+				 result (c:cs)
+
+interact :: IOMonad m => (String -> String) -> m ()
+interact f = do s <- getContents; putStr (f s)
+
+--------------------------------------------------------------------------
+-- MutVar's
+
+type Var a = MutVar RealWorld a
+  in newVar, readVar, writeVar, eqVar
+
+primitive newVar   "primSTNew"      :: a -> IO (Var a)
+primitive readVar  "primSTDeref"    :: Var a -> IO a
+primitive writeVar "primSTAssign"   :: Var a -> a -> IO ()
+primitive eqVar    "primSTMutVarEq" :: Var a -> Var a -> Bool
+
+newVar' :: IO (Var a)
+newVar' = newVar undefined
+
+updateVar :: (a -> a) -> Var a -> IO ()
+updateVar f var = do { a <- readVar var; writeVar var (f a) }
+
+instance Eq (Var a) where
+  (==) = eqVar
+
+--------------------------------------------------------------------------
+-- MutArr's
+
+primitive primSTNewArr   "primSTNewArr"
+          :: (a -> Int) -> (a,a) -> b -> ST s (MutArr s a b)
+primitive primSTReadArr  "primSTReadArr"
+          :: ((a,a) -> a -> Int) -> MutArr s a b -> a -> ST s b
+primitive primSTWriteArr "primSTWriteArr"
+          :: ((a,a) -> a -> Int) -> MutArr s a b -> a -> b -> ST s ()
+
+type LArray a b = MutArr RealWorld a b
+  in newArr, readArr, writeArr
+
+newArr   :: Ix a => (a,a) -> b -> IO (LArray a b)
+readArr  :: Ix a => LArray a b -> a -> IO b 
+writeArr :: Ix a => LArray a b -> a -> b -> IO ()
+
+newArr bounds c  = primSTNewArr (index bounds) bounds c
+readArr arr i    = primSTReadArr index arr i
+writeArr arr i x = primSTWriteArr index arr i x
+
+--------------------------------------------------------------------------
+-- Heap
+
+type HeapPtr = Int
+  in showPtr, readPtr
+   , newHeap, heapAlloc, heapWrite, heapFree, heapFilter, heapRead 
+
+type Heap a = (LArray HeapPtr (Maybe a), Var (HeapPtr, [HeapPtr]))
+  in newHeap, heapAlloc, heapWrite, heapFree, heapFilter, heapRead
+
+newHeap :: Int -> IO (Heap a)
+newHeap size =
+  do heap <- newArr (1,size) Nothing
+     free <- newVar (0 :: HeapPtr, [1..size] :: [HeapPtr])
+     result (heap, free)
+
+heapAlloc :: Heap a -> a -> IO HeapPtr
+heapAlloc (arr, free) a =
+  do (last, ptrs) <- readVar free
+     case ptrs of
+       []       -> error "Heap is full"
+       (p:ptrs) -> do x <- readArr arr p
+                      case x of
+                        Nothing -> done
+                        Just _  -> error "Full HeapCell reallocated"
+                      writeArr arr p (Just a)
+                      writeVar free (max p last, ptrs)
+                      result p
+
+heapWrite :: Heap a -> HeapPtr -> a -> IO ()
+heapWrite (arr, free) ptr a =
+  do ma <- readArr arr ptr
+     case ma of
+       Just _  -> writeArr arr ptr (Just a)
+       Nothing -> error "Writing to an unallocated Heapcell"
+
+heapFree :: Heap a -> HeapPtr -> IO ()
+heapFree (arr, free) ptr =
+  do writeArr arr ptr Nothing
+     (last, ptrs) <- readVar free
+     if ptr == last then
+       writeVar free (last-1, ptr:ptrs)
+      else
+       writeVar free (last, ptr:ptrs)
+
+heapRead :: Heap a -> HeapPtr -> IO a
+heapRead (arr, free) ptr =
+  do ma <- readArr arr ptr
+     case ma of
+       Just a  -> result a
+       Nothing -> error "Reading an unallocated HeapCell"
+
+heapFilter :: Heap a -> (a -> Bool) -> IO ()
+heapFilter (arr, free) pred =
+  do (last, ptrs)  <- readVar free
+     (last',ptrs') <- doAll [1..last] (0,ptrs)
+     writeVar free (last', ptrs')
+ where
+  doAll []     (last,ptrs) = result (last,ptrs)
+  doAll (p:ps) (last,ptrs) =
+    do ma <- readArr arr p
+       case ma of
+         Just a | pred a    -> do doAll ps (p,ptrs)
+                | otherwise -> do writeArr arr p Nothing
+                                  doAll ps (last,p:ptrs)
+         Nothing            -> do doAll ps (last,ptrs)
+
+showPtr :: HeapPtr -> String
+showPtr p = 'p':show p
+
+readPtr :: String -> HeapPtr
+readPtr ('p':s) = numval s
+
+instance Text HeapPtr where
+  showsPrec _ p = showString (showPtr p)
+
+--------------------------------------------------------------------------
+-- type Dyn
+
+data Dyn = Dyn
+
+fromDyn :: Dyn -> a
+fromDyn = typeCast
+
+toDyn :: a -> Dyn
+toDyn = typeCast
+
+primitive primCast "primStrict" :: (a -> a) -> a -> b
+
+typeCast :: a -> b
+typeCast = primCast id
+
+
+--------------------------------------------------------------------------
+-- support for sets
+
+class Expr2List c where
+  expr2list :: c a -> [a]
+
+
+instance Expr2List [] where
+  expr2list = id
+
+
+instance Expr2List {} where
+  expr2list (Set xs) = xs
+
+instance Eq [a] => Eq {a} where
+   Set xs == Set ys = xs == ys
+
+instance Ord [a] => Ord {a} where
+  Set a <  Set b = a <  b
+  Set a <= Set b = a <= b
+  Set a >  Set b = a >  b
+  Set a >= Set b = a >= b
+
+
+mkSet :: Ord a => [a] -> {a}
+mkSet([x]) = Set [x]
+mkSet(xs)  = Set(sort(nub(xs)))
+
+setmap :: Ord b => (a -> b) -> {a} -> {b}
+setmap f xs = { f(x) | x <-: xs }
+
+union :: (Ord a, Eq a) => {a} -> {a} -> {a}
+Set xs `union` Set ys = Set (xs `union` ys)
+   where [] `union` xs     = xs
+         xs `union` []     = xs
+         c@(x:xs) `union` k@(y:ys)
+             | x==y = c `union` ys
+             | x>y  = y : (c `union` ys)
+             | True = x: (xs `union` k)
+
+Set s1 `union` Set s2 = Set(sort(nub(s1 ++ s2)))
+
+bigUnion :: (Ord a, Eq a) => {{a}} -> {a}
+bigUnion (Set([])) = Set([])
+bigUnion (Set(xs)) = foldr1 union xs
+
+empty             :: {a} -> Bool
+empty (Set xs) = null(xs)
+
+one :: {a} -> a
+one (Set [])     = error ("one: set is empty")
+one (Set (x:xs)) = x
+
+card :: {a} -> Int
+card (Set xs) = length(xs)
+
+fold1 :: (a -> a -> a) -> {a} -> a
+fold1 f = foldl1 f . expr2list
+
+instance Text a => Text {a}  where
+    showsPrec p xs = showSet xs
+
+showSet :: Text a => {a} -> ShowS
+showSet (Set [])     = showString "{}"
+showSet (Set (x:xs)) = showChar '{' . shows x . showl xs
+                      where showl []     = showChar '}'
+                            showl (x:xs) = showChar ',' . shows x . showl xs
+ 
+
+intersect :: (Eq a, Ord a) => {a} -> {a} -> {a}
+Set xs `intersect` Set ys = Set (xs `intersect` ys)
+  where [] `intersect` _    = []
+        _  `intersect` []   = []
+        c@(x:xs) `intersect` k@(y:ys)
+           | x == y = x : (xs `intersect` ys)
+           | x <  y = xs `intersect` k
+           | True   = c `intersect` ys
+
+difference :: (Eq a, Ord a) => {a} -> {a} -> {a}
+Set xs `difference` Set ys = Set (xs `difference` ys)
+  where [] `difference` _  = []
+        xs `difference` [] = xs
+        c@(x:xs) `difference` k@(y:ys)
+          | x == y = xs `difference` ys
+          | x <  y = x : (xs `difference` k)
+          | True   = c `difference` ys
+
+intersectBy             :: Ord a => (a -> a -> Bool) -> {a} -> {a} -> {a}
+intersectBy eq xs ys     = {x | x <-: xs, any (eq x) ys}
+
+
+--------------------------------------------------------------------------
+-- the end.
+
+----------------------------------------------------------------------
+-- TkGofer v. 2.0
+-- Ton Vullinghs, Koen Claessen, July 1997
+----------------------------------------------------------------------
+-- guiMonad.gs
+
+-- need prelude.gs
+
+--------------------------------------------------------------------------
+-- User functions
+
+start :: GUI a -> IO ()
+start = tk_start tk_numberOfEvents
+
+quit :: GUI ()
+quit = tk_quit
+
+liftIO :: IO a -> GUI a
+liftIO = tk_action
+
+--------------------------------------------------------------------------
+-- TkGofer primitives
+
+-- on IO
+
+primitive primInitTcl      "primInitTcl"    :: IO Bool
+primitive primWaitTcl      "primRunTcl"     :: IO ()
+primitive primExecuteTcl   "primExecuteTcl" :: String -> IO String
+primitive primSetVar       "primSetVar"     :: String -> IO ()
+primitive primGetTcl       "primGetTcl"     :: IO Char
+
+primUpdateEvents :: IO ()
+primUpdateEvents = done -- for now; this is still a problem
+
+primGetEvent :: IO String
+primGetEvent =
+  do c <- primGetTcl
+     if c == '\n' then [ "" ] else [ c:s | s <- primGetEvent ]
+
+-- on GUI
+
+tk_getTcl :: [String] -> GUI String
+tk_getTcl as = liftIO (primExecuteTcl (unwords as))
+ 
+tk_putTcl :: [String] -> GUI ()
+tk_putTcl as = void (tk_getTcl as)
+ 
+--------------------------------------------------------------------------
+-- type TkCont
+
+data TkCont
+  = TkAction    (IO TkCont)
+  | TkWithTkGUI (TkGUI -> IO TkCont)
+  | TkFork      TkCont TkCont
+  | TkEnd
+  | TkCatchEvent
+  | TkQuit
+
+tk_continue :: ((a -> TkCont) -> IO TkCont) -> GUI a
+tk_continue f cont = TkAction (f cont)
+
+tk_withCont :: ((a -> TkCont) -> GUI TkCont) -> GUI a
+tk_withCont f cont = f cont id
+
+tk_GUI :: TkCont -> GUI ()
+tk_GUI cont _ = cont
+
+tk_action :: IO a -> GUI a
+tk_action io = tk_continue (`map` io)
+
+tk_withTkGUI :: (TkGUI -> IO a) -> GUI a
+tk_withTkGUI io cont = TkWithTkGUI (map cont . io)
+
+tk_fork :: GUI a -> GUI ()
+tk_fork gui cont = TkFork (gui (\_ -> TkEnd)) (cont ())
+
+tk_quit :: GUI a
+tk_quit cont = TkQuit
+
+tk_end :: GUI a
+tk_end cont = TkEnd
+
+tk_transGUI :: (TkCont -> TkCont) -> GUI a -> GUI a
+tk_transGUI f gui cont = f (gui cont)
+
+tk_melt :: GUI a -> GUI a
+tk_melt gui = tk_transGUI melt (do { a <- gui; tk_fork done; result a })
+ where
+  melt (TkAction io)   = melt (TkWithTkGUI (const io))
+  melt (TkWithTkGUI f) = TkWithTkGUI $ \tkgui ->
+                           do ac <- f tkgui
+                              case melt ac of
+                                TkAction io   -> io
+                                TkWithTkGUI f -> f tkgui
+                                act           -> result act
+  melt act             = act
+
+instance Text TkCont where
+  showsPrec _ x = showString $ case x of
+    TkAction io   -> "Action {" ++ take 20 (show' io) ++ "..}"
+    TkWithTkGUI f -> "WithGUI {" ++ take 20 (show' f) ++ "..}"
+    TkFork p1 p2  -> "Fork {" ++ show p1 ++ " | " ++ show p2 ++ "}"
+    TkEnd         -> "End"
+    TkQuit        -> "Quit"
+    TkCatchEvent  -> "CatchEvent"
+
+--------------------------------------------------------------------------
+-- type GUI
+
+type TkGUI = (TkCallBackS, Var Int)
+
+type GUI a = (a -> TkCont) -> TkCont
+  in tk_bindGUI, tk_resultGUI, tk_runGUI
+   , tk_continue, tk_withCont, tk_withTkGUI, tk_fork, tk_quit, tk_end
+   , tk_GUI, tk_transGUI
+
+instance Monad GUI where
+  bind   = tk_bindGUI
+  result = tk_resultGUI
+
+instance Functor GUI where
+  map f m = [ f x | x <- m ]
+
+tk_bindGUI   :: GUI a -> (a -> GUI b) -> GUI b
+tk_resultGUI :: a -> GUI a
+
+m `tk_bindGUI` k = \cont -> m (\a -> k a cont)
+tk_resultGUI a   = \cont -> cont a
+
+instance Monad0 GUI where
+  zero = error "Pattern match failed in GUI-monad."
+
+instance IOMonad GUI where
+  putStr s    = liftIO (putStr s)
+  getCh       = liftIO getCh
+  getChar     = liftIO getChar
+  getContents = liftIO getContents
+
+interleaveGUI :: GUI a -> GUI a
+interleaveGUI gui = tk_withTkGUI $ \tkgui -> interleaveIO $
+  do res <- newVar (error "interleaveGUI too strict")
+     tk_runGUI tkgui $ do { a <- gui ; writeGVar res a ; tk_quit }
+     readVar res
+     
+--------------------------------------------------------------------------
+-- running a GUI
+
+-- start
+
+tk_start :: Int -> GUI a -> IO ()
+tk_start n gui =
+  do cbs <- tk_callBackS n
+     var <- newVar 0
+     b   <- primInitTcl
+     if b then tk_runGUI (cbs, var) gui
+          else error "Initialization error."
+  
+-- run
+
+tk_runGUI :: TkGUI -> GUI a -> IO ()
+tk_runGUI tkgui@(callbacks, names) gui =
+  round [gui (\_ -> TkCatchEvent)]
+ where
+  round :: [TkCont] -> IO ()
+  round []     = error "Deadlock"
+  round (r:rs) = case r of
+    TkAction io   -> do pc <- io
+                        postpone [pc]
+
+    TkWithTkGUI f -> do pc <- f tkgui
+                        postpone [pc]
+
+    TkFork p1 p2  -> postpone [p1,p2]
+
+    TkEnd         -> round rs
+
+    TkQuit        -> done
+
+    TkCatchEvent  -> do if null rs then
+                          primWaitTcl
+                         else
+                          primUpdateEvents
+                        pc <- catchEvent
+                        postpone [pc]
+
+   where
+    postpone ps = round (rs ++ ps)
+    
+  catchEvent =
+    do ev <- primGetEvent
+       case words ev of
+         []      -> do result TkCatchEvent
+         ("q":_) -> do result TkQuit
+         (e:es)  -> do gui <- tk_getCallBack callbacks (readPtr e) es
+                       result (gui (\_ -> TkCatchEvent))
+
+--------------------------------------------------------------------------
+-- GVar
+
+type GVar = Var
+--in newGVar, newGVar', writeGVar, readGVar
+
+newGVar :: a -> GUI (GVar a)
+newGVar a = liftIO (newVar a)
+
+newGVar' :: GUI (GVar a)
+newGVar' = liftIO (newVar')
+
+writeGVar :: GVar a -> a -> GUI ()
+writeGVar v a = liftIO (writeVar v a)
+
+readGVar :: GVar a -> GUI a
+readGVar v = liftIO (readVar v)
+
+updateGVar :: (a -> a) -> GVar a -> GUI ()
+updateGVar f v =
+  do a <- readGVar v
+     writeGVar v (f a)
+
+fixGUI :: (GUI a -> GUI a) -> GUI a
+fixGUI f =
+  do v <- newGVar'
+     a <- f (readGVar v)
+     writeGVar v a
+     result a
+
+-- Class IsVar
+
+class IsVar v where
+  newV :: a -> GUI (v a)
+  newV a = do v <- newV'; v =: a; result v
+
+  newV' :: GUI (v a)
+  newV' = do v <- newV undefined; readV v; result v
+
+  writeV :: v a -> a -> GUI ()
+  readV  :: v a -> GUI a
+
+  (=:) :: v a -> a -> GUI ()
+  (=:) = writeV
+
+  updateV :: (a -> a) -> v a -> GUI ()
+  updateV f v = do a <- readV v; v =: (f a)
+
+instance IsVar GVar where
+  newV   = newGVar
+  newV'  = newGVar'
+  readV  = readGVar
+  writeV = writeGVar
+
+--------------------------------------------------------------------------
+-- Identifiers
+
+type TkWidId = String
+
+tk_newPathName :: GUI TkWidId
+tk_newPathName = tk_withTkGUI $ \(_, name) ->
+  do n <- readVar name
+     let m = n+1
+     writeVar name m
+     strict result (".w" ++ show m)
+
+--------------------------------------------------------------------------
+-- CallBacks
+
+type TkCallBack = (TkWidId, [String] -> GUI ())
+  in tk_callBackS, tk_getCallBack, tk_addCallBack
+   , tk_delEventId, tk_delThese, tk_delEvents, tk_delBelowEvents
+   , tk_changeCallBack
+
+type TkCallBackS = Heap TkCallBack
+  in tk_callBackS, tk_getCallBack, tk_addCallBack
+   , tk_delEventId, tk_delThese, tk_delEvents, tk_delBelowEvents
+   , tk_delCallBack, tk_changeCallBack
+
+tk_numberOfEvents = 5000
+
+-- on IO
+
+tk_callBackS :: Int -> IO TkCallBackS
+tk_callBackS n =
+  do newHeap n
+
+tk_getCallBack :: TkCallBackS -> HeapPtr -> [String] -> IO (GUI ())
+tk_getCallBack heap ptr xs =
+  do (_, cb) <- heapRead heap ptr
+     result (cb xs)
+
+-- on GUI
+    
+tk_withCallBackS :: (TkCallBackS -> IO a) -> GUI a
+tk_withCallBackS f = tk_withTkGUI (\(cbs,_) -> f cbs)
+
+-- widgets
+
+tk_addCallBack :: TkWidId -> ([String] -> GUI ()) -> GUI HeapPtr
+tk_addCallBack name f = tk_withCallBackS $ \heap ->
+  do heapAlloc heap (name++".", f)
+
+tk_changeCallBack :: HeapPtr -> ([String] -> GUI ()) -> GUI ()
+tk_changeCallBack p f = tk_withCallBackS $ \heap ->
+  do (name,_) <- heapRead heap p
+     heapWrite heap p (name,f)
+
+tk_delThese :: TkWidId -> GUI ()
+tk_delThese name = tk_withCallBackS $ \heap ->
+  do heapFilter heap $ \(s, _) -> not (name++"." == s)
+
+tk_delEvents :: TkWidId -> GUI ()
+tk_delEvents name = tk_withCallBackS $ \heap ->
+  do heapFilter heap $ \(s, _) -> not (name++"." `isPrefix` s)
+
+tk_delBelowEvents :: TkWidId -> GUI ()
+tk_delBelowEvents name = tk_withCallBackS $ \heap ->
+  do heapFilter heap $ \(s, _) -> not (name++"." `isRealPrefix` s)
+
+-- events
+
+tk_delCallBack :: HeapPtr -> GUI ()
+tk_delCallBack p = tk_withCallBackS $ \heap ->
+  do heapFree heap p
+
+tk_delEventId :: String -> GUI ()
+tk_delEventId "" = done
+tk_delEventId s  = tk_delCallBack . readPtr . head . words $ s
+
+--------------------------------------------------------------------------
+-- the end.
+            
+----------------------------------------------------------------------
+-- TkGofer v. 2.0
+-- Ton Vullinghs, Koen Claessen, July 1997
+----------------------------------------------------------------------
+-- widget.gs
+
+-- need prelude.gs
+-- need guiMonad.gs
+
+--------------------------------------------------------------------------
+-- The Widgets
+
+-- Class Widget ------------------------------------
+
+class TkWidget w => Widget w where
+  cset   :: w -> Conf w -> GUI ()
+  cget   :: GUIValue v => w -> (v -> Conf w) -> GUI v
+ 
+  csets ::  w -> [Conf w] -> GUI ()
+  csets w = seqs . map (cset w)
+ 
+  onArgs :: TkEvent -> String -> ([String] -> GUI ()) -> Conf w
+
+  on :: TkEvent -> GUI () -> Conf w
+  on e a = onArgs e "" (\_ -> a)
+
+  onxy :: TkEvent -> ((Int,Int) -> GUI ()) -> Conf w   -- relative to widget
+  onxy c e = onArgs c "xy" (\[x,y] -> let xx = numval x 
+                                          yy = numval y in e (xx,yy))
+ 
+  onXY :: TkEvent -> ((Int,Int) -> GUI ()) -> Conf w   -- relative to screen
+  onXY c e = onArgs c "XY" (\[x,y] -> let xx = numval x 
+                                          yy = numval y in e (xx,yy))
+
+  destroyEvent  :: w -> TkEvent -> GUI ()    -- destroy 1 event
+  destroyEvents :: w -> GUI ()               -- destroy all events
+
+-- Class HasBackground ---------------------------------
+ 
+class Widget w => HasBackground w where
+  background :: String -> Conf w
+  background s _ = Tk_Background s
+
+-- Class HasForeground ---------------------------------
+ 
+class Widget w => HasForeground w where
+  foreground :: String -> Conf w
+  foreground s _ = Tk_Foreground s
+ 
+  font :: String -> Conf w
+  font s _ = Tk_Font s
+
+-- Class HasBorder -------------------------------------
+ 
+class Widget w => HasBorder w where
+  borderWidth :: Int -> Conf w
+  borderWidth i _ = Tk_BorderWidth i
+
+  cursor :: String -> Conf w
+  cursor s _ = Tk_Cursor s
+
+  relief :: String -> Conf w  
+  relief r _ = Tk_Relief r
+
+-- Class HasWidth --------------------------------------
+ 
+class Widget w => HasWidth w where
+  width :: Int -> Conf w
+  width s _ = Tk_Width s
+ 
+  highlightBackground :: String -> Conf w
+  highlightBackground s _ = Tk_HighlightBackground s
+ 
+  highlightColor :: String -> Conf w
+  highlightColor s _ = Tk_HighlightColor s
+ 
+  highlightThickness :: Int -> Conf w
+  highlightThickness i _ = Tk_HighlightThickness i
+ 
+-- Class HasFocus --------------------------------------
+ 
+class Widget w => HasFocus w where
+  focus :: w -> GUI ()
+  focus w = tk_putTcl ["focus", tk_getPathName w]
+ 
+  takeFocus :: Bool -> Conf w
+  takeFocus b _ = Tk_TakeFocus b
+
+-- Class HasHeight -------------------------------------
+ 
+class Widget w => HasHeight w where
+  height :: Int -> Conf w
+  height i _ = Tk_Height i
+
+-- Class HasPad ----------------------------------------
+ 
+class Widget w => HasPad w where
+  padx :: Int -> Conf w
+  padx i _ = Tk_PadX i
+ 
+  pady :: Int -> Conf w
+  pady i _ = Tk_PadY i
+
+-- Class HasAnchor -------------------------------------
+ 
+class Widget w => HasAnchor w where
+  anchor :: String -> Conf w
+  anchor s _ = Tk_Anchor s
+ 
+  justify :: String -> Conf w
+  justify s _ = Tk_Justify s
+
+-- Class HasIndicator ----------------------------------
+ 
+class Widget w => HasIndicator w where
+  indicatorColor :: String -> Conf w
+  indicatorColor s _ = Tk_IndicatorColor s
+ 
+  indicatorOn :: Bool -> Conf w
+  indicatorOn s _ = Tk_IndicatorOn s
+
+-- Class HasCoords -------------------------------------
+ 
+class Widget a => HasCoords a where
+  moveObject   :: a -> (Int, Int) -> GUI ()
+  removeObject :: a -> GUI ()
+  lowerObject  :: a -> GUI ()
+  raiseObject  :: a -> GUI ()
+  getCoords    :: a -> GUI [(Int,Int)]
+  setCoords    :: a -> [(Int,Int)] -> GUI ()
+
+-- Class HasFillColor ----------------------------------
+ 
+class HasCoords a => HasFillColor a where
+  penWidth :: Int -> Conf a
+  penWidth i _ = Tk_Width i
+ 
+  penColor :: String -> Conf a
+  penColor c _ = Tk_OutlineColor c
+ 
+  fillColor ::  String -> Conf a
+  fillColor c _ = Tk_FillColor c
+
+
+
+-- Class HasScroll -------------------------------------
+ 
+class Widget w => HasScroll w 
+
+-- Class HasInput --------------------------------------
+ 
+class Widget (c (w v)) => HasInput c w v where
+  getValue :: c (w v) -> GUI v
+  setValue :: c (w v) -> v -> GUI ()
+ 
+  updValue :: (v -> v) -> c (w v) -> GUI ()
+  updValue f x = do {i <- getValue x; setValue x (f i)}
+
+  withValue ::  (v -> GUI b) -> c (w v) -> GUI b
+  withValue f w = getValue w `bind` f 
+ 
+  initValue :: v -> Conf (c (w v))
+  initValue v a = Tk_InitValue (setValue a v)
+ 
+  readOnly :: Bool -> Conf (c (w v))
+  readOnly b a = Tk_Active (not b)
+ 
+-- Class HasPosition -----------------------------------
+ 
+class HasInput WItem (w p) v => HasPosition w p v where
+ 
+  putBegin     :: WItem (w p v) -> v -> GUI ()
+  putEnd       :: WItem (w p v) -> v -> GUI ()
+  putPos       :: WItem (w p v) -> p -> v -> GUI ()
+  getFromTo    :: WItem (w p v) -> p -> p -> GUI v
+  getSize      :: WItem (w p v) -> GUI p
+ 
+  delFromTo :: GUIValue p => (WItem (w p v)) -> p -> p -> GUI ()
+  delFromTo w p1 p2 = tk_toTcl w ["delete", tk_toGUI p1, tk_toGUI p2]
+ 
+  setYView :: WItem (w p v) -> Int -> GUI ()
+  setYView w i = tk_toTcl w ["yview", show i]
+
+  getSelection :: (WItem (w p v)) -> GUI [p]
+  setSelection :: (WItem (w p v)) -> [p] -> GUI ()
+ 
+  selectBackground  :: String -> Conf (WItem (w p v))
+  selectBackground s _ = Tk_SelectBackground s
+ 
+  selectForeground  :: String -> Conf (WItem (w p v))
+  selectForeground s _ = Tk_SelectForeground s
+ 
+  selectBorderwidth :: Int -> Conf (WItem (w p v))
+  selectBorderwidth i _ = Tk_SelectBorderwidth i
+ 
+-- Class HasText ---------------------------------------
+ 
+class HasForeground w => HasText w where
+  text :: String -> Conf w
+  text s _ = Tk_Text s
+
+  bitmap :: String -> Conf w
+  bitmap s _ = Tk_Bitmap s
+
+  underline :: Int -> Conf w
+  underline i _ = Tk_Underline i
+
+-- Class HasCommand ------------------------------------
+ 
+class Widget w => HasCommand w where
+  command :: GUI () -> Conf w
+  command c _ = Tk_Command c
+ 
+  active :: Bool -> Conf w
+  active b _ = Tk_Active b
+ 
+  activeBackground :: String -> Conf w
+  activeBackground s _ = Tk_ActiveBackground s
+ 
+  activeForeground :: String -> Conf w
+  activeForeground s _ = Tk_ActiveForeground s
+
+  invoke :: w -> GUI ()
+  invoke w = cget w active ==> tk_toTcl w ["invoke"]
+
+  destroyCommand ::  w -> GUI ()
+  destroyCommand w = do
+    s <- tk_getTcl ["deleteCommand",tk_getPathName w] 
+    tk_delEventId s
+
+-- Class GUIValue --------------------------------------
+
+class (Text g) => GUIValue g where
+  tk_convert         :: String -> OkOrErr g
+  tk_defaultValue    :: g
+
+  tk_toGUI           :: g -> String
+  tk_toGUI           = show
+
+  tk_fromGUI         :: String -> GUI g
+  tk_fromGUI s       = okOrErr (tk_convert s)
+    where
+      okOrErr (Tk_Ok x)    = result x
+      okOrErr (Tk_Err msg) =
+        do {tk_showError msg; result tk_defaultValue}
+
+
+--------------------------------------------------------------------------
+-- The Kinds
+
+-- TItem ---------------------------------------------------
+
+data TItem a = TItem a String
+
+instance TkWidget (TItem a) where
+  tk_getPathName (TItem _ n) = n
+
+instance Widget (TItem a) where
+  cset w c =
+    do let cs = c w             -- get option
+       cs'  <- tk_showConf (tk_getPathName w) cs -- get option string
+       let cs''      = words (tail cs')
+           wm_option = ["wm", head cs'', tk_getPathName w] ++ tail cs''
+       case cs of
+           Tk_Title _        -> tk_putTcl wm_option
+           Tk_WinPosition _  -> tk_putTcl wm_option
+           Tk_WinSize _      -> tk_putTcl wm_option
+           _                 -> tk_toTcl w ["configure",cs']
+ 
+  cget w f =
+    do let cs = f tk_defaultValue w
+       cs'  <- tk_showConf (tk_getPathName w) cs
+       let cs''      = head (words cs')
+           wm_option = ["wm",tk_getPathName w , tail cs'']
+       v <- case cs of
+                Tk_Title s  -> tk_getTcl wm_option
+                _           -> tk_fromTcl w ["cget",cs'']
+       tk_fromGUI v
+
+  onArgs e args a w = Tk_FreeOption act where
+    act = do id <- tk_addCallBack (tk_getPathName w) a
+             tk_putTcl [ "bind", tk_getPathName w, show e
+                       , "{doEvent \"", show id
+                       , concat (map (\x -> " %"++[x]) args), "\"}"
+                       ]
+
+  destroyEvent w e = done
+  destroyEvents w = done
+
+-- WItem ---------------------------------------------------
+ 
+data WItem a = WItem a TkWidgetTree
+ 
+tk_makeWItem :: (TkWidget (TItem t), Widget (WItem a))
+    => [Config] -> a -> TItem t -> [Conf (WItem a)] -> String -> GUI (WItem a)
+tk_makeWItem defaults wid win cs k =
+  do x <- tk_newPathName
+     let e = WItem wid (Tk_Node (tk_getPathName win, x, [], []) []) in
+        do tk_putTcl [k, tk_getPathName e]
+           csets e (map const defaults ++ cs)
+           result e
+ 
+instance TkWidget (WItem a) where
+  tk_getPathName (WItem _ n) = tk_getNodeId n
+ 
+instance Widget (WItem a) where
+  cset w c =
+    do cs <- tk_showConf (tk_getPathName w) (c w)
+       if cs == "" then done else tk_toTcl w ["conf", cs]
+ 
+  cget w f =
+    do cs <- tk_showConf (tk_getPathName w) (f tk_defaultValue w)
+       v  <- tk_fromTcl w ["cget", head (words cs)]
+       tk_fromGUI v
+
+  onArgs e args a w = Tk_FreeOption act where
+    act = do id <- tk_addCallBack (tk_getPathName w) a
+             tk_putTcl [ "bind", tk_getPathName w, show e
+                       , "{doEvent \"", show id
+                       , concat (map (\x -> " %"++[x]) args), "\"}"
+                       ]
+
+  destroyEvent w e = do
+    s <- tk_getTcl ["deleteEvent",tk_getPathName w,show e]
+    tk_delEventId s 
+
+  destroyEvents w = do
+    let x = tk_getPathName w
+    tk_delEvents x
+    tk_putTcl ["deleteEvents", x]
+
+-- MItem ---------------------------------------------------
+ 
+data MItem a = MItem a String Int
+ 
+tk_makeMItem :: (TkWidget (TItem t), Widget (MItem a))
+             => [Config] -> a -> TItem t -> [Conf (MItem a)] -> String -> GUI
+             (MItem a)
+tk_makeMItem defaults item men cs k =
+  do let n = tk_getPathName men
+     x <- tk_getTcl [ "addmenu ", n, "{", n, "add ", k, "}"]
+     let e = MItem item n (numval x) in
+       do csets e (map const defaults ++ cs)
+          result e
+ 
+instance TkWidget (MItem a) where
+  tk_getPathName (MItem _ n _) = n
+ 
+  tk_getVarName (MItem _ n i) = n ++ "i" ++ show i
+ 
+instance Widget (MItem a) where
+  cset (MItem m n i) c =
+    do cs <- tk_showMenuConf n (c (MItem m n i))
+       tk_putTcl [n, "entryconfigure", show i, cs]
+ 
+  cget (MItem m n i) f =
+    do cs <- tk_showMenuConf n (f tk_defaultValue (MItem m n i))
+       v  <- tk_getTcl [n, "entrycget", show i, head (words cs)]
+       tk_fromGUI v
+ 
+  onArgs e args a w = Tk_FreeOption done
+ 
+  destroyEvent w e = done
+  destroyEvents w  = done
+
+-- CItem ---------------------------------------------------
+
+data Canvas0 = Canvas0
+type Canvas  = WItem Canvas0
+
+data CItem a = CItem a TkWidId Int
+ 
+tk_makeCItem :: Widget (CItem c)
+             => c -> Canvas -> [Int] -> [Conf (CItem c)] -> String -> GUI (CItem
+             c)
+tk_makeCItem i c ps cs k =
+  do let n = tk_getPathName c
+     x <- tk_getTcl ([n, "create", k] ++ map show ps)
+     let e = CItem i n (numval x) in
+       do csets e cs
+          result e
+
+instance TkWidget (CItem a) where
+  tk_getPathName (CItem _ n _) = n
+ 
+instance Widget (CItem a) where
+  cset (CItem m n i) c =
+    do cs <- tk_showConf n (c (CItem m n i))
+       tk_putTcl [n, "itemconfigure", show i, cs]
+ 
+  cget (CItem m n i) f =
+    do cs <- tk_showConf n (f tk_defaultValue (CItem m n i))
+       v <- tk_getTcl [n, "itemcget", show i, head (words cs)]
+       tk_fromGUI v 
+ 
+  onArgs e args a (CItem _ n i) = Tk_FreeOption act where
+    act = do id <- tk_addCallBack (n++".@"++show i) a
+             tk_putTcl [ n, "bind",show i, show e
+                       , " { doEvent \"", show id
+                       , concat (map (\x -> " %"++[x]) args), "\"}"
+                       ]
+
+  destroyEvent (CItem a n i) e = do
+    s <- tk_getTcl ["deleteCanvasEvent",n,show i,show e]
+    tk_delEventId s 
+
+  destroyEvents (CItem a n i) = do
+    tk_delThese (n++".@"++show i)
+    tk_putTcl ["deleteCanvasEvents",n,show i]
+      where name = (n++".@"++show i)++"."
+            match n = name==n
+
+instance Widget (CItem a) => HasCoords (CItem a) where
+  moveObject (CItem _ ctop i) (x,y) =
+    tk_putTcl [ctop, "move",show i,show x,show y]
+ 
+  removeObject w@(CItem a ctop i) = do
+    tk_delEvents ctop
+    tk_putTcl [ctop, "delete",show i]
+ 
+  lowerObject(CItem _ ctop i) =
+    tk_putTcl [ctop,"lower", show  i]
+ 
+  raiseObject(CItem _ ctop i) =
+    tk_putTcl [ctop,"raise", show  i]
+ 
+  getCoords (CItem _ ctop i) =
+    do s <- tk_getTcl [ctop, "coords",show i]
+       let ps = map (numval . takeWhile (/='.')) (words s)
+       result (makeCoords ps)
+    where makeCoords [] = []
+          makeCoords (x:y:ss) = (x,y):makeCoords ss
+ 
+  setCoords (CItem _ ctop i) ll =
+    tk_putTcl ([ctop, "coords",show i]
+       ++ (map (\(x,y) -> (show x)++" "++(show y)) ll))
+ 
+--------------------------------------------------------------------------
+-- Events
+
+data TkEvent = Tk_Event String
+ 
+instance Text TkEvent where
+  showsPrec d (Tk_Event s) = showString s
+
+-- Simple key events
+ 
+key :: String -> TkEvent
+key      s = Tk_Event ("<KeyPress-" ++ s ++ ">")
+shiftkey s = Tk_Event ("<Shift-KeyPress-" ++ s ++ ">")
+
+return, cursorUp, cursorDown, cursorLeft, cursorRight :: TkEvent
+return      = key "Return"
+cursorUp    = key "Up"
+cursorDown  = key "Down"
+cursorLeft  = key "Left"
+cursorRight = key "Right"
+ 
+-- Simple mouse events
+ 
+click, doubleClick, motion :: Int -> TkEvent
+click       i = Tk_Event ("<ButtonPress-"++show i ++ ">")
+doubleClick i = Tk_Event ("<Double-ButtonPress-"++show i ++ ">")
+motion      i = Tk_Event ("<B" ++ show i ++ "-Motion>")
+  
+mouseMotion :: TkEvent
+mouseMotion = Tk_Event "<Motion>"
+
+enterWidget, leaveWidget, destroyWidget :: TkEvent
+enterWidget   = Tk_Event "<Enter>"
+leaveWidget   = Tk_Event "<Leave>"
+destroyWidget = Tk_Event "<Destroy>"
+
+--------------------------------------------------------------------------
+-- GUIValue
+
+instance GUIValue a => GUIValue [a]
+ 
+instance GUIValue String where
+  tk_defaultValue    = ""
+  tk_convert s       = Tk_Ok s
+  tk_toGUI s         = s 
+ 
+instance GUIValue Int where
+  tk_defaultValue    = 0
+  tk_convert (' ':s) = tk_convert s
+  tk_convert ('+':s) = tk_convert s
+  tk_convert ('-':s) = let i = tk_convert s
+                    in case i of (Tk_Ok a)  -> Tk_Ok (-a)
+                                 _          -> i
+  tk_convert s | all (flip elem "0123456789") s = Tk_Ok (numval s)
+  tk_convert s | otherwise = Tk_Err ("Invalid Int: " ++ show s)
+  
+instance GUIValue Bool where
+  tk_defaultValue    = False
+  tk_convert b       = tk_convert' (map toLower b)
+    where -- standard representations -----------
+ 
+          tk_convert' "true"  = Tk_Ok True
+          tk_convert' "false" = Tk_Ok False
+ 
+          tk_convert' "0"     = Tk_Ok False
+          tk_convert' "1"     = Tk_Ok True
+          
+          -- representation for Active ----------
+ 
+          tk_convert' "active"   = Tk_Ok True
+          tk_convert' "normal"   = Tk_Ok True
+          tk_convert' "disabled" = Tk_Ok False
+ 
+          -- representation for Tk_Wrap -----------
+ 
+          tk_convert' "word"     = Tk_Ok True
+          tk_convert' "none"     = Tk_Ok False
+ 
+          -- representation for Tk_MultipleSelect -----
+ 
+          tk_convert' "extended" = Tk_Ok True
+          tk_convert' "browse"   = Tk_Ok False
+ 
+          -- representation for Tk_HorOrient --------
+ 
+          tk_convert' "horizontal" = Tk_Ok True
+          tk_convert' "vertcial"   = Tk_Ok False
+ 
+          -- error case ------------------------
+ 
+          tk_convert' s = Tk_Err ("Invalid Bool: " ++ show s)
+
+instance GUIValue (Int,Int) where
+  tk_defaultValue = (0,0) 
+
+  -- representation for text positions --
+  tk_toGUI (a,b)  = show a ++ "." ++ show b
+  tk_convert xs   = Tk_Ok (numval a, numval (drop 1 b))
+                    where (a,b) = span (/= '.') xs
+ 
+instance GUIValue [(Int,Int)] where
+  tk_defaultValue = []
+
+  -- representation for text positions --
+
+  tk_toGUI xs     = unwords (map tk_toGUI xs)
+  tk_convert xs   = let ys = map tk_convert (words xs)
+                    in Tk_Ok (map (\(Tk_Ok x) -> x) ys)
+
+
+data OkOrErr a    = Tk_Ok a | Tk_Err String
+ 
+tk_showError     :: String -> GUI ()
+tk_showError s   = tk_putTcl ["tk_dialog .tkerr {Tk_Input Error}",
+                               tk_secure s, "error 0 OK"
+                             ]
+
+--------------------------------------------------------------------------
+-- TkWidgetTree
+
+type TkTop   = String      -- window name
+type TkChild = String      -- windowitem name
+
+data TkWidgetTree
+  = Tk_Node (TkTop, TkChild, [Config], [TkLPack]) [TkWidgetTree]
+
+tk_emptyNode :: TkWidgetTree
+tk_emptyNode = Tk_Node ("", "", [], []) []
+
+tk_getNodeId :: TkWidgetTree -> TkWidId
+tk_getNodeId (Tk_Node (n,m,_,_) _) = n++m
+
+tk_getTop :: TkWidgetTree -> TkTop
+tk_getTop (Tk_Node (n,_,_,_) _) = n
+
+tk_getChild :: TkWidgetTree -> TkChild
+tk_getChild (Tk_Node (_,n,_,_) _) = n
+
+--------------------------------------------------------------------------
+-- Packing
+
+-- TkPack
+
+data TkPack = Tk_Side String
+            | Tk_Fill String
+            | Tk_Expand
+            | Tk_Group
+
+instance Eq TkPack where
+  Tk_Side x == Tk_Side y = x == y
+  Tk_Fill x == Tk_Fill y = x == y
+  Tk_Expand == Tk_Expand = True
+  Tk_Group  == Tk_Group  = True
+  _      == _      = False
+
+
+instance Text TkPack where
+  showsPrec d (Tk_Side s)   = showString "-si " . showString s
+  showsPrec d (Tk_Fill s)   = showString "-fi " . showString s
+  showsPrec d Tk_Group      = showString ""
+  showsPrec d Tk_Expand     = showString "-ex 1"
+ 
+-- TkLPack
+
+type TkLPack = TkTag TkPack
+data TkTag a = Tk_Pack1 a
+             | Tk_Pack2 a
+
+instance Eq TkLPack where
+  Tk_Pack1 a == Tk_Pack1 b = a == b
+  Tk_Pack2 a == Tk_Pack2 b = a == b
+  _          == _          = False
+
+
+-- Lifting Widgets
+
+{-  already defined in other module
+data Frame0 = Frame0
+type Frame  = WItem Frame0
+-}
+
+tk_WidgetToFrame :: Widget (WItem w) => WItem w -> Frame
+tk_WidgetToFrame (WItem w ts) = WItem Frame0 ts
+
+tk_combine :: (Widget (WItem a), Widget (WItem b))
+            => [TkPack] -> WItem a -> WItem b -> Frame
+tk_combine p a b =
+  let (WItem Frame0 a') = tk_WidgetToFrame a
+      (WItem Frame0 b') = tk_WidgetToFrame b
+  in WItem Frame0 (tk_combine' p a' b')
+  where
+    tk_combine' s a b =
+      Tk_Node (tk_getTop a, tk_getChild a ++ "f", [], [])
+               (lift a s ++ lift b s)
+      where
+        lift (Tk_Node (n,m,cs,[]) (w:ws)) s
+          | all (\(Tk_Node (n,m,cs,ps) w)
+                   -> s == [a | Tk_Pack2 a <- ps]) (w:ws) = (w:ws)
+        lift (Tk_Node (n,m,cs,ps)  ws) s
+          | otherwise = [Tk_Node (n,m,cs,nub (ps ++ map Tk_Pack2 s)) ws]
+
+
+tk_add :: Widget (WItem a) => [TkPack] -> WItem a -> WItem a 
+tk_add p (WItem a (Tk_Node (n, m, cs, ps) ws)) =
+  WItem a (Tk_Node (n, m, cs, nub (ps ++ map Tk_Pack1 p)) ws)
+
+-- Algorithm
+ 
+tk_packIn :: TkWidId -> [Config] -> TkWidgetTree -> GUI ()
+ 
+tk_packIn father _ (Tk_Node (top, son, configs, packinfo) []) =
+  do let info' = map show (tk_packUnion packinfo)
+     tk_putTcl (["praise", top++son, father] ++ info')
+     cs'      <- binds (map (tk_showConf (top++son)) configs)
+     if cs' == [] then done else tk_putTcl ([top++son, "configure "] ++ cs')
+
+tk_packIn father cs (Tk_Node (top, son, configs, packinfo) children) =
+  do cs'  <- binds (map (tk_showConf (top++son)) (configs ++ cs))
+     let info' = map show (tk_packUnion packinfo)
+     tk_putTcl (["frame ", top++son] ++ cs')
+     tk_putTcl (["praise", top++son , father] ++ info')
+     seqs (map (tk_packIn (top++son) cs) children)
+ 
+tk_packUnion :: [TkLPack] -> [TkPack]
+tk_packUnion ps =
+ let ps' = nub ([p | Tk_Pack1 p <- ps] ++ [p | Tk_Pack2 p <- ps])
+ in  if (Tk_Fill "x" `elem` ps' && Tk_Fill "y" `elem` ps') ||
+        Tk_Fill "both" `elem` ps'
+     then ps' ++ [Tk_Fill "both"]
+     else ps'
+
+--------------------------------------------------------------------------
+-- Layout Combinators
+
+infixl 7 <<, <*<, <-<, <|<, <+<, <*-<, <*|<, <*+<
+ 
+(<<),(<*<),(<-<),(<|<),(<+<),(<*-<),(<*|<),(<*+<) ::
+   (Widget (WItem a),Widget (WItem b)) => WItem a -> WItem b -> Frame
+ 
+(<<)   = tk_combine [Tk_Side "left"]
+(<*<)  = tk_combine [Tk_Side "left", Tk_Expand]
+(<-<)  = tk_combine [Tk_Side "left", Tk_Fill "x"]
+(<|<)  = tk_combine [Tk_Side "left", Tk_Fill "y"]
+(<+<)  = tk_combine [Tk_Side "left", Tk_Fill "both"]
+(<*-<) = tk_combine [Tk_Side "left", Tk_Expand, Tk_Fill "x"]
+(<*|<) = tk_combine [Tk_Side "left", Tk_Expand, Tk_Fill "y"]
+(<*+<) = tk_combine [Tk_Side "left", Tk_Expand, Tk_Fill "both"]
+ 
+infixl 6 ^^, ^*^, ^-^, ^|^, ^+^, ^*-^, ^*|^, ^*+^
+ 
+(^*^),(^^),(^-^),(^|^),(^+^),(^*-^),(^*|^),(^*+^) ::
+   (Widget (WItem a), Widget (WItem b)) => WItem a -> WItem b -> Frame
+ 
+(^*^)  = tk_combine [Tk_Side "top", Tk_Expand]
+(^^)   = tk_combine [Tk_Side "top"]
+(^-^)  = tk_combine [Tk_Side "top", Tk_Fill "x"]
+(^|^)  = tk_combine [Tk_Side "top", Tk_Fill "y"]
+(^+^)  = tk_combine [Tk_Side "top", Tk_Fill "both"]
+(^*-^) = tk_combine [Tk_Side "top", Tk_Expand, Tk_Fill "x"]
+(^*|^) = tk_combine [Tk_Side "top", Tk_Expand, Tk_Fill "y"]
+(^*+^) = tk_combine [Tk_Side "top", Tk_Expand, Tk_Fill "both"]
+
+ 
+matrix :: Widget (WItem a) => Int -> [WItem a] -> Frame
+matrix n ls = matrix' n (map tk_WidgetToFrame ls)
+
+matrix' :: Int -> [Frame] -> Frame
+matrix' n = foldl1 (^^) . map (foldl1 (<<)) . groupn n
+
+horizontal, vertical :: Widget (WItem a) => [WItem a] -> Frame
+horizontal xs = matrix (length xs) xs
+vertical   xs = matrix 1 xs
+
+-- Sizing
+
+expand, fillX, fillY, fillXY,flexible :: Widget (WItem a) => WItem a -> WItem a
+expand   = tk_add [Tk_Expand]
+fillX    = tk_add [Tk_Fill "x"]
+fillY    = tk_add [Tk_Fill "y"]
+fillXY   = tk_add [Tk_Fill "both"]
+flexible = fillXY . expand
+
+--------------------------------------------------------------------------
+-- Protecting Strings
+ 
+tk_secure :: String -> String
+tk_secure s = "\"" ++ secure s ++ "\""
+  where
+    secure [] = []
+    secure (x:xs) = x' ++ secure xs where
+      x' = case x of
+             '\n' -> "\\n"
+             '\t' -> "\\t"
+             '['  -> "\\["
+             ']'  -> "\\]"
+             '{'  -> "\\{"
+             '}'  -> "\\}"
+             '\\' -> "\\\\"
+             '\"' -> "\\\""
+             '$'  -> "\\$"
+             _    -> [x]
+
+--------------------------------------------------------------------------
+-- Configurations
+
+-- RGB Colors
+
+rgb :: Int -> Int -> Int -> String
+rgb r g b = "#" ++ concat (map (hex 2 "") [r,g,b]) where
+  hex 0 rs _ = rs
+  hex t rs 0 = hex (t-1) ('0':rs) 0
+  hex t rs i = let m = mod i 16
+               in hex (t-1)((chr (48+m+7*(div m 10))):rs)(div i 16)
+
+-- type Config
+
+data Menu0 = Menu0 [Config]
+type Menu  = TItem Menu0
+
+type Conf w = w -> Config
+ 
+data Config = Tk_Text String
+            | Tk_Width Int
+            | Tk_Height Int
+            | Tk_PadX Int
+            | Tk_PadY Int
+            | Tk_TakeFocus Bool
+            | Tk_IndicatorColor String
+            | Tk_HighlightBackground String
+            | Tk_HighlightColor String
+            | Tk_HighlightThickness Int
+            | Tk_SelectBackground String
+            | Tk_SelectForeground String
+            | Tk_SelectBorderwidth Int
+            | Tk_Command (GUI ())
+            | Tk_Title String
+            | Tk_WinSize (Int,Int)           --- ## not yet readable
+            | Tk_WinPosition (Int,Int)       --- ## not yet readable
+            | Tk_IndicatorOn Bool
+            | Tk_ActiveForeground String
+            | Tk_ActiveBackground String
+            | Tk_Background String
+            | Tk_Foreground String
+            | Tk_FillColor String
+            | Tk_OutlineColor String
+            | Tk_Bitmap String
+            | Tk_Active Bool
+            | Tk_Underline Int
+            | Tk_ScaleText String
+            | Tk_ScaleHeight Int
+            | Tk_Cursor String
+            | Tk_ScaleRange (Int,Int)        --- ## not yet readable
+            | Tk_SliderLength Int
+            | Tk_TickInterval Int
+            | Tk_TroughColor String
+            | Tk_Justify String
+            | Tk_Relief String     -- raised/flat/ridge/sunken/groove
+            | Tk_Aspect Int
+            | Tk_Font String
+            | Tk_Wrap Bool
+            | Tk_Anchor String   -- "n","ne","e","se","s","sw","w","nw","c"
+            | Tk_BorderWidth Int
+            | Tk_MultipleSelect Bool
+            | Tk_ScrollRegion (Int,Int)      --- ## not yet readable
+            | Tk_Variable String      -- internal use only
+            | Tk_HorOrient Bool       -- ""
+            | Tk_TextVariable String  -- ""
+            | Tk_OnValue  String      -- ""
+            | Tk_OffValue String      -- ""
+            | Tk_Value Int            -- ""
+            | Tk_FreeOption  (GUI ())   -- ""
+            | Tk_InitValue (GUI ())   -- ""
+            | Tk_Pulldown Menu        -- ""
+            | Tk_AngleExtent Int      -- size of the angular range of the arc
+            | Tk_AngleStart Int       -- start angle for arc
+            | Tk_DummyConf            -- ""
+ 
+
+-- Show functions
+
+instance Text Config where
+  showsPrec d (Tk_Text s)
+    = showString ("text " ++ tk_secure s)
+  showsPrec d (Tk_Underline i)
+    = showString "underline " . shows i
+  showsPrec d (Tk_Title t)
+    = showString ("title " ++ tk_secure t)
+  showsPrec d (Tk_WinSize (x, y))
+    = showString ("geometry " ++ show x ++ "x" ++ show y)
+  showsPrec d (Tk_WinPosition (x, y))
+    = showString ("geometry +" ++ show x ++ "+" ++ show y)
+  showsPrec d (Tk_PadX i)
+    = showString "padx " . shows i
+  showsPrec d (Tk_PadY i)
+    = showString "pady " . shows i
+  showsPrec d (Tk_TakeFocus False)
+    = showString "takefocus 0 "
+  showsPrec d (Tk_TakeFocus True)
+    = showString "takefocus 1 "
+  showsPrec d (Tk_Height i)
+    = showString "height " . shows i
+  showsPrec d (Tk_Width i)
+    = showString "width " . shows i
+  showsPrec d (Tk_Command a)
+    = showString "command "
+  showsPrec d (Tk_InitValue a)
+    = showString "initvalue "
+  showsPrec d (Tk_SelectBackground c)
+    = showString "selectbackground " . shows c
+  showsPrec d (Tk_SelectForeground c)
+    = showString "selectforeground " . shows c
+  showsPrec d (Tk_SelectBorderwidth i)
+    = showString "selectborderwidth " . shows i
+  showsPrec d (Tk_Background c)
+    = showString "background " . shows c
+  showsPrec d (Tk_Foreground c)
+    = showString "foreground " . shows c
+  showsPrec d (Tk_HighlightBackground c)
+    = showString "highlightbackground " . shows c
+  showsPrec d (Tk_HighlightColor c)
+    = showString "highlightcolor " . shows c
+  showsPrec d (Tk_HighlightThickness i)
+    = showString "highlightthickness " . shows i
+  showsPrec d (Tk_Bitmap n)
+    = showString ("bitmap @" ++ n)
+  showsPrec d (Tk_Active True)
+    = showString "state normal"
+  showsPrec d (Tk_Active False)
+    = showString "state disabled"
+  showsPrec d (Tk_FillColor c)
+    = showString "fill " . shows c
+  showsPrec d (Tk_OutlineColor c)
+    = showString "outline " . shows c
+  showsPrec d (Tk_IndicatorColor c)
+    = showString "selectcolor " . shows c
+  showsPrec d (Tk_IndicatorOn True)
+    = showString "indicatoron 1"
+  showsPrec d (Tk_IndicatorOn False)
+    = showString "indicatoron 0"
+  showsPrec d (Tk_Justify s)
+    = showString "justify " . shows s
+  showsPrec d (Tk_Relief r)
+    = showString ("relief " ++ tk_secure r)
+  showsPrec d (Tk_Aspect i)
+    = showString "aspect " . shows i
+  showsPrec d (Tk_ScaleText s)
+    = showString ("label " ++ tk_secure s)
+  showsPrec d (Tk_ScaleHeight s)
+    = showString "length " . shows s
+  showsPrec d (Tk_Cursor s)
+    = showString "cursor " . shows s
+  showsPrec d (Tk_ActiveForeground c)
+    = showString "activeforeground " . shows c
+  showsPrec d (Tk_ActiveBackground c)
+    = showString "activebackground " . shows c
+  showsPrec d (Tk_HorOrient True)
+    = showString "orient horizontal"
+  showsPrec d (Tk_HorOrient False)
+    = showString "orient vertical"
+  showsPrec d (Tk_ScaleRange (i,j))
+    = showString "from " . shows i . showString " -to " . shows j  -- ###
+  showsPrec d (Tk_SliderLength i)
+    = showString "sliderlength " . shows i
+  showsPrec d (Tk_TickInterval i)
+    = showString "tickinterval " . shows i
+  showsPrec d (Tk_TroughColor c)
+    = showString "troughcolor " . shows c
+  showsPrec d (Tk_ScrollRegion (i,j))
+    = showString ("scrollregion {0 0 " ++ show i ++ " " ++ show j ++ "}")
+  showsPrec d (Tk_Font s)
+    = showString "font " . shows s
+  showsPrec d (Tk_Anchor s)
+    = showString "anchor " . shows s
+  showsPrec d (Tk_Wrap True)
+    = showString "wrap word"
+  showsPrec d (Tk_Wrap False)
+    = showString "wrap none"
+  showsPrec d (Tk_Variable s)
+    = showString "variable " . shows s
+  showsPrec d (Tk_TextVariable s)
+    = showString "textvariable " . shows s
+  showsPrec d (Tk_OnValue s)
+    = showString "onvalue " . shows s
+  showsPrec d (Tk_OffValue s)
+    = showString "offvalue " . shows s
+  showsPrec d (Tk_Value s)
+    = showString "value " . shows s
+  showsPrec d (Tk_BorderWidth i)
+    = showString "borderwidth " . shows i
+  showsPrec d (Tk_MultipleSelect True)
+    = showString "selectmode extended"
+  showsPrec d (Tk_MultipleSelect False)
+    = showString "selectmode browse"
+  showsPrec d (Tk_Pulldown m)
+    = showString "menu " . shows (tk_getPathName m)
+  showsPrec d (Tk_AngleExtent i)
+    = showString "extent " . shows i
+  showsPrec d (Tk_AngleStart i)
+    = showString "start " . shows i
+  showsPrec d (Tk_FreeOption a)
+    = showString "dummy"
+
+-- send them to Tcl
+
+tk_showMenuConf :: String -> Config -> GUI String
+tk_showMenuConf _ (Tk_Text s) = result ("-label " ++ (tk_secure s))
+tk_showMenuConf pathname s    = tk_showConf pathname s
+ 
+tk_showConf :: String -> Config -> GUI String
+tk_showConf _ (Tk_DummyConf) = result ""
+tk_showConf _ (Tk_InitValue f) = do {f; result ""}
+tk_showConf _ (Tk_FreeOption f) = do {f; result ""}
+tk_showConf pathname (Tk_Command f)   =
+  do i <- tk_addCallBack pathname (\_ -> f)
+     result ("-command {doEvent " ++ show i ++ "}")
+tk_showConf _ c = result ('-' : show c)
+
+--------------------------------------------------------------------------
+-- Toplevel Widgets
+
+-- Window ---------------------------------------------
+
+data Window0 = Window0 [Config]
+type Window  = TItem Window0
+ 
+tk_getWinDef :: Window -> [Config]
+tk_getWinDef (TItem (Window0 cs) n) = cs
+ 
+instance HasHeight     Window
+instance HasWidth      Window
+instance HasFocus      Window
+instance HasBorder     Window
+instance HasBackground Window
+ 
+window :: [Conf Window] -> GUI Window
+window cs =
+  do x <- tk_newPathName
+     let w = (TItem (Window0 []) x) in
+       do tk_putTcl ["window", x]
+          id <- tk_addCallBack x (\_ -> destroy w)
+          tk_putTcl [ "wm protocol", x,"WM_DELETE_WINDOW"
+                    , "{doEvent \"", show id , "\"}"
+                    ]
+          csets w cs
+          result w
+ 
+windowDefault :: [Conf Window] -> [Conf Default] -> GUI Window
+windowDefault ct cf =
+   do (TItem _ n) <- window ct
+      result (TItem (Window0 [c (WItem Tk_Default tk_emptyNode) | c <- cf]) n)
+ 
+closeWindow :: Window -> GUI ()
+closeWindow = destroy
+
+openWindow :: Widget (WItem w) 
+           => [Conf Window] -> (Window -> GUI (WItem w)) -> GUI ()
+openWindow cs f = openDefault cs [] f
+ 
+openDefault :: Widget (WItem w) 
+            => [Conf Window] -> [Conf Default] 
+               -> (Window -> GUI (WItem w)) -> GUI ()
+openDefault cs ds f =
+   do v <- windowDefault cs ds
+      w <- f v
+      packDefault w ds
+ 
+pack :: Widget (WItem a) => WItem a -> GUI ()
+pack t = packDefault t []
+ 
+packDefault :: Widget (WItem a) => WItem a -> [Conf Default] -> GUI ()
+packDefault w cs = let (WItem _ wt) = flexible w in
+  tk_packIn (tk_getTop wt) defaults wt
+    where
+     defaults =
+      map tk_noForeground [c (WItem Tk_Default tk_emptyNode) | c <- cs]
+
+title :: String -> Conf Window
+title s a = Tk_Title s
+ 
+winSize     :: (Int,Int) -> Conf Window
+winSize (x,y) w = Tk_WinSize (x,y)
+ 
+winPosition :: (Int,Int) -> Conf Window
+winPosition (x,y) w = Tk_WinPosition (x,y)
+ 
+--------------------------------------------------------------------------
+-- Window Items
+
+-- Default ---------------------------------------------
+ 
+data TkDefault = Tk_Default
+type Default = WItem TkDefault
+
+instance HasForeground Default
+instance HasBackground Default
+ 
+tk_noForeground :: Config -> Config
+tk_noForeground x =
+ case x of (Tk_Foreground _) -> Tk_DummyConf
+           (Tk_Font _)       -> Tk_DummyConf
+           _                 -> x
+
+-- Frame ---------------------------------------------
+ 
+data Frame0 = Frame0
+type Frame  = WItem Frame0
+ 
+instance HasHeight     Frame
+instance HasBorder     Frame
+instance HasFocus      Frame
+instance HasWidth      Frame
+instance HasBackground Frame
+ 
+frame :: Widget (WItem a) => [Conf Frame] -> WItem a -> GUI Frame
+frame cs w =
+  let (WItem Frame0 node) = tk_WidgetToFrame (flexible w)
+      cs1 = map (\f -> f (WItem Frame0 tk_emptyNode)) cs
+      cs2 = map tk_noForeground cs1
+      m   = tk_getTop node
+  in do n <- tk_newPathName
+        result (WItem Frame0 (Tk_Node (m, n, cs2,[]) [node]))
+
+-- Label -----------------------------------------------
+ 
+data Label0 = Label0
+type Label  = WItem Label0
+ 
+instance HasAnchor     Label
+instance HasBorder     Label
+instance HasFocus      Label
+instance HasWidth      Label
+instance HasHeight     Label
+instance HasPad        Label
+instance HasBackground Label
+instance HasForeground Label
+instance HasText       Label
+ 
+label :: [Conf Label] -> Window -> GUI Label
+label cs t = tk_makeWItem defaults Label0 t cs "label"
+  where defaults = tk_getWinDef t
+ 
+
+-- Scrollbar -------------------------------------------
+ 
+data Scrollbar0 = Scrollbar0
+type Scrollbar  = WItem Scrollbar0
+ 
+instance HasWidth      Scrollbar
+instance HasFocus      Scrollbar
+instance HasBorder     Scrollbar
+instance HasBackground Scrollbar
+ 
+scrollbar :: [Conf Scrollbar] -> Window -> GUI Scrollbar
+scrollbar cs t = tk_makeWItem defaults Scrollbar0 t cs "scrollbar"
+   where defaults = map tk_noForeground (tk_getWinDef t)
+
+hscroll, vscroll :: HasScroll (WItem w)
+                 => [Conf Scrollbar] -> WItem w -> GUI Scrollbar
+vscroll cs w@(WItem _ wt) =
+ do v <- scrollbar cs (TItem (Window0 []) (tk_getTop wt))
+    tk_toTcl w [ "configure -yscrollcommand {", tk_getPathName v, "set}"]
+    tk_toTcl v [ "configure -command {", tk_getPathName w, "yview}"]
+    result v
+
+hscroll cs w@(WItem _ wt) =
+  do v <- scrollbar (const (Tk_HorOrient True):cs)
+                    (TItem (Window0 []) (tk_getTop wt))
+     tk_toTcl w [ "configure -xscrollcommand {", tk_getPathName v, "set}"]
+     tk_toTcl v [ "configure -command {", tk_getPathName w, "xview}"]
+     result v
+
+-- Scale -----------------------------------------------
+
+data Scale0 a = Scale0 a
+type Scale = WItem (Scale0 Int)
+
+instance HasBackground Scale
+instance HasForeground Scale
+instance HasFocus      Scale
+instance HasBorder     Scale 
+instance HasWidth      Scale 
+instance HasCommand    Scale where
+  activeBackground _ _ = Tk_DummyConf
+instance HasText       Scale where
+  text s w      = Tk_ScaleText s
+  underline _ _ = Tk_DummyConf
+  bitmap    _ _ = Tk_DummyConf
+instance HasHeight     Scale where
+  height s w = Tk_ScaleHeight s
+instance GUIValue v => HasInput WItem Scale0 v where
+  getValue w =
+    do s <- tk_fromTcl w ["get"]
+       tk_fromGUI s
+
+  setValue w i =
+    tk_output (tk_toGUI i) $ \x ->
+    tk_toTcl w ["set", x]
+
+vscale, hscale :: [Conf Scale] -> Window -> GUI Scale
+vscale cs t = tk_makeWItem defaults (Scale0 0) t cs "scale"
+  where defaults = tk_getWinDef t
+
+hscale cs t = 
+  tk_makeWItem defaults (Scale0 0) t (const (Tk_HorOrient True):cs) "scale"
+  where defaults = tk_getWinDef t
+
+scaleRange :: (Int,Int) -> Conf Scale
+scaleRange (x,y) w = Tk_ScaleRange (x,y)
+
+sliderLength     :: Int    -> Conf Scale
+sliderLength i w = Tk_SliderLength i
+
+tickInterval     :: Int    -> Conf Scale
+tickInterval i w = Tk_TickInterval i
+
+troughColor :: String -> Conf Scale
+troughColor s w = Tk_TroughColor s
+
+
+-- Entry -----------------------------------------------
+
+data Entry0 a = Entry0 a
+type Entry  a = WItem (Entry0 a)
+
+instance HasBackground (Entry a)
+instance HasForeground (Entry a)
+instance HasFocus      (Entry a)
+instance HasBorder     (Entry a)
+instance HasWidth      (Entry a)
+instance HasScroll     (Entry a)
+
+instance GUIValue v => HasInput WItem Entry0 v where
+  getValue w  =
+    do s <- tk_fromTcl w ["get"]
+       tk_fromGUI s
+ 
+  setValue w s =
+    tk_output (tk_toGUI s) $ \x ->
+    tk_putTcl [ "global",tk_getPathName w
+              , ";set",tk_getPathName w, x
+              ]
+ 
+entry :: (Widget (Entry a), GUIValue a) 
+      => [Conf (Entry a)] -> Window -> GUI (Entry a)
+entry cs w =
+  do e <- tk_makeWItem defaults (Entry0 tk_defaultValue) w [] "entry"
+     let c = const (Tk_TextVariable (tk_getPathName e)) in csets e (c:cs)
+     result e
+  where defaults = tk_getWinDef w
+
+
+-- Edit ------------------------------------------------
+ 
+data Edit0 p a = Edit0 p a
+type Edit = WItem (Edit0 (Int,Int) String)
+
+instance HasBackground Edit 
+instance HasForeground Edit
+instance HasWidth      Edit
+instance HasBorder     Edit
+instance HasFocus      Edit
+instance HasHeight     Edit
+instance HasPad        Edit
+instance HasScroll     Edit
+ 
+instance HasInput WItem (Edit0 (Int,Int)) String where
+  getValue w    = do { x <- tk_fromTcl w ["get","1.0","end"]; result x }
+  setValue w ls = do { tk_toTcl w ["delete","1.0","end"]; putEnd w ls }
+ 
+instance HasPosition Edit0 (Int,Int) String where
+ 
+  getFromTo w p1 p2 = do {y <- tk_fromTcl w ["get", tk_toGUI p1, tk_toGUI p2];
+  tk_fromGUI y}
+ 
+  putEnd  w s =
+    tk_output (tk_toGUI s) $ \x ->
+    tk_toTcl w ["insert","end", x]
+ 
+  putBegin w s = putPos w (1,0) s
+ 
+  putPos w p s =
+    tk_output (tk_toGUI s) $ \x ->
+    tk_toTcl w ["insert", tk_toGUI p, x]
+ 
+  setSelection w p = done
+ 
+  getSelection w   =
+    do s <- tk_fromTcl w ["tag","ranges","sel"]
+       case s of 
+            ""  -> result []
+            _   -> do let (a:b:ps) = map tk_str2pos (words s ++ repeat "")
+                      result [a,b]
+    where
+      tk_str2pos xs = (numval a, numval (tail b))
+         where (a,b) = span (/= '.') xs
+ 
+  getSize w = do { s <- tk_fromTcl w ["index end"]; tk_fromGUI s}
+ 
+edit :: [Conf Edit] -> Window -> GUI Edit
+edit cs t = tk_makeWItem defaults (Edit0 (0,0) "") t cs "text"
+  where defaults = tk_getWinDef t
+ 
+wrap :: Bool -> Conf Edit
+wrap b w = Tk_Wrap b
+
+
+-- Mark ------------------------------------------------
+ 
+data Mark = Mark String
+ 
+mouseMark, insMark, endMark :: Mark
+mouseMark = Mark "current"
+insMark   = Mark "insert"
+endMark   = Mark "end"
+ 
+setMark :: Edit -> (Int,Int) -> GUI Mark
+setMark w p =
+  do x <- tk_newPathName
+     tk_toTcl w ["mark set", "m" ++ x, tk_toGUI p]
+     result (Mark ("m" ++ x))
+ 
+getMark :: Edit -> Mark -> GUI (Int,Int)
+getMark w (Mark x) =
+  do {s <- tk_fromTcl w ["index", x]; tk_fromGUI s}
+
+
+-- Tag -------------------------------------------------
+ 
+type TkTagId = String
+ 
+data Tag0 a  = Tag TkWidId TkTagId
+type Tag = Tag0 ()
+ 
+instance Widget (Tag0 ()) where
+  cset (Tag n i) c =
+    do cs <- tk_showConf (n ++ ".@" ++ show i) (c (Tag n i))
+       tk_putTcl [n, "tag configure", i, cs]
+ 
+  cget (Tag n i) f =
+    do cs <- tk_showConf (n ++ ".@" ++ show i) (f tk_defaultValue (Tag n i))
+       v  <- tk_getTcl [n, "tag cget", i, cs]
+       tk_fromGUI v
+ 
+  onArgs e args a (Tag n i) = Tk_FreeOption act where
+    act = do id <- tk_addCallBack (n ++ ".@" ++ show i) a
+             tk_putTcl [ n, "tag bind",show i, show e
+                       , " { doEvent \"", show id
+                       , concat (map (\x -> " %"++[x]) args), "\"}"
+                       ]
+
+instance TkWidget Tag 
+instance HasBackground Tag
+instance HasForeground Tag
+instance HasText       Tag
+ 
+tag :: [(Int,Int)] -> [Conf Tag] -> Edit -> GUI Tag
+tag ps cs w =
+  do x <- tk_newPathName
+     tk_toTcl w (["tag add", ("t" ++ x), tk_toGUI ps])
+     let t = Tag (tk_getPathName w) ("t" ++ x) in do {csets t cs ; result t}
+ 
+putPosTag :: Edit -> (Int,Int) -> String -> [Conf Tag] -> GUI Tag
+putPosTag w p1 s cs =
+  do m  <- setMark w p1
+     putPos w p1 s
+     p2 <- getMark w m
+     tag [p1,p2] cs w
+
+putEndTag :: Edit -> String -> [Conf Tag] -> GUI Tag
+putEndTag w s cs =
+  do let n = tk_getPathName w
+     t <- tk_newPathName
+     tk_output (tk_toGUI s) $ \x -> do
+       tk_putTcl ["insTag", n, x, "t"++ t]
+       let v = Tag n ("t" ++ t) in do {csets v cs ; result v}
+
+delTag :: Tag -> GUI ()
+delTag (Tag n i) = tk_putTcl [n, "tag delete", i]
+ 
+tagRange :: Tag -> GUI [(Int,Int)]
+tagRange (Tag n i) = do ps <- tk_getTcl [n, "tag ranges", i]
+                        tk_fromGUI ps
+ 
+lowerTag :: Tag -> GUI ()
+lowerTag (Tag n i) = tk_putTcl [n, "tag lower", i]
+
+-- Listbox ---------------------------------------------
+
+data Listbox0 p a = Listbox0 p a
+type Listbox a = WItem (Listbox0 Int a)
+
+instance HasBackground (Listbox v) 
+instance HasForeground (Listbox v)
+instance HasFocus      (Listbox v)
+instance HasScroll     (Listbox v)
+instance HasBorder     (Listbox v)
+instance HasWidth      (Listbox v)
+instance HasHeight     (Listbox v)
+ 
+instance HasPosition Listbox0 Int [v]
+  => HasInput WItem (Listbox0 Int) [v] where
+ 
+  setValue w ls = do { tk_toTcl w ["delete","0","end"]; putEnd w ls }
+ 
+  getValue w    = do { x <- getSize w ; getFromTo w 0 (x-1) }
+  
+  readOnly _ _ = Tk_DummyConf
+ 
+instance GUIValue v => HasPosition Listbox0 Int [v] where
+ 
+  getFromTo w p1 p2 =
+     binds [do {y <- tk_fromTcl w ["get", tk_toGUI p]; tk_fromGUI y}
+              | p <- [p1..p2]
+              ]
+ 
+  putEnd w ls =
+    seqs [  tk_output (tk_toGUI y) $ \x ->
+            tk_toTcl w ["insert","end", x]
+         | y <- ls ]
+ 
+  putBegin w ls = putPos w 0 ls
+ 
+  putPos w p ls =
+    seqs [  tk_output (tk_toGUI y) $ \x ->
+            tk_toTcl w ["insert" ,tk_toGUI p, x]
+         | y <- reverse ls]
+ 
+  setSelection w ps =
+    do tk_toTcl w ["sel","clear 0 end"]
+       seqs (map (\p -> tk_toTcl w ["sel","set",tk_toGUI p,tk_toGUI p]) ps)
+ 
+  getSelection w =
+    do xs <- tk_fromTcl w ["curselection"]
+       result (map numval (words xs))
+ 
+  getSize w = do {s <- tk_fromTcl w ["size"] ; tk_fromGUI s }
+ 
+listbox :: (Widget (Listbox a), GUIValue a) =>
+         [Conf (Listbox a)] -> Window -> GUI (Listbox a)
+listbox cs t = tk_makeWItem defaults (Listbox0 0 tk_defaultValue) t cs "listbox"
+ where defaults = tk_getWinDef t
+ 
+multipleSelect :: Bool -> Conf (Listbox a)
+multipleSelect b w = Tk_MultipleSelect b
+
+
+-- Message0 ---------------------------------------------
+ 
+data Message0 = Message0
+type Message  = WItem Message0
+ 
+instance HasAnchor     Message
+instance HasWidth      Message
+instance HasFocus      Message
+instance HasBorder     Message
+instance HasBackground Message
+instance HasForeground Message
+instance HasPad        Message
+instance HasText       Message where
+  underline _ _ = Tk_DummyConf
+  bitmap    _ _ = Tk_DummyConf
+ 
+message :: [Conf Message] -> Window -> GUI Message
+message cs t = tk_makeWItem defaults Message0 t cs "message"
+  where defaults = tk_getWinDef t
+ 
+aspect :: Int -> Conf Message
+aspect i w = Tk_Aspect i
+ 
+--------------------------------------------------------------------------
+-- Menu's and Buttons
+
+-- Menu
+ 
+{- already defined
+data Menu0 = Menu0 [Config]
+type Menu  = TItem Menu0
+-}
+
+instance HasBorder     Menu
+instance HasBackground Menu
+ 
+tk_getMenDef :: Menu -> [Config]
+tk_getMenDef (TItem (Menu0 cs) n) = cs
+ 
+menu :: Widget (c Menubutton0)
+     => [Conf Menu] -> c Menubutton0 -> GUI Menu
+menu cs b =
+  do x <- tk_newPathName
+     let e = (TItem (Menu0 []) (tk_getPathName b ++ x)) in
+        do tk_putTcl ["menu0", tk_getPathName e]
+           cset b (\_ -> Tk_Pulldown e)
+           csets e cs
+           result e
+ 
+menuDefault :: Widget (c Menubutton0)
+            => [Conf Menu] -> [Conf Default] -> c Menubutton0 -> GUI Menu
+menuDefault ct cf b =
+    do (TItem _ n) <- menu ct b
+       result (TItem (Menu0 [c (WItem Tk_Default tk_emptyNode) | c <- cf]) n)
+ 
+popup :: (Int, Int) -> Menu -> GUI ()
+popup (x,y) m = tk_toTcl m ["post", show x, show y]
+
+
+-- Button ----------------------------------------------
+ 
+data Button0 = Button0
+type Button  = WItem Button0
+type MButton = MItem Button0
+
+instance HasBackground Button 
+instance HasForeground Button
+instance HasFocus      Button
+instance HasAnchor     Button
+instance HasBorder     Button
+instance HasWidth      Button
+instance HasHeight     Button
+instance HasPad        Button
+instance HasText       Button
+instance HasCommand    Button
+instance HasBackground MButton 
+instance HasForeground MButton
+instance HasText       MButton
+instance HasCommand    MButton
+ 
+button :: [Conf Button] -> Window -> GUI Button
+button cs t = tk_makeWItem defaults Button0 t cs "button"
+  where defaults = tk_getWinDef t
+
+mbutton :: [Conf MButton] -> Menu -> GUI MButton
+mbutton cs t = tk_makeMItem defaults Button0 t cs "command"
+  where defaults = tk_getMenDef t
+
+-- Radiobutton0  ----------------------------------------------
+ 
+data Radiobutton0 = Radiobutton0
+type Radiobutton  = WItem Radiobutton0
+type MRadiobutton = MItem Radiobutton0
+ 
+instance HasAnchor     Radiobutton
+instance HasHeight     Radiobutton
+instance HasWidth      Radiobutton
+instance HasFocus      Radiobutton
+instance HasBorder     Radiobutton
+instance HasPad        Radiobutton
+instance HasBackground Radiobutton 
+instance HasForeground Radiobutton
+instance HasText       Radiobutton
+instance HasCommand    Radiobutton
+instance HasIndicator  Radiobutton
+instance HasBackground MRadiobutton 
+instance HasForeground MRadiobutton
+instance HasText       MRadiobutton
+instance HasCommand    MRadiobutton
+instance HasIndicator  MRadiobutton
+ 
+radiobutton :: [Conf Radiobutton] -> Window -> GUI Radiobutton
+radiobutton cs t = tk_makeWItem defaults Radiobutton0 t cs "radiobutton"
+  where defaults = tk_getWinDef t
+ 
+mradiobutton :: [Conf MRadiobutton] -> Menu -> GUI MRadiobutton
+mradiobutton cs t = tk_makeMItem defaults Radiobutton0 t cs "radiobutton"
+  where defaults = tk_getMenDef t
+
+
+-- Radio -----------------------------------------------
+
+data Radio0 v = Radio0 v [Config]
+type Radio    = TItem (Radio0 Int)
+ 
+instance HasInput TItem Radio0 Int where
+ 
+  setValue (TItem (Radio0 _ _) n) i = tk_putTcl ["global", n, ";set ",n,show i]
+ 
+  getValue (TItem (Radio0 _ _) n) =
+    do { x <- tk_getTcl ["global", n, ";set ",n] ; tk_fromGUI x}
+ 
+radio :: (Widget (c Radiobutton0))
+      => [Conf Radio] ->[c Radiobutton0] -> GUI Radio
+radio cs xs =
+  do x <- tk_newPathName
+     seqs (zipWith  (\m i -> csets m [const (Tk_Variable x),
+                                      const (Tk_Value i)]) xs [0..])
+     let rd = (TItem (Radio0 0 []) x)
+     setValue rd 0                 -- initial setting
+     csets rd cs 
+     result rd
+
+instance Widget Radio where
+  cset w c = 
+    case c w of
+      Tk_InitValue a -> a
+      _              -> done
+  onArgs e args a w = Tk_FreeOption done
+
+
+-- Menubutton ------------------------------------------------
+
+data Menubutton0 = Menubutton0
+type Menubutton  = WItem Menubutton0
+type Cascade     = MItem Menubutton0
+ 
+instance HasAnchor     Menubutton
+instance HasHeight     Menubutton
+instance HasWidth      Menubutton
+instance HasFocus      Menubutton
+instance HasBorder     Menubutton
+instance HasPad        Menubutton
+instance HasBackground Menubutton
+instance HasForeground Menubutton
+instance HasText       Menubutton 
+instance HasCommand    Menubutton where
+  command c _ = Tk_DummyConf
+instance HasBackground Cascade
+instance HasForeground Cascade
+instance HasText       Cascade 
+instance HasCommand    Cascade where
+  command c _ = Tk_DummyConf
+ 
+menubutton :: [Conf Menubutton] -> Window -> GUI Menubutton
+menubutton cs t = tk_makeWItem defaults Menubutton0 t cs "menubutton"
+  where defaults = tk_getWinDef t
+ 
+cascade :: [Conf Cascade] -> Menu -> GUI Cascade
+cascade cs t = tk_makeMItem defaults Menubutton0 t cs "cascade"
+  where defaults = tk_getMenDef t
+
+
+-- Checkbutton  ----------------------------------------------
+ 
+data Checkbutton0 a = Checkbutton0 a
+type Checkbutton  = WItem (Checkbutton0 Bool)
+type MCheckbutton = MItem (Checkbutton0 Bool)
+ 
+instance HasAnchor     Checkbutton
+instance HasBorder     Checkbutton
+instance HasFocus      Checkbutton
+instance HasWidth      Checkbutton
+instance HasHeight     Checkbutton
+instance HasPad        Checkbutton
+instance HasBackground Checkbutton
+instance HasForeground Checkbutton
+instance HasText       Checkbutton
+instance HasCommand    Checkbutton
+instance HasIndicator  Checkbutton
+instance HasBackground MCheckbutton
+instance HasForeground MCheckbutton
+instance HasText       MCheckbutton
+instance HasCommand    MCheckbutton
+instance HasIndicator  MCheckbutton
+instance GUIValue v => HasInput c Checkbutton0 v where
+  getValue w =
+    do s <- tk_getTcl ["global", tk_getVarName w, ";set",tk_getVarName w ]
+       tk_fromGUI s
+ 
+  setValue w s =
+    tk_output (tk_toGUI s) $ \x ->
+    tk_putTcl [ "global",tk_getVarName w,";"
+              , "set",tk_getVarName w, x
+              ]
+ 
+checkbutton :: [Conf Checkbutton] -> Window -> GUI Checkbutton
+checkbutton cs w =
+  do c <- tk_makeWItem defaults (Checkbutton0 False) w [] "checkbutton"
+     let cs' = [ \_ -> Tk_OffValue "False"
+               , \_ -> Tk_OnValue "True"
+               , \_ -> Tk_Variable (tk_getVarName c)
+               ] in csets c (cs' ++ cs)
+     result c
+  where defaults = tk_getWinDef w
+     
+mcheckbutton :: [Conf MCheckbutton] -> Menu -> GUI MCheckbutton
+mcheckbutton cs w =
+  do c <- tk_makeMItem defaults (Checkbutton0 False) w [] "checkbutton"
+     let cs' = [ \_ -> Tk_OffValue "False"
+               , \_ -> Tk_OnValue "True"
+               , \_ -> Tk_Variable (tk_getVarName c)
+               ] in csets c (cs' ++ cs)
+     result c
+  where defaults = tk_getMenDef w
+ 
+
+-- Separator -------------------------------------------------
+ 
+data Separator0 = Separator0
+type Separator  = MItem Separator0
+ 
+ 
+separator :: Menu -> GUI Separator
+separator t = tk_makeMItem [] Separator0 t [] "separator"
+ 
+
+--------------------------------------------------------------------------
+-- Canvas and Canvas Items
+
+-- Canvas ----------------------------------------------
+
+{- already defined in other module
+data Canvas0 = Canvas0
+type Canvas  = WItem Canvas0
+-}
+ 
+instance HasBackground Canvas
+instance HasScroll     Canvas
+instance HasFocus      Canvas
+instance HasBorder     Canvas
+instance HasWidth      Canvas
+instance HasHeight     Canvas
+ 
+canvas :: [Conf Canvas] -> Window -> GUI Canvas
+canvas cs t = tk_makeWItem defaults Canvas0 t cs "canvas"
+  where defaults = map tk_noForeground (tk_getWinDef t)
+ 
+scrollRegion :: (Int,Int) -> Conf Canvas
+scrollRegion (x,y) c = Tk_ScrollRegion (x,y)
+ 
+clearCanvas :: Canvas -> GUI ()
+clearCanvas w = do
+  tk_toTcl w ["delete all"]
+  tk_delBelowEvents (tk_getPathName w)
+
+-- CArc --------------------------------------------------------
+
+data CArc0 = CArc0
+type CArc  = CItem CArc0
+
+instance HasFillColor CArc
+
+angleStart :: Int -> Conf CArc
+angleStart i _ = Tk_AngleStart i
+
+angleExtent :: Int -> Conf CArc
+angleExtent i _ = Tk_AngleExtent i
+
+carc :: (Int,Int) -> (Int,Int) -> [Conf CArc] -> Canvas -> GUI CArc
+carc (x1,y1) (x2,y2) cs c = tk_makeCItem CArc0 c [x1,y1,x2,y2] cs "arc"
+
+
+-- CPolygon ----------------------------------------------------
+
+data CPolygon0 = CPolygon0
+type CPolygon = CItem CPolygon0
+
+instance HasFillColor CPolygon
+
+cpolygon :: [(Int,Int)] -> [Conf CPolygon] -> Canvas -> GUI CPolygon
+cpolygon xy cs c = tk_makeCItem CPolygon0 c xys cs "polygon"
+   where xys = foldr (\(x,y) r -> x:y:r) [] xy
+
+-- CPicture ----------------------------------------------------
+
+data CPicture0 = CPicture0
+type CPicture  = CItem CPicture0
+
+cpicture :: (Int,Int) -> [Conf CPicture] -> Canvas -> GUI CPicture
+cpicture (x,y) cs c = do
+    tk_makeCItem CPicture0 c [x,y] cs "image"
+
+image :: String -> Conf CPicture 
+image n (CItem _ w i) = Tk_FreeOption $ 
+  do x <- tk_getTcl ["image create photo"]
+     tk_putTcl [x, "configure", "-file", n]
+     tk_putTcl [w, "itemconfigure", show i," -image", x]
+
+-- COval ------------------------------------------------------
+ 
+data COval0 = COval0
+type COval  = CItem COval0
+ 
+instance HasFillColor COval
+ 
+coval :: (Int,Int) -> (Int,Int) -> [Conf COval] -> Canvas -> GUI COval
+coval (x1,y1) (x2,y2) cs c = tk_makeCItem COval0 c [x1,y1,x2,y2] cs "oval"
+
+
+-- CLine ------------------------------------------------------
+ 
+data CLine0 = CLine0
+type CLine  = CItem CLine0
+ 
+instance HasFillColor CLine where
+  penColor  c _ = Tk_FillColor c
+  fillColor _ _ = Tk_DummyConf
+  
+cline :: (Int,Int) -> (Int,Int) -> [Conf CLine] -> Canvas -> GUI CLine
+cline (x1,y1) (x2,y2) cs c = tk_makeCItem CLine0 c [x1,y1,x2,y2] cs "line"
+ 
+
+-- CRect -------------------------------------------------
+ 
+data CRect0 = CRect0
+type CRect  = CItem CRect0
+ 
+ 
+crect :: (Int,Int) -> (Int,Int) -> [Conf CRect] -> Canvas -> GUI CRect
+crect (x1,y1) (x2,y2) cs c =
+  tk_makeCItem CRect0 c [x1,y1,x2,y2] cs "rectangle"
+ 
+instance HasFillColor CRect
+
+
+-- CText -----------------------------------------------------
+ 
+data CText0 = CText0
+type CText  = CItem CText0
+ 
+instance HasText       CText where
+  underline _ _ = Tk_DummyConf
+  bitmap _ _    = Tk_DummyConf
+instance HasBackground CText where
+  background _ _ = Tk_DummyConf
+instance HasForeground CText where
+  foreground c _ = Tk_FillColor c
+instance HasAnchor     CText
+ 
+ctext :: (Int,Int) -> [Conf CText] -> Canvas -> GUI CText
+ctext (x1,y1) cs c =
+  tk_makeCItem CText0 c [x1,y1] (const (Tk_Anchor "w"):cs) "text"
+ 
+
+-- CBitmap ----------------------------------------------------
+ 
+data CBitmap0 = CBitmap0
+type CBitmap  = CItem CBitmap0
+ 
+instance HasBackground CBitmap 
+instance HasForeground CBitmap where
+  font _ _ = Tk_DummyConf
+instance HasAnchor     CBitmap
+instance HasText       CBitmap where
+  text      _ _ = Tk_DummyConf
+  underline _ _ = Tk_DummyConf
+
+
+cbitmap :: (Int,Int) -> [Conf CBitmap] -> Canvas -> GUI CBitmap
+cbitmap (x1,y1) cs c = tk_makeCItem CBitmap0 c [x1,y1] cs "bitmap"
+
+
+--------------------------------------------------------------------------
+-- Special Widgets
+
+-- Clipboard --------------------------------------------------------
+
+data Clipboard0 a = Clipboard0 (GVar a)
+type Clipboard a  = TItem (Clipboard0 a)
+
+instance Widget (Clipboard a) where
+  cset w c = void $ tk_showConf "dummy" (c w)
+  cget w f = result tk_defaultValue
+  onArgs _ _ _ _ = Tk_DummyConf
+
+instance HasInput TItem Clipboard0 a where   
+  getValue (TItem (Clipboard0 v) _)   = readGVar v   
+  setValue (TItem (Clipboard0 v) _) x = writeGVar v x
+  readOnly _ _ = Tk_DummyConf
+
+clipboard :: Widget (Clipboard a) => [Conf (Clipboard a)] -> GUI (Clipboard a)
+clipboard cs = 
+  do v <- newGVar (error "Clipboard not initialized")
+     let t = TItem (Clipboard0 v) "clipboard"
+     csets t cs
+     result t
+
+----------------------------------------------------------------------
+-- Composing Widgets
+ 
+composeWidget :: (Widget (WItem v), Widget (WItem w))
+              => w -> WItem v -> [Conf (WItem w)] -> GUI (WItem w)
+composeWidget w v cs =
+  let (WItem _ node) = tk_WidgetToFrame v
+      a = WItem w node
+  in do {csets a cs ; result a}
+ 
+getWidget :: WItem w -> w
+getWidget (WItem a _) = a
+
+-- input mask ------------------------------------------
+-- combination of a label and a entryfield:
+
+
+data Tk_Input0 v = Tk_Input (Entry v,Label)
+type Tk_Input  v = WItem (Tk_Input0 v)
+
+input :: (Widget (Tk_Input v), GUIValue v)
+      => [Conf (Tk_Input v)] -> Window -> GUI (Tk_Input v)
+input cs w =
+  do l <- label [] w
+     e <- entry [] w
+     composeWidget (Tk_Input (e,l)) (l <-< expand e) cs
+
+instance Widget (Entry v) => Widget (Tk_Input v) where
+  cset w c = let newc = c w
+             in case newc of
+                  (Tk_Text s)      -> cset (inputL w) (const (Tk_Text s))
+                  (Tk_InitValue s) -> cset (inputE w) (const (Tk_InitValue s))
+                  _                -> do cset (inputE w) (const newc)
+                                         cset (inputL w) (const newc)
+
+  cget w f = let cs = f tk_defaultValue w
+             in cget (inputL w) (\_ _ -> cs)
+
+  onArgs e r a w = onArgs e r a (inputE w)
+
+instance HasFocus (Entry v) => HasFocus (Tk_Input v) where
+  focus = focus . inputE
+
+instance HasWidth      (Tk_Input v)
+instance HasBackground (Tk_Input v)
+instance HasForeground (Tk_Input v)
+instance HasText       (Tk_Input v)
+instance HasBorder     (Tk_Input v)
+
+instance (HasInput WItem Entry0 v) => HasInput WItem Tk_Input0 v where
+  getValue = getValue . inputE
+  setValue = setValue . inputE
+
+inputE :: Tk_Input v -> Entry v
+inputE i = let (Tk_Input (e,l)) = getWidget i in e
+
+inputL :: Tk_Input v -> Label
+inputL i = let (Tk_Input (e,l)) = getWidget i in l
+
+--------------------------------------------------------------------------
+
+-- embedded windows : poor version ---------------------------------------
+
+data EWindow0 = EWindow0
+type EWindow  = TItem EWindow0
+
+class HasEmbeddedWindow c where  --  ### canvas and positions
+  ewindow :: (Int,Int) -> [Conf Frame] -> c -> GUI Window
+
+instance HasEmbeddedWindow Edit where
+  ewindow p cs t =
+    do w <- tk_newPathName
+       let m = tk_getPathName t
+       tk_putTcl ["pack [","frame", m++w, "]"]
+       tk_toTcl t ["window create", tk_toGUI p, "-window", m++w]
+       csets (WItem Frame0 (Tk_Node (m,w,[],[]) [tk_emptyNode])) cs
+       result (TItem (Window0 []) (m++w))
+
+instance HasEmbeddedWindow Canvas where
+  ewindow (x,y) cs t =
+    do w <- tk_newPathName
+       let m = tk_getPathName t
+       tk_putTcl ["pack [","frame", m++w, "]"]
+       tk_toTcl t ["create window" , show x, show y
+                  , "-window", m++w
+                  , "-anchor nw"
+                  ]
+       csets (WItem Frame0 (Tk_Node (m,w,[],[]) [tk_emptyNode])) cs
+       result (TItem (Window0 []) (m++w))
+
+--------------------------------------------------------------------------
+-- Useful functions
+
+-- updating the screen
+
+updateIdleTask :: GUI ()
+updateIdleTask = tk_putTcl ["update idletasks"]
+
+updateTask :: GUI ()
+updateTask = tk_putTcl ["update"]
+
+-- adding new configuration options -------------------------------------
+
+
+myConf :: Widget w => (w -> GUI a) -> Conf w
+myConf f w = Tk_FreeOption (void (f w))
+
+-- Destroying Widgets  ---------------------------------
+
+destroy :: Widget w => w -> GUI () -- throw widget and all the events away
+destroy w = do
+  let x = tk_getPathName w
+  tk_delEvents x
+  tk_putTcl ["destroy", x]
+
+-- Implementation Class --------------------------------
+
+class TkWidget w where
+  tk_getPathName ::  w -> String   
+
+  tk_getVarName :: w -> String    
+  tk_getVarName = tk_getPathName
+
+--------------------------------------------------------------------------
+-- Implementations Specific Code
+
+
+--------------------------------------------------------------------------
+-- Some primitives
+
+tk_fromTcl :: TkWidget w => w -> [String] -> GUI String
+tk_fromTcl w xs = tk_getTcl (tk_getPathName w : xs)
+ 
+tk_toTcl :: TkWidget w => w -> [String] -> GUI ()
+tk_toTcl w xs = tk_putTcl (tk_getPathName w : xs)
+ 
+tk_output :: String -> (String -> GUI a) -> GUI a
+tk_output s f = tk_melt $
+  do liftIO $ primSetVar s
+     f ("$tmp")
+     
+--------------------------------------------------------------------------
+-- the end.
+----------------------------------------------------------------------
+-- TkGofer v. 2.0
+-- Ton Vullinghs, Koen Claessen, July 1997
+----------------------------------------------------------------------
+-- time.gs
+
+-- need prelude.gs
+-- need guiMonad.gs
+-- need widget.gs
+
+----------------------------------------------------------------
+-- time & waiting
+ 
+after :: Int -> GUI a -> GUI ()
+after n action =
+  do p <- tk_addCallBack "after" undefined
+     tk_changeCallBack p $ \_ ->
+       do action
+          tk_delCallBack p
+ 
+     tk_putTcl ["after", show n, "doEvent", show p ]
+ 
+delay :: Int -> GUI ()
+delay n = tk_withCont $ \cont ->
+  do after n (tk_fork $ tk_GUI $ cont ())
+     result TkEnd
+ 
+every :: Int -> GUI a -> GUI ()
+every i a = do a; after i (every i a)
+
+----------------------------------------------------------------
+-- return ellapsed time : actual value depends on system !!!
+
+getTicks :: GUI Int
+getTicks = map ((/1000) . numval) (tk_getTcl ["clock clicks"])
+
+-- a very bad random function
+
+random :: Int -> GUI Int
+random n = map (f.numval) (tk_getTcl ["clock clicks"])
+ where
+  f t = (t*t) `mod` n
+
+-- relative measurement of elapsed time
+
+timeOf :: GUI a -> GUI Int
+timeOf f
+  = do startT <- getTicks
+       f 
+       endT <- getTicks
+       result (endT - startT)
+ 
+----------------------------------------------------------------
+-- Timer Widget
+
+data Timer0 a = Timer0 (Var (a, GUI (), Bool))
+ 
+type Timer = TItem (Timer0 Int)
+ 
+timer :: [Conf Timer] -> GUI Timer
+timer cs =
+  do v <- newGVar (1000, done, False)
+     i <- tk_newPathName
+     let c = TItem (Timer0 v) i
+     csets c $ if elemAct (map ($c) cs)
+                 then cs ++ [active True]
+                 else cs
+     result c
+ where
+  elemAct []               = True
+  elemAct (Tk_Active _:cs) = False
+  elemAct (_:cs)           = elemAct cs
+ 
+runTimer :: Timer -> GUI ()
+runTimer timer@(TItem (Timer0 v) i) =
+  do (t,c,b) <- readGVar v
+     if b then do
+       after t (runTimer timer)
+       c
+      else
+       done
+ 
+instance HasCommand (TItem (Timer0 Int))
+  => HasInput TItem Timer0 Int where
+ 
+  getValue (TItem (Timer0 v) _) =
+    [ t | (t,_,_) <- readGVar v ]
+ 
+  setValue c@(TItem (Timer0 v) _) t =
+    updateGVar (\(_,c,b) -> (max t 10,c,b)) v
+ 
+  readOnly _ _  = Tk_DummyConf
+ 
+instance Widget Timer where
+  cset w@(TItem (Timer0 v) i) c =
+    let newc = c w
+    in case newc of
+         Tk_Command a -> updateGVar (\(t,_,b) -> (t,a,b)) v
+         Tk_Active b' ->
+           do (t,c,b) <- tk_melt $ do (t,c,b) <- readGVar v
+                                      writeGVar v (t,c,b')
+                                      result (t,c,b)
+              if b' && not b then
+                runTimer w
+               else done
+         otherwise    -> void $ tk_showConf i (c w)
+ 
+  cget  w@(TItem (Timer0 v) i) f =
+    let c = f tk_defaultValue w in case c of
+      Tk_Active _ -> [ typeCast b | (_,_,b) <- readGVar v ]
+      otherwise   -> result tk_defaultValue
+ 
+  onArgs _ _ _ _ = Tk_DummyConf
+ 
+instance HasCommand Timer
+
+--------------------------------------------------------------------------
+-- the end.
+
+----------------------------------------------------------------------
+-- TkGofer v. 2.0
+-- Ton Vullinghs, Koen Claessen, July 1997
+----------------------------------------------------------------------
+-- io.gs
+
+-- need prelude.gs
+-- need guiMonad.gs
+
+---------------------------------------------------------------------------
+-- Some datatypes
+
+type FilePath = String
+type TkFileId = String
+
+data Handle
+  = TkFile TkFileId FilePath
+  | TkChan TkFileId
+
+tk_stdin, tk_stdout, tk_stderr :: Handle
+tk_stdin  = TkChan "stdin"
+tk_stdout = TkChan "stdout"
+tk_stderr = TkChan "stderr"
+
+instance Eq Handle where
+  TkFile s _ == TkFile t _ = s == t
+  TkChan s   == TkChan t   = s == t
+  _          == _          = False
+
+tk_getFileId :: Handle -> TkFileId
+tk_getFileId (TkFile s _) = s
+tk_getFileId (TkChan s)   = s
+
+data IOMode
+  = ReadMode
+  | WriteMode
+  | AppendMode
+  | ReadWriteMode
+
+data SeekMode 
+  = AbsoluteSeek
+  | RelativeSeek
+  | SeekFromEnd
+
+---------------------------------------------------------------------------
+-- File IO functions
+
+openFile :: FilePath -> IOMode -> GUI Handle
+openFile file mode =
+  do curr <- filePwd
+     id   <- tk_getTcl ["open", tk_secure file, mode']
+     result (TkFile id (file' curr))
+ where 
+   mode' = case mode of
+     ReadMode      -> "r"
+     WriteMode     -> "w"
+     AppendMode    -> "a"
+     ReadWriteMode -> "w+"
+   
+   file' curr
+     | take 1 file == "/" = file
+     | otherwise          = curr ++ "/" ++ file
+   
+hClose :: Handle -> GUI ()
+hClose handle = tk_putTcl ["close", tk_getFileId handle]
+
+hGetLine :: Handle -> GUI String
+hGetLine handle = tk_getTcl ["gets", tk_getFileId handle]
+
+hGetChar :: Handle -> GUI Char
+hGetChar handle = map head (hGetString handle 1)
+
+hGetString :: Handle -> Int -> GUI String
+hGetString handle n = tk_getTcl ["read", tk_getFileId handle, show n]
+
+hGetContents :: Handle -> GUI String
+hGetContents = tk_lazyRead
+
+hPutChar :: Handle -> Char -> GUI ()
+hPutChar handle c = hPutStr handle [c]
+
+hPutStr :: Handle -> String -> GUI ()
+hPutStr handle s = tk_output s $ \s' ->
+  tk_putTcl ["puts", "-nonewline", tk_getFileId handle, s']
+
+hPutStrLn :: Handle -> String -> GUI ()
+hPutStrLn handle s = tk_output s $ \s' ->
+  tk_putTcl ["puts", tk_getFileId handle, s']
+
+hPrint :: Text a => Handle -> a -> GUI ()
+hPrint h x = hPutStrLn h (show x)
+
+hFileSize :: Handle -> GUI Int
+hFileSize = tk_handleGet "size"
+
+hIsEOF :: Handle -> GUI Bool
+hIsEOF handle = do x <- tk_getTcl ["eof", tk_getFileId handle]; tk_fromGUI x
+
+isEOF :: GUI Bool
+isEOF = hIsEOF tk_stdin
+
+hFlush :: Handle -> GUI ()
+hFlush handle = tk_putTcl ["flush", tk_getFileId handle]
+
+hSeek :: Handle -> SeekMode -> Int -> GUI ()
+hSeek handle mode i = tk_putTcl ["seek", tk_getFileId handle, show i, mode']
+ where
+  mode' = case mode of
+    AbsoluteSeek -> "start"
+    RelativeSeek -> "current"
+    SeekFromEnd  -> "end"
+
+hIsReadable :: Handle -> GUI Bool
+hIsReadable (TkChan "stdin") = result True
+hIsReadable (TkChan _)       = result False
+hIsReadable (TkFile _ name)  = tk_fileGet "readable" name
+
+hIsWritable :: Handle -> GUI Bool
+hIsWritable (TkChan "stdin") = result False
+hIsWritable (TkChan _)       = result True
+hIsWritable (TkFile _ name)  = tk_fileGet "writable" name
+
+hIsExecutable :: Handle -> GUI Bool
+hIsExecutable (TkChan _)      = result False
+hIsExecutable (TkFile _ name) = tk_fileGet "executable" name
+
+fileCd :: FilePath -> GUI ()
+fileCd s = tk_putTcl ["cd", tk_secure s]
+
+filePwd :: GUI FilePath
+filePwd = tk_getTcl ["pwd"]
+
+fileDir :: FilePath -> GUI [FilePath]
+fileDir pat = do x <- tk_getTcl ["glob -nocomplain", pat']
+                 result (words x)
+ where
+  pat' | pat == "" = "*"
+       | otherwise = pat
+
+fileIsDir :: FilePath -> GUI Bool
+fileIsDir = tk_fileGet "isdirectory"
+
+fileIsFile :: FilePath -> GUI Bool
+fileIsFile = tk_fileGet "isfile" 
+
+fileExists :: FilePath -> GUI Bool
+fileExists = tk_fileGet "exists"
+
+---------------------------------------------------------------------------
+-- Auxilary functions
+
+tk_fileGet :: GUIValue a => String -> FilePath -> GUI a
+tk_fileGet what name =
+  do x <- tk_getTcl ["file", what, tk_secure name]
+     tk_fromGUI x
+
+tk_handleGet :: GUIValue a => String -> Handle -> GUI a
+tk_handleGet what (TkChan n)      = error ("Can't ask " ++ n ++ " for " ++ what)
+tk_handleGet what (TkFile _ name) = tk_fileGet what name
+
+---------------------------------------------------------------------------
+-- Easy functions for reading and writing files
+
+withFile :: FilePath -> IOMode -> (Handle -> GUI a) -> GUI a
+withFile name mode f =
+  do h <- openFile name mode
+     a <- f h
+     hClose h
+     result a
+
+infoFile :: FilePath -> (Handle -> GUI a) -> GUI a
+infoFile name f = withFile name ReadMode f
+
+-- writing
+
+writeFileLines :: FilePath -> [String] -> GUI ()
+writeFileLines name xs
+  = withFile name WriteMode (void . (`mapl` xs) . hPutStrLn)
+
+writeFile :: FilePath -> String -> GUI ()
+writeFile name s
+  = withFile name WriteMode (`hPutStr` s)
+
+appendFile :: FilePath -> String -> GUI ()
+appendFile name s
+  = withFile name AppendMode (`hPutStr` s)
+
+-- reading (dirty implementation)
+
+readFile' :: FilePath -> GUI String
+readFile' name =
+  do s <- readFile name -- (is lazy, so force evaluation)
+     eval s
+     result s
+ where
+  eval (c:s) = eval s
+  eval []    = result ()
+
+readFileLines' :: FilePath -> GUI [String]
+readFileLines' = map lines . readFile'
+
+-- lazy
+
+readFile :: FilePath -> GUI String
+readFile name =
+  do b <- fileExists name
+     if b then result (openfile name)
+          else result ""
+
+readFileLines :: FilePath -> GUI [String]
+readFileLines = map lines . readFile
+
+-- auxilary function for lazy handle reading
+
+tk_lazyRead :: Handle -> GUI String
+tk_lazyRead h = interleaveGUI $
+  do b <- hIsEOF h
+     if b then do hClose h
+                  result ""
+          else do r  <- hGetString h blockSize
+                  rs <- tk_lazyRead h
+                  result (r++rs)
+ where
+  blockSize = 30
+
+---------------------------------------------------------------------------
+-- Execute a shell command
+
+system :: String -> GUI String
+system comm = tk_getTcl ["exec", comm]
+
+---------------------------------------------------------------------------
+-- Dialogues
+
+fileOpenDialogue :: GUI (Maybe FilePath)
+fileOpenDialogue =
+  do x <- tk_getTcl ["tk_getOpenFile"]
+     case x of
+       ""   -> result Nothing
+       name -> result (Just name)
+
+fileSaveDialogue :: GUI (Maybe FilePath)
+fileSaveDialogue =
+  do x <- tk_getTcl ["tk_getSaveFile"]
+     case x of
+       ""   -> result Nothing
+       name -> result (Just name)
+
+---------------------------------------------------------------------------
+-- the end.
+
+----------------------------------------------------------------------
+-- TkGofer v. 2.0
+-- Ton Vullinghs, Koen Claessen, July 1997
+----------------------------------------------------------------------
+-- concurrent.gs
+
+-- need prelude.gs
+-- need guiMonad.gs
+
+--------------------------------------------------------------------------
+-- Fork
+
+forks :: [GUI a] -> GUI ()
+forks = seqs . map tk_fork
+
+--------------------------------------------------------------------------
+-- Atomic
+
+-- make sure that the atomic action terminates!
+
+atomic :: GUI a -> GUI a
+atomic = tk_melt
+
+--------------------------------------------------------------------------
+-- Derived
+
+par :: GUI a -> GUI b -> GUI (a,b)
+par p1 p2 =
+  do v <- newMVar'
+     tk_fork (p1 `bind` putMVar v)
+     b <- p2
+     a <- takeMVar v
+     result (a,b)
+
+choice :: [(MVar a, a -> GUI b)] -> GUI b
+choice cs =
+  do won <- newMVar True
+     ans <- newMVar'
+     forks [ wait won ans p | p <- cs ]
+     takeMVar ans
+ where
+  wait won ans (v,f) =
+    do a <- takeMVar v
+       w <- takeMVar won
+       putMVar won False
+       if w then do
+         c <- f a
+         putMVar ans c
+        else
+         putMVar v a
+
+--------------------------------------------------------------------------
+-- MVar's
+
+type MVar a = Var (Either a [a -> TkCont])
+  in newMVar', newMVar, takeMVar, putMVar, eqMVar
+
+newMVar' :: GUI (MVar a)
+newMVar' = tk_action $
+  do newVar (Right [])
+
+newMVar :: a -> GUI (MVar a)
+newMVar a = tk_action $
+  do newVar (Left a)
+
+takeMVar :: MVar a -> GUI a
+takeMVar mvar = tk_continue $ \cont ->
+  do ma <- readVar mvar
+     case ma of
+       Left a   -> do writeVar mvar (Right [])
+                      result (cont a)
+       Right ws -> do writeVar mvar (Right (ws++[cont]))
+                      result TkEnd
+
+putMVar :: MVar a -> a -> GUI ()
+putMVar mvar a = tk_continue $ \cont ->
+  do ma <- readVar mvar
+     case ma of
+       Right []     -> do writeVar mvar (Left a)
+                          result (cont ())
+       Right (w:ws) -> do writeVar mvar (Right ws)
+                          result (TkFork (cont ()) (w a))
+       Left a       -> error "putMVar on a full MVar"
+
+updateMVar :: (a -> a) -> MVar a -> GUI ()
+updateMVar f mvar =
+  do a <- takeMVar mvar
+     putMVar mvar (f a)
+
+eqMVar :: MVar a -> MVar a -> Bool
+eqMVar = eqVar
+
+instance Eq (MVar a) where
+  (==) = eqMVar
+
+instance IsVar MVar where
+  newV   = newMVar
+  newV'  = newMVar'
+  readV  = takeMVar
+  writeV = putMVar
+
+--------------------------------------------------------------------------
+-- CVar's
+
+type CVar a = (MVar (), MVar a)
+  in newCVar', newCVar, takeCVar, putCVar, eqCVar
+
+newCVar' :: GUI (CVar a)
+newCVar' =
+  do vu <- newMVar ()
+     va <- newMVar'
+     result (vu,va)
+
+newCVar :: a -> GUI (CVar a)
+newCVar a =
+  do vu <- newMVar'
+     va <- newMVar a
+     result (vu,va)
+
+takeCVar :: CVar a -> GUI (a)
+takeCVar (vu,va) =
+  do a <- takeMVar va
+     putMVar vu ()
+     result a
+
+putCVar :: CVar a -> a -> GUI ()
+putCVar (vu,va) a =
+  do takeMVar vu
+     putMVar va a
+
+eqCVar :: CVar a -> CVar a -> Bool
+eqCVar (v1,v2) (w1,w2) = v1 `eqMVar` w1 && v2 `eqMVar` w2
+
+instance Eq (CVar a) where
+  (==) = eqCVar
+
+instance IsVar CVar where
+  newV   = newCVar
+  newV'  = newCVar'
+  readV  = takeCVar
+  writeV = putCVar
+
+--------------------------------------------------------------------------
+-- Channels
+
+type Channel a = (MVar (ChanStr a), MVar (ChanStr a))
+  in newChan', putChan, getChan, eqChan
+
+data ChanStr a = ChanStr (MVar (a, ChanStr a))
+
+newChan' :: GUI (Channel a)
+newChan' =
+  do hole <- newMVar'
+     let chole = ChanStr hole
+     read  <- newMVar chole
+     write <- newMVar chole
+     result (read,write)
+
+putChan :: Channel a -> a -> GUI ()
+putChan (read,write) a =
+  do hole' <- newMVar'
+     let chole' = ChanStr hole'
+     (ChanStr hole) <- takeMVar write
+     putMVar write chole'
+     putMVar hole (a, chole')
+
+getChan :: Channel a -> GUI a
+getChan (read,write) =
+  do (ChanStr cts) <- takeMVar read
+     (a,new) <- takeMVar cts
+     putMVar read new
+     result a
+
+eqChan :: Channel a -> Channel a -> Bool
+eqChan (v1,v2) (w1,w2) = v1 `eqMVar` w1 && v2 `eqMVar` w2
+
+instance Eq (Channel a) where
+  (==) = eqChan
+
+instance IsVar Channel where
+  newV'  = newChan'
+  readV  = getChan
+  writeV = putChan
+
+newChan :: a -> GUI (Channel a)
+newChan = newV
+
+--------------------------------------------------------------------------
+-- SkipChan's
+
+type SkipChan a = (MVar (a, [MVar ()]), MVar ())
+  in newSkipChan', putSkipChan, getSkipChan, dupSkipChan, eqSkipChan
+
+newSkipChan' :: GUI (SkipChan a)
+newSkipChan' =
+  do sem  <- newMVar'
+     main <- newMVar (undefined, [sem])
+     result (main, sem)
+
+putSkipChan :: SkipChan a -> a -> GUI ()
+putSkipChan (main,_) v =
+  do (_,sems) <- takeMVar main
+     putMVar main (v,[])
+     seqs [ putMVar sem () | sem <- sems ]
+
+getSkipChan :: SkipChan a -> GUI a
+getSkipChan (main,sem) =
+  do takeMVar sem
+     (v,sems) <- takeMVar main
+     putMVar main (v,sem:sems)
+     result v
+
+dupSkipChan :: SkipChan a -> GUI (SkipChan a)
+dupSkipChan (main,_) =
+  do sem <- newMVar'
+     (v,sems) <- takeMVar main
+     putMVar main (v, sem:sems)
+     result (main, sem)
+
+eqSkipChan :: SkipChan a -> SkipChan a -> Bool
+eqSkipChan (v1,v2) (w1,w2) = v1 `eqMVar` w1 && v2 `eqMVar` w2
+
+instance Eq (SkipChan a) where
+  (==) = eqSkipChan
+
+instance IsVar SkipChan where
+  newV'  = newSkipChan'
+  readV  = getSkipChan
+  writeV = putSkipChan
+
+----------------------------------------------------------------
+-- the end.
+
+type AsmVar a = a
+type Dynamic a = a
+
+infixl 1 :=, !:=
+infixl 1 =>>
+infixr 0  `seq`
+
+-- Declaration of primitive functions ---------------------------------------
+
+primitive primAsmEq     "primAsmEq"       :: a -> a -> Bool
+primitive primAsmSteps  "primAsmSteps"    :: IO Int
+primitive primAsmForceAssign "primAsmForceAssign" :: AsmVar a -> a -> IO ()
+primitive primAsmSetHistory  "primAsmSetHistory"  :: Bool -> IO ()
+primitive primAsmShowHistory "primAsmShowHistory" :: Int -> IO Bool
+primitive primAsmMinHistory  "primAsmMinHistory"  :: IO Int
+primitive primAsmVariable "primAsmNewFun0"  
+    :: String -> Int -> (a -> a -> Bool) -> a -> AsmVar a
+primitive primAsmFunction "primAsmNewFun1"  
+    :: String -> Int -> val -> (key -> key -> Bool)
+         -> (val -> val -> Bool) -> [(key,val)] -> AsmVar (key -> val)
+primitive primAsmWrite  "primAsmWriteFun" :: AsmVar a -> a -> IO ()
+primitive primAsmFire   "primAsmFire"     :: IO () -> IO Bool
+primitive primAsmCall   "primAsmCall"     :: IO () -> IO ()
+primitive primAsmSeq    "primAsmSeq"      :: IO () -> IO () -> IO ()
+primitive primAsmCall1  "primAsmCall1"    :: IO () -> IO Bool
+primitive primAsmSCall1 "primAsmSCall1"   :: IO () -> IO ()
+primitive primAsmAssocs "primAsmAssocsFun":: AsmVar (key -> val) -> [(key,val)]
+primitive primAsmRandom  "primAsmRandom"      :: Int -> Int
+primitive primAsmDefault "primAsmDefault"     :: a
+primitive primAsmInDom   "primAsmInDom"       :: key -> AsmVar (key -> val) -> Bool
+primitive primAsmEmptyDom "primAsmEmptyDom"   :: AsmVar (key -> val) -> Bool
+primitive primAsmStrictEval  "primAsmStrictEval" :: a -> IO a
+primitive primAsmCopyExpr    "primAsmCopyExpr"   :: a -> a
+primitive dynamicExpr        "primAsmCopyExpr"   :: a -> a
+primitive primAsmNewInteger  "primAsmNewInteger" :: Int
+primitive primAsmSetInteger  "primAsmSetInteger" :: Int -> IO ()
+
+primitive primAsmDynFuns     "primAsmDynFuns"    :: IO [String]
+
+primitive genericEq  "primGenericEq"  :: a -> a -> Bool
+primitive genericCmp "primGenericCmp"  :: a -> a -> Int
+primitive genericLt  "primGenericLt" :: a -> a -> Bool
+
+primitive primTrace  "primTrace" :: String -> a -> a
+
+-- Rule Monad ---------------------------------------------------------------
+
+data Rule a = Rule (IO a)
+            | Skip
+
+skip :: Rule ()
+skip = done
+
+instance Functor Rule where
+  map f (Rule m) = Rule (map f m)
+  map f Skip     = Skip
+
+instance Monad Rule where
+  result = Rule  . result
+  Rule m `bind` f = Rule (m `bind` (\x -> case f x of
+                                           Rule r -> r
+                                           Skip   -> result (error "skip occured")))
+  Skip `bind` f   = f (error "skip does not return a value")
+
+
+instance Monad0 Rule where
+  zero = Skip
+
+instance MonadPlus Rule where
+  a ++ b = do a; b
+
+(=>>) :: Monad m => Bool -> m a -> m ()
+True  =>> act = void act
+False =>> _   = done
+
+-- AsmTerm Types --------------------------------------------------------------
+
+class AsmOrd a where
+   asmLt :: a -> a -> Bool
+
+class AsmTerm a where
+   (:=) :: AsmVar a -> a -> Rule ()
+   l := r = Rule (primAsmWrite l r)
+
+   asmDefault :: a
+   asmDefault = primAsmDefault ()
+
+(!:=) :: AsmVar a -> a -> IO ()
+(!:=) = primAsmForceAssign
+
+instance AsmTerm Bool
+  where asmDefault = False
+
+instance AsmTerm Int
+instance AsmTerm Float
+instance AsmTerm Char
+instance AsmTerm String 
+
+instance AsmTerm a => AsmTerm [a]
+instance AsmTerm a => AsmTerm {a}
+instance (AsmTerm a, AsmTerm b) => AsmTerm (a,b)
+instance (AsmTerm a, AsmTerm b, AsmTerm c) => AsmTerm (a,b, c)
+instance (AsmTerm a, AsmTerm b, AsmTerm c, AsmTerm d) => AsmTerm (a,b, c, d)
+
+{-  
+instance AsmTerm a => AsmTerm [a] where
+  f := g  = seqs  (zipWith(:=) f g)
+
+instance (AsmTerm a, AsmTerm b) => AsmTerm (a,b) where
+   (l,r) := (l',r') = do l := l'
+                         r := r'
+-}
+
+
+instance AsmTerm a => Eq a where
+  (==) = genericEq
+
+instance AsmTerm a => AsmOrd a where
+  asmLt = genericLt
+
+instance AsmTerm a => Text a where
+  showsPrec i e = showString (primPrint i e [])
+
+-- ASM dynamic variables and functions  ------------------------------------
+
+initVal :: (Eq a, AsmTerm a) => String -> a -> AsmVar a
+initVal name = primAsmVariable name 0 (==)
+
+initValStdin :: String -> AsmVar String
+initValStdin name = primAsmVariable name 1 (==) ""
+
+initValStdout :: Bool -> String -> AsmVar String
+initValStdout True name  = primAsmVariable name 3 (==) ""
+initValStdout False name = primAsmVariable name 2 (==) ""
+
+initAssocs :: (AsmTerm key, AsmTerm val, AsmOrd key, Eq val)
+    => String -> [(key,val)] -> AsmVar (key -> val)
+initAssocs name = primAsmFunction name 0 asmDefault asmLt (==)
+
+initAssocsStdin :: (AsmTerm key, AsmOrd key)
+    => String -> AsmVar (key -> String)
+initAssocsStdin name = primAsmFunction name 1 asmDefault asmLt (==) []
+
+initAssocsStdout :: (AsmTerm key, AsmOrd key)
+    => Bool -> String -> AsmVar (key -> String)
+initAssocsStdout True name = primAsmFunction name 3
+                                  asmDefault asmLt (==) []
+initAssocsStdout False name = primAsmFunction name 2
+                                  asmDefault asmLt (==) []
+
+
+initAssocs' :: (AsmTerm key, AsmTerm val, AsmOrd key, Eq val)
+    => String -> val -> (key -> key -> Bool) -> (val -> val -> Bool) 
+        -> [(key,val)] -> AsmVar (key -> val)
+initAssocs' name dflt compare eq = primAsmFunction name 0 dflt compare eq
+
+-- access functions --------------------------------------------------------
+
+assocs :: AsmVar (key -> val) -> [(key,val)]
+assocs = primAsmAssocs
+
+dom :: Ord key => AsmVar (key -> val) -> {key}
+dom = mkSet . map fst . assocs
+
+ran :: Ord val => AsmVar (key -> val) -> {val}
+ran = mkSet . map snd . assocs
+
+inDom :: key -> AsmVar (key -> val) -> Bool
+inDom = primAsmInDom
+
+emptyDom :: AsmVar (key -> val) -> Bool
+emptyDom = primAsmEmptyDom
+
+notInDom :: key -> AsmVar (key -> val) -> Bool
+notInDom key fun = not(key `inDom` fun)
+
+dynFuns :: IO ()
+dynFuns = do xs <- primAsmDynFuns
+             seqs (map putStrLn xs)
+
+-- combining rules ---------------------------------------------------------
+
+forall :: [Rule ()] -> Rule ()
+forall = seqs
+
+rforall :: [Rule a] -> Rule [a]
+rforall = binds
+
+choose :: [Rule a] -> Rule ()
+choose = \xs -> case xs of
+                 [] -> Skip
+                 xs -> do i <- Rule $ strictEval (primAsmRandom (length xs))
+                          void (xs !! i)
+
+chooseIfNone :: [Rule a] -> Rule () -> Rule ()
+chooseIfNone = \xs r -> case xs of
+                 [] -> r
+                 xs -> do i <- Rule $ strictEval (primAsmRandom (length xs))
+                          void (xs !! i)
+
+choose_among :: [Rule ()] -> Rule ()
+choose_among ([]) = skip
+choose_among (xs) = do
+    i <- Rule $ strictEval (primAsmRandom (length xs))
+    let (ls,r:rs) = splitAt i xs
+    b <- asmCall1 r
+    if b then skip
+         else choose_among (ls ++ rs)
+
+iterate :: Rule () -> Rule ()
+iterate = Rule . primAsmCall . dynamicExpr . rule2io
+
+seq :: Rule () -> Rule () -> Rule ()
+seq r1 r2 = Rule (primAsmSeq (dynamicExpr (rule2io r1))
+                             (dynamicExpr (rule2io r2)))
+
+secureCall :: Rule () -> Rule ()
+secureCall = Rule . primAsmSCall1 . dynamicExpr . rule2io
+
+asmCall1 :: Rule () -> Rule Bool
+asmCall1 = Rule . primAsmCall1 . dynamicExpr . rule2io
+
+data Agent = Agent Int
+
+instance AsmTerm Agent
+instance AsmTerm (Agent -> Rule ())
+
+instance Eq (Agent -> Rule ()) where
+  (==) = primAsmEq
+
+instance Create Agent where
+  createElem = Agent
+
+agents :: AsmVar (Agent -> Bool)
+agents = initAssocs "agents" []
+
+act :: AsmVar (Agent -> (Agent -> Rule ()))
+act = initAssocs "act" []
+
+
+multi :: AsmVar (a -> (a -> Rule ())) -> Rule ()
+multi = multi' . assocs
+  where multi' [] = skip
+        multi' as = do
+          i <- Rule $ strictEval (primAsmRandom (length as))
+          let (ls,(a,r):rs) = splitAt i as
+          secureCall (r a)
+          multi' (ls ++ rs)
+
+-- general functions ------------------------------------------------------
+
+rule2io :: Rule a -> IO ()
+rule2io (Rule r) = void r
+rule2io Skip     = done
+
+rule2io' :: Rule a -> IO a
+rule2io' (Rule r) = r
+rule2io' Skip     = error "rule2io': skip not expected"
+
+strictEval = primAsmStrictEval
+
+activateHistory :: Bool -> IO ()
+activateHistory = primAsmSetHistory
+
+setDisplayState :: Int -> IO ()
+setDisplayState i = do
+  b <- primAsmShowHistory i
+  if not b then putStrLn "no history information available"
+           else done
+
+stdout :: AsmVar String
+stdout = initValStdout False "stdout"
+
+stdin :: AsmVar String
+stdin = initValStdin "stdin"
+
+
+
+str2int :: String -> Int
+str2int ('-':xs) = - (str2int xs)             
+str2int xs = foldl (\r c -> 10*r + ord c - ord '0') 0 xs
+
+
+-- fire functions on IO Monad ---------------------------------------------
+
+fire1_ :: IO () -> IO Bool
+fire1_ rule = primAsmFire (primAsmCopyExpr rule)
+
+
+fireWhile_ :: Bool -> IO () -> IO ()
+fireWhile_ f rule | primAsmCopyExpr f  
+                      = do b1 <- fire1_ rule
+                           if b1 then fireWhile_ f rule
+                                 else done
+fireWhile_ f rule | otherwise = done
+
+fireUntil_ :: Bool -> IO () -> IO ()
+fireUntil_ f rule = do b1 <- fire1_ rule
+                       if b1 then if primAsmCopyExpr f 
+                                   then done
+                                   else fireUntil_ f rule
+                             else done
+
+fixpoint_ :: IO () -> IO ()
+fixpoint_ r = do b <- primAsmFire (primAsmCopyExpr r)
+                 if b then fixpoint_ r
+                      else done
+
+-- fire functions on Rule Monad --------------------------------------------
+
+fire1 :: Rule a -> IO ()
+fire1 = void . fire1_ . rule2io
+
+fire :: Int -> Rule () -> IO ()
+fire i = void . map or . binds . copy i . fire1_ . rule2io
+
+
+fireWhile :: Bool -> Rule () -> IO ()
+fireWhile f = fireWhile_ f . rule2io
+
+fireUntil :: Bool -> Rule () -> IO ()
+fireUntil f = fireUntil_ f .rule2io
+
+
+fixpoint :: Rule () -> IO ()
+fixpoint = fixpoint_ . rule2io
+
+
+trace :: IO () -> Rule () -> Rule ()
+trace f Skip     = Skip
+trace f (Rule r) = Rule (do primAsmCopyExpr f; r)
+
+
+newInteger :: Int
+newInteger = primAsmNewInteger
+
+newIntegers :: Int -> [Int]
+newIntegers n = 
+              take n
+              . map (\i -> i + 0)
+              . repeat
+              . dynamicExpr $ newInteger + 0
+
+asmSetInteger :: Int -> IO ()
+asmSetInteger = primAsmSetInteger
+
+-- create ----------------------------------------------------------------
+
+class Create c where
+  createElem    :: Int -> c
+
+instance Create Int where
+  createElem    = id
+
+creates :: Create c => (Int, [c] -> Rule b) -> Rule b
+creates (i,rule) = do
+    let rs = map createElem (newIntegers i)
+    rule (rs)
+
+create :: Create c => Int -> ([c] -> Rule b) -> Rule b
+create = \i rule -> creates(i,rule)
+
+    
+
+-- ===================================================================
+-- the end.

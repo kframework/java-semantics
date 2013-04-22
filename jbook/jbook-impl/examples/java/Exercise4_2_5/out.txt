@@ -1,0 +1,4 @@
+Initialization of A
+Initialization of B
+3
+

@@ -1,0 +1,33 @@
+The license below applies to the source code and the binary files for 
+the executable models for Java, the Compiler, and the Java Virtual 
+Machine.
+
+The setup program installs BCEL.jar and jasmin.jar in the destination
+folder.
+BCEL.jar contains class files for BCEL (Byte Code Engineering Library) 
+written by Markus Dahm.  Check http://bcel.sourceforge.net/ 
+for more information.
+
+jasmin.jar contains class files for Jasmin. Check
+http://cat.nyu.edu/meyer/jasmin for more information.
+
+---------------------------------------------------------------------------- 
+  Permission to use, copy, modify, and distribute this software and its
+  documentation for any personal or educational use without fee is
+  hereby granted, provided that:
+    a) This copyright notice is retained in both source code and
+       supporting documentation.
+    b) Modified versions of this software are redistributed only if
+       accompanied by a complete history (date, author, description) of
+       modifications made; the intention here is to give appropriate
+       credit to those involved, whilst simultaneously ensuring that any
+       recipient can determine the origin of the software.
+    c) The same conditions are also applied to any software system
+       derived either in full or in part from these machines.
+
+   The machines are provided "as is" without express or implied 
+   warranty.
+---------------------------------------------------------------------------- 
+
+Copyright(c) Joachim Schmid, Siemens Corporate Technology, 
+Munich October 2000. 

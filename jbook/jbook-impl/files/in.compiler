@@ -1,0 +1,3 @@
+:p files/compiler.p
+do putStrLn "please wait (starting the GUI)" :: IO (); main
+:q

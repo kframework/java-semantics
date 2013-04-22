@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#Run jdk only over jva-fan preprocessed test suite.
+#Run jdk only over java-fan preprocessed test suite.
 
 TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 

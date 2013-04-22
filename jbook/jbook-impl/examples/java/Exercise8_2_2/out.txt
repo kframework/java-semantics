@@ -1,0 +1,5 @@
+Note: 
+=====
+Catcher for 'G' is not reachable. However, our implementation
+doesn't analyze which statements can throw which
+exceptions.

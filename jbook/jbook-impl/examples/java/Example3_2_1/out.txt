@@ -1,0 +1,12 @@
+l1: while
+l2: while
+continue l1
+l1: while
+l2: while
+continue l2
+l2: while
+break l2;
+l1: while
+l2: while
+break l1;
+

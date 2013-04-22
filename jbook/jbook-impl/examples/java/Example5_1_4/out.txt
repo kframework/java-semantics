@@ -1,0 +1,1 @@
+class A (method test): method 'A.m(J)' is ambiguous
