@@ -13,8 +13,10 @@ Setup:
     tools\jbook-run.bat <file>
 2. To run a particular test dir:
     tools\jbook-test.bat <test dir>
-3. To run all te tests:
-    tools\jbook-test.bat ..\programs
+3. To run a test dir over programs preprocessed with java-fan preprocessor:
+    tools\jbook-prep-test.bat <test dir>
+4. To run all te tests, preprocessed:
+    tools\jbook-prep-test.bat ..\programs
 
 A lot of problems were encountered during development. All of them are documented in the scripts
   inside \tools.
