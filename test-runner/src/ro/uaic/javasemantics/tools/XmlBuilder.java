@@ -83,7 +83,7 @@ public class XmlBuilder {
           .append("<testsuite")
           .append(" name='").append(args.getTestsuiteName()).append("'")
           .append(" tests='").append(getNrTests()).append("'")
-          .append(" errors='").append(statusCountMap.get("error")).append("'")
+          .append(" errors='").append(getNrErrorResults()).append("'")
           .append(" failures='").append(statusCountMap.get("failed")).append("'")
           .append(" time='").append(getTotalTime()).append("'")
           .append(">\n\n");
@@ -106,6 +106,16 @@ public class XmlBuilder {
     int nrTests = 0;
     for (Integer val : statusCountMap.values()) {
       nrTests += val;
+    }
+    return nrTests;
+  }
+
+  private int getNrErrorResults() {
+    int nrTests = 0;
+    for (Map.Entry<String, Integer> entry : statusCountMap.entrySet()) {
+      if (!(entry.getKey().equals("ok") || entry.getKey().equals("failed"))) {
+        nrTests += entry.getValue();
+      }
     }
     return nrTests;
   }
