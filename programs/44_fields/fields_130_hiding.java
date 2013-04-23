@@ -11,7 +11,7 @@ class B extends A {
   int a;
 }
 
-public class fields_13_hiding {
+public class fields_130_hiding {
   public static void main(String[] args) {
     B b = new B();
     b.a = 22;
