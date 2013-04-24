@@ -69,7 +69,7 @@ class Graph {
       for (int j = 0; j < edges[i].length; j++) {
         System.out.print(edges[i][j] + " ");
       }
-      System.out.print("\n");
+      System.out.println();
     }
   }
 }
@@ -84,10 +84,11 @@ public class graph_break {
       }
     }
     Graph graph1 = new Graph(edges);
-    System.out.print("Init graph:"+"\n");
+    System.out.println("Init graph:");
     graph1.print();
     Graph graph2 = graph1.loseEdges(1,2);
-    System.out.print("\n"+"Graph without edges (1,2),(2,1):"+"\n");
+    System.out.println();
+    System.out.println("Graph without edges (1,2),(2,1):");
     graph2.print();
     System.out.println("Done!");
   }

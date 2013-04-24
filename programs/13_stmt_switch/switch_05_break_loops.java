@@ -30,7 +30,7 @@ public class switch_05_break_loops {
       System.out.print("unreachable");
     }
     System.out.print("after outer while.");
-    System.out.print("\n");
+    System.out.println();
 	}
 
 	public static void main(String[] args) {

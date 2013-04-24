@@ -18,7 +18,7 @@ public class switch_07_break_label {
       }
       System.out.print(", after switch.");
     }
-    System.out.print("\n");
+    System.out.println();
 	}
 
 	public static void main(String[] args) {

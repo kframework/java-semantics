@@ -20,7 +20,7 @@ public class switch_06_continue {
           System.out.print("3 ");
       }
       System.out.print("+");
-      System.out.print("\n");
+      System.out.println();
     }
     System.out.println("Done!");
 	}

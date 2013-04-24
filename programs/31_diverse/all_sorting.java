@@ -14,10 +14,10 @@ class main {
   }
 
   void printArray(int[] x, int n) {
-    System.out.print("\n");
+    System.out.println();
     for (int i = 0; i<n; ++i)
       System.out.print(x[i]+" ");
-    System.out.print("\n");
+    System.out.println();
   }
 
   void reverse(int[] x, int n) {

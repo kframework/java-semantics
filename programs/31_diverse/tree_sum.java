@@ -42,7 +42,7 @@ public class tree_sum {
       new Leaf(5)
     );
     System.out.println(o.Sum());
-    System.out.print("o.left.Sum = " + o.getLeft().Sum() + "\n");
+    System.out.println("o.left.Sum = " + o.getLeft().Sum());
     System.out.println("Done!");
   }
 }

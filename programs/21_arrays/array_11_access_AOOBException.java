@@ -13,7 +13,8 @@ public class array_11_access_AOOBException {
 
   public static void main(String[] args) {
     new main();
-    System.out.println("\n"+ "Done!");
+    System.out.println();
+    System.out.println("Done!");
   }
 }
 

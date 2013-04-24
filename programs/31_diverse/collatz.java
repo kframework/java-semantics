@@ -21,7 +21,7 @@ class main {
       else
         n = 3*n+1;
     }
-    System.out.print("Done! It took "+s+" steps."+"\n");
+    System.out.println("Done! It took "+s+" steps.");
   }
 
   main(String[] args) {
@@ -29,8 +29,8 @@ class main {
     int m = new Scanner(System.in).nextInt();
     for (int i = 1; i<=m; ++i)
       collatz(i);
-    System.out.print("It appears to hold."+"\n");
-    System.out.print("Done!"+"\n");
+    System.out.println("It appears to hold.");
+    System.out.println("Done!");
   }
 }
 

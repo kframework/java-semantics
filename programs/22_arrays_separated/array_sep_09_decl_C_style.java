@@ -9,7 +9,8 @@ public class array_sep_09_decl_C_style {
 
   public static void main(String[] args) {
     new main();
-    System.out.println("\n"+ "Done!");
+    System.out.println();
+    System.out.println("Done!");
   }
 }
 

@@ -6,7 +6,8 @@ public class array_10_access_index_types {
 
   public static void main(String[] args) {
     new main();
-    System.out.println("\n"+ "Done!");
+    System.out.println();
+    System.out.println("Done!");
   }
 }
 

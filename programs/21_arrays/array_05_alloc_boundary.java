@@ -10,7 +10,8 @@ public class array_05_alloc_boundary {
 
   public static void main(String[] args) {
     new main();
-    System.out.println("\n"+ "Done!");
+    System.out.println();
+    System.out.println("Done!");
   }
 }
 

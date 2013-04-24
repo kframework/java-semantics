@@ -15,7 +15,7 @@ class main {
       xi = x[i];
       s = s + " " + xi;
 		}
-    System.out.print(s);
+    System.out.println(s);
 	}
 
 	main(String[] args) {
@@ -23,7 +23,7 @@ class main {
     int[] x = init(n);
 		System.out.print("The original sequence is");
 		printAll(x);
-		System.out.print("\n"+ "Sorting the array using insertion sort ... ");
+		System.out.print("Sorting the array using insertion sort ... ");
 		for (int i = 0; i<n; ++i) {
 			int j = i - 1, v = x[i];
 			while (j >= 0 && x[j] > v) {
@@ -32,9 +32,9 @@ class main {
 			}
 			x[j+1] = v;
 		}
-		System.out.print("Sort completed."+ "\n"+ "The sorted sequence is");
+    System.out.println("Sort completed.");
+		System.out.print("The sorted sequence is");
 		printAll(x);
-		System.out.print("\n");
     System.out.println("Done!");
 	}
 }

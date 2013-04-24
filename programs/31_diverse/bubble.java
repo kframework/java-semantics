@@ -34,7 +34,8 @@ class main {
     }
     System.out.print("Sorting the array using bubble sort ... ");
     bubbleSort(x);
-    System.out.println("Done!"+"\n"+ "Below is the sorted sequence:");
+    System.out.println("Done!");
+    System.out.println("Below is the sorted sequence:");
     for (int y = 0; y<x; ++y) {
       System.out.println("Element "+ y+ " = "+ v[y]);
     }

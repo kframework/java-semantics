@@ -1,6 +1,6 @@
 // Object = null, String = null, array = null, userClass = null.
 // Call to print tests that null of any type is correctly printed.
-// Call to println tests that null + "\n" , null of any type, is correctly executed.
+// Call to println tests that the expression (null + "\n") , null of any type, is correctly executed.
 
 class UserClass {
 }

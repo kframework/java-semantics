@@ -21,7 +21,7 @@ public class switch_03_default {
 			case 6:
       case 7:
 		}
-    System.out.print("\n");
+    System.out.println();
 	}
 
 	public static void main(String[] args) {

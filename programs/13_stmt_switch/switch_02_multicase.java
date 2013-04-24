@@ -12,7 +12,7 @@ public class switch_02_multicase {
 			case 4+0:
       case 5+0:
 		}
-    System.out.print("\n");
+    System.out.println();
 	}
 
 	public static void main(String[] args) {

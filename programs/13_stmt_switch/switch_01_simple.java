@@ -10,7 +10,7 @@ public class switch_01_simple {
 			case 2: System.out.print("2 ");
 			case 3: System.out.print("3 ");
 		}
-    System.out.print("\n");
+    System.out.println();
 	}
 
 	public static void main(String[] args) {

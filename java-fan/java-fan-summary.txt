@@ -255,12 +255,12 @@ Running tests for
     array_01_overview.java...  failed
     array_02_assign_type_preserv.java...  ok
     array_03_ref_assign_type_preserv.java...  failed
-    array_04_alloc_multidim.java...  failed
+    array_04_alloc_multidim.java...  ok
     array_05_alloc_boundary.java...  failed
     array_06_alloc_NASException.java...  timeout
     array_07_alloc_dim_expr_types.java...  failed
     array_08_alloc_order_of_dims.java...  failed
-    array_09_decl_C_style.java...  failed
+    array_09_decl_C_style.java...  ok
     array_10_access_index_types.java...  failed
     array_11_access_AOOBException.java...  failed
     array_12_access_eval_order.java...  failed
@@ -300,12 +300,12 @@ Running tests for
 ../programs/22_arrays_separated:
     array_sep_01_overview.java...  ok
     array_sep_03_ref_assign_type_preserv.java...  failed
-    array_sep_041_alloc_multidim_w_strict.java...  failed
-    array_sep_04_alloc_multidim.java...  failed
+    array_sep_041_alloc_multidim_w_strict.java...  ok
+    array_sep_04_alloc_multidim.java...  ok
     array_sep_05_alloc_boundary.java...  failed
-    array_sep_06_alloc_NASException.java...  timeout
+    array_sep_06_alloc_NASException.java...  generator error
     array_sep_08_alloc_order_of_dims.java...  failed
-    array_sep_09_decl_C_style.java...  failed
+    array_sep_09_decl_C_style.java...  ok
     array_sep_11_access_AOOBException.java...  failed
     array_sep_12_access_eval_order.java...  failed
     array_sep_13_access_null.java...  failed
@@ -358,7 +358,7 @@ Running tests for
     matrixMul.java...  failed
     odd_even.java...  ok
     point.java...  test error
-    tree_sum.java...  failed
+    tree_sum.java...  ok
 
 ../programs/32_java_api_core:
     Object_equals.java...  failed
@@ -754,11 +754,11 @@ Running tests for
     inner_st_812_inherit_in_unq_in_intf.java...  test error
     inner_st_813_inherit_in_unq_in_intf_ext.java...  test error
 
-failed:  239
-generator error:  78
-ok    :  102
+failed:  233
+generator error:  79
+ok    :  108
 test error:  220
-timeout:  28
+timeout:  27
 total :  667
 
-It took 172 seconds
+It took 294 seconds
