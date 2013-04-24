@@ -9,7 +9,7 @@ public class array_sep_06_alloc_NASException {
 
   public static void main(String[] args) {
     new main();
-    System.out.println()
+    System.out.println();
     System.out.println("Done!");
   }
 }
