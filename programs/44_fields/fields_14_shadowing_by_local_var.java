@@ -16,7 +16,7 @@ class A {
   }
 }
 
-public class fields_14_hiding_by_local_var {
+public class fields_14_shadowing_by_local_var {
   public static void main(String[] args) {
     new A().f();
     System.out.println("Done!");

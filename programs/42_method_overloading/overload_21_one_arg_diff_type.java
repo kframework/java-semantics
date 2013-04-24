@@ -15,13 +15,13 @@ class A {}
 
 class main {
   main() {
-    f(2L);
+    f(2);
     f("abcx");
-    f(new RuntimeException("zre"));
+    f(new RuntimeException());
     f(new A());
   }
 
-  void f(long a) {
+  void f(int a) {
     System.out.println("long: " + a);
   }
 
@@ -34,6 +34,6 @@ class main {
   }
 
   void f(A a) {
-    System.out.println("A: " + a.getClass().getName());
+    System.out.println("A");
   }
 }
