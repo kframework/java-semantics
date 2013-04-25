@@ -13,11 +13,11 @@ public class overload_22_one_arg_conv {
 }
 
 class A {
-  public String toString() {return "A"};
+  public String toString() {return "A";}
 }
 
 class B extends A {
-  public String toString() {return "B"};
+  public String toString() {return "B";}
 }
 
 class main {
