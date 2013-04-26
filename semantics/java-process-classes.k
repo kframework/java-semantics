@@ -1,7 +1,9 @@
 require "java-core.k"
+require "java-elaborate-blocks.k"
 
 module JAVA-PROCESS-CLASSES
     imports JAVA-CORE
+    imports JAVA-ELABORATE-BLOCKS
 
 //no semantics for 'Abstract and 'NoMethodBody required
 //existing semantics for methods covers them too
@@ -79,6 +81,16 @@ rule [processTypeWithDependsDiscard]:
 rule [processTypeWithDependsDiscard2]:
     processTypeWithDepends(noClass) => .K
 
+/*For each class compute the set of inherited interfaces, inherit all the members,
+process inner declaraions. Compute the following class cells:
+  <implTrans>
+  <fieldDecs>
+  <methods>
+  <instanceInit>
+  <staticEnv>
+  <staticInit>
+  <staticInitLocations>
+*/
 rule [ProcessType]:
     <k>
       processType(Class:ClassType) => computeImplTrans(SetItem(BaseClass) ISet)
@@ -89,7 +101,7 @@ rule [ProcessType]:
 
           ~> tryInherit(BaseClass)
           ~> inheritInterfaceFields
-          ~> Decls
+          ~> Decls ~> elabMethods(.Map) ~> elabInstanceInit ~> elabStaticInit
       ...
     </k>
     <class>
@@ -278,7 +290,7 @@ rule getTypesFromParams(Ts:List{K}, .List{K}) => types(Ts)
 
 rule [storeMethod]:
     <k>
-      storeMethod(Name:Id, Ts:Types, 'ListWrap(Params:List{K}), CT:ContextType, S:K,
+      storeMethod(Name:Id, Ts:Types, 'ListWrap(Params:List{K}), CT:ContextType, Body:K,
           MethodType:Type) => .
       ...
     </k>
@@ -286,7 +298,7 @@ rule [storeMethod]:
     <classType> Class </classType>
     <methods>
       Env:Map => Env[
-        methodClosure(Class, 'ListWrap(Params), CT, S) :: MethodType / sig(Name,Ts)
+        methodClosure(Class, 'ListWrap(Params), CT, Body) :: MethodType / sig(Name,Ts)
       ]
     </methods>
 
@@ -401,7 +413,7 @@ rule [InstanceInitSave]:
     <k> 'InstanceInit(K:K) => . ...</k>
     <cuClass> Class:ClassType </cuClass>
     <classType> Class </classType>
-    <instanceInit>... . => K </instanceInit>
+    <instanceInit> 'ListWrap(_,,(.List{K} => K)) </instanceInit>
         [structural]
 
 rule [FieldDecStaticInitDesugar]:
@@ -428,7 +440,7 @@ rule [StaticInitSave]:
     <k> 'StaticInit(K:K) => . ...</k>
     <cuClass> Class:ClassType </cuClass>
     <classType> Class </classType>
-    <staticInit>... . => K </staticInit>
+    <staticInit> 'ListWrap(_,,(.List{K} => K)) </staticInit>
         [structural]
 
 /*@ The parser represents interface fields as 'ConstantDec labels.

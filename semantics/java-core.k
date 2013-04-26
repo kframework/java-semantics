@@ -56,9 +56,11 @@ configuration
           <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>
           <methods color="purple"> .Map </methods>
           <br/>
-          <instanceInit> .K </instanceInit>
+          <instanceInit> 'ListWrap(.List{K}) </instanceInit>
           <staticEnv> .Map </staticEnv>
-          <staticInit> .K </staticInit>
+
+          //The sequence of static initializers (that also includes field initializers)
+          <staticInit> 'ListWrap(.List{K}) </staticInit>
           <br/>
 
           //Static fields declared in this class, not inherited. Used by static initialization.
@@ -332,5 +334,8 @@ when        (KL =/=KLabel 'Public)
     andBool (KL =/=KLabel 'Private)                           [structural, anywhere]
 
 rule getAccessMode('ListWrap(.List{K})) => package            [structural, anywhere]
+
+//Custom hole used for custom heating/cooling rules across the semantics.
+syntax K ::= "CHOLE"
 
 endmodule
