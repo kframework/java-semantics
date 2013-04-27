@@ -27,14 +27,16 @@ syntax K ::= "elabMethods" "(" Map ")"  //Elaborates the methods of the current 
                                         //Initially the map is empty.
            | "elabInstanceInit"
            | "elabStaticInit"
+           | "elabInit" "(" K ")"       //The first step of elaboration. Performs some initialization.
            | "elab" "(" K ")"           //Elaborates the given statement/expression.
-           | "elabEnd" "(" K ")"        //Intermediate state between elab and elabRes - all subterms were already elaborated.
-                                        //Deleting the elabRes() wrappers of subterms
-           | "elabRes" "(" K ")"        //Wraps the elaboration result.
+           | "elabDispose" "(" K ")"    //Intermediate state between elab and elabRes - all subterms were already elaborated.
+                                        //Responsible for deleting the elabRes() wrappers of subterms.
+
+syntax KResult ::= "elabRes" "(" K ")"  //Wraps the elaboration result
 
 rule [elabMethodsHeatMethod]:
   <k>
-    (. => elab(Body))
+    (. => elabInit(Body))
     ~> elabMethods( (. => Sig |-> methodClosure(MClass,ParamsLW,CT, CHOLE )::MethodType) _)
     ...
   </k>
@@ -53,7 +55,7 @@ rule [elabMethodsCoolMethod]:
 //todo consider eliminating the label constrClosure since it leads to too much duplication.
 rule [elabMethodsHeatConstr]:
   <k>
-    (. => elab(Body))
+    (. => elabInit(Body))
     ~> elabMethods( (. => Sig |-> constrClosure(MClass,ParamsLW,FirstLine, CHOLE )::MethodType) _)
     ...
   </k>
@@ -76,7 +78,7 @@ rule [elabMethodsEnd]:
   <methods> .Map => Methods </methods>
 
 rule [elabInstanceHeat]:
-    <k> (. => elab(K)) ~> elabInstanceInit ...</k>
+    <k> (. => elabInit(K)) ~> elabInstanceInit ...</k>
     <cuClass> Class:ClassType </cuClass>
     <classType> Class </classType>
     <instanceInit> K:K => CHOLE </instanceInit>
@@ -89,7 +91,7 @@ rule [elabInstanceEnd]:
     <instanceInit> CHOLE => K </instanceInit>
 
 rule [elabStaticHeat]:
-    <k> (. => elab(K)) ~> elabStaticInit ...</k>
+    <k> (. => elabInit(K)) ~> elabStaticInit ...</k>
     <cuClass> Class:ClassType </cuClass>
     <classType> Class </classType>
     <staticInit> K:K => CHOLE </staticInit>
@@ -103,24 +105,29 @@ rule [elabStaticEnd]:
 
 /*@ \section{Elaboration of code blocks} */
 
-rule [elabOtherHeat]:
-    (. => elab(K)) ~> elab(KL:KLabel(_,, (K:K => CHOLE),, _))
+rule [elabHeatOther]:
+    (. => elabInit(K)) ~> elab(KL:KLabel(ElabResL:List{K},, (K:K => CHOLE),, _))
 when
-    notBool isElab(K)
+    isElab(ElabResL) andBool notBool isElab(K) andBool notBool noElab(K)
+
+rule [elabInitHollow]:
+    elabInit(K) => elab(K)
+when
+    notBool needsSpecialElab(K)
 
 rule [elabOtherCool]:
     (elabRes(K) => .) ~> elab(_:KLabel(_,, (CHOLE => elabRes(K)),, _))
 
-rule [elabEndStart]:
-    elab(KL:KLabel(ElabResL:List{K})) => elabEnd(KL(ElabResL))
+rule [elabDisposeOtherStart]:
+    elab(KL:KLabel(ElabResL:List{K})) => elabDispose(KL(ElabResL))
 when
-    isElab(ElabResL)
+    isElab(ElabResL) andBool notBool needsSpecialElab(KL(ElabResL))
 
-rule [elabEndProcess]:
-    elabEnd(KL:KLabel(_,, (elabRes(K:K) => K),, _))
+rule [elabDisposeProcess]:
+    elabDispose(KL:KLabel(_,, (elabRes(K:K) => K),, _))
 
-rule [elabEndEnd]:
-    elabEnd(KL:KLabel(Ks:List{K})) => elabRes(KL(Ks))
+rule [elabDisposeEnd]:
+    elabDispose(KL:KLabel(Ks:List{K})) => elabRes(KL(Ks))
 when
     isNotElab(Ks)
 
@@ -145,5 +152,69 @@ rule isNotElab((.K => .List{K}),, _)            [anywhere]
 
 rule isNotElab((KL:KLabel(_) => .List{K}),, _)
 when KL =/=KLabel 'elabRes`(_`)                 [anywhere]
+
+//Computes true if the given term needs special rules for elaboration, false otherwise
+syntax K ::= "needsSpecialElab" "(" K ")"       [function]
+
+//Labels that need special semantics during at the beginning of elab and elabDispose phases.
+rule needsSpecialElab(.K) => false
+
+rule needsSpecialElab(KL:KLabel(_)) =>
+           KL ==KLabel 'Block
+
+//Labels that should not be heated for elaboration
+syntax K ::= "noElab" "(" K ")"                 [function]
+rule noElab(.K) => false
+rule noElab(KL:KLabel(_)) =>
+           KL ==KLabel 'LocalVarDecStm
+    orBool KL ==KLabel 'LocalVarDec
+
+//Elaboration of blocks
+
+rule [elabInitBlock]:
+    <k> elabInit('Block(Ks:List{K})) => elab('Block(Ks)) ...</k>
+    <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
+
+rule [elabDisposeBlockStart]:
+    <k> elab('Block(ElabResL:List{K})) => elabDispose('Block(ElabResL)) ...</k>
+    <elabEnv> (ListItem(_) => .) ...</elabEnv>
+when
+    isElab(ElabResL)
+
+//Local var decs desugaring
+
+rule [LocalVarDecStmRed]:
+    elab('ListWrap(_,,(
+      'LocalVarDecStm('LocalVarDec(_,, TypeK:K,, 'ListWrap(Ks:List{K})))
+      => 'LocalVarDec(TypeK,, 'ListWrap(Ks))
+    ),,_))                                            [structural]
+
+rule [VarListDecDesugar]:
+    elab('ListWrap(_,,(
+      'LocalVarDec(TypeK:K,, 'ListWrap(Var1:K,, Var2:K,, VarDecs:List{K}))
+      => 'LocalVarDec(TypeK,, 'ListWrap(Var1)),,
+         'LocalVarDec(TypeK,, 'ListWrap(Var2,, VarDecs))
+    ),,_))                                            [structural]
+
+rule [VarDecWithInitDesugar]:
+    elab('ListWrap(_,,(
+    'LocalVarDec(TypeK:K,, 'ListWrap('VarDec(X1:Id,,InitExp:K)))
+    => 'LocalVarDec(TypeK,, 'ListWrap('VarDec(X1:Id))),,
+       'ExprStm('Assign('ExprName(X1),, InitExp))
+    ),,_))
+when
+    getKLabel(InitExp) =/=KLabel 'ArrayInit           [structural]
+
+rule [elabHeatLocalVarDec]:
+    <k>
+      (. => elabInit('LocalVarDec(TypeK,, 'ListWrap('VarDec(X)))))
+      ~> elab(KL:KLabel(ElabResL:List{K},,
+        ('LocalVarDec(TypeK:K,, 'ListWrap('VarDec(X:Id))) => CHOLE),,
+      _))
+      ...
+    </k>
+    <elabEnv> ListItem(stEnv((. => SetItem(X)) _)) ...</elabEnv>
+when
+    isElab(ElabResL)
 
 endmodule

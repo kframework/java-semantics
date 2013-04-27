@@ -81,26 +81,6 @@ rule [envDiscard]:
 //@ \section{Local Variable Declaration Statements} JLS $14.4
 //@ Not only local but fields also
 
-//local var decs and field decs are reduced to a single case
-rule [LocalVarDecStmRed]:
-    'LocalVarDecStm('LocalVarDec(_,, TypeK:K,, 'ListWrap(Ks:List{K})))
-    => 'LocalVarDec(TypeK,, 'ListWrap(Ks))
-        [structural]
-
-rule [VarListDecDesugar]:
-    'LocalVarDec(TypeK:K,, 'ListWrap(Var1:K,, Var2:K,, VarDecs:List{K}))
-    => 'LocalVarDec(TypeK,, 'ListWrap(Var1))
-        ~> 'LocalVarDec(TypeK,, 'ListWrap(Var2,, VarDecs))
-      [structural]
-
-rule [VarDecWithInitDesugar]:
-    'LocalVarDec(TypeK:K,, 'ListWrap('VarDec(X1:Id,,InitExp:K)))
-    => 'LocalVarDec(TypeK,, 'ListWrap('VarDec(X1:Id)))
-        ~> 'ExprStm('Assign(localVar(X1),, InitExp))
-when
-    getKLabel(InitExp) =/=KLabel 'ArrayInit
-      [structural]
-
 /*In Java current version of semantics only int and boolean primitive
 types are supported*/
 

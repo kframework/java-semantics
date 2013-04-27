@@ -85,6 +85,10 @@ configuration
       <classLiteralsMap> .Map </classLiteralsMap>
       <br/>
 
+      //The local variables environment during elaboration
+      //Represents a stack
+      <elabEnv> ListItem(stEnv(.Set)) </elabEnv>
+
       <computationPhase> ProcessTypeNamesPhase </computationPhase>
       //required in ProcessCompUnitsPhase
       <programBackup> $PGM:K </programBackup>
@@ -335,7 +339,11 @@ when        (KL =/=KLabel 'Public)
 
 rule getAccessMode('ListWrap(.List{K})) => package            [structural, anywhere]
 
+// Auxiliary constructs for elaboration.
+
 //Custom hole used for custom heating/cooling rules across the semantics.
 syntax K ::= "CHOLE"
+
+syntax K ::= "stEnv" "(" Set ")"  //a layer of the static environment
 
 endmodule
