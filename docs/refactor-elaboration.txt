@@ -1,0 +1,48 @@
+    Plan for the refactoring of semantics inspired by JBook:
+
+  Separation ofstatic and dynamic semantics.
+Static semantics should compute anything that traditionally is computed at compile time.
+Dynamic semantics should compute just what is computed at runtime. More precisely, we have to
+move to the static semantics the following:
+  - Deduction of compile-time type for each expression.
+  - The right signature on method overloading.
+  - Names lookup - resolution of each name into a fully-qualified name,
+  or simple name, by case.
+
+  Given that there is some dependence between those steps, we have to perform
+those steps in certain order. Moreover, now we have to preprocess statement blocks before executing them -
+the content of methods, static and instance initializers.
+  So, we have to perform the refactoring in the following four steps:
+1.ok. Perform a preprocessing of blocks, that recursively visits each term of the block but leves it untouched. This will be a new preprocessign step,
+  after the preprocessing of classes members.
+  It should not be a new global preprocessing. Rather it will be performed for each class after its members have been collected and the class reached the phase MembersProcessedCPP.
+  Over this preprocessing we will be able to add certain transformations for certain KLabels.
+2. Implement names lookup in static sematnics.
+2.1.ok Implement elaboration of ExprName(X) into localVar or Field.
+    for this. we need the following:
+2.1.1.ok. Perform the hollow elaboration left to right in all KLists. This way local vars defined
+    in a previous statement will be accessible in the next statement.
+2.1.2.ok Create a new environment each time we meet an elab('Block).
+  The easiest way to store environments during elaboration is as a stack of sets.
+  Each time we enter a new block the new stack will be a copy of the previous stack.
+2.1.3.ok Restore the environment each time we leave an elab('Block)
+2.1.4.ok Save an entry in the environment each time we declare a var.
+2.1.5.ok Do the desugaring of 'ExprName into localVar or Field.
+
+2.2. Elaborate qualified expression names, no package yet.
+2.2.1.ok. This qualifier.
+2.2.2.ok. Class qualifier.
+2.2.3. Object qualifier. - could be localVar, Field or a complex expression.
+  In addition to elabRes we have to add another type of elaboration result -
+  elabQual(K,Set) - the elaborated qualifier. K is the original expression,
+  Set is the environment provided by that expression. Something similar to
+  objectClosure.
+
+2.3. Elaborate classes in the presence of packages.
+2.4. Elaborate names in the presence fo inner classes.
+
+3. Implement method static method signature lookup.
+4. Implement static expression type checking and annotation.
+
+  When elaborating a block, in order to distinguish between an unelaborated
+and elaborated block, we will wrap elaborated blocks into elab(...).

@@ -403,7 +403,7 @@ rule [FieldDecToLocalVarDec]:
     <cuClass> Class:ClassType </cuClass>
     <classType> Class </classType>
     <fieldDecs>
-      'ListWrap(_,, ( .List{K} => 'LocalVarDec(TypeK,, 'ListWrap('VarDec(X,, default(TypeK)))) ))
+      'ListWrap(_,, ( .List{K} => 'LocalVarDec(TypeK,, 'ListWrap('VarDec(X))) ))
     </fieldDecs>
 when
     getContextType(Modifiers) ==K instanceCT

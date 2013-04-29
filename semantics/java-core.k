@@ -43,6 +43,7 @@ configuration
           //sort ClassType. Contains the fully qualified class name.
           <classType color="Fuchsia"> .K </classType>
 
+          //for Object this is noClass
           <extends color="Fuchsia"> .K </extends>
           <implements> .Set </implements>
           <implTrans> .Set </implTrans>
@@ -53,10 +54,15 @@ configuration
                                                    //reached the state DecsProcessedCPP yet.
           <declarations color="purple"> .K </declarations>
           <metaType> .K </metaType>
+
+          //'LocalVarDec for each field
           <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>
+
           <methods color="purple"> .Map </methods>
           <br/>
           <instanceInit> 'ListWrap(.List{K}) </instanceInit>
+
+          //The map of static fields declared in this class and superinterfaces, but not in superclasses.
           <staticEnv> .Map </staticEnv>
 
           //The sequence of static initializers (that also includes field initializers)
@@ -88,6 +94,9 @@ configuration
       //The local variables environment during elaboration
       //Represents a stack
       <elabEnv> ListItem(stEnv(.Set)) </elabEnv>
+
+      //The context type - staticCT or instanceCT of the current code block.
+      <elabContextType> .K </elabContextType>
 
       <computationPhase> ProcessTypeNamesPhase </computationPhase>
       //required in ProcessCompUnitsPhase
@@ -344,6 +353,11 @@ rule getAccessMode('ListWrap(.List{K})) => package            [structural, anywh
 //Custom hole used for custom heating/cooling rules across the semantics.
 syntax K ::= "CHOLE"
 
-syntax K ::= "stEnv" "(" Set ")"  //a layer of the static environment
+syntax KResult ::= "stEnv" "(" Set ")"  //a layer of the static environment
+
+//size of a KList
+syntax K ::= "klsize" "(" List{K} ")"               [function]
+rule klsize(.List{K}) => 0                          [anywhere]
+rule klsize(_:K,, Ks:List{K}) => klsize(Ks) +Int 1  [anywhere]
 
 endmodule

@@ -604,4 +604,23 @@ rule [AltConstrInv]:
     <crntClass> Class:ClassType </crntClass>
 when isKResult(Vals)
 
+//@ \texttt{bindto} also checks the well-formedness of the method parameters
+
+syntax K ::= "bindto" List{K}
+                  "," List{K}  //List{KResult}
+
+rule [bindto]:
+    <k>
+      bindto paramImpl(T:Type, X:Id),, RestP:List{K}, TV:TypedVal,, RestV:List{K}
+      => 'ExprStm('Assign(localVar(X),,TV:TypedVal)) ~> bindto RestP, RestV
+      ...
+    </k>
+    <env> Env:Map => Env[L/X] </env>
+    <store>... . => L |-> undefined :: T ...</store>
+    <nextLoc> L:Int => L +Int 1 </nextLoc>
+
+rule [bindtoEmpty]:
+    <k> bindto .List{K},.List{K} => . ...</k>
+        [structural]
+
 endmodule

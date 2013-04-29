@@ -16,17 +16,21 @@ module JAVA-VAR-LOOKUP
 //performance optimization - the qualifier of an AmbName should be always resolved first,
 //no matter how are we going to interpret the AmbName,
 //so why not resolving it now?
+//todo remove after elabration phase will work
 context 'AmbName(HOLE,, _:K)
 
 //this rule covers both unqualified and qualified AmbName
+//todo remove after elabration phase will work
 rule [AmbName]:
     'AmbName(Ks:List{K},, K:K)
     => 'ExprName(Ks,,K) ?? 'TypeName(Ks,,K) ?? 'PackageName('ListWrap(Ks,,K))
 when isKResult(Ks)                          [structural]
 
+//todo remove after elabration phase will work
 rule [ExprNameSimple]:
   'ExprName(X) => localVar(X) ?? 'Field(X)
 
+//todo remove after elabration phase will work
 rule [ExprNameQualified]:
     'ExprName(K1:K,,K2:K) => 'Field(K1,,K2)
 
@@ -43,6 +47,7 @@ rule [localVarNoValue]:
     <env> Env:Map </env>
 when notBool X in keys(Env)
 
+//todo remove after elabration phase will work
 rule [FieldUnqualified]:
     <k>
       'Field(X:Id)
@@ -51,12 +56,14 @@ rule [FieldUnqualified]:
     </k>
     <crntClass> Class:ClassType </crntClass>
 
+//todo reconsider after elabration phase will work
 //resolving the qualifier of a qualified field access: it is either an object or a class reference
 context 'Field(HOLE,, _:K)
 
 /*@ \subsection{Self reference}
 Like in untyped KOOL. */
 
+//todo reconsider after elabration phase will work
 rule [This]:
     <k>
       'This(.List{K})
@@ -69,6 +76,7 @@ rule [This]:
       <location> OL:Int </location>
     </crntObj>
 
+//todo remove after elabration phase will work
 rule [ThisNoValue]:
     <k>
       'This(.List{K}) => noValue
@@ -104,11 +112,12 @@ rule [FieldInterfaceRefQualified]:
         [structural]
 
 //todo test similar case for lvalue('Field) ?
-rule [FieldOfPackage]:
-    'Field( _:PackageId,, _:Id ) => noValue  [structural, anywhere]
+//moved ot elaborate-blocks
+//rule [FieldOfPackage]:
+//    'Field( _:PackageId,, _:Id ) => noValue  [structural, anywhere]
 
-rule [FieldOfNoValue]:
-    'Field( noValue,, _:Id ) => noValue      [structural, anywhere]
+//rule [FieldOfNoValue]:
+//    'Field( noValue,, _:Id ) => noValue      [structural, anywhere]
 
 rule [FieldOfNull]:
     <k>
@@ -163,6 +172,7 @@ syntax K ::= "lookupStaticField" "(" ClassType // Class - ClassType to search, o
                                  "," Id        // X - field name
                                  ")"
 
+//todo reconsider after elabration phase will work
 rule [FieldStaticField]:
     'Field(Class:ClassType,, X:Id) => lookupStaticField(Class, X)
 

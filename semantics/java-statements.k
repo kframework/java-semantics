@@ -90,7 +90,7 @@ context 'LocalVarDec(HOLE,,_)
 rule [LocalVarDec]:
     <k> 'LocalVarDec(T:Type,,'ListWrap('VarDec(X:Id))) => . ...</k>
     <env> Env:Map => Env[L:Int/X] </env>
-    <store>... . => L |-> undefined :: T ...</store>
+    <store>... . => L |-> default(T) :: T ...</store>
     <nextLoc> L => L +Int 1 </nextLoc>
 
 //@ \section{Empty statement} JLS $14.6

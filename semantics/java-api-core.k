@@ -37,6 +37,11 @@ rule [NameSystem]:
 when
     Id2String(X) ==String "System"
 
+rule [elabNameSystem]:
+    elab('TypeName(elabRes(X:Id))) => elabRes(rtSystemType)
+when
+    Id2String(X) ==String "System"
+
 rule [NameInteger]:
     'TypeName(X:Id) => rtIntegerType
 when
@@ -82,6 +87,11 @@ rule [consoleReadInt]:
 
 rule [NameSystemOut]:
     'Field(rtSystemType,, X:Id) => rtSystemOut
+when
+    Id2String(X) ==String "out"
+
+rule [elabNameSystemOut]:
+    elab('Field(elabRes(rtSystemType),, elabRes(X:Id))) => elabRes(rtSystemOut)
 when
     Id2String(X) ==String "out"
 
