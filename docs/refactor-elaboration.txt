@@ -30,13 +30,16 @@ the content of methods, static and instance initializers.
 2.1.5.ok Do the desugaring of 'ExprName into localVar or Field.
 
 2.2. Elaborate qualified expression names, no package yet.
-2.2.1.ok. This qualifier.
-2.2.2.ok. Class qualifier.
-2.2.3. Object qualifier. - could be localVar, Field or a complex expression.
+2.2.1.ok. Elaborate This as qualifier.
+2.2.2.ok. Elaborate Class as qualifier for static fields.
+2.2.3. Elaborate Object refs as qualifier for instance fields.
+  Object ref Could be localVar, Field or any complex expression of type Ref.
   In addition to elabRes we have to add another type of elaboration result -
-  elabQual(K,Set) - the elaborated qualifier. K is the original expression,
-  Set is the environment provided by that expression. Something similar to
-  objectClosure.
+  elabQual(K,T) - the elaborated qualifier. K is the original expression,
+  T is the type of that expression. Something similar to
+  objectClosure, but instead of an object we now have a type.
+  Thus, in order to resolve qualifiers we need to resolve expression types
+  at elaboration phase.
 
 2.3. Elaborate classes in the presence of packages.
 2.4. Elaborate names in the presence fo inner classes.

@@ -402,8 +402,15 @@ rule [elabTypeName]:
 when
     Id2String(X) =/=String "System"
 
-//todo elab('Field), instance
-
-//for now if class-lib contains only Object, tests that don't contain instance fields pass.
+/*
+todo. Elaborate Object refs as qualifier for instance fields.
+Object ref Could be localVar, Field or any complex expression of type Ref.
+In addition to elabRes we have to add another type of elaboration result -
+elabQual(K,T) - the elaborated qualifier. K is the original expression,
+T is the type of that expression. Something similar to
+objectClosure, but instead of an object we now have a type.
+Thus, in order to resolve qualifiers we need to resolve expression types
+at elaboration phase.
+*/
 
 endmodule
