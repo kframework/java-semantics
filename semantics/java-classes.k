@@ -29,9 +29,9 @@ The only change to untyped KOOL's values is that closures are now typed
 //@ \subsection{Type labels}
 //@Here we rewrite java type ast into simple types
 
-rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK [structural]
-rule 'InterfaceType(TypeK:K,, _) => TypeK        [structural]
-rule 'ClassType(TypeK:K,, _) => TypeK            [structural]
+rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK [structural, anywhere]
+rule 'InterfaceType(TypeK:K,, _) => TypeK        [structural, anywhere]
+rule 'ClassType(TypeK:K,, _) => TypeK            [structural, anywhere]
 
 //Hapens during process-imports sub-phase. This is of course an approximation.
 rule [TypeNameInProcessCompUnitsPhase]:
@@ -191,6 +191,7 @@ first rule below needs to be changed; the others are identical to
 those in untyped KOOL. */
 
 //resolve new instance expression target type
+//todo obsolete - elab
 context 'NewInstance(_:K,, HOLE,, _)
 
 //resolve new instance expression parameter values

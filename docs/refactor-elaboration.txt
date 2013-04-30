@@ -47,8 +47,13 @@ the content of methods, static and instance initializers.
   Otherwise I might need to access the environment of a class whose members
   were not preprocessed, thus don't have its environment computed yet.
 
-2.3. Elaborate classes in the presence of packages.
-2.4. Elaborate names in the presence fo inner classes.
+2.3. Elaborate other minor expressions.
+2.3.1. Elaborate super keyword.
+2.3.2. Elaborate reference cast.
+2.3.3. Elaborate array access.
+
+2.4. Elaborate classes in the presence of packages.
+2.5. Elaborate names in the presence fo inner classes.
 
 3. Implement method static method signature lookup.
 4. Implement static expression type checking and annotation.

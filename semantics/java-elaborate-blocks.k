@@ -438,7 +438,8 @@ rule elabTypedExp(_, noValue) => noValue
 
 //todo This is simplified semantics, no packages yet.
 rule [elabTypeName]:
-  elab('TypeName(elabRes(X:Id))) => elabRes('TypeName(X:Id))
+    <k> elab('TypeName(elabRes(X:Id))) => elabRes(Class) ...</k>
+    <typeNamesMap>... _ |-> mapWrap(X |-> Class:ClassType _) ...</typeNamesMap>
 when
     Id2String(X) =/=String "System"
 
