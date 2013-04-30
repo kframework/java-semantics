@@ -88,18 +88,21 @@ when notBool X in keys(Imp)
 
 rule [TypeNameInProcessClassesPhase]:
     <k> 'TypeName(X:Id) => Class ...</k>
-    <computationPhase> ProcessClassesPhase </computationPhase>
+    <computationPhase> Phase:ComputationPhase </computationPhase>
     <cuClass> CuClass:ClassType </cuClass>
     <classType> CuClass </classType>
     <imports>... X |-> Class:ClassType ...</imports>
+when
+    (Phase ==K ProcessClassesPhase) orBool (Phase ==K ElaborateBlocksPhase)
 
 rule [TypeNameInProcessClassesPhaseFail]:
     <k> 'TypeName(X:Id) => noValue ...</k>
-    <computationPhase> ProcessClassesPhase </computationPhase>
+    <computationPhase> Phase:ComputationPhase </computationPhase>
     <cuClass> CuClass:ClassType </cuClass>
     <classType> CuClass </classType>
     <imports> Imp:Map </imports>
-when notBool X in keys(Imp)
+when ((Phase ==K ProcessClassesPhase) orBool (Phase ==K ElaborateBlocksPhase))
+     andBool notBool (X in keys(Imp))
 
 rule [TypeNameInExecutionPhase]:
     <k> 'TypeName(X:Id) => Class ...</k>

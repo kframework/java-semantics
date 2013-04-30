@@ -30,7 +30,7 @@ module JAVA-PROCESS-COMP-UNITS
 
 rule [StartProcessCompUnitsPhase]:
     <k> . => Pgm </k>
-    <programBackup> Pgm:K => . </programBackup>
+    (<programBackup> Pgm:K </programBackup> => .)
     <computationPhase> ProcessTypeNamesPhase => ProcessCompUnitsPhase </computationPhase>
 
 //ImpDecs will be processed in the module JAVA-PROCESS-IMPORTS

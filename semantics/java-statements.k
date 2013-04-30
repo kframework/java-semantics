@@ -25,7 +25,7 @@ rule [StartExecutionPhase]:
     </k>
     <env> . </env>
     <mainClass> ListItem(MainClassS:String) </mainClass>
-    <computationPhase> ProcessClassesPhase => ExecutionPhase </computationPhase>
+    <computationPhase> ElaborateBlocksPhase => ExecutionPhase </computationPhase>
     (<cuClass> _ </cuClass> => .Bag)
 
 //@ \section{Program stack}

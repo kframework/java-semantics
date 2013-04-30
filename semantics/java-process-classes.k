@@ -20,12 +20,9 @@ when        KL =/=KLabel 'Static                            [anywhere]
 rule getContextType('ListWrap(.List{K}))      => instanceCT [anywhere]
 
 //@ \section{Process type list}
-syntax K ::= "processTypeList" "("
-                                    Bag // the collection of <class> tags
-                                ")"
-           | "processTypeSet" "("
-                                  Set   // the set of Ids - implemented interface names
-                              ")"
+syntax K ::= "processClasses" "("
+                                  K //setWrap(Set) - the set of all classes
+                              ")"         [strict]
            | "processTypeWithDepends" "("
                                 ClassType  //the class to be processed,
                                            //or noClass if no processing is required
@@ -39,33 +36,20 @@ syntax K ::= "processTypeList" "("
 //We need to process Object first. Thus when we will process any interfaces,
 //Object class will be already processed.
 rule [StartProcessClassesPhase]:
-    <k> . => processTypeWithDepends(objectClass) ~> processTypeList(Classes) </k>
-    <classes> Classes:Bag </classes>
+    <k> . => processTypeWithDepends(objectClass) ~> processClasses(getAllClasses) </k>
     <computationPhase> ProcessClassDecsPhase => ProcessClassesPhase </computationPhase>
 
-rule [processTypeList]:
+rule [processClasses]:
     (. => processTypeWithDepends(Class))
-    ~>  processTypeList(
-          (<class>
-            <classType> Class:ClassType </classType>
-            ...
-          </class> => .Bag)
-          _:Bag
-        )
+    ~>  processClasses(setWrap( (SetItem(Class:ClassType) => .) _:Set))
 
 rule [ProcessTypeListDiscard]:
-    processTypeList(.) => .
-
-rule [processTypeSet]:
-    (. => processTypeWithDepends(Class:ClassType)) ~> processTypeSet((SetItem(Class) => .) _)
-
-rule [processTypeSetDiscard]:
-    processTypeSet(.) => .
+    processClasses(setWrap(.)) => .
 
 rule [processTypeWithDepends]:
     <k>
       processTypeWithDepends(Class:ClassType)
-      => processTypeWithDepends(BaseClass) ~> processTypeSet(ISet) ~> processType(Class)
+      => processTypeWithDepends(BaseClass) ~> processClasses(setWrap(ISet)) ~> processType(Class)
       ...
     </k>
     <classType> Class </classType>
@@ -101,7 +85,7 @@ rule [ProcessType]:
 
           ~> tryInherit(BaseClass)
           ~> inheritInterfaceFields
-          ~> Decls ~> elabMethods(.Map) ~> elabInstanceInit ~> elabStaticInit
+          ~> Decls
       ...
     </k>
     <class>
@@ -454,7 +438,7 @@ rule [ConstantDecDesugar]:
         )
 
 //Discard inner class declarations at this phase. They are processed when their
-//respective <class> tag is encountered as part of processTypeList
+//respective <class> tag is encountered as part of processClasses
 rule [ClassDecDiscard]: 'ClassDec(_) => .
 rule [InterfaceDecDiscard]: 'InterfaceDec(_) => .
 

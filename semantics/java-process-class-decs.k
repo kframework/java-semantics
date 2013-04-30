@@ -8,22 +8,22 @@ module JAVA-PROCESS-CLASS-DECS
 /*@ \subsection{Third pass - processing class dependencies and imports} */
 
 rule [StartProcessClassDecsPhase]:
-    <k> . => processClassesSet(getAllClasses) </k>
+    <k> . => processClassDecs(getAllClasses) </k>
     <computationPhase> ProcessCompUnitsPhase => ProcessClassDecsPhase </computationPhase>
 
 //Processes all classes from CreatedCPP to DecsProcessedCPP.
-syntax K ::= "processClassesSet" "(" K //setwrap(Set) - the set of all classes
-                                 ")"  [strict]
+syntax K ::= "processClassDecs" "(" K //setWrap(Set) - the set of all classes
+                                ")"  [strict]
 
 rule [resolveBasesTopLevelStart]:
-    <k> (. => resolveBases(Class)) ~> processClassesSet(_) ...</k>
+    <k> (. => resolveBases(Class)) ~> processClassDecs(_) ...</k>
     <classType> Class:ClassType </classType>
     <enclosingClass> noClass </enclosingClass>
     <preprocessingPhase> CreatedCPP </preprocessingPhase>
     <cuClass> _ => Class </cuClass>
 
 rule [resolveBasesInnerStart]:
-    <k> (. => resolveBases(Class)) ~> processClassesSet(_) ...</k>
+    <k> (. => resolveBases(Class)) ~> processClassDecs(_) ...</k>
     <class>
       <classType> Class:ClassType </classType>
       <enclosingClass> OuterClass:ClassType </enclosingClass>
@@ -82,7 +82,7 @@ rule [resolveBasesEnd]:
 when isKResult(ImplTypes)
 
 rule [markBaseProcessed]:
-    <k> processClassesSet(_) ...</k>
+    <k> processClassDecs(_) ...</k>
     <class>
       <unprocessedBases> 'ListWrap((BaseClass:ClassType => .List{K}) ,,_) </unprocessedBases>
       ...
@@ -95,7 +95,7 @@ rule [markBaseProcessed]:
 
 //this one is for class Object
 rule [markNoClassProcessed]:
-    <k> processClassesSet(_) ...</k>
+    <k> processClassDecs(_) ...</k>
     <unprocessedBases> 'ListWrap((noClass => .List{K}) ,,_) </unprocessedBases>
 
 rule [processClassDecEnd]:
@@ -103,7 +103,7 @@ rule [processClassDecEnd]:
       (. => saveImplements(Class, kListToSet(ImplTypes, .Set))
          ~> saveImports(Class, OuterClass, (BaseClass,,ImplTypes), .K, noValue, noValue)
       )
-      ~> processClassesSet(setWrap( (SetItem(Class:ClassType) => .Set) _:Set ))
+      ~> processClassDecs(setWrap( (SetItem(Class:ClassType) => .Set) _:Set ))
       ...
     </k>
     <classType> Class </classType>
@@ -116,8 +116,8 @@ rule [processClassDecEnd]:
       <rawImplements> 'ListWrap(ImplTypes:List{K}) </rawImplements>
       <unprocessedBases> 'ListWrap(.List{K}) </unprocessedBases> => .Bag)
 
-rule [processClassesSetDiscard]:
-    processClassesSet(setWrap(.)) => .K
+rule [processClassDecsDiscard]:
+    processClassDecs(setWrap(.)) => .K
 
 //Converts a term of type List{K} into a Set
 syntax K ::= "kListToSet" "(" List{K} //a list of some K Terms
@@ -208,18 +208,5 @@ rule [saveImports]:
     <classType> Class </classType>
     <imports> _ => Imports </imports>
     (<cuImports> _ </cuImports> => .Bag)
-
-//evaluates into a setWrap(S), containing all the classes in the program.
-//uses <typeNamesMap> to compute the result
-syntax K ::= "getAllClasses"
-           | "getAllClasses" "(" Map "," Set ")"
-
-rule [getAllClassesStart]:
-    <k> getAllClasses => getAllClasses(NamesMap, .Set) ...</k>
-    <typeNamesMap> NamesMap:Map </typeNamesMap>
-
-rule getAllClasses(_ _ |-> mapWrap(_ (_ |-> Class:ClassType => .Map)), _ (.Set => SetItem(Class)))
-rule getAllClasses(_ (_ |-> mapWrap(.Map) => .Map), _)
-rule getAllClasses(.Map, ClassesSet:Set) => setWrap(ClassesSet)
 
 endmodule

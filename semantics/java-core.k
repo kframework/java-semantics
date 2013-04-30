@@ -113,6 +113,7 @@ syntax ComputationPhase ::= "ProcessTypeNamesPhase"
                           | "ProcessCompUnitsPhase"
                           | "ProcessClassDecsPhase"
                           | "ProcessClassesPhase"
+                          | "ElaborateBlocksPhase"
                           | "ExecutionPhase"
 
 syntax ClassPreprocessingPhase ::= "CreatedCPP"
@@ -349,6 +350,19 @@ when        (KL =/=KLabel 'Public)
     andBool (KL =/=KLabel 'Private)                           [structural, anywhere]
 
 rule getAccessMode('ListWrap(.List{K})) => package            [structural, anywhere]
+
+//evaluates into a setWrap(S), containing all the classes in the program.
+//uses <typeNamesMap> to compute the result
+syntax K ::= "getAllClasses"
+           | "getAllClasses" "(" Map "," Set ")"
+
+rule [getAllClassesStart]:
+    <k> getAllClasses => getAllClasses(NamesMap, .Set) ...</k>
+    <typeNamesMap> NamesMap:Map </typeNamesMap>
+
+rule getAllClasses(_ _ |-> mapWrap(_ (_ |-> Class:ClassType => .Map)), _ (.Set => SetItem(Class)))
+rule getAllClasses(_ (_ |-> mapWrap(.Map) => .Map), _)
+rule getAllClasses(.Map, ClassesSet:Set) => setWrap(ClassesSet)
 
 // Auxiliary constructs for elaboration.
 

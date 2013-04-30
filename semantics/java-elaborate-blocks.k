@@ -26,7 +26,9 @@ module JAVA-ELABORATE-BLOCKS
     imports JAVA-VAR-LOOKUP //for localVar
     imports JAVA-PROCESS-CLASSES //for paramImpl
 
-syntax K ::= "elabMethods" "(" Map ")"  //Elaborates the methods of the current class.
+syntax K ::= "elaborateBlocks" "(" K ")" [strict] //Elaborate the blocks inside all classes.
+                                        //K = setWrap(Set) - the set of all classes.
+           | "elabMethods" "(" Map ")"  //Elaborates the methods of the current class.
                                         //The map contains already elaborated methods.
                                         //Initially the map is empty.
            | "elabInstanceInit"
@@ -37,6 +39,21 @@ syntax K ::= "elabMethods" "(" Map ")"  //Elaborates the methods of the current 
                                         //Responsible for deleting the elabRes() wrappers of subterms.
 
 syntax KResult ::= "elabRes" "(" K ")"  //Wraps the elaboration result
+
+rule [elaborateBlocksStart]:
+    <k> . => elaborateBlocks(getAllClasses) </k>
+    <computationPhase> ProcessClassesPhase => ElaborateBlocksPhase </computationPhase>
+
+rule [elaborateBlocks]:
+    <k>
+      (. => elabMethods(.Map) ~> elabInstanceInit ~> elabStaticInit)
+      ~> elaborateBlocks(setWrap((SetItem(Class:ClassType) => .) _:Set))
+      ...
+    </k>
+    <cuClass> _ => Class </cuClass>
+
+rule [elaborateBlocksDiscard]:
+    elaborateBlocks(setWrap(.)) => .
 
 rule [elabMethodsHeatMethod]:
   <k>
@@ -424,13 +441,5 @@ rule [elabTypeName]:
   elab('TypeName(elabRes(X:Id))) => elabRes('TypeName(X:Id))
 when
     Id2String(X) =/=String "System"
-
-/*
-Move elaboration to a separate preprocessing phase, after all classes
-  reached the state MembersProcessedCPP. We need class member declarations
-  to be processed in order to proceed with block elaboration.
-  Otherwise I might need to access the environment of a class whose members
-  were not preprocessed, thus don't have its environment computed yet.
-*/
 
 endmodule

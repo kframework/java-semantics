@@ -29,7 +29,7 @@ the content of methods, static and instance initializers.
 2.1.4.ok Save an entry in the environment each time we declare a var.
 2.1.5.ok Do the desugaring of 'ExprName into localVar or Field.
 
-2.2. Elaborate qualified expression names, no package yet.
+2.2. Elaborate qualified expression names, no packages yet.
 2.2.1.ok. Elaborate This as qualifier.
 2.2.2.ok. Elaborate Class as qualifier for static fields.
 2.2.3.ok Elaborate Object refs as qualifier for instance fields.
@@ -41,7 +41,7 @@ the content of methods, static and instance initializers.
   Thus, in order to resolve qualifiers we need to resolve expression types
   at elaboration phase.
 
-2.2.4. Move elaboration to a separate preprocessing phase, after all classes
+2.2.4.ok. Move elaboration to a separate preprocessing phase, after all classes
   reached the state MembersProcessedCPP. We need class member declarations
   to be processed in order to proceed with block elaboration.
   Otherwise I might need to access the environment of a class whose members
