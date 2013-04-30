@@ -158,6 +158,11 @@ when
     Id2String(X) ==String "String"
         [structural]
 
+rule [elabNameString]:
+    elab('TypeName(elabRes(X:Id))) => elabRes(rtString)
+when
+    Id2String(X) ==String "String"
+
 //@ \subsection{Auxiliary operations}
 
 //@ \texttt{typeOf and toString}

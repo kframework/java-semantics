@@ -90,7 +90,7 @@ context 'LocalVarDec(HOLE,,_)
 rule [LocalVarDec]:
     <k> 'LocalVarDec(T:Type,,'ListWrap('VarDec(X:Id))) => . ...</k>
     <env> Env:Map => Env[L:Int/X] </env>
-    <store>... . => L |-> default(T) :: T ...</store>
+    <store>... . => L |-> default(T) ...</store>
     <nextLoc> L => L +Int 1 </nextLoc>
 
 //@ \section{Empty statement} JLS $14.6
@@ -244,10 +244,14 @@ rule [stmDiscard]:
 
 rule [stmList]:
     stm('ListWrap(E:K,, Es:List{K})) => 'ExprStm(E) ~> stm('ListWrap(Es))
+when
+    getKLabel(E) =/=KLabel 'LocalVarDec
         [structural]
 
 rule [stmLocalVarDec]:
-    <k> stm('LocalVarDec(Ks:List{K})) => 'LocalVarDecStm('LocalVarDec(Ks)) ...</k>
+    stm('ListWrap(K:K,,Ks:List{K})) => 'ListWrap(K,,Ks)
+when
+    getKLabel(K) ==KLabel 'LocalVarDec
         [structural]
 
 rule [ForFirstArgV1Red]:
@@ -256,11 +260,12 @@ rule [ForFirstArgV1Red]:
     ),,_:List{K})
         [structural]
 
+//Works also in elaboration phase
 rule [ForFirstArgV2Red]:
     'For((
-      'LocalVarDec(Ks:List{K}) => stm('LocalVarDec(Ks))
+      'LocalVarDec(_:K,, Ks:List{K}) => stm('ListWrap('LocalVarDec(Ks)))
     ),,_:List{K})
-        [structural]
+        [structural, anywhere]
 
 rule [ForSecondArgRed]:
     'For(_:K,,(
@@ -413,8 +418,9 @@ rule [ThrowCheckedTrue]:
     checkCatch(true::bool) ~> 'Throw(TV:TypedVal)
     ~> catchBlocks(catchImpl(paramImpl(T:Type, X:Id), CatchS),, _)
     => 'Block('ListWrap(
-          'LocalVarDecStm('LocalVarDec('ListWrap(.List{K}),, T,, 'ListWrap('VarDec(X,, TV)))),,
-            CatchS
+          'LocalVarDec(T,, 'ListWrap('VarDec(X))),,
+          'ExprStm('Assign('ExprName(X),, TV)),,
+          CatchS
         ))
 
 rule [ThrowCheckedFalse]:

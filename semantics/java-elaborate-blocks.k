@@ -222,6 +222,8 @@ rule customElab(.K) => false
 
 rule customElab(KL:KLabel(KLArgs:List{K})) =>
            (KL ==KLabel 'Block)
+    orBool (KL ==KLabel 'For)
+    orBool (KL ==KLabel 'Catch)
 
 //Computes true if the given term needs special rules to startelab dispose phase, false otherwise.
 syntax K ::= "customElabDispose" "(" K ")"       [function]
@@ -231,6 +233,8 @@ rule customElabDispose(.K) => false
 
 rule customElabDispose(KL:KLabel(_)) =>
            (KL ==KLabel 'Block)
+    orBool (KL ==KLabel 'For)
+    orBool (KL ==KLabel 'Catch)
     orBool (KL ==KLabel 'AmbName)
     orBool (KL ==KLabel 'ExprName)
     orBool (KL ==KLabel 'localVar`(_`))
@@ -238,18 +242,22 @@ rule customElabDispose(KL:KLabel(_)) =>
     orBool (KL ==KLabel 'Field)
     orBool (KL ==KLabel 'noValue)
     orBool (KL ==KLabel 'TypeName)
+    orBool (KL ==KLabel 'castImpl`(_`,_`))
 
 //Elaboration of blocks
 
-rule [elabInitBlock]:
-    <k> elabInit('Block(Ks:List{K})) => elab('Block(Ks)) ...</k>
+rule [elabInitBlockOrFor]:
+    <k> elabInit(KL:KLabel(Ks:List{K})) => elab(KL(Ks)) ...</k>
     <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
+when
+    (KL ==KLabel 'Block) orBool (KL ==KLabel 'For)
 
 rule [elabDisposeBlockStart]:
-    <k> elab('Block(ElabResL:List{K})) => elabDispose('Block(ElabResL)) ...</k>
+    <k> elab(KL:KLabel(ElabResL:List{K})) => elabDispose(KL(ElabResL)) ...</k>
     <elabEnv> (ListItem(_) => .) ...</elabEnv>
 when
     isElab(ElabResL)
+    andBool ((KL ==KLabel 'Block) orBool (KL ==KLabel 'For) orBool (KL ==KLabel 'Catch))
 
 //Local var decs desugaring
 
@@ -442,5 +450,22 @@ rule [elabTypeName]:
     <typeNamesMap>... _ |-> mapWrap(X |-> Class:ClassType _) ...</typeNamesMap>
 when
     Id2String(X) =/=String "System"
+
+//elab cast
+
+//Required so that we will always have a type as first argument.
+context elab(castImpl(elabRes(HOLE), _))
+
+rule [elabCastImpl]:
+    elab(castImpl(elabRes(T:Type), Exp:K)) => castImpl(T, unElab(Exp)) ::: T
+when isElab(Exp)
+
+//Hole is transformed into paramImpl
+context elabInit('Catch(HOLE,, _))
+
+//Catch creates a new env layer and saves its argument.
+rule [elabInitCatch]:
+    <k> elabInit('Catch(Param:KResult,, Body:K)) => elabParams(Param) ~> elab('Catch(Param,, Body)) ...</k>
+    <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
 
 endmodule

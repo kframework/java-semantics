@@ -245,19 +245,19 @@ rule isNumericType2(T:Type)
 
 //this is actually a hack, since we should not access k-labels 'arrayOf_ and 'class_ .
 //maybe this isSort methods will be provided by K later on.
-syntax K ::= "isRefType2" "(" Type ")" [function]
+syntax K ::= "isRefType2" "(" Type ")"  [function]
 rule isRefType2(T:Type)
 =>          (T ==K rtString)
     orBool  (T ==K nullType)
     orBool  (getKLabel(T) ==KLabel 'arrayOf_)
     orBool  (getKLabel(T) ==KLabel 'class_)
-        [structural, anywhere]
+                                        [structural, anywhere]
 
 //default value of all types
-syntax K ::= "default" "(" Type ")" [function]
+syntax K ::= "default" "(" Type ")"     [function]
 rule default(NT:NumericType) => 0 :: NT [anywhere]
-rule default(bool) => false :: bool [anywhere]
-rule default(RT:RefType) => null :: RT [anywhere]
+rule default(bool) => false :: bool     [anywhere]
+rule default(RT:RefType) => null :: RT  [anywhere]
 
 //@ \subsubsection{Auxiliary constructs for other modules}
 
