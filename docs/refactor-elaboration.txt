@@ -32,14 +32,20 @@ the content of methods, static and instance initializers.
 2.2. Elaborate qualified expression names, no package yet.
 2.2.1.ok. Elaborate This as qualifier.
 2.2.2.ok. Elaborate Class as qualifier for static fields.
-2.2.3. Elaborate Object refs as qualifier for instance fields.
+2.2.3.ok Elaborate Object refs as qualifier for instance fields.
   Object ref Could be localVar, Field or any complex expression of type Ref.
   In addition to elabRes we have to add another type of elaboration result -
-  elabQual(K,T) - the elaborated qualifier. K is the original expression,
+  K ::: T - the elaborated qualifier. K is the original expression,
   T is the type of that expression. Something similar to
   objectClosure, but instead of an object we now have a type.
   Thus, in order to resolve qualifiers we need to resolve expression types
   at elaboration phase.
+
+2.2.4. Move elaboration to a separate preprocessing phase, after all classes
+  reached the state MembersProcessedCPP. We need class member declarations
+  to be processed in order to proceed with block elaboration.
+  Otherwise I might need to access the environment of a class whose members
+  were not preprocessed, thus don't have its environment computed yet.
 
 2.3. Elaborate classes in the presence of packages.
 2.4. Elaborate names in the presence fo inner classes.

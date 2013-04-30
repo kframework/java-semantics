@@ -63,6 +63,7 @@ configuration
           <instanceInit> 'ListWrap(.List{K}) </instanceInit>
 
           //The map of static fields declared in this class and superinterfaces, but not in superclasses.
+          //Map[Id -> Location]
           <staticEnv> .Map </staticEnv>
 
           //The sequence of static initializers (that also includes field initializers)
@@ -93,7 +94,7 @@ configuration
 
       //The local variables environment during elaboration
       //Represents a stack
-      <elabEnv> ListItem(stEnv(.Set)) </elabEnv>
+      <elabEnv> ListItem(stEnv(.Map)) </elabEnv>
 
       //The context type - staticCT or instanceCT of the current code block.
       <elabContextType> .K </elabContextType>
@@ -146,7 +147,9 @@ syntax Type ::= "methodType" "(" AccessMode ","    // the access mode
 
 syntax ClassType ::= "class" Id
                    | "noClass"
+
 syntax RefType ::= ClassType
+                 | "arrayOf" Type       [latex({#1}\texttt{\char91\char93})]
 
 syntax ContextType ::= "staticCT" | "instanceCT"
 syntax KResult ::= ContextType
@@ -170,19 +173,18 @@ syntax RawVal ::= "objectClosure" "(" Int //OL - object location
                              //   .K - none, if this class is Object
                     K        // S - method body
                   ")"
-
-syntax RefType ::= "arrayOf" Type
-                  [latex({#1}\texttt{\char91\char93})]
-
-syntax RawVal ::= "arrayRef" "("
+                | "arrayRef" "("
                     Type ","  // Type of array
                     Int ","   // Location of first element
                     Int       // Length
                   ")"
 
 syntax TypedVal ::= RawVal "::" Type
-
 syntax KResult ::= TypedVal | Type
+
+//If we try to use "::" we get ambiguities
+syntax TypedExp ::= K ":::" Type
+syntax KResult ::= TypedExp
 
 syntax AccessMode ::= "public" | "protected" | "package" | "private"
 syntax KResult ::= AccessMode
@@ -353,7 +355,8 @@ rule getAccessMode('ListWrap(.List{K})) => package            [structural, anywh
 //Custom hole used for custom heating/cooling rules across the semantics.
 syntax K ::= "CHOLE"
 
-syntax KResult ::= "stEnv" "(" Set ")"  //a layer of the static environment
+syntax KResult ::= "stEnv" "(" Map ")"  //A layer of the static environment
+                                        //Map[name -> Type]
 
 //size of a KList
 syntax K ::= "klsize" "(" List{K} ")"               [function]

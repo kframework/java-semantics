@@ -11,6 +11,7 @@ syntax K ::= RawVal "::" "elem" Type
 
 //@ \subsection{Array declarators with c-style dimensions and inits}
 
+//C-style array dec
 rule [ArrayVarDecIdDesugar]:
     'LocalVarDec(
       (T:Type => arrayOf T),,

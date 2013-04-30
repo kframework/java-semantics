@@ -52,7 +52,7 @@ rule [elabMethodsHeatMethod]:
     ...
   </methods>
   <elabContextType> _ => CT </elabContextType>
-  <elabEnv> _ => ListItem(stEnv(.Set)) </elabEnv>
+  <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
 
 rule [elabMethodsCoolMethod]:
     (elabRes(Body:K) => .)
@@ -73,7 +73,7 @@ rule [elabMethodsHeatConstr]:
     ...
   </methods>
   <elabContextType> _ => instanceCT </elabContextType>
-  <elabEnv> _ => ListItem(stEnv(.Set)) </elabEnv>
+  <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
 
 rule [elabMethodsCoolConstr]:
     (elabRes(Body:K) => .)
@@ -91,7 +91,7 @@ rule [elabInstanceHeat]:
     <classType> Class </classType>
     <instanceInit> K:K => CHOLE </instanceInit>
     <elabContextType> _ => instanceCT </elabContextType>
-    <elabEnv> _ => ListItem(stEnv(.Set)) </elabEnv>
+    <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
 when K =/=K CHOLE
 
 rule [elabInstanceEnd]:
@@ -106,7 +106,7 @@ rule [elabStaticHeat]:
     <classType> Class </classType>
     <staticInit> K:K => CHOLE </staticInit>
     <elabContextType> _ => staticCT </elabContextType>
-    <elabEnv> _ => ListItem(stEnv(.Set)) </elabEnv>
+    <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
 when K =/=K CHOLE
 
 rule [elabStaticEnd]:
@@ -118,8 +118,8 @@ rule [elabStaticEnd]:
 //Adds params to the <elabEnv>.
 syntax K ::= "elabParams" "(" List{K} ")"
 rule [elabParams]:
-    <k> elabParams((paramImpl(_, X:Id) => .List{K}) ,,_) ...</k>
-    <elabEnv> ListItem(stEnv((. => SetItem(X)) _)) ...</elabEnv>
+    <k> elabParams((paramImpl(T:Type, X:Id) => .List{K}) ,,_) ...</k>
+    <elabEnv> ListItem(stEnv((. => X |-> T) _)) ...</elabEnv>
 
 rule [elabParamsEnd]:
     elabParams(.List{K}) => .K
@@ -141,37 +141,46 @@ rule [elabCoolDefault]:
 when
     isElab(ElabK)
 
-rule [elabDisposeOtherStart]:
+rule [elabDisposeStartDefault]:
     elab(KL:KLabel(ElabResL:List{K})) => elabDispose(KL(ElabResL))
 when
     isElab(ElabResL) andBool notBool customElabDispose(KL(ElabResL))
 
+rule [elabDotK]:
+    elab(.K) => elabRes(.K)
+
 rule [elabDisposeProcess]:
-    elabDispose(KL:KLabel(_,, (elabRes(K:K) => K),, _))
+    elabDispose(KL:KLabel(_,, (K:K => unElab(K)),, _))
+when
+    notBool isNotElab(K)
 
 rule [elabDisposeEnd]:
     elabDispose(KL:KLabel(Ks:List{K})) => elabRes(KL(Ks))
 when
     isNotElab(Ks)
 
-rule [elabDotK]:
-    elab(.K) => elabRes(.K)
+//Invoked during elabDispose. Transforms the term from elab result to normal.
+syntax K ::= "unElab" "(" K ")"                 [function]
+rule unElab(elabRes(K:K)) => K                  [anywhere]
+rule unElab(K:::_) => K                         [anywhere]
 
 //Computes to true if the given arg is a list of terms wrapped into elabRes(), false otherwise.
-syntax K ::= "isElab" "(" List{K} ")"       [function]
-rule isElab((elabRes(_) => .List{K}) ,,_)   [anywhere]
-rule isElab((noValue => .List{K}) ,,_)      [anywhere]
-rule isElab((stEnv(_) => .List{K}) ,,_)     [anywhere]
-rule isElab(.List{K}) => true               [anywhere]
-rule isElab(.K,, _) => false                [anywhere]
+syntax K ::= "isElab" "(" List{K} ")"           [function]
+rule isElab((elabRes(_) => .List{K}) ,,_)       [anywhere]
+rule isElab((_:::_ => .List{K}) ,,_)            [anywhere]
+rule isElab((noValue => .List{K}) ,,_)          [anywhere]
+rule isElab((stEnv(_) => .List{K}) ,,_)         [anywhere]
+rule isElab(.List{K}) => true                   [anywhere]
+rule isElab(.K,, _) => false                    [anywhere]
 
 rule isElab(KL:KLabel(_),,_) => false
-when KL =/=KLabel 'elabRes`(_`)             [anywhere]
+when KL =/=KLabel 'elabRes`(_`)                 [anywhere]
 
 //Computes to true if the given arg is a list of terms with none wrapped into elabRes(),
 //false otherwise.
 syntax K ::= "isNotElab" "(" List{K} ")"        [function]
 rule isNotElab(elabRes(_) ,,_) => false         [anywhere]
+rule isNotElab(_:::_ ,,_) => false              [anywhere]
 rule isNotElab((noValue => .List{K}) ,,_)       [anywhere]
 rule isNotElab((stEnv(_) => .List{K}) ,,_)      [anywhere]
 rule isNotElab(.List{K}) => true                [anywhere]
@@ -208,6 +217,7 @@ rule customElabDispose(KL:KLabel(_)) =>
     orBool (KL ==KLabel 'AmbName)
     orBool (KL ==KLabel 'ExprName)
     orBool (KL ==KLabel 'localVar`(_`))
+    orBool (KL ==KLabel 'This)
     orBool (KL ==KLabel 'Field)
     orBool (KL ==KLabel 'noValue)
     orBool (KL ==KLabel 'TypeName)
@@ -232,31 +242,36 @@ rule [LocalVarDecStmRed]:
       => 'LocalVarDec(TypeK,, 'ListWrap(Ks))
     ),,_))                                            [structural]
 
-rule [VarListDecDesugar]:
+//Resolve the local var type, required to register the var in <elabEnv>
+context elab('ListWrap(_,,'LocalVarDec(HOLE,,_),,_))
+
+rule [VarDecMultiDesugar]:
     elab('ListWrap(_,,(
-      'LocalVarDec(TypeK:K,, 'ListWrap(Var1:K,, Var2:K,, VarDecs:List{K}))
-      => 'LocalVarDec(TypeK,, 'ListWrap(Var1)),,
-         'LocalVarDec(TypeK,, 'ListWrap(Var2,, VarDecs))
+      'LocalVarDec(T:Type,, 'ListWrap(Var1:K,, Var2:K,, VarDecs:List{K}))
+      => 'LocalVarDec(T,, 'ListWrap(Var1)),,
+         'LocalVarDec(T,, 'ListWrap(Var2,, VarDecs))
     ),,_))                                            [structural]
 
 rule [VarDecWithInitDesugar]:
     elab('ListWrap(_,,(
-    'LocalVarDec(TypeK:K,, 'ListWrap('VarDec(X1:Id,,InitExp:K)))
-    => 'LocalVarDec(TypeK,, 'ListWrap('VarDec(X1:Id))),,
+    'LocalVarDec(T:Type,, 'ListWrap('VarDec(X1:Id,,InitExp:K)))
+    => 'LocalVarDec(T,, 'ListWrap('VarDec(X1:Id))),,
        'ExprStm('Assign('ExprName(X1),, InitExp))
     ),,_))
 when
     getKLabel(InitExp) =/=KLabel 'ArrayInit           [structural]
 
+//todo this should not work. T should be resolved after elaboration of 'LocalVarDec
+//At least types of fields should be computed upfront. We need them to compute instanceElabEnv.
 rule [elabHeatLocalVarDec]:
     <k>
-      (. => elabInit('LocalVarDec(TypeK,, 'ListWrap('VarDec(X)))))
+      (. => elabInit('LocalVarDec(T,, 'ListWrap('VarDec(X)))))
       ~> elab(KL:KLabel(ElabResL:List{K},,
-        ('LocalVarDec(TypeK:K,, 'ListWrap('VarDec(X:Id))) => CHOLE),,
+        ('LocalVarDec(T:Type,, 'ListWrap('VarDec(X:Id))) => CHOLE),,
       _))
       ...
     </k>
-    <elabEnv> ListItem(stEnv((. => SetItem(X)) _)) ...</elabEnv>
+    <elabEnv> ListItem(stEnv((. => X |-> T) _)) ...</elabEnv>
 when
     isElab(ElabResL)
 
@@ -278,13 +293,13 @@ when
     isElab(K1) andBool isElab(K2)
 
 rule [elabLocalVarOk]:
-  <k> elab(localVar(elabRes(X:Id))) => elabRes(localVar(X)) ...</k>
-  <elabEnv> ListItem(stEnv(SetItem(X) _)) ...</elabEnv>
+  <k> elab(localVar(elabRes(X:Id))) => localVar(X) ::: T ...</k>
+  <elabEnv> ListItem(stEnv(X |-> T:Type _)) ...</elabEnv>
 
 rule [elabLocalVarNoValue]:
   <k> elab(localVar(elabRes(X:Id))) => noValue ...</k>
-  <elabEnv> ListItem(stEnv(StEnv:Set)) ...</elabEnv>
-when notBool (X in StEnv)
+  <elabEnv> ListItem(stEnv(StEnv:Map)) ...</elabEnv>
+when notBool (X in keys(StEnv))
 
 //todo add outerStaticField option
 rule [elabFieldUnqualified]:
@@ -316,85 +331,93 @@ syntax K ::= "instanceElabEnv" "(" ClassType ")"
            | "instanceElabEnv" "("            //The working form
                                   ClassType "," //The classes remaining to search, noClass if none
                                   List{K} "," //List of LocalVarDec - content of <fieldDecs> of currently searched class
-                                  Set         //Collected fields so far
+                                  Map         //Collected fields so far
                                 ")"
 
 rule [instanceElabEnvStart]:
-    <k> instanceElabEnv(CT:ClassType) => instanceElabEnv(BaseClass, FDecs, .Set) ...</k>
+    <k> instanceElabEnv(CT:ClassType) => instanceElabEnv(BaseClass, FDecs, .Map) ...</k>
     <classType> CT </classType>
     <extends> BaseClass:ClassType </extends>
     <fieldDecs> 'ListWrap(FDecs:List{K}) </fieldDecs>
+    <preprocessingPhase> MembersProcessedCPP </preprocessingPhase>
 
 rule [instanceElabEnv]:
-    instanceElabEnv(_, ('LocalVarDec(_:K,, 'ListWrap('VarDec(X:Id,, _))) => .List{K}),,_, (. => SetItem(X)) _)
+    instanceElabEnv(_, ('LocalVarDec(T:Type,, 'ListWrap('VarDec(X:Id,, _))) => .List{K}),,_, (. => X |-> T) _)
 
 rule [instanceElabEnvNextClass]:
-    <k> instanceElabEnv(CT:ClassType, .List{K}, Env:Set) => instanceElabEnv(BaseClass, FDecs, Env) ...</k>
+    <k> instanceElabEnv(CT:ClassType, .List{K}, Env:Map) => instanceElabEnv(BaseClass, FDecs, Env) ...</k>
     <classType> CT </classType>
     <extends> BaseClass:ClassType </extends>
     <fieldDecs> 'ListWrap(FDecs:List{K}) </fieldDecs>
 
 rule [instanceElabEnvEnd]:
-    instanceElabEnv(noClass, .List{K}, Env:Set) => stEnv(Env)
+    instanceElabEnv(noClass, .List{K}, Env:Map) => stEnv(Env)
 
 //Computes a stEnv() - environment of all static fields of the given class
 syntax K ::= "staticElabEnv" "(" ClassType ")"
-           | "staticElabEnv" "("            //The working form
+           | "staticElabEnv" "("                //The working form
                                   ClassType "," //The classes remaining to search, noClass if none
-                                  Set         //Collected fields so far
+                                  Map ","       //Content of <staticEnv> to be processed: Map[Id -> Loc]
+                                  Map           //Collected fields so far
                                 ")"
 
-rule [instanceElabEnvStart]:
-    <k> staticElabEnv(CT:ClassType) => staticElabEnv(BaseClass, keys(CuEnv)) ...</k>
+rule [staticElabEnvStart]:
+    <k> staticElabEnv(CT:ClassType) => staticElabEnv(BaseClass, CuEnv, .Map) ...</k>
+    <classType> CT </classType>
+    <extends> BaseClass:ClassType </extends>
+    <staticEnv> CuEnv:Map </staticEnv>
+    <preprocessingPhase> MembersProcessedCPP </preprocessingPhase>
+
+rule [staticElabEnv]:
+    <k> staticElabEnv(_, (X:Id |-> L:Int => .) _, (. => X |-> T) _) ...</k>
+    <store>... L |-> uninitialized(_,T:Type)  ...</store>
+
+rule [staticElabEnvNextClass]:
+    <k> staticElabEnv(CT:ClassType, .Map, Env:Map) => staticElabEnv(BaseClass, CuEnv, Env) ...</k>
     <classType> CT </classType>
     <extends> BaseClass:ClassType </extends>
     <staticEnv> CuEnv:Map </staticEnv>
 
-rule [instanceElabEnvNextClass]:
-    <k> staticElabEnv(CT:ClassType, Env:Set) => staticElabEnv(BaseClass, (Env keys(CuEnv))) ...</k>
-    <classType> CT </classType>
-    <extends> BaseClass:ClassType </extends>
-    <staticEnv> CuEnv:Map </staticEnv>
-
-rule [instanceElabEnvEnd]:
-    staticElabEnv(noClass, Env:Set) => stEnv(Env)
+rule [staticElabEnvEnd]:
+    staticElabEnv(noClass, .Map, Env:Map) => stEnv(Env)
 
 rule [elabThisInstanceCT]:
-    <k>
-      elab('Field(elabRes('This(.List{K})),, elabRes(X:Id)))
-      => 'If(
-            elabLookup(X, instanceElabEnv(Class)),,
-            elabRes('Field('This(.List{K}),,X)),,
-            noValue
-          )
-      ...
-    </k>
+    <k> elab('This(.List{K})) => 'This(.List{K}) ::: Class ...</k>
     <elabContextType> instanceCT </elabContextType>
     <cuClass> Class:ClassType </cuClass>
 
 rule [elabThisStaticCT]:
-    <k>
-      elab('Field(elabRes('This(.List{K})),, elabRes(X:Id))) => noValue
-      ...
-    </k>
+    <k> elab('This(.List{K})) => noValue ...</k>
     <elabContextType> staticCT </elabContextType>
 
-rule [elabFieldStaticField]:
-    elab('Field(elabRes(Class:ClassType),, elabRes(X:Id)))
-    => 'If(
-          elabLookup(X, staticElabEnv(Class)),,
-          elabRes('Field(Class,,X)),,
-          noValue
-        )
+rule [elabFieldQualRef]:
+    elab('Field(Qual:K ::: T:Type,, elabRes(X:Id)))
+    => elabTypedExp('Field(Qual,,X), elabLookup(X, instanceElabEnv(T)))
 
-//computes true if the given id is in the set of the second argument, false otherwise
+rule [elabFieldQualClass]:
+    elab('Field(elabRes(Class:ClassType),, elabRes(X:Id)))
+    => elabTypedExp('Field(Class,,X), elabLookup(X, staticElabEnv(Class)))
+
+//computes the type of the given Id in the given Env:Map, or noValue if the Id is not in the Map.
 syntax K ::= "elabLookup" "(" Id  //The Id to search
-                          "," K   //computes into stEnv(Set) - the set where Id is searched
+                          "," K   //computes into stEnv(Map) - the map where Id is searched
                           ")" [strict(2)]
 
-rule [elabLookup]:
-    elabLookup(X:Id, stEnv(Env:Set)) => (X in Env)::bool
+rule [elabLookupOk]:
+    elabLookup(X:Id, stEnv(X |-> T:Type _)) => T
 
+rule [elabLookupNoValue]:
+    elabLookup(X:Id, stEnv(Env:Map)) => noValue
+when
+    notBool (X in keys(Env))
+
+//Computed the TypedExp expression for a given expression and its type
+syntax K ::= "elabTypedExp" "(" K //The original expression to be typed
+                            "," K //elabLookup(...), computes into Type or noValue
+                            ")"  [strict(2)]
+
+rule elabTypedExp(Exp:K, T:Type) => Exp ::: T
+rule elabTypedExp(_, noValue) => noValue
 
 //todo This is simplified semantics, no packages yet.
 rule [elabTypeName]:
@@ -403,14 +426,11 @@ when
     Id2String(X) =/=String "System"
 
 /*
-todo. Elaborate Object refs as qualifier for instance fields.
-Object ref Could be localVar, Field or any complex expression of type Ref.
-In addition to elabRes we have to add another type of elaboration result -
-elabQual(K,T) - the elaborated qualifier. K is the original expression,
-T is the type of that expression. Something similar to
-objectClosure, but instead of an object we now have a type.
-Thus, in order to resolve qualifiers we need to resolve expression types
-at elaboration phase.
+Move elaboration to a separate preprocessing phase, after all classes
+  reached the state MembersProcessedCPP. We need class member declarations
+  to be processed in order to proceed with block elaboration.
+  Otherwise I might need to access the environment of a class whose members
+  were not preprocessed, thus don't have its environment computed yet.
 */
 
 endmodule

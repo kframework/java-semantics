@@ -386,12 +386,12 @@ rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(Class
 //resolve field declaration type
 context 'FieldDec(_:K,, HOLE,, _)
 
-rule [FieldDecDesugar]:
-    (. => 'FieldDec(SomeK,, TypeK,, 'ListWrap(K1))) ~>
-    'FieldDec(SomeK:K,, TypeK:K,, 'ListWrap((K1:K => .List{K}),, K2:K,, Ks:List{K}))
+rule [FieldDecMultiDesugar]:
+    (. => 'FieldDec(SomeK,, T,, 'ListWrap(K1))) ~>
+    'FieldDec(SomeK:K,, T:Type,, 'ListWrap((K1:K => .List{K}),, K2:K,, Ks:List{K}))
 
 rule [FieldDecInstanceInitDesugar]:
-    'FieldDec(Modifiers:K,, TypeK:K,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .List{K})) ))
+    'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .List{K})) ))
     ~> (. => 'InstanceInit('ExprStm('Assign('Field(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
@@ -399,11 +399,11 @@ when
         [structural]
 
 rule [FieldDecToLocalVarDec]:
-    <k> 'FieldDec(Modifiers:K,, TypeK:K,, 'ListWrap('VarDec(X:Id))) => . ...</k>
+    <k> 'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id))) => . ...</k>
     <cuClass> Class:ClassType </cuClass>
     <classType> Class </classType>
     <fieldDecs>
-      'ListWrap(_,, ( .List{K} => 'LocalVarDec(TypeK,, 'ListWrap('VarDec(X))) ))
+      'ListWrap(_,, ( .List{K} => 'LocalVarDec(T,, 'ListWrap('VarDec(X))) ))
     </fieldDecs>
 when
     getContextType(Modifiers) ==K instanceCT
@@ -417,7 +417,7 @@ rule [InstanceInitSave]:
         [structural]
 
 rule [FieldDecStaticInitDesugar]:
-    'FieldDec(Modifiers:K,, TypeK:K,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .List{K})) ))
+    'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .List{K})) ))
     ~> (. => 'StaticInit('ExprStm('Assign('Field(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
