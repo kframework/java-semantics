@@ -163,51 +163,58 @@ rule [elabDisposeStartDefault]:
 when
     isElab(ElabResL) andBool notBool customElabDispose(KL(ElabResL))
 
-rule [elabDotK]:
-    elab(.K) => elabRes(.K)
-
 rule [elabDisposeProcess]:
     elabDispose(KL:KLabel(_,, (K:K => unElab(K)),, _))
 when
-    notBool isNotElab(K)
+    isElabOnly(K)
 
 rule [elabDisposeEnd]:
     elabDispose(KL:KLabel(Ks:List{K})) => elabRes(KL(Ks))
 when
     isNotElab(Ks)
 
+//true if this label is elaborated, but is not un-elaborated.
+syntax K ::= "isElabOnly" "(" K ")"                   [function]
+rule isElabOnly(K:K) =>
+           (getKLabel(K) ==KLabel 'elabRes`(_`))
+    orBool (getKLabel(K) ==KLabel '_:::_)             [anywhere]
+
+syntax K ::= "isElabIndependent" "(" K ")"            [function]
+rule isElabIndependent(K:K) =>
+           (K ==K .K)
+    orBool (isId(K) ==K true)
+    orBool (isKResult(K) ==K true)                    [anywhere]
+
 //Invoked during elabDispose. Transforms the term from elab result to normal.
 syntax K ::= "unElab" "(" K ")"                 [function]
 rule unElab(elabRes(K:K)) => K                  [anywhere]
 rule unElab(K:::_) => K                         [anywhere]
 
-//Computes to true if the given arg is a list of terms wrapped into elabRes(), false otherwise.
+//Computes to true if the given arg is a list of elaboration results, false otherwise.
 syntax K ::= "isElab" "(" List{K} ")"           [function]
-rule isElab((elabRes(_) => .List{K}) ,,_)       [anywhere]
-rule isElab((_:::_ => .List{K}) ,,_)            [anywhere]
-rule isElab((noValue => .List{K}) ,,_)          [anywhere]
-rule isElab((stEnv(_) => .List{K}) ,,_)         [anywhere]
+rule isElab((K:K => .List{K}) ,,_)
+when isElabOnly(K) orBool isElabIndependent(K)  [anywhere]
+
+rule isElab(K:K,,_) => false
+when notBool (
+           (isElabOnly(K) ==K true)
+    orBool (isElabIndependent(K) ==K true))     [anywhere]
+
 rule isElab(.List{K}) => true                   [anywhere]
-rule isElab(.K,, _) => false                    [anywhere]
 
-rule isElab(KL:KLabel(_),,_) => false
-when KL =/=KLabel 'elabRes`(_`)                 [anywhere]
-
-//Computes to true if the given arg is a list of terms with none wrapped into elabRes(),
+//Computes to true if the given arg is a list of terms with none being elab-result only,
 //false otherwise.
 syntax K ::= "isNotElab" "(" List{K} ")"        [function]
-rule isNotElab(elabRes(_) ,,_) => false         [anywhere]
-rule isNotElab(_:::_ ,,_) => false              [anywhere]
-rule isNotElab((noValue => .List{K}) ,,_)       [anywhere]
-rule isNotElab((stEnv(_) => .List{K}) ,,_)      [anywhere]
-rule isNotElab(.List{K}) => true                [anywhere]
-rule isNotElab((.K => .List{K}),, _)            [anywhere]
+rule isNotElab(K:K,,_) => false
+when isElabOnly(K)                              [anywhere]
 
-rule isNotElab((KL:KLabel(_) => .List{K}),, _)
-when KL =/=KLabel 'elabRes`(_`)                 [anywhere]
+rule isNotElab((K:K => .List{K}),,_)
+when notBool (isElabOnly(K) ==K true)           [anywhere]
+
+rule isNotElab(.List{K}) => true                [anywhere]
 
 //Returns true if the term needs special rules to be heated for elaboration, false otherwise.
-syntax K ::= "customElabInit" "(" K ")"                 [function]
+syntax K ::= "customElabInit" "(" K ")"         [function]
 
 rule customElabInit(.K) => false
 rule customElabInit(KL:KLabel(_)) =>
@@ -217,9 +224,6 @@ rule customElabInit(KL:KLabel(_)) =>
 //Computes true if the given term needs special rules for elaboration, false otherwise
 syntax K ::= "customElab" "(" K ")"             [function]
 
-//Labels that need special semantics during at the beginning of elab and elabDispose phases.
-rule customElab(.K) => false
-
 rule customElab(KL:KLabel(KLArgs:List{K})) =>
            (KL ==KLabel 'Block)
     orBool (KL ==KLabel 'For)
@@ -227,9 +231,6 @@ rule customElab(KL:KLabel(KLArgs:List{K})) =>
 
 //Computes true if the given term needs special rules to startelab dispose phase, false otherwise.
 syntax K ::= "customElabDispose" "(" K ")"       [function]
-
-//Labels that need special semantics during at the beginning of elab and elabDispose phases.
-rule customElabDispose(.K) => false
 
 rule customElabDispose(KL:KLabel(_)) =>
            (KL ==KLabel 'Block)
@@ -240,7 +241,6 @@ rule customElabDispose(KL:KLabel(_)) =>
     orBool (KL ==KLabel 'localVar`(_`))
     orBool (KL ==KLabel 'This)
     orBool (KL ==KLabel 'Field)
-    orBool (KL ==KLabel 'noValue)
     orBool (KL ==KLabel 'TypeName)
     orBool (KL ==KLabel 'castImpl`(_`,_`))
 
@@ -318,11 +318,11 @@ when
     isElab(K1) andBool isElab(K2)
 
 rule [elabLocalVarOk]:
-  <k> elab(localVar(elabRes(X:Id))) => localVar(X) ::: T ...</k>
+  <k> elab(localVar(X:Id)) => localVar(X) ::: T ...</k>
   <elabEnv> ListItem(stEnv(X |-> T:Type _)) ...</elabEnv>
 
 rule [elabLocalVarNoValue]:
-  <k> elab(localVar(elabRes(X:Id))) => noValue ...</k>
+  <k> elab(localVar(X:Id)) => noValue ...</k>
   <elabEnv> ListItem(stEnv(StEnv:Map)) ...</elabEnv>
 when notBool (X in keys(StEnv))
 
@@ -339,13 +339,10 @@ when
     isElab(Arg)
 
 rule [FieldOfPackage]:
-    'Field( _:PackageId,, _:K ) => noValue  [structural, anywhere]
+    elab('Field( _:PackageId,, _:K )) => noValue  [structural]
 
 rule [FieldOfNoValue]:
-    'Field( noValue,, _:K ) => noValue      [structural, anywhere]
-
-rule [elabNoValue]:
-    elab(noValue) => noValue
+    elab('Field( noValue,, _:K )) => noValue      [structural]
 
 //Computationof instance and static environment of a class
 //e.g. set of fields
@@ -416,11 +413,11 @@ rule [elabThisStaticCT]:
     <elabContextType> staticCT </elabContextType>
 
 rule [elabFieldQualRef]:
-    elab('Field(Qual:K ::: T:Type,, elabRes(X:Id)))
+    elab('Field(Qual:K ::: T:Type,, X:Id))
     => elabTypedExp('Field(Qual,,X), elabLookup(X, instanceElabEnv(T)))
 
 rule [elabFieldQualClass]:
-    elab('Field(elabRes(Class:ClassType),, elabRes(X:Id)))
+    elab('Field(Class:ClassType,, X:Id))
     => elabTypedExp('Field(Class,,X), elabLookup(X, staticElabEnv(Class)))
 
 //computes the type of the given Id in the given Env:Map, or noValue if the Id is not in the Map.
@@ -446,7 +443,7 @@ rule elabTypedExp(_, noValue) => noValue
 
 //todo This is simplified semantics, no packages yet.
 rule [elabTypeName]:
-    <k> elab('TypeName(elabRes(X:Id))) => elabRes(Class) ...</k>
+    <k> elab('TypeName(X:Id)) => Class ...</k>
     <typeNamesMap>... _ |-> mapWrap(X |-> Class:ClassType _) ...</typeNamesMap>
 when
     Id2String(X) =/=String "System"
@@ -454,10 +451,10 @@ when
 //elab cast
 
 //Required so that we will always have a type as first argument.
-context elab(castImpl(elabRes(HOLE), _))
+context elab(castImpl(HOLE, _))
 
 rule [elabCastImpl]:
-    elab(castImpl(elabRes(T:Type), Exp:K)) => castImpl(T, unElab(Exp)) ::: T
+    elab(castImpl(T:Type, Exp:K)) => castImpl(T, unElab(Exp)) ::: T
 when isElab(Exp)
 
 //Hole is transformed into paramImpl

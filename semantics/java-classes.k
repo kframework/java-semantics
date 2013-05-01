@@ -159,7 +159,7 @@ when
         [structural]
 
 rule [elabNameString]:
-    elab('TypeName(elabRes(X:Id))) => elabRes(rtString)
+    elab('TypeName(X:Id)) => rtString
 when
     Id2String(X) ==String "String"
 

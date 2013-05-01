@@ -38,7 +38,7 @@ when
     Id2String(X) ==String "System"
 
 rule [elabNameSystem]:
-    elab('TypeName(elabRes(X:Id))) => elabRes(rtSystemType)
+    elab('TypeName(X:Id)) => rtSystemType
 when
     Id2String(X) ==String "System"
 
@@ -91,7 +91,7 @@ when
     Id2String(X) ==String "out"
 
 rule [elabNameSystemOut]:
-    elab('Field(elabRes(rtSystemType),, elabRes(X:Id))) => elabRes(rtSystemOut)
+    elab('Field(rtSystemType,, X:Id)) => rtSystemOut
 when
     Id2String(X) ==String "out"
 
