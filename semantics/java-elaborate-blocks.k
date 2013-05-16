@@ -188,7 +188,7 @@ rule isElabIndependent(K:K) =>
 //Invoked during elabDispose. Transforms the term from elab result to normal.
 syntax K ::= "unElab" "(" K ")"                 [function]
 rule unElab(elabRes(K:K)) => K                  [anywhere]
-rule unElab(K:::_) => K                         [anywhere]
+rule unElab(K:K:::_) => K                       [anywhere]
 
 //Computes to true if the given arg is a list of elaboration results, false otherwise.
 syntax K ::= "isElab" "(" List{K} ")"           [function]
@@ -450,12 +450,17 @@ when
 
 //elab cast
 
-//Required so that we will always have a type as first argument.
+//Required so that we will always have a type as first argument
 context elab(castImpl(HOLE, _))
 
-rule [elabCastImpl]:
-    elab(castImpl(T:Type, Exp:K)) => castImpl(T, unElab(Exp)) ::: T
-when isElab(Exp)
+rule [elabCastImplElabOnly]:
+    elab(castImpl(T:Type, ElabExp:K)) => castImpl(T, unElab(ElabExp)) ::: T
+when isElabOnly(ElabExp)
+
+//Case when Exp was initially a literal, and now is Val::Type
+rule [elabCastImplElabIndep]:
+    elab(castImpl(T:Type, Exp:K)) => castImpl(T, Exp) ::: T
+when isElabIndependent(Exp)
 
 //Hole is transformed into paramImpl
 context elabInit('Catch(HOLE,, _))
