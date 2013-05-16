@@ -32,7 +32,7 @@ the content of methods, static and instance initializers.
 2.2. Elaborate qualified expression names, no packages yet.
 2.2.1.ok. Elaborate This as qualifier.
 2.2.2.ok. Elaborate Class as qualifier for static fields.
-2.2.3.ok. Elaborate Object refs as qualifier for instance fields.
+2.2.3.ok. Elaborate Object ref as qualifier for instance fields.
   Object ref Could be localVar, Field or any complex expression of type Ref.
   In addition to elabRes we have to add another type of elaboration result -
   K ::: T - the elaborated qualifier. K is the original expression,
@@ -52,7 +52,7 @@ the content of methods, static and instance initializers.
 2.3.2.ok. Elaborate for variable declarations.
 2.3.3.ok. Elaborate catch variable declarations.
 2.3.4.ok. Eliminate elaboration for .K, Id and Type.
-2.3.5. Elaborate super keyword.
+2.3.5.ok. Elaborate super.<field> expressions.
 2.3.6. Elaborate array access.
 
 2.4. Elaborate classes in the presence of packages.

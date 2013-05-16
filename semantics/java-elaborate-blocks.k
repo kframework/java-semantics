@@ -241,6 +241,7 @@ rule customElabDispose(KL:KLabel(_)) =>
     orBool (KL ==KLabel 'localVar`(_`))
     orBool (KL ==KLabel 'This)
     orBool (KL ==KLabel 'Field)
+    orBool (KL ==KLabel 'SuperField)
     orBool (KL ==KLabel 'TypeName)
     orBool (KL ==KLabel 'castImpl`(_`,_`))
 
@@ -419,6 +420,16 @@ rule [elabFieldQualRef]:
 rule [elabFieldQualClass]:
     elab('Field(Class:ClassType,, X:Id))
     => elabTypedExp('Field(Class,,X), elabLookup(X, staticElabEnv(Class)))
+
+rule [elabSuperField]:
+    <k>
+      elab('SuperField(X:Id))
+      => elabTypedExp('SuperField(X), elabLookup(X, instanceElabEnv(BaseClass)))
+      ...
+    </k>
+    <cuClass> Class:ClassType </cuClass>
+    <classType> Class </classType>
+    <extends> BaseClass:ClassType </extends>
 
 //computes the type of the given Id in the given Env:Map, or noValue if the Id is not in the Map.
 syntax K ::= "elabLookup" "(" Id  //The Id to search

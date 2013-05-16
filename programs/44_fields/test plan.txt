@@ -26,6 +26,11 @@ Access a hidden field through super qualifier, cast to base class,
 17. Multifield. One field declaration with multiple fields.
 18. Final field. A simple final field. Initialized in constructor. Null semantics.
 
+Part 2. Chained qualifiers involving super.
+21. B < A. Call to B: super.x.y simple.
+22. B < A. Call to B: f(super.x) where A.x and B.x are of different types, f() overloaded.
+23. B < A. Call to B: f(super.x.y) where A.x.y and B.x.y are of different types, f() overloaded.
+
 Already tested in other suites:
   - catch param hiding a field
   - for param hiding a field
