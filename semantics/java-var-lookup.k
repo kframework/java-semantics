@@ -4,6 +4,8 @@ require "java-process-classes.k"
 require "java-static-init.k"
 require "java-expressions.k"
 
+//todo remove al rules related to 'Field
+
 module JAVA-VAR-LOOKUP
     imports JAVA-CORE
     imports JAVA-SUBTYPING
@@ -85,6 +87,42 @@ rule [ThisNoValue]:
     <location> noValue </location>
 
 /*@ \subsection{Object member access} */
+
+//new rules
+
+//outside lvalue we have strictness rules
+
+context lvalue(lookupFieldImpl(HOLE,_,_))
+
+rule [lookupFieldImpl]:
+    lookupFieldImpl(
+      objectClosure(_,
+          <envStack>... ListItem((TargetClass, EnvC:BagItem)) ...</envStack>
+        ) ::_,
+      TargetClass:ClassType,
+      X:Id
+    ) => lookupField(<envStack>ListItem((TargetClass, EnvC)) </envStack>, X)
+        [structural, anywhere]
+
+rule [lookupFieldImplOfNull]:
+    <k>
+      lookupFieldImpl(null::_, _, _)
+      =>  'Throw('NewInstance(
+            'None(.List{K}),,
+            class String2Id("java.lang.NullPointerException"),,
+            'ListWrap( null :: nullType ),,
+            'None(.List{K})
+          ))
+      ...
+    </k>
+        [structural, anywhere]
+
+rule [lookupStaticFieldImpl]:
+    lookupStaticFieldImpl(
+      TargetClass:ClassType,
+      X:Id
+    ) => lookupStaticField(TargetClass, X)
+        [structural, anywhere]
 
 //todo bug: this rule and the next one are not mutually exclusive. Expose the problem in a test.
 //Expressions of type o.x, where o is a reference of type class

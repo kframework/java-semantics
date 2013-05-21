@@ -371,6 +371,12 @@ syntax K ::= "CHOLE"
 
 syntax KResult ::= "stEnv" "(" Map ")"  //A layer of the static environment
                                         //Map[name -> Type]
+                  | "classEnv" "(" Map ")"  //The declaration environment of a class
+                                            //Map[name -> fieldEntry(...)]
+                  | "fieldEntry" "(" ClassType // target class
+                                 "," Id        //X - field name
+                                 "," Type      // Field type
+                                 ")"
 
 //size of a KList
 syntax K ::= "klsize" "(" List{K} ")"               [function]

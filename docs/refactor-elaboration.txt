@@ -47,19 +47,20 @@ the content of methods, static and instance initializers.
   Otherwise I might need to access the environment of a class whose members
   were not preprocessed, thus don't have its environment computed yet.
 
-2.3. Elaborate other minor expressions.
+2.3.ok. Elaborate other minor expressions.
 2.3.1.ok. Elaborate reference cast.
 2.3.2.ok. Elaborate for variable declarations.
 2.3.3.ok. Elaborate catch variable declarations.
 2.3.4.ok. Eliminate elaboration for .K, Id and Type.
-2.3.5.ok. Elaborate super.<field> expressions.
-2.3.6. Elaborate array access.
+2.3.5.ok. Elaborate super.<field> expressions - semantics doubled at runtime and compile time.
 
-2.4. Elaborate classes in the presence of packages.
-2.5. Elaborate names in the presence fo inner classes.
+2.4.ok. Use elaboration-phase data for field lookup at runtime.
 
-3. Implement method static method signature lookup.
-4. Implement static expression type checking and annotation.
+2.5. Elaborate classes in the presence of packages.
+2.6. Elaborate names in the presence of inner classes.
+
+3. Implement method signature lookup during elaboration.
+4. Implement expression type checking and annotation during elaboration.
 
   When elaborating a block, in order to distinguish between an unelaborated
 and elaborated block, we will wrap elaborated blocks into elab(...).
