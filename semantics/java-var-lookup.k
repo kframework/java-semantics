@@ -122,7 +122,16 @@ rule [lookupStaticFieldImpl]:
       TargetClass:ClassType,
       X:Id
     ) => lookupStaticField(TargetClass, X)
-        [structural, anywhere]
+        [structural]
+
+rule [lvalue-lookupStaticFieldImpl]:
+    lvalue(
+      lookupStaticFieldImpl(
+        TargetClass:ClassType,
+        X:Id
+      ) => lookupStaticField(TargetClass, X)
+    )
+        [structural]
 
 //todo bug: this rule and the next one are not mutually exclusive. Expose the problem in a test.
 //Expressions of type o.x, where o is a reference of type class

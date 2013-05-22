@@ -1,5 +1,5 @@
 /*
-Static field, accesed though class qualified expression for read/write.
+Static field, accessed though class qualified expression for read/write.
 */
 
 public class static_f_101_qualified {
