@@ -373,8 +373,13 @@ rule [instanceElabEnvStart]:
     <fieldDecs> 'ListWrap(FDecs:List{K}) </fieldDecs>
     <preprocessingPhase> MembersProcessedCPP </preprocessingPhase>
 
-rule [instanceElabEnv]:
-    instanceElabEnv(Class:ClassType, ('LocalVarDec(T:Type,, 'ListWrap('VarDec(X:Id,, _))) => .List{K}),,_, (. => X |-> fieldEntry(Class,X,T)) _)
+rule [instanceElabEnvNewField]:
+    instanceElabEnv(Class:ClassType, ('LocalVarDec(T:Type,, 'ListWrap('VarDec(X:Id,, _))) => .List{K}),,_, (. => X |-> fieldEntry(Class,X,T)) Env:Map)
+when
+    notBool (X in keys(Env))
+
+rule [instanceElabEnvHiddenField]:
+    instanceElabEnv(_, ('LocalVarDec(_,, 'ListWrap('VarDec(X:Id,, _))) => .List{K}),,_, X |-> _ _:Map)
 
 rule [instanceElabEnvNextClass]:
     <k> instanceElabEnv(CT:ClassType, .List{K}, Env:Map) => instanceElabEnv(BaseClass, FDecs, Env) ...</k>
@@ -408,9 +413,14 @@ rule [staticElabEnvStart]:
     <staticEnv> CuEnv:Map </staticEnv>
     <preprocessingPhase> MembersProcessedCPP </preprocessingPhase>
 
-rule [staticElabEnv]:
-    <k> staticElabEnv(Class:ClassType, (X:Id |-> L:Int => .) _, (. => X |-> fieldEntry(Class,X,T)) _) ...</k>
+rule [staticElabEnvNewField]:
+    <k> staticElabEnv(Class:ClassType, (X:Id |-> L:Int => .) _, (. => X |-> fieldEntry(Class,X,T)) Env:Map) ...</k>
     <store>... L |-> uninitialized(_,T:Type)  ...</store>
+when
+    notBool (X in keys(Env))
+
+rule [staticElabEnvHiddenField]:
+    staticElabEnv(_, (X:Id |-> _ => .) _, X |-> _ _:Map)
 
 rule [staticElabEnvNextClass]:
     <k> staticElabEnv(CT:ClassType, .Map, Env:Map) => staticElabEnv(BaseClass, CuEnv, Env) ...</k>
