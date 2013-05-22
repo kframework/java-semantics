@@ -230,6 +230,9 @@ rule customElabInit(.K) => false
 rule customElabInit(KL:KLabel(_)) =>
            KL ==KLabel 'LocalVarDecStm
     orBool KL ==KLabel 'LocalVarDec
+    orBool KL ==KLabel 'ClassOrInterfaceType
+    orBool KL ==KLabel 'InterfaceType
+    orBool KL ==KLabel 'ClassType
 
 //Computes true if the given term needs special rules for elaboration, false otherwise
 syntax K ::= "customElab" "(" K ")"             [function]
@@ -298,7 +301,7 @@ when
     getKLabel(InitExp) =/=KLabel 'ArrayInit           [structural]
 
 //todo this should not work. T should be resolved after elaboration of 'LocalVarDec
-//At least types of fields should be computed upfront. We need them to compute instanceElabEnv.
+//At least types of fields should be computed upfront. We need them to compute elabLookup.
 rule [elabHeatLocalVarDec]:
     <k>
       (. => elabInit('LocalVarDec(T,, 'ListWrap('VarDec(X)))))
@@ -358,87 +361,37 @@ rule [FieldOfNoValue]:
 //Computationof instance and static environment of a class
 //e.g. set of fields
 
-//Computes a classEnv() - environment of all instance fields of the given class
-//No static fields
-syntax K ::= "instanceElabEnv" "(" ClassType ")"
-           | "instanceElabEnv" "("              //The working form
-                                  ClassType "," //The current class under search
-                                  List{K} ","   //List of LocalVarDec - content of <fieldDecs> of currently searched class
-                                  Map           //Collected fields so far
-                                ")"
+//Searches the given field name in the given type, both static and instance context.
+syntax K ::= "elabLookup" "("
+                                      Id ","    //The field to search
+                                      ClassType //The current class under search
+                                  ")"
 
-rule [instanceElabEnvStart]:
-    <k> instanceElabEnv(CT:ClassType) => instanceElabEnv(CT, FDecs, .Map) ...</k>
+rule [elabLookupFoundInstance]:
+    <k> elabLookup(X, CT:ClassType) => FEntry ...</k>
     <classType> CT </classType>
-    <fieldDecs> 'ListWrap(FDecs:List{K}) </fieldDecs>
-    <preprocessingPhase> MembersProcessedCPP </preprocessingPhase>
+    <instanceEnv>... X |-> FEntry:K ...</instanceEnv>
 
-rule [instanceElabEnvNewField]:
-    instanceElabEnv(Class:ClassType, ('LocalVarDec(T:Type,, 'ListWrap('VarDec(X:Id,, _))) => .List{K}),,_, (. => X |-> fieldEntry(Class,X,T)) Env:Map)
-when
-    notBool (X in keys(Env))
-
-rule [instanceElabEnvHiddenField]:
-    instanceElabEnv(_, ('LocalVarDec(_,, 'ListWrap('VarDec(X:Id,, _))) => .List{K}),,_, X |-> _ _:Map)
-
-rule [instanceElabEnvNextClass]:
-    <k> instanceElabEnv(CT:ClassType, .List{K}, Env:Map) => instanceElabEnv(BaseClass, FDecs, Env) ...</k>
-    <class>
-      <classType> CT </classType>
-      <extends> BaseClass:ClassType </extends>
-      ...
-    </class>
-    <class>
-      <classType> BaseClass </classType>
-      <fieldDecs> 'ListWrap(FDecs:List{K}) </fieldDecs>
-      ...
-    </class>
-
-rule [instanceElabEnvEnd]:
-    <k> instanceElabEnv(CT:ClassType, .List{K}, Env:Map) => classEnv(Env) ...</k>
+rule [elabLookupFoundStatic]:
+    <k> elabLookup(X, CT:ClassType) => fieldEntry(CT,X,T, staticCT) ...</k>
     <classType> CT </classType>
-    <extends> noClass </extends>
-
-//Computes a classEnv() - environment of all static fields of the given class
-syntax K ::= "staticElabEnv" "(" ClassType ")"
-           | "staticElabEnv" "("                //The working form
-                                  ClassType "," //The classes remaining to search, noClass if none
-                                  Map ","       //Content of <staticEnv> to be processed: Map[Id -> Loc]
-                                  Map           //Collected fields so far
-                                ")"
-
-rule [staticElabEnvStart]:
-    <k> staticElabEnv(CT:ClassType) => staticElabEnv(CT, CuEnv, .Map) ...</k>
-    <classType> CT </classType>
-    <staticEnv> CuEnv:Map </staticEnv>
-    <preprocessingPhase> MembersProcessedCPP </preprocessingPhase>
-
-rule [staticElabEnvNewField]:
-    <k> staticElabEnv(Class:ClassType, (X:Id |-> L:Int => .) _, (. => X |-> fieldEntry(Class,X,T)) Env:Map) ...</k>
+    <instanceEnv> InstanceEnv:Map </instanceEnv>
+    <staticEnv>... X |-> L:Int ...</staticEnv>
     <store>... L |-> uninitialized(_,T:Type)  ...</store>
 when
-    notBool (X in keys(Env))
+    notBool (X in keys(InstanceEnv))
 
-rule [staticElabEnvHiddenField]:
-    staticElabEnv(_, (X:Id |-> _ => .) _, X |-> _ _:Map)
-
-rule [staticElabEnvNextClass]:
-    <k> staticElabEnv(CT:ClassType, .Map, Env:Map) => staticElabEnv(BaseClass, CuEnv, Env) ...</k>
-    <class>
-      <classType> CT </classType>
-      <extends> BaseClass:ClassType </extends>
-      ...
-    </class>
-    <class>
-      <classType> BaseClass </classType>
-      <staticEnv> CuEnv:Map </staticEnv>
-      ...
-    </class>
-
-rule [staticElabEnvEnd]:
-    <k> staticElabEnv(CT:ClassType, .Map, Env:Map) => classEnv(Env) ...</k>
+rule [elabLookupNextClass]:
+    <k> elabLookup(X:Id, CT:ClassType) => elabLookup(X, BaseClass) ...</k>
     <classType> CT </classType>
-    <extends> noClass </extends>
+    <extends> BaseClass:ClassType </extends>
+    <instanceEnv> InstanceEnv:Map </instanceEnv>
+    <staticEnv> StaticEnv:Map </staticEnv>
+when
+    notBool ((X in keys(InstanceEnv)) orBool (X in keys(StaticEnv)))
+
+rule [elabLookupNotFound]:
+    elabLookup(X:Id, noClass) => noValue
 
 rule [elabThisInstanceCT]:
     <k> elab('This(.List{K})) => 'This(.List{K}) ::: Class ...</k>
@@ -451,42 +404,30 @@ rule [elabThisStaticCT]:
 
 rule [elabFieldQualRef]:
     elab('Field(Qual:K ::: T:Type,, X:Id))
-    => elabTypedExp(lookupFieldImpl(Qual, noClass, X), elabLookup(X, instanceElabEnv(T)))
+    => elabTypedExp(lookupFieldImpl(Qual, noClass, X), elabLookup(X, T))
 
 rule [elabFieldQualClass]:
     elab('Field(Class:ClassType,, X:Id))
-    => elabTypedExp(lookupStaticFieldImpl(noClass,X), elabLookup(X, staticElabEnv(Class)))
+    => elabTypedExp(lookupStaticFieldImpl(noClass,X), elabLookup(X, Class))
 
 rule [elabSuperField]:
     <k>
       elab('SuperField(X:Id))
-      => elabTypedExp(lookupFieldImpl('This(.List{K}), noClass, X), elabLookup(X, instanceElabEnv(BaseClass)))
+      => elabTypedExp(lookupFieldImpl('This(.List{K}), noClass, X), elabLookup(X, BaseClass))
       ...
     </k>
     <cuClass> Class:ClassType </cuClass>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
-//computes the type of the given Id in the given Env:Map, or noValue if the Id is not in the Map.
-syntax K ::= "elabLookup" "(" Id  //The Id to search
-                          "," K   //computes into classEnv(Map) - the map where Id is searched
-                          ")" [strict(2)]
-
-rule [elabLookupOk]:
-    elabLookup(X:Id, classEnv(X |-> FieldEntry:K _)) => FieldEntry
-
-rule [elabLookupNoValue]:
-    elabLookup(X:Id, classEnv(Env:Map)) => noValue
-when
-    notBool (X in keys(Env))
-
 //Computed the TypedExp expression for a given expression and its type
 syntax K ::= "elabTypedExp" "(" K //The original expression to be typed
-                            "," K //elabLookup(...), computes into fieldEntry or noValue
+                            "," K //elabLookup(...), computes into fieldEntry(...) or noValue
                             ")"  [strict(2)]
 
-rule elabTypedExp(lookupFieldImpl(Exp:K,_,X:Id), fieldEntry(Class:ClassType,_,T:Type)) => lookupFieldImpl(Exp,Class,X) ::: T
-rule elabTypedExp(lookupStaticFieldImpl(_,X:Id), fieldEntry(Class:ClassType,_,T:Type)) => lookupStaticFieldImpl(Class,X) ::: T
+rule elabTypedExp(lookupFieldImpl(Exp:K,_,X:Id), fieldEntry(Class:ClassType,_,T:Type, instanceCT)) => lookupFieldImpl(Exp,Class,X) ::: T
+rule elabTypedExp(lookupFieldImpl(Exp:K,_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT)) => lookupStaticFieldImpl(Class,X) ::: T
+rule elabTypedExp(lookupStaticFieldImpl(_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT)) => lookupStaticFieldImpl(Class,X) ::: T
 rule elabTypedExp(_, noValue) => noValue
 
 //todo This is simplified semantics, no packages yet.
@@ -517,5 +458,12 @@ context elabInit('Catch(HOLE,, _))
 rule [elabInitCatch]:
     <k> elabInit('Catch(Param:KResult,, Body:K)) => elabParams(Param) ~> elab('Catch(Param,, Body)) ...</k>
     <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
+
+
+/*@ \section{Elaboration of types} */
+
+rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK [structural, anywhere]
+rule 'InterfaceType(TypeK:K,, _) => TypeK        [structural, anywhere]
+rule 'ClassType(TypeK:K,, _) => TypeK            [structural, anywhere]
 
 endmodule

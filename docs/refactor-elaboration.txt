@@ -55,6 +55,9 @@ the content of methods, static and instance initializers.
 2.3.5.ok. Elaborate super.<field> expressions - semantics doubled at runtime and compile time.
 
 2.4.ok. Use elaboration-phase data for field lookup at runtime.
+2.4.1.ok. Static and instance field lookup in classes.
+2.4.2.ok. Resolve static fields with instance qualifier.
+2.4.3.ok. Resolve fields qualified with a reference to interface.
 
 2.5. Elaborate classes in the presence of packages.
 2.6. Elaborate names in the presence of inner classes.

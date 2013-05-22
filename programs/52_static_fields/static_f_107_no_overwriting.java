@@ -1,6 +1,6 @@
 /*
 Fields do not participate in polymorphism. (neither static nor instance)
-  B < A, four hidding scenarios:
+  B < A, four hiding scenarios:
   static - static, static - instance, instance - static, instance - instance.
   Call all four through (A)B ref. Fields from A should be called.
 */

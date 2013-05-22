@@ -389,6 +389,7 @@ rule [FieldDecToLocalVarDec]:
     <fieldDecs>
       'ListWrap(_,, ( .List{K} => 'LocalVarDec(T,, 'ListWrap('VarDec(X))) ))
     </fieldDecs>
+    <instanceEnv> Env:Map => Env[fieldEntry(Class,X,T, instanceCT)/X] </instanceEnv>
 when
     getContextType(Modifiers) ==K instanceCT
         [structural]

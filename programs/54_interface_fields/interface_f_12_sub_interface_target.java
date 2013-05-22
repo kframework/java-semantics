@@ -1,5 +1,5 @@
 /*
-Access to an interface field. Through a subinterface.
+Access to an interface field. Through a sub-interface.
     Possible expressions: Interface qualifier, interface ref qualifier.
 */
 

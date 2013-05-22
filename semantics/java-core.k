@@ -60,6 +60,11 @@ configuration
 
           <methods color="purple"> .Map </methods>
           <br/>
+          //The map of instance fields declared in this class, but not in superclasses.
+          //Map[Id -> fieldEntry(Class, X, T, ConType)] (declaring class, field name, field type)
+          //Used in elaboration phase
+          <instanceEnv> .Map </instanceEnv>
+
           <instanceInit> 'ListWrap(.List{K}) </instanceInit>
 
           //The map of static fields declared in this class and superinterfaces, but not in superclasses.
@@ -376,6 +381,7 @@ syntax KResult ::= "stEnv" "(" Map ")"  //A layer of the static environment
                   | "fieldEntry" "(" ClassType // target class
                                  "," Id        //X - field name
                                  "," Type      // Field type
+                                 "," ContextType // staticCT | instanceCT
                                  ")"
 
 //size of a KList
