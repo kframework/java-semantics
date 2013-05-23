@@ -5,27 +5,26 @@ module JAVA-PROCESS-TYPE-NAMES
 
 /*@ \subsection{First pass - processing top level names} */
 
-//[anywhere] is due to wrapping inside elab(...) in the phase ELABORATE-BLOCKS
 rule [PackageNameStart]:
-    'PackageName('ListWrap(Ks:List{K})) => packageNameImpl("", Ks:List{K})    [structural, anywhere]
+    'PackageName('ListWrap(Ks:List{K})) => packageNameImpl("", Ks:List{K})    [structural]
 
 //Aux construct for processing packages
 syntax K ::= "packageNameImpl" "(" String "," List{K} ")"
 
 rule [PackageNameFirstInnerDesugar]:
-    packageNameImpl(_:String, (X:Id => packageId(Id2String(X))),, Ks:List{K}) [structural, anywhere]
+    packageNameImpl(_:String, (X:Id => packageId(Id2String(X))),, Ks:List{K}) [structural]
 
 rule [PackageNameFirstPack]:
     packageNameImpl("", packageId(NextStr:String),, Ks:List{K})
-    => packageNameImpl(NextStr, Ks)                                           [structural, anywhere]
+    => packageNameImpl(NextStr, Ks)                                           [structural]
 
 rule [PackageNameNextPack]:
     packageNameImpl(Str:String, packageId(NextStr:String),, Ks:List{K})
     => packageNameImpl(Str +String "." +String NextStr, Ks)
-when Str =/=String ""                                                         [structural, anywhere]
+when Str =/=String ""                                                         [structural]
 
 rule [PackageNameEnd]:
-    packageNameImpl(Str:String, .List{K}) => packageId(Str)                   [structural, anywhere]
+    packageNameImpl(Str:String, .List{K}) => packageId(Str)                   [structural]
 
 rule [DefaultPackageDesugar]:
     'CompilationUnit(

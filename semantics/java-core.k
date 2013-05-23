@@ -110,6 +110,7 @@ configuration
 
       <dissolveEmptyK> true </dissolveEmptyK>
       <dissolveClasses> true </dissolveClasses>
+      <debug> .List </debug>
     </T>
 
 //@ \section{Identifiers}
