@@ -11,13 +11,11 @@ module JAVA-API-CORE
 // This module contains the minimal part of java API required to perform
 // console read/write operations.
 
-syntax KResult ::=  "rtSystemType"
-                  | "rtSystemOut"
+syntax KResult ::=  "rtSystemOut"
                   | "rtSystemOutPrint"
                   | "rtSystemOutPrintln"
                   | "rtSystemConsole"
                   | "rtSystemConsoleReadLine"
-                  | "rtIntegerType"
                   | "rtIntegerParseInt"
                   | "rtSystemIn"
                   | "rtScannerNextInt"
@@ -30,28 +28,24 @@ syntax KResult ::=  "rtSystemType"
 syntax RawVal ::= "rtSymbolicConsoleLine"
                 | "rtScanner"
 
-syntax RefType ::= "rtScannerType"
+syntax RefType ::= "rtSystemType"
+                 | "rtIntegerType"
+                 | "rtScannerType"
 
 rule [NameSystem]:
     'TypeName(X:Id) => rtSystemType
 when
-    Id2String(X) ==String "System"
-
-rule [elabNameSystem]:
-    elab('TypeName(X:Id)) => rtSystemType
-when
-    Id2String(X) ==String "System"
+    Id2String(X) ==String "System"    [structural, anywhere]
 
 rule [NameInteger]:
     'TypeName(X:Id) => rtIntegerType
 when
-    Id2String(X) ==String "Integer"
+    Id2String(X) ==String "Integer"   [structural, anywhere]
 
 rule [rtScanner]:
     'TypeName(X:Id) => rtScannerType
 when
-    Id2String(X) ==String "Scanner"
-        [structural]
+    Id2String(X) ==String "Scanner"   [structural, anywhere]
 
 rule [NameSystemConsole]:
     methodNameImpl(rtSystemType, X:Id, _) => rtSystemConsole

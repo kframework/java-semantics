@@ -100,65 +100,6 @@ rule [TypeNameInProcessClassesPhaseFail]:
 when ((Phase ==K ProcessClassesPhase) orBool (Phase ==K ElaborateBlocksPhase))
      andBool notBool (X in keys(Imp))
 
-rule [TypeNameInExecutionPhase]:
-    <k> 'TypeName(X:Id) => Class ...</k>
-    <computationPhase> ExecutionPhase </computationPhase>
-    <crntClass> CrntClass:ClassType </crntClass>
-    <classType> CrntClass </classType>
-    <imports>... X |-> Class:ClassType ...</imports>
-
-rule [TypeNameInExecutionPhaseFail]:
-    <k> 'TypeName(X:Id) => noValue ...</k>
-    <computationPhase> ExecutionPhase </computationPhase>
-    <crntClass> CrntClass:ClassType </crntClass>
-    <classType> CrntClass </classType>
-    <imports> Imp:Map </imports>
-when notBool X in keys(Imp)
-
-//resolving fully qualified type names
-// A name pack.p2.A is represented as:
-// 'TypeName('PackageOrTypeName('PackageOrTypeName(pack),,p2),,A)
-
-context 'TypeName(HOLE,, _:K)
-context 'PackageOrTypeName(HOLE,, _:K)
-
-rule 'PackageOrTypeName(KRs:List{K},, K:K) => 'TypeName(KRs,,K) ?? 'PackageName('ListWrap(KRs,,K))
-when isKResult(KRs)
-
-//When we search for a class qualified by another class, we simply convert
-//the qualifier into a package.
-rule [TypeNameQualifiedClass]:
-    'TypeName(ClassQ:ClassType,, X:Id) => 'TypeName(toPackage(ClassQ),, X)
-
-rule [TypeNameQualifiedPackage]:
-    'TypeName(Pack:PackageId,, X:Id) => typeNameQualifiedImpl(getNamesMap(Pack), X)
-
-//Retrieves the ClassType for the given names map and simple class name
-syntax K ::= "typeNameQualifiedImpl" "(" K "," Id ")"                     [strict(1)]
-
-rule [typeNameQualifiedImplFound]:
-    typeNameQualifiedImpl(mapWrap(X |-> Class:ClassType _), X:Id) => Class
-
-rule [typeNameQualifiedImplNotFound]:
-    typeNameQualifiedImpl(mapWrap(NamesMap:Map), X:Id) => noValue
-when notBool X in keys(NamesMap)
-//end of section
-
-//limitations:
-// - All string types should be referred by simple name "String".
-//    Fully qualified name java.lang.String is not allowed.
-// - No other classes with name "String" are possiblle.
-rule [rtString]:
-    'TypeName(X:Id) => rtString
-when
-    Id2String(X) ==String "String"
-        [structural]
-
-rule [elabNameString]:
-    elab('TypeName(X:Id)) => rtString
-when
-    Id2String(X) ==String "String"
-
 //@ \subsection{Auxiliary operations}
 
 //@ \texttt{typeOf and toString}

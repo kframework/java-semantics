@@ -1,5 +1,6 @@
 require "java-core.k"
 require "java-var-lookup.k"
+require "java-process-type-names.k"
 require "java-process-classes.k"
 
 /* Elaborate the composition of code blocks of a class - the last step of preprocessing.
@@ -24,6 +25,7 @@ static initializers of a class and perform the following transformations:
 module JAVA-ELABORATE-BLOCKS
     imports JAVA-CORE
     imports JAVA-VAR-LOOKUP //for localVar
+    imports JAVA-PROCESS-TYPE-NAMES //for toPackage()
     imports JAVA-PROCESS-CLASSES //for paramImpl
 
 syntax K ::= "elaborateBlocks" "(" K ")" [strict] //Elaborate the blocks inside all classes.
@@ -168,10 +170,21 @@ rule [elabCoolDefault]:
 when
     isElab(ElabK)
 
+//todo check why this rule leads to a construct like
+//elab ( 'TypeName(elabRes ( (packageId ( "pack" )) ),, A))
+//if packageId is KResult, thus is ElabIndependent, thus cannot be matched by this rule
+//and this rule is the only way for a term to get wrapped into elabRes().
 rule [elabDisposeStartDefault]:
     elab(KL:KLabel(ElabResL:List{K})) => elabDispose(KL(ElabResL))
 when
-    isElab(ElabResL) andBool notBool customElabDispose(KL(ElabResL))
+            isElab(ElabResL)
+    andBool (notBool customElabDispose(KL(ElabResL)))
+    andBool (notBool (isElabIndependent(KL(ElabResL)) ==K true)) // ==k true is redundant, still doesn't work
+
+rule [elabIndependentUnwrap]:
+    elab(K:K) => K
+when
+    isElabIndependent(K)        [structural]
 
 rule [elabDisposeProcess]:
     elabDispose(KL:KLabel(_,, (K:K => unElab(K)),, _))
@@ -245,7 +258,7 @@ rule customElab(KL:KLabel(KLArgs:List{K})) =>
 //Computes true if the given term needs special rules to startelab dispose phase, false otherwise.
 syntax K ::= "customElabDispose" "(" K ")"       [function]
 
-rule customElabDispose(KL:KLabel(_)) =>
+rule customElabDispose(KL:KLabel(Ks:List{K})) =>
            (KL ==KLabel 'Block)
     orBool (KL ==KLabel 'For)
     orBool (KL ==KLabel 'Catch)
@@ -256,7 +269,9 @@ rule customElabDispose(KL:KLabel(_)) =>
     orBool (KL ==KLabel 'Field)
     orBool (KL ==KLabel 'SuperField)
     orBool (KL ==KLabel 'TypeName)
+    orBool (KL ==KLabel 'PackageOrTypeName)
     orBool (KL ==KLabel 'castImpl`(_`,_`))
+    orBool (isType(KL(Ks)) ==K true)
 
 //Elaboration of blocks
 
@@ -430,13 +445,6 @@ rule elabTypedExp(lookupFieldImpl(Exp:K,_,X:Id), fieldEntry(Class:ClassType,_,T:
 rule elabTypedExp(lookupStaticFieldImpl(_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT)) => lookupStaticFieldImpl(Class,X) ::: T
 rule elabTypedExp(_, noValue) => noValue
 
-//todo This is simplified semantics, no packages yet.
-rule [elabTypeName]:
-    <k> elab('TypeName(X:Id)) => Class ...</k>
-    <typeNamesMap>... _ |-> mapWrap(X |-> Class:ClassType _) ...</typeNamesMap>
-when
-    Id2String(X) =/=String "System"
-
 //elab cast
 
 //Required so that we will always have a type as first argument
@@ -465,5 +473,63 @@ rule [elabInitCatch]:
 rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK [structural, anywhere]
 rule 'InterfaceType(TypeK:K,, _) => TypeK        [structural, anywhere]
 rule 'ClassType(TypeK:K,, _) => TypeK            [structural, anywhere]
+
+//resolving fully qualified type names
+// A name pack.p2.A is represented as:
+// 'TypeName('PackageOrTypeName('PackageOrTypeName(pack),,p2),,A)
+
+context elab('TypeName(HOLE,, _:K))
+context elab('PackageOrTypeName(HOLE,, _:K))
+
+rule elab('PackageOrTypeName(KRs:List{K},, K:K)) => elab('TypeName(KRs,,K)) ?? elab('PackageName('ListWrap(KRs,,K)))
+when isKResult(KRs)
+
+//When we search for a class qualified by another class, we simply convert
+//the qualifier into a package.
+rule [TypeNameQualifiedClass]:
+    elab('TypeName(ClassQ:ClassType,, X:Id) => 'TypeName(toPackage(ClassQ),, X))
+
+rule [TypeNameQualifiedPackage]:
+    elab('TypeName(Pack:PackageId,, X:Id) => typeNameQualifiedImpl(getNamesMap(Pack), X))
+
+//Retrieves the ClassType for the given names map and simple class name
+syntax K ::= "typeNameQualifiedImpl" "(" K "," Id ")"
+
+context elab(typeNameQualifiedImpl(HOLE, _))
+
+rule [typeNameQualifiedImplFound]:
+    elab(typeNameQualifiedImpl(mapWrap(X |-> Class:ClassType _), X:Id)) => Class
+
+rule [typeNameQualifiedImplNotFound]:
+    elab(typeNameQualifiedImpl(mapWrap(NamesMap:Map), X:Id)) => noValue
+when notBool X in keys(NamesMap)
+//end of section
+
+//limitations:
+// - All string types should be referred by simple name "String".
+//    Fully qualified name java.lang.String is not allowed.
+// - No other classes with name "String" are possiblle.
+rule [TypeNameString]:
+    'TypeName(X:Id) => rtString
+when
+    Id2String(X) ==String "String"    [structural, anywhere]
+
+rule [TypeNameInExecutionPhase]:
+    <k> elab('TypeName(X:Id)) => Class ...</k>
+    <computationPhase> ElaborateBlocksPhase </computationPhase>
+    <cuClass> CrntClass:ClassType </cuClass>
+    <classType> CrntClass </classType>
+    <imports>... X |-> Class:ClassType ...</imports>
+
+rule [TypeNameInExecutionPhaseFail]:
+    <k> elab('TypeName(X:Id)) => noValue ...</k>
+    <computationPhase> ElaborateBlocksPhase </computationPhase>
+    <cuClass> CrntClass:ClassType </cuClass>
+    <classType> CrntClass </classType>
+    <imports> Imp:Map </imports>
+when notBool  ((X in keys(Imp))
+              orBool (Id2String(X) ==String "System")
+              orBool (Id2String(X) ==String "Integer")
+              orBool (Id2String(X) ==String "Scanner"))
 
 endmodule
