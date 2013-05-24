@@ -189,7 +189,7 @@ when
 rule [elabIndependentUnwrap]:
     elab(K:K) => K
 when
-    isElabIndependent(K)        [structural]
+    isElabIndependent(K) orBool isElabNaked(K)       [structural]
 
 rule [elabDisposeProcess]:
     elabDispose(KL:KLabel(_,, (K:K => unElab(K)),, _))
@@ -261,6 +261,8 @@ rule isElabNaked(KL:KLabel(_)) =>
            KL ==KLabel 'TypeName
     orBool KL ==KLabel 'PackageOrTypeName
     orBool KL ==KLabel 'PackageName
+    orBool (KL ==KLabel 'Field)
+    orBool (KL ==KLabel 'SuperField)
 
 //Computes true if the given term needs special rules for elaboration, false otherwise
 syntax K ::= "customElab" "(" K ")"             [function]
@@ -281,8 +283,6 @@ rule customElabDispose(KL:KLabel(Ks:List{K})) =>
     orBool (KL ==KLabel 'ExprName)
     orBool (KL ==KLabel 'localVar`(_`))
     orBool (KL ==KLabel 'This)
-    orBool (KL ==KLabel 'Field)
-    orBool (KL ==KLabel 'SuperField)
     orBool (KL ==KLabel 'castImpl`(_`,_`))
     orBool (isType(KL(Ks)) ==K true)            [anywhere]
 
@@ -350,12 +350,12 @@ when
     isElab(Ks)
 
 rule [elabExprNameSimple]:
-    elab('ExprName(ResK:K)) => elab(localVar(ResK)) ?? elab('Field(ResK))
+    elab('ExprName(ResK:K)) => elab(localVar(ResK)) ?? 'Field(ResK)
 when
     isElab(ResK)
 
 rule [elabExprNameQualified]:
-    elab('ExprName(K1:K,,K2:K)) => elab('Field(K1,,K2))
+    elab('ExprName(K1:K,,K2:K)) => 'Field(K1,,K2)
 when
     isElab(K1) andBool isElab(K2)
 
@@ -368,23 +368,32 @@ rule [elabLocalVarNoValue]:
   <elabEnv> ListItem(stEnv(StEnv:Map)) ...</elabEnv>
 when notBool (X in keys(StEnv))
 
-//todo add outerStaticField option
 rule [elabFieldUnqualified]:
     <k>
-      elab('Field(Arg:K))
-      => elab('Field( 'This(.List{K}),, Arg )) ?? elab('Field( Class,, Arg))
-         //?? elab(outerStaticField(Class, Arg))
+      'Field(Arg:K)
+      => 'Field( 'This(.List{K}),, Arg ) ?? 'Field( Class,, Arg)
+         ?? outerStaticField(Class, Arg)
       ...
     </k>
     <cuClass> Class:ClassType </cuClass>
 when
     isElab(Arg)
 
+rule [FieldQualifierHeat]:
+    (. => elabInit(Qual)) ~> 'Field((Qual:K => CHOLE),, X:Id)
+when
+    notBool isElab(Qual) andBool notBool customElabInit(Qual) andBool notBool isElabNaked(Qual)
+
+rule [FieldQualifierCool]:
+    (ElabK => .) ~> 'Field((CHOLE => ElabK),, _:Id)
+when
+    isElab(ElabK)
+
 rule [FieldOfPackage]:
-    elab('Field( _:PackageId,, _:K )) => noValue  [structural]
+    'Field( _:PackageId,, _:K ) => noValue  [structural]
 
 rule [FieldOfNoValue]:
-    elab('Field( noValue,, _:K )) => noValue      [structural]
+    'Field( noValue,, _:K ) => noValue      [structural]
 
 //Computationof instance and static environment of a class
 //e.g. set of fields
@@ -431,11 +440,11 @@ rule [elabThisStaticCT]:
     <elabContextType> staticCT </elabContextType>
 
 rule [elabFieldQualRef]:
-    elab('Field(Qual:K ::: T:Type,, X:Id))
+    'Field(Qual:K ::: T:Type,, X:Id)
     => elabTypedExp(lookupFieldImpl(Qual, noClass, X), elabLookup(X, T))
 
 rule [elabFieldQualClass]:
-    elab('Field(Class:ClassType,, X:Id))
+    'Field(Class:ClassType,, X:Id)
     => elabTypedExp(lookupStaticFieldImpl(noClass,X), elabLookup(X, Class))
 
 rule [elabSuperField]:

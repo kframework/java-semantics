@@ -49,19 +49,6 @@ rule [localVarNoValue]:
     <env> Env:Map </env>
 when notBool X in keys(Env)
 
-//todo remove after elabration phase will work
-rule [FieldUnqualified]:
-    <k>
-      'Field(X:Id)
-      => 'Field( 'This(.List{K}),, X ) ?? 'Field( Class,, X ) ?? outerStaticField(Class, X)
-      ...
-    </k>
-    <crntClass> Class:ClassType </crntClass>
-
-//todo reconsider after elabration phase will work
-//resolving the qualifier of a qualified field access: it is either an object or a class reference
-context 'Field(HOLE,, _:K)
-
 /*@ \subsection{Self reference}
 Like in untyped KOOL. */
 
@@ -77,14 +64,6 @@ rule [This]:
       <crntClass> Class:ClassType </crntClass>
       <location> OL:Int </location>
     </crntObj>
-
-//todo remove after elabration phase will work
-rule [ThisNoValue]:
-    <k>
-      'This(.List{K}) => noValue
-      ...
-    </k>
-    <location> noValue </location>
 
 /*@ \subsection{Object member access} */
 
@@ -133,58 +112,6 @@ rule [lvalue-lookupStaticFieldImpl]:
     )
         [structural]
 
-//todo bug: this rule and the next one are not mutually exclusive. Expose the problem in a test.
-//Expressions of type o.x, where o is a reference of type class
-rule [FieldClassRefQualified]:
-    <k>
-      'Field(
-        objectClosure(_,
-          <envStack>... ListItem((Class:ClassType, EnvC:BagItem)) EStack:List </envStack>
-        ) :: Class,, X:Id
-      )
-      => lookupField(<envStack>ListItem((Class, EnvC)) EStack</envStack>, X)
-      ...
-    </k>
-        [structural]
-
-//Expressions of type o.x, where o is a reference of type interface
-rule [FieldInterfaceRefQualified]:
-    <k>
-      'Field(objectClosure(_, _) :: Intf:ClassType,, X:Id)
-      => 'Field(Intf,, X)
-      ...
-    </k>
-    <classType> Intf </classType>
-    <metaType> interfaceMetaT </metaType>
-        [structural]
-
-//todo test similar case for lvalue('Field) ?
-//moved ot elaborate-blocks
-//rule [FieldOfPackage]:
-//    'Field( _:PackageId,, _:Id ) => noValue  [structural, anywhere]
-
-//rule [FieldOfNoValue]:
-//    'Field( noValue,, _:Id ) => noValue      [structural, anywhere]
-
-rule [FieldOfNull]:
-    <k>
-      'Field(null::_ ,, X:Id)
-      =>  'Throw('NewInstance(
-            'None(.List{K}),,
-            class String2Id("java.lang.NullPointerException"),,
-            'ListWrap( null :: nullType ),,
-            'None(.List{K})
-          ))
-      ...
-    </k>
-        [structural]
-
-rule [SuperField]:
-    <k>'SuperField(X:Id) => lookupField(<envStack>EStack</envStack>, X) ...</k>
-    <crntClass> Class:ClassType </crntClass>
-    <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>
-      [structural]
-
 /*@ \subsection{Lookup member}
 Like in untyped KOOL. */
 
@@ -218,10 +145,6 @@ rule lookupField(<envStack> . </envStack>, _) => noValue
 syntax K ::= "lookupStaticField" "(" ClassType // Class - ClassType to search, or noClass
                                  "," Id        // X - field name
                                  ")"
-
-//todo reconsider after elabration phase will work
-rule [FieldStaticField]:
-    'Field(Class:ClassType,, X:Id) => lookupStaticField(Class, X)
 
 rule [lookupStaticField]:
     <k>
@@ -261,48 +184,6 @@ rule [lvalueExprNameDiscard]:
     <k> lvalue(localVar(X:Id)) => noValue ...</k>
     <env> Env:Map </env>
 when notBool X in keys(Env)                   [structural]
-
-rule [lvalueExprNameMember]:
-    <k>
-      lvalue('Field(X:Id))
-      => lvalue('Field( 'This(.List{K}),, X )) ?? lvalue('Field( Class,, X ))
-         ?? lvalue(outerStaticField(Class, X ))
-      ...
-    </k>
-    <crntClass> Class:ClassType </crntClass>  [structural]
-
-//resolving the qualifier of a lvalue qualified expression: either an object or a class reference
-context lvalue('Field(HOLE,, _:Id) )
-
-rule [lvalueExprNameQualified]:
-    <k>
-      lvalue(
-        'Field(
-          objectClosure(_,
-            <envStack>... ListItem((Class:ClassType, EnvC:BagItem)) EStack:List </envStack>
-          ) :: Class,,
-          X:Id
-        )
-        => lookupField(
-            <envStack> ListItem((Class, EnvC)) EStack:List </envStack>,
-            X
-          )
-      )
-      ...
-    </k>
-        [structural]
-
-rule [lvalueSuperField]:
-    <k> lvalue('SuperField(X:Id) => lookupField(<envStack>EStack</envStack>, X)) ...</k>
-    <crntClass> Class:ClassType </crntClass>
-    <envStack>... ListItem((Class, EnvC:BagItem)) EStack:List </envStack>
-        [structural]
-
-rule [lvalueExprNameStaticField]:
-    lvalue('Field(Class:ClassType,, X:Id) => lookupStaticField(Class, X))
-
-rule [lvalueOfNoValue]:
-    lvalue(noValue) => noValue
 
 rule [lvalueLookupStaticField]:
     <k>

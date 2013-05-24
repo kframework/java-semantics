@@ -84,11 +84,6 @@ rule [NameSystemOut]:
 when
     Id2String(X) ==String "out"
 
-rule [elabNameSystemOut]:
-    elab('Field(rtSystemType,, X:Id)) => rtSystemOut
-when
-    Id2String(X) ==String "out"
-
 rule [NameSystemOutPrint]:
     methodNameImpl(rtSystemOut, X:Id, _) => rtSystemOutPrint
 when
