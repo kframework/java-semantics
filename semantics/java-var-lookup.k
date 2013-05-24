@@ -15,27 +15,6 @@ module JAVA-VAR-LOOKUP
 
 //@ \subsection{Names}
 
-//performance optimization - the qualifier of an AmbName should be always resolved first,
-//no matter how are we going to interpret the AmbName,
-//so why not resolving it now?
-//todo remove after elabration phase will work
-context 'AmbName(HOLE,, _:K)
-
-//this rule covers both unqualified and qualified AmbName
-//todo remove after elabration phase will work
-rule [AmbName]:
-    'AmbName(Ks:List{K},, K:K)
-    => 'ExprName(Ks,,K) ?? 'TypeName(Ks,,K) ?? 'PackageName('ListWrap(Ks,,K))
-when isKResult(Ks)                          [structural]
-
-//todo remove after elabration phase will work
-rule [ExprNameSimple]:
-  'ExprName(X) => localVar(X) ?? 'Field(X)
-
-//todo remove after elabration phase will work
-rule [ExprNameQualified]:
-    'ExprName(K1:K,,K2:K) => 'Field(K1,,K2)
-
 //lookup the given local var by name. Return noValue if none found.
 syntax K ::= "localVar" "(" Id //the var name
                         ")"
@@ -44,10 +23,9 @@ rule [localVarOK]:
     <k> localVar(X:Id) => typedLookup(L) ...</k>
     <env>... X |-> L ...</env>
 
-rule [localVarNoValue]:
-    <k> localVar(X:Id) => noValue ...</k>
-    <env> Env:Map </env>
-when notBool X in keys(Env)
+rule [lvalueExprNameLocal]:
+    <k> lvalue(localVar(X:Id)) => typedLoc(L) ...</k>
+    <env>... X |-> L:Int ...</env>            [structural]
 
 /*@ \subsection{Self reference}
 Like in untyped KOOL. */
@@ -71,141 +49,53 @@ rule [This]:
 
 //outside lvalue we have strictness rules
 
-context lvalue(lookupFieldImpl(HOLE,_,_))
+context lookupField(HOLE,_,_)
+context lvalue(lookupField(HOLE,_,_))
 
-rule [lookupFieldImpl]:
-    lookupFieldImpl(
+rule [lookupField]:
+    lookupField(
       objectClosure(_,
-          <envStack>... ListItem((TargetClass, EnvC:BagItem)) ...</envStack>
+          <envStack>... ListItem((TargetClass, <env>... X |-> L:Int ...</env>)) ...</envStack>
         ) ::_,
       TargetClass:ClassType,
       X:Id
-    ) => lookupField(<envStack>ListItem((TargetClass, EnvC)) </envStack>, X)
+    ) => typedLookup(L)
+        [anywhere]
+
+rule [lookupFieldOfNull]:
+    lookupField(null::_, _, _)
+    =>  'Throw('NewInstance(
+          'None(.List{K}),,
+          class String2Id("java.lang.NullPointerException"),,
+          'ListWrap( null :: nullType ),,
+          'None(.List{K})
+        ))
         [structural, anywhere]
 
-rule [lookupFieldImplOfNull]:
-    <k>
-      lookupFieldImpl(null::_, _, _)
-      =>  'Throw('NewInstance(
-            'None(.List{K}),,
-            class String2Id("java.lang.NullPointerException"),,
-            'ListWrap( null :: nullType ),,
-            'None(.List{K})
-          ))
-      ...
-    </k>
-        [structural, anywhere]
-
-rule [lookupStaticFieldImpl]:
-    lookupStaticFieldImpl(
-      TargetClass:ClassType,
-      X:Id
-    ) => lookupStaticField(TargetClass, X)
-        [structural]
-
-rule [lvalue-lookupStaticFieldImpl]:
-    lvalue(
-      lookupStaticFieldImpl(
-        TargetClass:ClassType,
-        X:Id
-      ) => lookupStaticField(TargetClass, X)
-    )
-        [structural]
-
-/*@ \subsection{Lookup member}
-Like in untyped KOOL. */
-
-//lookup field result is always typed
-syntax K ::= "lookupField" "(" BagItem "," Id ")" [function]
-
-rule lookupField(
-    <envStack>
-      ListItem((_, <env>... X |-> L:Int ...</env>))
-      ...
-    </envStack>,
-    X:Id
-  ) => typedLookup(L)
-        [anywhere]
-
-rule lookupField(
-    <envStack>
-      ListItem((_, <env> Env:Map </env>)) => .
-      ...
-    </envStack>,
-    X:Id
-  )
-when notBool(X in keys(Env))
-        [anywhere]
-
-rule lookupField(<envStack> . </envStack>, _) => noValue
-        [anywhere]
-
-//@Section{lookup static field}
-
-syntax K ::= "lookupStaticField" "(" ClassType // Class - ClassType to search, or noClass
-                                 "," Id        // X - field name
-                                 ")"
-
+//Cannot put mark this rule with [anywhwre] to avoid duplicate, because it will be matched in ElaborateBlocks phase.
 rule [lookupStaticField]:
     <k>
-      lookupStaticField(Class:ClassType, X:Id) => typedLookup(L)
+      lookupStaticField(
+        TargetClass:ClassType,
+        X:Id
+      ) => typedLookup(L)
       ...
     </k>
-    <classType> Class </classType>
+    <classType> TargetClass </classType>
     <staticEnv>... X |-> L ...</staticEnv>
 
-rule [lookupStaticFieldContinue]:
+rule [lvalue-lookupStaticField]:
     <k>
-      lookupStaticField((Class:ClassType => BaseClass), X:Id)
+      lvalue(
+        lookupStaticField(
+          TargetClass:ClassType,
+          X:Id
+        ) => typedLookup(L)
+      )
       ...
     </k>
-    <classType> Class </classType>
-    <extends> BaseClass:ClassType </extends>
-    <staticEnv> Env:Map </staticEnv>
-when
-    notBool X in keys(Env)
-
-rule [lookupStaticFieldEmpty]:
-    lookupStaticField(noClass, _) => noValue
-
-//@ \texttt{lvalue}
-
-rule [lvalueExprNameSimple]:
-    lvalue('ExprName(X:Id)) => lvalue(localVar(X)) ?? lvalue('Field(X))
-
-rule [lvalueExprNameQualified]:
-    lvalue('ExprName(K1:K,,K2:K)) => lvalue('Field(K1,,K2))
-
-rule [lvalueExprNameLocal]:
-    <k> lvalue(localVar(X:Id)) => typedLoc(L) ...</k>
-    <env>... X |-> L:Int ...</env>            [structural]
-
-rule [lvalueExprNameDiscard]:
-    <k> lvalue(localVar(X:Id)) => noValue ...</k>
-    <env> Env:Map </env>
-when notBool X in keys(Env)                   [structural]
-
-rule [lvalueLookupStaticField]:
-    <k>
-      lvalue(lookupStaticField(Class:ClassType, X:Id)) => lvalue(typedLookup(L))
-      ...
-    </k>
-    <classType> Class </classType>
+    <classType> TargetClass </classType>
     <staticEnv>... X |-> L ...</staticEnv>
-
-rule [lvalueLookupStaticFieldContinue]:
-    <k>
-      lvalue(lookupStaticField((Class:ClassType => BaseClass), X:Id))
-      ...
-    </k>
-    <classType> Class </classType>
-    <extends> BaseClass:ClassType </extends>
-    <staticEnv> Env:Map </staticEnv>
-when
-    notBool X in keys(Env)
-
-rule [lvalueLookupStaticFieldEmpty]:
-    lvalue(lookupStaticField(noClass, _)) => noValue
 
 /*@ \subsection{lvalue and loc} */
 
@@ -249,35 +139,5 @@ rule [lookupLocation]:
       ...
     </k>
     <store>... L |-> V:RawVal :: T2:Type ...</store>
-
-//Search for fields with this name in the outer classes of the given class, if any.
-syntax K ::= "outerStaticField" "(" ClassType //The original class. We will search in
-                                              //its outer classes
-                                "," Id        //The field name
-                                ")"
-
-rule [outerStaticField]:
-    <k>
-      outerStaticField(Class:ClassType, X:Id)
-      => lookupStaticField(EnclosingClass, X) ?? outerStaticField(EnclosingClass, X)
-      ...
-    </k>
-    <classType> Class </classType>
-    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
-
-rule [outerStaticFieldDiscard]:
-    outerStaticField(noClass, _) => noValue
-
-rule [lvalueOuterStaticField]:
-    <k>
-      lvalue(outerStaticField(Class:ClassType, X:Id))
-      => lvalue(lookupStaticField(EnclosingClass, X)) ?? lvalue(outerStaticField(EnclosingClass, X))
-      ...
-    </k>
-    <classType> Class </classType>
-    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
-
-rule [lvalueOuterStaticFieldDiscard]:
-    lvalue(outerStaticField(noClass, _)) => noValue
 
 endmodule

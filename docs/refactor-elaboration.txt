@@ -60,7 +60,7 @@ the content of methods, static and instance initializers.
 2.4.3.ok. Resolve fields qualified with a reference to interface.
 
 2.5.ok. Elaborate classes in the presence of packages.
-2.6. Elaborate names in the presence of inner classes.
+2.6.ok. Elaborate names in the presence of inner classes.
 
 3. Implement method signature lookup during elaboration.
 4. Implement expression type checking and annotation during elaboration.

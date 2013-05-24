@@ -43,12 +43,12 @@ syntax K ::= "elaborateBlocks" "(" K ")" [strict] //Elaborate the blocks inside 
 syntax KResult ::= "elabRes" "(" K ")"  //Wraps the elaboration result
 
 //Elaboration result of a field access exp.
-syntax K ::= "lookupFieldImpl" "(" K    //Qualifier exp
+syntax K ::= "lookupField" "(" K    //Qualifier exp
                                "," Type //Precise type where the field is defined
                                "," Id   //X - field name
-                               ")"                          [strict(1)] //Execution phase
+                               ")"
 //Elaboration result of a static field access expression
-            | "lookupStaticFieldImpl" "(" Type //Precise type where the field is defined
+            | "lookupStaticField" "(" Type //Precise type where the field is defined
                                       "," Id   //X - field name
                                       ")"
 
@@ -158,12 +158,7 @@ rule [elabParamsEnd]:
 rule [elabHeatDefault]:
     (. => elabInit(K)) ~> elab(KL:KLabel(ElabResL:List{K},, (K:K => CHOLE),, _))
 when
-    isElab(ElabResL) andBool notBool isElab(K) andBool notBool customElabInit(K) andBool notBool isElabNaked(K)
-
-rule [elabHeatNaked]:
-    (. => K) ~> elab(KL:KLabel(ElabResL:List{K},, (K:K => CHOLE),, _))
-when
-    isElab(ElabResL) andBool isElabNaked(K)
+    isElab(ElabResL) andBool notBool isElab(K) andBool notBool customElabInit(K)
 
 rule [elabInitDefault]:
     elabInit(K) => elab(K)
@@ -172,6 +167,11 @@ when
 
 rule [elabCoolDefault]:
     (ElabK => .) ~> elab(_:KLabel(_,, (CHOLE => ElabK),, _))
+when
+    isElab(ElabK)
+
+rule [elabCoolNaked]:
+    (ElabK => .) ~> _:KLabel(_,, (CHOLE => ElabK),, _)
 when
     isElab(ElabK)
 
@@ -185,6 +185,7 @@ when
             isElab(ElabResL)
     andBool (notBool customElabDispose(KL(ElabResL)))
     andBool (notBool isElabIndependent(KL(ElabResL)))
+    andBool (notBool isElabNaked(KL(ElabResL)))
 
 rule [elabIndependentUnwrap]:
     elab(K:K) => K
@@ -258,11 +259,25 @@ syntax K ::= "isElabNaked" "(" K ")"         [function]
 
 rule isElabNaked(.K) => false
 rule isElabNaked(KL:KLabel(_)) =>
-           KL ==KLabel 'TypeName
-    orBool KL ==KLabel 'PackageOrTypeName
-    orBool KL ==KLabel 'PackageName
+           (KL ==KLabel 'TypeName)
+    orBool (KL ==KLabel 'PackageOrTypeName)
+    orBool (KL ==KLabel 'PackageName)
     orBool (KL ==KLabel 'Field)
     orBool (KL ==KLabel 'SuperField)
+    orBool (KL ==KLabel 'AmbName)
+    orBool (KL ==KLabel 'ExprName)
+
+rule [elabHeatQualOfNaked]:
+    (. => elabInit(K)) ~> KL:KLabel((K:K => CHOLE),, _:Id)
+when
+    (
+             (KL ==KLabel 'TypeName)
+      orBool (KL ==KLabel 'PackageOrTypeName)
+      orBool (KL ==KLabel 'Field)
+      orBool (KL ==KLabel 'AmbName)
+      orBool (KL ==KLabel 'ExprName)
+    )
+    andBool notBool isElab(K)
 
 //Computes true if the given term needs special rules for elaboration, false otherwise
 syntax K ::= "customElab" "(" K ")"             [function]
@@ -279,8 +294,6 @@ rule customElabDispose(KL:KLabel(Ks:List{K})) =>
            (KL ==KLabel 'Block)
     orBool (KL ==KLabel 'For)
     orBool (KL ==KLabel 'Catch)
-    orBool (KL ==KLabel 'AmbName)
-    orBool (KL ==KLabel 'ExprName)
     orBool (KL ==KLabel 'localVar`(_`))
     orBool (KL ==KLabel 'This)
     orBool (KL ==KLabel 'castImpl`(_`,_`))
@@ -345,17 +358,17 @@ when
 //Elaboration of rules in java-var-lookup
 
 rule [elabAmbName]:
-    elab('AmbName(Ks:List{K})) => elab('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName('ListWrap(Ks))
+    'AmbName(Ks:List{K}) => 'ExprName(Ks) ?? 'TypeName(Ks) ?? 'PackageName('ListWrap(Ks))
 when
     isElab(Ks)
 
 rule [elabExprNameSimple]:
-    elab('ExprName(ResK:K)) => elab(localVar(ResK)) ?? 'Field(ResK)
+    'ExprName(ResK:K) => elab(localVar(ResK)) ?? 'Field(ResK)
 when
     isElab(ResK)
 
 rule [elabExprNameQualified]:
-    elab('ExprName(K1:K,,K2:K)) => 'Field(K1,,K2)
+    'ExprName(K1:K,,K2:K) => 'Field(K1,,K2)
 when
     isElab(K1) andBool isElab(K2)
 
@@ -378,16 +391,6 @@ rule [elabFieldUnqualified]:
     <cuClass> Class:ClassType </cuClass>
 when
     isElab(Arg)
-
-rule [FieldQualifierHeat]:
-    (. => elabInit(Qual)) ~> 'Field((Qual:K => CHOLE),, X:Id)
-when
-    notBool isElab(Qual) andBool notBool customElabInit(Qual) andBool notBool isElabNaked(Qual)
-
-rule [FieldQualifierCool]:
-    (ElabK => .) ~> 'Field((CHOLE => ElabK),, _:Id)
-when
-    isElab(ElabK)
 
 rule [FieldOfPackage]:
     'Field( _:PackageId,, _:K ) => noValue  [structural]
@@ -441,16 +444,16 @@ rule [elabThisStaticCT]:
 
 rule [elabFieldQualRef]:
     'Field(Qual:K ::: T:Type,, X:Id)
-    => elabTypedExp(lookupFieldImpl(Qual, noClass, X), elabLookup(X, T))
+    => elabTypedExp(lookupField(Qual, noClass, X), elabLookup(X, T))
 
 rule [elabFieldQualClass]:
     'Field(Class:ClassType,, X:Id)
-    => elabTypedExp(lookupStaticFieldImpl(noClass,X), elabLookup(X, Class))
+    => elabTypedExp(lookupStaticField(noClass,X), elabLookup(X, Class))
 
 rule [elabSuperField]:
     <k>
-      elab('SuperField(X:Id))
-      => elabTypedExp(lookupFieldImpl('This(.List{K}), noClass, X), elabLookup(X, BaseClass))
+      'SuperField(X:Id)
+      => elabTypedExp(lookupField('This(.List{K}), noClass, X), elabLookup(X, BaseClass))
       ...
     </k>
     <cuClass> Class:ClassType </cuClass>
@@ -462,9 +465,9 @@ syntax K ::= "elabTypedExp" "(" K //The original expression to be typed
                             "," K //elabLookup(...), computes into fieldEntry(...) or noValue
                             ")"  [strict(2)]
 
-rule elabTypedExp(lookupFieldImpl(Exp:K,_,X:Id), fieldEntry(Class:ClassType,_,T:Type, instanceCT)) => lookupFieldImpl(Exp,Class,X) ::: T
-rule elabTypedExp(lookupFieldImpl(Exp:K,_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT)) => lookupStaticFieldImpl(Class,X) ::: T
-rule elabTypedExp(lookupStaticFieldImpl(_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT)) => lookupStaticFieldImpl(Class,X) ::: T
+rule elabTypedExp(lookupField(Exp:K,_,X:Id), fieldEntry(Class:ClassType,_,T:Type, instanceCT)) => lookupField(Exp,Class,X) ::: T
+rule elabTypedExp(lookupField(Exp:K,_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT)) => lookupStaticField(Class,X) ::: T
+rule elabTypedExp(lookupStaticField(_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT)) => lookupStaticField(Class,X) ::: T
 rule elabTypedExp(_, noValue) => noValue
 
 //elab cast
@@ -499,9 +502,6 @@ rule 'ClassType(TypeK:K,, _) => TypeK            [structural, anywhere]
 //resolving fully qualified type names
 // A name pack.p2.A is represented as:
 // 'TypeName('PackageOrTypeName('PackageOrTypeName(pack),,p2),,A)
-
-context 'TypeName(HOLE,, _:K)
-context 'PackageOrTypeName(HOLE,, _:K)
 
 rule 'PackageOrTypeName(KRs:List{K},, K:K) => 'TypeName(KRs,,K) ?? 'PackageName('ListWrap(KRs,,K))
 when isKResult(KRs)
@@ -551,5 +551,25 @@ when notBool  ((X in keys(Imp))
               orBool (Id2String(X) ==String "System")
               orBool (Id2String(X) ==String "Integer")
               orBool (Id2String(X) ==String "Scanner"))
+
+/*@ \section{Outer static fields} */
+
+//Search for fields with this name in the outer classes of the given class, if any.
+syntax K ::= "outerStaticField" "(" ClassType //The original class. We will search in
+                                              //its outer classes
+                                "," Id        //The field name
+                                ")"
+
+rule [outerStaticField]:
+    <k>
+      outerStaticField(Class:ClassType, X:Id)
+      => 'Field(EnclosingClass,, X) ?? outerStaticField(EnclosingClass, X)
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
+
+rule [outerStaticFieldDiscard]:
+    outerStaticField(noClass, _) => noValue
 
 endmodule
