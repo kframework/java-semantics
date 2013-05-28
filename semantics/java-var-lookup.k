@@ -4,8 +4,6 @@ require "java-process-classes.k"
 require "java-static-init.k"
 require "java-expressions.k"
 
-//todo remove al rules related to 'Field
-
 module JAVA-VAR-LOOKUP
     imports JAVA-CORE
     imports JAVA-SUBTYPING

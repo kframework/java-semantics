@@ -88,10 +88,10 @@ rule [elabMethodsCoolMethod]:
     ~> elabMethods(_ |-> methodClosure(_,_,_, CHOLE => Body)::_ _:Map)
 
 //todo consider eliminating the label constrClosure since it leads to too much duplication.
-rule [elabMethodsHeatConstr]:
+rule [elabMethodsHeatConstrFirstLine]:
   <k>
-    (. => elabParams(Params) ~> elabInit(Body))
-    ~> elabMethods( (. => Sig |-> constrClosure(MClass,'ListWrap(Params),FirstLine, CHOLE )::MethodType) _)
+    (. => elabParams(Params) ~> elabInit(FirstLine))
+    ~> elabMethods( (. => Sig |-> constrClosure(MClass, 'ListWrap(Params), CHOLE, Body )::MethodType) _)
     ...
   </k>
   <cuClass> Class:ClassType </cuClass>
@@ -103,6 +103,10 @@ rule [elabMethodsHeatConstr]:
   </methods>
   <elabContextType> _ => instanceCT </elabContextType>
   <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
+
+rule [elabMethodsHeatConstrBody]:
+    (elabRes(FirstLine:K) => elabInit(Body))
+    ~> elabMethods(_ |-> constrClosure(_,_, CHOLE => FirstLine, Body => CHOLE )::_ _:Map)
 
 rule [elabMethodsCoolConstr]:
     (elabRes(Body:K) => .)
@@ -164,6 +168,10 @@ rule [elabInitDefault]:
     elabInit(K) => elab(K)
 when
     notBool customElab(K)
+
+//Required when processing first constructor line of Object, which is .K
+rule [elabInitDotK]:
+    elabInit(.K) => elabRes(.K)
 
 rule [elabCoolDefault]:
     (ElabK => .) ~> elab(_:KLabel(_,, (CHOLE => ElabK),, _))
@@ -285,7 +293,9 @@ syntax K ::= "customElab" "(" K ")"             [function]
 rule customElab(KL:KLabel(KLArgs:List{K})) =>
            (KL ==KLabel 'Block)
     orBool (KL ==KLabel 'For)
-    orBool (KL ==KLabel 'Catch)                 [anywhere]
+    orBool (KL ==KLabel 'Catch)
+
+rule customElab(.K) => true
 
 //Computes true if the given term needs special rules to startelab dispose phase, false otherwise.
 syntax K ::= "customElabDispose" "(" K ")"       [function]
