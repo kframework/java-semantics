@@ -75,11 +75,11 @@ rule [elabMethodsHeatMethod]:
   </k>
   <cuClass> Class:ClassType </cuClass>
   <classType> Class </classType>
-  <methods>
+  <methodDecs>
     Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:List{K}), CT:ContextType, Body:K) :: MethodType:Type
     => .Map
     ...
-  </methods>
+  </methodDecs>
   <elabContextType> _ => CT </elabContextType>
   <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
 
@@ -96,11 +96,11 @@ rule [elabMethodsHeatConstrFirstLine]:
   </k>
   <cuClass> Class:ClassType </cuClass>
   <classType> Class </classType>
-  <methods>
+  <methodDecs>
     Sig:K |-> constrClosure(MClass:ClassType, 'ListWrap(Params:List{K}), FirstLine:K, Body:K) :: MethodType:Type
     => .Map
     ...
-  </methods>
+  </methodDecs>
   <elabContextType> _ => instanceCT </elabContextType>
   <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
 
@@ -116,7 +116,7 @@ rule [elabMethodsEnd]:
     <k> elabMethods( Methods:Map ) => . ...</k>
     <cuClass> Class:ClassType </cuClass>
     <classType> Class </classType>
-    <methods> .Map => Methods </methods>
+    <methodDecs> .Map => Methods </methodDecs>
 
 rule [elabInstanceHeat]:
     <k> (. => elabInit(K)) ~> elabInstanceInit ...</k>

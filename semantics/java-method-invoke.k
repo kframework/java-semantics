@@ -254,7 +254,7 @@ rule getTypesFromValues(TKs:List{K}, .List{K}) => types(TKs)
 //computes into a signature
 syntax K ::= "lookupSignature" "("  Id     // MethodName
                                ","  Types  // Argument types
-                               ","  Map    // Env - methods environment
+                               ","  Map    // Env - methods environment Map[sig -> Class]
                                ","  Bool   // IsQ - whether the original method call was qualified
                                ","  K      // The best signature found so far,
                                            // or noValue if none found
@@ -262,40 +262,50 @@ syntax K ::= "lookupSignature" "("  Id     // MethodName
                                ")"
 
 rule [lookupSignatureNoAlternatives]:
-    (. => isPreferableSig(
-            'LazyAnd(
-              subtypeList(CallTs, SigTs),,
-              isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
-                  getMethodDeclaringClass(TV), IsQ, Class)
-            ),
-            sig(MethodName, SigTs)
-          ) )
-     ~> lookupSignature(
-          MethodName:Id,
-          CallTs:Types,
-          (sig(MethodName, SigTs:Types) |-> TV:TypedVal => .) _:Map,
-          IsQ:Bool,
-          noValue,
-          Class:ClassType
-        )
+    <k>
+      (. => isPreferableSig(
+              'LazyAnd(
+                subtypeList(CallTs, SigTs),,
+                isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
+                    getMethodDeclaringClass(TV), IsQ, Class)
+              ),
+              sig(MethodName, SigTs)
+            ) )
+       ~> lookupSignature(
+            MethodName:Id,
+            CallTs:Types,
+            (sig(MethodName, SigTs:Types) |-> DecClass:ClassType => .) _:Map,
+            IsQ:Bool,
+            noValue,
+            Class:ClassType
+          )
+      ...
+    </k>
+    <classType> DecClass </classType>
+    <methodDecs>... sig(MethodName, SigTs) |-> TV:TypedVal ...</methodDecs>
 
 rule [lookupSignatureWithAlternative]:
-    (. => isPreferableSig(
-            'LazyAnd(
-              'LazyAnd(subtypeList(CallTs, SigTs),, subtypeList(SigTs, AltTs)),,
-              isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
-                  getMethodDeclaringClass(TV), IsQ, Class)
-            ),
-            sig(MethodName, SigTs)
-          ) )
-     ~> lookupSignature(
-          MethodName:Id,
-          CallTs:Types,
-          (sig(MethodName, SigTs:Types) |-> TV:TypedVal => .) _:Map,
-          IsQ:Bool,
-          sig(MethodName, AltTs:Types),
-          Class:ClassType
-        )
+    <k>
+      (. => isPreferableSig(
+              'LazyAnd(
+                'LazyAnd(subtypeList(CallTs, SigTs),, subtypeList(SigTs, AltTs)),,
+                isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
+                    getMethodDeclaringClass(TV), IsQ, Class)
+              ),
+              sig(MethodName, SigTs)
+            ) )
+       ~> lookupSignature(
+            MethodName:Id,
+            CallTs:Types,
+            (sig(MethodName, SigTs:Types) |-> DecClass:ClassType => .) _:Map,
+            IsQ:Bool,
+            sig(MethodName, AltTs:Types),
+            Class:ClassType
+          )
+      ...
+    </k>
+    <classType> DecClass </classType>
+    <methodDecs>... sig(MethodName, SigTs) |-> TV:TypedVal ...</methodDecs>
 
 rule [lookupSignatureSigDiscard]:
     lookupSignature(
@@ -330,42 +340,52 @@ syntax K ::= "lookupMethodSigKnown" "("
                             ")"           [strict(1,3,4)]
 
 rule [lookupMethodSigKnownFirstCandidate]:
-    lookupMethodSigKnown(
-      sig(Name:Id, SigTs:Types),
-      _,
-      mapWrap( (sig(Name, SigTs) |-> TV:TypedVal _:Map) => .Map ),
-      noValue => TV
-    )
+    <k>
+      lookupMethodSigKnown(
+        Sig:K,
+        _,
+        mapWrap( (Sig |-> DeclClass:ClassType _:Map) => .Map ),
+        noValue => TV
+      )
+      ...
+    </k>
+    <classType> DeclClass </classType>
+    <methodDecs>... Sig |-> TV:TypedVal ...</methodDecs>
 
 rule [lookupMethodSigKnownOtherCandidates]:
-    lookupMethodSigKnown(
-      sig(Name:Id, SigTs:Types),
-      (_,, LayerClass:ClassType),
-      mapWrap( (sig(Name, SigTs) |-> TV:TypedVal => .) _:Map ),
-      MCClosure:RawVal :: methodType(Acc:AccessMode, DeclClass:ClassType, SigTs, T:Type)
-      => 'If(
-            'LazyAnd(
-              ( getMethodContextType(MCClosure :: methodType(Acc, DeclClass, SigTs, T))
-                ==K instanceCT
-              )::bool,,
-              isAccessibleForOverwriting(
-                getMethConsClosureClass(MCClosure), Acc, LayerClass, getMethodAccessMode(TV)
-              )
-            ),,
-            TV,,
-            MCClosure :: methodType(Acc, DeclClass, SigTs, T)
-          )
-    )
+    <k>
+      lookupMethodSigKnown(
+        sig(Name:Id, SigTs:Types),
+        (_,, LayerClass:ClassType),
+        mapWrap( (sig(Name, SigTs) |-> NewDeclClass:ClassType => .) _:Map ),
+        MCClosure:RawVal :: methodType(Acc:AccessMode, DeclClass:ClassType, SigTs, T:Type)
+        => 'If(
+              'LazyAnd(
+                ( getMethodContextType(MCClosure :: methodType(Acc, DeclClass, SigTs, T))
+                  ==K instanceCT
+                )::bool,,
+                isAccessibleForOverwriting(
+                  getMethConsClosureClass(MCClosure), Acc, LayerClass, getMethodAccessMode(TV)
+                )
+              ),,
+              TV,,
+              MCClosure :: methodType(Acc, DeclClass, SigTs, T)
+            )
+      )
+      ...
+    </k>
+    <classType> NewDeclClass </classType>
+    <methodDecs>... sig(Name, SigTs) |-> TV:TypedVal ...</methodDecs>
 
 rule [lookupMethodSigKnownEntryDiscard]:
     lookupMethodSigKnown(
-      sig(Name:Id, ChosenSigTs:Types),
+      Sig:KResult,
       _,
-      mapWrap( (sig(X:Id, SigTs:Types) |-> _ => .) _:Map ),
+      mapWrap( (OtherSig:K |-> _ => .) _:Map ),
       _:K
     )
 when
-    sig(X, SigTs) =/=K sig(Name, ChosenSigTs)
+    Sig =/=K OtherSig
 
 rule [lookupMethodSigKnownLayerDiscard]:
     <k>

@@ -153,12 +153,17 @@ rule [tryInheritImplUnfold]:
     <k> (. => tryInheritImpl(MI)) ~> tryInheritImpl( (MI:MapItem => .) _:MapItem _) ...</k>
 
 rule [tryInheritImpl]:
-    tryInheritImpl(Sig:K |-> TV:TypedVal)
-    => 'If(
-          isInheritable(getMethodAccessMode(TV)),,
-          inherit(Sig |-> TV),,
-          .K
-        )
+    <k>
+      tryInheritImpl(Sig:K |-> DecClass:ClassType)
+      => 'If(
+            isInheritable(getMethodAccessMode(TV)),,
+            inherit(Sig |-> DecClass),,
+            .K
+          )
+      ...
+    </k>
+    <classType> DecClass </classType>
+    <methodDecs>... Sig |-> TV:TypedVal ...</methodDecs>
 
 rule [tryInheritImplDiscard]: tryInheritImpl(.) => .
 
@@ -185,11 +190,11 @@ rule isInheritable(private) => false::bool
 //todo if the same method is inherited say from the base class and interface,
 //we're in trouble
 rule [inherit]:
-    <k> inherit(Sig:K |-> TV:TypedVal) => . ...</k>
+    <k> inherit(Sig:K |-> DeclClass:ClassType) => . ...</k>
     <cuClass> Class:ClassType </cuClass>
     <class>
       <classType> Class </classType>
-      <methods> Env:Map => Env[TV/Sig] </methods>
+      <methods> Env:Map => Env[DeclClass/Sig] </methods>
       ...
     </class>
 
@@ -280,11 +285,12 @@ rule [storeMethod]:
     </k>
     <cuClass> Class:ClassType </cuClass>
     <classType> Class </classType>
-    <methods>
-      Env:Map => Env[
+    <methods> Env:Map => Env[Class / sig(Name,Ts)] </methods>
+    <methodDecs>
+      DecsEnv:Map => DecsEnv[
         methodClosure(Class, 'ListWrap(Params), CT, Body) :: MethodType / sig(Name,Ts)
       ]
-    </methods>
+    </methodDecs>
 
 //A method signature
 //KResult is required in java-method-invoke module
@@ -354,12 +360,13 @@ rule [storeConstructor]:
     </k>
     <cuClass> Class:ClassType </cuClass>
     <classType> Class </classType>
-    <methods>
-      Env:Map => Env[
+    <methods> Env:Map => Env[Class / sig(getConsName(Class), getTypesFromParams(Params))] </methods>
+    <methodDecs>
+      DecsEnv:Map => DecsEnv[
         constrClosure(Class, 'ListWrap(Params), FirstLine, S:K) :: MethodType
           / sig(getConsName(Class), getTypesFromParams(Params))
       ]
-    </methods>
+    </methodDecs>
 
 //@get internal constructor name from a class
 syntax K ::= "getConsName" "(" ClassType ")"                               [function]

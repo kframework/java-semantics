@@ -58,7 +58,13 @@ configuration
           //'LocalVarDec for each field
           <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>
 
+          //Signatures of methods accessible to this class (declared or inherited)
+          //Map[sig -> Class]
           <methods color="purple"> .Map </methods>
+
+          //All methods declared in this class. Map[sig -> methodClosure / constrClosuure]
+          <methodDecs color="purple"> .Map </methodDecs>
+
           <br/>
           //The map of instance fields declared in this class, but not in superclasses.
           //Map[Id -> fieldEntry(Class, X, T, ConType)] (declaring class, field name, field type)
