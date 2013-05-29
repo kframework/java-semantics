@@ -419,7 +419,7 @@ rule [ThrowCheckedTrue]:
     ~> catchBlocks(catchImpl(paramImpl(T:Type, X:Id), CatchS),, _)
     => 'Block('ListWrap(
           'LocalVarDec(T,, 'ListWrap('VarDec(X))),,
-          'ExprStm('Assign(localVar(X),, TV)),,
+          'ExprStm('Assign(localVar(X)::T,, TV)),,
           CatchS
         ))
 

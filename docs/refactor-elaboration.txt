@@ -61,9 +61,15 @@ the content of methods, static and instance initializers.
 
 2.5.ok. Elaborate classes in the presence of packages.
 2.6.ok. Elaborate names in the presence of inner classes.
+2.7.ok. Refactor methods configuration. Now each method is elaborated in its defining class only.
 
-3. Implement method signature lookup during elaboration.
-4. Implement expression type checking and annotation during elaboration.
+At this step, all tests except array-related and some conditional-operator-related pass.
+
+3. Implement expression type checking and annotation during elaboration.
+3.1.ok. Annotate the type of localVar, fieldLookup, staticFieldLookup terms.
+  Also other additional terms required to preserve all the passing tests (as for the end of step 2).
+
+4. Implement method signature lookup during elaboration.
 
   When elaborating a block, in order to distinguish between an unelaborated
 and elaborated block, we will wrap elaborated blocks into elab(...).

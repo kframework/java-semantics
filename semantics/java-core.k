@@ -195,9 +195,9 @@ syntax RawVal ::= "objectClosure" "(" Int //OL - object location
 syntax TypedVal ::= RawVal "::" Type
 syntax KResult ::= TypedVal | Type
 
-//If we try to use "::" we get ambiguities
-syntax TypedExp ::= K ":::" Type
-syntax KResult ::= TypedExp
+syntax TypedExp ::= TypedVal
+syntax TypedExp ::= K "::" Type
+syntax K ::= TypedExp
 
 syntax AccessMode ::= "public" | "protected" | "package" | "private"
 syntax KResult ::= AccessMode
@@ -305,17 +305,6 @@ rule [getTopLevel]:
 syntax K ::= "kEq" "(" K "," K ")" [seqstrict]
 rule kEq(KR1:KResult, KR2:KResult) => (KR1 ==K KR2)::bool
 
-syntax KResult ::= "noValue"
-
-syntax K ::= K "??" K [strict(1), right]
-
-rule [chainOfResponsibility1]:
-    KR:KResult ?? _ => KR
-when KR =/=K noValue
-
-rule [chainOfResponsibility2]:
-    noValue ?? K => K
-
 syntax K ::= "restoreEnvAndObj" "(" Map "," Bag ")"
 
 rule [restoreEnvAndObj]:
@@ -330,6 +319,8 @@ syntax K ::= "(" ClassType "," BagItem ")"
 //Also used as part of mapUnion operation in java-process-classes
 syntax KResult ::= "mapWrap" "(" Map ")"
                  | "setWrap" "(" Set ")"
+
+syntax KResult ::= "noValue"
 
 syntax K ::= "objectClass"                              [function]
 rule objectClass => class String2Id("java.lang.Object") [structural, anywhere]

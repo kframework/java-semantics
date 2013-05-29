@@ -42,6 +42,23 @@ syntax K ::= "elaborateBlocks" "(" K ")" [strict] //Elaborate the blocks inside 
 
 syntax KResult ::= "elabRes" "(" K ")"  //Wraps the elaboration result
 
+syntax K ::= K "??" K [right]
+
+rule [chainOfResponsibilityHeat]:
+    (. => K) ~> (K:K => CHOLE) ?? _
+when notBool (isElab(K) ==K true)
+
+rule [chainOfResponsibilityCool]:
+    (ElabRes:K => .) ~> (CHOLE => ElabRes) ?? _
+when isElab(ElabRes) ==K true
+
+rule [chainOfResponsibility1]:
+    ElabRes:K ?? _ => ElabRes
+when isElab(ElabRes) andBool (ElabRes =/=K noValue)
+
+rule [chainOfResponsibility2]:
+    noValue ?? K:K => K
+
 //Elaboration result of a field access exp.
 syntax K ::= "lookupField" "(" K    //Qualifier exp
                                "," Type //Precise type where the field is defined
@@ -212,21 +229,19 @@ when
 
 //true if this label is elaborated, but is not un-elaborated.
 syntax K ::= "isElabOnly" "(" K ")"                   [function]
-rule isElabOnly(K:K) =>
-           (getKLabel(K) ==KLabel 'elabRes`(_`))
-    orBool (getKLabel(K) ==KLabel '_:::_)             [anywhere]
+rule isElabOnly(K:K) => getKLabel(K) ==KLabel 'elabRes`(_`)
 
 syntax K ::= "isElabIndependent" "(" K ")"            [function]
 rule isElabIndependent(K:K) =>
            (K ==K .K)
     orBool (isId(K) ==K true)
     orBool (isString(K) ==K true)
-    orBool (isKResult(K) ==K true)                    [anywhere]
+    orBool (isKResult(K) ==K true)
+    orBool (isTypedExp(K) ==K true)
 
 //Invoked during elabDispose. Transforms the term from elab result to normal.
 syntax K ::= "unElab" "(" K ")"                 [function]
 rule unElab(elabRes(K:K)) => K                  [anywhere]
-rule unElab(K:K:::_) => K                       [anywhere]
 
 //Computes to true if the given arg is a list of elaboration results, false otherwise.
 syntax K ::= "isElab" "(" List{K} ")"           [function]
@@ -383,7 +398,7 @@ when
     isElab(K1) andBool isElab(K2)
 
 rule [elabLocalVarOk]:
-  <k> elab(localVar(X:Id)) => localVar(X) ::: T ...</k>
+  <k> elab(localVar(X:Id)) => localVar(X) :: T ...</k>
   <elabEnv> ListItem(stEnv(X |-> T:Type _)) ...</elabEnv>
 
 rule [elabLocalVarNoValue]:
@@ -444,7 +459,7 @@ rule [elabLookupNotFound]:
     elabLookup(X:Id, noClass) => noValue
 
 rule [elabThisInstanceCT]:
-    <k> elab('This(.List{K})) => 'This(.List{K}) ::: Class ...</k>
+    <k> elab('This(.List{K})) => 'This(.List{K}) :: Class ...</k>
     <elabContextType> instanceCT </elabContextType>
     <cuClass> Class:ClassType </cuClass>
 
@@ -453,8 +468,8 @@ rule [elabThisStaticCT]:
     <elabContextType> staticCT </elabContextType>
 
 rule [elabFieldQualRef]:
-    'Field(Qual:K ::: T:Type,, X:Id)
-    => elabTypedExp(lookupField(Qual, noClass, X), elabLookup(X, T))
+    'Field(Qual:K :: T:Type,, X:Id)
+    => elabTypedExp(lookupField(Qual::T, noClass, X), elabLookup(X, T))
 
 rule [elabFieldQualClass]:
     'Field(Class:ClassType,, X:Id)
@@ -463,7 +478,7 @@ rule [elabFieldQualClass]:
 rule [elabSuperField]:
     <k>
       'SuperField(X:Id)
-      => elabTypedExp(lookupField('This(.List{K}), noClass, X), elabLookup(X, BaseClass))
+      => elabTypedExp(lookupField('This(.List{K})::Class, noClass, X), elabLookup(X, BaseClass))
       ...
     </k>
     <cuClass> Class:ClassType </cuClass>
@@ -475,26 +490,24 @@ syntax K ::= "elabTypedExp" "(" K //The original expression to be typed
                             "," K //elabLookup(...), computes into fieldEntry(...) or noValue
                             ")"  [strict(2)]
 
-rule elabTypedExp(lookupField(Exp:K,_,X:Id), fieldEntry(Class:ClassType,_,T:Type, instanceCT)) => lookupField(Exp,Class,X) ::: T
-rule elabTypedExp(lookupField(Exp:K,_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT)) => lookupStaticField(Class,X) ::: T
-rule elabTypedExp(lookupStaticField(_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT)) => lookupStaticField(Class,X) ::: T
+rule elabTypedExp(lookupField(TE:TypedExp,_,X:Id), fieldEntry(Class:ClassType,_,T:Type, instanceCT)) => lookupField(TE,Class,X) :: T
+rule elabTypedExp(lookupField(TE:TypedExp,_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT)) => lookupStaticField(Class,X) :: T
+rule elabTypedExp(lookupStaticField(_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT)) => lookupStaticField(Class,X) :: T
 rule elabTypedExp(_, noValue) => noValue
 
 //elab cast
+rule 'CastRef(K1:K,, K2:K) => castImpl(K1,K2)       [structural, anywhere]
+rule 'CastPrim(K1:K,, K2:K) => castImpl(K1,K2)      [structural, anywhere]
 
 //Required so that we will always have a type as first argument
 context elab(castImpl(HOLE, _))
 
-rule [elabCastImplElabOnly]:
-    elab(castImpl(T:Type, ElabExp:K)) => castImpl(T, unElab(ElabExp)) ::: T
-when isElabOnly(ElabExp)
-
 //Case when Exp was initially a literal, and now is Val::Type
 rule [elabCastImplElabIndep]:
-    elab(castImpl(T:Type, Exp:K)) => castImpl(T, Exp) ::: T
+    elab(castImpl(T:Type, Exp:K)) => castImpl(T, Exp) :: T
 when isElabIndependent(Exp)
 
-//Hole is transformed into paramImpl
+//HOLE is transformed into paramImpl
 context elabInit('Catch(HOLE,, _))
 
 //Catch creates a new env layer and saves its argument.

@@ -26,8 +26,7 @@ rule [staticInit]:
                   'NewInstance(
                     'None(.List{K}),,
                     class String2Id("java.lang.ExceptionInInitializerError"),,
-                    //referencing localvar by label, to avoid circular references between modules
-                    'ListWrap('localVar`(_`)(String2Id("e"))),,
+                    'ListWrap(localVar(String2Id("e"))) :: objectClass,,
                     'None(.List{K})
                   )
                 )

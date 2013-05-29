@@ -102,9 +102,6 @@ rule isAnyToBool(KL:KLabel) =>
   orBool KL ==KLabel 'GtEq
   orBool KL ==KLabel 'InstanceOf                [anywhere]
 
-rule [getExpTypeCastImpl]:
-    getExpType(castImpl(TypeK:K, _)) => TypeK
-
 //Custom HOLE used in the EXP-TYPE module.
 syntax K ::= "EXPHOLE"
 
@@ -127,7 +124,6 @@ rule isCoveredExprTypeKLabel(KL:KLabel) =>
   orBool KL ==KLabel 'ExprName
   orBool KL ==KLabel 'ArrayAccess
   orBool isNumToNum(KL)
-  orBool isAnyToBool(KL)
-  orBool KL ==KLabel 'castImpl`(_`,_`)                  [anywhere]
+  orBool isAnyToBool(KL)                                [anywhere]
 
 endmodule

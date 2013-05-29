@@ -151,7 +151,11 @@ rule /* loc(L)-- => (loc(L) = lookup(L) - 1) + 1 */
 //The biggest difficulty is computing the expression type, according to JLS1 $15.24
 rule 'Cond(CondExp:K,, TrueExp:K,, FalseExp:K)
     => castImpl(getCondType(getExpType(TrueExp), getExpType(FalseExp)),
-                'If(CondExp,, TrueExp,, FalseExp))
+                'If(CondExp,, TrueExp,, FalseExp)) :: getCondType(getExpType(TrueExp), getExpType(FalseExp))
+
+//just for the rule above
+context castImpl(HOLE,_)::_
+context castImpl(_,_)::HOLE
 
 //computes the type of a conditional expression
 //Operands evaluate into types
@@ -214,7 +218,7 @@ when isCompoundAssignLabel(KL)
 
 rule [CompoundAssign]:
     KL:KLabel(loc(L:Int) :: T:Type,, E:K) => 'Assign(loc(L)::T,,
-      castImpl(T, getOpLabel(KL)(lookup(L)::T,, E)))
+      castImpl(T, getOpLabel(KL)(lookup(L)::T,, E))::T)
 when isCompoundAssignLabel(KL)
 
 //only for Compound Assign KLabel's
@@ -233,12 +237,11 @@ rule getOpLabel('AssignURightShift) => 'URightShift [anywhere]
 
 /*@ \subsection{primitive types cast} */
 
-syntax KLabel ::= "'CastPrim"
-rule 'CastPrim(K1:K,, K2:K) => castImpl(K1,K2)      [structural, anywhere]
+syntax K ::= "castImpl" "(" Type "," K ")"
+context castImpl(_,HOLE)::_
 
-syntax K ::= "castImpl" "(" Type "," K ")" [seqstrict]
-rule [CastNumber]: castImpl(NT:NumericType, I:Int::_) => normalize(I::NT)
-rule [CastBool]: castImpl(bool, B:Bool::bool) => B::bool
+rule [CastNumber]: castImpl(NT:NumericType, I:Int::_)::NT => normalize(I::NT)
+rule [CastBool]: castImpl(bool, B:Bool::bool)::bool => B::bool
 
 /*@ \subsection{lvalue and loc syntax} */
 

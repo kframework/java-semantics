@@ -18,12 +18,12 @@ syntax K ::= "localVar" "(" Id //the var name
                         ")"
 
 rule [localVarOK]:
-    <k> localVar(X:Id) => typedLookup(L) ...</k>
-    <env>... X |-> L ...</env>
+    <k> localVar(X:Id)::_ => typedLookup(L) ...</k>
+    <env>... X |-> L:Int ...</env>
 
 rule [lvalueExprNameLocal]:
-    <k> lvalue(localVar(X:Id)) => typedLoc(L) ...</k>
-    <env>... X |-> L:Int ...</env>            [structural]
+    <k> lvalue(localVar(X:Id)::_) => typedLoc(L) ...</k>
+    <env>... X |-> L:Int ...</env>
 
 /*@ \subsection{Self reference}
 Like in untyped KOOL. */
@@ -31,13 +31,13 @@ Like in untyped KOOL. */
 //todo reconsider after elabration phase will work
 rule [This]:
     <k>
-      'This(.List{K})
+      'This(.List{K})::Class:ClassType
       => objectClosure(OL, Obj) :: Class
       ...
     </k>
     <crntObj>
       Obj:Bag
-      <crntClass> Class:ClassType </crntClass>
+      <crntClass> Class </crntClass>
       <location> OL:Int </location>
     </crntObj>
 
@@ -47,8 +47,8 @@ rule [This]:
 
 //outside lvalue we have strictness rules
 
-context lookupField(HOLE,_,_)
-context lvalue(lookupField(HOLE,_,_))
+context lookupField(HOLE,_,_)::_
+context lvalue(lookupField(HOLE,_,_)::_)
 
 rule [lookupField]:
     lookupField(
@@ -57,11 +57,11 @@ rule [lookupField]:
         ) ::_,
       TargetClass:ClassType,
       X:Id
-    ) => typedLookup(L)
+    )::_ => typedLookup(L)
         [anywhere]
 
 rule [lookupFieldOfNull]:
-    lookupField(null::_, _, _)
+    lookupField(null::_, _, _)::_
     =>  'Throw('NewInstance(
           'None(.List{K}),,
           class String2Id("java.lang.NullPointerException"),,
@@ -76,7 +76,7 @@ rule [lookupStaticField]:
       lookupStaticField(
         TargetClass:ClassType,
         X:Id
-      ) => typedLookup(L)
+      )::_ => typedLookup(L)
       ...
     </k>
     <classType> TargetClass </classType>
@@ -88,7 +88,7 @@ rule [lvalue-lookupStaticField]:
         lookupStaticField(
           TargetClass:ClassType,
           X:Id
-        ) => typedLookup(L)
+        )::_ => typedLookup(L)
       )
       ...
     </k>
@@ -133,7 +133,7 @@ rule [lvalueTypedLoc]:
 rule [lookupLocation]:
     <k>
       lookup(L:Int) :: T1:Type
-      => subtype(T2, T1) ~> true? ~> V::T1
+      => subtype(T2, T1) ~> true? ~> (V::T1)
       ...
     </k>
     <store>... L |-> V:RawVal :: T2:Type ...</store>

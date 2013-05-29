@@ -239,12 +239,9 @@ rule [InstanceOf]:
 Unlike in untyped KOOL, in typed KOOL we actually check that the object
 can indeed be cast to the claimed type. */
 
-syntax KLabel ::= "'CastRef"
-rule 'CastRef(K1:K,, K2:K) => castImpl(K1,K2)   [structural, anywhere]
-
 rule [CastRef]:
     <k>
-      castImpl(RT1:RefType, V:RawVal :: RT2:RefType)
+      castImpl(RT1:RefType, V:RawVal :: RT2:RefType)::RT1
       =>  'If(
             subtype(typeOf(V), RT1),,
             (V::RT1),,

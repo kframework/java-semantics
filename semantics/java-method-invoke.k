@@ -25,9 +25,10 @@ rule 'Method(K:K,, _:K,, Name:Id) => 'MethodName(K,, Name)  [structural, anywher
 
 rule [MethodNameUnqInstanceCT]:
     <k>
-      'MethodName(Name:Id) => 'MethodName('This(.List{K}),, Name)
+      'MethodName(Name:Id) => 'MethodName('This(.List{K})::Class,, Name)
       ...
     </k>
+    <crntClass> Class:ClassType </crntClass>
     <location> _:Int </location>
         [structural]
 
@@ -40,7 +41,10 @@ rule [MethodNameUnqStaticCT]:
     <location> noValue </location>
         [structural]
 
-rule 'MethodName(K:K,, Name:Id) => methodNameImpl(K, Name, getKLabel(K) =/=KLabel 'This)
+rule 'MethodName(K:K,, Name:Id) => methodNameImpl(K, Name, true)
+when getKLabel(K) =/=KLabel '_::_
+
+rule 'MethodName(QualE:K :: T:Type,, Name:Id) => methodNameImpl(QualE::T, Name, getKLabel(QualE) =/=KLabel 'This)
 
 syntax K ::= "methodNameImpl" "("
                                   K ","   //qualifier exp
@@ -632,7 +636,7 @@ syntax K ::= "bindto" List{K}
 rule [bindto]:
     <k>
       bindto paramImpl(T:Type, X:Id),, RestP:List{K}, TV:TypedVal,, RestV:List{K}
-      => 'ExprStm('Assign(localVar(X),,TV:TypedVal)) ~> bindto RestP, RestV
+      => 'ExprStm('Assign(localVar(X)::T,,TV:TypedVal)) ~> bindto RestP, RestV
       ...
     </k>
     <env> Env:Map => Env[L/X] </env>

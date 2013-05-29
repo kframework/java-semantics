@@ -92,7 +92,7 @@ when (N >=Int 0) andBool (N <Int M)
 rule [lookupArrayLocation]:
     <k>
       lookup(L:Int) :: T1:Type
-      => subtype(T2, T1) ~> true? ~> V::T1
+      => subtype(T2, T1) ~> true? ~> (V::T1)
       ...
     </k>
     <store>... L |-> V:RawVal ::elem T2:Type ...</store>
