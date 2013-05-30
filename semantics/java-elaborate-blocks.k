@@ -40,7 +40,7 @@ syntax K ::= "elaborateBlocks" "(" K ")" [strict] //Elaborate the blocks inside 
            | "elabDispose" "(" K ")"    //Intermediate state between elab and elabRes - all subterms were already elaborated.
                                         //Responsible for deleting the elabRes() wrappers of subterms.
 
-syntax KResult ::= "elabRes" "(" K ")"  //Wraps the elaboration result
+syntax K ::= "elabRes" "(" K ")"  //Wraps the elaboration result
 
 syntax K ::= K "??" K [right]
 
@@ -499,12 +499,10 @@ rule elabTypedExp(_, noValue) => noValue
 rule 'CastRef(K1:K,, K2:K) => castImpl(K1,K2)       [structural, anywhere]
 rule 'CastPrim(K1:K,, K2:K) => castImpl(K1,K2)      [structural, anywhere]
 
-//Required so that we will always have a type as first argument
-context elab(castImpl(HOLE, _))
-
 //Case when Exp was initially a literal, and now is Val::Type
 rule [elabCastImplElabIndep]:
-    elab(castImpl(T:Type, Exp:K)) => castImpl(T, Exp) :: T
+    <k> elab(castImpl(T:Type, Exp:K)) => castImpl(T, Exp) :: T ...</k>
+    <debug>... . => ListItem(castImpl(T,Exp)) </debug>
 when isElabIndependent(Exp)
 
 //HOLE is transformed into paramImpl
