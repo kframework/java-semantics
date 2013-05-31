@@ -132,10 +132,6 @@ order to be recovered after the creation of the new object.  Only the
 first rule below needs to be changed; the others are identical to
 those in untyped KOOL. */
 
-//resolve new instance expression target type
-//todo obsolete - elab
-context 'NewInstance(_:K,, HOLE,, _)
-
 //resolve new instance expression parameter values
 context 'NewInstance(_:K,,_:K,, 'ListWrap(_,,HOLE,,_),, _)
 
@@ -226,7 +222,7 @@ when isKResult(Vals)
 /*@ \subsection{Instance Of}
 Like in untyped KOOL. */
 
-syntax KLabel ::= "'InstanceOf" [seqstrict]
+syntax KLabel ::= "'InstanceOf" [strict(1)]
 
 rule [InstanceOf]:
     'InstanceOf(V:RawVal::_,, RT2:RefType)
@@ -251,14 +247,12 @@ rule [CastRef]:
                     'ListWrap( 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to "::rtString),,
                         toString(RT1)) ),,
                     'None(.List{K})
-                  ))
+                  ) :: class String2Id("java.lang.ClassCastException"))
           )
       ...
     </k>
 
 //\subsection{Class literal}
-
-context 'Lit('Class(HOLE))
 
 rule [ClassLiteralInstantiate]:
     <k>

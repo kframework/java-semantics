@@ -1,5 +1,5 @@
 /*
-Fields with initializer, refering to superclass fields/methods.
+Fields with initializer, referring to superclass fields/methods.
 */
 
 class A {

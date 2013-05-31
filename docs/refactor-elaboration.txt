@@ -68,6 +68,12 @@ At this step, all tests except array-related and some conditional-operator-relat
 3. Implement expression type checking and annotation during elaboration.
 3.1.ok. Annotate the type of localVar, fieldLookup, staticFieldLookup terms.
   Also other additional terms required to preserve all the passing tests (as for the end of step 2).
+3.2.ok. Annotate the type of all numeric expressions, but remove the type annotation during
+  runtime to avoid changing runtime rules.
+3.3.ok. Annotate the type of all other expressions, including arrays. The type of method invocation
+  will be fake - always noClass. In most cases this will not affect execution - only when method invocation
+  is part of a larger expression that requires the type of its children in order to compute its type.
+  All tests except such cases should pass.
 
 4. Invert the condition for labels elaborated by default:
   Right now we specify the labels that should not be elaborated by default, and do default elaboration

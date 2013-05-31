@@ -108,7 +108,7 @@ rule                  'Div(_::_     ,, 0::_)
         (class String2Id("java.lang.ArithmeticException")),,
         'ListWrap( "/ by zero" :: rtString ),,
         'None(.List{K})
-      ))
+      ) :: class String2Id("java.lang.ArithmeticException"))
 
 rule /* I1 % I2    */ 'Remain(I1:Int :: NT1:NumericType,, I2:Int :: NT2:NumericType) => normalize( (I1 %Int I2), NT1, NT2 )
     when I2 =/=Int 0
@@ -120,7 +120,7 @@ rule                  'Remain(_::_     ,, 0::_)
         (class String2Id("java.lang.ArithmeticException")),,
         'ListWrap( "/ by zero" :: rtString ),,
         'None(.List{K})
-      ))
+      ) :: class String2Id("java.lang.ArithmeticException"))
 
 // ++E
 context 'PreIncr(HOLE => lvalue(HOLE))
@@ -149,8 +149,10 @@ rule /* loc(L)-- => (loc(L) = lookup(L) - 1) + 1 */
 
 //Conditional expression : ?: . Desugared into an if with cast.
 //The biggest difficulty is computing the expression type, according to JLS1 $15.24
-rule 'Cond(CondExp:K,, TrueExp:K,, FalseExp:K) :: ResT:Type
-    => castImpl(ResT, 'If(CondExp,, TrueExp,, FalseExp)) :: ResT
+rule
+    <k> 'Cond(CondExp:K,, TrueExp:K,, FalseExp:K) :: ResT:Type
+    => castImpl(ResT, 'If(CondExp,, TrueExp,, FalseExp)) :: ResT ...</k>
+    <debug>... . => ListItem(castImpl(ResT, 'If(CondExp,, TrueExp,, FalseExp)) :: ResT) </debug>
 
 /*@ \subsubsection{Assignment operators}
 Typed KOOL allows to assign subtype instance values to supertype lvalues.
@@ -223,6 +225,7 @@ when
     andBool notBool (KL ==KLabel 'localVar`(_`))
     andBool notBool (KL ==KLabel 'lookupField`(_`,_`,_`))
     andBool notBool (KL ==KLabel 'lookupStaticField`(_`,_`))
+    andBool notBool (KL ==KLabel 'lookup`(_`))
 
 //todo temp
 rule [tempDeleteElabTypeInfo-lvalue]:
@@ -234,5 +237,6 @@ when
     andBool notBool (KL ==KLabel 'localVar`(_`))
     andBool notBool (KL ==KLabel 'lookupField`(_`,_`,_`))
     andBool notBool (KL ==KLabel 'lookupStaticField`(_`,_`))
+    andBool notBool (KL ==KLabel 'lookup`(_`))
 
 endmodule

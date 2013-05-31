@@ -16,10 +16,7 @@ rule [StartExecutionPhase]:
       'ExprStm(
         'Invoke(
           'MethodName((class String2Id("." +String MainClassS)),, String2Id("main")),,
-          'ListWrap('NewArray(
-              rtString,,
-              'ListWrap('Dim(0 :: int)),,
-              'ListWrap(.List{K})))
+          'ListWrap(newArrayImpl(rtString, 'ListWrap('Dim(0 :: int)), null :: nullType, .List{K}) :: arrayOf rtString)
         )
       )
     </k>
@@ -142,7 +139,7 @@ rule [AssertStmOneArg]:
       (class String2Id("java.lang.AssertionError")),,
       'ListWrap( null :: nullType ),,
       'None(.List{K})
-    ))
+    ) :: class String2Id("java.lang.AssertionError"))
 
 context 'AssertStm(false::bool,, HOLE)
 
@@ -152,7 +149,7 @@ rule [AssertStmTwoArgs]:
       (class String2Id("java.lang.AssertionError")),,
       'ListWrap( toString(TV) ),,
       'None(.List{K})
-    ))
+    ) :: class String2Id("java.lang.AssertionError"))
 
 //@ \section{Switch statement}
 

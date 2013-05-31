@@ -87,7 +87,7 @@ rule [MethodNameQualifiedNull]:
             class String2Id("java.lang.NullPointerException"),,
             'ListWrap( null :: nullType ),,
             'None(.List{K})
-          ))
+          ) :: class String2Id("java.lang.NullPointerException"))
       ...
     </k>
         [structural]

@@ -61,13 +61,23 @@ rule [chainOfResponsibility2]:
 
 //Elaboration result of a field access exp.
 syntax K ::= "lookupField" "(" K    //Qualifier exp
-                               "," Type //Precise type where the field is defined
-                               "," Id   //X - field name
-                               ")"
+                           "," Type //Precise type where the field is defined
+                           "," Id   //X - field name
+                           ")"
 //Elaboration result of a static field access expression
             | "lookupStaticField" "(" Type //Precise type where the field is defined
-                                      "," Id   //X - field name
-                                      ")"
+                                  "," Id   //X - field name
+                                  ")"
+
+//Elaboration result of expressions new T[]...
+syntax K ::= "newArrayImpl" "("
+                Type ","  // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
+                K ","     // 'ListWrap(Dims) - array dimensions
+                K ","     // InitExp - expression used to initialize each array element, or .K if arg 4 is specified.
+                List{K}   //InitContent - array initializer, if any, or .K if arg 3 is specified.
+                          //From arguments 3 and 4 just one may be specified. This initializer is for the whole array,
+                          //not for each element as the previous one.
+             ")"
 
 rule [elaborateBlocksStart]:
     <k> . => elaborateBlocks(getAllClasses) </k>
@@ -289,6 +299,8 @@ rule isElabNaked(KL:KLabel(_)) =>
     orBool (KL ==KLabel 'SuperField)
     orBool (KL ==KLabel 'AmbName)
     orBool (KL ==KLabel 'ExprName)
+    orBool (KL ==KLabel 'ArrayType)
+    orBool (KL ==KLabel 'NewArray)
 
 rule [elabHeatQualOfNaked]:
     (. => elabInit(K)) ~> KL:KLabel((K:K => CHOLE),, _:Id)
@@ -467,8 +479,8 @@ rule [elabThisStaticCT]:
     <elabContextType> staticCT </elabContextType>
 
 rule [elabFieldQualRef]:
-    'Field(Qual:K :: T:Type,, X:Id)
-    => elabTypedExp(lookupField(Qual::T, noClass, X), elabLookup(X, T))
+    'Field(Qual:K :: Class:ClassType,, X:Id)
+    => elabTypedExp(lookupField(Qual::Class, noClass, X), elabLookup(X, Class))
 
 rule [elabFieldQualClass]:
     'Field(Class:ClassType,, X:Id)
@@ -632,7 +644,7 @@ rule isExpressionLabel(KL:KLabel) =>
 
     //Ternary operators
       /* ? : */ orBool (KL ==KLabel 'Cond)
-      /* =   */ orBool (KL ==KLabel 'Assing)
+      /* =   */ orBool (KL ==KLabel 'Assign)
                 orBool isCompoundAssignLabel(KL)
                 orBool isNonNumericExp(KL)
 
@@ -714,7 +726,7 @@ rule [elabCond]:
 
 //todo Workaround used to elaborate method calls and arrays.
 rule [tempElabExpWithElabRes]:
-    elab(KL:KLabel(_,, (elabRes(MethCall:K) => MethCall::noClass),, _))
+    elab(KL:KLabel(_,, (elabRes('Invoke(Ks:List{K})) => 'Invoke(Ks:List{K})::noClass),, _))
 when
     isExpressionLabel(KL)
 
@@ -735,10 +747,10 @@ when
 rule [condTypeFirstChar]:
     condType(char, T2:Type) => 'If(subtype(char, T2),, T2,, int)
 
-rule [elabAssing]:
-    elab('Assing(Exp1:K::T1:Type,, TE:TypedExp)) => 'Assing(Exp1::T1,, TE) :: T1
+rule [elabAssign]:
+    elab('Assign(Exp1:K::T1:Type,, TE:TypedExp)) => 'Assign(Exp1::T1,, TE) :: T1
 
-rule [elabCompoundAssing]:
+rule [elabCompoundAssign]:
     elab(KL:KLabel(Exp1:K::T1:Type,, TE:TypedExp)) => KL(Exp1::T1,, TE) :: T1
 when
     isCompoundAssignLabel(KL)
@@ -748,8 +760,60 @@ when
 syntax K ::= "isNonNumericExp" "(" KLabel ")" [function]
 rule isNonNumericExp(KL:KLabel) =>
            (KL ==KLabel 'ArrayAccess)
+    orBool (KL ==KLabel 'NewInstance)
+    orBool (KL ==KLabel 'InstanceOf)
+    orBool (KL ==KLabel 'Lit)
+
+rule [elabNewInstance]:
+      elab('NewInstance(elabRes(Arg1:K),, T:RefType,, elabRes(Arg3:K),, elabRes(Arg4:K)))
+      => 'NewInstance(Arg1:K,, T:RefType,, Arg3:K,, Arg4:K) :: T
+
+rule [elabInstanceOf]:
+    elab('InstanceOf(TE:TypedExp,, RT2:RefType)) => 'InstanceOf(TE,, RT2) :: bool
+
+rule [elabLitClass]:
+    elab('Lit(elabRes('Class(T:Type)))) => 'Lit('Class(T:Type)) :: class String2Id("java.lang.Class")
 
 rule [elabArrayAccess]:
     elab('ArrayAccess(TargetExp:K::arrayOf T:Type,, IndexTE:TypedExp)) => 'ArrayAccess(TargetExp::arrayOf T,, IndexTE) :: T
+
+rule [elabArrayLength]:
+    'Field(Qual:K :: arrayOf T:Type,, X:Id)
+    => lookupField(Qual:: arrayOf T, arrayOf T, X) :: int
+when
+    Id2String(X) ==String "length"
+
+context 'ArrayType(HOLE)
+rule    'ArrayType(T:Type) => arrayOf T [structural]
+
+rule [NewArrayEmptyDims]:
+    'NewArray( (T:Type => arrayOf T),, _:K,,
+        elabRes('ListWrap( ( 'Dim(.List{K}) => .List{K} ) ,,_:List{K})) )
+        [structural]
+
+rule [NewArray]:
+    'NewArray(T:Type,, elabRes('ListWrap(Dims:List{K})),, elabRes('ListWrap(.List{K})))
+    => newArrayImpl(T, 'ListWrap(Dims), default(T), .List{K}) :: getArrayType(T, Dims)
+        [structural]
+
+//computes the array type based on allocated elem type and number of allocated dimensions.
+syntax K ::= "getArrayType" "(" Type "," List{K} ")"
+rule getArrayType(T:Type, K:K,,Dims:List{K}) => getArrayType(arrayOf T, Dims) [structural]
+rule getArrayType(T:Type, .List{K}) => T                                      [structural]
+
+rule [ArrayInitPreprocess]:
+    'NewArray((T:Type => arrayOf T),, elabRes('ListWrap(('Dim(.List{K}) => .List{K}),, _)),, elabRes('ArrayInit(_)))
+
+rule [ArrayInit]:
+    'NewArray(arrayOf T:Type,, elabRes('ListWrap(.List{K})),, elabRes('ArrayInit('ListWrap(InitContent:List{K}))))
+    => newArrayImpl(T, 'ListWrap(count(InitContent)), .K, InitContent) :: arrayOf T
+
+//counts the number of elements in the List{K} list. Evaluates to an Int::int .
+syntax K ::= "count" "(" List{K} ")"
+           | "count" "(" Int "," List{K} ")"
+
+rule count(Ks:List{K}) => count(0, Ks)
+rule count(I:Int, K:K,, Ks:List{K}) => count(I +Int 1, Ks)
+rule count(I:Int, .List{K}) => I::int
 
 endmodule

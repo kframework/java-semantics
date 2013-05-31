@@ -104,7 +104,7 @@ rule [ArrayIndexOutOfBoundsException]:
       (class String2Id("java.lang.ArrayIndexOutOfBoundsException")),,
       'ListWrap( Int2String(N) :: rtString ),,
       'None(.List{K})
-    ))
+    ) :: class String2Id("java.lang.ArrayIndexOutOfBoundsException"))
 when notBool ((N >=Int 0) andBool (N <Int M))
         [structural, anywhere]
 
@@ -120,19 +120,14 @@ rule [arrayAccessNull]:
       class String2Id("java.lang.NullPointerException"),,
       'ListWrap( null :: rtString ),,
       'None(.List{K})
-    ))
+    ) :: class String2Id("java.lang.NullPointerException"))
         [structural, anywhere]
 
 //Array length, as defined in JDK
 rule
-    <k> 'Field(arrayRef(_,_:Int, N:Int)::_,, X:Id ) => N::int ...</k>
+    lookupField(arrayRef(_,_:Int, N:Int)::_, _, X:Id) :: int => N::int
 when
     Id2String(X) ==String "length"
-
-//@ \subsection{Array Type}
-
-context 'ArrayType(HOLE)
-rule    'ArrayType(T:Type) => arrayOf T [structural]
 
 //@ \subsection{New array allocation}
 /*@ The dynamic semantics of typed array declarations is
@@ -140,24 +135,7 @@ similar to that in untyped SIMPLE, but we have to enforce that the
 type of an array declaration be of the form \texttt{arrayOf $T$}
 and assign the right type ($T$) to the allocated array locations. */
 
-context 'NewArray(HOLE,, _:List{K})
-
-rule [NewArrayEmptyDims]:
-    'NewArray( (T:Type => arrayOf T),, _:List{K},,
-        'ListWrap( ( 'Dim(.List{K}) => .List{K} ) ,,_:List{K}) )
-        [structural, anywhere]
-
-rule [NewArray]:
-    'NewArray(T:Type,, K:K,, 'ListWrap(.List{K})) => newArrayImpl(T, K, default(T))
-        [structural, anywhere]
-
-syntax K ::= "newArrayImpl" "("
-                Type ","  // T - element type
-                K ","     // 'ListWrap(Dims) - array dimensions
-                K         // InitExp - expression used to initialize each array element
-             ")"
-
-context newArrayImpl(_:KResult, 'ListWrap(Dims:List{K},,HOLE,, _), _)
+context newArrayImpl(_:Type, 'ListWrap(Dims:List{K},,HOLE,, _), _,_)
 when isKResult(Dims)
 
 //applies right after the previous rule, because HOLE is of the form 'Dim(K)
@@ -165,13 +143,17 @@ rule 'Dim(K:K) => K [structural]
 
 //when all dims were computed, check that dims are positive, and only
 //after that begin array allocation
-rule newArrayImpl(T:Type, 'ListWrap(Dims:List{K}), InitExp:K)
+rule newArrayImpl(T:Type, 'ListWrap(Dims:List{K}), InitExp:K, .List{K})
     => checkNonNegative(Dims) ~> newArrayAlloc(T, 'ListWrap(Dims), InitExp)
-when isKResult(Dims)
+when isKResult(Dims) andBool InitExp =/=K .K
+
+rule [newArrayWithInit]:
+    newArrayImpl(T, 'ListWrap(Dim:TypedVal), .K, InitContent:List{K})
+    => arrayInitAlloc(newArrayImpl(T, 'ListWrap(Dim), undefined :: T, .List{K}) :: arrayOf T, InitContent)
 
 //same as newArrayImpl, but after dims were computed and checked
 syntax K ::= "newArrayAlloc" "("
-                Type ","  // T - element type
+                Type ","  // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
                 K ","     // 'ListWrap(Dims:List{KResult}) - array dimensions
                 K         // InitExp - expression used to initialize each array element
              ")"
@@ -192,7 +174,7 @@ rule [NegativeArraySizeException]:
       class String2Id("java.lang.NegativeArraySizeException"),,
       'ListWrap( null :: rtString ),,
       'None(.List{K})
-    ))
+    ) :: class String2Id("java.lang.NegativeArraySizeException"))
 when
     NI <Int 0
 
@@ -305,24 +287,9 @@ rule [ArrayStoreException]:
             )
           ),,
           'None(.List{K})
-        ))
+        ) :: class String2Id("java.lang.ArrayStoreException"))
 
 //@ \subsection{Array initializer}
-
-rule [ArrayInitPreprocess]:
-    'NewArray((T:Type => arrayOf T),, 'ListWrap(('Dim(.List{K}) => .List{K}),, _),, 'ArrayInit(_))
-
-rule [ArrayInit]:
-    'NewArray(arrayOf T:Type,, 'ListWrap(.List{K}),, 'ArrayInit('ListWrap(InitContent:List{K})))
-    => arrayInitAlloc(newArrayImpl(T, 'ListWrap(count(InitContent)), undefined :: T), InitContent)
-
-//counts the number of elements in the List{K} list. Evaluates to an Int::int .
-syntax K ::= "count" "(" List{K} ")"
-           | "count" "(" Int "," List{K} ")"
-
-rule count(Ks:List{K}) => count(0, Ks)
-rule count(I:Int, K:K,, Ks:List{K}) => count(I +Int 1, Ks)
-rule count(I:Int, .List{K}) => I::int
 
 //allocates the array based on previously computed size, the proceeds to array initialization
 syntax K ::= "arrayInitAlloc" "("
@@ -352,12 +319,12 @@ rule [arrayInitImplInnerArrayInit]:
     ( . => 'ExprStm(assignImpl(
               true::bool,
               L,
-              'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK:K))
+              newArrayImpl(T, 'ListWrap(count(InitContent)), .K, InitContent) :: arrayOf T
            )) )
     ~> arrayInitImpl(
-          arrayOf T:Type,
+          arrayOf arrayOf T:Type,
           (L:Int => L +Int 1),
-          (('ArrayInit(InitK:K) => .List{K}),, _)
+          (('ArrayInit('ListWrap(InitContent:List{K})) => .List{K}),, _)
        )
 
 rule [arrayInitImplDiscard]:

@@ -12,10 +12,10 @@ Part 2 - class init
 203. Fields with initializer, initializer exps refer to fields declared below. Default values exposed.
 204. Fields with initializer, forward reference, default values for all types tested.
 205. Field with initializer, initializer have an assignment to other field declared forward.
-206. Fields with initializer, refering to methods declared both below and above.
-207. Fields with initializer, refering to superclass fields/methods.
+206. Fields with initializer, referring to methods declared both below and above.
+207. Fields with initializer, referring to superclass fields/methods.
 208. Fields with initializer, calling an overridden method from subclass. The method
-  references fileds in the subclass which have initializers. The test should expose default values
+  references fields in the subclass which have initializers. The test should expose default values
   of the fields in the subclass.
     It is not clear from JLS what version of method should be called. I suppose that polymorphism
   applies in field initializer context.
