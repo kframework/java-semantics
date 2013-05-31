@@ -197,7 +197,9 @@ syntax KResult ::= TypedVal | Type
 
 syntax TypedExp ::= TypedVal
 syntax TypedExp ::= K "::" Type
-syntax K ::= TypedExp
+
+syntax ProtoTypedExp ::= TypedExp
+syntax ProtoTypedExp ::= K "::" K       [strict(2)]
 
 syntax AccessMode ::= "public" | "protected" | "package" | "private"
 syntax KResult ::= AccessMode

@@ -246,7 +246,7 @@ rule unElab(elabRes(K:K)) => K                  [anywhere]
 //Computes to true if the given arg is a list of elaboration results, false otherwise.
 syntax K ::= "isElab" "(" List{K} ")"           [function]
 rule isElab((K:K => .List{K}) ,,_)
-when isElabOnly(K) orBool isElabIndependent(K)  [anywhere]
+when (isElabOnly(K) ==K true) orBool (isElabIndependent(K) ==K true)
 
 rule isElab(K:K,,_) => false
 when notBool (
@@ -319,10 +319,9 @@ rule customElabDispose(KL:KLabel(Ks:List{K})) =>
            (KL ==KLabel 'Block)
     orBool (KL ==KLabel 'For)
     orBool (KL ==KLabel 'Catch)
-    orBool (KL ==KLabel 'localVar`(_`))
     orBool (KL ==KLabel 'This)
-    orBool (KL ==KLabel 'castImpl`(_`,_`))
-    orBool (isType(KL(Ks)) ==K true)            [anywhere]
+    orBool (isType(KL(Ks)) ==K true)
+    orBool (isExpressionLabel(KL))
 
 //Elaboration of blocks
 
@@ -501,9 +500,7 @@ rule 'CastPrim(K1:K,, K2:K) => castImpl(K1,K2)      [structural, anywhere]
 
 //Case when Exp was initially a literal, and now is Val::Type
 rule [elabCastImplElabIndep]:
-    <k> elab(castImpl(T:Type, Exp:K)) => castImpl(T, Exp) :: T ...</k>
-    <debug>... . => ListItem(castImpl(T,Exp)) </debug>
-when isElabIndependent(Exp)
+    elab(castImpl(T1:Type, Exp:K :: T2:Type)) => castImpl(T1, Exp::T2) :: T1
 
 //HOLE is transformed into paramImpl
 context elabInit('Catch(HOLE,, _))
@@ -592,5 +589,167 @@ rule [outerStaticField]:
 
 rule [outerStaticFieldDiscard]:
     outerStaticField(noClass, _) => noValue
+
+/*@ \section{Elaboration of numeric expressions} */
+
+syntax K ::= "isExpressionLabel" "(" KLabel ")" [function]
+rule isExpressionLabel(KL:KLabel) =>
+           (KL ==KLabel 'localVar`(_`))
+    orBool (KL ==KLabel 'castImpl`(_`,_`))
+
+    //Infix operators
+    /* ||  */ orBool (KL ==KLabel 'LazyOr)
+    /* &&  */ orBool (KL ==KLabel 'LazyAnd)
+    /* |   */ orBool (KL ==KLabel 'Or)
+    /* ^   */ orBool (KL ==KLabel 'ExcOr)
+    /* &   */ orBool (KL ==KLabel 'And)
+    /* ==  */ orBool (KL ==KLabel 'Eq)
+    /* !=  */ orBool (KL ==KLabel 'NotEq)
+    /* <   */ orBool (KL ==KLabel 'Lt)
+    /* >   */ orBool (KL ==KLabel 'Gt)
+    /* <=  */ orBool (KL ==KLabel 'LtEq)
+    /* >=  */ orBool (KL ==KLabel 'GtEq)
+    /* <<  */ orBool (KL ==KLabel 'LeftShift)
+    /* >>  */ orBool (KL ==KLabel 'RightShift)
+    /* >>> */ orBool (KL ==KLabel 'URightShift)
+    /* +   */ orBool (KL ==KLabel 'Plus)
+    /* -   */ orBool (KL ==KLabel 'Minus)
+    /* *   */ orBool (KL ==KLabel 'Mul)
+    /* /   */ orBool (KL ==KLabel 'Div)
+    /* %   */ orBool (KL ==KLabel 'Remain)
+
+    //Prefix operators
+    /* ++  */ orBool (KL ==KLabel 'PreIncr)
+    /* --  */ orBool (KL ==KLabel 'PreDecr)
+    /* !   */ orBool (KL ==KLabel 'Not)
+    /* ~   */ orBool (KL ==KLabel 'Complement)
+    /* +   */ //'Plus   - defined earlier
+    /* -   */ //'Minus  - defined earlier
+
+    //Postfix operators
+    /* ++  */ orBool (KL ==KLabel 'PostIncr)
+    /* --  */ orBool (KL ==KLabel 'PostDecr)
+
+    //Ternary operators
+      /* ? : */ orBool (KL ==KLabel 'Cond)
+      /* =   */ orBool (KL ==KLabel 'Assing)
+                orBool isCompoundAssignLabel(KL)
+                orBool isNonNumericExp(KL)
+
+syntax K ::= "isCompoundAssignLabel" "(" KLabel ")" [function]
+rule isCompoundAssignLabel(KL:KLabel) =>
+           (KL ==KLabel 'AssignPlus)
+    orBool (KL ==KLabel 'AssignMinus)
+    orBool (KL ==KLabel 'AssignMul)
+    orBool (KL ==KLabel 'AssignDiv)
+    orBool (KL ==KLabel 'AssignAnd)
+    orBool (KL ==KLabel 'AssignOr)
+    orBool (KL ==KLabel 'AssignExcOr)
+    orBool (KL ==KLabel 'AssignRemain)
+    orBool (KL ==KLabel 'AssignLeftShift)
+    orBool (KL ==KLabel 'AssignRightShift)
+    orBool (KL ==KLabel 'AssignURightShift)           [structural, anywhere]
+
+//It looks like isTypedExp(List{K}) doesn't work.
+rule [elabBoolOnlyResultExpBinary]:
+    elab(KL:KLabel(TE1:TypedExp,, TE2:TypedExp)) => KL(TE1,,TE2) :: bool
+when
+           (KL ==KLabel 'LazyOr)
+    orBool (KL ==KLabel 'LazyAnd)
+    orBool (KL ==KLabel 'Eq)
+    orBool (KL ==KLabel 'NotEq)
+    orBool (KL ==KLabel 'Lt)
+    orBool (KL ==KLabel 'Gt)
+    orBool (KL ==KLabel 'LtEq)
+    orBool (KL ==KLabel 'GtEq)
+
+rule [elabBoolOnlyResultExpUnary]:
+    elab('Not(TE:TypedExp)) => 'Not(TE) :: bool
+
+rule [elabBoolOperandBoolResultExp]:
+    elab(KL:KLabel(Exp1:K::bool,, Exp2:K::bool)) => KL(Exp1::bool,, Exp2::bool) :: bool
+when
+           (KL ==KLabel 'Or)
+    orBool (KL ==KLabel 'ExcOr)
+    orBool (KL ==KLabel 'And)
+
+rule [elabBinaryNumOperandNumResultExp]:
+    elab(KL:KLabel(Exp1:K::NT1:NumericType,, Exp2:K::NT2:NumericType)) => KL(Exp1::NT1,, Exp2::NT2) :: normalizeType(NT1,NT2)
+when
+           (KL ==KLabel 'Or)
+    orBool (KL ==KLabel 'ExcOr)
+    orBool (KL ==KLabel 'And)
+    orBool (KL ==KLabel 'Plus)
+    orBool (KL ==KLabel 'Minus)
+    orBool (KL ==KLabel 'Mul)
+    orBool (KL ==KLabel 'Div)
+    orBool (KL ==KLabel 'Remain)
+
+rule [elabBitShift]:
+    elab(KL:KLabel(Exp1:K::NT1:NumericType,, Exp2:K::NT2:NumericType)) => KL(Exp1::NT1,, Exp2::NT2) :: normalizeType(NT1)
+when
+           (KL ==KLabel 'LeftShift)
+    orBool (KL ==KLabel 'RightShift)
+    orBool (KL ==KLabel 'URightShift)
+
+rule [elabUnaryNumeric]:
+    elab(KL:KLabel(Exp:K::NT:NumericType)) => KL(Exp::NT) :: normalizeType(NT)
+when
+           (KL ==KLabel 'Plus)
+    orBool (KL ==KLabel 'Minus)
+    orBool (KL ==KLabel 'PreIncr)
+    orBool (KL ==KLabel 'PreDecr)
+    orBool (KL ==KLabel 'PostIncr)
+    orBool (KL ==KLabel 'PostDecr)
+    orBool (KL ==KLabel 'Complement)
+
+rule [elabStringPlusAny]:
+    elab('Plus(Exp:K::rtString,, TE:TypedExp)) => 'Plus(Exp::rtString,, TE) :: rtString
+
+rule [elabAnyPlusString]:
+    elab('Plus(TE:TypedExp,, Exp:K::rtString)) => 'Plus(TE,, Exp::rtString) :: rtString
+
+rule [elabCond]:
+    elab('Cond(CondTE:TypedExp,, Exp1:K::T1:Type,, Exp2:K::T2:Type)) => 'Cond(CondTE,, Exp1::T1,, Exp2::T2) :: condType(T1, T2)
+
+//todo Workaround used to elaborate method calls and arrays.
+rule [tempElabExpWithElabRes]:
+    elab(KL:KLabel(_,, (elabRes(MethCall:K) => MethCall::noClass),, _))
+when
+    isExpressionLabel(KL)
+
+//computes the type of a conditional expression
+//Operands evaluate into types
+syntax K ::= "condType" "(" Type "," Type ")" [strict]
+
+rule [condTypeNoChar]:
+    condType(T1:Type,T2:Type) => 'If(subtype(T1,T2),, T2,, T1)
+when
+    T1 =/=K char andBool T2 =/=K char
+
+rule [condTypeSecondChar]:
+    condType(T1:Type, char) => condType(char, T1)
+when
+    T1 =/=K char
+
+rule [condTypeFirstChar]:
+    condType(char, T2:Type) => 'If(subtype(char, T2),, T2,, int)
+
+rule [elabAssing]:
+    elab('Assing(Exp1:K::T1:Type,, TE:TypedExp)) => 'Assing(Exp1::T1,, TE) :: T1
+
+rule [elabCompoundAssing]:
+    elab(KL:KLabel(Exp1:K::T1:Type,, TE:TypedExp)) => KL(Exp1::T1,, TE) :: T1
+when
+    isCompoundAssignLabel(KL)
+
+/*@ \section{Elaboration of non-numeric expressions} */
+
+syntax K ::= "isNonNumericExp" "(" KLabel ")" [function]
+rule isNonNumericExp(KL:KLabel) =>
+           (KL ==KLabel 'ArrayAccess)
+
+rule [elabArrayAccess]:
+    elab('ArrayAccess(TargetExp:K::arrayOf T:Type,, IndexTE:TypedExp)) => 'ArrayAccess(TargetExp::arrayOf T,, IndexTE) :: T
 
 endmodule

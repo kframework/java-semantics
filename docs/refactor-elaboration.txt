@@ -69,7 +69,18 @@ At this step, all tests except array-related and some conditional-operator-relat
 3.1.ok. Annotate the type of localVar, fieldLookup, staticFieldLookup terms.
   Also other additional terms required to preserve all the passing tests (as for the end of step 2).
 
-4. Implement method signature lookup during elaboration.
+4. Invert the condition for labels elaborated by default:
+  Right now we specify the labels that should not be elaborated by default, and do default elaboration
+    for all other labels.
+  This strategy is problematic because whenever we introduce a new language construct that could be
+    desugared into existing constructs at elaboration phase, we need to add it to the list of exceptions.
+    LocalVarDec is a good example. If we don't add them to the list of custom elab init, the results of
+    our execution will depend on the order of rules in the compiled maude file.
+  We need to do the opposite: Specify the list of labels for which we perform default elaboration,
+    perform custom elaboration case by case, and for all other labels we will expect other rules to rewrite
+    them into labels with known elaboration rules.
+
+5. Implement method signature lookup during elaboration.
 
   When elaborating a block, in order to distinguish between an unelaborated
 and elaborated block, we will wrap elaborated blocks into elab(...).

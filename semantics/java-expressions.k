@@ -149,52 +149,12 @@ rule /* loc(L)-- => (loc(L) = lookup(L) - 1) + 1 */
 
 //Conditional expression : ?: . Desugared into an if with cast.
 //The biggest difficulty is computing the expression type, according to JLS1 $15.24
-rule 'Cond(CondExp:K,, TrueExp:K,, FalseExp:K)
-    => castImpl(getCondType(getExpType(TrueExp), getExpType(FalseExp)),
-                'If(CondExp,, TrueExp,, FalseExp)) :: getCondType(getExpType(TrueExp), getExpType(FalseExp))
-
-//just for the rule above
-context castImpl(HOLE,_)::_
-context castImpl(_,_)::HOLE
-
-//computes the type of a conditional expression
-//Operands evaluate into types
-syntax K ::= "getCondType" "(" K "," K ")" [strict]
-
-rule [getCondTypeNoChar]:
-    getCondType(T1:Type,T2:Type) => 'If(subtype(T1,T2),, T2,, T1)
-when
-    T1 =/=K char andBool T2 =/=K char
-
-rule [getCondTypeSecondChar]:
-    getCondType(T1:Type, char) => getCondType(char, T1)
-when
-    T1 =/=K char
-
-rule [getCondTypeFirstChar]:
-    getCondType(char, T2:Type) => 'If(subtype(char, T2),, T2,, int)
-
-//Get the compile-time type of the given expression
-//The implementation for the above construct is given in the module JAVA-EXPR-TYPE
-syntax K ::= "getExpType" "(" K ")"
+rule 'Cond(CondExp:K,, TrueExp:K,, FalseExp:K) :: ResT:Type
+    => castImpl(ResT, 'If(CondExp,, TrueExp,, FalseExp)) :: ResT
 
 /*@ \subsubsection{Assignment operators}
 Typed KOOL allows to assign subtype instance values to supertype lvalues.
 Assignment operators are seqstrict according to JLS. */
-
-syntax K ::= "isCompoundAssignLabel" "(" KLabel ")" [function]
-rule isCompoundAssignLabel(KL:KLabel) =>
-           (KL ==KLabel 'AssignPlus)
-    orBool (KL ==KLabel 'AssignMinus)
-    orBool (KL ==KLabel 'AssignMul)
-    orBool (KL ==KLabel 'AssignDiv)
-    orBool (KL ==KLabel 'AssignAnd)
-    orBool (KL ==KLabel 'AssignOr)
-    orBool (KL ==KLabel 'AssignExcOr)
-    orBool (KL ==KLabel 'AssignRemain)
-    orBool (KL ==KLabel 'AssignLeftShift)
-    orBool (KL ==KLabel 'AssignRightShift)
-    orBool (KL ==KLabel 'AssignURightShift)           [structural, anywhere]
 
 context 'Assign((HOLE => lvalue(HOLE)),,_)
 context 'Assign(_:KResult,,HOLE)
@@ -252,5 +212,27 @@ syntax RawVal ::= "loc" "(" Int ")"
 
 //lookup result is of sort RawType
 syntax K ::= "lookup" "(" Int ")"
+
+//todo Temporary rule, deletes the elaboration type info for expressions, for temporary testing.
+rule [tempDeleteElabTypeInfo]:
+    <k> KL:KLabel(Ks:List{K}) :: T:Type => KL(Ks) ...</k>
+    <computationPhase> ExecutionPhase </computationPhase>
+when
+    (notBool (isRawVal(KL(Ks)) ==K true))
+    andBool notBool (KL ==KLabel 'Cond)
+    andBool notBool (KL ==KLabel 'localVar`(_`))
+    andBool notBool (KL ==KLabel 'lookupField`(_`,_`,_`))
+    andBool notBool (KL ==KLabel 'lookupStaticField`(_`,_`))
+
+//todo temp
+rule [tempDeleteElabTypeInfo-lvalue]:
+    <k> lvalue( KL:KLabel(Ks:List{K}) :: T:Type => KL(Ks) ) ...</k>
+    <computationPhase> ExecutionPhase </computationPhase>
+when
+    (notBool (isRawVal(KL(Ks)) ==K true))
+    andBool notBool (KL ==KLabel 'Cond)
+    andBool notBool (KL ==KLabel 'localVar`(_`))
+    andBool notBool (KL ==KLabel 'lookupField`(_`,_`,_`))
+    andBool notBool (KL ==KLabel 'lookupStaticField`(_`,_`))
 
 endmodule

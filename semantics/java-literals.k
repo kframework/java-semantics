@@ -121,36 +121,36 @@ rule 'Lit('Bool('False(.List{K}))) => false::bool
 //@ \section{char literals}
 //@ Chars are represented as int values, as described in java specification.
 
-rule 'Lit('Char('Single( I:Int ))) => I :: char
+rule 'Lit('Char('Single( I:Int ))) => I :: char [anywhere]
 
 //todo the three escape characters below are not parsed by K3 in their nice form
-rule 'Lit('Char('NamedEscape(  98 ))) =>                 8 :: char  // \b
-rule 'Lit('Char('NamedEscape( 102 ))) =>                12 :: char  // \f
-rule 'Lit('Char('NamedEscape(  39 ))) =>                39 :: char  // \'
+rule 'Lit('Char('NamedEscape(  98 ))) =>                 8 :: char [anywhere]  // \b
+rule 'Lit('Char('NamedEscape( 102 ))) =>                12 :: char [anywhere]  // \f
+rule 'Lit('Char('NamedEscape(  39 ))) =>                39 :: char [anywhere]  // \'
 
-rule 'Lit('Char('NamedEscape( 116 ))) => asciiString("\t") :: char
-rule 'Lit('Char('NamedEscape( 110 ))) => asciiString("\n") :: char
-rule 'Lit('Char('NamedEscape( 114 ))) => asciiString("\r") :: char
+rule 'Lit('Char('NamedEscape( 116 ))) => asciiString("\t") :: char [anywhere]
+rule 'Lit('Char('NamedEscape( 110 ))) => asciiString("\n") :: char [anywhere]
+rule 'Lit('Char('NamedEscape( 114 ))) => asciiString("\r") :: char [anywhere]
 
-rule 'Lit('Char('NamedEscape( 34 ))) => asciiString("\"") :: char
-rule 'Lit('Char('NamedEscape( 92 ))) => asciiString("\\") :: char
+rule 'Lit('Char('NamedEscape( 34 ))) => asciiString("\"") :: char [anywhere] //"
+rule 'Lit('Char('NamedEscape( 92 ))) => asciiString("\\") :: char [anywhere] //"
 
-rule 'Lit('Char('OctaEscape1( I:Int ))) => octaAsciiToInt(I) :: char
+rule 'Lit('Char('OctaEscape1( I:Int ))) => octaAsciiToInt(I) :: char [anywhere]
 
 rule 'Lit('Char('OctaEscape2( I1:Int,, I2:Int )))
     =>    octaAsciiToInt(I1) *Int 8
-    +Int  octaAsciiToInt(I2)        :: char
+    +Int  octaAsciiToInt(I2)        :: char [anywhere]
 
 rule 'Lit('Char('OctaEscape3( I1:Int,, I2:Int,, I3:Int )))
     =>    octaAsciiToInt(I1) *Int 64
      +Int octaAsciiToInt(I2) *Int  8
-     +Int octaAsciiToInt(I3)          :: char
+     +Int octaAsciiToInt(I3)          :: char [anywhere]
 
 rule 'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
     =>    hexAsciiToInt(I1) *Int 4096
      +Int hexAsciiToInt(I2) *Int  256
      +Int hexAsciiToInt(I3) *Int   16
-     +Int hexAsciiToInt(I4)           :: char
+     +Int hexAsciiToInt(I4)           :: char [anywhere]
 
 //@ \section{String literals}
 

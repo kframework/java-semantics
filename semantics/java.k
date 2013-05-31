@@ -9,7 +9,6 @@ require "java-primitive-types.k"
 require "java-literals.k"
 require "java-subtyping.k"
 require "java-expressions.k"
-require "java-expr-type.k"
 require "java-statements.k"
 require "java-arrays.k"
 require "java-static-init.k"
@@ -30,7 +29,6 @@ module JAVA
     imports JAVA-LITERALS
     imports JAVA-SUBTYPING
     imports JAVA-EXPRESSIONS
-    imports JAVA-EXPR-TYPE
     imports JAVA-STATEMENTS
     imports JAVA-ARRAYS
     imports JAVA-STATIC-INIT
