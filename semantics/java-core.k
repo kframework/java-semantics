@@ -245,18 +245,6 @@ rule toString(rtString) => "java.lang.String"::rtString [anywhere]
 syntax K ::= "typeOf" "(" K ")" [function]
 rule typeOf(_ :: T:Type) => T   [anywhere]
 
-//todo this rule, if used, leads to the error "failed to load IOWrapper".
-syntax K ::= "isNumericType2" "(" Type ")" [function]
-rule isNumericType2(T:Type)
-=>  #if         (T ==K byte)
-        orBool  (T ==K short)
-        orBool  (T ==K int)
-        orBool  (T ==K long)
-        orBool  (T ==K char)
-      #then true
-      #else false
-    #fi  [structural, anywhere]
-
 //this is actually a hack, since we should not access k-labels 'arrayOf_ and 'class_ .
 //maybe this isSort methods will be provided by K later on.
 syntax K ::= "isRefType2" "(" Type ")"  [function]

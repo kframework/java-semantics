@@ -78,13 +78,13 @@ rule [ArrayParamIdDiscard]:
 /*@ \subsection{Array access}
 Check array bounds, as part of the dynamic typing policy. */
 
-syntax KLabel ::= "'ArrayAccess" [seqstrict]
-
-context lvalue('ArrayAccess(HOLE,,_))
-context lvalue('ArrayAccess(_:KResult,,HOLE))
+context 'ArrayAccess(HOLE,,_)::_
+context 'ArrayAccess(_:KResult,,HOLE)::_
+context lvalue('ArrayAccess(HOLE,,_)::_)
+context lvalue('ArrayAccess(_:KResult,,HOLE)::_)
 
 rule [arrayLookup]:
-    'ArrayAccess(arrayRef(_, L:Int, M:Int) :: arrayOf T:Type,, N:Int::_)
+    'ArrayAccess(arrayRef(_, L:Int, M:Int) :: arrayOf T:Type,, N:Int::_) :: T
     => lookup(L +Int N) :: T
 when (N >=Int 0) andBool (N <Int M)
         [structural, anywhere]
@@ -98,7 +98,7 @@ rule [lookupArrayLocation]:
     <store>... L |-> V:RawVal ::elem T2:Type ...</store>
 
 rule [ArrayIndexOutOfBoundsException]:
-    'ArrayAccess(arrayRef(_,_,M:Int) :: _,, N:Int::_)
+    'ArrayAccess(arrayRef(_,_,M:Int) :: _,, N:Int::_)::_
     => 'Throw('NewInstance(
       'None(.List{K}),,
       (class String2Id("java.lang.ArrayIndexOutOfBoundsException")),,
@@ -114,7 +114,7 @@ rule [LvalueIndexOutOfBoundsDesugar]:
     lvalue('Throw(K:K)) => 'Throw(K)
 
 rule [arrayAccessNull]:
-    'ArrayAccess(null::_ ,, _)
+    'ArrayAccess(null::_ ,, _)::_
     => 'Throw('NewInstance(
       'None(.List{K}),,
       class String2Id("java.lang.NullPointerException"),,
@@ -135,7 +135,7 @@ similar to that in untyped SIMPLE, but we have to enforce that the
 type of an array declaration be of the form \texttt{arrayOf $T$}
 and assign the right type ($T$) to the allocated array locations. */
 
-context newArrayImpl(_:Type, 'ListWrap(Dims:List{K},,HOLE,, _), _,_)
+context newArrayImpl(_:Type, 'ListWrap(Dims:List{K},,HOLE,, _), _,_)::_
 when isKResult(Dims)
 
 //applies right after the previous rule, because HOLE is of the form 'Dim(K)
@@ -143,12 +143,12 @@ rule 'Dim(K:K) => K [structural]
 
 //when all dims were computed, check that dims are positive, and only
 //after that begin array allocation
-rule newArrayImpl(T:Type, 'ListWrap(Dims:List{K}), InitExp:K, .List{K})
+rule newArrayImpl(T:Type, 'ListWrap(Dims:List{K}), InitExp:K, .List{K})::_
     => checkNonNegative(Dims) ~> newArrayAlloc(T, 'ListWrap(Dims), InitExp)
 when isKResult(Dims) andBool InitExp =/=K .K
 
 rule [newArrayWithInit]:
-    newArrayImpl(T, 'ListWrap(Dim:TypedVal), .K, InitContent:List{K})
+    newArrayImpl(T, 'ListWrap(Dim:TypedVal), .K, InitContent:List{K})::_
     => arrayInitAlloc(newArrayImpl(T, 'ListWrap(Dim), undefined :: T, .List{K}) :: arrayOf T, InitContent)
 
 //same as newArrayImpl, but after dims were computed and checked
@@ -238,12 +238,12 @@ rule N1:Int..N2:Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2 [anywhere]
 //@ \subsection{Array element assignment}
 
 rule [AssignInArrayExact]:
-    <k> 'Assign(loc(L:Int) :: T:Type,, V:RawVal :: T) => V::T ...</k>
+    <k> 'Assign(loc(L:Int)::_,, V:RawVal::_)::T => V::T ...</k>
     <store>... L |-> (_ => V)::elem T ...</store>
 
 rule [AssignInArrayWithCheck]:
     <k>
-      'Assign(loc(L:Int) :: T:Type,, V:RawVal :: T)
+      'Assign(loc(L:Int)::_,, V:RawVal::_)::T
       => assignImpl(
           subtype(typeOf(V), StoreType),
           L,
@@ -261,8 +261,8 @@ syntax K ::= "assignImpl" "("
                             Int ","   //destination store location
                             TypedVal  //assigned value
                           ")"
-        [strict(1)]
 
+context assignImpl(HOLE,_,_)
 context assignImpl(_:KResult, _, HOLE)
 
 rule [assignImpl]:
@@ -336,7 +336,7 @@ rule toString(arrayOf T:Type) => arrayToString(arrayOf T) [anywhere]
 
 //string representation of a type within an array type
 //see JDK: Class.getName()
-syntax K ::= "arrayToString" "(" Type ")" [function]
+syntax K ::= "arrayToString" "(" Type ")"  [function]
 rule arrayToString(byte)  => "B"::rtString [anywhere]
 rule arrayToString(short) => "S"::rtString [anywhere]
 rule arrayToString(int)   => "I"::rtString [anywhere]
@@ -346,13 +346,11 @@ rule arrayToString(bool)  => "Z"::rtString [anywhere]
 
 //hack in order to access class Id construct from classes
 rule arrayToString('class_(Class:Id))
-    => 'Plus("L"::rtString,,'Plus(toString('class_(Class)) ,,";"::rtString))
-        [anywhere]
+    => 'Plus("L"::rtString,,'Plus(toString('class_(Class)) ,,";"::rtString)::rtString)::rtString  [anywhere]
 
 rule arrayToString(rtString)
-    => 'Plus("L"::rtString,,'Plus(toString(rtString   ) ,,";"::rtString))
-        [anywhere]
-rule arrayToString(arrayOf T:Type) => 'Plus("["::rtString ,,arrayToString(T))
-        [anywhere]
+    => 'Plus("L"::rtString,,'Plus(toString(rtString   ) ,,";"::rtString)::rtString)::rtString     [anywhere]
+
+rule arrayToString(arrayOf T:Type) => 'Plus("["::rtString ,,arrayToString(T))::rtString [anywhere]
 
 endmodule

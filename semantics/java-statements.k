@@ -1,11 +1,13 @@
 require "java-core.k"
 require "java-subtyping.k"
 require "java-var-lookup.k"
+require "java-api-core.k"
 
 module JAVA-STATEMENTS
     imports JAVA-CORE
     imports JAVA-SUBTYPING
     imports JAVA-VAR-LOOKUP
+    imports JAVA-API-CORE //for rtSystemOut
 
 //@ \section{Initiation of execution}
 
@@ -416,7 +418,7 @@ rule [ThrowCheckedTrue]:
     ~> catchBlocks(catchImpl(paramImpl(T:Type, X:Id), CatchS),, _)
     => 'Block('ListWrap(
           'LocalVarDec(T,, 'ListWrap('VarDec(X))),,
-          'ExprStm('Assign(localVar(X)::T,, TV)),,
+          'ExprStm('Assign(localVar(X)::T,, TV)::T),,
           CatchS
         ))
 
@@ -449,11 +451,11 @@ rule [ThrowCausesThreadTermination]:
       'Throw(TV:TypedVal)
       =>  'ExprStm('Invoke(
             'Method('MethodName(
-              'AmbName('TypeName(String2Id("System")),, String2Id("out")),,
+              rtSystemOut,,
               String2Id("println")
             )),,
             'ListWrap(
-                'Plus("Thread terminated with exception: "::rtString,, TV))
+                'Plus("Thread terminated with exception: "::rtString,, TV)::rtString)
           ))
     </k>
     <stack> .List </stack>

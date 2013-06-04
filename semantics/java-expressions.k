@@ -9,100 +9,100 @@ module JAVA-EXPRESSIONS
 
 //@ \section{Operators}
 
-syntax KLabel ::=
-                //Infix operators
-                  /* ||  */ "'LazyOr"      [strict(1)]
-                | /* &&  */ "'LazyAnd"     [strict(1)]
-                | /* |   */ "'Or"          [seqstrict]
-                | /* ^   */ "'ExcOr"       [seqstrict]
-                | /* &   */ "'And"         [seqstrict]
-                | /* ==  */ "'Eq"          [seqstrict]
-                | /* !=  */ "'NotEq"       [seqstrict]
-                | /* <   */ "'Lt"          [seqstrict]
-                | /* >   */ "'Gt"          [seqstrict]
-                | /* <=  */ "'LtEq"        [seqstrict]
-                | /* >=  */ "'GtEq"        [seqstrict]
-                | /* <<  */ "'LeftShift"   [seqstrict]
-                | /* >>  */ "'RightShift"  [seqstrict]
-                | /* >>> */ "'URightShift" [seqstrict]
-                | /* +   */ "'Plus"        [seqstrict]
-                | /* -   */ "'Minus"       [seqstrict]
-                | /* *   */ "'Mul"         [seqstrict]
-                | /* /   */ "'Div"         [seqstrict]
-                | /* %   */ "'Remain"      [seqstrict]
+//Infix operators
+context /* ||  */'LazyOr(HOLE,,_)::_
+context /* &&  */'LazyAnd(HOLE,,_)::_
+context /* |   */ 'Or(HOLE,,_)::_
+context           'Or(_:KResult,,HOLE)::_
+context /* ^   */ 'ExcOr(HOLE,,_)::_
+context           'ExcOr(_:KResult,,HOLE)::_
+context /* &   */ 'And(HOLE,,_)::_
+context           'And(_:KResult,,HOLE)::_
+context /* ==  */ 'Eq(HOLE,,_)::_
+context           'Eq(_:KResult,,HOLE)::_
+context /* !=  */ 'NotEq(HOLE,,_)::_
+context           'NotEq(_:KResult,,HOLE)::_
+context /* <   */ 'Lt(HOLE,,_)::_
+context           'Lt(_:KResult,,HOLE)::_
+context /* >   */ 'Gt(HOLE,,_)::_
+context           'Gt(_:KResult,,HOLE)::_
+context /* <=  */ 'LtEq(HOLE,,_)::_
+context           'LtEq(_:KResult,,HOLE)::_
+context /* >=  */ 'GtEq(HOLE,,_)::_
+context           'GtEq(_:KResult,,HOLE)::_
+context /* <<  */ 'LeftShift(HOLE,,_)::_
+context           'LeftShift(_:KResult,,HOLE)::_
+context /* >>  */ 'RightShift(HOLE,,_)::_
+context           'RightShift(_:KResult,,HOLE)::_
+context /* >>> */ 'URightShift(HOLE,,_)::_
+context           'URightShift(_:KResult,,HOLE)::_
+context /* +   */ 'Plus(HOLE,,_)::_
+context           'Plus(_:KResult,,HOLE)::_
+context /* -   */ 'Minus(HOLE,,_)::_
+context           'Minus(_:KResult,,HOLE)::_
+context /* *   */ 'Mul(HOLE,,_)::_
+context           'Mul(_:KResult,,HOLE)::_
+context /* /   */ 'Div(HOLE,,_)::_
+context           'Div(_:KResult,,HOLE)::_
+context /* %   */ 'Remain(HOLE,,_)::_
+context           'Remain(_:KResult,,HOLE)::_
 
-                //Prefix operators
-                | /* ++  */ "'PreIncr"
-                | /* --  */ "'PreDecr"
-                | /* !   */ "'Not"         [strict]
-                | /* ~   */ "'Complement"  [strict]
-                  /* +   */ //"'Plus"   - defined earlier
-                  /* -   */ //"'Minus"  - defined earlier
+//Prefix operators
+context /* !   */ 'Not(HOLE)::_
+context /* ~   */ 'Complement(HOLE)::_
+        /* +   */ //"'Plus"   - defined earlier
+        /* -   */ //"'Minus"  - defined earlier
 
-                //Postfix operators
-                | /* ++  */ "'PostIncr"
-                | /* --  */ "'PostDecr"
+rule /* true  || _ */ 'LazyOr(true :: bool,, _) :: bool => true :: bool
 
-                //Ternary operators
-                | /* ? : */ "'Cond"
+//We use K:K instead of TE:TypedList becuase 'LazyAnd is used inside the semantics, not only in the source program.
+rule /* false || K */ 'LazyOr(false :: bool,, K:K) :: bool => K
+rule /* true  && K */ 'LazyAnd(true :: bool,, K:K) :: bool => K
 
-rule /* true  || _ */ 'LazyOr(true :: bool,, _) => true :: bool
-rule /* false || K */ 'LazyOr(false :: bool,, K:K) => K
-rule /* true  && K */ 'LazyAnd(true :: bool,, K:K) => K
-rule /* false && _ */ 'LazyAnd(false :: bool,, _:K) => false :: bool
+rule /* false && _ */ 'LazyAnd(false :: bool,, _) :: bool => false :: bool
 
-rule /* I1 | I2 */ 'Or(I1:Int :: NT1:NumericType,, I2:Int :: NT2:NumericType)
-    => normalize( (I1 |Int I2), NT1, NT2 )
-rule /* B1 | B2 */ 'Or(B1:Bool :: bool,, B2:Bool :: bool) => (B1 orBool B2) :: bool
-rule /* I1 ^ I2 */ 'ExcOr(I1:Int :: NT1:NumericType,, I2:Int :: NT2:NumericType) => normalize( (I1 xorInt I2), NT1, NT2 )
-rule /* B1 ^ B2 */ 'ExcOr(B1:Bool :: bool,, B2:Bool :: bool) => (B1 xorBool B2) :: bool
-rule /* I1 & I2 */ 'And(I1:Int :: NT1:NumericType,, I2:Int :: NT2:NumericType) => normalize( (I1 &Int I2), NT1, NT2 )
-rule /* B1 & B2 */ 'And(B1:Bool :: bool,, B2:Bool :: bool) => (B1 andBool B2) :: bool
+rule /* I1 | I2 */ 'Or(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType => normalize( (I1 |Int I2) :: ResT )
+rule /* B1 | B2 */ 'Or(B1:Bool :: bool,, B2:Bool :: bool) :: bool => (B1 orBool B2) :: bool
+rule /* I1 ^ I2 */ 'ExcOr(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType => normalize( (I1 xorInt I2) :: ResT )
+rule /* B1 ^ B2 */ 'ExcOr(B1:Bool :: bool,, B2:Bool :: bool) :: bool => (B1 xorBool B2) :: bool
+rule /* I1 & I2 */ 'And(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType => normalize( (I1 &Int I2) :: ResT )
+rule /* B1 & B2 */ 'And(B1:Bool :: bool,, B2:Bool :: bool) :: bool => (B1 andBool B2) :: bool
 
-rule /* V1 == V2 */ 'Eq(V1:RawVal :: _,, V2:RawVal :: _) => (V1 ==K V2) :: bool
-rule /* V1 != V2 */ 'NotEq(V1:RawVal :: _,, V2:RawVal :: _) => (V1 =/=K V2) :: bool
-rule /* I1 <  I2 */ 'Lt(I1:Int :: _,, I2:Int :: _) => (I1 <Int I2) :: bool
-rule /* I1 >  I2 */ 'Gt(I1:Int :: _,, I2:Int :: _) => (I1 >Int I2) :: bool
-rule /* I1 <= I2 */ 'LtEq(I1:Int :: _,, I2:Int :: _) => (I1 <=Int I2) :: bool
-rule /* I1 >= I2 */ 'GtEq(I1:Int :: _,, I2:Int :: _) => (I1 >=Int I2) :: bool
+rule /* V1 == V2 */ 'Eq(V1:RawVal :: _,, V2:RawVal :: _) :: bool => (V1 ==K V2) :: bool
+rule /* V1 != V2 */ 'NotEq(V1:RawVal :: _,, V2:RawVal :: _) :: bool => (V1 =/=K V2) :: bool
+rule /* I1 <  I2 */ 'Lt(I1:Int :: _,, I2:Int :: _) :: bool => (I1 <Int I2) :: bool
+rule /* I1 >  I2 */ 'Gt(I1:Int :: _,, I2:Int :: _) :: bool => (I1 >Int I2) :: bool
+rule /* I1 <= I2 */ 'LtEq(I1:Int :: _,, I2:Int :: _) :: bool => (I1 <=Int I2) :: bool
+rule /* I1 >= I2 */ 'GtEq(I1:Int :: _,, I2:Int :: _) :: bool => (I1 >=Int I2) :: bool
 
-//normalization of first argument of bit shift operator
-rule KL:KLabel(I1:Int :: NT1:NumericType,, I2:Int :: NT2:NumericType) => KL(I1 :: normalizeType(NT1),, I2 :: NT2)
-when (NT1 =/=K int) andBool (NT1 =/=K long)
-     andBool (
-               (KL ==KLabel 'LeftShift)
-        orBool (KL ==KLabel 'RightShift)
-        orBool (KL ==KLabel 'URightShift)
-     )
-
-rule /* I1 <<  I2 */ 'LeftShift(I1:Int :: ILT:IntOrLongType,, I2:Int :: _)
-    => normalize( (I1 <<Int (I2 &Int (bitCount(ILT) -Int 1))) :: ILT ) //JLS 15.19
-rule /* I1 >>  I2 */ 'RightShift(I1:Int :: ILT:IntOrLongType,, I2:Int :: _)
-    => normalize( (I1 >>Int (I2 &Int (bitCount(ILT) -Int 1))) :: ILT )
-rule /* I1 >>> I2 */ 'URightShift(I1:Int :: ILT:IntOrLongType,, I2:Int :: NT:NumericType)
+rule /* I1 <<  I2 */ 'LeftShift(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType
+    => normalize( (I1 <<Int (I2 &Int (bitCount(ResT) -Int 1))) :: ResT ) //JLS 15.19
+rule /* I1 >>  I2 */ 'RightShift(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType
+    => normalize( (I1 >>Int (I2 &Int (bitCount(ResT) -Int 1))) :: ResT )
+rule /* I1 >>> I2 */ 'URightShift(I1:Int :: _,, I2:Int :: NT:NumericType) :: ResT:NumericType
   => 'If(
     (I1 >=Int 0)::bool,,
-    'RightShift(I1 :: ILT,, I2 :: NT),,
-    'Plus('RightShift(I1::ILT,, I2::NT),, 'LeftShift(2::ILT,, 'Complement(I2::NT)))
+    'RightShift(I1 :: ResT,, I2 :: NT) :: ResT,,
+    'Plus('RightShift(I1::ResT,, I2::NT) :: ResT,, 'LeftShift(2::ResT,, 'Complement(I2::NT) :: int) :: ResT) :: ResT
   )
 
-rule /* I1 + I2     */ 'Plus(I1:Int :: NT1:NumericType,, I2:Int :: NT2:NumericType) => normalize( (I1 +Int I2), NT1, NT2 )
-rule /* Str1 + Str2 */ 'Plus(Str1:String :: rtString,, Str2:String :: rtString)
+rule /* I1 + I2     */ 'Plus(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType => normalize( (I1 +Int I2) :: ResT )
+rule /* Str1 + Str2 */ 'Plus(Str1:String :: rtString,, Str2:String :: rtString) :: rtString
     => (Str1 +String Str2) :: rtString
-rule /* Str + KR    */ 'Plus(Str:String :: rtString,, ( KR:KResult => toString(KR) ))
+rule /* Str + KR    */ 'Plus(Str:String :: rtString,, ( KR:KResult => toString(KR) )) :: rtString
 when       (typeOf(KR) =/=K rtString)
     orBool (KR ==K (null::rtString))
-rule /* KR + Str    */ 'Plus(( KR:KResult => toString(KR) ),, Str:String :: rtString)
+rule /* KR + Str    */ 'Plus(( KR:KResult => toString(KR) ),, Str:String :: rtString) :: rtString
 when       (typeOf(KR) =/=K rtString)
     orBool (KR ==K (null::rtString))
 
-rule /* I1 - I2    */ 'Minus(I1:Int :: NT1:NumericType,, I2:Int :: NT2:NumericType) => normalize( (I1 -Int I2), NT1, NT2 )
-rule /* I1 * I2    */ 'Mul(I1:Int :: NT1:NumericType,, I2:Int :: NT2:NumericType) => normalize( (I1 *Int I2), NT1, NT2 )
-rule /* I1 / I2    */ 'Div(I1:Int :: NT1:NumericType,, I2:Int :: NT2:NumericType) => normalize( (I1 /Int I2), NT1, NT2 )
+rule /* I1 - I2    */ 'Minus(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType => normalize( (I1 -Int I2) :: ResT )
+rule /* I1 * I2    */ 'Mul(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType => normalize( (I1 *Int I2) :: ResT )
+rule /* I1 / I2    */ 'Div(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType => normalize( (I1 /Int I2) :: ResT )
     when I2 =/=Int 0
 
 //todo test that the first argument is fully evaluated, right now it may be not evaluated
-rule                  'Div(_::_     ,, 0::_)
+rule                  'Div(_::_     ,, 0::_)::_
    => 'Throw('NewInstance(
         'None(.List{K}),,
         (class String2Id("java.lang.ArithmeticException")),,
@@ -110,11 +110,11 @@ rule                  'Div(_::_     ,, 0::_)
         'None(.List{K})
       ) :: class String2Id("java.lang.ArithmeticException"))
 
-rule /* I1 % I2    */ 'Remain(I1:Int :: NT1:NumericType,, I2:Int :: NT2:NumericType) => normalize( (I1 %Int I2), NT1, NT2 )
+rule /* I1 % I2    */ 'Remain(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType => normalize( (I1 %Int I2) :: ResT )
     when I2 =/=Int 0
 
 //todo test that the first argument is fully evaluated, right now it may be not evaluated
-rule                  'Remain(_::_     ,, 0::_)
+rule                  'Remain(_::_     ,, 0::_)::_
    => 'Throw('NewInstance(
         'None(.List{K}),,
         (class String2Id("java.lang.ArithmeticException")),,
@@ -123,79 +123,67 @@ rule                  'Remain(_::_     ,, 0::_)
       ) :: class String2Id("java.lang.ArithmeticException"))
 
 // ++E
-context 'PreIncr(HOLE => lvalue(HOLE))
+context 'PreIncr(HOLE => lvalue(HOLE))::_
 rule /* ++loc(L) => loc(L) = lookup(L) + 1 */
-  'PreIncr(loc(L:Int)::NT:NumericType) => 'AssignPlus( loc(L)::NT,, 1::NT )
+  'PreIncr(loc(L:Int)::NT:NumericType)::NT => 'AssignPlus( loc(L)::NT,, 1::NT )::NT
 
 // --E
-context 'PreDecr(HOLE => lvalue(HOLE))
+context 'PreDecr(HOLE => lvalue(HOLE))::_
 rule /* --loc(L) => loc(L) = lookup(L) - 1 */
-  'PreDecr(loc(L:Int)::NT:NumericType) => 'AssignMinus( loc(L)::NT,, 1::NT )
+  'PreDecr(loc(L:Int)::NT:NumericType)::NT => 'AssignMinus( loc(L)::NT,, 1::NT )::NT
 
-rule /* ! B    */ 'Not(B:Bool :: bool) => (notBool B) :: bool
-rule /* ~ I    */ 'Complement(I:Int :: NT:NumericType) => normalize( (~Int I), NT )
-rule /* + I    */ 'Plus(I:Int :: NT:NumericType) => normalize( I, NT )
-rule /* - I    */ 'Minus(I:Int :: NT:NumericType) => normalize( (0 -Int I), NT )
+rule /* ! B    */ 'Not(B:Bool :: bool) :: bool => (notBool B) :: bool
+rule /* ~ I    */ 'Complement(I:Int :: _) :: ResT:NumericType => normalize( (~Int I) :: ResT )
+rule /* + I    */ 'Plus(I:Int :: _) :: ResT:NumericType => normalize( I :: ResT )
+rule /* - I    */ 'Minus(I:Int :: _) :: ResT:NumericType => normalize( (0 -Int I) :: ResT )
 
 // E++
-context 'PostIncr(HOLE => lvalue(HOLE))
+context 'PostIncr(HOLE => lvalue(HOLE))::_
 rule /* loc(L)++ => (loc(L) = lookup(L) + 1) - 1 */
-  'PostIncr(loc(L:Int) :: NT:NumericType) => 'Minus( 'PreIncr(loc(L)::NT),, 1::NT)
+  'PostIncr(loc(L:Int) :: NT:NumericType)::NT => 'Minus( 'PreIncr(loc(L)::NT)::NT,, 1::NT)::NT
 
 // E--
-context 'PostDecr(HOLE => lvalue(HOLE))
+context 'PostDecr(HOLE => lvalue(HOLE))::_
 rule /* loc(L)-- => (loc(L) = lookup(L) - 1) + 1 */
-  'PostDecr(loc(L:Int) :: NT:NumericType) => 'Plus( 'PreDecr(loc(L)::NT),, 1::NT)
+  'PostDecr(loc(L:Int) :: NT:NumericType)::NT => 'Plus( 'PreDecr(loc(L)::NT)::NT,, 1::NT)::NT
 
 //Conditional expression : ?: . Desugared into an if with cast.
 //The biggest difficulty is computing the expression type, according to JLS1 $15.24
-rule
-    <k> 'Cond(CondExp:K,, TrueExp:K,, FalseExp:K) :: ResT:Type
-    => castImpl(ResT, 'If(CondExp,, TrueExp,, FalseExp)) :: ResT ...</k>
-    <debug>... . => ListItem(castImpl(ResT, 'If(CondExp,, TrueExp,, FalseExp)) :: ResT) </debug>
+rule 'Cond(CondExp:TypedExp,, TrueExp:TypedExp,, FalseExp:TypedExp) :: ResT:Type
+    => castImpl(ResT, 'If(CondExp,, TrueExp,, FalseExp)) :: ResT
 
 /*@ \subsubsection{Assignment operators}
 Typed KOOL allows to assign subtype instance values to supertype lvalues.
 Assignment operators are seqstrict according to JLS. */
 
-context 'Assign((HOLE => lvalue(HOLE)),,_)
-context 'Assign(_:KResult,,HOLE)
-
-//todo check assign expression type in JLS
-rule [AssignWithConversion]:
-    'Assign(loc(L:Int) :: T1:Type,, V:RawVal :: T2:Type)
-    =>  #if isNumericType2(T1)
-          #then isInRange(V::T1)::bool
-          #else subtype(T2, T1)
-        #fi ~> true? ~> 'Assign(loc(L)::T1,, V::T1)
-when
-    T1 =/=K T2
+context 'Assign((HOLE => lvalue(HOLE)),,_)::_
+context 'Assign(_:KResult,,HOLE)::_
 
 rule [Assign]:
-    <k> 'Assign(loc(L:Int) :: T:Type,, V:RawVal :: T) => V::T ...</k>
-    <store>... L |-> (_ => V)::T ...</store>
+    <k> 'Assign(loc(L:Int) :: _,, V:RawVal :: _) :: ResT:Type => V::ResT ...</k>
+    <store>... L |-> (_ => V)::ResT ...</store>
 
-context KL:KLabel((HOLE => lvalue(HOLE)),,_)
+context KL:KLabel((HOLE => lvalue(HOLE)),, _)::_
 when isCompoundAssignLabel(KL)
 
 rule [CompoundAssign]:
-    KL:KLabel(loc(L:Int) :: T:Type,, E:K) => 'Assign(loc(L)::T,,
-      castImpl(T, getOpLabel(KL)(lookup(L)::T,, E))::T)
+    KL:KLabel(loc(L:Int) :: T1:Type,, Exp2:K::T2:Type) :: T1:Type
+    => 'Assign(loc(L)::T1,, castImpl(T1, getOpLabel(KL)(lookup(L)::T1,, Exp2::T2)::normalizeType(T1,T2))::T1)::T1
 when isCompoundAssignLabel(KL)
 
 //only for Compound Assign KLabel's
 syntax KLabel ::= "getOpLabel" "(" KLabel ")" [function]
-rule getOpLabel('AssignPlus) => 'Plus [anywhere]
-rule getOpLabel('AssignMinus) => 'Minus [anywhere]
-rule getOpLabel('AssignMul) => 'Mul [anywhere]
-rule getOpLabel('AssignDiv) => 'Div [anywhere]
-rule getOpLabel('AssignAnd) => 'And [anywhere]
-rule getOpLabel('AssignOr) => 'Or [anywhere]
-rule getOpLabel('AssignExcOr) => 'ExcOr [anywhere]
-rule getOpLabel('AssignRemain) => 'Remain [anywhere]
-rule getOpLabel('AssignLeftShift) => 'LeftShift [anywhere]
-rule getOpLabel('AssignRightShift) => 'RightShift [anywhere]
-rule getOpLabel('AssignURightShift) => 'URightShift [anywhere]
+rule getOpLabel('AssignPlus)        => 'Plus
+rule getOpLabel('AssignMinus)       => 'Minus
+rule getOpLabel('AssignMul)         => 'Mul
+rule getOpLabel('AssignDiv)         => 'Div
+rule getOpLabel('AssignAnd)         => 'And
+rule getOpLabel('AssignOr)          => 'Or
+rule getOpLabel('AssignExcOr)       => 'ExcOr
+rule getOpLabel('AssignRemain)      => 'Remain
+rule getOpLabel('AssignLeftShift)   => 'LeftShift
+rule getOpLabel('AssignRightShift)  => 'RightShift
+rule getOpLabel('AssignURightShift) => 'URightShift
 
 /*@ \subsection{primitive types cast} */
 
@@ -217,26 +205,12 @@ syntax K ::= "lookup" "(" Int ")"
 
 //todo Temporary rule, deletes the elaboration type info for expressions, for temporary testing.
 rule [tempDeleteElabTypeInfo]:
-    <k> KL:KLabel(Ks:List{K}) :: T:Type => KL(Ks) ...</k>
+    <k> 'Invoke(Ks:List{K})::noClass => 'Invoke(Ks:List{K}) ...</k>
     <computationPhase> ExecutionPhase </computationPhase>
-when
-    (notBool (isRawVal(KL(Ks)) ==K true))
-    andBool notBool (KL ==KLabel 'Cond)
-    andBool notBool (KL ==KLabel 'localVar`(_`))
-    andBool notBool (KL ==KLabel 'lookupField`(_`,_`,_`))
-    andBool notBool (KL ==KLabel 'lookupStaticField`(_`,_`))
-    andBool notBool (KL ==KLabel 'lookup`(_`))
 
 //todo temp
 rule [tempDeleteElabTypeInfo-lvalue]:
-    <k> lvalue( KL:KLabel(Ks:List{K}) :: T:Type => KL(Ks) ) ...</k>
+    <k> lvalue( 'Invoke(Ks:List{K})::noClass => 'Invoke(Ks:List{K}) ) ...</k>
     <computationPhase> ExecutionPhase </computationPhase>
-when
-    (notBool (isRawVal(KL(Ks)) ==K true))
-    andBool notBool (KL ==KLabel 'Cond)
-    andBool notBool (KL ==KLabel 'localVar`(_`))
-    andBool notBool (KL ==KLabel 'lookupField`(_`,_`,_`))
-    andBool notBool (KL ==KLabel 'lookupStaticField`(_`,_`))
-    andBool notBool (KL ==KLabel 'lookup`(_`))
 
 endmodule

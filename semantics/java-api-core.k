@@ -80,7 +80,7 @@ rule [consoleReadInt]:
 //@ For integers and strings, print their value. For classes, print class type.
 
 rule [NameSystemOut]:
-    'Field(rtSystemType,, X:Id) => rtSystemOut
+    elabDispose('Field(rtSystemType,, X:Id)) => rtSystemOut
 when
     Id2String(X) ==String "out"
 
@@ -96,7 +96,7 @@ when
 
 rule [printlnDesugar]:
     'Invoke(rtSystemOutPrintln,, 'ListWrap(KR:KResult))
-    => 'Invoke(rtSystemOutPrint,, 'ListWrap('Plus(KR:KResult,,"\n"::rtString)))
+    => 'Invoke(rtSystemOutPrint,, 'ListWrap('Plus(KR:KResult,,"\n"::rtString)::rtString))
 
 rule [printlnEmptyDesugar]:
     'Invoke(rtSystemOutPrintln,, 'ListWrap(.List{K}))
@@ -117,7 +117,7 @@ rule [consolePrint]:
     <out>... .=> ListItem(Str) </out>
 
 rule [NameSystemIn]:
-    'Field(rtSystemType,, X:Id) => rtSystemIn
+    elabDispose('Field(rtSystemType,, X:Id)) => rtSystemIn
 when
     Id2String(X) ==String "in"
 
@@ -126,7 +126,7 @@ rule [NewInstanceScanner]:
       rtScannerType,,
       'ListWrap(rtSystemIn),,
       'None(.List{K})
-    )
+    ) :: rtScannerType
     => rtScanner :: rtScannerType
 
 rule [ScannerNextInt]:
@@ -207,7 +207,7 @@ rule [ClassNameInner]:
       => 'Plus(
             fullyQualifiedClassName(class OuterClassId),,
             ("$" +String Id2String(SimpleName))::rtString
-         )
+         ) :: rtString
       ...
     </k>
     <classType> class ClassId </classType>

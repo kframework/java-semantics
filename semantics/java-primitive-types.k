@@ -38,13 +38,16 @@ rule normalize(I:Int :: char)
           #else toUnsigned(normalizeImpl(I::char))
         #fi [anywhere]
 
-syntax K ::= "isInRange" "(" TypedVal ")" [function]
+syntax K ::= "isInRange" "(" TypedExp ")"                                          [function]
 rule isInRange(I:Int::byte) => ((I >=Int -128) andBool (I <=Int 127))              [structural, anywhere]
 rule isInRange(I:Int::short) => ((I >=Int -32768) andBool (I <=Int 32767))         [structural, anywhere]
 rule isInRange(I:Int::int) => ((I >=Int -2147483648) andBool (I <=Int 2147483647)) [structural, anywhere]
 rule isInRange(I:Int::long) => ((I >=Int -9223372036854775808)
                           andBool (I <=Int  9223372036854775807))                  [structural, anywhere]
 rule isInRange(I:Int::char) => ((I >=Int 0) andBool (I <=Int 65535))               [structural, anywhere]
+
+rule isInRange(K:K::_) => true
+when notBool (isInt(K) ==K true)                                                   [structural, anywhere]
 
 syntax K ::= "normalizeImpl" "(" TypedVal ")" [function]
 
@@ -68,16 +71,6 @@ rule toUnsigned(I:Int :: T:Type)
           #else I +Int (1 <<Int bitCount(T)) :: T
         #fi [anywhere]
 
-//promote the result type based on unary operator argument type, and normalize the result.
-syntax K ::= "normalize" "(" Int "," NumericType ")" [function]
-rule normalize(I:Int, NT:NumericType) => normalize(I :: normalizeType(NT)) [anywhere]
-
-//promote the result type based on binary operator arguments type, and normalize the result.
-syntax K ::= "normalize" "(" Int "," NumericType "," NumericType ")" [function]
-rule normalize(I:Int, NT1:NumericType, NT2:NumericType )
-     => normalize(I :: normalizeType(NT1,NT2))
-        [anywhere]
-
 syntax K ::= "normalizeType" "(" Type ")" [function]
 rule normalizeType(ILT:IntOrLongType) => ILT [anywhere]
 
@@ -95,5 +88,9 @@ when (NT1 ==K long) orBool (NT2 ==K long) [anywhere]
 //not technically primitive types, but here is the most appropriate place to put the rules
 rule normalizeType(rtString, _) => rtString
 rule normalizeType(_, rtString) => rtString
+
+//Other cases. Required by the rule CompoundAssign
+rule normalizeType(T1:Type,T2:Type) => T1
+when notBool (isNumericType(T1) ==K true) andBool (T1 =/=K rtString)  andBool (T2 =/=K rtString)
 
 endmodule

@@ -133,7 +133,7 @@ first rule below needs to be changed; the others are identical to
 those in untyped KOOL. */
 
 //resolve new instance expression parameter values
-context 'NewInstance(_:K,,_:K,, 'ListWrap(_,,HOLE,,_),, _)
+context 'NewInstance(_:K,,_:K,, 'ListWrap(_,,HOLE,,_),, _)::_
 
 rule [NewInstance]:
     <k>
@@ -142,7 +142,7 @@ rule [NewInstance]:
         Class:ClassType,,
         'ListWrap( Vals:List{K} ),,
         _:K
-      )
+      )::Class
       => staticInit(Class)
         ~> create(Class)
         ~> storeObj
@@ -222,10 +222,10 @@ when isKResult(Vals)
 /*@ \subsection{Instance Of}
 Like in untyped KOOL. */
 
-syntax KLabel ::= "'InstanceOf" [strict(1)]
+context 'InstanceOf(HOLE,,_)::_
 
 rule [InstanceOf]:
-    'InstanceOf(V:RawVal::_,, RT2:RefType)
+    'InstanceOf(V:RawVal::_,, RT2:RefType) :: bool
     =>  #if V =/=K null
           #then subtype(typeOf(V), RT2)
           #else false::bool
@@ -244,8 +244,8 @@ rule [CastRef]:
             'Throw('NewInstance(
                     'None(.List{K}),,
                     (class String2Id("java.lang.ClassCastException")),,
-                    'ListWrap( 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to "::rtString),,
-                        toString(RT1)) ),,
+                    'ListWrap( 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to "::rtString)::rtString,,
+                        toString(RT1))::rtString ),,
                     'None(.List{K})
                   ) :: class String2Id("java.lang.ClassCastException"))
           )
@@ -261,9 +261,9 @@ rule [ClassLiteralInstantiate]:
                 class String2Id("java.lang.Class"),,
                 'ListWrap(toString(T)),,
                 'None(.List{K})
-              ))
+              ) :: class String2Id("java.lang.Class"))
         )
-        ~> 'Lit('Class(T:Type))
+        ~> 'Lit('Class(T:Type))::_
       ...
     </k>
     <classLiteralsMap> CLMap:Map </classLiteralsMap>
@@ -279,7 +279,7 @@ rule [saveClassLiteral]:
     <classLiteralsMap> CLMap:Map => CLMap[TV/T] </classLiteralsMap>
 
 rule [ClassLiteral]:
-    <k> 'Lit('Class(T:Type)) => TV ...</k>
+    <k> 'Lit('Class(T:Type))::_ => TV ...</k>
     <classLiteralsMap>... T |-> TV:TypedVal ...</classLiteralsMap>
 
 endmodule

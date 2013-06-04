@@ -73,7 +73,30 @@ At this step, all tests except array-related and some conditional-operator-relat
 3.3.ok. Annotate the type of all other expressions, including arrays. The type of method invocation
   will be fake - always noClass. In most cases this will not affect execution - only when method invocation
   is part of a larger expression that requires the type of its children in order to compute its type.
-  All tests except such cases should pass.
+
+3.4.ok. Preserve expression types at runtime. Now the result type is always taken from the source expression type.
+  Same tests as for point 3.2. pass. For this we made massive changes in the whole semantics.
+  This commit is annotated as a separate "branch", because it could be reverted soon.
+  We have to make the choice described below.
+
+  Now we have to make the following design choice:
+v1. Preserve expression types at runtime. Like it is done in point 3.4. Unfortunately point 3.4 leads
+  to a lot of changes in the whole semantics - all expressions generated during runtime transformations
+  should be typed. Also we cannot use [strict] for expressions any more - instead we have to use context rules,
+  because all labels are now typed. In fact the bigger problem is that not even a slightest expression
+  is left unchanged from the original program - everything have to be typed. Thus the semantics don't resemble
+  the original language at all. Syntax-based definition in future will have to add type information and will be
+  very problematic.
+
+v2. Compute expression types at elaboration time only when needed - when they are arguments of ?: or method call.
+  At runtime all expressions and statements will be left untyped - exactly as they are in the original program.
+  In this approach each expression will only have to be parsed twice - once during standard top-down traversal
+  of each code block, and second when computing the type of some ?: / method call parent. Another advantage is
+  that just expression names will look different in right-hand-side of rules, other expressions will look the same.
+  The main transformation done by elaboration will be:
+  - resolving names into specific references to local vars / fields / full class names
+  - resolving method calls into specific references to method signature and definition target.
+  - desugar ?: into if + cast, thus integrating the expression type into cast expression.
 
 4. Invert the condition for labels elaborated by default:
   Right now we specify the labels that should not be elaborated by default, and do default elaboration

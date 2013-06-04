@@ -160,7 +160,7 @@ rule [subtypeArrayOfArrayRef]:
 
 rule [subtypeList]:
     subtypeList(types(T1:Type,,Ts:List{K}), types(Tp1:Type,,Tps:List{K}))
-    => 'LazyAnd( subtype(T1,Tp1),, subtypeList(types(Ts), types(Tps)) )
+    => 'LazyAnd( subtype(T1,Tp1),, subtypeList(types(Ts), types(Tps)) ) :: bool
         [structural]
 
 rule [subtypeListEmptyLeft]:

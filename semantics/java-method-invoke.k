@@ -272,7 +272,7 @@ rule [lookupSignatureNoAlternatives]:
                 subtypeList(CallTs, SigTs),,
                 isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
                     getMethodDeclaringClass(TV), IsQ, Class)
-              ),
+              ) :: bool,
               sig(MethodName, SigTs)
             ) )
        ~> lookupSignature(
@@ -292,10 +292,10 @@ rule [lookupSignatureWithAlternative]:
     <k>
       (. => isPreferableSig(
               'LazyAnd(
-                'LazyAnd(subtypeList(CallTs, SigTs),, subtypeList(SigTs, AltTs)),,
+                'LazyAnd(subtypeList(CallTs, SigTs),, subtypeList(SigTs, AltTs)) :: bool,,
                 isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
                     getMethodDeclaringClass(TV), IsQ, Class)
-              ),
+              ) :: bool,
               sig(MethodName, SigTs)
             ) )
        ~> lookupSignature(
@@ -371,7 +371,7 @@ rule [lookupMethodSigKnownOtherCandidates]:
                 isAccessibleForOverwriting(
                   getMethConsClosureClass(MCClosure), Acc, LayerClass, getMethodAccessMode(TV)
                 )
-              ),,
+              ) :: bool,,
               TV,,
               MCClosure :: methodType(Acc, DeclClass, SigTs, T)
             )
@@ -442,14 +442,14 @@ rule [isAccessibleProtected]:
       )
       => 'LazyOr(
             'LazyAnd(
-              'LazyOr((CT ==K staticCT)::bool,, 'Not(IsQ :: bool)),,
+              'LazyOr((CT ==K staticCT)::bool,, 'Not(IsQ :: bool)::bool) :: bool,,
               subtype(
                 'If(IsQ::bool,, CurrentClass,, TargetClass),
                 DeclaringClass
               )
-            ),,
+            ) :: bool,,
             isAccessible(package, CT, DeclaringClass, IsQ, TargetClass)
-      )
+      ) :: bool
       ...
     </k>
     <crntClass> CurrentClass:ClassType </crntClass>
@@ -636,7 +636,7 @@ syntax K ::= "bindto" List{K}
 rule [bindto]:
     <k>
       bindto paramImpl(T:Type, X:Id),, RestP:List{K}, TV:TypedVal,, RestV:List{K}
-      => 'ExprStm('Assign(localVar(X)::T,,TV:TypedVal)) ~> bindto RestP, RestV
+      => 'ExprStm('Assign(localVar(X)::T,,TV:TypedVal)::T) ~> bindto RestP, RestV
       ...
     </k>
     <env> Env:Map => Env[L/X] </env>
