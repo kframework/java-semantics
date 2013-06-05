@@ -62,7 +62,7 @@ configuration
           //Map[sig -> Class]
           <methods color="purple"> .Map </methods>
 
-          //All methods declared in this class. Map[sig -> methodClosure / constrClosuure]
+          //All methods declared in this class. Map[sig -> methodClosure / constrClosure :: MethodType ]
           <methodDecs color="purple"> .Map </methodDecs>
 
           <br/>
@@ -146,17 +146,25 @@ syntax Type ::= PrimitiveType
               | RefType
               | "void"
               | "rtType"
+              | MethodType
 
 syntax RawVal ::= Int | Bool | String
                 | "null"
                 | "nothing"
                 | "undefined" [latex(\bot_{#1})]
 
-syntax Type ::= "methodType" "(" AccessMode ","    // the access mode
-                                 ClassType ","     // the declaring class
-                                 K ","             // to be processed into Types
-                                 Type              // return type
-                             ")"
+syntax ProtoMethodType ::= "methodType" "(" AccessMode ","    // the access mode
+                                            ClassType ","     // the declaring class
+                                            K ","             // to be processed into Types
+                                            Type              // return type
+                                        ")"
+                          | MethodType
+
+syntax MethodType ::= "methodType" "(" AccessMode ","    // the access mode
+                                       ClassType ","     // the declaring class
+                                       Types ","         // argument types
+                                       Type              // return type
+                                   ")"
 
 syntax ClassType ::= "class" Id
                    | "noClass"
@@ -173,9 +181,9 @@ syntax RawVal ::= "objectClosure" "(" Int //OL - object location
 
                 | "methodClosure" "("
                     ClassType ","   // Class - class defining the method
-                    K ","    // 'ListWrap(Params) - params
-                    ContextType "," //either staticCT or instanceCT
-                    K        // S - method body
+                    K ","           // 'ListWrap(Params) - params
+                    ContextType "," // Either staticCT or instanceCT
+                    K               // S - method body
                   ")"
                 | "constrClosure" "("
                     ClassType ","   // Class - class defining the method
@@ -188,18 +196,18 @@ syntax RawVal ::= "objectClosure" "(" Int //OL - object location
                   ")"
                 | "arrayRef" "("
                     Type ","  // Type of array
-                    Int ","   // Location of first element
+                    Int ","   // Location of the first element
                     Int       // Length
                   ")"
 
 syntax TypedVal ::= RawVal "::" Type
 syntax KResult ::= TypedVal | Type
 
-syntax TypedExp ::= TypedVal
 syntax TypedExp ::= K "::" Type
+                  | TypedVal
 
-syntax ProtoTypedExp ::= TypedExp
 syntax ProtoTypedExp ::= K "::" K       [strict(2)]
+                       | TypedExp
 
 syntax AccessMode ::= "public" | "protected" | "package" | "private"
 syntax KResult ::= AccessMode

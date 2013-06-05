@@ -332,61 +332,62 @@ rule isPreferableSig(false::bool, _) => .
 //The right signature is already found.
 //Search for the right implementation is performed from the compile-time type of the target
 //to more derived types, up to the object type of the target.
+//This is required in order to respect the rules of inheritance in the presence of access modes.
 syntax K ::= "lookupMethodSigKnown" "("
-                              K ","       // sig(Name, SigTL) - Method signature
-                              List{K} "," //class list, elems of type ClassType,
-                                          //from derived to base
-                                          //The last one is always the current one.
+                              K ","       //sig(Name, SigTL) - Method signature
+                              List{K} "," //Class list, elems of type ClassType,
+                                          // from derived to base.
+                                          // The last one is always the current one.
                               K ","       //mapWrap(Map) - methods map of current LayerClass
                               TypedVal    //method closure of the most specific method found so far
-                                          //or noValue if no applicable method
-                                          //was found yet
+                                          // or noValue if no applicable method
+                                          // was found yet
                             ")"           [strict(1,3,4)]
 
 rule [lookupMethodSigKnownFirstCandidate]:
     <k>
       lookupMethodSigKnown(
-        Sig:K,
+        Sig:Signature,
         _,
         mapWrap( (Sig |-> DeclClass:ClassType _:Map) => .Map ),
-        noValue => TV
+        noValue => NewMethTV
       )
       ...
     </k>
     <classType> DeclClass </classType>
-    <methodDecs>... Sig |-> TV:TypedVal ...</methodDecs>
+    <methodDecs>... Sig |-> NewMethTV:TypedVal ...</methodDecs>
 
 rule [lookupMethodSigKnownOtherCandidates]:
     <k>
       lookupMethodSigKnown(
-        sig(Name:Id, SigTs:Types),
-        (_,, LayerClass:ClassType),
-        mapWrap( (sig(Name, SigTs) |-> NewDeclClass:ClassType => .) _:Map ),
-        MCClosure:RawVal :: methodType(Acc:AccessMode, DeclClass:ClassType, SigTs, T:Type)
+        Sig:Signature,
+        _,
+        mapWrap( (Sig |-> NewDeclClass:ClassType => .) _:Map ),
+        OldMethTV:TypedVal
         => 'If(
               'LazyAnd(
-                ( getMethodContextType(MCClosure :: methodType(Acc, DeclClass, SigTs, T))
-                  ==K instanceCT
-                )::bool,,
+                ( getMethodContextType(OldMethTV) ==K instanceCT )::bool,,
                 isAccessibleForOverwriting(
-                  getMethConsClosureClass(MCClosure), Acc, LayerClass, getMethodAccessMode(TV)
+                  getMethConsClosureClass(OldMethTV),
+                  getMethodAccessMode(OldMethTV),
+                  getMethConsClosureClass(NewMethTV)
                 )
               ) :: bool,,
-              TV,,
-              MCClosure :: methodType(Acc, DeclClass, SigTs, T)
+              NewMethTV,,
+              OldMethTV
             )
       )
       ...
     </k>
     <classType> NewDeclClass </classType>
-    <methodDecs>... sig(Name, SigTs) |-> TV:TypedVal ...</methodDecs>
+    <methodDecs>... Sig |-> NewMethTV:TypedVal ...</methodDecs>
 
 rule [lookupMethodSigKnownEntryDiscard]:
     lookupMethodSigKnown(
-      Sig:KResult,
+      Sig:Signature,
       _,
-      mapWrap( (OtherSig:K |-> _ => .) _:Map ),
-      _:K
+      mapWrap( (OtherSig:Signature |-> _ => .) _:Map ),
+      _
     )
 when
     Sig =/=K OtherSig
@@ -397,29 +398,27 @@ rule [lookupMethodSigKnownLayerDiscard]:
         _,
         (_,, NewLayerClass:ClassType,, (_:ClassType => .List{K})),
         mapWrap( .Map => NewEnv ),
-        _:K
+        _
       )
       ...
     </k>
-    <class>
-      <classType> NewLayerClass </classType>
-      <methods> NewEnv:Map </methods>
-      ...
-    </class>
+    <classType> NewLayerClass </classType>
+    <methods> NewEnv:Map </methods>
 
 rule [lookupMethodSigKnownEnd]:
     lookupMethodSigKnown(
       _,
       (_:ClassType),
       mapWrap(.Map),
-     TV:TypedVal
-    ) => TV
+     MethTV:TypedVal
+    ) => MethTV
 
 rule [lookupMethodSigKnownNoSig]:
     lookupMethodSigKnown(noValue,_,_,_) => noValue
 
-syntax K ::= "getMethConsClosureClass" "(" RawVal ")"
-rule getMethConsClosureClass( (_:KLabel)(Class:ClassType,, _:List{K}) ) => Class
+//Returns the defining class of the given method TypedVal.
+syntax K ::= "getMethConsClosureClass" "(" TypedVal ")"
+rule getMethConsClosureClass( (_:KLabel)(Class:ClassType,, _:List{K})::_ ) => Class
         [structural, anywhere]
 
 //Tests whether a method from a given class with a given AccessMode and ContextType
@@ -471,23 +470,6 @@ rule [isAccessiblePrivate]:
       ...
     </k>
     <crntClass> CurrentClass:ClassType </crntClass>
-
-//tests whether a new method in an overwriting chain is accessible to the old method
-syntax K ::= "isAccessibleForOverwriting" "("
-                                              ClassType ","   //OldMethodClass
-                                              AccessMode ","  //OldMethodAccessMode
-                                              ClassType ","   //NewMethodClass
-                                              AccessMode      //NewMethodAccessMode
-                                          ")"
-        [strict(4)] //strict(2) also makes sense but is not used by the construct creation rule
-
-rule isAccessibleForOverwriting(_, private, _, _) => false::bool
-
-rule isAccessibleForOverwriting(OldClass:ClassType, package, NewClass:ClassType, NewAcc:AccessMode)
-    => kEq(getPackage(getTopLevel(OldClass)), getPackage(getTopLevel(NewClass)))
-
-rule isAccessibleForOverwriting(_, protected, _, _) => true::bool
-rule isAccessibleForOverwriting(_, public,    _, _) => true::bool
 
 syntax K ::= "getArgTypes" "(" TypedVal ")" [function]
 rule getArgTypes(_ :: methodType(_,_, Ts:Types, _)) => Ts [anywhere]
@@ -570,7 +552,7 @@ when isKResult(ParamValues)
 rule [invokeConstrClosure]:
     <k>
       invokeImpl( constrClosure(Class:ClassType, 'ListWrap(Params:List{K}), FirstLine:K, Body:K)
-          :: T:Type, OL:Int, K:K
+          :: MT:MethodType, OL:Int, K:K
       )
       => invokeImpl(
             methodClosure(Class, 'ListWrap(Params), instanceCT,
@@ -580,7 +562,7 @@ rule [invokeConstrClosure]:
                     #else freshEnv(IInit)
                   #fi
               ~> Body
-            ) :: T, OL, K
+            ) :: MT, OL, K
          )
       ...
     </k>

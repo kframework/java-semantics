@@ -168,24 +168,36 @@ rule [tryInheritImpl]:
 rule [tryInheritImplDiscard]: tryInheritImpl(.) => .
 
 syntax K ::= "isInheritable" "(" K ")"                        [strict]
-rule isInheritable(public) => true::bool
-rule isInheritable(protected) => true::bool
 
-//Object class cannot match this rule since it has public access mode
 rule [isInheritablePackage]:
     <k>
-      isInheritable(package)
-      => kEq(getPackage(getTopLevel(Class)), getPackage(getTopLevel(BaseClass)))
+      isInheritable(BaseAccessMode:AccessMode)
+      => isAccessibleForOverwriting(BaseClass, BaseAccessMode, Class)
       ...
     </k>
     <cuClass> Class:ClassType </cuClass>
-    <class>
-      <classType> Class </classType>
-      <extends> BaseClass:ClassType </extends>
-      ...
-    </class>
+    <classType> Class </classType>
+    <extends> BaseClass:ClassType </extends>
 
-rule isInheritable(private) => false::bool
+//Tests if a method within BaseClass with BaseAccessMode is overwritten by a method with the same signature
+//in SubClass with SubAccessMode.
+//It is also possible that BaseClass and SubClass are the same, since the same method is inherited by many classes,
+//and gets in their <methods> cell.
+syntax K ::= "isAccessibleForOverwriting" "("
+                                              ClassType ","   //BaseClass
+                                              AccessMode ","  //BaseAccessMode
+                                              ClassType       //SubClass
+                                          ")"
+        [strict(2)]
+
+rule isAccessibleForOverwriting(_, public,    _) => true::bool
+rule isAccessibleForOverwriting(_, protected, _) => true::bool
+
+//Object class cannot match this rule since it has public access mode
+rule isAccessibleForOverwriting(BaseClass:ClassType, package, SubClass:ClassType)
+    => kEq(getPackage(getTopLevel(BaseClass)), getPackage(getTopLevel(SubClass)))
+
+rule isAccessibleForOverwriting(_, private, _) => false::bool
 
 //todo if the same method is inherited say from the base class and interface,
 //we're in trouble
@@ -294,7 +306,8 @@ rule [storeMethod]:
 
 //A method signature
 //KResult is required in java-method-invoke module
-syntax KResult ::= "sig" "(" Id "," Types ")"
+syntax Signature ::= "sig" "(" Id "," Types ")"
+syntax KResult ::= Signature
 
 rule [ConstrDecSuperCallDesugar]:
     <k>
