@@ -32,6 +32,10 @@ syntax RefType ::= "rtSystemType"
                  | "rtIntegerType"
                  | "rtScannerType"
 
+//todo temp
+context 'Invoke(KR:KResult,, 'ListWrap(_:List{K},,HOLE,,_:List{K}))
+when getKLabel(KR) =/=KLabel 'lookupMethodData`(_`,_`,_`)
+
 rule [NameSystem]:
     'TypeName(X:Id) => rtSystemType
 when
