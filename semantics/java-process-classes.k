@@ -188,7 +188,7 @@ syntax K ::= "isAccessibleForOverwriting" "("
                                               AccessMode ","  //BaseAccessMode
                                               ClassType       //SubClass
                                           ")"
-        [strict(2)]
+        [strict]
 
 rule isAccessibleForOverwriting(_, public,    _) => true::bool
 rule isAccessibleForOverwriting(_, protected, _) => true::bool
