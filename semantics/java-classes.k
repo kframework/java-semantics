@@ -212,11 +212,15 @@ rule [storeObj]:
 syntax K ::= "invokeConstr" "(" Int "," ClassType "," List{K} ")"
 
 rule [invokeConstr]:
-    invokeConstr(OL:Int, Class:ClassType, Vals:List{K})
-    => 'ExprStm('Invoke(
-          'Method('MethodName( typedLookup(OL),, getConsName(Class) )),,
-          'ListWrap( Vals )
-        ))
+    <k>
+      invokeConstr(OL:Int, Class:ClassType, Vals:List{K})
+      => 'ExprStm('Invoke(
+            'Method('MethodName( lookup(OL)::T,, getConsName(Class) )),,
+            'ListWrap( Vals )
+          ))
+      ...
+    </k>
+    <store>... OL |-> _::T:Type ...</store>
 when isKResult(Vals)
 
 /*@ \subsection{Instance Of}

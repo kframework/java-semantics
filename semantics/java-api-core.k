@@ -11,7 +11,7 @@ module JAVA-API-CORE
 // This module contains the minimal part of java API required to perform
 // console read/write operations.
 
-syntax KResult ::=  "rtSystemOut"
+syntax ApiId   ::=  "rtSystemOut"
                   | "rtSystemOutPrint"
                   | "rtSystemOutPrintln"
                   | "rtSystemConsole"
@@ -24,6 +24,8 @@ syntax KResult ::=  "rtSystemOut"
                   | "classObject" "(" K ")"         //KResult
                   | "methodClassGetName" "(" K ")"
                   | "methodArrayClone" "(" K ")"
+
+syntax KResult ::= ApiId
 
 syntax RawVal ::= "rtSymbolicConsoleLine"
                 | "rtScanner"
@@ -134,7 +136,7 @@ rule [NewInstanceScanner]:
     => rtScanner :: rtScannerType
 
 rule [ScannerNextInt]:
-    methodNameImpl(rtScanner::_, X:Id, _) => rtScannerNextInt
+    methodNameImpl( _::rtScannerType, X:Id, _) => rtScannerNextInt
 when
     Id2String(X) ==String "nextInt"
 
@@ -147,20 +149,22 @@ rule [InvokeScannerNextInt]:
     <in> ListItem(I) => . ...</in>
 
 rule [NameGetClass]:
-    methodNameImpl(KR:KResult, X:Id, _) => methodGetClass(KR)
+    methodNameImpl(Qual:K, X:Id, _) => methodGetClass(Qual)
 when
     Id2String(X) ==String "getClass"
 
 rule [InvokeGetClass]:
     'Invoke(
-      methodGetClass(KR:KResult),,
+      methodGetClass(Qual:K),,
       'ListWrap(.List{K})
-    ) => classObject(KR)
+    ) => classObject(Qual)
 
 rule [NameClassGetName]:
-    methodNameImpl(classObject(KR:KResult), X:Id, _) => methodClassGetName(KR)
+    methodNameImpl(classObject(Qual:K), X:Id, _) => methodClassGetName(Qual)
 when
     Id2String(X) ==String "getName"
+
+context 'Invoke(methodClassGetName(HOLE),,_)
 
 rule [InvokeClassGetNameObject]:
     'Invoke(

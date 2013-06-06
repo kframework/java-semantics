@@ -98,7 +98,14 @@ v2. Compute expression types at elaboration time only when needed - when they ar
   - resolving method calls into specific references to method signature and definition target.
   - desugar ?: into if + cast, thus integrating the expression type into cast expression.
 
-4. Invert the condition for labels elaborated by default:
+4. elaboration of method calls, method signature lookup during elaboration.
+4.1.ok. Separate compile-time processing from runtime processing in method-lookup logic. Thus it will be easier to move
+  compile-time processing to elaboration phase later. Some new hacks for java API used.
+4.2. Rework the logic for java API methods. Add class-lib classes whenever possible. Add custom rules just for
+  native methods, where possible.
+4.3. Implement method signature elaboration.
+
+5. Invert the condition for labels elaborated by default:
   Right now we specify the labels that should not be elaborated by default, and do default elaboration
     for all other labels.
   This strategy is problematic because whenever we introduce a new language construct that could be
@@ -108,8 +115,6 @@ v2. Compute expression types at elaboration time only when needed - when they ar
   We need to do the opposite: Specify the list of labels for which we perform default elaboration,
     perform custom elaboration case by case, and for all other labels we will expect other rules to rewrite
     them into labels with known elaboration rules.
-
-5. Implement method signature lookup during elaboration.
 
   When elaborating a block, in order to distinguish between an unelaborated
 and elaborated block, we will wrap elaborated blocks into elab(...).

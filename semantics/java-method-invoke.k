@@ -41,8 +41,8 @@ rule [MethodNameUnqStaticCT]:
     <location> noValue </location>
         [structural]
 
-rule 'MethodName(K:K,, Name:Id) => methodNameImpl(K, Name, true)
-when getKLabel(K) =/=KLabel '_::_
+rule 'MethodName(QualK:K,, Name:Id) => methodNameImpl(QualK, Name, true)
+when getKLabel(QualK) =/=KLabel '_::_
 
 rule 'MethodName(QualE:K :: T:Type,, Name:Id) => methodNameImpl(QualE::T, Name, getKLabel(QualE) =/=KLabel 'This)
 
@@ -52,64 +52,41 @@ syntax K ::= "methodNameImpl" "("
                                   Bool    //IsQ - isQualified
                               ")"
 
-//resolving the qualifier of a qualified method call: either an object or a class reference
-context methodNameImpl(HOLE, _, _)
-
-//objClos.X(_)
+//objClos.X(_) or Class.X(_)
 rule [MethodNameQualified]:
-    <k>
-      methodNameImpl(TObjClos:TypedVal,
-          Name:Id, IsQ:Bool)
-      => lookupMethodData(TObjClos, Name, IsQ)
-      ...
-    </k>
+    methodNameImpl(QualK:K, Name:Id, IsQ:Bool) => lookupMethodData(QualK, Name, IsQ)
 when
-    Id2String(Name) =/=String "getClass"
+            (Id2String(Name) =/=String "getClass")
+    andBool ((isClassType(QualK) ==K true) orBool (isTypedExp(QualK) ==K true))
+    andBool notBool (isApiExp(QualK) ==K true)
         [structural]
 
-//Class.X(_)
-rule [MethodNameStatic]:
-    <k>
-      methodNameImpl(Class:ClassType, Name:Id, IsQ:Bool)
-      => lookupMethodData(Class, Name, IsQ)
-      ...
-    </k>
-when
-    Id2String(Name) =/=String "getClass"
-        [structural]
+//todo temp. Whether the term should be processed by the rule above or not.
+//Not if it is a custom api hack.
+syntax K ::= "isApiExp" "(" K ")"               [function]
+rule isApiExp(_ :: 'rtScannerType(_)) => true
 
-rule [MethodNameQualifiedNull]:
-    <k>
-      methodNameImpl(null::_ , _,_)
-      =>  'Throw('NewInstance(
-            'None(.List{K}),,
-            class String2Id("java.lang.NullPointerException"),,
-            'ListWrap( null :: nullType ),,
-            'None(.List{K})
-          ) :: class String2Id("java.lang.NullPointerException"))
-      ...
-    </k>
-        [structural]
+//todo temp
+context methodNameImpl(HOLE,_,_)
+when getKLabel(HOLE) ==KLabel 'Invoke
 
 // super.X(_)
 rule [SuperMethod]:
     <k>
       'SuperMethod(_:K,, Name:Id)
-      => lookupMethodData(objectClosure(OL, <envStack> EStack </envStack>)::BaseClass, Name, false)
+      => lookupMethodData(superMethod::BaseClass, Name, false)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-    <location> OL:Int </location>
-    <envStack>... ListItem((Class, _)) EStack:List </envStack>
     <classType> Class </classType>
-    <extends> BaseClass:ClassType </extends>
-        [structural]
+    <extends> BaseClass:ClassType </extends>  [structural]
 
 syntax KResult ::= "lookupMethodData" "(" K         //TypedVal - typed obj closure for instance qualifier
                                                     //or ClassType - for class qualifier
                                       "," Id        //method name
                                       "," Bool      //IsQ - isQualified
                     ")"
+                  | "superMethod"   //Elaboration result super keyword in super.m() call.
 
 /*@ Closure application needs to also set a new return type in the
 \textsf{return} cell, in order for the values returned by its body to
@@ -117,12 +94,12 @@ be checked against the return type of the method.  To do this correctly,
 we also need to stack the current status of the \textsf{return} cell
 and then pop it when the method returns. */
 
-//todo test order of params evaluation - here it should get wrong
+//First argument is reduced up to lookupMethodData. Qualifier is not evaluated yet.
 context 'Invoke(HOLE,, _)
 
 rule [InvokeToInvokeImplInstance]:
     'Invoke(lookupMethodData(
-        ObjClos:RawVal :: Class:ClassType,
+        Exp:K :: Class:ClassType,
         MethodName:Id,
         IsQ:Bool
       ),,
@@ -133,7 +110,7 @@ rule [InvokeToInvokeImplInstance]:
       IsQ,
       noValue,
       false,
-      ObjClos::Class,
+      Exp::Class,
       ParamExps
     )
 
@@ -192,8 +169,8 @@ rule [lookupMethodInClassRefLookupClosure]:
       Class:ClassType,
       _,
       _,
-      Sig:Signature, true, TClosureK:K, ParamExps:List{K}
-    ) => methodInvokeRuntime(Class, Sig, TClosureK, ParamExps)
+      Sig:Signature, true, QualK:K, ParamExps:List{K}
+    ) => methodInvokeRuntime(Class, Sig, QualK, ParamExps)
 
 rule [lookupMethodGotoEnclosing]:
     <k>
@@ -359,7 +336,7 @@ syntax K ::= "methodInvokeRuntime" "(" ClassType  //Compile-time target class
                                    "," Signature  //Method signature
                                    "," K          //Qualifier expression, if any, or noValue if it is static invocation
                                    "," List{K}    //Arguments, each of type TypedExp
-                                   ")"
+                                   ")"            [strict(3)]
 
 rule [methodInvokeRuntimeInstanceOnClass]:
     <k>
@@ -409,6 +386,26 @@ rule [methodInvokeRuntimeInstanceOnInterface]:
     </k>
     <classType> Class </classType>
     <metaType> interfaceMetaT </metaType>
+
+rule [superMethodEval]:
+    <k>
+      superMethod::BaseClass:ClassType
+      => objectClosure(OL, <envStack> EStack </envStack>)::BaseClass
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <location> OL:Int </location>
+    <envStack>... ListItem((Class, _)) EStack:List </envStack>
+    <classType> Class </classType>
+
+rule [methodInvokeRuntimeOnNull]:
+    methodInvokeRuntime(_,_, null::_, _)
+    =>  'Throw('NewInstance(
+          'None(.List{K}),,
+          class String2Id("java.lang.NullPointerException"),,
+          'ListWrap( null :: nullType ),,
+          'None(.List{K})
+        ) :: class String2Id("java.lang.NullPointerException"))
 
 syntax K ::= "getClassList" "(" List ")"
 rule (.List{K} => Class),, getClassList((ListItem((Class:ClassType, _)) => .List) _)
