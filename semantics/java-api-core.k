@@ -9,180 +9,111 @@ module JAVA-API-CORE
     imports JAVA-VAR-LOOKUP
 
 // This module contains the minimal part of java API required to perform
-// console read/write operations.
-
-syntax ApiId   ::=  "rtSystemOut"
-                  | "rtSystemOutPrint"
-                  | "rtSystemOutPrintln"
-                  | "rtSystemConsole"
-                  | "rtSystemConsoleReadLine"
-                  | "rtIntegerParseInt"
-                  | "rtSystemIn"
-                  | "rtScannerNextInt"
-                  | "methodGetClass" "(" K ")"
-                  | "methodHashCode" "(" K ")"
-                  | "classObject" "(" K ")"         //KResult
-                  | "methodClassGetName" "(" K ")"
-                  | "methodArrayClone" "(" K ")"
-
-syntax KResult ::= ApiId
-
-syntax RawVal ::= "rtSymbolicConsoleLine"
-                | "rtScanner"
-
-syntax RefType ::= "rtSystemType"
-                 | "rtIntegerType"
-                 | "rtScannerType"
-
-//todo temp
-context 'Invoke(KR:KResult,, 'ListWrap(_:List{K},,HOLE,,_:List{K}))
-when getKLabel(KR) =/=KLabel 'lookupMethodData`(_`,_`,_`)
-
-rule [NameSystem]:
-    'TypeName(X:Id) => rtSystemType
-when
-    Id2String(X) ==String "System"    [structural, anywhere]
-
-rule [NameInteger]:
-    'TypeName(X:Id) => rtIntegerType
-when
-    Id2String(X) ==String "Integer"   [structural, anywhere]
-
-rule [rtScanner]:
-    'TypeName(X:Id) => rtScannerType
-when
-    Id2String(X) ==String "Scanner"   [structural, anywhere]
-
-rule [NameSystemConsole]:
-    methodNameImpl(rtSystemType, X:Id, _) => rtSystemConsole
-when
-    Id2String(X) ==String "console"
-
-rule [InvokeSystemConsole]:
-    'Invoke(rtSystemConsole,, 'ListWrap(.List{K})) => rtSystemConsole
-
-rule [NameSystemConsoleReadLine]:
-    methodNameImpl(rtSystemConsole, X:Id, _) => rtSystemConsoleReadLine
-when
-    Id2String(X) ==String "readLine"
-
-rule [InvokeSystemConsoleReadLine]:
-    'Invoke(rtSystemConsoleReadLine,, 'ListWrap(.List{K}))
-    => rtSymbolicConsoleLine :: rtString
-
-rule [NameIntegerParseInt]:
-    methodNameImpl(rtIntegerType, X:Id, _) => rtIntegerParseInt
-when
-    Id2String(X) ==String "parseInt"
-
-rule [consoleReadInt]:
-    <k>
-      'Invoke(rtIntegerParseInt,, 'ListWrap(rtSymbolicConsoleLine :: rtString))
-      => I:Int :: int
-      ...
-    </k>
-    <in> ListItem(I) => . ...</in>
+// console read/write operations, as well as a few other API functions mentioned in JLS.
 
 //@ For integers and strings, print their value. For classes, print class type.
 
-rule [NameSystemOut]:
-    elabDispose('Field(rtSystemType,, X:Id)) => rtSystemOut
+rule [system-out-print-argConvert]:
+    invokeImpl(
+      methodClosure(_,_,_, 'NoMethodBody(_)) :: _,_,
+      'ListWrap(KR:KResult => toString(KR)), sig(MethodName:Id, _)
+    )
 when
-    Id2String(X) ==String "out"
+            (Id2String(MethodName) ==String "print")
+    andBool (       (typeOf(KR) =/=K rtString)
+             orBool (KR ==K (null::rtString)))
 
-rule [NameSystemOutPrint]:
-    methodNameImpl(rtSystemOut, X:Id, _) => rtSystemOutPrint
-when
-    Id2String(X) ==String "print"
-
-rule [NameSystemOutPrintln]:
-    methodNameImpl(rtSystemOut, X:Id, _) => rtSystemOutPrintln
-when
-    Id2String(X) ==String "println"
-
-rule [printlnDesugar]:
-    'Invoke(rtSystemOutPrintln,, 'ListWrap(KR:KResult))
-    => 'Invoke(rtSystemOutPrint,, 'ListWrap('Plus(KR:KResult,,"\n"::rtString)::rtString))
-
-rule [printlnEmptyDesugar]:
-    'Invoke(rtSystemOutPrintln,, 'ListWrap(.List{K}))
-    => 'Invoke(rtSystemOutPrint,, 'ListWrap("\n"::rtString))
-
-rule [consolePrintArgConvert]:
-    'Invoke(rtSystemOutPrint,, 'ListWrap(KR:KResult => toString(KR)))
-when
-           (typeOf(KR) =/=K rtString)
-    orBool (KR ==K (null::rtString))
-
-rule [consolePrint]:
+rule [system-out-print]:
     <k>
-      'Invoke(rtSystemOutPrint,, 'ListWrap(Str:String :: rtString))
-      => nothing::void
+      invokeImpl(
+        methodClosure(_,_,_, 'NoMethodBody(_))::_, _,
+        'ListWrap(Str:String :: rtString), sig(MethodName:Id, _)
+      ) => nothing::void
       ...
     </k>
-    <out>... .=> ListItem(Str) </out>
-
-rule [NameSystemIn]:
-    elabDispose('Field(rtSystemType,, X:Id)) => rtSystemIn
+    <out>... . => ListItem(Str) </out>
 when
-    Id2String(X) ==String "in"
+    Id2String(MethodName) ==String "print"
 
-rule [NewInstanceScanner]:
-    'NewInstance('None(.List{K}),,
-      rtScannerType,,
-      'ListWrap(rtSystemIn),,
-      'None(.List{K})
-    ) :: rtScannerType
-    => rtScanner :: rtScannerType
-
-rule [ScannerNextInt]:
-    methodNameImpl( _::rtScannerType, X:Id, _) => rtScannerNextInt
-when
-    Id2String(X) ==String "nextInt"
-
-rule [InvokeScannerNextInt]:
+rule [scanner-nextInt]:
     <k>
-      'Invoke(rtScannerNextInt,, 'ListWrap(.List{K}))
-      => I:Int :: int
+      invokeImpl(
+        methodClosure(_,_,_, 'NoMethodBody(_))::_, _,
+        'ListWrap(.List{K}), sig(MethodName:Id, _)
+      ) => I :: int
       ...
     </k>
-    <in> ListItem(I) => . ...</in>
-
-rule [NameGetClass]:
-    methodNameImpl(Qual:K, X:Id, _) => methodGetClass(Qual)
+    <in> ListItem(I:Int) => . ...</in>
 when
-    Id2String(X) ==String "getClass"
+    Id2String(MethodName) ==String "nextInt"
 
-rule [InvokeGetClass]:
-    'Invoke(
-      methodGetClass(Qual:K),,
-      'ListWrap(.List{K})
-    ) => classObject(Qual)
-
-rule [NameClassGetName]:
-    methodNameImpl(classObject(Qual:K), X:Id, _) => methodClassGetName(Qual)
+rule [object-getClass-on-object]:
+    <k>
+      invokeImpl(
+        methodClosure(_,_,_, 'NoMethodBody(_))::_, OL:Int,
+        'ListWrap(.List{K}), sig(MethodName:Id, _)
+      ) => 'Lit('Class(T)) :: class String2Id("java.lang.Class")
+      ...
+    </k>
+    <store>
+      ...
+      OL |-> objectClosure(_, <envStack>ListItem((T:ClassType, _)) _</envStack>) :: _
+      ...
+    </store>
 when
-    Id2String(X) ==String "getName"
+    Id2String(MethodName) ==String "getClass"
 
-context 'Invoke(methodClassGetName(HOLE),,_)
+rule [object-getClass-on-String]:
+    invokeImpl(
+      methodClosure(_,_,_, 'NoMethodBody(_))::_, rtString,
+      'ListWrap(.List{K}), sig(MethodName:Id, _)
+    ) => 'Lit('Class(rtString)) :: class String2Id("java.lang.Class")
+when
+    Id2String(MethodName) ==String "getClass"
 
-rule [InvokeClassGetNameObject]:
-    'Invoke(
-      methodClassGetName(objectClosure(_, _ <envStack>ListItem((Class:ClassType, _))...</envStack>)::_),,
-      'ListWrap(.List{K})
-    ) => fullyQualifiedClassName(Class)
+rule [object-getClass-on-array]:
+    invokeImpl(
+      methodClosure(_,_,_, 'NoMethodBody(_))::_, arrayOf T:Type,
+      'ListWrap(.List{K}), sig(MethodName:Id, _)
+    ) => 'Lit('Class(arrayOf T)) :: class String2Id("java.lang.Class")
+when
+    Id2String(MethodName) ==String "getClass"
 
-rule [InvokeClassGetNameString]:
-    'Invoke(
-      methodClassGetName(Str:String::_),,
-      'ListWrap(.List{K})
-    ) => toString(rtString)
+//hashCode will always return 0 for now
+rule [object-hashCode]:
+    <k>
+      invokeImpl(
+        methodClosure(_,_,_, 'NoMethodBody(_))::_, OL:Int,
+        'ListWrap(.List{K}), sig(MethodName:Id, _)
+      ) => NewOL :: int
+      ...
+    </k>
+    <store>
+      ...
+      OL |-> objectClosure(NewOL:Int, _) :: _
+      ...
+    </store>
+when
+    Id2String(MethodName) ==String "hashCode"
 
-rule [InvokeClassGetNameArray]:
-    'Invoke(
-      methodClassGetName(arrayRef(T:Type,_,_)::_),,
-      'ListWrap(.List{K})
-    ) => toString(T)
+rule [array-clone]:
+    <k>
+      invokeImpl(
+        methodClosure(_,_,_, 'NoMethodBody(_))::_, OL:Int,
+        'ListWrap(.List{K}), sig(MethodName:Id, _)
+      ) => arrayCopy(
+        arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT,
+        newArrayAlloc(ElemT, 'ListWrap(Len::int), undefined :: ElemT)
+      )
+      ...
+    </k>
+    <store>
+      ...
+      OL |-> arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT:Type
+      ...
+    </store>
+when
+    Id2String(MethodName) ==String "clone"
 
 rule toString(Class:ClassType) => fullyQualifiedClassName(Class) [anywhere]
 
@@ -221,39 +152,6 @@ rule [ClassNameInner]:
     <classType> class ClassId </classType>
     <enclosingClass> class OuterClassId:Id </enclosingClass>
     <typeNamesMap>... _ |-> mapWrap(SimpleName:Id |-> class ClassId _:Map) ...</typeNamesMap>
-
-rule [NameHashCode]:
-    methodNameImpl(KR:KResult, X:Id, _) => methodHashCode(KR)
-when
-    Id2String(X) ==String "hashCode"
-
-//hashCode will always return 0 for now
-rule [InvokeHashCode]:
-    'Invoke(
-      methodHashCode(
-        objectClosure(I:Int, _ <envStack>ListItem((Class:ClassType, _))...</envStack>)::_
-      ),,
-      'ListWrap(.List{K})
-    ) => I :: int
-
-rule [NameArrayClone]:
-    methodNameImpl(arrayRef(T:Type, L1:Int, Len:Int)::CompileT:Type, X:Id, _)
-    => methodArrayClone(arrayRef(T,L1,Len)::CompileT)
-when
-    Id2String(X) ==String "clone"
-
-//hashCode will always return 0 for now
-rule [InvokeArrayClone]:
-    'Invoke(
-      methodArrayClone(
-        arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT:Type
-      ),,
-      'ListWrap(.List{K})
-    )
-    => arrayCopy(
-      arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT,
-      newArrayAlloc(ElemT, 'ListWrap(Len::int), undefined :: ElemT)
-    )
 
 //construct to copy content of an array to another
 //after copy, the term is rewritten into the destination array

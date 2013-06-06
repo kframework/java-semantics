@@ -56,18 +56,11 @@ syntax K ::= "methodNameImpl" "("
 rule [MethodNameQualified]:
     methodNameImpl(QualK:K, Name:Id, IsQ:Bool) => lookupMethodData(QualK, Name, IsQ)
 when
-            (Id2String(Name) =/=String "getClass")
-    andBool ((isClassType(QualK) ==K true) orBool (isTypedExp(QualK) ==K true))
-    andBool notBool (isApiExp(QualK) ==K true)
+    (isClassType(QualK) ==K true) orBool (isTypedExp(QualK) ==K true)
         [structural]
 
-//todo temp. Whether the term should be processed by the rule above or not.
-//Not if it is a custom api hack.
-syntax K ::= "isApiExp" "(" K ")"               [function]
-rule isApiExp(_ :: 'rtScannerType(_)) => true
-
-//todo temp
-context methodNameImpl(HOLE,_,_)
+//todo temp - a hack just to evaluate chained method calls
+context methodNameImpl(HOLE, _,_)
 when getKLabel(HOLE) ==KLabel 'Invoke
 
 // super.X(_)
@@ -99,18 +92,18 @@ context 'Invoke(HOLE,, _)
 
 rule [InvokeToInvokeImplInstance]:
     'Invoke(lookupMethodData(
-        Exp:K :: Class:ClassType,
+        Exp:K :: QualT:RefType,
         MethodName:Id,
         IsQ:Bool
       ),,
       'ListWrap(ParamExps:List{K})
     ) => lookupMethod(
-      Class,
+      QualT,
       MethodName,
       IsQ,
       noValue,
       false,
-      Exp::Class,
+      Exp::QualT,
       ParamExps
     )
 
@@ -137,10 +130,11 @@ rule [InvokeToInvokeImplStatic]:
 //First we search for the signature - lookupSignature construct.
 //Afterwards we search for the right implementation in the hierarchy, once the signature is known
 // - lookupMethodSigKnown.
-syntax K ::= "lookupMethod" "(" ClassType //target ref class
+syntax K ::= "lookupMethod" "(" RefType //target ref class
                             "," Id        //method name
                             "," Bool      //IsQ - isQualified
                             "," K         //Evaluates to the signature to be called, or noValue if no signature was found yet
+                                          //Sig format: mapWrap(Sig |-> Type)
                             "," Bool      //SigSearched: true if Sig was already searched for the current class, false otherwise.
                                           // Starts with false.
                             "," K         //TypedExp - qualifier expression, or noValue for class qualifiers.
@@ -164,13 +158,33 @@ rule [lookupMethodLookupSig]:
     <classType> Class </classType>
     <methods> Env:Map </methods>
 
+//When qualifier is not a class, lookup the method in the class Object
+rule [lookupMethodLookupSigGeneralRef]:
+    <k>
+      lookupMethod(
+        QualT:RefType,
+        MethodName:Id,
+        IsQ:Bool,
+        noValue => lookupSignature(MethodName, getTypesFromValues(ParamExps), Env, IsQ, noValue, objectClass),
+        false => true,
+        _,
+        ParamExps:List{K}
+      )
+      ...
+    </k>
+    <classType> ObjT:ClassType </classType>
+    <methods> Env:Map </methods>
+when
+    (notBool (isClassType(QualT) ==K true)) andBool (objectClass ==K ObjT)
+
 rule [lookupMethodInClassRefLookupClosure]:
     lookupMethod(
-      Class:ClassType,
+      QualT:RefType,
       _,
       _,
-      Sig:Signature, true, QualK:K, ParamExps:List{K}
-    ) => methodInvokeRuntime(Class, Sig, QualK, ParamExps)
+      mapWrap(Sig:Signature |-> RetT:Type),
+      true, QualK:K, ParamExps:List{K}
+    ) => methodInvokeRuntime(QualT, Sig, QualK, ParamExps) :: RetT
 
 rule [lookupMethodGotoEnclosing]:
     <k>
@@ -193,17 +207,21 @@ rule [lookupMethodDiscard]:
 
 //converts a List{TypedVal} to Types.
 syntax K ::= "getTypesFromValues" "("
-                            List{K}     //List{KResult} a list of values
+                            List{K}     //List{KResult} a list of source expressions
                         ")"
            | "getTypesFromValues" "("
-                            List{K} "," //List{KResult} a list of types
-                            List{K}     //List{KResult} a list of values
+                            List{K} "," //List{KResult} a list of result types
+                            List{K}     //List{KResult} a list of source typed expressions
                         ")"
 
 rule getTypesFromValues(VKs:List{K}) => getTypesFromValues(.List{K}, VKs)
 rule getTypesFromValues(TKs:List{K}, _::T:Type,, VKs:List{K})
      => getTypesFromValues(TKs,,T, VKs)
 rule getTypesFromValues(TKs:List{K}, .List{K}) => types(TKs)
+
+//todo temp - a hack just to evaluate chained method calls
+context getTypesFromValues(_, HOLE,,_)
+when getKLabel(HOLE) ==KLabel 'Invoke
 
 //searches for the correct method signature to use
 //when calling a given MethodName with the given argument types
@@ -212,7 +230,7 @@ syntax K ::= "lookupSignature" "("  Id     // MethodName
                                ","  K      // Computes into Types - argument types
                                ","  Map    // Env - methods environment Map[sig -> Class]
                                ","  Bool   // IsQ - whether the original method call was qualified
-                               ","  K      // The best signature found so far,
+                               ","  K      // The best signature found so far, in the form mapWrap(Sig -> Type)
                                            // or noValue if none found
                                ","  ClassType //target class
                                ")"  [strict(2)]
@@ -225,7 +243,7 @@ rule [lookupSignatureNoAlternatives]:
                 isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
                     getMethodDeclaringClass(TV), IsQ, Class)
               ) :: bool,
-              sig(MethodName, SigTs)
+              mapWrap(sig(MethodName, SigTs) |-> getMethodReturnType(TV))
             ) )
        ~> lookupSignature(
             MethodName:Id,
@@ -248,14 +266,14 @@ rule [lookupSignatureWithAlternative]:
                 isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
                     getMethodDeclaringClass(TV), IsQ, Class)
               ) :: bool,
-              sig(MethodName, SigTs)
+              mapWrap(sig(MethodName, SigTs) |-> getMethodReturnType(TV))
             ) )
        ~> lookupSignature(
             MethodName:Id,
             CallTs:Types,
             (sig(MethodName, SigTs:Types) |-> DecClass:ClassType => .) _:Map,
             IsQ:Bool,
-            sig(MethodName, AltTs:Types),
+            mapWrap(sig(MethodName, AltTs:Types) |-> _),
             Class:ClassType
           )
       ...
@@ -276,7 +294,11 @@ when
 rule [lookupSignatureEnd]:
     lookupSignature(_,_,.Map,_,K:K,_) => K
 
-syntax K ::= "isPreferableSig" "(" K "," K ")"  [strict(1)]
+//Inserts the second argument into the term lookupSignature that follows, if the first argument computes to true
+//todo convert into 'If
+syntax K ::= "isPreferableSig" "(" K  //computes to bool::bool
+                               "," K  //computes to mapWrap(Sig -> Type)
+                               ")"  [strict(1)]
 
 rule (isPreferableSig(true::bool, K:K) => .) ~> lookupSignature(_,_,_,_, _ => K, _ )
 rule isPreferableSig(false::bool, _) => .
@@ -332,11 +354,14 @@ rule [isAccessiblePrivate]:
     <crntClass> CurrentClass:ClassType </crntClass>
 
 //The elaboration result of a method invocation.
-syntax K ::= "methodInvokeRuntime" "(" ClassType  //Compile-time target class
+syntax K ::= "methodInvokeRuntime" "(" RefType    //Compile-time target class, or more general reference
                                    "," Signature  //Method signature
                                    "," K          //Qualifier expression, if any, or noValue if it is static invocation
                                    "," List{K}    //Arguments, each of type TypedExp
-                                   ")"            [strict(3)]
+                                   ")"
+
+//Evaluate the qualifier
+context methodInvokeRuntime(_,_, HOLE, _)::_
 
 rule [methodInvokeRuntimeInstanceOnClass]:
     <k>
@@ -348,11 +373,10 @@ rule [methodInvokeRuntimeInstanceOnClass]:
             ...
           </envStack>)::_,
           ParamExps:List{K}
-      )
+      )::_
       => invokeImpl(
         lookupOverloadedMethod(Sig, getClassList(Rest ListItem((Class, BI))), mapWrap(.Map), noValue),
-        OL,
-        'ListWrap(ParamExps)
+        OL, 'ListWrap(ParamExps), Sig
       )
       ...
     </k>
@@ -360,11 +384,10 @@ rule [methodInvokeRuntimeInstanceOnClass]:
     <metaType> classMetaT </metaType>
 
 rule [methodInvokeRuntimeStaticOnClass]:
-    methodInvokeRuntime(Class:ClassType, Sig:Signature, noValue, ParamExps:List{K})
+    methodInvokeRuntime(Class:ClassType, Sig:Signature, noValue, ParamExps:List{K})::_
     => invokeImpl(
       lookupOverloadedMethod(Sig, Class, mapWrap(.Map), noValue),
-      noValue,
-      'ListWrap(ParamExps)
+      noValue, 'ListWrap(ParamExps), Sig
     )
 
 rule [methodInvokeRuntimeInstanceOnInterface]:
@@ -376,16 +399,35 @@ rule [methodInvokeRuntimeInstanceOnInterface]:
           ...
         </envStack>)::_,
           ParamExps:List{K}
-      )
+      )::_
       => invokeImpl(
         lookupOverloadedMethod(Sig, ActualClass, mapWrap(.Map), noValue),
-        OL,
-        'ListWrap(ParamExps)
+        OL, 'ListWrap(ParamExps), Sig
       )
       ...
     </k>
     <classType> Class </classType>
     <metaType> interfaceMetaT </metaType>
+
+rule [methodInvokeRuntimeOnString]:
+    methodInvokeRuntime(_, Sig:Signature,
+        Str:String::_,
+        ParamExps:List{K}
+    )::_
+    => invokeImpl(
+      lookupOverloadedMethod(Sig, objectClass, mapWrap(.Map), noValue),
+      rtString, 'ListWrap(ParamExps), Sig
+    )
+
+rule [methodInvokeRuntimeOnArray]:
+    methodInvokeRuntime(_, Sig:Signature,
+        arrayRef(ArrT:RefType, _,_)::_,
+        ParamExps:List{K}
+    )::_
+    => invokeImpl(
+      lookupOverloadedMethod(Sig, objectClass, mapWrap(.Map), noValue),
+      ArrT, 'ListWrap(ParamExps), Sig
+    )
 
 rule [superMethodEval]:
     <k>
@@ -399,7 +441,7 @@ rule [superMethodEval]:
     <classType> Class </classType>
 
 rule [methodInvokeRuntimeOnNull]:
-    methodInvokeRuntime(_,_, null::_, _)
+    methodInvokeRuntime(_,_, null::_, _)::_
     =>  'Throw('NewInstance(
           'None(.List{K}),,
           class String2Id("java.lang.NullPointerException"),,
@@ -507,13 +549,15 @@ syntax K ::= "getArgTypes" "(" TypedVal ")" [function]
 rule getArgTypes(_ :: methodType(_,_, Ts:Types, _)) => Ts [anywhere]
 
 syntax K ::= "invokeImpl" "(" K   //lookupOverloadedMethod statement, later methodClosure
-                          "," K   //OL - object location, or noValue for static methods
+                          "," K   //OL - object location, target type for methods on non-object refs,
+                                  // or noValue for static methods
                           "," K   //evaluates to 'ListWrap(ParamValues:List{KResult})
+                          "," Signature //Method signature, used by native methods
                           ")"
         [strict(1)]
 
 //todo test expressions order
-context invokeImpl(_, _,'ListWrap(_:List{K},,HOLE,,_:List{K}))
+context invokeImpl(_, _,'ListWrap(_:List{K},,HOLE,,_:List{K}), _)
 
 rule [invokeImplInstance]:
     <k>
@@ -521,7 +565,7 @@ rule [invokeImplInstance]:
         methodClosure(Class:ClassType, 'ListWrap(Params:List{K}), instanceCT, Body:K)
             :: methodType(_,_,_, T:Type),
         OL:Int,
-        'ListWrap(ParamValues:List{K})
+        'ListWrap(ParamValues:List{K}), _
       ) ~> K:K
        => bindto Params, ParamValues ~> Body ~> 'Return('None(.List{K}))
     </k>
@@ -551,7 +595,7 @@ rule [invokeImplInstance]:
       OL |-> objectClosure(NewOL:Int, Obj:Bag) :: _
       ...
     </store>
-when isKResult(ParamValues)
+when isKResult(ParamValues) andBool (getKLabel(Body) =/=KLabel 'NoMethodBody)
 
 //todo report bug: if we remove parentheses around (bindto Params, ParamValues)
 //we'll get compile-time error
@@ -563,7 +607,7 @@ rule [invokeImplStatic]:
         methodClosure(Class:ClassType, 'ListWrap(Params:List{K}), staticCT, Body:K)
             :: methodType(_,_,_, T:Type),
         _,
-        'ListWrap(ParamValues:List{K})
+        'ListWrap(ParamValues:List{K}), _
       ) ~> K:K
        => staticInit(Class) ~> (bindto Params, ParamValues) ~> Body ~> 'Return('None(.List{K}))
     </k>
@@ -593,7 +637,7 @@ when isKResult(ParamValues)
 rule [invokeConstrClosure]:
     <k>
       invokeImpl( constrClosure(Class:ClassType, 'ListWrap(Params:List{K}), FirstLine:K, Body:K)
-          :: MT:MethodType, OL:Int, K:K
+          :: MT:MethodType, OL:Int, K:K, Sig:Signature
       )
       => invokeImpl(
             methodClosure(Class, 'ListWrap(Params), instanceCT,
@@ -603,7 +647,7 @@ rule [invokeConstrClosure]:
                     #else freshEnv(IInit)
                   #fi
               ~> Body
-            ) :: MT, OL, K
+            ) :: MT, OL, K, Sig
          )
       ...
     </k>

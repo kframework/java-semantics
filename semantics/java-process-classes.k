@@ -223,6 +223,10 @@ rule getMethodContextType( constrClosure(_,_,_,_) :: _ ) => instanceCT [anywhere
 syntax K ::= "getMethodDeclaringClass" "(" TypedVal ")"   [function]
 rule getMethodDeclaringClass( _ :: methodType(_, Class:ClassType, _,_ ) ) => Class [anywhere]
 
+//returns the return type of a method closure given as argument
+syntax K ::= "getMethodReturnType" "(" TypedVal ")"       [function]
+rule getMethodReturnType( _::methodType(_,_,_, T:Type ) ) => T
+
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
 closures, so that their type contract can be checked at invocation

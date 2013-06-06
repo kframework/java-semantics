@@ -446,6 +446,8 @@ rule [ThrowMethodEnd]:
     </control>
     <env> _ => Env </env>
 
+//todo rewrite after system api is ready
+/*
 rule [ThrowCausesThreadTermination]:
     <k>
       'Throw(TV:TypedVal)
@@ -459,6 +461,7 @@ rule [ThrowCausesThreadTermination]:
           ))
     </k>
     <stack> .List </stack>
+*/
 
 //@ \section{Try statement}
 

@@ -8,4 +8,8 @@ public class Object {
     public String toString() {
         return getClass().getName() + "@" + hashCode();
     }
+
+    public final native Class getClass();
+
+    public native int hashCode();
 }

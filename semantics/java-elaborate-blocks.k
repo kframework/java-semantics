@@ -551,10 +551,8 @@ rule [TypeNameInExecutionPhaseFail]:
     <cuClass> CrntClass:ClassType </cuClass>
     <classType> CrntClass </classType>
     <imports> Imp:Map </imports>
-when notBool  ((X in keys(Imp))
-              orBool (Id2String(X) ==String "System")
-              orBool (Id2String(X) ==String "Integer")
-              orBool (Id2String(X) ==String "Scanner"))
+when
+    notBool (X in keys(Imp))
 
 /*@ \section{Outer static fields} */
 
