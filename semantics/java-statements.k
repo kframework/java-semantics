@@ -446,22 +446,21 @@ rule [ThrowMethodEnd]:
     </control>
     <env> _ => Env </env>
 
-//todo rewrite after system api is ready
-/*
 rule [ThrowCausesThreadTermination]:
     <k>
       'Throw(TV:TypedVal)
-      =>  'ExprStm('Invoke(
-            'Method('MethodName(
-              rtSystemOut,,
-              String2Id("println")
-            )),,
-            'ListWrap(
-                'Plus("Thread terminated with exception: "::rtString,, TV)::rtString)
-          ))
+      =>  'ExprStm(
+            invokeImpl(
+              methodClosure(noClass,.K, instanceCT, 'NoMethodBody(.List{K})) :: noClass,
+              noValue,
+              'ListWrap(
+                'Plus('Plus("Thread terminated with exception: "::rtString,, TV)::rtString,,"\n"::rtString)::rtString
+              ),
+              sig(String2Id("print"), types(rtString))
+            )
+          )
     </k>
     <stack> .List </stack>
-*/
 
 //@ \section{Try statement}
 
