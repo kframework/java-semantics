@@ -40,6 +40,7 @@ rule [This]:
       <crntClass> Class </crntClass>
       <location> OL:Int </location>
     </crntObj>
+    <contextType> instanceCT </contextType>
 
 /*@ \subsection{Object member access} */
 

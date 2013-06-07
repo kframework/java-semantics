@@ -23,30 +23,30 @@ public class array_18_clone {
 class main {
   main() {
     int[] v1 = new int[0];
-    int[] v2 = v1.clone();
+    int[] v2 = (int[]) v1.clone();
     cloneTest(v1,v2);
 
     int[][] m1 = new int[0][0];
-    int[][] m2 = m1.clone();
+    int[][] m2 = (int[][]) m1.clone();
     matrixCloneTest(m1,m2);
 
     v1 = allocateAndInitArray(4,2);
-    cloneTest(v1, v1.clone());
+    cloneTest(v1, (int[])v1.clone());
 
     m1 = new int[2][0];
-    matrixCloneTest(m1, m1.clone());
+    matrixCloneTest(m1, (int[][])m1.clone());
 
     m1 = new int[2][];
     m1[0] = allocateAndInitArray(10,2);
     m1[1] = allocateAndInitArray(20,2);
-    matrixCloneTest(m1,m1.clone());
+    matrixCloneTest(m1, (int[][])m1.clone());
 
     Object[] vo = new Object[4];
     vo[0] = "str";
     vo[1] = new RuntimeException("re");
     vo[2] = new Object();
     vo[3] = null;
-    Object[] vo2 = vo.clone();
+    Object[] vo2 = (Object[])vo.clone();
     System.out.print("Object[] : "+ (vo == vo2) + " : ");
     for(int i=0; i<vo2.length; i++) {
       System.out.print((vo[i] == vo2[i]) + " ");
@@ -56,7 +56,7 @@ class main {
     System.out.println("Null tests:");
     v1 = null;
     try {
-      v2 = v1.clone();
+      v2 = (int[])v1.clone();
       cloneTest(v1, v2);
     } catch (NullPointerException e) {
       System.out.println(e);
@@ -64,7 +64,7 @@ class main {
 
     m1[1] = null;
     try {
-      m2 = m1.clone();
+      m2 = (int[][])m1.clone();
       matrixCloneTest(m1, m2);
     } catch (NullPointerException e) {
       System.out.println(e);

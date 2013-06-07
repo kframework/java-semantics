@@ -43,16 +43,27 @@ syntax K ::= "elaborateBlocks" "(" K ")" [strict] //Elaborate the blocks inside 
            | "elabDispose" "(" K ")"    //Intermediate state between elab and elabRes - all subterms were already elaborated.
                                         //Responsible for deleting the elabRes() wrappers of subterms.
 
-syntax KResult ::= "elabRes" "(" K ")"  //Wraps the elaboration result
+//Wraps the elaboration result. Since elaboration may happen at both ElaborateBlocksPhase and ExecutionPhase,
+//it cannot be KResult. Actually it is not KResult for HOLE, but is for CHOLE.
+syntax K ::= "elabRes" "(" K ")"
 
-syntax K ::= K "??" K [strict(1), right]
+//Chain of responsibility.
+//Evaluate the first argument. if it is KResult (except noValue) or elabRes(), the result of the ?? expression is
+//the result of the first argument. Otherwise, if the first argument evaluates to noValue, the result of the
+//?? expression is the result of the second argument.
+syntax K ::= K "??" K [right]
 
-rule [chainOfResponsibility1]:
-    ElabRes:K ?? _ => ElabRes
+rule [chainOfResponsibilityHeat]:
+    (. => Arg1) ~> (Arg1:K => CHOLE) ?? _
+when
+    notBool isElab(Arg1)
+
+rule [chainOfResponsibilityResult1]:
+    ElabRes:K ~> (CHOLE ?? _) => ElabRes
 when isElab(ElabRes) andBool (ElabRes =/=K noValue)
 
-rule [chainOfResponsibility2]:
-    noValue ?? K:K => K
+rule [chainOfResponsibilityResult2]:
+    noValue ~> (CHOLE ?? K:K) => K
 
 //Elaboration result of a field access exp.
 syntax K ::= "lookupField" "(" K    //Qualifier exp
@@ -74,99 +85,121 @@ syntax K ::= "newArrayImpl" "("
                           //not for each element as the previous one.
              ")"
 
+
 rule [elaborateBlocksStart]:
     <k> . => elaborateBlocks(getAllClasses) </k>
     <computationPhase> ProcessClassesPhase => ElaborateBlocksPhase </computationPhase>
 
 rule [elaborateBlocks]:
     <k>
-      (. => elabMethods(.Map) ~> elabInstanceInit ~> elabStaticInit)
+      (. => elabMethods(MethodDecs) ~> elabInstanceInit ~> elabStaticInit)
       ~> elaborateBlocks(setWrap((SetItem(Class:ClassType) => .) _:Set))
       ...
     </k>
-    <cuClass> _ => Class </cuClass>
+    <crntClass> _ => Class </crntClass>
+    <classType> Class </classType>
+    <methodDecs> MethodDecs:Map </methodDecs>
 
 rule [elaborateBlocksDiscard]:
     elaborateBlocks(setWrap(.)) => .
 
 rule [elabMethodsHeatMethod]:
-  <k>
-    (. => elabParams(Params) ~> elabInit(Body))
-    ~> elabMethods( (. => Sig |-> methodClosure(MClass,'ListWrap(Params),CT, CHOLE )::MethodType) _)
-    ...
-  </k>
-  <cuClass> Class:ClassType </cuClass>
-  <classType> Class </classType>
-  <methodDecs>
-    Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:List{K}), CT:ContextType, Body:K) :: MethodType:Type
-    => .Map
-    ...
-  </methodDecs>
-  <elabContextType> _ => CT </elabContextType>
-  <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
+    <k>
+      (. => elabParams(Params) ~> elabInit(Body))
+      ~> elabMethods( (Sig |-> _ => .Map) _)
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    <methodDecs>
+      Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:List{K}), CT:ContextType, (Body:K => CHOLE)) :: MethodType:Type
+      ...
+    </methodDecs>
+    <contextType> _ => CT </contextType>
+    <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
 
 rule [elabMethodsCoolMethod]:
-    (elabRes(Body:K) => .)
-    ~> elabMethods(_ |-> methodClosure(_,_,_, CHOLE => Body)::_ _:Map)
+    <k>
+      (elabRes(Body:K) => .) ~> elabMethods(_:Map)
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    <methodDecs>
+      _ |-> methodClosure(_,_,_, (CHOLE => Body)) :: _
+      ...
+    </methodDecs>
 
 //todo consider eliminating the label constrClosure since it leads to too much duplication.
 rule [elabMethodsHeatConstrFirstLine]:
-  <k>
-    (. => elabParams(Params) ~> elabInit(FirstLine))
-    ~> elabMethods( (. => Sig |-> constrClosure(MClass, 'ListWrap(Params), CHOLE, Body )::MethodType) _)
-    ...
-  </k>
-  <cuClass> Class:ClassType </cuClass>
-  <classType> Class </classType>
-  <methodDecs>
-    Sig:K |-> constrClosure(MClass:ClassType, 'ListWrap(Params:List{K}), FirstLine:K, Body:K) :: MethodType:Type
-    => .Map
-    ...
-  </methodDecs>
-  <elabContextType> _ => instanceCT </elabContextType>
-  <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
+    <k>
+      (. => elabParams(Params) ~> elabInit(FirstLine))
+      ~> elabMethods( (Sig |-> _ => .Map) _)
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    <methodDecs>
+      Sig:K |-> constrClosure(MClass:ClassType, 'ListWrap(Params:List{K}), (FirstLine:K => CHOLE), Body:K) :: MethodType:Type
+      ...
+    </methodDecs>
+    <contextType> _ => instanceCT </contextType>
+    <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
 
 rule [elabMethodsHeatConstrBody]:
-    (elabRes(FirstLine:K) => elabInit(Body))
-    ~> elabMethods(_ |-> constrClosure(_,_, CHOLE => FirstLine, Body => CHOLE )::_ _:Map)
+    <k>
+      (elabRes(FirstLine:K) => elabInit(Body)) ~> elabMethods(_:Map)
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    <methodDecs>
+      Sig:K |-> constrClosure(MClass:ClassType, 'ListWrap(Params:List{K}), CHOLE => FirstLine, Body:K => CHOLE) :: MethodType:Type
+      ...
+    </methodDecs>
 
 rule [elabMethodsCoolConstr]:
-    (elabRes(Body:K) => .)
-    ~> elabMethods(_ |-> constrClosure(_,_,_, CHOLE => Body)::_ _:Map)
+    <k>
+      (elabRes(Body:K) => .) ~> elabMethods(_:Map)
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    <methodDecs>
+      Sig:K |-> constrClosure(MClass:ClassType, 'ListWrap(Params:List{K}), FirstLine:K, CHOLE => Body) :: MethodType:Type
+      ...
+    </methodDecs>
 
 rule [elabMethodsEnd]:
-    <k> elabMethods( Methods:Map ) => . ...</k>
-    <cuClass> Class:ClassType </cuClass>
-    <classType> Class </classType>
-    <methodDecs> .Map => Methods </methodDecs>
+    elabMethods( .Map ) => .
 
 rule [elabInstanceHeat]:
     <k> (. => elabInit(K)) ~> elabInstanceInit ...</k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <instanceInit> K:K => CHOLE </instanceInit>
-    <elabContextType> _ => instanceCT </elabContextType>
+    <contextType> _ => instanceCT </contextType>
     <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
 when K =/=K CHOLE
 
 rule [elabInstanceEnd]:
     <k> elabRes(K) ~> elabInstanceInit => . ...</k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <instanceInit> CHOLE => K </instanceInit>
 
 rule [elabStaticHeat]:
     <k> (. => elabInit(K)) ~> elabStaticInit ...</k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticInit> K:K => CHOLE </staticInit>
-    <elabContextType> _ => staticCT </elabContextType>
+    <contextType> _ => staticCT </contextType>
     <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
 when K =/=K CHOLE
 
 rule [elabStaticEnd]:
     <k> elabRes(K) ~> elabStaticInit => . ...</k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticInit> CHOLE => K </staticInit>
 
@@ -358,8 +391,6 @@ rule [VarDecWithInitDesugar]:
 when
     getKLabel(InitExp) =/=KLabel 'ArrayInit           [structural]
 
-//todo this should not work. T should be resolved after elaboration of 'LocalVarDec
-//At least types of fields should be computed upfront. We need them to compute elabLookup.
 rule [elabHeatLocalVarDec]:
     <k>
       (. => elabInit('LocalVarDec(T,, 'ListWrap('VarDec(X)))))
@@ -376,8 +407,6 @@ when
 
 rule [elabAmbName]:
     elabDispose('AmbName(Ks:List{K})) => elabDispose('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName('ListWrap(Ks))
-when
-    isElab(Ks)
 
 rule [elabExprNameSimple]:
     elabDispose('ExprName(ResK:K)) => elabDispose(localVar(ResK)) ?? elabDispose('Field(ResK))
@@ -401,7 +430,7 @@ rule [elabFieldUnqualified]:
          ?? outerStaticField(Class, Arg)
       ...
     </k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
 when
     isElab(Arg)
 
@@ -448,12 +477,12 @@ rule [elabLookupNotFound]:
 
 rule [elabThisInstanceCT]:
     <k> elab('This(.List{K})) => elabRes('This(.List{K}) :: Class) ...</k>
-    <elabContextType> instanceCT </elabContextType>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
+    <contextType> instanceCT </contextType>
 
 rule [elabThisStaticCT]:
     <k> elab('This(.List{K})) => noValue ...</k>
-    <elabContextType> staticCT </elabContextType>
+    <contextType> staticCT </contextType>
 
 rule [elabFieldQualRef]:
     elabDispose('Field(Qual:K :: Class:ClassType,, X:Id))
@@ -469,7 +498,8 @@ rule [elabSuperField]:
       => elabTypedExp(lookupField('This(.List{K})::Class, noClass, X), elabLookup(X, BaseClass))
       ...
     </k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
+    <contextType> instanceCT </contextType>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
@@ -541,14 +571,14 @@ when
 rule [TypeNameInExecutionPhase]:
     <k> 'TypeName(X:Id) => Class ...</k>
     <computationPhase> ElaborateBlocksPhase </computationPhase>
-    <cuClass> CrntClass:ClassType </cuClass>
+    <crntClass> CrntClass:ClassType </crntClass>
     <classType> CrntClass </classType>
     <imports>... X |-> Class:ClassType ...</imports>
 
 rule [TypeNameInExecutionPhaseFail]:
     <k> 'TypeName(X:Id) => noValue ...</k>
     <computationPhase> ElaborateBlocksPhase </computationPhase>
-    <cuClass> CrntClass:ClassType </cuClass>
+    <crntClass> CrntClass:ClassType </crntClass>
     <classType> CrntClass </classType>
     <imports> Imp:Map </imports>
 when
@@ -704,12 +734,6 @@ rule [elabCond]:
 rule [elabResCoolExpType]:
     (T:Type => .K) ~> elabRes(_ :: (CHOLE => T))
 
-//todo Workaround used to elaborate method calls and arrays.
-rule [tempElabExpWithElabRes]:
-    elabDispose(KL:KLabel(_,, ('Invoke(Ks:List{K}) => 'Invoke(Ks:List{K})::noClass),, _))
-when
-    isExpressionLabel(KL)
-
 //computes the type of a conditional expression
 //Operands evaluate into types
 syntax K ::= "condType" "(" Type "," Type ")" [strict]
@@ -730,11 +754,10 @@ rule [condTypeFirstChar]:
 rule [elabAssign]:
     elabDispose('Assign(Exp1:K::T1:Type,, Exp2:K::T2:Type))
     =>
-        //todo uncomment when methods will be elaborated
-        /* #if (isNumericType(T1) ==K true)
+        #if (isNumericType(T1) ==K true)
           #then isInRange(Exp2::T1)::bool
           #else subtype(T2, T1)
-        #fi ~> true? ~>  */
+        #fi ~> true? ~>
         elabRes('Assign(Exp1::T1,, Exp2::T2) :: T1)
 
 rule [elabCompoundAssign]:
@@ -751,6 +774,7 @@ rule isNonNumericExp(KL:KLabel) =>
     orBool (KL ==KLabel 'InstanceOf)
     orBool (KL ==KLabel 'Lit)
     orBool (KL ==KLabel 'castImpl`(_`,_`))
+    orBool (KL ==KLabel 'Invoke)
 
 //elab cast
 rule 'CastRef(K1:K,, K2:K)  => castImpl(K1,K2)      [structural, anywhere]

@@ -146,7 +146,7 @@ rule [NewInstance]:
       => staticInit(Class)
         ~> create(Class)
         ~> storeObj
-        ~> restoreEnvAndObj(Env, Obj)
+        ~> restoreEnvObjContext(Env, Obj, CT)
         ~> invokeConstr(L, Class, Vals)
         ~> typedLookup(L)
       ...
@@ -158,6 +158,7 @@ rule [NewInstance]:
           <envStack> .List </envStack>
           <location> L </location>
     </crntObj>
+    <contextType> CT:ContextType </contextType>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 when isKResult(Vals)
 

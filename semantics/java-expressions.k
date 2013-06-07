@@ -203,14 +203,4 @@ syntax RawVal ::= "loc" "(" Int ")"
 //lookup result is of sort RawType
 syntax K ::= "lookup" "(" Int ")"
 
-//todo Temporary rule, deletes the elaboration type info for expressions, for temporary testing.
-rule [tempDeleteElabTypeInfo]:
-    <k> 'Invoke(Ks:List{K})::noClass => 'Invoke(Ks:List{K}) ...</k>
-    <computationPhase> ExecutionPhase </computationPhase>
-
-//todo temp
-rule [tempDeleteElabTypeInfo-lvalue]:
-    <k> lvalue( 'Invoke(Ks:List{K})::noClass => 'Invoke(Ks:List{K}) ) ...</k>
-    <computationPhase> ExecutionPhase </computationPhase>
-
 endmodule

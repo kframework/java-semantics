@@ -16,8 +16,13 @@ configuration
             //todo this cell contained originally .K
             //why it worked?
             <return color="LimeGreen"> void </return> // holds method return type
+
+            //Current method/block context type - static or instance
+            //Used both during elaboration and execution
+            <contextType> staticCT </contextType>
             <br/>
             <crntObj color="Fuchsia">
+              //current class during elaboration and execution phase
               <crntClass> .K </crntClass>
               <envStack> .List </envStack>
               <location multiplicity="?"> .K </location>
@@ -96,6 +101,8 @@ configuration
       <mainClass> $MainClass:ListItem </mainClass>
       //current compilation unit package
       <cuPackage> .K </cuPackage>
+
+      //Current class during process-classes phase.
       <cuClass> .K </cuClass>
       <compUnitImports> .Map </compUnitImports>
 
@@ -106,9 +113,6 @@ configuration
       //The local variables environment during elaboration
       //Represents a stack
       <elabEnv> ListItem(stEnv(.Map)) </elabEnv>
-
-      //The context type - staticCT or instanceCT of the current code block.
-      <elabContextType> .K </elabContextType>
 
       <computationPhase> ProcessTypeNamesPhase </computationPhase>
       //required in ProcessCompUnitsPhase
@@ -303,12 +307,13 @@ rule [getTopLevel]:
 syntax K ::= "kEq" "(" K "," K ")" [seqstrict]
 rule kEq(KR1:KResult, KR2:KResult) => (KR1 ==K KR2)::bool
 
-syntax K ::= "restoreEnvAndObj" "(" Map "," Bag ")"
+syntax K ::= "restoreEnvObjContext" "(" Map "," Bag "," ContextType ")"
 
-rule [restoreEnvAndObj]:
-    <k> restoreEnvAndObj(Env:Map, Obj:Bag) => . ...</k>
+rule [restoreEnvObjContext]:
+    <k> restoreEnvObjContext(Env:Map, Obj:Bag, CT:ContextType) => . ...</k>
     <env> _ => Env </env>
     <crntObj> _ => Obj </crntObj>
+    <contextType> _ => CT </contextType>
 
 //The content of an <envStack> ListItem() </envStack>
 syntax K ::= "(" ClassType "," BagItem ")"

@@ -98,17 +98,30 @@ v2. Compute expression types at elaboration time only when needed - when they ar
   - resolving method calls into specific references to method signature and definition target.
   - desugar ?: into if + cast, thus integrating the expression type into cast expression.
 
-4. elaboration of method calls, method signature lookup during elaboration.
+4.ok elaboration of method calls, method signature lookup during elaboration.
 4.1.ok. Separate compile-time processing from runtime processing in method-lookup logic. Thus it will be easier to move
   compile-time processing to elaboration phase later. Some new hacks for java API used.
 4.2.ok. Rework the logic for java API methods. Add class-lib classes whenever possible.
   Custom rules for API should be required just for API method calls, in their final phase.
 4.3.ok. Compute method invocation return type immediately after signature has been computed, but before actual execution.
   We should compute the return type simultaneously with the signature.
+4.4.ok. Implement a new cell - <contextType>, that will hold staticCT or instanceCT depending on the context of the current
+  block. Method/field lookup elaboration should be done based on this context. Should also be updated during method calls
+  / return.
 
-4.4. Implement method signature elaboration.
+4.5.ok. Implement method signature elaboration.
+4.6.ok. Make method call elaboration to be compatible with execution phase. Thus method invocation expressions
+  produced at run time need not be elaborated.
+4.7.ok. Fix array clone logic in the context of elaborated methods.
 
-5. Invert the condition for labels elaborated by default:
+5. Additional cleanup once elaboration is functionally complete.
+
+5.1. Make the whole elaboration to be compatible with execution phase. Revert all expressions produced at runtime
+  to be in the state prior to the elaboration refactoring - thus unelaborated and more concise.
+5.2. Rethink methodClosure :: methodType content to be more concise.
+5.3. Optimize method invocation / elaboration logic. Eliminate redundant constructs.
+
+6. Invert the condition for labels elaborated by default:
   Right now we specify the labels that should not be elaborated by default, and do default elaboration
     for all other labels.
   This strategy is problematic because whenever we introduce a new language construct that could be

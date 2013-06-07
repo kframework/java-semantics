@@ -96,24 +96,22 @@ rule [object-hashCode]:
 when
     Id2String(MethodName) ==String "hashCode"
 
-rule [array-clone]:
-    <k>
-      invokeImpl(
-        methodClosure(_,_,_, 'NoMethodBody(_))::_, OL:Int,
-        'ListWrap(.List{K}), sig(MethodName:Id, _)
-      ) => arrayCopy(
+rule [elab-array-clone]:
+    lookupMethod( arrayOf T:Type, MethodName:Id,
+      _, noValue, true, QualTE:TypedExp, .List{K}
+    ) => elabRes(methodInvokeRuntime(arrayOf T:Type, sig(MethodName, types(.List{K})), QualTE, .List{K}) :: objectClass)
+when
+    Id2String(MethodName) ==String "clone"
+
+rule [methodInvokeRuntime-array-clone]:
+    methodInvokeRuntime(_, sig(MethodName:Id, _),
+        arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT:Type, _
+    )::_
+    => arrayCopy(
         arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT,
         newArrayAlloc(ElemT, 'ListWrap(Len::int), undefined :: ElemT)
       )
-      ...
-    </k>
-    <store>
-      ...
-      OL |-> arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT:Type
-      ...
-    </store>
-when
-    Id2String(MethodName) ==String "clone"
+when Id2String(MethodName) ==String "clone"
 
 rule toString(Class:ClassType) => fullyQualifiedClassName(Class) [anywhere]
 
@@ -157,7 +155,7 @@ rule [ClassNameInner]:
 //after copy, the term is rewritten into the destination array
 syntax K ::=  "arrayCopy" "("
                               TypedVal "," // source array
-                              K            // destination array
+                              K            // destination array, computes to TypedVal
               ")"
         [strict(2)]
 

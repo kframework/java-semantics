@@ -29,8 +29,7 @@ rule [MethodNameUnqInstanceCT]:
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-    <location> _:Int </location>
-        [structural]
+    <contextType> instanceCT </contextType>                 [structural]
 
 rule [MethodNameUnqStaticCT]:
     <k>
@@ -38,30 +37,19 @@ rule [MethodNameUnqStaticCT]:
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-    <location> noValue </location>
-        [structural]
+    <contextType> staticCT </contextType>                   [structural]
 
-rule 'MethodName(QualK:K,, Name:Id) => methodNameImpl(QualK, Name, true)
-when getKLabel(QualK) =/=KLabel '_::_
+rule [MethodName]:
+    'MethodName(QualK:K,, Name:Id)
+    => lookupMethodData(QualK, Name, notBool isTypedThis(QualK))        [structural]
 
-rule 'MethodName(QualE:K :: T:Type,, Name:Id) => methodNameImpl(QualE::T, Name, getKLabel(QualE) =/=KLabel 'This)
+//True for 'This(_)::T, false otherwise
+syntax K ::= "isTypedThis" "(" K ")"                                    [function]
 
-syntax K ::= "methodNameImpl" "("
-                                  K ","   //qualifier exp
-                                  Id ","  //method name
-                                  Bool    //IsQ - isQualified
-                              ")"
+rule isTypedThis(K::_) => getKLabel(K) ==KLabel 'This
 
-//objClos.X(_) or Class.X(_)
-rule [MethodNameQualified]:
-    methodNameImpl(QualK:K, Name:Id, IsQ:Bool) => lookupMethodData(QualK, Name, IsQ)
-when
-    (isClassType(QualK) ==K true) orBool (isTypedExp(QualK) ==K true)
-        [structural]
-
-//todo temp - a hack just to evaluate chained method calls
-context methodNameImpl(HOLE, _,_)
-when getKLabel(HOLE) ==KLabel 'Invoke
+rule isTypedThis(K) => false
+when getKLabel(K) =/=KLabel '_::_
 
 // super.X(_)
 rule [SuperMethod]:
@@ -87,16 +75,27 @@ be checked against the return type of the method.  To do this correctly,
 we also need to stack the current status of the \textsf{return} cell
 and then pop it when the method returns. */
 
-//First argument is reduced up to lookupMethodData. Qualifier is not evaluated yet.
-context 'Invoke(HOLE,, _)
+//First argument is reduced up to lookupMethodData.
+context elabDispose('Invoke(HOLE,, _))
+
+//Elaborate 'Invoke ar execution phase
+rule [elabInvokeExecutionPhase]:
+    <k> 'Invoke(Ks:List{K}) => elab('Invoke(Ks)) ...</k>
+    <computationPhase> ExecutionPhase </computationPhase>
+
+rule [elabResInExecutionPhase]:
+    <k> (elabRes(K:K) => K) ~> KL(_) ...</k>
+    <computationPhase> ExecutionPhase </computationPhase>
+when
+    KL =/=KLabel 'elab`(_`)
 
 rule [InvokeToInvokeImplInstance]:
-    'Invoke(lookupMethodData(
+    elabDispose('Invoke(lookupMethodData(
         Exp:K :: QualT:RefType,
         MethodName:Id,
         IsQ:Bool
       ),,
-      'ListWrap(ParamExps:List{K})
+      'ListWrap(ParamExps:List{K}))
     ) => lookupMethod(
       QualT,
       MethodName,
@@ -108,12 +107,12 @@ rule [InvokeToInvokeImplInstance]:
     )
 
 rule [InvokeToInvokeImplStatic]:
-    'Invoke(lookupMethodData(
+    elabDispose('Invoke(lookupMethodData(
         Class:ClassType,
         MethodName:Id,
         IsQ:Bool
       ),,
-      'ListWrap(ParamExps:List{K})
+      'ListWrap(ParamExps:List{K}))
     ) => lookupMethod(
       Class,
       MethodName,
@@ -184,7 +183,7 @@ rule [lookupMethodInClassRefLookupClosure]:
       _,
       mapWrap(Sig:Signature |-> RetT:Type),
       true, QualK:K, ParamExps:List{K}
-    ) => methodInvokeRuntime(QualT, Sig, QualK, ParamExps) :: RetT
+    ) => elabRes(methodInvokeRuntime(QualT, Sig, QualK, ParamExps) :: RetT)
 
 rule [lookupMethodGotoEnclosing]:
     <k>
@@ -219,10 +218,6 @@ rule getTypesFromValues(TKs:List{K}, _::T:Type,, VKs:List{K})
      => getTypesFromValues(TKs,,T, VKs)
 rule getTypesFromValues(TKs:List{K}, .List{K}) => types(TKs)
 
-//todo temp - a hack just to evaluate chained method calls
-context getTypesFromValues(_, HOLE,,_)
-when getKLabel(HOLE) ==KLabel 'Invoke
-
 //searches for the correct method signature to use
 //when calling a given MethodName with the given argument types
 //computes into a signature
@@ -241,7 +236,7 @@ rule [lookupSignatureNoAlternatives]:
               'LazyAnd(
                 subtypeList(CallTs, SigTs),,
                 isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
-                    getMethodDeclaringClass(TV), IsQ, Class)
+                    DecClass, IsQ, Class)
               ) :: bool,
               mapWrap(sig(MethodName, SigTs) |-> getMethodReturnType(TV))
             ) )
@@ -264,7 +259,7 @@ rule [lookupSignatureWithAlternative]:
               'LazyAnd(
                 'LazyAnd(subtypeList(CallTs, SigTs),, subtypeList(SigTs, AltTs)) :: bool,,
                 isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
-                    getMethodDeclaringClass(TV), IsQ, Class)
+                    DecClass, IsQ, Class)
               ) :: bool,
               mapWrap(sig(MethodName, SigTs) |-> getMethodReturnType(TV))
             ) )
@@ -420,14 +415,15 @@ rule [methodInvokeRuntimeOnString]:
     )
 
 rule [methodInvokeRuntimeOnArray]:
-    methodInvokeRuntime(_, Sig:Signature,
+    methodInvokeRuntime(_, sig(MethodName:Id, Ts:Types),
         arrayRef(ArrT:RefType, _,_)::_,
         ParamExps:List{K}
     )::_
     => invokeImpl(
-      lookupOverloadedMethod(Sig, objectClass, mapWrap(.Map), noValue),
-      ArrT, 'ListWrap(ParamExps), Sig
+      lookupOverloadedMethod(sig(MethodName, Ts), objectClass, mapWrap(.Map), noValue),
+      ArrT, 'ListWrap(ParamExps), sig(MethodName, Ts)
     )
+when Id2String(MethodName) =/=String "clone"
 
 rule [superMethodEval]:
     <k>
@@ -437,6 +433,7 @@ rule [superMethodEval]:
     </k>
     <crntClass> Class:ClassType </crntClass>
     <location> OL:Int </location>
+    <contextType> instanceCT </contextType>
     <envStack>... ListItem((Class, _)) EStack:List </envStack>
     <classType> Class </classType>
 
@@ -575,6 +572,7 @@ rule [invokeImplInstance]:
                   (
                     <crntObj> OldObj </crntObj>
                     <return> OldT </return>
+                    <contextType> OldCT </contextType>
                     C
                   )
               ))
@@ -587,6 +585,7 @@ rule [invokeImplInstance]:
            Obj
       </crntObj>
       <return> OldT:Type => T </return>
+      <contextType> OldCT:ContextType => instanceCT </contextType>
       C:Bag
     </control>
     <env> Env:Map => . </env>
@@ -617,6 +616,7 @@ rule [invokeImplStatic]:
                   (
                     <crntObj> OldObj </crntObj>
                     <return> OldT </return>
+                    <contextType> OldCT </contextType>
                     C
                   )
               ))
@@ -629,6 +629,7 @@ rule [invokeImplStatic]:
            <location> noValue </location>
       </crntObj>
       <return> OldT:Type => T </return>
+      <contextType> OldCT:ContextType => staticCT </contextType>
       C:Bag
     </control>
     <env> Env:Map => . </env>

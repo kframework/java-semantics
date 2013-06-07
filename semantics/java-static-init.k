@@ -33,7 +33,7 @@ rule [staticInit]:
               )
             )
           )
-      ~> restoreEnvAndObj(Env, Obj)
+      ~> restoreEnvObjContext(Env, Obj, CT)
       ...
     </k>
     <env> Env:Map => . </env>
@@ -43,6 +43,7 @@ rule [staticInit]:
           <envStack> .List </envStack>
           <location> noValue </location>
     </crntObj>
+    <contextType> CT:ContextType => staticCT </contextType>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
     <staticInit> StaticInit:K </staticInit>
