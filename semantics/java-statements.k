@@ -139,9 +139,9 @@ rule [AssertStmOneArg]:
     'AssertStm(false::bool) => 'Throw('NewInstance(
       'None(.List{K}),,
       (class String2Id("java.lang.AssertionError")),,
-      'ListWrap( null :: nullType ),,
+      'ListWrap(null),,
       'None(.List{K})
-    ) :: class String2Id("java.lang.AssertionError"))
+    ))
 
 context 'AssertStm(false::bool,, HOLE)
 
@@ -151,7 +151,7 @@ rule [AssertStmTwoArgs]:
       (class String2Id("java.lang.AssertionError")),,
       'ListWrap( toString(TV) ),,
       'None(.List{K})
-    ) :: class String2Id("java.lang.AssertionError"))
+    ))
 
 //@ \section{Switch statement}
 
@@ -268,7 +268,7 @@ rule [ForFirstArgV2Red]:
 
 rule [ForSecondArgRed]:
     'For(_:K,,(
-      'None(.List{K}) => 'Some(true::bool)
+      'None(.List{K}) => 'Some(true)
     ),,_:List{K})
         [structural]
 
@@ -454,7 +454,7 @@ rule [ThrowCausesThreadTermination]:
               methodClosure(noClass,.K, instanceCT, 'NoMethodBody(.List{K})) :: noClass,
               noValue,
               'ListWrap(
-                'Plus('Plus("Thread terminated with exception: "::rtString,, TV)::rtString,,"\n"::rtString)::rtString
+                'Plus('Plus("Thread terminated with exception: ",, TV),,"\n")
               ),
               sig(String2Id("print"), types(rtString))
             )

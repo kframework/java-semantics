@@ -12,7 +12,7 @@ syntax K ::= "compUnitImportsStart" "(" PackageId // The package of the current 
 
 rule [compUnitImportsStart]:
     <k>
-      compUnitImportsStart(Pack:PackageId) => 'TypeImportOnDemandDec(packageId("java.lang"))
+      compUnitImportsStart(Pack:PackageId) => 'TypeImportOnDemandDec(packageId(String2Id("java.lang")))
       ...
     </k>
     <typeNamesMap>... Pack |-> mapWrap(PackMap:Map) ...</typeNamesMap>

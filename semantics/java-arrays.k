@@ -310,14 +310,14 @@ syntax K ::= "arrayInitImpl" "("
                               ")"
 
 rule [arrayInitImpl]:
-    ( . => 'ExprStm(assignImpl(true::bool, L, K)) )
+    ( . => 'ExprStm(assignImpl(true, L, K)) )
     ~> arrayInitImpl(_, (L:Int => L +Int 1), ((K:K => .List{K}),, _) )
 when
     getKLabel(K) =/=KLabel 'ArrayInit
 
 rule [arrayInitImplInnerArrayInit]:
     ( . => 'ExprStm(assignImpl(
-              true::bool,
+              true,
               L,
               newArrayImpl(T, 'ListWrap(count(InitContent)), .K, InitContent) :: arrayOf T
            )) )

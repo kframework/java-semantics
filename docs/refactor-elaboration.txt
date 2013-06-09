@@ -13,7 +13,7 @@ move to the static semantics the following:
 those steps in certain order. Moreover, now we have to preprocess statement blocks before executing them -
 the content of methods, static and instance initializers.
   So, we have to perform the refactoring in the following four steps:
-1.ok. Perform a preprocessing of blocks, that recursively visits each term of the block but leves it untouched. This will be a new preprocessign step,
+1.ok. Perform a preprocessing of blocks, that recursively visits each term of the block but leaves it untouched. This will be a new preprocessing step,
   after the preprocessing of classes members.
   It should not be a new global preprocessing. Instead it will be performed for each class after its members have been collected and the class reached the phase MembersProcessedCPP.
   Over this preprocessing we will be able to add certain transformations for certain KLabels.
@@ -116,10 +116,24 @@ v2. Compute expression types at elaboration time only when needed - when they ar
 
 5. Additional cleanup once elaboration is functionally complete.
 
-5.1. Make the whole elaboration to be compatible with execution phase. Revert all expressions produced at runtime
+5.1.ok. Add a set of rules to convert a RawVal into appropriate TypedVal. This way we can use raw values in RHS
+  of the rules in most cases, and once a RawVal will reach the top of computation it will be appropriately
+  converted into a TypedVal. Thus our semantics will be closer to pure java.
+
+General guidelines for elaboration and execution interoperability:
+  R1. If a statement/expression is produced during execution phase, it need not to be typed.
+    if an untyped expression is discovered in the top of computation it will be automatically
+    elaborated in any phase, but unwrapped from elabRes only in execution phase.
+  R2. If a pre-execution phase produces an expression that needs to be preserved, it should not be produced
+    in the top of computation, otherwise the expression elaboration will start.
+  R3. If a pre-execution phase produces an expression that needs to be executed immediately,
+    it should be ready-typed. Typed expressions in the top of computation are executed immediately in any phase.
+
+5.2. Make the whole elaboration to be compatible with execution phase. Revert all expressions produced at runtime
   to be in the state prior to the elaboration refactoring - thus unelaborated and more concise.
-5.2. Rethink methodClosure :: methodType content to be more concise.
-5.3. Optimize method invocation / elaboration logic. Eliminate redundant constructs.
+  We call this feature elaboration-execution interoperability.
+5.3. Rethink methodClosure :: methodType content to be more concise.
+5.4. Optimize method invocation / elaboration logic. Eliminate redundant constructs.
 
 6. Invert the condition for labels elaborated by default:
   Right now we specify the labels that should not be elaborated by default, and do default elaboration

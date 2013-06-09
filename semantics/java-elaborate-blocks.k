@@ -214,6 +214,10 @@ rule [elabParamsEnd]:
 
 /*@ \section{Elaboration of code blocks} */
 
+//todo if we make this rule structural, I expect many things to go wrong.
+//It should make possible heating of components inside TypedExp.
+//Actually that's wrong - TypedExp will never be wrapped inside elab() -
+//in the worst case it will be wrapped inside elabInit(), then unwrapped by [elabInitNakedUnwrap].
 rule [elabHeatDefault]:
     (. => elabInit(K)) ~> elab(KL:KLabel(ElabResL:List{K},, (K:K => CHOLE),, _))
 when
@@ -223,6 +227,29 @@ rule [elabInitDefault]:
     elabInit(K) => elab(K)
 when
     notBool customElab(K)
+    andBool notBool (
+             isElabIndependent(K)
+      orBool (isRawVal(K) ==K true)
+      orBool (getKLabel(K) ==KLabel 'TypeName)
+      orBool (getKLabel(K) ==KLabel 'ArrayType)
+      orBool (getKLabel(K) ==KLabel 'PackageName)
+      orBool (getKLabel(K) ==KLabel 'PackageOrTypeName)
+      orBool (getKLabel(K) ==KLabel 'Id)
+      orBool (getKLabel(K) ==KLabel 'Lit)
+    )                                             [structural]
+
+//Will not match .K - is not KL(Ks). (.K) is matched by the next rule.
+rule [elabInitNakedUnwrap]:
+    elabInit((KL:KLabel(Ks:List{K}))) => KL(Ks)
+when
+           isElabIndependent(KL(Ks))
+    orBool (isRawVal(KL(Ks)) ==K true)
+    orBool (KL ==KLabel 'TypeName)
+    orBool (KL ==KLabel 'ArrayType)
+    orBool (KL ==KLabel 'PackageName)
+    orBool (KL ==KLabel 'PackageOrTypeName)
+    orBool (KL ==KLabel 'Id)
+    orBool (KL ==KLabel 'Lit)                     [structural]
 
 //Required when processing first constructor line of Object, which is .K
 rule [elabInitDotK]:
@@ -238,26 +265,11 @@ rule [elabDisposeStartDefault]:
 when
             isElab(ElabResL)
     andBool (notBool customElabDispose(KL(ElabResL)))
-    andBool (notBool isElabIndependent(KL(ElabResL)))
-
-rule [elabIndependentUnwrap]:
-    elab(K:K) => K
-when
-    isElabIndependent(K)       [structural]
 
 rule [elabDisposeProcess]:
     elabDispose(KL:KLabel(_,, (K:K => unElab(K)),, _))
 when
     isElabOnly(K)
-
-rule [elabDisposeTypesAndPackages]:
-    elabDispose(KL:KLabel(Ks:List{K})) => KL(Ks)
-when isNotElab(Ks) andBool (
-             (KL ==KLabel 'TypeName)
-      orBool (KL ==KLabel 'ArrayType)
-      orBool (KL ==KLabel 'PackageName)
-      orBool (KL ==KLabel 'PackageOrTypeName)
-    )
 
 rule [elabDisposeEnd]:
     elabDispose(KL:KLabel(Ks:List{K})) => elabRes(KL(Ks))
@@ -271,13 +283,12 @@ rule isElabOnly(K:K) => getKLabel(K) ==KLabel 'elabRes`(_`)
 syntax K ::= "isElabIndependent" "(" K ")"            [function]
 rule isElabIndependent(K:K) =>
            (K ==K .K)
-    orBool (isId(K) ==K true)
-    orBool (isString(K) ==K true)
     orBool (isKResult(K) ==K true)
+    orBool (isTypedExp(K) ==K true)
 
 //Invoked during elabDispose. Transforms the term from elab result to normal.
 syntax K ::= "unElab" "(" K ")"                 [function]
-rule unElab(elabRes(K:K)) => K                  [anywhere]
+rule unElab(elabRes(K:K)) => K
 
 //Computes to true if the given arg is a list of elaboration results, false otherwise.
 syntax K ::= "isElab" "(" List{K} ")"           [function]
@@ -287,31 +298,31 @@ when (isElabOnly(K) ==K true) orBool (isElabIndependent(K) ==K true)
 rule isElab(K:K,,_) => false
 when notBool (
            (isElabOnly(K) ==K true)
-    orBool (isElabIndependent(K) ==K true))     [anywhere]
+    orBool (isElabIndependent(K) ==K true))
 
-rule isElab(.List{K}) => true                   [anywhere]
+rule isElab(.List{K}) => true
 
 //Computes to true if the given arg is a list of terms with none being elab-result only,
 //false otherwise.
 syntax K ::= "isNotElab" "(" List{K} ")"        [function]
 rule isNotElab(K:K,,_) => false
-when isElabOnly(K)                              [anywhere]
+when isElabOnly(K)
 
 rule isNotElab((K:K => .List{K}),,_)
-when notBool (isElabOnly(K) ==K true)           [anywhere]
+when notBool (isElabOnly(K) ==K true)
 
-rule isNotElab(.List{K}) => true                [anywhere]
+rule isNotElab(.List{K}) => true
 
 //Returns true if the term needs special rules to be heated for elaboration, false otherwise.
 syntax K ::= "customElabInit" "(" K ")"         [function]
 
-rule customElabInit(.K) => false                [anywhere]
+rule customElabInit(.K) => false
 rule customElabInit(KL:KLabel(_)) =>
            KL ==KLabel 'LocalVarDecStm
     orBool KL ==KLabel 'LocalVarDec
     orBool KL ==KLabel 'ClassOrInterfaceType
     orBool KL ==KLabel 'InterfaceType
-    orBool KL ==KLabel 'ClassType               [anywhere]
+    orBool KL ==KLabel 'ClassType
 
 //Computes true if the given term needs special rules for elaboration, false otherwise
 syntax K ::= "customElab" "(" K ")"             [function]
@@ -646,6 +657,7 @@ rule isExpressionLabel(KL:KLabel) =>
     //Ternary operators
       /* ? : */ orBool (KL ==KLabel 'Cond)
       /* =   */ orBool (KL ==KLabel 'Assign)
+
                 orBool isCompoundAssignLabel(KL)
                 orBool isNonNumericExp(KL)
 
@@ -661,7 +673,15 @@ rule isCompoundAssignLabel(KL:KLabel) =>
     orBool (KL ==KLabel 'AssignRemain)
     orBool (KL ==KLabel 'AssignLeftShift)
     orBool (KL ==KLabel 'AssignRightShift)
-    orBool (KL ==KLabel 'AssignURightShift)           [structural, anywhere]
+    orBool (KL ==KLabel 'AssignURightShift)
+
+syntax K ::= "isNonNumericExp" "(" KLabel ")"       [function]
+rule isNonNumericExp(KL:KLabel) =>
+           (KL ==KLabel 'ArrayAccess)
+    orBool (KL ==KLabel 'NewInstance)
+    orBool (KL ==KLabel 'InstanceOf)
+    orBool (KL ==KLabel 'castImpl`(_`,_`))
+    orBool (KL ==KLabel 'Invoke)
 
 //It looks like isTypedExp(List{K}) doesn't work.
 rule [elabBoolOnlyResultExpBinary]:
@@ -767,15 +787,6 @@ when
 
 /*@ \section{Elaboration of non-numeric expressions} */
 
-syntax K ::= "isNonNumericExp" "(" KLabel ")" [function]
-rule isNonNumericExp(KL:KLabel) =>
-           (KL ==KLabel 'ArrayAccess)
-    orBool (KL ==KLabel 'NewInstance)
-    orBool (KL ==KLabel 'InstanceOf)
-    orBool (KL ==KLabel 'Lit)
-    orBool (KL ==KLabel 'castImpl`(_`,_`))
-    orBool (KL ==KLabel 'Invoke)
-
 //elab cast
 rule 'CastRef(K1:K,, K2:K)  => castImpl(K1,K2)      [structural, anywhere]
 rule 'CastPrim(K1:K,, K2:K) => castImpl(K1,K2)      [structural, anywhere]
@@ -791,8 +802,10 @@ rule [elabNewInstance]:
 rule [elabInstanceOf]:
     elabDispose('InstanceOf(TE:TypedExp,, RT2:RefType)) => elabRes('InstanceOf(TE,, RT2) :: bool)
 
+context 'Lit('Class(HOLE))
+
 rule [elabLitClass]:
-    elabDispose('Lit('Class(T:Type))) => elabRes('Lit('Class(T:Type)) :: class String2Id("java.lang.Class"))
+    'Lit('Class(T:Type)) => elabRes('Lit('Class(T:Type)) :: class String2Id("java.lang.Class"))
 
 rule [elabArrayAccess]:
     elabDispose('ArrayAccess(TargetExp:K::arrayOf T:Type,, IndexTE:TypedExp)) => elabRes('ArrayAccess(TargetExp::arrayOf T,, IndexTE) :: T)
@@ -835,5 +848,26 @@ syntax K ::= "count" "(" List{K} ")"
 rule count(Ks:List{K}) => count(0, Ks)
 rule count(I:Int, K:K,, Ks:List{K}) => count(I +Int 1, Ks)
 rule count(I:Int, .List{K}) => I::int
+
+//Old rule, used when only method invocations were elaborated at both elaboration and execution time.
+/*rule [elabInvoke]:
+    'Invoke(Ks:List{K}) => elab('Invoke(Ks))
+*/
+
+//Elaborate all expressions once they reach the top of computation,
+//both in elaboration and in execution phase.
+//Performance: Using this rule instead of the rule above leads to execution performance decrease by 5%
+//in helloWorld, with medium execution time rising from 9.6s to 10.1s
+rule [elabExpressions]:
+    KL:KLabel(Ks:List{K}) => elab(KL(Ks))
+when
+    isExpressionLabel(KL)
+
+//Unwrap elaborated terms in execution phase, so that they could be executed.
+rule [elabResInExecutionPhase]:
+    <k> (elabRes(K:K) => K) ~> KL(_) ...</k>
+    <computationPhase> ExecutionPhase </computationPhase>
+when
+    KL =/=KLabel 'elab`(_`)
 
 endmodule

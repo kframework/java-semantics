@@ -53,27 +53,27 @@ context /* ~   */ 'Complement(HOLE)::_
         /* +   */ //"'Plus"   - defined earlier
         /* -   */ //"'Minus"  - defined earlier
 
-rule /* true  || _ */ 'LazyOr(true :: bool,, _) :: bool => true :: bool
+rule /* true  || _ */ 'LazyOr(true :: bool,, _) :: bool => true
 
 //We use K:K instead of TE:TypedList becuase 'LazyAnd is used inside the semantics, not only in the source program.
 rule /* false || K */ 'LazyOr(false :: bool,, K:K) :: bool => K
 rule /* true  && K */ 'LazyAnd(true :: bool,, K:K) :: bool => K
 
-rule /* false && _ */ 'LazyAnd(false :: bool,, _) :: bool => false :: bool
+rule /* false && _ */ 'LazyAnd(false :: bool,, _) :: bool => false
 
 rule /* I1 | I2 */ 'Or(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType => normalize( (I1 |Int I2) :: ResT )
-rule /* B1 | B2 */ 'Or(B1:Bool :: bool,, B2:Bool :: bool) :: bool => (B1 orBool B2) :: bool
+rule /* B1 | B2 */ 'Or(B1:Bool :: bool,, B2:Bool :: bool) :: bool => B1 orBool B2
 rule /* I1 ^ I2 */ 'ExcOr(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType => normalize( (I1 xorInt I2) :: ResT )
-rule /* B1 ^ B2 */ 'ExcOr(B1:Bool :: bool,, B2:Bool :: bool) :: bool => (B1 xorBool B2) :: bool
+rule /* B1 ^ B2 */ 'ExcOr(B1:Bool :: bool,, B2:Bool :: bool) :: bool => B1 xorBool B2
 rule /* I1 & I2 */ 'And(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType => normalize( (I1 &Int I2) :: ResT )
-rule /* B1 & B2 */ 'And(B1:Bool :: bool,, B2:Bool :: bool) :: bool => (B1 andBool B2) :: bool
+rule /* B1 & B2 */ 'And(B1:Bool :: bool,, B2:Bool :: bool) :: bool => B1 andBool B2
 
 rule /* V1 == V2 */ 'Eq(V1:RawVal :: _,, V2:RawVal :: _) :: bool => (V1 ==K V2) :: bool
-rule /* V1 != V2 */ 'NotEq(V1:RawVal :: _,, V2:RawVal :: _) :: bool => (V1 =/=K V2) :: bool
-rule /* I1 <  I2 */ 'Lt(I1:Int :: _,, I2:Int :: _) :: bool => (I1 <Int I2) :: bool
-rule /* I1 >  I2 */ 'Gt(I1:Int :: _,, I2:Int :: _) :: bool => (I1 >Int I2) :: bool
-rule /* I1 <= I2 */ 'LtEq(I1:Int :: _,, I2:Int :: _) :: bool => (I1 <=Int I2) :: bool
-rule /* I1 >= I2 */ 'GtEq(I1:Int :: _,, I2:Int :: _) :: bool => (I1 >=Int I2) :: bool
+rule /* V1 != V2 */ 'NotEq(V1:RawVal :: _,, V2:RawVal :: _) :: bool => V1 =/=K V2
+rule /* I1 <  I2 */ 'Lt(I1:Int :: _,, I2:Int :: _) :: bool => I1 <Int I2
+rule /* I1 >  I2 */ 'Gt(I1:Int :: _,, I2:Int :: _) :: bool => I1 >Int I2
+rule /* I1 <= I2 */ 'LtEq(I1:Int :: _,, I2:Int :: _) :: bool => I1 <=Int I2
+rule /* I1 >= I2 */ 'GtEq(I1:Int :: _,, I2:Int :: _) :: bool => I1 >=Int I2
 
 rule /* I1 <<  I2 */ 'LeftShift(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType
     => normalize( (I1 <<Int (I2 &Int (bitCount(ResT) -Int 1))) :: ResT ) //JLS 15.19
@@ -81,7 +81,7 @@ rule /* I1 >>  I2 */ 'RightShift(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType
     => normalize( (I1 >>Int (I2 &Int (bitCount(ResT) -Int 1))) :: ResT )
 rule /* I1 >>> I2 */ 'URightShift(I1:Int :: _,, I2:Int :: NT:NumericType) :: ResT:NumericType
   => 'If(
-    (I1 >=Int 0)::bool,,
+    (I1 >=Int 0),,
     'RightShift(I1 :: ResT,, I2 :: NT) :: ResT,,
     'Plus('RightShift(I1::ResT,, I2::NT) :: ResT,, 'LeftShift(2::ResT,, 'Complement(I2::NT) :: int) :: ResT) :: ResT
   )
@@ -132,7 +132,7 @@ context 'PreDecr(HOLE => lvalue(HOLE))::_
 rule /* --loc(L) => loc(L) = lookup(L) - 1 */
   'PreDecr(loc(L:Int)::NT:NumericType)::NT => 'AssignMinus( loc(L)::NT,, 1::NT )::NT
 
-rule /* ! B    */ 'Not(B:Bool :: bool) :: bool => (notBool B) :: bool
+rule /* ! B    */ 'Not(B:Bool :: bool) :: bool => (notBool B)
 rule /* ~ I    */ 'Complement(I:Int :: _) :: ResT:NumericType => normalize( (~Int I) :: ResT )
 rule /* + I    */ 'Plus(I:Int :: _) :: ResT:NumericType => normalize( I :: ResT )
 rule /* - I    */ 'Minus(I:Int :: _) :: ResT:NumericType => normalize( (0 -Int I) :: ResT )
@@ -191,7 +191,7 @@ syntax K ::= "castImpl" "(" Type "," K ")"
 context castImpl(_,HOLE)::_
 
 rule [CastNumber]: castImpl(NT:NumericType, I:Int::_)::NT => normalize(I::NT)
-rule [CastBool]: castImpl(bool, B:Bool::bool)::bool => B::bool
+rule [CastBool]: castImpl(bool, B:Bool::bool)::bool => B
 
 /*@ \subsection{lvalue and loc syntax} */
 

@@ -78,17 +78,6 @@ and then pop it when the method returns. */
 //First argument is reduced up to lookupMethodData.
 context elabDispose('Invoke(HOLE,, _))
 
-//Elaborate 'Invoke ar execution phase
-rule [elabInvokeExecutionPhase]:
-    <k> 'Invoke(Ks:List{K}) => elab('Invoke(Ks)) ...</k>
-    <computationPhase> ExecutionPhase </computationPhase>
-
-rule [elabResInExecutionPhase]:
-    <k> (elabRes(K:K) => K) ~> KL(_) ...</k>
-    <computationPhase> ExecutionPhase </computationPhase>
-when
-    KL =/=KLabel 'elab`(_`)
-
 rule [InvokeToInvokeImplInstance]:
     elabDispose('Invoke(lookupMethodData(
         Exp:K :: QualT:RefType,
@@ -309,7 +298,7 @@ syntax K ::= "isAccessible" "(" AccessMode ","  //the method access mode
         [strict(2)]
 
 rule [isAccessiblePublic]:
-    isAccessible(public, _,_,_,_) => true::bool
+    isAccessible(public, _,_,_,_) => true
 
 rule [isAccessibleProtected]:
     <k>
@@ -318,9 +307,9 @@ rule [isAccessibleProtected]:
       )
       => 'LazyOr(
             'LazyAnd(
-              'LazyOr((CT ==K staticCT)::bool,, 'Not(IsQ :: bool)::bool) :: bool,,
+              'LazyOr((CT ==K staticCT),, 'Not(IsQ)::bool) :: bool,,
               subtype(
-                'If(IsQ::bool,, CurrentClass,, TargetClass),
+                'If(IsQ,, CurrentClass,, TargetClass),
                 DeclaringClass
               )
             ) :: bool,,
@@ -333,7 +322,7 @@ rule [isAccessibleProtected]:
 rule [isAccessiblePackage]:
     <k>
       isAccessible(package, _, DeclaringClass:ClassType, _,_)
-      => kEq(getPackage(getTopLevel(DeclaringClass)), getPackage(getTopLevel(CurrentClass)))
+      => eqAux(getPackage(getTopLevel(DeclaringClass)), getPackage(getTopLevel(CurrentClass)))
       ...
     </k>
     <crntClass> CurrentClass:ClassType </crntClass>
@@ -343,7 +332,7 @@ rule [isAccessiblePackage]:
 rule [isAccessiblePrivate]:
     <k>
       isAccessible(private, _, DeclaringClass:ClassType, _,_)
-      => kEq(getTopLevel(DeclaringClass), getTopLevel(CurrentClass))
+      => eqAux(getTopLevel(DeclaringClass), getTopLevel(CurrentClass))
       ...
     </k>
     <crntClass> CurrentClass:ClassType </crntClass>
@@ -490,13 +479,13 @@ rule [lookupMethodSigKnownOtherCandidates]:
         OldMethTV:TypedVal
         => 'If(
               'LazyAnd(
-                ( getMethodContextType(OldMethTV) ==K instanceCT )::bool,,
+                (getMethodContextType(OldMethTV) ==K instanceCT)::bool,,
                 isAccessibleForOverwriting(
                   getMethConsClosureClass(OldMethTV),
                   getMethodAccessMode(OldMethTV),
                   getMethConsClosureClass(NewMethTV)
                 )
-              ) :: bool,,
+              )::bool,,
               NewMethTV,,
               OldMethTV
             )

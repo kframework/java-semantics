@@ -12,19 +12,19 @@ rule [PackageNameStart]:
 syntax K ::= "packageNameImpl" "(" String "," List{K} ")"
 
 rule [PackageNameFirstInnerDesugar]:
-    packageNameImpl(_:String, (X:Id => packageId(Id2String(X))),, Ks:List{K}) [structural]
+    packageNameImpl(_:String, (X:Id => packageId(X)),, Ks:List{K}) [structural]
 
 rule [PackageNameFirstPack]:
-    packageNameImpl("", packageId(NextStr:String),, Ks:List{K})
-    => packageNameImpl(NextStr, Ks)                                           [structural]
+    packageNameImpl("", packageId(NextKId:Id),, Ks:List{K})
+    => packageNameImpl(Id2String(NextKId), Ks)                                           [structural]
 
 rule [PackageNameNextPack]:
-    packageNameImpl(Str:String, packageId(NextStr:String),, Ks:List{K})
-    => packageNameImpl(Str +String "." +String NextStr, Ks)
-when Str =/=String ""                                                         [structural]
+    packageNameImpl(Str:String, packageId(NextKId:Id),, Ks:List{K})
+    => packageNameImpl(Str +String "." +String Id2String(NextKId), Ks)
+when Str =/=String ""                                                                    [structural]
 
 rule [PackageNameEnd]:
-    packageNameImpl(Str:String, .List{K}) => packageId(Str)                   [structural]
+    packageNameImpl(Str:String, .List{K}) => packageId(String2Id(Str))                   [structural]
 
 rule [DefaultPackageDesugar]:
     'CompilationUnit(
@@ -96,8 +96,8 @@ syntax K ::= "getClassType" "(" PackageId // the Package Id
                             ")"                                 [function]
 
 rule [getclassType]:
-    getClassType(packageId(PackStr:String), SimpleClass:Id)
-    => class String2Id(PackStr +String "." +String Id2String(SimpleClass))
+    getClassType(packageId(PackKId:Id), SimpleClass:Id)
+    => class String2Id(Id2String(PackKId) +String "." +String Id2String(SimpleClass))
         [structural, anywhere]
 
 //Converts a term of type Classtype into a term of type PackageId
@@ -106,7 +106,7 @@ syntax K ::= "toPackage"  "(" ClassType //the class to be converted into package
                           ")"   [function]
 
 rule [toPackage]:
-    toPackage(class Class:Id) => packageId(Id2String(Class))  [structural, anywhere]
+    toPackage(class Class:Id) => packageId(Class)  [structural, anywhere]
 
 //Receives a class/interface body as K, and extracts the List{K} part of it
 syntax K ::= "bodyAsList"  "(" K         //The class body to be processed

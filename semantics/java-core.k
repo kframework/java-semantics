@@ -137,7 +137,7 @@ syntax ClassPreprocessingPhase ::= "CreatedCPP"
                                  | "DecsProcessedCPP"
                                  | "MembersProcessedCPP"
 
-rule 'Id(Str:String) => String2Id(Str)     [anywhere]
+rule 'Id(Str:String) => String2Id(Str)                [structural, anywhere]
 
 //@ \section{Types}
 
@@ -205,7 +205,7 @@ syntax RawVal ::= "objectClosure" "(" Int //OL - object location
                   ")"
 
 syntax TypedVal ::= RawVal "::" Type
-syntax KResult ::= TypedVal | Type
+syntax KResult ::= TypedVal | Type | Id
 
 syntax TypedExp ::= K "::" Type
                   | TypedVal
@@ -227,11 +227,6 @@ computation to continue only if a prefix guard evaluates to true.  */
 
 syntax K ::= "true?"
 rule true::bool ~> true? => .  [structural]
-
-//Converts a Bool::bool result into Bool, to be used with #if
-syntax K ::= "isTrue" "(" K ")" [function]
-context isTrue(HOLE)
-rule isTrue(B:Bool :: bool) => B [anywhere]
 
 /*@ \section{auxiliary constructs} */
 
@@ -257,25 +252,31 @@ rule toString(rtString) => "java.lang.String"::rtString [anywhere]
 syntax K ::= "typeOf" "(" K ")" [function]
 rule typeOf(_ :: T:Type) => T   [anywhere]
 
-//this is actually a hack, since we should not access k-labels 'arrayOf_ and 'class_ .
-//maybe this isSort methods will be provided by K later on.
-syntax K ::= "isRefType2" "(" Type ")"  [function]
-rule isRefType2(T:Type)
-=>          (T ==K rtString)
-    orBool  (T ==K nullType)
-    orBool  (getKLabel(T) ==KLabel 'arrayOf_)
-    orBool  (getKLabel(T) ==KLabel 'class_)
-                                        [structural, anywhere]
-
 //default value of all types
 syntax K ::= "default" "(" Type ")"     [function]
 rule default(NT:NumericType) => 0 :: NT [anywhere]
 rule default(bool) => false :: bool     [anywhere]
 rule default(RT:RefType) => null :: RT  [anywhere]
 
+//@ \subsection{Default types for raw values}
+
+//Converts a RawVal into a TypedVal, adding a default type for the given value.
+//Greatly simplifies many rules, because now we can use raw vals in the RHS, instead of typed vals.
+syntax K ::= "defaultTyped" "(" RawVal ")"
+
+rule Val:RawVal => defaultTyped(Val)                                                  [structural]
+rule defaultTyped(I:Int) => I :: int                                                  [structural]
+rule defaultTyped(B:Bool) => B :: bool                                                [structural]
+rule defaultTyped(Str:String) => Str :: rtString                                      [structural]
+rule defaultTyped(null) => null :: nullType                                           [structural]
+rule defaultTyped(
+      objectClosure(OL:Int, <envStack>ListItem((Class:ClassType, BI:BagItem)) Rest:List</envStack>)
+    ) => objectClosure(OL, <envStack>ListItem((Class, BI)) Rest</envStack>) :: Class  [structural]
+rule defaultTyped(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T           [structural]
+
 //@ \subsubsection{Auxiliary constructs for other modules}
 
-syntax PackageId ::= "packageId" "(" String ")"
+syntax PackageId ::= "packageId" "(" Id ")"
 syntax KResult ::= PackageId
 
 //The argument should evaluatge to ClassType
@@ -304,8 +305,9 @@ rule [getTopLevel]:
     <classType> Class </classType>
     <enclosingClass> noClass </enclosingClass>
 
-syntax K ::= "kEq" "(" K "," K ")" [seqstrict]
-rule kEq(KR1:KResult, KR2:KResult) => (KR1 ==K KR2)::bool
+//Auxiliary construct - generalized equality suitable to compare not only TypedVal-s but any K terms.
+syntax K ::= "eqAux" "(" K "," K ")"                  [seqstrict]
+rule eqAux(KR1:KResult, KR2:KResult) => KR1 ==K KR2
 
 syntax K ::= "restoreEnvObjContext" "(" Map "," Bag "," ContextType ")"
 

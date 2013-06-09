@@ -231,10 +231,7 @@ context 'InstanceOf(HOLE,,_)::_
 
 rule [InstanceOf]:
     'InstanceOf(V:RawVal::_,, RT2:RefType) :: bool
-    =>  #if V =/=K null
-          #then subtype(typeOf(V), RT2)
-          #else false::bool
-        #fi
+    =>  'LazyAnd((V =/=K null),, subtype(typeOf(V), RT2))::bool
 
 /*@ \subsection{Cast}
 Unlike in untyped KOOL, in typed KOOL we actually check that the object

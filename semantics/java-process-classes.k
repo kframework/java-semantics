@@ -81,7 +81,7 @@ rule [ProcessType]:
           ~> tryInheritSet(ISet)
 
           //interfaces should also contain Object members
-          ~> 'If((MetaT ==K interfaceMetaT)::bool,, tryInherit(objectClass))
+          ~> 'If((MetaT ==K interfaceMetaT),, tryInherit(objectClass))
 
           ~> tryInherit(BaseClass)
           ~> inheritInterfaceFields
@@ -190,14 +190,14 @@ syntax K ::= "isAccessibleForOverwriting" "("
                                           ")"
         [strict]
 
-rule isAccessibleForOverwriting(_, public,    _) => true::bool
-rule isAccessibleForOverwriting(_, protected, _) => true::bool
+rule isAccessibleForOverwriting(_, public,    _) => true
+rule isAccessibleForOverwriting(_, protected, _) => true
 
 //Object class cannot match this rule since it has public access mode
 rule isAccessibleForOverwriting(BaseClass:ClassType, package, SubClass:ClassType)
-    => kEq(getPackage(getTopLevel(BaseClass)), getPackage(getTopLevel(SubClass)))
+    => eqAux(getPackage(getTopLevel(BaseClass)), getPackage(getTopLevel(SubClass)))
 
-rule isAccessibleForOverwriting(_, private, _) => false::bool
+rule isAccessibleForOverwriting(_, private, _) => false
 
 //todo if the same method is inherited say from the base class and interface,
 //we're in trouble

@@ -20,47 +20,28 @@ syntax K ::= "subtype" "("
                             ")"
 
 rule [subtypeRefTrue]:
-    subtype( T:Type, T ) => true :: bool
+    subtype( T:Type, T ) => true
         [structural]
 
 /*@ \subsubsection{Subtyping among primitive types} */
 
-rule subtype( byte, T:Type )
-=>  #if         (T ==K short)
-        orBool  (T ==K int)
-        orBool  (T ==K long)
-      #then true :: bool
-      #else false :: bool
-    #fi
+rule subtype( byte, T:Type ) => (T ==K short) orBool (T ==K int) orBool (T ==K long)
 when T =/=K byte [structural]
 
-rule subtype( short, T:Type )
-=>  #if         (T ==K int)
-        orBool  (T ==K long)
-      #then true :: bool
-      #else false :: bool
-    #fi
+rule subtype( short, T:Type ) => (T ==K int) orBool (T ==K long)
+
 when T =/=K short [structural]
 
-rule subtype( int, T:Type )
-=>  #if         T ==K long
-      #then true :: bool
-      #else false :: bool
-    #fi
+rule subtype( int, T:Type ) => T ==K long
 when T =/=K int [structural]
 
-rule subtype( long, T:Type ) =>  false :: bool
+rule subtype( long, T:Type ) => false
 when T =/=K long [structural]
 
-rule subtype( char, T:Type )
-=>  #if         (T ==K int)
-        orBool  (T ==K long)
-      #then true :: bool
-      #else false :: bool
-    #fi
+rule subtype( char, T:Type ) => (T ==K int) orBool (T ==K long)
 when T =/=K char [structural]
 
-rule subtype( bool, T:Type ) => false::bool
+rule subtype( bool, T:Type ) => false
 when T =/=K bool [structural]
 
 /*@ \subsubsection{Subtyping among reference types}
@@ -85,10 +66,10 @@ when
         [structural]
 
 rule [subtypeClassOfClassFalse]:
-    subtype( noClass, _ ) => false :: bool
+    subtype( noClass, _ ) => false
 
 rule [subtypeInterfaceOfClass]:
-    <k> subtype( Class1:ClassType, Class:ClassType ) => (Class ==K objectClass)::bool ...</k>
+    <k> subtype( Class1:ClassType, Class:ClassType ) => Class ==K objectClass ...</k>
     <class>
       <classType> Class1 </classType>
       <metaType> interfaceMetaT </metaType>
@@ -108,7 +89,7 @@ K Limitation: This way don't seem to work:
 */
 
 rule [subtypeOfInterface]:
-    <k> subtype( Class1:ClassType, Class:ClassType ) => (Class in ISet)::bool ...</k>
+    <k> subtype( Class1:ClassType, Class:ClassType ) => Class in ISet ...</k>
     <class>
       <classType> Class1 </classType>
       <implTrans> ISet:Set </implTrans>
@@ -121,37 +102,37 @@ rule [subtypeOfInterface]:
     </class>
 
 rule [subTypeClassOfOtherFalse]:
-    subtype( _:ClassType, T:Type ) => false :: bool
+    subtype( _:ClassType, T:Type ) => false
 when
     getKLabel(T) =/=KLabel 'class_
 
 rule [subtypeStringOfClass]:
-    subtype( rtString, Class:ClassType ) => (Class ==K objectClass)::bool
+    subtype( rtString, Class:ClassType ) => Class ==K objectClass
 
 rule [subtypeStringOfOtherFalse]:
-    subtype( rtString, T:Type ) => false::bool
+    subtype( rtString, T:Type ) => false
 when
             getKLabel(T) =/=KLabel 'rtString
     andBool getKLabel(T) =/=KLabel 'class_
 
 rule [subtypeArrayOfClass]:
-    subtype( arrayOf _, Class:ClassType ) => (Class ==K objectClass)::bool
+    subtype( arrayOf _, Class:ClassType ) => Class ==K objectClass
 
 rule [subtypeArrayOfOtherFalse]:
-    subtype( arrayOf _, T:Type ) => false::bool
+    subtype( arrayOf _, T:Type ) => false
 when
             (getKLabel(T) =/=KLabel 'arrayOf_)
     andBool (getKLabel(T) =/=KLabel 'class_)
 
 rule [subtypeNull]:
-    subtype( nullType, T:Type ) => isRefType2(T) :: bool
+    subtype( nullType, T:Type ) => (isRefType(T) ==K true)
         [structural]
 
 //@ Subtype
 rule [subtypeArrayOfArrayPrimitive]:
-    subtype( arrayOf T1:Type, arrayOf T2:Type ) => (T1 ==K T2)::bool
+    subtype( arrayOf T1:Type, arrayOf T2:Type ) => (T1 ==K T2)
 when
-    notBool isRefType2(T1) orBool notBool isRefType2(T2)
+    notBool (isRefType(T1) ==K true) orBool notBool (isRefType(T2) ==K true)
 
 rule [subtypeArrayOfArrayRef]:
     subtype( arrayOf RefT1:RefType, arrayOf RefT2:RefType ) => subtype( RefT1, RefT2 )
@@ -164,15 +145,15 @@ rule [subtypeList]:
         [structural]
 
 rule [subtypeListEmptyLeft]:
-    subtypeList(types(.List{K}), types(_:Type,,_)) => false :: bool
+    subtypeList(types(.List{K}), types(_:Type,,_)) => false
         [structural]
 
 rule [subtypeListEmptyRight]:
-    subtypeList(types(_:Type,,_) , types(.List{K})) => false :: bool
+    subtypeList(types(_:Type,,_) , types(.List{K})) => false
         [structural]
 
 rule [subtypeEmptyBoth]:
-    subtypeList(types(.List{K}), types(.List{K})) => true :: bool
+    subtypeList(types(.List{K}), types(.List{K})) => true
         [structural]
 
 endmodule
