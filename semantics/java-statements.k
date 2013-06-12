@@ -17,15 +17,17 @@ rule [StartExecutionPhase]:
       //k-ast for new <MainClass>().main(new String[0]);
       'ExprStm(
         'Invoke(
-          'MethodName((class String2Id("." +String MainClassS)),, String2Id("main")),,
-          'ListWrap(newArrayImpl(rtString, 'ListWrap('Dim(0 :: int)), null :: nullType, .List{K}) :: arrayOf rtString)
+          'MethodName('TypeName(packageId(String2Id("")),,String2Id(MainClassS)),, String2Id("main")),,
+          'ListWrap('NewArray(
+              rtString,,
+              'ListWrap('Dim(0 :: int)),,
+              'ListWrap(.List{K})))
         )
       )
     </k>
     <env> . </env>
     <mainClass> ListItem(MainClassS:String) </mainClass>
     <computationPhase> ElaborateBlocksPhase => ExecutionPhase </computationPhase>
-    (<cuClass> _ </cuClass> => .Bag)
 
 //@ \section{Program stack}
 

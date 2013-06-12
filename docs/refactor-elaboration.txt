@@ -65,7 +65,7 @@ the content of methods, static and instance initializers.
 
 At this step, all tests except array-related and some conditional-operator-related pass.
 
-3. Implement expression type checking and annotation during elaboration.
+3.ok. Implement expression type checking and annotation during elaboration.
 3.1.ok. Annotate the type of localVar, fieldLookup, staticFieldLookup terms.
   Also other additional terms required to preserve all the passing tests (as for the end of step 2).
 3.2.ok. Annotate the type of all numeric expressions, but remove the type annotation during
@@ -129,8 +129,8 @@ General guidelines for elaboration and execution interoperability:
   R3. If a pre-execution phase produces an expression that needs to be executed immediately,
     it should be ready-typed. Typed expressions in the top of computation are executed immediately in any phase.
 
-5.2. Make the whole elaboration to be compatible with execution phase. Revert all expressions produced at runtime
-  to be in the state prior to the elaboration refactoring - thus unelaborated and more concise.
+5.2.ok. Make the whole elaboration to be compatible with the execution phase. Revert all expressions produced
+  at runtime to be in the state prior to the elaboration refactoring - thus unelaborated and more concise.
   We call this feature elaboration-execution interoperability.
 5.3. Rethink methodClosure :: methodType content to be more concise.
 5.4. Optimize method invocation / elaboration logic. Eliminate redundant constructs.

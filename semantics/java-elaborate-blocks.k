@@ -89,6 +89,7 @@ syntax K ::= "newArrayImpl" "("
 rule [elaborateBlocksStart]:
     <k> . => elaborateBlocks(getAllClasses) </k>
     <computationPhase> ProcessClassesPhase => ElaborateBlocksPhase </computationPhase>
+    (<cuClass> _ </cuClass> => .Bag)
 
 rule [elaborateBlocks]:
     <k>

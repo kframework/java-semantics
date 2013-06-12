@@ -431,9 +431,9 @@ rule [methodInvokeRuntimeOnNull]:
     =>  'Throw('NewInstance(
           'None(.List{K}),,
           class String2Id("java.lang.NullPointerException"),,
-          'ListWrap( null :: nullType ),,
+          'ListWrap( null ),,
           'None(.List{K})
-        ) :: class String2Id("java.lang.NullPointerException"))
+        ))
 
 syntax K ::= "getClassList" "(" List ")"
 rule (.List{K} => Class),, getClassList((ListItem((Class:ClassType, _)) => .List) _)

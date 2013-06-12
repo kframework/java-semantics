@@ -106,9 +106,9 @@ rule                  'Div(_::_     ,, 0::_)::_
    => 'Throw('NewInstance(
         'None(.List{K}),,
         (class String2Id("java.lang.ArithmeticException")),,
-        'ListWrap( "/ by zero" :: rtString ),,
+        'ListWrap( "/ by zero" ),,
         'None(.List{K})
-      ) :: class String2Id("java.lang.ArithmeticException"))
+      ))
 
 rule /* I1 % I2    */ 'Remain(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType => normalize( (I1 %Int I2) :: ResT )
     when I2 =/=Int 0
@@ -118,9 +118,9 @@ rule                  'Remain(_::_     ,, 0::_)::_
    => 'Throw('NewInstance(
         'None(.List{K}),,
         (class String2Id("java.lang.ArithmeticException")),,
-        'ListWrap( "/ by zero" :: rtString ),,
+        'ListWrap( "/ by zero" ),,
         'None(.List{K})
-      ) :: class String2Id("java.lang.ArithmeticException"))
+      ))
 
 // ++E
 context 'PreIncr(HOLE => lvalue(HOLE))::_

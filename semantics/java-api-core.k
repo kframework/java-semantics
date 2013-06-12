@@ -52,7 +52,7 @@ rule [object-getClass-on-object]:
       invokeImpl(
         methodClosure(_,_,_, 'NoMethodBody(_))::_, OL:Int,
         'ListWrap(.List{K}), sig(MethodName:Id, _)
-      ) => 'Lit('Class(T)) :: class String2Id("java.lang.Class")
+      ) => 'Lit('Class(T))
       ...
     </k>
     <store>
@@ -67,7 +67,7 @@ rule [object-getClass-on-String]:
     invokeImpl(
       methodClosure(_,_,_, 'NoMethodBody(_))::_, rtString,
       'ListWrap(.List{K}), sig(MethodName:Id, _)
-    ) => 'Lit('Class(rtString)) :: class String2Id("java.lang.Class")
+    ) => 'Lit('Class(rtString))
 when
     Id2String(MethodName) ==String "getClass"
 
@@ -75,7 +75,7 @@ rule [object-getClass-on-array]:
     invokeImpl(
       methodClosure(_,_,_, 'NoMethodBody(_))::_, arrayOf T:Type,
       'ListWrap(.List{K}), sig(MethodName:Id, _)
-    ) => 'Lit('Class(arrayOf T)) :: class String2Id("java.lang.Class")
+    ) => 'Lit('Class(arrayOf T))
 when
     Id2String(MethodName) ==String "getClass"
 
@@ -121,7 +121,7 @@ syntax K ::= "fullyQualifiedClassName" "(" ClassType ")"
 rule [ClassNameTopLevelWithPackage]:
     <k>
       fullyQualifiedClassName(class ClassId:Id)
-      => Id2String(ClassId) :: rtString
+      => Id2String(ClassId)
       ...
     </k>
     <classType> class ClassId </classType>
@@ -131,7 +131,7 @@ when substrString(Id2String(ClassId), 0, 1) =/=String "."
 rule [ClassNameTopLevelWithDefaultPackage]:
     <k>
       fullyQualifiedClassName(class ClassId:Id)
-      => substrString(Id2String(ClassId), 1, lengthString(Id2String(ClassId)) -Int 1) :: rtString
+      => substrString(Id2String(ClassId), 1, lengthString(Id2String(ClassId)) -Int 1)
       ...
     </k>
     <classType> class ClassId </classType>
@@ -143,8 +143,8 @@ rule [ClassNameInner]:
       fullyQualifiedClassName(class ClassId:Id)
       => 'Plus(
             fullyQualifiedClassName(class OuterClassId),,
-            ("$" +String Id2String(SimpleName))::rtString
-         ) :: rtString
+            ("$" +String Id2String(SimpleName))
+         )
       ...
     </k>
     <classType> class ClassId </classType>

@@ -102,9 +102,9 @@ rule [ArrayIndexOutOfBoundsException]:
     => 'Throw('NewInstance(
       'None(.List{K}),,
       (class String2Id("java.lang.ArrayIndexOutOfBoundsException")),,
-      'ListWrap( Int2String(N) :: rtString ),,
+      'ListWrap( Int2String(N) ),,
       'None(.List{K})
-    ) :: class String2Id("java.lang.ArrayIndexOutOfBoundsException"))
+    ))
 when notBool ((N >=Int 0) andBool (N <Int M))
         [structural, anywhere]
 
@@ -118,9 +118,9 @@ rule [arrayAccessNull]:
     => 'Throw('NewInstance(
       'None(.List{K}),,
       class String2Id("java.lang.NullPointerException"),,
-      'ListWrap( null :: rtString ),,
+      'ListWrap( null ),,
       'None(.List{K})
-    ) :: class String2Id("java.lang.NullPointerException"))
+    ))
         [structural, anywhere]
 
 //Array length, as defined in JDK
@@ -172,9 +172,9 @@ rule [NegativeArraySizeException]:
     => 'Throw('NewInstance(
       'None(.List{K}),,
       class String2Id("java.lang.NegativeArraySizeException"),,
-      'ListWrap( null :: rtString ),,
+      'ListWrap( null ),,
       'None(.List{K})
-    ) :: class String2Id("java.lang.NegativeArraySizeException"))
+    ))
 when
     NI <Int 0
 
@@ -287,7 +287,7 @@ rule [ArrayStoreException]:
             )
           ),,
           'None(.List{K})
-        ) :: class String2Id("java.lang.ArrayStoreException"))
+        ))
 
 //@ \subsection{Array initializer}
 
@@ -337,20 +337,20 @@ rule toString(arrayOf T:Type) => arrayToString(arrayOf T) [anywhere]
 //string representation of a type within an array type
 //see JDK: Class.getName()
 syntax K ::= "arrayToString" "(" Type ")"  [function]
-rule arrayToString(byte)  => "B"::rtString [anywhere]
-rule arrayToString(short) => "S"::rtString [anywhere]
-rule arrayToString(int)   => "I"::rtString [anywhere]
-rule arrayToString(long)  => "J"::rtString [anywhere]
-rule arrayToString(char)  => "C"::rtString [anywhere]
-rule arrayToString(bool)  => "Z"::rtString [anywhere]
+rule arrayToString(byte)  => "B"::rtString
+rule arrayToString(short) => "S"::rtString
+rule arrayToString(int)   => "I"::rtString
+rule arrayToString(long)  => "J"::rtString
+rule arrayToString(char)  => "C"::rtString
+rule arrayToString(bool)  => "Z"::rtString
 
 //hack in order to access class Id construct from classes
 rule arrayToString('class_(Class:Id))
-    => 'Plus("L"::rtString,,'Plus(toString('class_(Class)) ,,";"::rtString)::rtString)::rtString  [anywhere]
+    => 'Plus("L"::rtString,,'Plus(toString('class_(Class)) ,,";"::rtString)::rtString)::rtString
 
 rule arrayToString(rtString)
-    => 'Plus("L"::rtString,,'Plus(toString(rtString   ) ,,";"::rtString)::rtString)::rtString     [anywhere]
+    => 'Plus("L"::rtString,,'Plus(toString(rtString   ) ,,";"::rtString)::rtString)::rtString
 
-rule arrayToString(arrayOf T:Type) => 'Plus("["::rtString ,,arrayToString(T))::rtString [anywhere]
+rule arrayToString(arrayOf T:Type) => 'Plus("["::rtString ,,arrayToString(T))::rtString
 
 endmodule

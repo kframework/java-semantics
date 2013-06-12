@@ -237,26 +237,26 @@ rule true::bool ~> true? => .  [structural]
 syntax K ::= "toString" "(" K ")" [function]
 context toString(HOLE)
 
-rule toString(Str:String :: _) => Str :: rtString [anywhere]
-rule toString(I:Int :: char) => charString(I) :: rtString [anywhere]
+rule toString(Str:String :: _) => Str :: rtString
+rule toString(I:Int :: char) => charString(I) :: rtString
 rule toString(I:Int :: T:Type) => Int2String(I) :: rtString
-    when T =/=K char [anywhere]
-rule toString(true::_) => "true" :: rtString [anywhere]
-rule toString(false::_) => "false" :: rtString [anywhere]
-rule toString(null::_) => "null" :: rtString [anywhere]
+    when T =/=K char
+rule toString(true::_) => "true" :: rtString
+rule toString(false::_) => "false" :: rtString
+rule toString(null::_) => "null" :: rtString
 
-rule toString(rtString) => "java.lang.String"::rtString [anywhere]
+rule toString(rtString) => "java.lang.String"::rtString
 
 //@ \texttt{typeOf definition}
 
 syntax K ::= "typeOf" "(" K ")" [function]
-rule typeOf(_ :: T:Type) => T   [anywhere]
+rule typeOf(_ :: T:Type) => T
 
 //default value of all types
 syntax K ::= "default" "(" Type ")"     [function]
-rule default(NT:NumericType) => 0 :: NT [anywhere]
-rule default(bool) => false :: bool     [anywhere]
-rule default(RT:RefType) => null :: RT  [anywhere]
+rule default(NT:NumericType) => 0 :: NT
+rule default(bool) => false :: bool
+rule default(RT:RefType) => null :: RT
 
 //@ \subsection{Default types for raw values}
 

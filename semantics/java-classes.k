@@ -246,10 +246,10 @@ rule [CastRef]:
             'Throw('NewInstance(
                     'None(.List{K}),,
                     (class String2Id("java.lang.ClassCastException")),,
-                    'ListWrap( 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to "::rtString)::rtString,,
-                        toString(RT1))::rtString ),,
+                    'ListWrap( 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to "),,
+                        toString(RT1)) ),,
                     'None(.List{K})
-                  ) :: class String2Id("java.lang.ClassCastException"))
+                  ))
           )
       ...
     </k>
@@ -263,7 +263,7 @@ rule [ClassLiteralInstantiate]:
                 class String2Id("java.lang.Class"),,
                 'ListWrap(toString(T)),,
                 'None(.List{K})
-              ) :: class String2Id("java.lang.Class"))
+              ))
         )
         ~> 'Lit('Class(T:Type))::_
       ...

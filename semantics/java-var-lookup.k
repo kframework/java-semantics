@@ -66,9 +66,9 @@ rule [lookupFieldOfNull]:
     =>  'Throw('NewInstance(
           'None(.List{K}),,
           class String2Id("java.lang.NullPointerException"),,
-          'ListWrap( null :: nullType ),,
+          'ListWrap( null ),,
           'None(.List{K})
-        ) :: class String2Id("java.lang.NullPointerException"))
+        ))
         [structural, anywhere]
 
 //Cannot put mark this rule with [anywhwre] to avoid duplicate, because it will be matched in ElaborateBlocks phase.

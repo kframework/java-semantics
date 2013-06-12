@@ -109,9 +109,9 @@ rule [LitOcta]:
         #fi
 
 //@ \section{bool literals}
-rule 'Lit('Bool('True(.List{K}))) => true::bool
+rule 'Lit('Bool('True(.List{K}))) => true
 
-rule 'Lit('Bool('False(.List{K}))) => false::bool
+rule 'Lit('Bool('False(.List{K}))) => false
 
 //@ \section{char literals}
 //@ Chars are represented as int values, as described in java specification.
@@ -154,15 +154,15 @@ rule  'Lit('String('ListWrap(K1:K,, K2:K,, Ks:List{K})))
                'Lit('String('ListWrap(K2,, Ks)))
           )
 
-rule 'Lit('String('ListWrap('Chars(Str:String)))) => Str::rtString
+rule 'Lit('String('ListWrap('Chars(Str:String)))) => Str
 
 rule 'Lit('String('ListWrap(K:K))) => toString('Lit('Char(K)))
 when getKLabel(K) =/=KLabel 'Chars
 
-rule 'Lit('String('ListWrap(.List{K}))) => ""::rtString
+rule 'Lit('String('ListWrap(.List{K}))) => ""
 
 //@ \section{Null literal}
 
-rule 'Lit('Null(.List{K})) => null::nullType
+rule 'Lit('Null(.List{K})) => null
 
 endmodule
