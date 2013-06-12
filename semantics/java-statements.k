@@ -452,13 +452,14 @@ rule [ThrowCausesThreadTermination]:
     <k>
       'Throw(TV:TypedVal)
       =>  'ExprStm(
-            invokeImpl(
-              methodClosure(noClass,.K, instanceCT, 'NoMethodBody(.List{K})) :: noClass,
-              noValue,
-              'ListWrap(
-                'Plus('Plus("Thread terminated with exception: ",, TV),,"\n")
-              ),
-              sig(String2Id("print"), types(rtString))
+            'Invoke(
+              'Method(
+                'MethodName(
+                  'AmbName( 'AmbName( String2Id("System")),, String2Id("out") ),,
+                  String2Id("println")
+                )
+              ),,
+              'ListWrap( 'Plus( "Thread terminated with exception: ",, TV ) )
             )
           )
     </k>

@@ -212,20 +212,22 @@ rule [inherit]:
 
 //returns the access mode of a method closure given as argument
 syntax K ::= "getMethodAccessMode" "(" TypedVal ")"   [function]
-rule getMethodAccessMode( _ :: methodType(Acc:AccessMode, _,_,_ ) ) => Acc [anywhere]
+rule getMethodAccessMode( methodClosure(_,_,_, Acc:AccessMode, _)::_ ) => Acc
+rule getMethodAccessMode( constrClosure(_,_, Acc:AccessMode, _,_)::_ ) => Acc
 
 //returns the context type of a method closure given as argument
 syntax K ::= "getMethodContextType" "(" TypedVal ")"  [function]
-rule getMethodContextType( methodClosure(_, _, CT:ContextType, _) :: _ ) => CT [anywhere]
-rule getMethodContextType( constrClosure(_,_,_,_) :: _ ) => instanceCT [anywhere]
+rule getMethodContextType( methodClosure(_,_, CT:ContextType, _,_) :: _ ) => CT
+rule getMethodContextType( constrClosure(_,_,_,_,_) :: _ ) => instanceCT
 
 //returns the class in which this method was defined
 syntax K ::= "getMethodDeclaringClass" "(" TypedVal ")"   [function]
-rule getMethodDeclaringClass( _ :: methodType(_, Class:ClassType, _,_ ) ) => Class [anywhere]
+rule getMethodDeclaringClass( methodClosure(Class:ClassType, _,_,_,_)::_ ) => Class
+rule getMethodDeclaringClass( constrClosure(Class:ClassType, _,_,_,_)::_ ) => Class
 
 //returns the return type of a method closure given as argument
 syntax K ::= "getMethodReturnType" "(" TypedVal ")"       [function]
-rule getMethodReturnType( _::methodType(_,_,_, T:Type ) ) => T
+rule getMethodReturnType( _::methodType(_, T:Type ) ) => T
 
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
@@ -248,8 +250,8 @@ rule [MethodDec]:
         S:K
       )
       => storeMethod(Name, getTypesFromParams(Params), 'ListWrap(Params),
-            getContextType(Modifiers), S,
-            methodType(getAccessMode(Modifiers), Class, getTypesFromParams(Params), ReturnType))
+            getContextType(Modifiers), getAccessMode(Modifiers), S,
+            methodType(sig(Name, getTypesFromParams(Params)), ReturnType))
       ...
     </k>
     <cuClass> Class:ClassType </cuClass>
@@ -268,8 +270,9 @@ syntax K ::= "storeMethod" "("
                               K ","   //will evaluate to Types - a syntactic list of types
                               K ","   //'ListWrap(Params)
                               K ","   //will evaluate to ContextType - staticCT or instanceCT
+                              K ","   //will evaluate to AccessMode
                               K ","   //S - method body
-                              Type    //method closure type
+                              MethodType //method closure type
                            ")"
 
 syntax Types ::= "types" "(" List{K} // list of Type elements, when processed
@@ -295,7 +298,7 @@ rule getTypesFromParams(Ts:List{K}, .List{K}) => types(Ts)
 
 rule [storeMethod]:
     <k>
-      storeMethod(Name:Id, Ts:Types, 'ListWrap(Params:List{K}), CT:ContextType, Body:K,
+      storeMethod(Name:Id, Ts:Types, 'ListWrap(Params:List{K}), CT:ContextType, Acc:AccessMode, Body:K,
           MethodType:Type) => .
       ...
     </k>
@@ -304,14 +307,9 @@ rule [storeMethod]:
     <methods> Env:Map => Env[Class / sig(Name,Ts)] </methods>
     <methodDecs>
       DecsEnv:Map => DecsEnv[
-        methodClosure(Class, 'ListWrap(Params), CT, Body) :: MethodType / sig(Name,Ts)
+        methodClosure(Class, 'ListWrap(Params), CT, Acc, Body) :: MethodType / sig(Name,Ts)
       ]
     </methodDecs>
-
-//A method signature
-//KResult is required in java-method-invoke module
-syntax Signature ::= "sig" "(" Id "," Types ")"
-syntax KResult ::= Signature
 
 rule [ConstrDecSuperCallDesugar]:
     <k>
@@ -356,8 +354,8 @@ rule [ConstrDec]:
       'ConstrDec('ConstrDecHead(Modifiers:K,, _:K,, Name:Id,, 'ListWrap(Params:List{K}),, _),,
           'ConstrBody(
         'Some(FirstLine:K) ,,S:K))
-      => storeConstructor(Name, 'ListWrap(Params), FirstLine,
-          S, methodType(getAccessMode(Modifiers), Class, getTypesFromParams(Params), void))
+      => storeConstructor(Name, 'ListWrap(Params), getAccessMode(Modifiers), FirstLine,
+          S, methodType(sig(getConsName(Class), getTypesFromParams(Params)), void))
       ...
     </k>
     <cuClass> Class:ClassType </cuClass>
@@ -365,14 +363,15 @@ when isKResult(Params)
 
 syntax K ::= "storeConstructor" "(" Id    // Class name
                                 "," K     // 'ListWrap(Params) - formal params
+                                "," K     // will evaluate to AccessMode
                                 "," K     // FirstLine - SyperConstrInv()
                                 "," K     // S - constructor body
-                                "," Type  // MethodType of the constructor
+                                "," MethodType // MethodType of the constructor
                                 ")"
 
 rule [storeConstructor]:
     <k>
-      storeConstructor(Name:Id, 'ListWrap(Params:List{K}), FirstLine:K, S, MethodType:Type) => .
+      storeConstructor(Name:Id, 'ListWrap(Params:List{K}), Acc:AccessMode, FirstLine:K, S, MethodType:Type) => .
       ...
     </k>
     <cuClass> Class:ClassType </cuClass>
@@ -380,7 +379,7 @@ rule [storeConstructor]:
     <methods> Env:Map => Env[Class / sig(getConsName(Class), getTypesFromParams(Params))] </methods>
     <methodDecs>
       DecsEnv:Map => DecsEnv[
-        constrClosure(Class, 'ListWrap(Params), FirstLine, S:K) :: MethodType
+        constrClosure(Class, 'ListWrap(Params), Acc, FirstLine, S:K) :: MethodType
           / sig(getConsName(Class), getTypesFromParams(Params))
       ]
     </methodDecs>

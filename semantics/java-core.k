@@ -157,18 +157,19 @@ syntax RawVal ::= Int | Bool | String
                 | "nothing"
                 | "undefined" [latex(\bot_{#1})]
 
-syntax ProtoMethodType ::= "methodType" "(" AccessMode ","    // the access mode
-                                            ClassType ","     // the declaring class
-                                            K ","             // to be processed into Types
+syntax ProtoMethodType ::= "methodType" "(" K ","             // to be processed into Types
                                             Type              // return type
                                         ")"
                           | MethodType
 
-syntax MethodType ::= "methodType" "(" AccessMode ","    // the access mode
-                                       ClassType ","     // the declaring class
-                                       Types ","         // argument types
-                                       Type              // return type
+syntax MethodType ::= "methodType" "(" Signature "," // Method signature
+                                       Type          // return type
                                    ")"
+
+//A method signature
+//KResult is required in java-method-invoke module
+syntax Signature ::= "sig" "(" Id "," Types ")"
+syntax KResult ::= Signature
 
 syntax ClassType ::= "class" Id
                    | "noClass"
@@ -187,11 +188,13 @@ syntax RawVal ::= "objectClosure" "(" Int //OL - object location
                     ClassType ","   // Class - class defining the method
                     K ","           // 'ListWrap(Params) - params
                     ContextType "," // Either staticCT or instanceCT
+                    AccessMode ","  // The access mode
                     K               // S - method body
                   ")"
                 | "constrClosure" "("
                     ClassType ","   // Class - class defining the method
                     K ","    // 'ListWrap(Params) - params
+                    AccessMode ","  // The access mode
                     K ","    // first line - either:
                              //   'SuperInv - superclass constructor invocation
                              //   'AltConstrInv - alternate this class consturctor invocation

@@ -132,7 +132,7 @@ General guidelines for elaboration and execution interoperability:
 5.2.ok. Make the whole elaboration to be compatible with the execution phase. Revert all expressions produced
   at runtime to be in the state prior to the elaboration refactoring - thus unelaborated and more concise.
   We call this feature elaboration-execution interoperability.
-5.3. Rethink methodClosure :: methodType content to be more concise.
+5.3.ok. Rethink methodClosure :: methodType content to be more concise.
 5.4. Optimize method invocation / elaboration logic. Eliminate redundant constructs.
 
 6. Invert the condition for labels elaborated by default:

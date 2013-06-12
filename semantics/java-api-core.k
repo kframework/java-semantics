@@ -15,8 +15,8 @@ module JAVA-API-CORE
 
 rule [system-out-print-argConvert]:
     invokeImpl(
-      methodClosure(_,_,_, 'NoMethodBody(_)) :: _,_,
-      'ListWrap(KR:KResult => toString(KR)), sig(MethodName:Id, _)
+      methodClosure(_,_,_,_, 'NoMethodBody(_)) :: methodType(sig(MethodName:Id, _),_),_,
+      'ListWrap(KR:KResult => toString(KR))
     )
 when
             (Id2String(MethodName) ==String "print")
@@ -26,8 +26,8 @@ when
 rule [system-out-print]:
     <k>
       invokeImpl(
-        methodClosure(_,_,_, 'NoMethodBody(_))::_, _,
-        'ListWrap(Str:String :: rtString), sig(MethodName:Id, _)
+        methodClosure(_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
+        'ListWrap(Str:String :: rtString)
       ) => nothing::void
       ...
     </k>
@@ -38,8 +38,8 @@ when
 rule [scanner-nextInt]:
     <k>
       invokeImpl(
-        methodClosure(_,_,_, 'NoMethodBody(_))::_, _,
-        'ListWrap(.List{K}), sig(MethodName:Id, _)
+        methodClosure(_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
+        'ListWrap(.List{K})
       ) => I :: int
       ...
     </k>
@@ -50,8 +50,8 @@ when
 rule [object-getClass-on-object]:
     <k>
       invokeImpl(
-        methodClosure(_,_,_, 'NoMethodBody(_))::_, OL:Int,
-        'ListWrap(.List{K}), sig(MethodName:Id, _)
+        methodClosure(_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), OL:Int,
+        'ListWrap(.List{K})
       ) => 'Lit('Class(T))
       ...
     </k>
@@ -65,16 +65,16 @@ when
 
 rule [object-getClass-on-String]:
     invokeImpl(
-      methodClosure(_,_,_, 'NoMethodBody(_))::_, rtString,
-      'ListWrap(.List{K}), sig(MethodName:Id, _)
+      methodClosure(_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), rtString,
+      'ListWrap(.List{K})
     ) => 'Lit('Class(rtString))
 when
     Id2String(MethodName) ==String "getClass"
 
 rule [object-getClass-on-array]:
     invokeImpl(
-      methodClosure(_,_,_, 'NoMethodBody(_))::_, arrayOf T:Type,
-      'ListWrap(.List{K}), sig(MethodName:Id, _)
+      methodClosure(_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), arrayOf T:Type,
+      'ListWrap(.List{K})
     ) => 'Lit('Class(arrayOf T))
 when
     Id2String(MethodName) ==String "getClass"
@@ -83,8 +83,8 @@ when
 rule [object-hashCode]:
     <k>
       invokeImpl(
-        methodClosure(_,_,_, 'NoMethodBody(_))::_, OL:Int,
-        'ListWrap(.List{K}), sig(MethodName:Id, _)
+        methodClosure(_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), OL:Int,
+        'ListWrap(.List{K})
       ) => NewOL :: int
       ...
     </k>

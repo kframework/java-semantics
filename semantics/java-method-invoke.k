@@ -360,7 +360,7 @@ rule [methodInvokeRuntimeInstanceOnClass]:
       )::_
       => invokeImpl(
         lookupOverloadedMethod(Sig, getClassList(Rest ListItem((Class, BI))), mapWrap(.Map), noValue),
-        OL, 'ListWrap(ParamExps), Sig
+        OL, 'ListWrap(ParamExps)
       )
       ...
     </k>
@@ -371,7 +371,7 @@ rule [methodInvokeRuntimeStaticOnClass]:
     methodInvokeRuntime(Class:ClassType, Sig:Signature, noValue, ParamExps:List{K})::_
     => invokeImpl(
       lookupOverloadedMethod(Sig, Class, mapWrap(.Map), noValue),
-      noValue, 'ListWrap(ParamExps), Sig
+      noValue, 'ListWrap(ParamExps)
     )
 
 rule [methodInvokeRuntimeInstanceOnInterface]:
@@ -386,7 +386,7 @@ rule [methodInvokeRuntimeInstanceOnInterface]:
       )::_
       => invokeImpl(
         lookupOverloadedMethod(Sig, ActualClass, mapWrap(.Map), noValue),
-        OL, 'ListWrap(ParamExps), Sig
+        OL, 'ListWrap(ParamExps)
       )
       ...
     </k>
@@ -400,7 +400,7 @@ rule [methodInvokeRuntimeOnString]:
     )::_
     => invokeImpl(
       lookupOverloadedMethod(Sig, objectClass, mapWrap(.Map), noValue),
-      rtString, 'ListWrap(ParamExps), Sig
+      rtString, 'ListWrap(ParamExps)
     )
 
 rule [methodInvokeRuntimeOnArray]:
@@ -410,7 +410,7 @@ rule [methodInvokeRuntimeOnArray]:
     )::_
     => invokeImpl(
       lookupOverloadedMethod(sig(MethodName, Ts), objectClass, mapWrap(.Map), noValue),
-      ArrT, 'ListWrap(ParamExps), sig(MethodName, Ts)
+      ArrT, 'ListWrap(ParamExps)
     )
 when Id2String(MethodName) =/=String "clone"
 
@@ -532,26 +532,25 @@ rule getMethConsClosureClass( (_:KLabel)(Class:ClassType,, _:List{K})::_ ) => Cl
         [structural]
 
 syntax K ::= "getArgTypes" "(" TypedVal ")" [function]
-rule getArgTypes(_ :: methodType(_,_, Ts:Types, _)) => Ts [anywhere]
+rule getArgTypes(_ :: methodType(sig(_, Ts:Types), _)) => Ts
 
-syntax K ::= "invokeImpl" "(" K   //lookupOverloadedMethod statement, later methodClosure
+syntax K ::= "invokeImpl" "(" K   //lookupOverloadedMethod statement, evaluates to typed methodClosure
                           "," K   //OL - object location, target type for methods on non-object refs,
                                   // or noValue for static methods
                           "," K   //evaluates to 'ListWrap(ParamValues:List{KResult})
-                          "," Signature //Method signature, used by native methods
                           ")"
         [strict(1)]
 
 //todo test expressions order
-context invokeImpl(_, _,'ListWrap(_:List{K},,HOLE,,_:List{K}), _)
+context invokeImpl(_, _,'ListWrap(_:List{K},,HOLE,,_:List{K}))
 
 rule [invokeImplInstance]:
     <k>
       invokeImpl(
-        methodClosure(Class:ClassType, 'ListWrap(Params:List{K}), instanceCT, Body:K)
-            :: methodType(_,_,_, T:Type),
+        methodClosure(Class:ClassType, 'ListWrap(Params:List{K}), instanceCT, _, Body:K)
+            :: methodType(_, T:Type),
         OL:Int,
-        'ListWrap(ParamValues:List{K}), _
+        'ListWrap(ParamValues:List{K})
       ) ~> K:K
        => bindto Params, ParamValues ~> Body ~> 'Return('None(.List{K}))
     </k>
@@ -592,10 +591,10 @@ when isKResult(ParamValues) andBool (getKLabel(Body) =/=KLabel 'NoMethodBody)
 rule [invokeImplStatic]:
     <k>
       invokeImpl(
-        methodClosure(Class:ClassType, 'ListWrap(Params:List{K}), staticCT, Body:K)
-            :: methodType(_,_,_, T:Type),
+        methodClosure(Class:ClassType, 'ListWrap(Params:List{K}), staticCT, _, Body:K)
+            :: methodType(_, T:Type),
         _,
-        'ListWrap(ParamValues:List{K}), _
+        'ListWrap(ParamValues:List{K})
       ) ~> K:K
        => staticInit(Class) ~> (bindto Params, ParamValues) ~> Body ~> 'Return('None(.List{K}))
     </k>
@@ -626,18 +625,18 @@ when isKResult(ParamValues)
 
 rule [invokeConstrClosure]:
     <k>
-      invokeImpl( constrClosure(Class:ClassType, 'ListWrap(Params:List{K}), FirstLine:K, Body:K)
-          :: MT:MethodType, OL:Int, K:K, Sig:Signature
+      invokeImpl( constrClosure(Class:ClassType, 'ListWrap(Params:List{K}), Acc:AccessMode, FirstLine:K, Body:K)
+          :: MT:MethodType, OL:Int, K:K
       )
       => invokeImpl(
-            methodClosure(Class, 'ListWrap(Params), instanceCT,
+            methodClosure(Class, 'ListWrap(Params), instanceCT, Acc,
               FirstLine
               ~>  #if getKLabel(FirstLine) ==KLabel 'AltConstrInv
                     #then .K
                     #else freshEnv(IInit)
                   #fi
               ~> Body
-            ) :: MT, OL, K, Sig
+            ) :: MT, OL, K
          )
       ...
     </k>

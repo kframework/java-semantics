@@ -113,7 +113,7 @@ rule [elabMethodsHeatMethod]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <methodDecs>
-      Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:List{K}), CT:ContextType, (Body:K => CHOLE)) :: MethodType:Type
+      Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:List{K}), CT:ContextType,_, (Body:K => CHOLE)) :: MethodType:Type
       ...
     </methodDecs>
     <contextType> _ => CT </contextType>
@@ -127,7 +127,7 @@ rule [elabMethodsCoolMethod]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <methodDecs>
-      _ |-> methodClosure(_,_,_, (CHOLE => Body)) :: _
+      _ |-> methodClosure(_,_,_,_, (CHOLE => Body)) :: _
       ...
     </methodDecs>
 
@@ -141,7 +141,7 @@ rule [elabMethodsHeatConstrFirstLine]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <methodDecs>
-      Sig:K |-> constrClosure(MClass:ClassType, 'ListWrap(Params:List{K}), (FirstLine:K => CHOLE), Body:K) :: MethodType:Type
+      Sig:K |-> constrClosure(MClass:ClassType, 'ListWrap(Params:List{K}), _, (FirstLine:K => CHOLE), Body:K) :: MethodType:Type
       ...
     </methodDecs>
     <contextType> _ => instanceCT </contextType>
@@ -155,7 +155,7 @@ rule [elabMethodsHeatConstrBody]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <methodDecs>
-      Sig:K |-> constrClosure(MClass:ClassType, 'ListWrap(Params:List{K}), CHOLE => FirstLine, Body:K => CHOLE) :: MethodType:Type
+      Sig:K |-> constrClosure(MClass:ClassType, 'ListWrap(Params:List{K}), _, CHOLE => FirstLine, Body:K => CHOLE) :: MethodType:Type
       ...
     </methodDecs>
 
@@ -167,7 +167,7 @@ rule [elabMethodsCoolConstr]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <methodDecs>
-      Sig:K |-> constrClosure(MClass:ClassType, 'ListWrap(Params:List{K}), FirstLine:K, CHOLE => Body) :: MethodType:Type
+      Sig:K |-> constrClosure(MClass:ClassType, 'ListWrap(Params:List{K}), _, FirstLine:K, CHOLE => Body) :: MethodType:Type
       ...
     </methodDecs>
 
