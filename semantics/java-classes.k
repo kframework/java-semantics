@@ -246,8 +246,8 @@ rule [CastRef]:
             'Throw('NewInstance(
                     'None(.List{K}),,
                     (class String2Id("java.lang.ClassCastException")),,
-                    'ListWrap( 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to "),,
-                        toString(RT1)) ),,
+                    'ListWrap( 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to ")::rtString,,
+                        toString(RT1))::rtString ),,
                     'None(.List{K})
                   ))
           )

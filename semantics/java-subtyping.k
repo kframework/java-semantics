@@ -65,7 +65,7 @@ when
     Class1 =/=K Class
         [structural]
 
-rule [subtypeClassOfClassFalse]:
+rule [subtypeClassOfNoClassFalse]:
     subtype( noClass, _ ) => false
 
 rule [subtypeInterfaceOfClass]:
@@ -89,14 +89,14 @@ K Limitation: This way don't seem to work:
 */
 
 rule [subtypeOfInterface]:
-    <k> subtype( Class1:ClassType, Class:ClassType ) => Class in ISet ...</k>
+    <k> subtype( Class1:ClassType, Class2:ClassType ) => Class2 in ISet ...</k>
     <class>
       <classType> Class1 </classType>
       <implTrans> ISet:Set </implTrans>
       ...
     </class>
     <class>
-      <classType> Class </classType>
+      <classType> Class2 </classType>
       <metaType> interfaceMetaT </metaType>
       ...
     </class>
@@ -104,7 +104,7 @@ rule [subtypeOfInterface]:
 rule [subTypeClassOfOtherFalse]:
     subtype( _:ClassType, T:Type ) => false
 when
-    getKLabel(T) =/=KLabel 'class_
+    notBool (isClassType(T) ==K true)
 
 rule [subtypeStringOfClass]:
     subtype( rtString, Class:ClassType ) => Class ==K objectClass
@@ -112,8 +112,8 @@ rule [subtypeStringOfClass]:
 rule [subtypeStringOfOtherFalse]:
     subtype( rtString, T:Type ) => false
 when
-            getKLabel(T) =/=KLabel 'rtString
-    andBool getKLabel(T) =/=KLabel 'class_
+            (T =/=K rtString)
+    andBool notBool (isClassType(T) ==K true)
 
 rule [subtypeArrayOfClass]:
     subtype( arrayOf _, Class:ClassType ) => Class ==K objectClass
@@ -122,7 +122,7 @@ rule [subtypeArrayOfOtherFalse]:
     subtype( arrayOf _, T:Type ) => false
 when
             (getKLabel(T) =/=KLabel 'arrayOf_)
-    andBool (getKLabel(T) =/=KLabel 'class_)
+    andBool notBool (isClassType(T) ==K true)
 
 rule [subtypeNull]:
     subtype( nullType, T:Type ) => (isRefType(T) ==K true)

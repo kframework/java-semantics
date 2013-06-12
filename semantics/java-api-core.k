@@ -113,7 +113,7 @@ rule [methodInvokeRuntime-array-clone]:
       )
 when Id2String(MethodName) ==String "clone"
 
-rule toString(Class:ClassType) => fullyQualifiedClassName(Class) [anywhere]
+rule toString(Class:ClassType) => fullyQualifiedClassName(Class)
 
 //todo this function will be obsolete once Class itself will be fully qualified
 syntax K ::= "fullyQualifiedClassName" "(" ClassType ")"
@@ -143,8 +143,8 @@ rule [ClassNameInner]:
       fullyQualifiedClassName(class ClassId:Id)
       => 'Plus(
             fullyQualifiedClassName(class OuterClassId),,
-            ("$" +String Id2String(SimpleName))
-         )
+            ("$" +String Id2String(SimpleName))::rtString
+         ) :: rtString
       ...
     </k>
     <classType> class ClassId </classType>

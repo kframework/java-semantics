@@ -332,25 +332,24 @@ rule [arrayInitImplDiscard]:
 
 //@ toString
 
-rule toString(arrayOf T:Type) => arrayToString(arrayOf T) [anywhere]
+rule toString(arrayOf T:Type) => arrayToString(arrayOf T)
 
 //string representation of a type within an array type
 //see JDK: Class.getName()
-syntax K ::= "arrayToString" "(" Type ")"  [function]
-rule arrayToString(byte)  => "B"::rtString
-rule arrayToString(short) => "S"::rtString
-rule arrayToString(int)   => "I"::rtString
-rule arrayToString(long)  => "J"::rtString
-rule arrayToString(char)  => "C"::rtString
-rule arrayToString(bool)  => "Z"::rtString
+syntax K ::= "arrayToString" "(" Type ")"
+rule arrayToString(byte)  => "B"
+rule arrayToString(short) => "S"
+rule arrayToString(int)   => "I"
+rule arrayToString(long)  => "J"
+rule arrayToString(char)  => "C"
+rule arrayToString(bool)  => "Z"
 
-//hack in order to access class Id construct from classes
-rule arrayToString('class_(Class:Id))
-    => 'Plus("L"::rtString,,'Plus(toString('class_(Class)) ,,";"::rtString)::rtString)::rtString
+rule arrayToString(class Class:Id)
+    => 'Plus("L",, 'Plus(toString(class Class) ,,";")::rtString)::rtString
 
 rule arrayToString(rtString)
-    => 'Plus("L"::rtString,,'Plus(toString(rtString   ) ,,";"::rtString)::rtString)::rtString
+    => 'Plus("L",, 'Plus(toString(rtString),, ";")::rtString)::rtString
 
-rule arrayToString(arrayOf T:Type) => 'Plus("["::rtString ,,arrayToString(T))::rtString
+rule arrayToString(arrayOf T:Type) => 'Plus("[",, arrayToString(T))::rtString
 
 endmodule

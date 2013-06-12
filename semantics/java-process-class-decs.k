@@ -48,10 +48,7 @@ rule [heatRawExtends]:
     <k> (. => BaseClassRaw) ~> resolveBases(Class:ClassType) ...</k>
     <classType> Class </classType>
     <rawExtends> BaseClassRaw:K => BASES$HOLE </rawExtends>
-//todo bug - this one don't work, let's try an alternative
-//when notBool isKResult(BaseClassRaw)
-when        getKLabel(BaseClassRaw) =/=KLabel 'class_
-    andBool getKLabel(BaseClassRaw) =/=KLabel 'noClass
+when notBool (isKResult(BaseClassRaw) ==K true)
 
 rule [coolRawExtends]:
     <k> (BaseClass:ClassType => .) ~> resolveBases(Class:ClassType) ...</k>
@@ -63,9 +60,7 @@ rule [heatRawImplements]:
     <k> (. => BaseInterfaceRaw) ~> resolveBases(Class:ClassType) ...</k>
     <classType> Class </classType>
     <rawImplements> 'ListWrap(_,, (BaseInterfaceRaw:K => BASES$HOLE),, _) </rawImplements>
-//todo same bug as for heatRawExtends
-//when notBool isKResult(BaseInterfaceRaw)
-when getKLabel(BaseInterfaceRaw) =/=KLabel 'class_
+when notBool(isKResult(BaseInterfaceRaw) ==K true)
 
 rule [coolRawImplements]:
     <k> (BaseInterface:ClassType => .) ~> resolveBases(Class:ClassType) ...</k>

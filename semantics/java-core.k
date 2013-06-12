@@ -233,19 +233,17 @@ rule true::bool ~> true? => .  [structural]
 
 /*toString - Converts various result types to string type, mainly for printing.*/
 
-// syntax K ::= "toString" "(" KResult ")" [function]
-syntax K ::= "toString" "(" K ")" [function]
-context toString(HOLE)
+syntax K ::= "toString" "(" K ")"   [strict]
 
-rule toString(Str:String :: _) => Str :: rtString
-rule toString(I:Int :: char) => charString(I) :: rtString
-rule toString(I:Int :: T:Type) => Int2String(I) :: rtString
+rule toString(Str:String :: _) => Str
+rule toString(I:Int :: char) => charString(I)
+rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
-rule toString(true::_) => "true" :: rtString
-rule toString(false::_) => "false" :: rtString
-rule toString(null::_) => "null" :: rtString
+rule toString(true::_) => "true"
+rule toString(false::_) => "false"
+rule toString(null::_) => "null"
 
-rule toString(rtString) => "java.lang.String"::rtString
+rule toString(rtString) => "java.lang.String"
 
 //@ \texttt{typeOf definition}
 
