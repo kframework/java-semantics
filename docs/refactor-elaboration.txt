@@ -135,7 +135,11 @@ General guidelines for elaboration and execution interoperability:
 5.3.ok. Rethink methodClosure :: methodType content to be more concise.
 5.4.ok. Optimize method invocation / elaboration logic. Eliminate redundant constructs.
 
-6. Invert the condition for labels elaborated by default:
+6. Cleanup the elaboration mechanism. reduce the amount of auxiliary constructs.
+6.1.ok. Introduced the predicate customElabChildren and removed customElabInit. The new predicate will replace
+  several old ones.
+
+7. Invert the condition for labels elaborated by default:
   Right now we specify the labels that should not be elaborated by default, and do default elaboration
     for all other labels.
   This strategy is problematic because whenever we introduce a new language construct that could be

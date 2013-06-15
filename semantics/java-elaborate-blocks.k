@@ -147,6 +147,10 @@ rule [elabMethodsHeatConstrFirstLine]:
     <contextType> _ => instanceCT </contextType>
     <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
 
+//Required when processing first constructor line of Object, which is .K
+rule [elabInitDotK]:
+    elabInit(.K) => elabRes(.K)
+
 rule [elabMethodsHeatConstrBody]:
     <k>
       (elabRes(FirstLine:K) => elabInit(Body)) ~> elabMethods(_:Map)
@@ -222,16 +226,27 @@ rule [elabParamsEnd]:
 rule [elabHeatDefault]:
     (. => elabInit(K)) ~> elab(KL:KLabel(ElabResL:List{K},, (K:K => CHOLE),, _))
 when
-    isElab(ElabResL) andBool notBool isElab(K) andBool notBool customElabInit(K)
+    isElab(ElabResL) andBool notBool isElab(K) andBool notBool customElabHeat(K)
+    andBool notBool customElabChildren(KL)
+
+//True if children of this label should not be automatically heated for elaboration.
+syntax K ::= "customElabChildren" "(" KLabel ")"                [function]
+rule customElabChildren(KL:KLabel) =>
+           (KL ==KLabel 'Block)
+    orBool (KL ==KLabel 'For)
+    orBool (KL ==KLabel 'Catch)
 
 rule [elabInitDefault]:
     elabInit(K) => elab(K)
 when
-    notBool customElab(K)
+    (K =/=K .K)
     andBool notBool (
              isElabIndependent(K)
       orBool (isRawVal(K) ==K true)
       orBool (getKLabel(K) ==KLabel 'TypeName)
+      orBool (getKLabel(K) ==KLabel 'ClassOrInterfaceType)
+      orBool (getKLabel(K) ==KLabel 'InterfaceType)
+      orBool (getKLabel(K) ==KLabel 'ClassType)
       orBool (getKLabel(K) ==KLabel 'ArrayType)
       orBool (getKLabel(K) ==KLabel 'PackageName)
       orBool (getKLabel(K) ==KLabel 'PackageOrTypeName)
@@ -246,15 +261,14 @@ when
            isElabIndependent(KL(Ks))
     orBool (isRawVal(KL(Ks)) ==K true)
     orBool (KL ==KLabel 'TypeName)
+    orBool (KL ==KLabel 'ClassOrInterfaceType)
+    orBool (KL ==KLabel 'InterfaceType)
+    orBool (KL ==KLabel 'ClassType)
     orBool (KL ==KLabel 'ArrayType)
     orBool (KL ==KLabel 'PackageName)
     orBool (KL ==KLabel 'PackageOrTypeName)
     orBool (KL ==KLabel 'Id)
     orBool (KL ==KLabel 'Lit)                     [structural]
-
-//Required when processing first constructor line of Object, which is .K
-rule [elabInitDotK]:
-    elabInit(.K) => elabRes(.K)
 
 rule [elabCoolDefault]:
     (ElabK => .) ~> elab(_:KLabel(_,, (CHOLE => ElabK),, _))
@@ -265,21 +279,15 @@ rule [elabDisposeStartDefault]:
     elab(KL:KLabel(ElabResL:List{K})) => elabDispose(KL(ElabResL))
 when
             isElab(ElabResL)
-    andBool (notBool customElabDispose(KL(ElabResL)))
+    andBool (notBool customElabDisposeStart(KL(ElabResL)))
 
 rule [elabDisposeProcess]:
-    elabDispose(KL:KLabel(_,, (K:K => unElab(K)),, _))
-when
-    isElabOnly(K)
+    elabDispose(KL:KLabel(_,, (elabRes(K:K) => K),, _))
 
 rule [elabDisposeEnd]:
     elabDispose(KL:KLabel(Ks:List{K})) => elabRes(KL(Ks))
 when
-    isNotElab(Ks) andBool notBool customElabRes(KL)
-
-//true if this label is elaborated, but is not un-elaborated.
-syntax K ::= "isElabOnly" "(" K ")"                   [function]
-rule isElabOnly(K:K) => getKLabel(K) ==KLabel 'elabRes`(_`)
+    haveNoElabRes(Ks) andBool notBool customElabDisposeEnd(KL)
 
 syntax K ::= "isElabIndependent" "(" K ")"            [function]
 rule isElabIndependent(K:K) =>
@@ -287,58 +295,43 @@ rule isElabIndependent(K:K) =>
     orBool (isKResult(K) ==K true)
     orBool (isTypedExp(K) ==K true)
 
-//Invoked during elabDispose. Transforms the term from elab result to normal.
-syntax K ::= "unElab" "(" K ")"                 [function]
-rule unElab(elabRes(K:K)) => K
-
 //Computes to true if the given arg is a list of elaboration results, false otherwise.
-syntax K ::= "isElab" "(" List{K} ")"           [function]
+syntax K ::= "isElab" "(" List{K} ")"                 [function]
 rule isElab((K:K => .List{K}) ,,_)
-when (isElabOnly(K) ==K true) orBool (isElabIndependent(K) ==K true)
+when       (getKLabel(K) ==KLabel 'elabRes`(_`))
+    orBool (isElabIndependent(K) ==K true)
 
 rule isElab(K:K,,_) => false
 when notBool (
-           (isElabOnly(K) ==K true)
+           (getKLabel(K) ==KLabel 'elabRes`(_`))
     orBool (isElabIndependent(K) ==K true))
 
 rule isElab(.List{K}) => true
 
 //Computes to true if the given arg is a list of terms with none being elab-result only,
 //false otherwise.
-syntax K ::= "isNotElab" "(" List{K} ")"        [function]
-rule isNotElab(K:K,,_) => false
-when isElabOnly(K)
+syntax K ::= "haveNoElabRes" "(" List{K} ")"          [function]
+rule haveNoElabRes(K:K,,_) => false
+when getKLabel(K) ==KLabel 'elabRes`(_`)
 
-rule isNotElab((K:K => .List{K}),,_)
-when notBool (isElabOnly(K) ==K true)
+rule haveNoElabRes((K:K => .List{K}),,_)
+when notBool (getKLabel(K) ==KLabel 'elabRes`(_`))
 
-rule isNotElab(.List{K}) => true
+rule haveNoElabRes(.List{K}) => true
 
 //Returns true if the term needs special rules to be heated for elaboration, false otherwise.
-syntax K ::= "customElabInit" "(" K ")"         [function]
+syntax K ::= "customElabHeat" "(" K ")"          [function]
 
-rule customElabInit(.K) => false
-rule customElabInit(KL:KLabel(_)) =>
+rule customElabHeat(.K) => false
+rule customElabHeat(KL:KLabel(_)) =>
            KL ==KLabel 'LocalVarDecStm
     orBool KL ==KLabel 'LocalVarDec
-    orBool KL ==KLabel 'ClassOrInterfaceType
-    orBool KL ==KLabel 'InterfaceType
-    orBool KL ==KLabel 'ClassType
 
-//Computes true if the given term needs special rules for elaboration, false otherwise
-syntax K ::= "customElab" "(" K ")"             [function]
+//Computes true if the given term needs special rules for the phase elab => elabDispose,
+//after children have been elaborated.
+syntax K ::= "customElabDisposeStart" "(" K ")"       [function]
 
-rule customElab(KL:KLabel(KLArgs:List{K})) =>
-           (KL ==KLabel 'Block)
-    orBool (KL ==KLabel 'For)
-    orBool (KL ==KLabel 'Catch)
-
-rule customElab(.K) => true
-
-//Computes true if the given term needs special rules for the phase elab => elabDispose
-syntax K ::= "customElabDispose" "(" K ")"       [function]
-
-rule customElabDispose(KL:KLabel(Ks:List{K})) =>
+rule customElabDisposeStart(KL:KLabel(Ks:List{K})) =>
            (KL ==KLabel 'Block)
     orBool (KL ==KLabel 'For)
     orBool (KL ==KLabel 'Catch)
@@ -346,12 +339,15 @@ rule customElabDispose(KL:KLabel(Ks:List{K})) =>
     orBool (isType(KL(Ks)) ==K true)
 
 //Computes true if the given term needs special rules for the phase elabDispose => elabRes
-syntax K ::= "customElabRes" "(" KLabel ")"       [function]
+syntax K ::= "customElabDisposeEnd" "(" KLabel ")"      [function]
 
-rule customElabRes(KL:KLabel) =>
+rule customElabDisposeEnd(KL:KLabel) =>
     isExpressionLabel(KL)
     //ex isElabNaked
     orBool (KL ==KLabel 'TypeName)
+    orBool (KL ==KLabel 'ClassOrInterfaceType)
+    orBool (KL ==KLabel 'InterfaceType)
+    orBool (KL ==KLabel 'ClassType)
     orBool (KL ==KLabel 'ArrayType)
     orBool (KL ==KLabel 'PackageName)
     orBool (KL ==KLabel 'PackageOrTypeName)
@@ -363,13 +359,29 @@ rule customElabRes(KL:KLabel) =>
 
 //Elaboration of blocks
 
-rule [elabInitBlockOrFor]:
-    <k> elabInit(KL:KLabel(Ks:List{K})) => elab(KL(Ks)) ...</k>
+rule [elabBlockHeat]:
+    <k> elab('Block('ListWrap(Ks:List{K}))) => elab('ListWrap(Ks)) ~> elab('Block(CHOLE)) ...</k>
     <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
-when
-    (KL ==KLabel 'Block) orBool (KL ==KLabel 'For)
 
-rule [elabDisposeBlockStart]:
+rule [elabForHeatFirstSubterm]:
+    <k> (.=> elab(K)) ~> elab('For((K:K => CHOLE),, Ks:List{K})) ...</k>
+    <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
+when getKLabel(K) =/=KLabel 'elabRes`(_`)
+
+rule [elabForHeatOtherSubterms]:
+    (.=> elab(K)) ~> elab('For(_,, elabRes(_),, (K:K => CHOLE),, _))
+when getKLabel(K) =/=KLabel 'elabRes`(_`)
+
+//HOLE is transformed into paramImpl
+context elab('Catch(HOLE,, _))
+when getKLabel(HOLE) =/=KLabel 'elabRes`(_`)
+
+//Catch creates a new env layer and saves its argument.
+rule [elabCatch]:
+    <k> elab('Catch(Param:KResult,, Body:K)) => elabParams(Param) ~> elab(Body) ~> elab('Catch(elabRes(Param),, CHOLE)) ...</k>
+    <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
+
+rule [elabDisposeBlockForOrCatch]:
     <k> elab(KL:KLabel(ElabResL:List{K})) => elabDispose(KL(ElabResL)) ...</k>
     <elabEnv> (ListItem(_) => .) ...</elabEnv>
 when
@@ -525,20 +537,11 @@ rule elabTypedExp(lookupField(TE:TypedExp,_,X:Id), fieldEntry(Class:ClassType,_,
 rule elabTypedExp(lookupStaticField(_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT)) => elabRes(lookupStaticField(Class,X) :: T)
 rule elabTypedExp(_, noValue) => noValue
 
-//HOLE is transformed into paramImpl
-context elabInit('Catch(HOLE,, _))
-
-//Catch creates a new env layer and saves its argument.
-rule [elabInitCatch]:
-    <k> elabInit('Catch(Param:KResult,, Body:K)) => elabParams(Param) ~> elab('Catch(Param,, Body)) ...</k>
-    <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
-
-
 /*@ \section{Elaboration of types} */
 
-rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK [structural, anywhere]
-rule 'InterfaceType(TypeK:K,, _) => TypeK        [structural, anywhere]
-rule 'ClassType(TypeK:K,, _) => TypeK            [structural, anywhere]
+rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK [structural]
+rule 'InterfaceType(TypeK:K,, _) => TypeK        [structural]
+rule 'ClassType(TypeK:K,, _) => TypeK            [structural]
 
 //resolving fully qualified type names
 // A name pack.p2.A is represented as:
@@ -547,7 +550,7 @@ rule 'ClassType(TypeK:K,, _) => TypeK            [structural, anywhere]
 context 'PackageOrTypeName(HOLE,, _:K)
 
 rule 'PackageOrTypeName(KRs:List{K},, K:K) => 'TypeName(KRs,,K) ?? 'PackageName('ListWrap(KRs,,K))
-when isKResult(KRs)
+when isKResult(KRs)                              [structural]
 
 //When we search for a class qualified by another class, we simply convert
 //the qualifier into a package.
@@ -555,10 +558,10 @@ when isKResult(KRs)
 context 'TypeName(HOLE,,_:Id)
 
 rule [TypeNameQualifiedClass]:
-    'TypeName(ClassQ:ClassType,, X:Id) => 'TypeName(toPackage(ClassQ),, X)
+    'TypeName(ClassQ:ClassType,, X:Id) => 'TypeName(toPackage(ClassQ),, X)            [structural]
 
 rule [TypeNameQualifiedPackage]:
-    'TypeName(Pack:PackageId,, X:Id) => typeNameQualifiedImpl(getNamesMap(Pack), X)
+    'TypeName(Pack:PackageId,, X:Id) => typeNameQualifiedImpl(getNamesMap(Pack), X)   [structural]
 
 //Retrieves the ClassType for the given names map and simple class name
 syntax K ::= "typeNameQualifiedImpl" "(" K "," Id ")" [strict(1)]
@@ -578,7 +581,7 @@ when notBool X in keys(NamesMap)
 rule [TypeNameString]:
     'TypeName(X:Id) => rtString
 when
-    Id2String(X) ==String "String"    [structural, anywhere]
+    Id2String(X) ==String "String"                      [structural]
 
 rule [TypeNameInExecutionPhase]:
     <k> 'TypeName(X:Id) => Class ...</k>
@@ -849,11 +852,6 @@ syntax K ::= "count" "(" List{K} ")"
 rule count(Ks:List{K}) => count(0, Ks)
 rule count(I:Int, K:K,, Ks:List{K}) => count(I +Int 1, Ks)
 rule count(I:Int, .List{K}) => I::int
-
-//Old rule, used when only method invocations were elaborated at both elaboration and execution time.
-/*rule [elabInvoke]:
-    'Invoke(Ks:List{K}) => elab('Invoke(Ks))
-*/
 
 //Elaborate all expressions once they reach the top of computation,
 //both in elaboration and in execution phase.
