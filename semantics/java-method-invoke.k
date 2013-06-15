@@ -435,6 +435,7 @@ rule [methodInvokeRuntimeOnNull]:
           'None(.List{K})
         ))
 
+//Converts a list of ListItem((Class, BI) into List{K} with elements of sort ClassType
 syntax K ::= "getClassList" "(" List ")"
 rule (.List{K} => Class),, getClassList((ListItem((Class:ClassType, _)) => .List) _)
         [structural, anywhere]
@@ -531,7 +532,8 @@ syntax K ::= "getMethConsClosureClass" "(" TypedVal ")"
 rule getMethConsClosureClass( (_:KLabel)(Class:ClassType,, _:List{K})::_ ) => Class
         [structural]
 
-syntax K ::= "getArgTypes" "(" TypedVal ")" [function]
+//returns Types - argument types for the given typed methodClosure.
+syntax K ::= "getArgTypes" "(" TypedVal ")"                   [function]
 rule getArgTypes(_ :: methodType(sig(_, Ts:Types), _)) => Ts
 
 syntax K ::= "invokeImpl" "(" K   //lookupOverloadedMethod statement, evaluates to typed methodClosure

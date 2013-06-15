@@ -13,6 +13,7 @@ public class method_01_return_void {
 
 class main {
   main() {
+    x=1;
     f();
   }
 

@@ -114,7 +114,7 @@ v2. Compute expression types at elaboration time only when needed - when they ar
   produced at run time need not be elaborated.
 4.7.ok. Fix array clone logic in the context of elaborated methods.
 
-5. Additional cleanup once elaboration is functionally complete.
+5.ok Additional cleanup part 1, once elaboration is functionally complete.
 
 5.1.ok. Add a set of rules to convert a RawVal into appropriate TypedVal. This way we can use raw values in RHS
   of the rules in most cases, and once a RawVal will reach the top of computation it will be appropriately
@@ -133,7 +133,7 @@ General guidelines for elaboration and execution interoperability:
   at runtime to be in the state prior to the elaboration refactoring - thus unelaborated and more concise.
   We call this feature elaboration-execution interoperability.
 5.3.ok. Rethink methodClosure :: methodType content to be more concise.
-5.4. Optimize method invocation / elaboration logic. Eliminate redundant constructs.
+5.4.ok. Optimize method invocation / elaboration logic. Eliminate redundant constructs.
 
 6. Invert the condition for labels elaborated by default:
   Right now we specify the labels that should not be elaborated by default, and do default elaboration

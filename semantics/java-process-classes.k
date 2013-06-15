@@ -384,7 +384,7 @@ rule [storeConstructor]:
       ]
     </methodDecs>
 
-//@get internal constructor name from a class
+//@get the internal constructor name for a given class
 syntax K ::= "getConsName" "(" ClassType ")"                               [function]
 
 rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(ClassId))
