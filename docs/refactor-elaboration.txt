@@ -138,6 +138,7 @@ General guidelines for elaboration and execution interoperability:
 6. Cleanup the elaboration mechanism. reduce the amount of auxiliary constructs.
 6.1.ok. Introduced the predicate customElabChildren and removed customElabInit. The new predicate will replace
   several old ones.
+6.2. Eliminated elabInit wrapper. Reduced the predicate customElabHeat to customElabChildren.
 
 7. Invert the condition for labels elaborated by default:
   Right now we specify the labels that should not be elaborated by default, and do default elaboration

@@ -38,8 +38,7 @@ syntax K ::= "elaborateBlocks" "(" K ")" [strict] //Elaborate the blocks inside 
                                         //Initially the map is empty.
            | "elabInstanceInit"
            | "elabStaticInit"
-           | "elabInit" "(" K ")"       //The first step of elaboration. Performs some initialization.
-           | "elab" "(" K ")"           //Elaborates the given statement/expression.
+           | "elab" "(" K ")"           //Elaborates the given statement/expression. The first step of elaboration.
            | "elabDispose" "(" K ")"    //Intermediate state between elab and elabRes - all subterms were already elaborated.
                                         //Responsible for deleting the elabRes() wrappers of subterms.
 
@@ -106,7 +105,7 @@ rule [elaborateBlocksDiscard]:
 
 rule [elabMethodsHeatMethod]:
     <k>
-      (. => elabParams(Params) ~> elabInit(Body))
+      (. => elabParams(Params) ~> elab(Body))
       ~> elabMethods( (Sig |-> _ => .Map) _)
       ...
     </k>
@@ -134,7 +133,7 @@ rule [elabMethodsCoolMethod]:
 //todo consider eliminating the label constrClosure since it leads to too much duplication.
 rule [elabMethodsHeatConstrFirstLine]:
     <k>
-      (. => elabParams(Params) ~> elabInit(FirstLine))
+      (. => elabParams(Params) ~> elab(FirstLine))
       ~> elabMethods( (Sig |-> _ => .Map) _)
       ...
     </k>
@@ -148,12 +147,12 @@ rule [elabMethodsHeatConstrFirstLine]:
     <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
 
 //Required when processing first constructor line of Object, which is .K
-rule [elabInitDotK]:
-    elabInit(.K) => elabRes(.K)
+rule [elabDotK]:
+    elab(.K) => elabRes(.K)
 
 rule [elabMethodsHeatConstrBody]:
     <k>
-      (elabRes(FirstLine:K) => elabInit(Body)) ~> elabMethods(_:Map)
+      (elabRes(FirstLine:K) => elab(Body)) ~> elabMethods(_:Map)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -179,7 +178,7 @@ rule [elabMethodsEnd]:
     elabMethods( .Map ) => .
 
 rule [elabInstanceHeat]:
-    <k> (. => elabInit(K)) ~> elabInstanceInit ...</k>
+    <k> (. => elab(K)) ~> elabInstanceInit ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <instanceInit> K:K => CHOLE </instanceInit>
@@ -194,7 +193,7 @@ rule [elabInstanceEnd]:
     <instanceInit> CHOLE => K </instanceInit>
 
 rule [elabStaticHeat]:
-    <k> (. => elabInit(K)) ~> elabStaticInit ...</k>
+    <k> (. => elab(K)) ~> elabStaticInit ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticInit> K:K => CHOLE </staticInit>
@@ -222,12 +221,35 @@ rule [elabParamsEnd]:
 //todo if we make this rule structural, I expect many things to go wrong.
 //It should make possible heating of components inside TypedExp.
 //Actually that's wrong - TypedExp will never be wrapped inside elab() -
-//in the worst case it will be wrapped inside elabInit(), then unwrapped by [elabInitNakedUnwrap].
+//in the worst case it will be wrapped inside elab(), then unwrapped by [elabHeatNaked].
 rule [elabHeatDefault]:
-    (. => elabInit(K)) ~> elab(KL:KLabel(ElabResL:List{K},, (K:K => CHOLE),, _))
+    (. => elab(K)) ~> elab(KL:KLabel(ElabResL:List{K},, (K:K => CHOLE),, _))
 when
-    isElab(ElabResL) andBool notBool isElab(K) andBool notBool customElabHeat(K)
+            notBool isElab(K)
     andBool notBool customElabChildren(KL)
+    andBool (K =/=K .K)
+    andBool notBool isElabNaked(K)
+    andBool isElab(ElabResL)
+
+//Will not match .K - is not KL(Ks). (.K) is matched by [elabDotK].
+rule [elabHeatNaked]:
+    (. => K) ~> elab(KL:KLabel(_,, (K:K => CHOLE),, _))
+when
+            notBool customElabChildren(KL)
+    andBool isElabNaked(K)
+
+syntax K ::= "isElabNaked" "(" K ")"                            [function]
+rule isElabNaked(K) =>
+           (isRawVal(K) ==K true)
+    orBool (getKLabel(K) ==KLabel 'TypeName)
+    orBool (getKLabel(K) ==KLabel 'ClassOrInterfaceType)
+    orBool (getKLabel(K) ==KLabel 'InterfaceType)
+    orBool (getKLabel(K) ==KLabel 'ClassType)
+    orBool (getKLabel(K) ==KLabel 'ArrayType)
+    orBool (getKLabel(K) ==KLabel 'PackageName)
+    orBool (getKLabel(K) ==KLabel 'PackageOrTypeName)
+    orBool (getKLabel(K) ==KLabel 'Id)
+    orBool (getKLabel(K) ==KLabel 'Lit)
 
 //True if children of this label should not be automatically heated for elaboration.
 syntax K ::= "customElabChildren" "(" KLabel ")"                [function]
@@ -235,40 +257,8 @@ rule customElabChildren(KL:KLabel) =>
            (KL ==KLabel 'Block)
     orBool (KL ==KLabel 'For)
     orBool (KL ==KLabel 'Catch)
-
-rule [elabInitDefault]:
-    elabInit(K) => elab(K)
-when
-    (K =/=K .K)
-    andBool notBool (
-             isElabIndependent(K)
-      orBool (isRawVal(K) ==K true)
-      orBool (getKLabel(K) ==KLabel 'TypeName)
-      orBool (getKLabel(K) ==KLabel 'ClassOrInterfaceType)
-      orBool (getKLabel(K) ==KLabel 'InterfaceType)
-      orBool (getKLabel(K) ==KLabel 'ClassType)
-      orBool (getKLabel(K) ==KLabel 'ArrayType)
-      orBool (getKLabel(K) ==KLabel 'PackageName)
-      orBool (getKLabel(K) ==KLabel 'PackageOrTypeName)
-      orBool (getKLabel(K) ==KLabel 'Id)
-      orBool (getKLabel(K) ==KLabel 'Lit)
-    )                                             [structural]
-
-//Will not match .K - is not KL(Ks). (.K) is matched by the next rule.
-rule [elabInitNakedUnwrap]:
-    elabInit((KL:KLabel(Ks:List{K}))) => KL(Ks)
-when
-           isElabIndependent(KL(Ks))
-    orBool (isRawVal(KL(Ks)) ==K true)
-    orBool (KL ==KLabel 'TypeName)
-    orBool (KL ==KLabel 'ClassOrInterfaceType)
-    orBool (KL ==KLabel 'InterfaceType)
-    orBool (KL ==KLabel 'ClassType)
-    orBool (KL ==KLabel 'ArrayType)
-    orBool (KL ==KLabel 'PackageName)
-    orBool (KL ==KLabel 'PackageOrTypeName)
-    orBool (KL ==KLabel 'Id)
-    orBool (KL ==KLabel 'Lit)                     [structural]
+    orBool (KL ==KLabel 'LocalVarDecStm)
+    orBool (KL ==KLabel 'LocalVarDec)
 
 rule [elabCoolDefault]:
     (ElabK => .) ~> elab(_:KLabel(_,, (CHOLE => ElabK),, _))
@@ -318,14 +308,6 @@ rule haveNoElabRes((K:K => .List{K}),,_)
 when notBool (getKLabel(K) ==KLabel 'elabRes`(_`))
 
 rule haveNoElabRes(.List{K}) => true
-
-//Returns true if the term needs special rules to be heated for elaboration, false otherwise.
-syntax K ::= "customElabHeat" "(" K ")"          [function]
-
-rule customElabHeat(.K) => false
-rule customElabHeat(KL:KLabel(_)) =>
-           KL ==KLabel 'LocalVarDecStm
-    orBool KL ==KLabel 'LocalVarDec
 
 //Computes true if the given term needs special rules for the phase elab => elabDispose,
 //after children have been elaborated.
@@ -391,41 +373,33 @@ when
 //Local var decs desugaring
 
 rule [LocalVarDecStmRed]:
-    elab('ListWrap(_,,(
-      'LocalVarDecStm('LocalVarDec(_,, TypeK:K,, 'ListWrap(Ks:List{K})))
-      => 'LocalVarDec(TypeK,, 'ListWrap(Ks))
-    ),,_))                                            [structural]
+    elab('LocalVarDecStm('LocalVarDec(Ks:List{K}))
+      => 'LocalVarDec(Ks)
+    )                                                   [structural]
 
 //Resolve the local var type, required to register the var in <elabEnv>
-context elab('ListWrap(_,,'LocalVarDec(HOLE,,_),,_))
+context elab('LocalVarDec(_:K,, HOLE,, _:K))
 
 rule [VarDecMultiDesugar]:
-    elab('ListWrap(_,,(
-      'LocalVarDec(T:Type,, 'ListWrap(Var1:K,, Var2:K,, VarDecs:List{K}))
-      => 'LocalVarDec(T,, 'ListWrap(Var1)),,
-         'LocalVarDec(T,, 'ListWrap(Var2,, VarDecs))
-    ),,_))                                            [structural]
+    elab('LocalVarDec(K:K,, T:Type,, 'ListWrap(Var1:K,, Var2:K,, VarDecs:List{K}))
+      => 'ListWrap('LocalVarDec(K,, T,, 'ListWrap(Var1)),,
+            'LocalVarDec(K,, T,, 'ListWrap(Var2,, VarDecs)))
+    )                                                   [structural]
 
 rule [VarDecWithInitDesugar]:
-    elab('ListWrap(_,,(
-    'LocalVarDec(T:Type,, 'ListWrap('VarDec(X1:Id,,InitExp:K)))
-    => 'LocalVarDec(T,, 'ListWrap('VarDec(X1:Id))),,
-       'ExprStm('Assign('ExprName(X1),, InitExp))
-    ),,_))
+    elab('LocalVarDec(K:K,, T:Type,, 'ListWrap('VarDec(X:Id,,InitExp:K)))
+    => 'ListWrap('LocalVarDec(K,, T,, 'ListWrap('VarDec(X:Id))),,
+        'ExprStm('Assign('ExprName(X),, InitExp))))
 when
-    getKLabel(InitExp) =/=KLabel 'ArrayInit           [structural]
+    getKLabel(InitExp) =/=KLabel 'ArrayInit             [structural]
 
-rule [elabHeatLocalVarDec]:
+rule [elabLocalVarDec]:
     <k>
-      (. => elabInit('LocalVarDec(T,, 'ListWrap('VarDec(X)))))
-      ~> elab(KL:KLabel(ElabResL:List{K},,
-        ('LocalVarDec(T:Type,, 'ListWrap('VarDec(X:Id))) => CHOLE),,
-      _))
+      elab('LocalVarDec(K:K,, T:Type,, 'ListWrap('VarDec(X:Id))))
+      => elabRes('LocalVarDec(K,, T,, 'ListWrap('VarDec(X))))
       ...
     </k>
     <elabEnv> ListItem(stEnv((. => X |-> T) _)) ...</elabEnv>
-when
-    isElab(ElabResL)
 
 //Elaboration of rules in java-var-lookup
 
@@ -483,7 +457,7 @@ rule [elabLookupFoundStatic]:
     <classType> CT </classType>
     <instanceEnv> InstanceEnv:Map </instanceEnv>
     <staticEnv>... X |-> L:Int ...</staticEnv>
-    <store>... L |-> uninitialized(_,T:Type)  ...</store>
+    <store>... L |-> _ :: T  ...</store>
 when
     notBool (X in keys(InstanceEnv))
 
@@ -585,19 +559,22 @@ when
 
 rule [TypeNameInExecutionPhase]:
     <k> 'TypeName(X:Id) => Class ...</k>
-    <computationPhase> ElaborateBlocksPhase </computationPhase>
+    <computationPhase> Phase:ComputationPhase </computationPhase>
     <crntClass> CrntClass:ClassType </crntClass>
     <classType> CrntClass </classType>
     <imports>... X |-> Class:ClassType ...</imports>
+when
+    (Phase ==K ElaborateBlocksPhase) orBool (Phase ==K ExecutionPhase)
 
 rule [TypeNameInExecutionPhaseFail]:
     <k> 'TypeName(X:Id) => noValue ...</k>
-    <computationPhase> ElaborateBlocksPhase </computationPhase>
+    <computationPhase> Phase:ComputationPhase </computationPhase>
     <crntClass> CrntClass:ClassType </crntClass>
     <classType> CrntClass </classType>
     <imports> Imp:Map </imports>
 when
-    notBool (X in keys(Imp))
+    ((Phase ==K ElaborateBlocksPhase) orBool (Phase ==K ExecutionPhase))
+     andBool notBool (X in keys(Imp))
 
 /*@ \section{Outer static fields} */
 

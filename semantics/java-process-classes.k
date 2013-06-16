@@ -410,7 +410,7 @@ rule [FieldDecToLocalVarDec]:
     <cuClass> Class:ClassType </cuClass>
     <classType> Class </classType>
     <fieldDecs>
-      'ListWrap(_,, ( .List{K} => 'LocalVarDec(T,, 'ListWrap('VarDec(X))) ))
+      'ListWrap(_,, ( .List{K} => 'LocalVarDec(.K,, T,, 'ListWrap('VarDec(X))) ))
     </fieldDecs>
     <instanceEnv> Env:Map => Env[fieldEntry(Class,X,T, instanceCT)/X] </instanceEnv>
 when
@@ -438,7 +438,7 @@ rule [StaticFieldDecToLocalVarDec]:
     <classType> Class </classType>
     <staticEnv> Env:Map => Env[L/X] </staticEnv>
     <staticInitLocations> _ (. => SetItem(L)) </staticInitLocations>
-    <store>... . => L |-> uninitialized(Class,T) ...</store>
+    <store>... . => L |-> uninitialized(Class,T)::T ...</store>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 when
     getContextType(Modifiers) ==K staticCT

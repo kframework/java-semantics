@@ -85,11 +85,8 @@ rule [envDiscard]:
 /*In Java current version of semantics only int and boolean primitive
 types are supported*/
 
-//resolve local variable declaration type
-context 'LocalVarDec(HOLE,,_)
-
 rule [LocalVarDec]:
-    <k> 'LocalVarDec(T:Type,,'ListWrap('VarDec(X:Id))) => . ...</k>
+    <k> 'LocalVarDec(_:K,, T:Type,,'ListWrap('VarDec(X:Id))) => . ...</k>
     <env> Env:Map => Env[L:Int/X] </env>
     <store>... . => L |-> default(T) ...</store>
     <nextLoc> L => L +Int 1 </nextLoc>
@@ -246,14 +243,12 @@ rule [stmDiscard]:
 rule [stmList]:
     stm('ListWrap(E:K,, Es:List{K})) => 'ExprStm(E) ~> stm('ListWrap(Es))
 when
-    getKLabel(E) =/=KLabel 'LocalVarDec
-        [structural]
+    isTypedExp(E) ==K true                [structural]
 
 rule [stmLocalVarDec]:
     stm('ListWrap(K:K,,Ks:List{K})) => 'ListWrap(K,,Ks)
 when
-    getKLabel(K) ==KLabel 'LocalVarDec
-        [structural]
+    notBool (isTypedExp(K) ==K true)      [structural]
 
 rule [ForFirstArgV1Red]:
     'For((
@@ -264,9 +259,9 @@ rule [ForFirstArgV1Red]:
 //Works also in elaboration phase
 rule [ForFirstArgV2Red]:
     'For((
-      'LocalVarDec(_:K,, Ks:List{K}) => stm('ListWrap('LocalVarDec(Ks)))
+      'LocalVarDec(Ks:List{K}) => stm('ListWrap('LocalVarDec(Ks)))
     ),,_:List{K})
-        [structural, anywhere]
+        [structural]
 
 rule [ForSecondArgRed]:
     'For(_:K,,(
@@ -419,7 +414,7 @@ rule [ThrowCheckedTrue]:
     checkCatch(true::bool) ~> 'Throw(TV:TypedVal)
     ~> catchBlocks(catchImpl(paramImpl(T:Type, X:Id), CatchS),, _)
     => 'Block('ListWrap(
-          'LocalVarDec(T,, 'ListWrap('VarDec(X))),,
+          'LocalVarDec(.K,, T,, 'ListWrap('VarDec(X))),,
           'ExprStm('Assign(localVar(X)::T,, TV)::T),,
           CatchS
         ))

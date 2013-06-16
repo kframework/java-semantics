@@ -70,7 +70,7 @@ syntax K ::= "preInitLocations" "(" Set //The set of locations to be initialized
 
 rule [preInitLocations]:
     <k> preInitLocations((SetItem(L:Int) => .) _) ...</k>
-    <store>... L |-> (uninitialized(_, T:Type) => default(T)) ...</store>
+    <store>... L |-> (uninitialized(_, T:Type) :: _ => default(T)) ...</store>
 
 rule [preInitLocationsDiscard]:
     preInitLocations(.) => .

@@ -84,21 +84,19 @@ when notBool X in keys(Imp)
 
 rule [TypeNameInProcessClassesPhase]:
     <k> 'TypeName(X:Id) => Class ...</k>
-    <computationPhase> Phase:ComputationPhase </computationPhase>
+    <computationPhase> ProcessClassesPhase </computationPhase>
     <cuClass> CuClass:ClassType </cuClass>
     <classType> CuClass </classType>
     <imports>... X |-> Class:ClassType ...</imports>
-when
-    (Phase ==K ProcessClassesPhase) orBool (Phase ==K ElaborateBlocksPhase)
 
 rule [TypeNameInProcessClassesPhaseFail]:
     <k> 'TypeName(X:Id) => noValue ...</k>
-    <computationPhase> Phase:ComputationPhase </computationPhase>
+    <computationPhase> ProcessClassesPhase </computationPhase>
     <cuClass> CuClass:ClassType </cuClass>
     <classType> CuClass </classType>
     <imports> Imp:Map </imports>
-when ((Phase ==K ProcessClassesPhase) orBool (Phase ==K ElaborateBlocksPhase))
-     andBool notBool (X in keys(Imp))
+when
+    notBool (X in keys(Imp))
 
 //@ \subsection{Auxiliary operations}
 

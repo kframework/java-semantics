@@ -161,7 +161,11 @@ context 'Assign(_:KResult,,HOLE)::_
 
 rule [Assign]:
     <k> 'Assign(loc(L:Int) :: _,, V:RawVal :: _) :: ResT:Type => V::ResT ...</k>
-    <store>... L |-> (_ => V)::ResT ...</store>
+    <store>... L |-> (_:RawVal => V)::ResT ...</store>
+
+rule [AssignUninitialized]:
+    <k> (. => staticInit(Class)) ~> 'Assign(loc(L:Int) :: _,, _)::_ ...</k>
+    <store>... L |-> uninitialized(Class:ClassType, _) :: _ ...</store>
 
 context KL:KLabel((HOLE => lvalue(HOLE)),, _)::_
 when isCompoundAssignLabel(KL)

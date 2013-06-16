@@ -109,14 +109,6 @@ rule [lvalueTypedLookup]:
     <k> lvalue( typedLookup(L:Int) => lookup(L)::T ) ...</k>
     <store>... L |-> _::T:Type ...</store>
 
-rule [typedLookupUninitialized]:
-    <k> (. => staticInit(Class)) ~> typedLookup(L:Int) ...</k>
-    <store>... L |-> uninitialized(Class:ClassType, T:Type) ...</store>
-
-rule [lvalueTypedLookupUninitialized]:
-    <k> (. => staticInit(Class)) ~> lvalue(typedLookup(L:Int)) ...</k>
-    <store>... L |-> uninitialized(Class:ClassType, T:Type) ...</store>
-
 rule <k> lvalue(lookup(L:Int)::T:Type) => loc(L)::T ...</k>  [structural]
 
 syntax K ::= "typedLoc" "(" Int ")"
@@ -138,5 +130,9 @@ rule [lookupLocation]:
       ...
     </k>
     <store>... L |-> V:RawVal :: T2:Type ...</store>
+
+rule [lookupUninitialized]:
+    <k> (. => staticInit(Class)) ~> lookup(L:Int) :: _ ...</k>
+    <store>... L |-> uninitialized(Class:ClassType, _) :: _ ...</store>
 
 endmodule

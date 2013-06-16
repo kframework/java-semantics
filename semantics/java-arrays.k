@@ -12,8 +12,10 @@ syntax K ::= RawVal "::" "elem" Type
 //@ \subsection{Array declarators with c-style dimensions and inits}
 
 //C-style array dec
+//Applied in both elaboration and execution phase
 rule [ArrayVarDecIdDesugar]:
     'LocalVarDec(
+      _:K,,
       (T:Type => arrayOf T),,
       'ListWrap('VarDec('ArrayVarDecId(
           X:Id,,
@@ -22,13 +24,13 @@ rule [ArrayVarDecIdDesugar]:
     )))                                                 [structural, anywhere]
 
 rule [ArrayVarDecIdDiscard]:
-    'LocalVarDec(T:Type,, 'ListWrap('VarDec(
+    'LocalVarDec(_:K,, T:Type,, 'ListWrap('VarDec(
         ( 'ArrayVarDecId( X:Id,, 'ListWrap(.List{K}) ) => X ),,
         _:List{K} //possible initializer
     )))                                                 [structural, anywhere]
 
 rule [VarDecWithArrayInitDesugar]:
-    'LocalVarDec(T:Type,, 'ListWrap('VarDec(
+    'LocalVarDec(_:K,, T:Type,, 'ListWrap('VarDec(
       X:Id,,
       ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK)) )
     )))                                                 [structural, anywhere]
