@@ -140,8 +140,17 @@ General guidelines for elaboration and execution interoperability:
   several old ones.
 6.2.ok. Eliminated elabInit wrapper. Reduced the predicate customElabHeat to customElabChildren.
 6.3.ok. Eliminated the predicate customElabDisposeStart.
-6.4. Eliminate all custom elaboration predicates except customElabChildren() and isElabNaked(_).
-6.5. Make the elaboration of expressions naked. This way we can use strictness rules for expressions
+6.4.ok. Eliminated the predicate customElabDisposeEnd. Now it is replaced by isExpressionLabel.
+6.5. Eliminate all custom elaboration predicates except customElabChildren() and isElabNaked(_). (if there is any left)
+    Current elaboration-related predicates:
+    - customElabChildren
+    - isElab
+    - haveNoElabRes
+    - isElabNaked
+    - isElabIndependent
+    - isExpressionLabel
+
+6.6. Make the elaboration of expressions naked. This way we can use strictness rules for expressions
   in the elaboration phase, and context rules in execution phase.
 
 7. Invert the condition for labels elaborated by default:

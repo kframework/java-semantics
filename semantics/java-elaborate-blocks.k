@@ -231,6 +231,23 @@ when
     andBool (notBool isElabNaked(KL(ElabResL,,K,,RestKs)))
     andBool isElab(ElabResL)
 
+//True if children of this label should not be automatically heated for elaboration.
+syntax K ::= "customElabChildren" "(" KLabel ")"                [function]
+rule customElabChildren(KL:KLabel) =>
+           (KL ==KLabel 'Block)
+    orBool (KL ==KLabel 'For)
+    orBool (KL ==KLabel 'Catch)
+    orBool (KL ==KLabel 'LocalVarDecStm)
+    orBool (KL ==KLabel 'LocalVarDec)
+    orBool (KL ==KLabel 'This)
+    orBool (KL ==KLabel 'AmbName)
+    orBool (KL ==KLabel 'ExprName)
+    orBool (KL ==KLabel 'Field)
+    orBool (KL ==KLabel 'SuperField)
+    orBool (KL ==KLabel 'localVar`(_`))
+    orBool (KL ==KLabel 'CastPrim)
+    orBool (KL ==KLabel 'CastRef)
+
 //Will not match .K - is not KL(Ks). (.K) is matched by [elabDotK].
 rule [unwrapElabNaked]:
     elab(K:K) => K
@@ -250,20 +267,6 @@ rule isElabNaked(K) =>
     orBool (getKLabel(K) ==KLabel 'Id)
     orBool (getKLabel(K) ==KLabel 'Lit)
 
-//True if children of this label should not be automatically heated for elaboration.
-syntax K ::= "customElabChildren" "(" KLabel ")"                [function]
-rule customElabChildren(KL:KLabel) =>
-           (KL ==KLabel 'Block)
-    orBool (KL ==KLabel 'For)
-    orBool (KL ==KLabel 'Catch)
-    orBool (KL ==KLabel 'LocalVarDecStm)
-    orBool (KL ==KLabel 'LocalVarDec)
-    orBool (KL ==KLabel 'This)
-    orBool (KL ==KLabel 'AmbName)
-    orBool (KL ==KLabel 'ExprName)
-    orBool (KL ==KLabel 'Field)
-    orBool (KL ==KLabel 'localVar`(_`))
-
 rule [elabCoolDefault]:
     (ElabK => .) ~> elab(_:KLabel(_,, (CHOLE => ElabK),, _))
 when
@@ -282,7 +285,7 @@ rule [elabDisposeProcess]:
 rule [elabDisposeEnd]:
     elabDispose(KL:KLabel(Ks:List{K})) => elabRes(KL(Ks))
 when
-    haveNoElabRes(Ks) andBool notBool customElabDisposeEnd(KL)
+    haveNoElabRes(Ks) andBool notBool isExpressionLabel(KL)
 
 syntax K ::= "isElabIndependent" "(" K ")"            [function]
 rule isElabIndependent(K:K) =>
@@ -313,22 +316,6 @@ rule haveNoElabRes((K:K => .List{K}),,_)
 when notBool (getKLabel(K) ==KLabel 'elabRes`(_`))
 
 rule haveNoElabRes(.List{K}) => true
-
-//Computes true if the given term needs special rules for the phase elabDispose => elabRes
-syntax K ::= "customElabDisposeEnd" "(" KLabel ")"      [function]
-
-rule customElabDisposeEnd(KL:KLabel) =>
-    isExpressionLabel(KL)
-    //ex isElabNaked
-    orBool (KL ==KLabel 'TypeName)
-    orBool (KL ==KLabel 'ClassOrInterfaceType)
-    orBool (KL ==KLabel 'InterfaceType)
-    orBool (KL ==KLabel 'ClassType)
-    orBool (KL ==KLabel 'ArrayType)
-    orBool (KL ==KLabel 'PackageName)
-    orBool (KL ==KLabel 'PackageOrTypeName)
-    orBool (KL ==KLabel 'SuperField)
-    orBool (KL ==KLabel 'NewArray)
 
 //Elaboration of blocks
 
@@ -488,7 +475,7 @@ rule [elabFieldQualClass]:
 
 rule [elabSuperField]:
     <k>
-      elabDispose('SuperField(X:Id))
+      elab('SuperField(X:Id))
       => elabTypedExp(lookupField('This(.List{K})::Class, noClass, X), elabLookup(X, BaseClass))
       ...
     </k>
@@ -664,6 +651,10 @@ rule isNonNumericExp(KL:KLabel) =>
     orBool (KL ==KLabel 'AmbName)
     orBool (KL ==KLabel 'ExprName)
     orBool (KL ==KLabel 'Field)
+    orBool (KL ==KLabel 'SuperField)
+    orBool (KL ==KLabel 'NewArray)
+    orBool (KL ==KLabel 'CastPrim)
+    orBool (KL ==KLabel 'CastRef)
 
 //It looks like isTypedExp(List{K}) doesn't work.
 rule [elabBoolOnlyResultExpBinary]:
@@ -770,8 +761,8 @@ when
 /*@ \section{Elaboration of non-numeric expressions} */
 
 //elab cast
-rule 'CastRef(K1:K,, K2:K)  => castImpl(K1,K2)      [structural, anywhere]
-rule 'CastPrim(K1:K,, K2:K) => castImpl(K1,K2)      [structural, anywhere]
+rule elab('CastRef(K1:K,, K2:K)  => castImpl(K1,K2))      [structural]
+rule elab('CastPrim(K1:K,, K2:K) => castImpl(K1,K2))      [structural]
 
 //Case when Exp was initially a literal, and now is Val::Type
 rule [elabCastImplElabIndep]:
