@@ -135,10 +135,14 @@ General guidelines for elaboration and execution interoperability:
 5.3.ok. Rethink methodClosure :: methodType content to be more concise.
 5.4.ok. Optimize method invocation / elaboration logic. Eliminate redundant constructs.
 
-6. Cleanup the elaboration mechanism. reduce the amount of auxiliary constructs.
+6. Cleanup the elaboration mechanism. Reduce the amount of auxiliary constructs.
 6.1.ok. Introduced the predicate customElabChildren and removed customElabInit. The new predicate will replace
   several old ones.
-6.2. Eliminated elabInit wrapper. Reduced the predicate customElabHeat to customElabChildren.
+6.2.ok. Eliminated elabInit wrapper. Reduced the predicate customElabHeat to customElabChildren.
+6.3.ok. Eliminated the predicate customElabDisposeStart.
+6.4. Eliminate all custom elaboration predicates except customElabChildren() and isElabNaked(_).
+6.5. Make the elaboration of expressions naked. This way we can use strictness rules for expressions
+  in the elaboration phase, and context rules in execution phase.
 
 7. Invert the condition for labels elaborated by default:
   Right now we specify the labels that should not be elaborated by default, and do default elaboration
@@ -152,4 +156,4 @@ General guidelines for elaboration and execution interoperability:
     them into labels with known elaboration rules.
 
   When elaborating a block, in order to distinguish between an unelaborated
-and elaborated block, we will wrap elaborated blocks into elab(...).
+and an elaborated block, we will wrap elaborated blocks into elab(...).
