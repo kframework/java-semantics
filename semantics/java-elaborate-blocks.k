@@ -223,13 +223,14 @@ rule [elabParamsEnd]:
 //Actually that's wrong - TypedExp will never be wrapped inside elab() -
 //in the worst case it will be wrapped inside elab(), then unwrapped by [elabHeatNaked].
 rule [elabHeatDefault]:
-    (. => elab(K)) ~> elab(KL:KLabel(ElabResL:List{K},, (K:K => CHOLE),, RestKs:List{K}))
+    (. => elab(K)) ~> elab(KL:KLabel(HeadKs:List{K},, (K:K => CHOLE),, TailKs:List{K}))
 when
-            notBool isElab(K)
-    andBool notBool customElabChildren(KL)
+            notBool customElabChildren(KL)
+    andBool notBool isElab(K)
+    andBool notBool isElabNaked(KL(HeadKs,,K,,TailKs))
     andBool (K =/=K .K)
-    andBool (notBool isElabNaked(KL(ElabResL,,K,,RestKs)))
-    andBool isElab(ElabResL)
+    //todo test that lacking this leads to problems
+    //andBool isElab(HeadKs)
 
 //True if children of this label should not be automatically heated for elaboration.
 syntax K ::= "customElabChildren" "(" KLabel ")"                [function]
@@ -239,14 +240,6 @@ rule customElabChildren(KL:KLabel) =>
     orBool (KL ==KLabel 'Catch)
     orBool (KL ==KLabel 'LocalVarDecStm)
     orBool (KL ==KLabel 'LocalVarDec)
-    orBool (KL ==KLabel 'This)
-    orBool (KL ==KLabel 'AmbName)
-    orBool (KL ==KLabel 'ExprName)
-    orBool (KL ==KLabel 'Field)
-    orBool (KL ==KLabel 'SuperField)
-    orBool (KL ==KLabel 'localVar`(_`))
-    orBool (KL ==KLabel 'CastPrim)
-    orBool (KL ==KLabel 'CastRef)
 
 //Will not match .K - is not KL(Ks). (.K) is matched by [elabDotK].
 rule [unwrapElabNaked]:
@@ -267,17 +260,25 @@ rule isElabNaked(K) =>
     orBool (getKLabel(K) ==KLabel 'Id)
     orBool (getKLabel(K) ==KLabel 'Lit)
 
-rule [elabCoolDefault]:
-    (ElabK => .) ~> elab(_:KLabel(_,, (CHOLE => ElabK),, _))
+rule [elabCoolStatement]:
+    (elabRes(K:K) => .) ~> elab(_:KLabel(_,, (CHOLE => elabRes(K)),, _))
 when
-    isElab(ElabK)
+    notBool (isTypedExp(K) ==K true)
+
+rule [elabCoolExpression]:
+    (elabRes(TExp:TypedExp) => .) ~> elab(_:KLabel(_,, (CHOLE => TExp),, _))
+
+rule [elabCoolIndependent]:
+    (ElabIndep => .) ~> elab(_:KLabel(_,, (CHOLE => ElabIndep),, _))
+when
+    isElabIndependent(ElabIndep)
 
 rule [elabDisposeStartDefault]:
     elab(KL:KLabel(ElabResL:List{K})) => elabDispose(KL(ElabResL))
 when
-            (notBool customElabChildren(KL))
+            notBool customElabChildren(KL)
     andBool isElab(ElabResL)
-    andBool notBool (isElabNaked(KL(ElabResL)))
+    andBool notBool isElabNaked(KL(ElabResL))
 
 rule [elabDisposeProcess]:
     elabDispose(KL:KLabel(_,, (elabRes(K:K) => K),, _))
@@ -285,7 +286,7 @@ rule [elabDisposeProcess]:
 rule [elabDisposeEnd]:
     elabDispose(KL:KLabel(Ks:List{K})) => elabRes(KL(Ks))
 when
-    haveNoElabRes(Ks) andBool notBool isExpressionLabel(KL)
+    notBool isExpressionLabel(KL) andBool haveNoElabRes(Ks)
 
 syntax K ::= "isElabIndependent" "(" K ")"            [function]
 rule isElabIndependent(K:K) =>
@@ -295,25 +296,17 @@ rule isElabIndependent(K:K) =>
 
 //Computes to true if the given arg is a list of elaboration results, false otherwise.
 syntax K ::= "isElab" "(" List{K} ")"                 [function]
-rule isElab((K:K => .List{K}) ,,_)
-when       (getKLabel(K) ==KLabel 'elabRes`(_`))
-    orBool (isElabIndependent(K) ==K true)
-
-rule isElab(K:K,,_) => false
-when notBool (
-           (getKLabel(K) ==KLabel 'elabRes`(_`))
-    orBool (isElabIndependent(K) ==K true))
+rule isElab(K:K,, Ks:List{K})
+     =>      ((getKLabel(K) ==KLabel 'elabRes`(_`)) orBool (isElabIndependent(K) ==K true))
+     andBool isElab(Ks)
 
 rule isElab(.List{K}) => true
 
 //Computes to true if the given arg is a list of terms with none being elab-result only,
 //false otherwise.
 syntax K ::= "haveNoElabRes" "(" List{K} ")"          [function]
-rule haveNoElabRes(K:K,,_) => false
-when getKLabel(K) ==KLabel 'elabRes`(_`)
-
-rule haveNoElabRes((K:K => .List{K}),,_)
-when notBool (getKLabel(K) ==KLabel 'elabRes`(_`))
+rule haveNoElabRes(K:K,, Ks:List{K})
+     => (getKLabel(K) =/=KLabel 'elabRes`(_`)) andBool haveNoElabRes(Ks)
 
 rule haveNoElabRes(.List{K}) => true
 
@@ -381,45 +374,41 @@ rule [elabLocalVarDec]:
 
 //Elaboration of rules in java-var-lookup
 
+//Both unqualified and qualified AmbName.
 rule [elabAmbName]:
-    elab('AmbName(Ks:List{K})) => elab('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName('ListWrap(Ks))
+    elabDispose('AmbName(Ks:List{K})) => elabDispose('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName('ListWrap(Ks))
+when
+    haveNoElabRes(Ks)
 
 rule [elabExprNameSimple]:
-    elab('ExprName(ResK:K)) => elab(localVar(ResK)) ?? elab('Field(ResK))
+    elabDispose('ExprName(X:Id)) => elabDispose(localVar(X)) ?? elabDispose('Field(X))
 
 rule [elabExprNameQualified]:
-    elab('ExprName(K1:K,,K2:K)) => elab('Field(K1,,K2))
+    elabDispose('ExprName(QualK:K,,X:Id)) => elabDispose('Field(QualK,,X))
 
 rule [elabLocalVarOk]:
-  <k> elab(localVar(X:Id)) => elabRes(localVar(X) :: T) ...</k>
+  <k> elabDispose(localVar(X:Id)) => elabRes(localVar(X) :: T) ...</k>
   <elabEnv> ListItem(stEnv(X |-> T:Type _)) ...</elabEnv>
 
 rule [elabLocalVarNoValue]:
-  <k> elab(localVar(X:Id)) => noValue ...</k>
+  <k> elabDispose(localVar(X:Id)) => noValue ...</k>
   <elabEnv> ListItem(stEnv(StEnv:Map)) ...</elabEnv>
 when notBool (X in keys(StEnv))
 
 rule [elabFieldUnqualified]:
     <k>
-      elab('Field(Arg:K))
-      => elab('Field( 'This(.List{K}),, Arg )) ?? elab('Field( Class,, Arg))
-         ?? outerStaticField(Class, Arg)
+      elabDispose('Field(X:Id))
+      => elab('Field( 'This(.List{K}),, X )) ?? elab('Field( Class,, X))
+         ?? outerStaticField(Class, X)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-when
-    isElab(Arg)
-
-rule [elabFieldHeatQual]:
-    (. => elab(K)) ~> elab('Field((K:K => CHOLE),, _:Id))
-when
-    notBool isElab(K)
 
 rule [FieldOfPackage]:
-    elab('Field( _:PackageId,, _:K )) => noValue  [structural]
+    elabDispose('Field( _:PackageId,, _:Id )) => noValue  [structural]
 
 rule [FieldOfNoValue]:
-    elab('Field( noValue,, _:K )) => noValue      [structural]
+    elabDispose('Field( noValue,, _:Id )) => noValue      [structural]
 
 //Computationof instance and static environment of a class
 //e.g. set of fields
@@ -457,25 +446,25 @@ rule [elabLookupNotFound]:
     elabLookup(X:Id, noClass) => noValue
 
 rule [elabThisInstanceCT]:
-    <k> elab('This(.List{K})) => elabRes('This(.List{K}) :: Class) ...</k>
+    <k> elabDispose('This(.List{K})) => elabRes('This(.List{K}) :: Class) ...</k>
     <crntClass> Class:ClassType </crntClass>
     <contextType> instanceCT </contextType>
 
 rule [elabThisStaticCT]:
-    <k> elab('This(.List{K})) => noValue ...</k>
+    <k> elabDispose('This(.List{K})) => noValue ...</k>
     <contextType> staticCT </contextType>
 
 rule [elabFieldQualRef]:
-    elab('Field(elabRes(Qual:K :: Class:ClassType),, X:Id))
+    elabDispose('Field(Qual:K :: Class:ClassType,, X:Id))
     => elabTypedExp(lookupField(Qual::Class, noClass, X), elabLookup(X, Class))
 
 rule [elabFieldQualClass]:
-    elab('Field(Class:ClassType,, X:Id))
+    elabDispose('Field(Class:ClassType,, X:Id))
     => elabTypedExp(lookupStaticField(noClass,X), elabLookup(X, Class))
 
 rule [elabSuperField]:
     <k>
-      elab('SuperField(X:Id))
+      elabDispose('SuperField(X:Id))
       => elabTypedExp(lookupField('This(.List{K})::Class, noClass, X), elabLookup(X, BaseClass))
       ...
     </k>
@@ -761,8 +750,8 @@ when
 /*@ \section{Elaboration of non-numeric expressions} */
 
 //elab cast
-rule elab('CastRef(K1:K,, K2:K)  => castImpl(K1,K2))      [structural]
-rule elab('CastPrim(K1:K,, K2:K) => castImpl(K1,K2))      [structural]
+rule elabDispose('CastRef(T:Type,, TExp:TypedExp)  => castImpl(T, TExp))      [structural]
+rule elabDispose('CastPrim(T:Type,, TExp:TypedExp) => castImpl(T, TExp))      [structural]
 
 //Case when Exp was initially a literal, and now is Val::Type
 rule [elabCastImplElabIndep]:
@@ -784,7 +773,7 @@ rule [elabArrayAccess]:
     elabDispose('ArrayAccess(TargetExp:K::arrayOf T:Type,, IndexTE:TypedExp)) => elabRes('ArrayAccess(TargetExp::arrayOf T,, IndexTE) :: T)
 
 rule [elabArrayLength]:
-    elab('Field(elabRes(Qual:K :: arrayOf T:Type),, X:Id))
+    elabDispose('Field(Qual:K :: arrayOf T:Type,, X:Id))
     => elabRes(lookupField(Qual:: arrayOf T, arrayOf T, X) :: int)
 when
     Id2String(X) ==String "length"
