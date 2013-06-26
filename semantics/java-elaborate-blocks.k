@@ -23,8 +23,6 @@ static initializers of a class and perform the following transformations:
     During elaboration, elaborated members will be wrapped into elab().
 */
 
-// todo: Anything that evaluates to Type should be naked, anything else - not.
-
 module JAVA-ELABORATE-BLOCKS
     imports JAVA-CORE
     imports JAVA-VAR-LOOKUP //for localVar
@@ -228,7 +226,6 @@ when
             notBool customElabChildren(KL)
     andBool notBool isElab(K)
     andBool notBool isElabNaked(KL(HeadKs,,K,,TailKs))
-    andBool (K =/=K .K)
     //todo test that lacking this leads to problems
     //andBool isElab(HeadKs)
 
@@ -241,7 +238,7 @@ rule customElabChildren(KL:KLabel) =>
     orBool (KL ==KLabel 'LocalVarDecStm)
     orBool (KL ==KLabel 'LocalVarDec)
 
-//Will not match .K - is not KL(Ks). (.K) is matched by [elabDotK].
+//Will not match .K - is not isElabNaked. (.K) is matched by [elabDotK].
 rule [unwrapElabNaked]:
     elab(K:K) => K
 when
@@ -290,8 +287,7 @@ when
 
 syntax K ::= "isElabIndependent" "(" K ")"            [function]
 rule isElabIndependent(K:K) =>
-           (K ==K .K)
-    orBool (isKResult(K) ==K true)
+               (isKResult(K) ==K true)
     orBool (isTypedExp(K) ==K true)
 
 //Computes to true if the given arg is a list of elaboration results, false otherwise.
