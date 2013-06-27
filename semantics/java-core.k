@@ -67,7 +67,7 @@ configuration
           //Map[sig -> Class]
           <methods color="purple"> .Map </methods>
 
-          //All methods declared in this class. Map[sig -> methodClosure / constrClosure :: MethodType ]
+          //All methods declared in this class. Map[sig -> methodClosure :: MethodType ]
           <methodDecs color="purple"> .Map </methodDecs>
 
           <br/>
@@ -187,19 +187,15 @@ syntax RawVal ::= "objectClosure" "(" Int //OL - object location
                 | "methodClosure" "("
                     ClassType ","   // Class - class defining the method
                     K ","           // 'ListWrap(Params) - params
-                    ContextType "," // Either staticCT or instanceCT
+                    ContextType "," // Either staticCT, instanceCT
                     AccessMode ","  // The access mode
+                    RoutineType "," // Either methodRT or constructorRT
+                    K ","           // first line, constructors only. Either of:
+                                    //   'SuperInv - superclass constructor invocation
+                                    //   'AltConstrInv - alternate this class consturctor invocation
+                                    //   .K - none, if this class is Object
+                                    //   For methods it is noValue
                     K               // S - method body
-                  ")"
-                | "constrClosure" "("
-                    ClassType ","   // Class - class defining the method
-                    K ","    // 'ListWrap(Params) - params
-                    AccessMode ","  // The access mode
-                    K ","    // first line - either:
-                             //   'SuperInv - superclass constructor invocation
-                             //   'AltConstrInv - alternate this class consturctor invocation
-                             //   .K - none, if this class is Object
-                    K        // S - method body
                   ")"
                 | "arrayRef" "("
                     Type ","  // Type of array
@@ -217,6 +213,7 @@ syntax ProtoTypedExp ::= K "::" K       [strict(2)]
                        | TypedExp
 
 syntax AccessMode ::= "public" | "protected" | "package" | "private"
+syntax RoutineType ::= "methodRT" | "constructorRT"
 syntax KResult ::= AccessMode
 
 //bug cannot call this construct ClassType:

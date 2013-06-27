@@ -101,20 +101,36 @@ rule [elaborateBlocks]:
 rule [elaborateBlocksDiscard]:
     elaborateBlocks(setWrap(.)) => .
 
-rule [elabMethodsHeatMethod]:
+rule [elabMethodsHeatMethodFirstLine]:
     <k>
-      (. => elabParams(Params) ~> elab(Body))
+      (. => elabParams(Params) ~> elab(FirstLine))
       ~> elabMethods( (Sig |-> _ => .Map) _)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <methodDecs>
-      Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:List{K}), CT:ContextType,_, (Body:K => CHOLE)) :: MethodType:Type
+      Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:List{K}), CT:ContextType,_,_, (FirstLine:K => CHOLE), Body:K) :: MethodType:Type
       ...
     </methodDecs>
     <contextType> _ => CT </contextType>
     <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
+
+//Required when processing first constructor line of Object, which is .K
+rule [elabDotK]:
+    elab(.K) => elabRes(.K)
+
+rule [elabMethodsHeatMethodBody]:
+    <k>
+      (elabRes(FirstLine:K) => elab(Body)) ~> elabMethods(_:Map)
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    <methodDecs>
+      Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:List{K}), _,_,_, CHOLE => FirstLine, Body:K => CHOLE) :: MethodType:Type
+      ...
+    </methodDecs>
 
 rule [elabMethodsCoolMethod]:
     <k>
@@ -124,51 +140,7 @@ rule [elabMethodsCoolMethod]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <methodDecs>
-      _ |-> methodClosure(_,_,_,_, (CHOLE => Body)) :: _
-      ...
-    </methodDecs>
-
-//todo consider eliminating the label constrClosure since it leads to too much duplication.
-rule [elabMethodsHeatConstrFirstLine]:
-    <k>
-      (. => elabParams(Params) ~> elab(FirstLine))
-      ~> elabMethods( (Sig |-> _ => .Map) _)
-      ...
-    </k>
-    <crntClass> Class:ClassType </crntClass>
-    <classType> Class </classType>
-    <methodDecs>
-      Sig:K |-> constrClosure(MClass:ClassType, 'ListWrap(Params:List{K}), _, (FirstLine:K => CHOLE), Body:K) :: MethodType:Type
-      ...
-    </methodDecs>
-    <contextType> _ => instanceCT </contextType>
-    <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
-
-//Required when processing first constructor line of Object, which is .K
-rule [elabDotK]:
-    elab(.K) => elabRes(.K)
-
-rule [elabMethodsHeatConstrBody]:
-    <k>
-      (elabRes(FirstLine:K) => elab(Body)) ~> elabMethods(_:Map)
-      ...
-    </k>
-    <crntClass> Class:ClassType </crntClass>
-    <classType> Class </classType>
-    <methodDecs>
-      Sig:K |-> constrClosure(MClass:ClassType, 'ListWrap(Params:List{K}), _, CHOLE => FirstLine, Body:K => CHOLE) :: MethodType:Type
-      ...
-    </methodDecs>
-
-rule [elabMethodsCoolConstr]:
-    <k>
-      (elabRes(Body:K) => .) ~> elabMethods(_:Map)
-      ...
-    </k>
-    <crntClass> Class:ClassType </crntClass>
-    <classType> Class </classType>
-    <methodDecs>
-      Sig:K |-> constrClosure(MClass:ClassType, 'ListWrap(Params:List{K}), _, FirstLine:K, CHOLE => Body) :: MethodType:Type
+      Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:List{K}), _,_,_, FirstLine:K, CHOLE => Body) :: MethodType:Type
       ...
     </methodDecs>
 

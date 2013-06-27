@@ -217,53 +217,40 @@ syntax K ::= "lookupSignature" "("  Id     // MethodName
                                ","  K      // The best signature found so far, in the form mapWrap(Sig -> Type)
                                            // or noValue if none found
                                ","  ClassType //target class
-                               ")"  [strict(2)]
+                               ")"  [strict(2,5)]
 
-rule [lookupSignatureNoAlternatives]:
+rule [lookupSignatureMain]:
     <k>
-      (. => isPreferableSig(
+      lookupSignature(
+        MethodName:Id,
+        CallTs:Types,
+        (sig(MethodName, SigTs:Types) |-> DecClass:ClassType => .) _:Map,
+        IsQ:Bool,
+        OldMethodDecRecord:KResult
+        => 'If(
+            'LazyAnd(
               'LazyAnd(
                 subtypeList(CallTs, SigTs),,
-                isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
-                    DecClass, IsQ, Class)
-              ) :: bool,
-              mapWrap(sig(MethodName, SigTs) |-> getMethodReturnType(TV))
-            ) )
-       ~> lookupSignature(
-            MethodName:Id,
-            CallTs:Types,
-            (sig(MethodName, SigTs:Types) |-> DecClass:ClassType => .) _:Map,
-            IsQ:Bool,
-            noValue,
-            Class:ClassType
-          )
+                #if OldMethodDecRecord ==K noValue
+                  #then true
+                  #else subtypeList(SigTs, getMethodDecArgTypes(OldMethodDecRecord))
+                #fi
+              ) :: bool,,
+              isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
+                  DecClass, IsQ, Class)
+            ) :: bool,,
+            mapWrap(sig(MethodName, SigTs) |-> getMethodReturnType(TV)),,
+            OldMethodDecRecord
+          ),
+        Class:ClassType
+      )
       ...
     </k>
     <classType> DecClass </classType>
     <methodDecs>... sig(MethodName, SigTs) |-> TV:TypedVal ...</methodDecs>
 
-rule [lookupSignatureWithAlternative]:
-    <k>
-      (. => isPreferableSig(
-              'LazyAnd(
-                'LazyAnd(subtypeList(CallTs, SigTs),, subtypeList(SigTs, AltTs)) :: bool,,
-                isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
-                    DecClass, IsQ, Class)
-              ) :: bool,
-              mapWrap(sig(MethodName, SigTs) |-> getMethodReturnType(TV))
-            ) )
-       ~> lookupSignature(
-            MethodName:Id,
-            CallTs:Types,
-            (sig(MethodName, SigTs:Types) |-> DecClass:ClassType => .) _:Map,
-            IsQ:Bool,
-            mapWrap(sig(MethodName, AltTs:Types) |-> _),
-            Class:ClassType
-          )
-      ...
-    </k>
-    <classType> DecClass </classType>
-    <methodDecs>... sig(MethodName, SigTs) |-> TV:TypedVal ...</methodDecs>
+syntax K ::= "getMethodDecArgTypes" "(" K ")"
+rule getMethodDecArgTypes(mapWrap(sig(_, Ts:Types) |-> _)) => Ts  [structural, anywhere]
 
 rule [lookupSignatureSigDiscard]:
     lookupSignature(
@@ -276,16 +263,7 @@ when
     Name =/=K MethodName
 
 rule [lookupSignatureEnd]:
-    lookupSignature(_,_,.Map,_,K:K,_) => K
-
-//Inserts the second argument into the term lookupSignature that follows, if the first argument computes to true
-//todo convert into 'If
-syntax K ::= "isPreferableSig" "(" K  //computes to bool::bool
-                               "," K  //computes to mapWrap(Sig -> Type)
-                               ")"  [strict(1)]
-
-rule (isPreferableSig(true::bool, K:K) => .) ~> lookupSignature(_,_,_,_, _ => K, _ )
-rule isPreferableSig(false::bool, _) => .
+    lookupSignature(_,_,.Map,_, SigWrap:KResult, _) => SigWrap
 
 //Tests whether a method from a given class with a given AccessMode and ContextType
 //may be called from the current object environment
@@ -529,7 +507,7 @@ rule [lookupMethodSigKnownEnd]:
 
 //Returns the defining class of the given method TypedVal.
 syntax K ::= "getMethConsClosureClass" "(" TypedVal ")"
-rule getMethConsClosureClass( (_:KLabel)(Class:ClassType,, _:List{K})::_ ) => Class
+rule getMethConsClosureClass( methodClosure(Class:ClassType, _,_,_,_,_,_) ::_ ) => Class
         [structural]
 
 //returns Types - argument types for the given typed methodClosure.
@@ -549,7 +527,7 @@ context invokeImpl(_, _,'ListWrap(_:List{K},,HOLE,,_:List{K}))
 rule [invokeImplInstance]:
     <k>
       invokeImpl(
-        methodClosure(Class:ClassType, 'ListWrap(Params:List{K}), instanceCT, _, Body:K)
+        methodClosure(Class:ClassType, 'ListWrap(Params:List{K}), instanceCT, _,methodRT, noValue, Body:K)
             :: methodType(_, T:Type),
         OL:Int,
         'ListWrap(ParamValues:List{K})
@@ -593,7 +571,7 @@ when isKResult(ParamValues) andBool (getKLabel(Body) =/=KLabel 'NoMethodBody)
 rule [invokeImplStatic]:
     <k>
       invokeImpl(
-        methodClosure(Class:ClassType, 'ListWrap(Params:List{K}), staticCT, _, Body:K)
+        methodClosure(Class:ClassType, 'ListWrap(Params:List{K}), staticCT, _,methodRT, noValue, Body:K)
             :: methodType(_, T:Type),
         _,
         'ListWrap(ParamValues:List{K})
@@ -625,21 +603,21 @@ rule [invokeImplStatic]:
     <env> Env:Map => . </env>
 when isKResult(ParamValues)
 
-rule [invokeConstrClosure]:
+rule [invokeConstructor]:
     <k>
-      invokeImpl( constrClosure(Class:ClassType, 'ListWrap(Params:List{K}), Acc:AccessMode, FirstLine:K, Body:K)
-          :: MT:MethodType, OL:Int, K:K
+      invokeImpl(
+        methodClosure(
+          Class:ClassType, _,_,_,
+          constructorRT => methodRT,
+          FirstLine:K => noValue,
+          Body:K => FirstLine
+                  ~>  #if getKLabel(FirstLine) ==KLabel 'AltConstrInv
+                        #then .K
+                        #else freshEnv(IInit)
+                      #fi
+                  ~> Body
+        )::_, _,_
       )
-      => invokeImpl(
-            methodClosure(Class, 'ListWrap(Params), instanceCT, Acc,
-              FirstLine
-              ~>  #if getKLabel(FirstLine) ==KLabel 'AltConstrInv
-                    #then .K
-                    #else freshEnv(IInit)
-                  #fi
-              ~> Body
-            ) :: MT, OL, K
-         )
       ...
     </k>
     <classType> Class </classType>
