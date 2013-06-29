@@ -1,9 +1,9 @@
 /*
-06. Method inheritance.
+Method inheritance.
   - Three classes. A < B < C. A{f()} B{g()} C{h()} C c; c.f(); c.g(); c.h();
 */
 
-public class method_06_inheritance {
+public class method_21_inheritance {
 
   public static void main(String[] args) {
     C c = new C();

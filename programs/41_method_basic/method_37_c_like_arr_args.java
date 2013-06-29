@@ -1,6 +1,6 @@
 // Method with c-like array arguments. Three such arguments.
 
-public class method_12_c_like_arr_args {
+public class method_37_c_like_arr_args {
   public static void main(String[] args) {
     new A().f(
       new int[]{1,2,3},

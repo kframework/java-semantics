@@ -1,5 +1,5 @@
 /*
-05. Argument conversion.
+Argument conversion.
   Method with four arguments, arguments 2 and 3 needs conversion.
   formal types: int, int, Object, String
   actual method call types:
@@ -7,7 +7,7 @@
     - int, int, null, null
 */
 
-public class method_05_arg_conv {
+public class method_15_arg_conv {
 
   public static void main(String[] args) {
     new test();

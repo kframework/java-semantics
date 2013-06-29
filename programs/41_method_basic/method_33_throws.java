@@ -1,9 +1,8 @@
 /*
-01. Simple method test.
-  - call a method, no args, return type void, printing a value.
+Throws clause. A simple method with throws. Null semantics.
 */
 
-public class method_01_return_void {
+public class method_33_throws {
 
   public static void main(String[] args) {
     new main();
@@ -16,7 +15,7 @@ class main {
     f();
   }
 
-  void f() {
+  void f() throws RuntimeException {
     System.out.println("f()");
   }
 }

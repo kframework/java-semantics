@@ -1,8 +1,8 @@
 /*
-08. Throws clause. A simple method with throws. Null semantics.
+Final method. A simple final method. Null semantics.
 */
 
-public class method_08_throws {
+public class method_34_final {
 
   public static void main(String[] args) {
     new main();
@@ -15,7 +15,7 @@ class main {
     f();
   }
 
-  void f() throws RuntimeException {
+  final void f() {
     System.out.println("f()");
   }
 }

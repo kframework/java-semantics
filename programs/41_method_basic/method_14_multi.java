@@ -1,11 +1,11 @@
 /*
-04. Multiple methods, multiple argument types/numbers:
+Multiple methods, multiple argument types/numbers:
   - method negation(one arg),
   - method max(two args),
   - method arrayLen(one arg)
 */
 
-public class method_04_multi {
+public class method_14_multi {
 
   public static void main(String[] args) {
     new main();

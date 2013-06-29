@@ -9,7 +9,7 @@ class C {
   }
 }
 
-class method_10_this_explicit {
+class method_35_this_explicit {
   public static void main(String[] args) {
     System.out.println((new C()).m1());
     System.out.println("Done!");

@@ -1,5 +1,5 @@
 /*
-07. Overriding, polymorphism.
+Overriding, polymorphism.
   Three classes. A < B < C.
     - A{f() g() h() m()}
     - B{g() h()}
@@ -8,7 +8,7 @@
   All six references call all four methods.
 */
 
-public class method_07_overriding {
+public class method_31_overriding {
 
   public static void main(String[] args) {
     A a = new A();

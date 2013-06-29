@@ -1,5 +1,5 @@
 /*
-Overriding. Test that an unqualified call to an overridded method
+Overriding. Test that an unqualified call to an overridden method
   calls the method from the actual object type.
 */
 
@@ -13,7 +13,7 @@ class c2 extends c1 {
   int m2() { return 2; }
 }
 
-public class method_071_overriding_2 {
+public class method_32_overriding_2 {
   public static void main(String[] args) {
     c1 o1 = new c1();
     c2 o2 = new c2();

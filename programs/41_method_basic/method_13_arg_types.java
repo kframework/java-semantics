@@ -1,10 +1,10 @@
 /*
-03. Testing method arguments:
+Testing method arguments:
   - int, bool, String, RuntimeException, int[].
   Print the arg inside method.
 */
 
-public class method_03_arg_types {
+public class method_13_arg_types {
 
   public static void main(String[] args) {
     new main();

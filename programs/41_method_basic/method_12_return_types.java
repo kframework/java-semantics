@@ -1,12 +1,12 @@
 /*
-02. Test method return type. Call a method returning:
+Test method return type. Call a method returning:
   - int, bool, String, RuntimeException, int[].
   - RuntimeException return, converted to Object. (return type conversion)
   - RuntimeException return, ignored. Called using Expression statement.
   Print the result.
 */
 
-public class method_02_return_types {
+public class method_12_return_types {
 
   public static void main(String[] args) {
     new main();

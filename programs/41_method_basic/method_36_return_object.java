@@ -21,7 +21,7 @@ class G {
   void print2() { System.out.println(a); }
 }
 
-public class method_11_return_object {
+public class method_36_return_object {
   public static void main(String[] args) {
     ((new I(1)).m1()).print2();
     System.out.println("Done!");
