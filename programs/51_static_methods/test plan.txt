@@ -15,9 +15,10 @@ Part 6. Implementation of console read/out and others through static members.
 102. Static method call through Class.f() expression, Inside f(),
   another static method call, Class.g()
 103. Static method call unqualified, from an instance method.
-104. Two static and two instance methods in one class. Call all unqualified
+104. First static method is called qualified. It calls another unqualified static method.
+105. Two static and two instance methods in one class. Call all unqualified
   in an instance context.
-105. Static method lookup, all the forms:
+106. Static method lookup, all the forms:
   6 possible expressions:
   - unqualified in static context
   - unqualified in instance context
@@ -29,18 +30,18 @@ Part 6. Implementation of console read/out and others through static members.
   - method defined in the target type/ current class
   - method inherited. Test all possibilities.
 
-106. Static method overloading, all versions of the method in one class.
-107. Static methods access modes - test just public vs private access mode
+107. Static method overloading, all versions of the method in one class.
+108. Static methods access modes - test just public vs private access mode
   in one compilation unit.
-108. Static protected access mode. Test that a static protected method can be
+109. Static protected access mode. Test that a static protected method can be
   accessed from a subclass in a different package,
   using an instance qualifier, while a non-static protected cannot.
-109. Static method versions from subclasses are not accessible,
+110. Static method versions from subclasses are not accessible,
   even when calling them through instance qualifier.
   B < A, B.f() <sig A.f(), call to (A)B.f() have no access to B.f().
-110. Static methods are not overwritten. B < A, A.f() =sig B.f().
+111. Static methods are not overwritten. B < A, A.f() =sig B.f().
   Call to (A)B.f() calls A.f().
-111. Static methods hiding.
+112. Static methods hiding.
   A < B, A.f() =sig B.f(). Other variations by need.
   6 possible expressions:
   - unqualified in static context
@@ -55,9 +56,9 @@ Part 6. Implementation of console read/out and others through static members.
 
   Method hiding is described in: $8.4.8.2, $8.4.8.3
 
-112. Hiding and overloading independence. A < B. A.f(int), A.f(long), B.f(int).
+113. Hiding and overloading independence. A < B. A.f(int), A.f(long), B.f(int).
   From B, A.f(long) is visible.
-113. Overloading through a mix of static and instance methods.
+114. Overloading through a mix of static and instance methods.
   Call from instance context. All methods are accessible.
   Class A:
     - f(byte)
@@ -70,7 +71,7 @@ Part 6. Implementation of console read/out and others through static members.
       - instance of A,
     with all param types.
 
-114. Overloading through a mix of static and instance methods.
+115. Overloading through a mix of static and instance methods.
   Call from static context. Only static methods are accessible.
   Class A:
     - f(byte)
@@ -82,7 +83,7 @@ Part 6. Implementation of console read/out and others through static members.
       - class name A,
     with param types: short, long. Other ones will give compile-time error.
 
-115. Overloading through a mix of static and instance methods.
+116. Overloading through a mix of static and instance methods.
   Inheritnace. Call through super.f()
   Class A:
     - f(int)
@@ -93,14 +94,19 @@ Part 6. Implementation of console read/out and others through static members.
     Call via:
       - super.f() inside B, with all param types.
 
-116. Overwriting vs hiding.
+117. Overwriting vs hiding.
   A: f(), static g().
   B < A: f(), static g(). Call both from (A)a, (B)b, (B)a.
 
-117. Unqualified static method in instance initializing contexts.
+118. Unqualified static method in instance initializing contexts.
   Access a static method through unqualified expression in:
   - instance field initializer
   - instance initializer
   - super() call
   - constructor
 
+119. Static method call qualified with a null reference and an argument.
+  No exception occurs, the method is executed.
+
+120. Static method call qualified with a traced object creation.
+  Even if qualifier value is not used by the method call, it is still evaluated.

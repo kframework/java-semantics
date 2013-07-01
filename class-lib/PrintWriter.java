@@ -1,9 +1,17 @@
 package java.io;
 
 public class PrintWriter {
-    public native void print(Object o);
+    public native void print(String s);
     public native void print(long l);
     public native void print(boolean b);
+
+    public void print(Object o) {
+      if (o == null) {
+        print("null");
+      } else {
+        print(o.toString());
+      }
+    }
 
     public void println() {
       print("\n");

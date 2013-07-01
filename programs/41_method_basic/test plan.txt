@@ -61,3 +61,18 @@ Part 3. Overriding, polymorphism.
   Class A: f(int a[]), g(int[] a)
   Class B: f(int[] a), g(int a[])
   Test that polymorphism works for both.
+
+Part 4. Order of evaluation.
+
+41. Method qualifier is evaluated prior to arguments.
+    Call a one-arg method with a traced qualifier and traced argument.
+
+42. When evaluation of the qualifier throws an exception, the argument is not evaluated.
+    Call a one-arg method with traced argument, on a constructor throwing an exception.
+    Catch the exception.
+
+43. When method qualifier is null, arguments are still evaluated. Only after that NPE is thrown.
+    Call a one-arg method with traced argument, on a null reference. Catch the exception.
+
+44. Method arguments are evaluated left-to-right.
+    Call a method with 5 arguments, all different and traced.

@@ -13,17 +13,7 @@ module JAVA-API-CORE
 
 //@ For integers and strings, print their value. For classes, print class type.
 
-rule [system-out-print-argConvert]:
-    invokeImpl(
-      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_)) :: methodType(sig(MethodName:Id, _),_),_,
-      'ListWrap(KR:KResult => toString(KR))
-    )
-when
-            (Id2String(MethodName) ==String "print")
-    andBool (       (typeOf(KR) =/=K rtString)
-             orBool (KR ==K (null::rtString)))
-
-rule [system-out-print]:
+rule [system-out-print-string]:
     <k>
       invokeImpl(
         methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
@@ -32,6 +22,24 @@ rule [system-out-print]:
       ...
     </k>
     <out>... . => ListItem(Str) </out>
+when
+    Id2String(MethodName) ==String "print"
+
+//Is only used for primitive type arguments. Object arguments are converted by java code inside the class PrintWriter.
+rule [system-out-print-convert]:
+    invokeImpl(
+      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
+      'ListWrap(RV:RawVal :: T:Type => toString(RV::T))
+    )
+when
+    (Id2String(MethodName) ==String "print") andBool (T =/=K rtString)
+
+//system-out-print-convert heat argument
+context
+    invokeImpl(
+      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
+      'ListWrap(HOLE)
+    )
 when
     Id2String(MethodName) ==String "print"
 
@@ -65,7 +73,7 @@ when
 
 rule [object-getClass-on-String]:
     invokeImpl(
-      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), rtString,
+      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), Str::rtString,
       'ListWrap(.List{K})
     ) => 'Lit('Class(rtString))
 when
@@ -73,11 +81,19 @@ when
 
 rule [object-getClass-on-array]:
     invokeImpl(
-      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), arrayOf T:Type,
+      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), arrayRef(_,_,_)::ArrT:Type,
       'ListWrap(.List{K})
-    ) => 'Lit('Class(arrayOf T))
+    ) => 'Lit('Class(ArrT))
 when
     Id2String(MethodName) ==String "getClass"
+
+rule [object-toString-on-String]:
+    invokeImpl(
+      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), Str::rtString,
+      'ListWrap(.List{K})
+    ) => Str::rtString
+when
+    Id2String(MethodName) ==String "toString"
 
 //hashCode will always return 0 for now
 rule [object-hashCode]:
@@ -96,60 +112,24 @@ rule [object-hashCode]:
 when
     Id2String(MethodName) ==String "hashCode"
 
+//\subsection{Array clone}
+
 rule [elab-array-clone]:
     lookupMethod( arrayOf T:Type, MethodName:Id,
       _, noValue, true, QualTE:TypedExp, .List{K}
-    ) => elabRes(methodInvokeRuntime(arrayOf T:Type, sig(MethodName, types(.List{K})), QualTE, .List{K}) :: objectClass)
+    ) => elabRes(methodInvokeRuntime(arrayOf T:Type, sig(MethodName, types(.List{K})), QualTE, .List{K}, instanceCT) :: objectClass)
 when
     Id2String(MethodName) ==String "clone"
 
 rule [methodInvokeRuntime-array-clone]:
     methodInvokeRuntime(_, sig(MethodName:Id, _),
-        arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT:Type, _
+        arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT:Type, _,_
     )::_
     => arrayCopy(
         arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT,
         newArrayAlloc(ElemT, 'ListWrap(Len::int), undefined :: ElemT)
       )
 when Id2String(MethodName) ==String "clone"
-
-rule toString(Class:ClassType) => fullyQualifiedClassName(Class)
-
-//todo this function will be obsolete once Class itself will be fully qualified
-syntax K ::= "fullyQualifiedClassName" "(" ClassType ")"
-
-rule [ClassNameTopLevelWithPackage]:
-    <k>
-      fullyQualifiedClassName(class ClassId:Id)
-      => Id2String(ClassId)
-      ...
-    </k>
-    <classType> class ClassId </classType>
-    <enclosingClass> noClass </enclosingClass>
-when substrString(Id2String(ClassId), 0, 1) =/=String "."
-
-rule [ClassNameTopLevelWithDefaultPackage]:
-    <k>
-      fullyQualifiedClassName(class ClassId:Id)
-      => substrString(Id2String(ClassId), 1, lengthString(Id2String(ClassId)) -Int 1)
-      ...
-    </k>
-    <classType> class ClassId </classType>
-    <enclosingClass> noClass </enclosingClass>
-when substrString(Id2String(ClassId), 0, 1) ==String "."
-
-rule [ClassNameInner]:
-    <k>
-      fullyQualifiedClassName(class ClassId:Id)
-      => 'Plus(
-            fullyQualifiedClassName(class OuterClassId),,
-            ("$" +String Id2String(SimpleName))::rtString
-         ) :: rtString
-      ...
-    </k>
-    <classType> class ClassId </classType>
-    <enclosingClass> class OuterClassId:Id </enclosingClass>
-    <typeNamesMap>... _ |-> mapWrap(SimpleName:Id |-> class ClassId _:Map) ...</typeNamesMap>
 
 //construct to copy content of an array to another
 //after copy, the term is rewritten into the destination array
@@ -186,5 +166,68 @@ when
 
 rule [storeCopyDiscard]:
     storeCopy(_, _, 0) => .
+
+//\subsection{Class literal}
+
+rule [ClassLiteralInstantiate]:
+    <k>
+        (. => saveClassLiteral(T, 'NewInstance(
+                'None(.List{K}),,
+                class String2Id("java.lang.Class"),,
+                'ListWrap(toString(T)),,
+                'None(.List{K})
+              ))
+        )
+        ~> 'Lit('Class(T:Type))::_
+      ...
+    </k>
+    <classLiteralsMap> CLMap:Map </classLiteralsMap>
+when notBool T in keys(CLMap)
+
+// wraps a newly created java.lang.Class object
+syntax K ::= "saveClassLiteral" "(" Type  // The type for this class literal is being instantiated
+                                "," K     // The class literal instantiation expression
+                                ")"         [strict(2)]
+
+rule [saveClassLiteral]:
+    <k> saveClassLiteral(T:Type, TV:TypedVal) => . ...</k>
+    <classLiteralsMap> CLMap:Map => CLMap[TV/T] </classLiteralsMap>
+
+rule [ClassLiteral]:
+    <k> 'Lit('Class(T:Type))::_ => TV ...</k>
+    <classLiteralsMap>... T |-> TV:TypedVal ...</classLiteralsMap>
+
+rule [ClassNameTopLevelWithPackage]:
+    <k>
+      toString(class ClassId:Id)
+      => Id2String(ClassId)
+      ...
+    </k>
+    <classType> class ClassId </classType>
+    <enclosingClass> noClass </enclosingClass>
+when substrString(Id2String(ClassId), 0, 1) =/=String "."
+
+rule [ClassNameTopLevelWithDefaultPackage]:
+    <k>
+      toString(class ClassId:Id)
+      => substrString(Id2String(ClassId), 1, lengthString(Id2String(ClassId)) -Int 1)
+      ...
+    </k>
+    <classType> class ClassId </classType>
+    <enclosingClass> noClass </enclosingClass>
+when substrString(Id2String(ClassId), 0, 1) ==String "."
+
+rule [ClassNameInner]:
+    <k>
+      toString(class ClassId:Id)
+      => 'Plus(
+            toString(class OuterClassId),,
+            ("$" +String Id2String(SimpleName))::rtString
+         ) :: rtString
+      ...
+    </k>
+    <classType> class ClassId </classType>
+    <enclosingClass> class OuterClassId:Id </enclosingClass>
+    <typeNamesMap>... _ |-> mapWrap(SimpleName:Id |-> class ClassId _:Map) ...</typeNamesMap>
 
 endmodule

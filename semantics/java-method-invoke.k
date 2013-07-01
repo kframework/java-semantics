@@ -122,7 +122,7 @@ syntax K ::= "lookupMethod" "(" RefType //target ref class
                             "," Id        //method name
                             "," Bool      //IsQ - isQualified
                             "," K         //Evaluates to the signature to be called, or noValue if no signature was found yet
-                                          //Sig format: mapWrap(Sig |-> Type)
+                                          //Sig format: mapWrap(Sig |-> MethodTV)
                             "," Bool      //SigSearched: true if Sig was already searched for the current class, false otherwise.
                                           // Starts with false.
                             "," K         //TypedExp - qualifier expression, or noValue for class qualifiers.
@@ -165,14 +165,16 @@ rule [lookupMethodLookupSigGeneralRef]:
 when
     (notBool (isClassType(QualT) ==K true)) andBool (objectClass ==K ObjT)
 
-rule [lookupMethodInClassRefLookupClosure]:
+//If resolved method is static, we cannot insert in the construct the actual method body,
+//because this body might not be elaborated.
+rule [lookupMethodSigFound]:
     lookupMethod(
       QualT:RefType,
       _,
       _,
-      mapWrap(Sig:Signature |-> RetT:Type),
+      mapWrap(Sig:Signature |-> methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(_, RetT:Type)),
       true, QualK:K, ParamExps:List{K}
-    ) => elabRes(methodInvokeRuntime(QualT, Sig, QualK, ParamExps) :: RetT)
+    ) => elabRes(methodInvokeRuntime(QualT, Sig, QualK, ParamExps, CT) :: RetT)
 
 rule [lookupMethodGotoEnclosing]:
     <k>
@@ -207,9 +209,9 @@ rule getTypesFromValues(TKs:List{K}, _::T:Type,, VKs:List{K})
      => getTypesFromValues(TKs,,T, VKs)
 rule getTypesFromValues(TKs:List{K}, .List{K}) => types(TKs)
 
-//searches for the correct method signature to use
-//when calling a given MethodName with the given argument types
-//computes into a signature
+//Search for the correct method signature to use
+//when calling a given MethodName with the given argument types.
+//computes mapWrap(Sig -> MethodTV)
 syntax K ::= "lookupSignature" "("  Id     // MethodName
                                ","  K      // Computes into Types - argument types
                                ","  Map    // Env - methods environment Map[sig -> Class]
@@ -239,7 +241,7 @@ rule [lookupSignatureMain]:
               isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
                   DecClass, IsQ, Class)
             ) :: bool,,
-            mapWrap(sig(MethodName, SigTs) |-> getMethodReturnType(TV)),,
+            mapWrap(sig(MethodName, SigTs) |-> TV),,
             OldMethodDecRecord
           ),
         Class:ClassType
@@ -320,10 +322,17 @@ syntax K ::= "methodInvokeRuntime" "(" RefType    //Compile-time target class, o
                                    "," Signature  //Method signature
                                    "," K          //Qualifier expression, if any, or noValue if it is static invocation
                                    "," List{K}    //Arguments, each of type TypedExp
+                                   "," ContextType  //instanceCT or staticCT
                                    ")"
 
 //Evaluate the qualifier
-context methodInvokeRuntime(_,_, HOLE, _)::_
+//JLS $15.12.4.1 - Compute Target Reference
+context methodInvokeRuntime(_,_, HOLE, _,_)::_
+
+//todo a test for expression order exists, but is unable expose the error in this rule.
+//Waiting for an alternative from K guys.
+//JLS $15.12.4.2 - Evaluate Arguments
+context methodInvokeRuntime(_,_,_:KResult, (_,,HOLE,,_), _)::_
 
 rule [methodInvokeRuntimeInstanceOnClass]:
     <k>
@@ -334,63 +343,83 @@ rule [methodInvokeRuntimeInstanceOnClass]:
             ListItem((Class:ClassType, BI:BagItem))
             ...
           </envStack>)::_,
-          ParamExps:List{K}
+          ParamVals:List{K}, instanceCT
       )::_
       => invokeImpl(
         lookupOverloadedMethod(Sig, getClassList(Rest ListItem((Class, BI))), mapWrap(.Map), noValue),
-        OL, 'ListWrap(ParamExps)
-      )
-      ...
+        OL, 'ListWrap(ParamVals)
+      )      ...
     </k>
     <classType> Class </classType>
     <metaType> classMetaT </metaType>
+when
+    isKResult(ParamVals)
 
 rule [methodInvokeRuntimeStaticOnClass]:
-    methodInvokeRuntime(Class:ClassType, Sig:Signature, noValue, ParamExps:List{K})::_
+    methodInvokeRuntime(Class:ClassType, Sig:Signature, _:KResult, ParamVals:List{K}, staticCT)::_
     => invokeImpl(
       lookupOverloadedMethod(Sig, Class, mapWrap(.Map), noValue),
-      noValue, 'ListWrap(ParamExps)
+      noValue, 'ListWrap(ParamVals)
     )
+when
+    isKResult(ParamVals)
 
 rule [methodInvokeRuntimeInstanceOnInterface]:
     <k>
       methodInvokeRuntime(Class:ClassType, Sig:Signature,
         objectClosure(OL:Int,
           <envStack>
-          ListItem((ActualClass:ClassType, _))
-          ...
-        </envStack>)::_,
-          ParamExps:List{K}
+            ListItem((ActualClass:ClassType, _))
+            ...
+          </envStack>)::_,
+        ParamVals:List{K}, instanceCT
       )::_
       => invokeImpl(
         lookupOverloadedMethod(Sig, ActualClass, mapWrap(.Map), noValue),
-        OL, 'ListWrap(ParamExps)
-      )
-      ...
+        OL, 'ListWrap(ParamVals)
+      )      ...
     </k>
     <classType> Class </classType>
     <metaType> interfaceMetaT </metaType>
+when
+    isKResult(ParamVals)
 
 rule [methodInvokeRuntimeOnString]:
     methodInvokeRuntime(_, Sig:Signature,
         Str:String::_,
-        ParamExps:List{K}
+        ParamVals:List{K}, _
     )::_
     => invokeImpl(
       lookupOverloadedMethod(Sig, objectClass, mapWrap(.Map), noValue),
-      rtString, 'ListWrap(ParamExps)
+      Str::rtString, 'ListWrap(ParamVals)
     )
+when
+    isKResult(ParamVals)
 
 rule [methodInvokeRuntimeOnArray]:
     methodInvokeRuntime(_, sig(MethodName:Id, Ts:Types),
-        arrayRef(ArrT:RefType, _,_)::_,
-        ParamExps:List{K}
+        arrayRef(ArrT:RefType, L:Int, M:Int)::_,
+        ParamVals:List{K}, _
     )::_
     => invokeImpl(
       lookupOverloadedMethod(sig(MethodName, Ts), objectClass, mapWrap(.Map), noValue),
-      ArrT, 'ListWrap(ParamExps)
+      arrayRef(ArrT, L, M)::ArrT, 'ListWrap(ParamVals)
     )
-when Id2String(MethodName) =/=String "clone"
+when
+            (Id2String(MethodName) =/=String "clone")
+    andBool isKResult(ParamVals)
+
+
+rule [methodInvokeRuntimeOnNull]:
+    methodInvokeRuntime(_,_, null::_, ParamVals:List{K}, instanceCT)::_
+    =>  'Throw('NewInstance(
+          'None(.List{K}),,
+          class String2Id("java.lang.NullPointerException"),,
+          'ListWrap( null ),,
+          'None(.List{K})
+        ))
+when
+    isKResult(ParamVals)
 
 rule [superMethodEval]:
     <k>
@@ -403,15 +432,6 @@ rule [superMethodEval]:
     <contextType> instanceCT </contextType>
     <envStack>... ListItem((Class, _)) EStack:List </envStack>
     <classType> Class </classType>
-
-rule [methodInvokeRuntimeOnNull]:
-    methodInvokeRuntime(_,_, null::_, _)::_
-    =>  'Throw('NewInstance(
-          'None(.List{K}),,
-          class String2Id("java.lang.NullPointerException"),,
-          'ListWrap( null ),,
-          'None(.List{K})
-        ))
 
 //Converts a list of ListItem((Class, BI) into List{K} with elements of sort ClassType
 syntax K ::= "getClassList" "(" List ")"
@@ -510,19 +530,12 @@ syntax K ::= "getMethConsClosureClass" "(" TypedVal ")"
 rule getMethConsClosureClass( methodClosure(Class:ClassType, _,_,_,_,_,_) ::_ ) => Class
         [structural]
 
-//returns Types - argument types for the given typed methodClosure.
-syntax K ::= "getArgTypes" "(" TypedVal ")"                   [function]
-rule getArgTypes(_ :: methodType(sig(_, Ts:Types), _)) => Ts
-
 syntax K ::= "invokeImpl" "(" K   //lookupOverloadedMethod statement, evaluates to typed methodClosure
                           "," K   //OL - object location, target type for methods on non-object refs,
                                   // or noValue for static methods
                           "," K   //evaluates to 'ListWrap(ParamValues:List{KResult})
                           ")"
         [strict(1)]
-
-//todo test expressions order
-context invokeImpl(_, _,'ListWrap(_:List{K},,HOLE,,_:List{K}))
 
 rule [invokeImplInstance]:
     <k>
@@ -562,12 +575,8 @@ rule [invokeImplInstance]:
       OL |-> objectClosure(NewOL:Int, Obj:Bag) :: _
       ...
     </store>
-when isKResult(ParamValues) andBool (getKLabel(Body) =/=KLabel 'NoMethodBody)
+when getKLabel(Body) =/=KLabel 'NoMethodBody
 
-//todo report bug: if we remove parentheses around (bindto Params, ParamValues)
-//we'll get compile-time error
-//test with the latest version of K
-//the problem is present in v8518. v8620 compiles but cannot execute the definition.
 rule [invokeImplStatic]:
     <k>
       invokeImpl(
@@ -576,7 +585,7 @@ rule [invokeImplStatic]:
         _,
         'ListWrap(ParamValues:List{K})
       ) ~> K:K
-       => staticInit(Class) ~> (bindto Params, ParamValues) ~> Body ~> 'Return('None(.List{K}))
+       => staticInit(Class) ~> bindto Params, ParamValues ~> Body ~> 'Return('None(.List{K}))
     </k>
     <control>
       <stack>
@@ -601,7 +610,6 @@ rule [invokeImplStatic]:
       C:Bag
     </control>
     <env> Env:Map => . </env>
-when isKResult(ParamValues)
 
 rule [invokeConstructor]:
     <k>
