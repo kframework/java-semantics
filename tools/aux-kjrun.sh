@@ -17,9 +17,17 @@ SEMANTICS_DIR=$TOOLS_DIR/../semantics
 
 PARSER_CMD="aux-kjparser.sh $WORK_DIR $JAVA_FILE"
 
+if  [[ $BASE_JAVA_FILE == mc* ]] ;
+then
+KRUN_CMD="krun --parser=cat \
+  --compiled-def=\"$SEMANTICS_DIR/java-compiled.maude\" \
+  --main-module=JAVA -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\" --search-final $KAST_FILE | grep \"Solution\""
+
+else
 KRUN_CMD="krun --parser=cat \
   --compiled-def=\"$SEMANTICS_DIR/java-compiled.maude\" \
   --main-module=JAVA --output-mode=none -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\" $KAST_FILE"
+fi
 
 eval $PARSER_CMD >/dev/null
 cd $SEMANTICS_DIR

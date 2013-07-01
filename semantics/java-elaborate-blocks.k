@@ -188,18 +188,20 @@ rule [elabParamsEnd]:
 
 /*@ \section{Elaboration of code blocks} */
 
-//todo if we make this rule structural, I expect many things to go wrong.
-//It should make possible heating of components inside TypedExp.
-//Actually that's wrong - TypedExp will never be wrapped inside elab() -
-//in the worst case it will be wrapped inside elab(), then unwrapped by [elabHeatNaked].
+//Heating arguments for both expression and statement terms.
+//The attribute [strictness-transition] is used as transition attribute for testing strictness.
+//This is a rule that may lead to unexpected nondeterminism if it is wrongly implemented.
+//In order to expose incorrect nondeterminism we need to modelcheck a program that exposes the nondeterminism.
 rule [elabHeatDefault]:
     (. => elab(K)) ~> elab(KL:KLabel(HeadKs:List{K},, (K:K => CHOLE),, TailKs:List{K}))
 when
             notBool customElabChildren(KL)
     andBool notBool isElab(K)
     andBool notBool isElabNaked(KL(HeadKs,,K,,TailKs))
-    //todo test that lacking this leads to problems
+    //todo test that lacking this leads to problems - if KL == 'ListWrap of statements.
+    //For this we need state space search on sumInWhile.
     //andBool isElab(HeadKs)
+    [strictness-transition]
 
 //True if children of this label should not be automatically heated for elaboration.
 syntax K ::= "customElabChildren" "(" KLabel ")"                [function]
