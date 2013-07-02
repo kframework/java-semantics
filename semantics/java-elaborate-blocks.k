@@ -198,9 +198,7 @@ when
             notBool customElabChildren(KL)
     andBool notBool isElab(K)
     andBool notBool isElabNaked(KL(HeadKs,,K,,TailKs))
-    //todo test that lacking this leads to problems - if KL == 'ListWrap of statements.
-    //For this we need state space search on sumInWhile.
-    //andBool isElab(HeadKs)
+    andBool isElab(HeadKs)    //Forces elaboration left-to-right. Required when KL == 'ListWrap of statements.
     [strictness-transition]
 
 //True if children of this label should not be automatically heated for elaboration.

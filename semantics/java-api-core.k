@@ -17,7 +17,7 @@ rule [system-out-print-string]:
     <k>
       invokeImpl(
         methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
-        'ListWrap(Str:String :: rtString)
+        'ListWrap(Str:String :: _)
       ) => nothing::void
       ...
     </k>
@@ -32,7 +32,7 @@ rule [system-out-print-convert]:
       'ListWrap(RV:RawVal :: T:Type => toString(RV::T))
     )
 when
-    (Id2String(MethodName) ==String "print") andBool (T =/=K rtString)
+    (Id2String(MethodName) ==String "print") andBool notBool (isString(RV) ==K true)
 
 //system-out-print-convert heat argument
 context

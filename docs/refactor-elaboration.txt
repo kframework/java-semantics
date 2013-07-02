@@ -155,7 +155,7 @@ General guidelines for elaboration and execution interoperability:
 6.7.cancel. Make the elaboration of expressions naked. This way we can use strictness rules for expressions
   in the elaboration phase, and context rules in execution phase.
 
-7. Resolve the remaining todo-s.
+7.ok. Resolve the remaining todo-s.
 
 8.cancel. Invert the condition for labels elaborated by default:
   Right now we specify the labels that should not be elaborated by default, and do default elaboration
