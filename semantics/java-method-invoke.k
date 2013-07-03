@@ -130,6 +130,9 @@ syntax K ::= "lookupMethod" "(" RefType //target ref class
                             ")"
         [strict(4)]
 
+//todo K 10341 it looks like [strict] above don't work
+context lookupMethod(_,_,_,HOLE,_,_,_)
+
 rule [lookupMethodLookupSig]:
     <k>
       lookupMethod(
@@ -455,6 +458,11 @@ syntax K ::= "lookupOverloadedMethod" "("
                                           // or noValue if no applicable method
                                           // was found yet
                             ")"           [strict(1,3,4)]
+
+//todo K 10341 it looks like [strict] above don't work
+context lookupOverloadedMethod(HOLE,_,_,_)
+context lookupOverloadedMethod(_,_,HOLE,_)
+context lookupOverloadedMethod(_,_,_,HOLE)
 
 rule [lookupMethodSigKnownFirstCandidate]:
     <k>

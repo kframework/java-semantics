@@ -142,6 +142,10 @@ syntax K ::= "saveImports"  "(" ClassType //Class - the actual class
                                           //the desired Imports map
                             ")"   [strict(5,6)]
 
+//todo K 10341 it looks like [strict] above don't work
+context saveImports(_,_,_,_,HOLE,_)
+context saveImports(_,_,_,_,_,HOLE)
+
 //Compute the ClassType and the Package representing the given class
 rule [saveImportsComputePackage]:
     saveImports(Class:ClassType, _,_,

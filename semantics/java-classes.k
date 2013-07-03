@@ -19,9 +19,6 @@ module JAVA-CLASSES
     imports JAVA-STATIC-INIT
     imports JAVA-VAR-LOOKUP
 
-//@ \subsection{Unused Labels}
-syntax KLabel ::= "'Native"
-
 /*@ \section{Object and method closures}
 The only change to untyped KOOL's values is that closures are now typed
 (their last argument holds their type). */

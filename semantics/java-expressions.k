@@ -123,12 +123,10 @@ rule                  'Remain(_::_     ,, 0::_)::_
       ))
 
 // ++E
-context 'PreIncr(HOLE => lvalue(HOLE))::_
 rule /* ++loc(L) => loc(L) = lookup(L) + 1 */
   'PreIncr(loc(L:Int)::NT:NumericType)::NT => 'AssignPlus( loc(L)::NT,, 1::NT )::NT
 
 // --E
-context 'PreDecr(HOLE => lvalue(HOLE))::_
 rule /* --loc(L) => loc(L) = lookup(L) - 1 */
   'PreDecr(loc(L:Int)::NT:NumericType)::NT => 'AssignMinus( loc(L)::NT,, 1::NT )::NT
 
@@ -138,12 +136,10 @@ rule /* + I    */ 'Plus(I:Int :: _) :: ResT:NumericType => normalize( I :: ResT 
 rule /* - I    */ 'Minus(I:Int :: _) :: ResT:NumericType => normalize( (0 -Int I) :: ResT )
 
 // E++
-context 'PostIncr(HOLE => lvalue(HOLE))::_
 rule /* loc(L)++ => (loc(L) = lookup(L) + 1) - 1 */
   'PostIncr(loc(L:Int) :: NT:NumericType)::NT => 'Minus( 'PreIncr(loc(L)::NT)::NT,, 1::NT)::NT
 
 // E--
-context 'PostDecr(HOLE => lvalue(HOLE))::_
 rule /* loc(L)-- => (loc(L) = lookup(L) - 1) + 1 */
   'PostDecr(loc(L:Int) :: NT:NumericType)::NT => 'Plus( 'PreDecr(loc(L)::NT)::NT,, 1::NT)::NT
 
@@ -156,7 +152,6 @@ rule 'Cond(CondExp:TypedExp,, TrueExp:TypedExp,, FalseExp:TypedExp) :: ResT:Type
 Typed KOOL allows to assign subtype instance values to supertype lvalues.
 Assignment operators are seqstrict according to JLS. */
 
-context 'Assign((HOLE => lvalue(HOLE)),,_)::_
 context 'Assign(_:KResult,,HOLE)::_
 
 rule [Assign]:
@@ -167,8 +162,21 @@ rule [AssignUninitialized]:
     <k> (. => staticInit(Class)) ~> 'Assign(loc(L:Int) :: _,, _)::_ ...</k>
     <store>... L |-> uninitialized(Class:ClassType, _) :: _ ...</store>
 
-context KL:KLabel((HOLE => lvalue(HOLE)),, _)::_
-when isCompoundAssignLabel(KL)
+
+rule [expLValueHeat]:
+    (. => lvalue(K)) ~> KL:KLabel((K:K => HOLE),, _)::_
+when
+    (      KL ==KLabel 'PreIncr
+    orBool KL ==KLabel 'PreDecr
+    orBool KL ==KLabel 'PostIncr
+    orBool KL ==KLabel 'PostDecr
+    orBool KL ==KLabel 'Assign
+    orBool isCompoundAssignLabel(KL)
+    )
+    andBool notBool (isKResult(K) ==K true)
+
+rule [expLValueCool]:
+    (KR:KResult => .) ~> KL:KLabel((HOLE => KR),, _)::_
 
 rule [CompoundAssign]:
     KL:KLabel(loc(L:Int) :: T1:Type,, Exp2:K::T2:Type) :: T1:Type

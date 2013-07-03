@@ -1,3 +1,4 @@
+require "java-labels.k"
 require "java-core.k"
 require "java-process-type-names.k"
 require "java-process-comp-units.k"
@@ -18,6 +19,7 @@ require "java-method-invoke.k"
 require "java-api-core.k"
 
 module JAVA
+    imports JAVA-LABELS
     imports JAVA-CORE
     imports JAVA-PROCESS-TYPE-NAMES
     imports JAVA-PROCESS-COMP-UNITS

@@ -83,8 +83,8 @@ when DecLabel ==KLabel 'ClassDec orBool DecLabel ==KLabel 'InterfaceDec
 
 rule [processTypeNamesElemDiscard]:
     processTypeNames((Label:KLabel(_) => .List{K}),,_ ,_)
-when notBool( Label ==KLabel 'ClassDec orBool Label ==KLabel 'InterfaceDec
-              orBool Label ==KLabel 'bodyAsList
+when notBool( (Label ==KLabel 'ClassDec) orBool (Label ==KLabel 'InterfaceDec)
+              orBool (Label ==KLabel 'bodyAsList`(_`)) //todo semantics seems to work without this condition
             )
 
 rule [processTypeNamesDiscard]:

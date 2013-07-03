@@ -5,10 +5,6 @@ module JAVA-PROCESS-CLASSES
     imports JAVA-CORE
     imports JAVA-ELABORATE-BLOCKS
 
-//no semantics for 'Abstract and 'NoMethodBody required
-//existing semantics for methods covers them too
-syntax KLabel ::= "'ThrowsDec" | "'Abstract" | "'NoMethodBody"
-
 syntax K ::= "getContextType" "(" K //'ListWrap(...) - the list of method attributes
                               ")"                           [function]
 

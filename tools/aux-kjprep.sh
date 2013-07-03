@@ -11,15 +11,17 @@ fi
 javaFile=$1
 TOOLS_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
+echo "'ListWrap("
+
 if [ -f $javaFile ];
 then
   java -jar $TOOLS_DIR/../parser/JavaParser.jar $javaFile
-  echo "~>"
+  echo ",,"
 else
   find -P $javaFile -name "*.java" -type f |
   while read FILE; do
     java -jar $TOOLS_DIR/../parser/JavaParser.jar $FILE
-    echo "~>"
+    echo ",,"
   done
 fi
 
@@ -39,7 +41,8 @@ find $TOOLS_DIR/../class-lib -type f \( -name "*java" \) |
     fi
 
     cat $kastFile
-    echo "~>"
+    echo ",,"
   done
 
-echo "."
+echo ".K"
+echo ")"

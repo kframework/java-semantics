@@ -300,6 +300,9 @@ syntax K ::= "arrayInitAlloc" "("
                               ")"
         [strict(1)]
 
+//todo K 10341 it looks like [strict] above don't work
+context arrayInitAlloc(HOLE,_)
+
 rule [arrayInitAlloc]:
     arrayInitAlloc(arrayRef(T:Type, L:Int, Len:Int)::T, InitContent:List{K})
     => arrayInitImpl(T, L, InitContent) ~> arrayRef(T, L, Len)::T
