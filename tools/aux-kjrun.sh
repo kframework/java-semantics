@@ -22,7 +22,7 @@ then
 KRUN_CMD="krun --parser=cat \
   --compiled-def=\"$SEMANTICS_DIR/java-kompiled\" \
   --main-module=JAVA -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\"
-  --search-final $KAST_FILE | grep \"Solution\""
+  --search-final $KAST_FILE | grep \"Solution\" | wc -l"
 
 else
 KRUN_CMD="krun --parser=cat \
