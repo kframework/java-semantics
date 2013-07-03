@@ -31,7 +31,7 @@ Like in untyped KOOL. */
 //todo reconsider after elabration phase will work
 rule [This]:
     <k>
-      'This(.List{K})::Class:ClassType
+      'This(.KList)::Class:ClassType
       => objectClosure(OL, Obj) :: Class
       ...
     </k>
@@ -64,10 +64,10 @@ rule [lookupField]:
 rule [lookupFieldOfNull]:
     lookupField(null::_, _, _)::_
     =>  'Throw('NewInstance(
-          'None(.List{K}),,
+          'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
           'ListWrap( null ),,
-          'None(.List{K})
+          'None(.KList)
         ))
         [structural, anywhere]
 

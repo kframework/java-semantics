@@ -47,7 +47,7 @@ rule [scanner-nextInt]:
     <k>
       invokeImpl(
         methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
-        'ListWrap(.List{K})
+        'ListWrap(.KList)
       ) => I :: int
       ...
     </k>
@@ -59,7 +59,7 @@ rule [object-getClass-on-object]:
     <k>
       invokeImpl(
         methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), OL:Int,
-        'ListWrap(.List{K})
+        'ListWrap(.KList)
       ) => 'Lit('Class(T))
       ...
     </k>
@@ -74,7 +74,7 @@ when
 rule [object-getClass-on-String]:
     invokeImpl(
       methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), Str::rtString,
-      'ListWrap(.List{K})
+      'ListWrap(.KList)
     ) => 'Lit('Class(rtString))
 when
     Id2String(MethodName) ==String "getClass"
@@ -82,7 +82,7 @@ when
 rule [object-getClass-on-array]:
     invokeImpl(
       methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), arrayRef(_,_,_)::ArrT:Type,
-      'ListWrap(.List{K})
+      'ListWrap(.KList)
     ) => 'Lit('Class(ArrT))
 when
     Id2String(MethodName) ==String "getClass"
@@ -90,7 +90,7 @@ when
 rule [object-toString-on-String]:
     invokeImpl(
       methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), Str::rtString,
-      'ListWrap(.List{K})
+      'ListWrap(.KList)
     ) => Str::rtString
 when
     Id2String(MethodName) ==String "toString"
@@ -100,7 +100,7 @@ rule [object-hashCode]:
     <k>
       invokeImpl(
         methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), OL:Int,
-        'ListWrap(.List{K})
+        'ListWrap(.KList)
       ) => NewOL :: int
       ...
     </k>
@@ -116,8 +116,8 @@ when
 
 rule [elab-array-clone]:
     lookupMethod( arrayOf T:Type, MethodName:Id,
-      _, noValue, true, QualTE:TypedExp, .List{K}
-    ) => elabRes(methodInvokeRuntime(arrayOf T:Type, sig(MethodName, types(.List{K})), QualTE, .List{K}, instanceCT) :: objectClass)
+      _, noValue, true, QualTE:TypedExp, .KList
+    ) => elabRes(methodInvokeRuntime(arrayOf T:Type, sig(MethodName, types(.KList)), QualTE, .KList, instanceCT) :: objectClass)
 when
     Id2String(MethodName) ==String "clone"
 
@@ -172,10 +172,10 @@ rule [storeCopyDiscard]:
 rule [ClassLiteralInstantiate]:
     <k>
         (. => saveClassLiteral(T, 'NewInstance(
-                'None(.List{K}),,
+                'None(.KList),,
                 class String2Id("java.lang.Class"),,
                 'ListWrap(toString(T)),,
-                'None(.List{K})
+                'None(.KList)
               ))
         )
         ~> 'Lit('Class(T:Type))::_

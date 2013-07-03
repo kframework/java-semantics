@@ -10,10 +10,10 @@ syntax K ::= "getContextType" "(" K //'ListWrap(...) - the list of method attrib
 
 rule getContextType('ListWrap('Static(_),,_)) => staticCT   [anywhere]
 
-rule getContextType('ListWrap((KL:KLabel(_) => .List{K}),, _))
+rule getContextType('ListWrap((KL:KLabel(_) => .KList),, _))
 when        KL =/=KLabel 'Static                            [anywhere]
 
-rule getContextType('ListWrap(.List{K}))      => instanceCT [anywhere]
+rule getContextType('ListWrap(.KList))      => instanceCT [anywhere]
 
 //@ \section{Process type list}
 syntax K ::= "processClasses" "("
@@ -238,7 +238,7 @@ rule [MethodDec]:
     <k>
       'MethodDec(
         'MethodDecHead(Modifiers:K,, _:K,, ReturnType:Type,, Name:Id,,
-            'ListWrap(Params:List{K}),, _:K
+            'ListWrap(Params:KList),, _:K
         ),,
         S:K
       )
@@ -252,10 +252,10 @@ when
     isKResult(Params)                       [structural]
 
 rule [AbstractMethodDec]:
-    'AbstractMethodDec(_:K,, Ks:List{K})
+    'AbstractMethodDec(_:K,, Ks:KList)
     =>  'MethodDec(
-          'MethodDecHead('ListWrap('Public(.List{K}),,'Abstract(.List{K})),, Ks),,
-          'NoMethodBody(.List{K})
+          'MethodDecHead('ListWrap('Public(.KList),,'Abstract(.KList)),, Ks),,
+          'NoMethodBody(.KList)
         )
 
 syntax K ::= "storeMethod" "("
@@ -268,30 +268,30 @@ syntax K ::= "storeMethod" "("
                               MethodType      //method closure type: methodType(Signature, ReturnType)
                            ")"
 
-syntax Types ::= "types" "(" List{K} // list of Type elements, when processed
+syntax Types ::= "types" "(" KList // list of Type elements, when processed
                          ")"
 syntax KResult ::= Types
 
-syntax K     ::= "getTypesFromParams" "(" List{K} // list of paramImpl terms,
+syntax K     ::= "getTypesFromParams" "(" KList // list of paramImpl terms,
                                                // to be processed into Type terms
                                       ")"
-               | "getTypesFromParams" "(" List{K} "," //resulting types
-                                          List{K}     //source paramImpl terms
+               | "getTypesFromParams" "(" KList "," //resulting types
+                                          KList     //source paramImpl terms
                                       ")"
 
-rule getTypesFromParams(Ks:List{K}) => getTypesFromParams(.List{K}, Ks:List{K})
+rule getTypesFromParams(Ks:KList) => getTypesFromParams(.KList, Ks:KList)
         [structural, anywhere]
 
-rule getTypesFromParams(Ts:List{K}, paramImpl(T:Type, _),, Ks:List{K})
+rule getTypesFromParams(Ts:KList, paramImpl(T:Type, _),, Ks:KList)
      => getTypesFromParams(Ts,, T, Ks)
         [structural, anywhere]
 
-rule getTypesFromParams(Ts:List{K}, .List{K}) => types(Ts)
+rule getTypesFromParams(Ts:KList, .KList) => types(Ts)
         [structural, anywhere]
 
 rule [storeMethod]:
     <k>
-      storeMethod('ListWrap(Params:List{K}), CT:ContextType, Acc:AccessMode, RT:RoutineType, FirstLine:K, Body:K,
+      storeMethod('ListWrap(Params:KList), CT:ContextType, Acc:AccessMode, RT:RoutineType, FirstLine:K, Body:K,
           methodType(Sig:Signature, ReturnType:Type)) => .
       ...
     </k>
@@ -307,11 +307,11 @@ rule [storeMethod]:
 rule [ConstrDecSuperCallDesugar]:
     <k>
       'ConstrDec(
-        'ConstrDecHead(_:K,, _:K,, Name:Id,, _:List{K}),,
+        'ConstrDecHead(_:K,, _:K,, Name:Id,, _:KList),,
         'ConstrBody(
           (
             'None(_)
-            => 'Some('SuperConstrInv( 'None(.List{K}),, 'ListWrap(.List{K}) ))
+            => 'Some('SuperConstrInv( 'None(.KList),, 'ListWrap(.KList) ))
           ),,
           _:K
         )
@@ -325,7 +325,7 @@ when
 rule [ConstrDecObjectDesugar]:
     <k>
       'ConstrDec(
-        'ConstrDecHead(_:K,, _:K,, Name:Id,, _:List{K}),,
+        'ConstrDecHead(_:K,, _:K,, Name:Id,, _:KList),,
         'ConstrBody(
           (
             'None(_) => 'Some(.K)
@@ -344,7 +344,7 @@ context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, 'ListWrap(_,, HOLE,, _),, _
 
 rule [ConstrDec]:
     <k>
-      'ConstrDec('ConstrDecHead(Modifiers:K,, _:K,, Name:Id,, 'ListWrap(Params:List{K}),, _),,
+      'ConstrDec('ConstrDecHead(Modifiers:K,, _:K,, Name:Id,, 'ListWrap(Params:KList),, _),,
           'ConstrBody(
         'Some(FirstLine:K) ,,S:K))
       => storeMethod('ListWrap(Params),
@@ -366,10 +366,10 @@ context 'FieldDec(_:K,, HOLE,, _)
 
 rule [FieldDecMultiDesugar]:
     (. => 'FieldDec(SomeK,, T,, 'ListWrap(K1))) ~>
-    'FieldDec(SomeK:K,, T:Type,, 'ListWrap((K1:K => .List{K}),, K2:K,, Ks:List{K}))
+    'FieldDec(SomeK:K,, T:Type,, 'ListWrap((K1:K => .KList),, K2:K,, Ks:KList))
 
 rule [FieldDecInstanceInitDesugar]:
-    'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .List{K})) ))
+    'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .KList)) ))
     ~> (. => 'InstanceInit('ExprStm('Assign('Field(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
@@ -381,7 +381,7 @@ rule [FieldDecToLocalVarDec]:
     <cuClass> Class:ClassType </cuClass>
     <classType> Class </classType>
     <fieldDecs>
-      'ListWrap(_,, ( .List{K} => 'LocalVarDec(.K,, T,, 'ListWrap('VarDec(X))) ))
+      'ListWrap(_,, ( .KList => 'LocalVarDec(.K,, T,, 'ListWrap('VarDec(X))) ))
     </fieldDecs>
     <instanceEnv> Env:Map => Env[fieldEntry(Class,X,T, instanceCT)/X] </instanceEnv>
 when
@@ -392,11 +392,11 @@ rule [InstanceInitSave]:
     <k> 'InstanceInit(K:K) => . ...</k>
     <cuClass> Class:ClassType </cuClass>
     <classType> Class </classType>
-    <instanceInit> 'ListWrap(_,,(.List{K} => K)) </instanceInit>
+    <instanceInit> 'ListWrap(_,,(.KList => K)) </instanceInit>
         [structural]
 
 rule [FieldDecStaticInitDesugar]:
-    'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .List{K})) ))
+    'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .KList)) ))
     ~> (. => 'StaticInit('ExprStm('Assign('Field(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
@@ -419,16 +419,16 @@ rule [StaticInitSave]:
     <k> 'StaticInit(K:K) => . ...</k>
     <cuClass> Class:ClassType </cuClass>
     <classType> Class </classType>
-    <staticInit> 'ListWrap(_,,(.List{K} => K)) </staticInit>
+    <staticInit> 'ListWrap(_,,(.KList => K)) </staticInit>
         [structural]
 
 /*@ The parser represents interface fields as 'ConstantDec labels.
   This rule desugars them into 'FieldDec labels and adds the modifiers "public static final".
 */
 rule [ConstantDecDesugar]:
-    'ConstantDec('ListWrap(ModifiersKs:List{K}),, TypeK:K,, VarDecs:K)
+    'ConstantDec('ListWrap(ModifiersKs:KList),, TypeK:K,, VarDecs:K)
     => 'FieldDec(
-          'ListWrap(ModifiersKs,, 'Public(.List{K}),, 'Static(.List{K}),, 'Final(.List{K})),,
+          'ListWrap(ModifiersKs,, 'Public(.KList),, 'Static(.KList),, 'Final(.KList)),,
           TypeK,, VarDecs
         )
 

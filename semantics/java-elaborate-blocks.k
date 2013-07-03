@@ -77,7 +77,7 @@ syntax K ::= "newArrayImpl" "("
                 Type ","  // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
                 K ","     // 'ListWrap(Dims) - array dimensions
                 K ","     // InitExp - expression used to initialize each array element, or .K if arg 4 is specified.
-                List{K}   //InitContent - array initializer, if any, or .K if arg 3 is specified.
+                KList   //InitContent - array initializer, if any, or .K if arg 3 is specified.
                           //From arguments 3 and 4 just one may be specified. This initializer is for the whole array,
                           //not for each element as the previous one.
              ")"
@@ -110,7 +110,7 @@ rule [elabMethodsHeatMethodFirstLine]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <methodDecs>
-      Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:List{K}), CT:ContextType,_,_, (FirstLine:K => CHOLE), Body:K) :: MethodType:Type
+      Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:KList), CT:ContextType,_,_, (FirstLine:K => CHOLE), Body:K) :: MethodType:Type
       ...
     </methodDecs>
     <contextType> _ => CT </contextType>
@@ -128,7 +128,7 @@ rule [elabMethodsHeatMethodBody]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <methodDecs>
-      Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:List{K}), _,_,_, CHOLE => FirstLine, Body:K => CHOLE) :: MethodType:Type
+      Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:KList), _,_,_, CHOLE => FirstLine, Body:K => CHOLE) :: MethodType:Type
       ...
     </methodDecs>
 
@@ -140,7 +140,7 @@ rule [elabMethodsCoolMethod]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <methodDecs>
-      Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:List{K}), _,_,_, FirstLine:K, CHOLE => Body) :: MethodType:Type
+      Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:KList), _,_,_, FirstLine:K, CHOLE => Body) :: MethodType:Type
       ...
     </methodDecs>
 
@@ -178,13 +178,13 @@ rule [elabStaticEnd]:
     <staticInit> CHOLE => K </staticInit>
 
 //Adds params to the <elabEnv>.
-syntax K ::= "elabParams" "(" List{K} ")"
+syntax K ::= "elabParams" "(" KList ")"
 rule [elabParams]:
-    <k> elabParams((paramImpl(T:Type, X:Id) => .List{K}) ,,_) ...</k>
+    <k> elabParams((paramImpl(T:Type, X:Id) => .KList) ,,_) ...</k>
     <elabEnv> ListItem(stEnv((. => X |-> T) _)) ...</elabEnv>
 
 rule [elabParamsEnd]:
-    elabParams(.List{K}) => .K
+    elabParams(.KList) => .K
 
 /*@ \section{Elaboration of code blocks} */
 
@@ -193,7 +193,7 @@ rule [elabParamsEnd]:
 //This is a rule that may lead to unexpected nondeterminism if it is wrongly implemented.
 //In order to expose incorrect nondeterminism we need to modelcheck a program that exposes the nondeterminism.
 rule [elabHeatDefault]:
-    (. => elab(K)) ~> elab(KL:KLabel(HeadKs:List{K},, (K:K => CHOLE),, TailKs:List{K}))
+    (. => elab(K)) ~> elab(KL:KLabel(HeadKs:KList,, (K:K => CHOLE),, TailKs:KList))
 when
             notBool customElabChildren(KL)
     andBool notBool isElab(K)
@@ -243,7 +243,7 @@ when
     isElabIndependent(ElabIndep)
 
 rule [elabDisposeStartDefault]:
-    elab(KL:KLabel(ElabResL:List{K})) => elabDispose(KL(ElabResL))
+    elab(KL:KLabel(ElabResL:KList)) => elabDispose(KL(ElabResL))
 when
             notBool customElabChildren(KL)
     andBool isElab(ElabResL)
@@ -253,7 +253,7 @@ rule [elabDisposeProcess]:
     elabDispose(KL:KLabel(_,, (elabRes(K:K) => K),, _))
 
 rule [elabDisposeEnd]:
-    elabDispose(KL:KLabel(Ks:List{K})) => elabRes(KL(Ks))
+    elabDispose(KL:KLabel(Ks:KList)) => elabRes(KL(Ks))
 when
     notBool isExpressionLabel(KL) andBool haveNoElabRes(Ks)
 
@@ -263,29 +263,29 @@ rule isElabIndependent(K:K) =>
     orBool (isTypedExp(K) ==K true)
 
 //Computes to true if the given arg is a list of elaboration results, false otherwise.
-syntax K ::= "isElab" "(" List{K} ")"                 [function]
-rule isElab(K:K,, Ks:List{K})
+syntax K ::= "isElab" "(" KList ")"                 [function]
+rule isElab(K:K,, Ks:KList)
      =>      ((getKLabel(K) ==KLabel 'elabRes`(_`)) orBool (isElabIndependent(K) ==K true))
      andBool isElab(Ks)
 
-rule isElab(.List{K}) => true
+rule isElab(.KList) => true
 
 //Computes to true if the given arg is a list of terms with none being elab-result only,
 //false otherwise.
-syntax K ::= "haveNoElabRes" "(" List{K} ")"          [function]
-rule haveNoElabRes(K:K,, Ks:List{K})
+syntax K ::= "haveNoElabRes" "(" KList ")"          [function]
+rule haveNoElabRes(K:K,, Ks:KList)
      => (getKLabel(K) =/=KLabel 'elabRes`(_`)) andBool haveNoElabRes(Ks)
 
-rule haveNoElabRes(.List{K}) => true
+rule haveNoElabRes(.KList) => true
 
 //Elaboration of blocks
 
 rule [elabBlockHeat]:
-    <k> elab('Block('ListWrap(Ks:List{K}))) => elab('ListWrap(Ks)) ~> elab('Block(CHOLE)) ...</k>
+    <k> elab('Block('ListWrap(Ks:KList))) => elab('ListWrap(Ks)) ~> elab('Block(CHOLE)) ...</k>
     <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
 
 rule [elabForHeatFirstSubterm]:
-    <k> (.=> elab(K)) ~> elab('For((K:K => CHOLE),, Ks:List{K})) ...</k>
+    <k> (.=> elab(K)) ~> elab('For((K:K => CHOLE),, Ks:KList)) ...</k>
     <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
 when getKLabel(K) =/=KLabel 'elabRes`(_`)
 
@@ -303,7 +303,7 @@ rule [elabCatch]:
     <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
 
 rule [elabDisposeBlockForOrCatch]:
-    <k> elab(KL:KLabel(ElabResL:List{K})) => elabDispose(KL(ElabResL)) ...</k>
+    <k> elab(KL:KLabel(ElabResL:KList)) => elabDispose(KL(ElabResL)) ...</k>
     <elabEnv> (ListItem(_) => .) ...</elabEnv>
 when
     isElab(ElabResL)
@@ -312,7 +312,7 @@ when
 //Local var decs desugaring
 
 rule [LocalVarDecStmRed]:
-    elab('LocalVarDecStm('LocalVarDec(Ks:List{K}))
+    elab('LocalVarDecStm('LocalVarDec(Ks:KList))
       => 'LocalVarDec(Ks)
     )                                                   [structural]
 
@@ -320,7 +320,7 @@ rule [LocalVarDecStmRed]:
 context elab('LocalVarDec(_:K,, HOLE,, _:K))
 
 rule [VarDecMultiDesugar]:
-    elab('LocalVarDec(K:K,, T:Type,, 'ListWrap(Var1:K,, Var2:K,, VarDecs:List{K}))
+    elab('LocalVarDec(K:K,, T:Type,, 'ListWrap(Var1:K,, Var2:K,, VarDecs:KList))
       => 'ListWrap('LocalVarDec(K,, T,, 'ListWrap(Var1)),,
             'LocalVarDec(K,, T,, 'ListWrap(Var2,, VarDecs)))
     )                                                   [structural]
@@ -344,7 +344,7 @@ rule [elabLocalVarDec]:
 
 //Both unqualified and qualified AmbName.
 rule [elabAmbName]:
-    elabDispose('AmbName(Ks:List{K})) => elabDispose('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName('ListWrap(Ks))
+    elabDispose('AmbName(Ks:KList)) => elabDispose('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName('ListWrap(Ks))
 when
     haveNoElabRes(Ks)
 
@@ -366,7 +366,7 @@ when notBool (X in keys(StEnv))
 rule [elabFieldUnqualified]:
     <k>
       elabDispose('Field(X:Id))
-      => elab('Field( 'This(.List{K}),, X )) ?? elab('Field( Class,, X))
+      => elab('Field( 'This(.KList),, X )) ?? elab('Field( Class,, X))
          ?? outerStaticField(Class, X)
       ...
     </k>
@@ -414,12 +414,12 @@ rule [elabLookupNotFound]:
     elabLookup(X:Id, noClass) => noValue
 
 rule [elabThisInstanceCT]:
-    <k> elabDispose('This(.List{K})) => elabRes('This(.List{K}) :: Class) ...</k>
+    <k> elabDispose('This(.KList)) => elabRes('This(.KList) :: Class) ...</k>
     <crntClass> Class:ClassType </crntClass>
     <contextType> instanceCT </contextType>
 
 rule [elabThisStaticCT]:
-    <k> elabDispose('This(.List{K})) => noValue ...</k>
+    <k> elabDispose('This(.KList)) => noValue ...</k>
     <contextType> staticCT </contextType>
 
 rule [elabFieldQualRef]:
@@ -433,7 +433,7 @@ rule [elabFieldQualClass]:
 rule [elabSuperField]:
     <k>
       elabDispose('SuperField(X:Id))
-      => elabTypedExp(lookupField('This(.List{K})::Class, noClass, X), elabLookup(X, BaseClass))
+      => elabTypedExp(lookupField('This(.KList)::Class, noClass, X), elabLookup(X, BaseClass))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -463,7 +463,7 @@ rule 'ClassType(TypeK:K,, _) => TypeK            [structural]
 
 context 'PackageOrTypeName(HOLE,, _:K)
 
-rule 'PackageOrTypeName(KRs:List{K},, K:K) => 'TypeName(KRs,,K) ?? 'PackageName('ListWrap(KRs,,K))
+rule 'PackageOrTypeName(KRs:KList,, K:K) => 'TypeName(KRs,,K) ?? 'PackageName('ListWrap(KRs,,K))
 when isKResult(KRs)                              [structural]
 
 //When we search for a class qualified by another class, we simply convert
@@ -613,7 +613,7 @@ rule isNonNumericExp(KL:KLabel) =>
     orBool (KL ==KLabel 'CastPrim)
     orBool (KL ==KLabel 'CastRef)
 
-//It looks like isTypedExp(List{K}) doesn't work.
+//It looks like isTypedExp(KList) doesn't work.
 rule [elabBoolOnlyResultExpBinary]:
     elabDispose(KL:KLabel(TE1:TypedExp,, TE2:TypedExp)) => elabRes(KL(TE1,,TE2) :: bool)
 when
@@ -751,40 +751,40 @@ rule 'ArrayType(T:Type) => arrayOf T     [structural]
 
 rule [NewArrayEmptyDims]:
     elabDispose('NewArray( (T:Type => arrayOf T),, _:K,,
-        'ListWrap( ( 'Dim(.List{K}) => .List{K} ) ,,_:List{K}) ))
+        'ListWrap( ( 'Dim(.KList) => .KList ) ,,_:KList) ))
         [structural]
 
 rule [NewArray]:
-    elabDispose('NewArray(T:Type,, 'ListWrap(Dims:List{K}),, 'ListWrap(.List{K})))
-    => getArrayType(T, Dims) ~> elabRes(newArrayImpl(T, 'ListWrap(Dims), default(T), .List{K}) :: CHOLE)
+    elabDispose('NewArray(T:Type,, 'ListWrap(Dims:KList),, 'ListWrap(.KList)))
+    => getArrayType(T, Dims) ~> elabRes(newArrayImpl(T, 'ListWrap(Dims), default(T), .KList) :: CHOLE)
         [structural]
 
 //computes the array type based on allocated elem type and number of allocated dimensions.
-syntax K ::= "getArrayType" "(" Type "," List{K} ")"
-rule getArrayType(T:Type, K:K,,Dims:List{K}) => getArrayType(arrayOf T, Dims) [structural]
-rule getArrayType(T:Type, .List{K}) => T                                      [structural]
+syntax K ::= "getArrayType" "(" Type "," KList ")"
+rule getArrayType(T:Type, K:K,,Dims:KList) => getArrayType(arrayOf T, Dims) [structural]
+rule getArrayType(T:Type, .KList) => T                                      [structural]
 
 rule [ArrayInitPreprocess]:
-    elabDispose('NewArray((T:Type => arrayOf T),, 'ListWrap(('Dim(.List{K}) => .List{K}),, _),, 'ArrayInit(_)))
+    elabDispose('NewArray((T:Type => arrayOf T),, 'ListWrap(('Dim(.KList) => .KList),, _),, 'ArrayInit(_)))
 
 rule [ArrayInit]:
-    elabDispose('NewArray(arrayOf T:Type,, 'ListWrap(.List{K}),, 'ArrayInit('ListWrap(InitContent:List{K}))))
+    elabDispose('NewArray(arrayOf T:Type,, 'ListWrap(.KList),, 'ArrayInit('ListWrap(InitContent:KList))))
     => elabRes(newArrayImpl(T, 'ListWrap(count(InitContent)), .K, InitContent) :: arrayOf T)
 
-//counts the number of elements in the List{K} list. Evaluates to an Int::int .
-syntax K ::= "count" "(" List{K} ")"
-           | "count" "(" Int "," List{K} ")"
+//counts the number of elements in the KList list. Evaluates to an Int::int .
+syntax K ::= "count" "(" KList ")"
+           | "count" "(" Int "," KList ")"
 
-rule count(Ks:List{K}) => count(0, Ks)
-rule count(I:Int, K:K,, Ks:List{K}) => count(I +Int 1, Ks)
-rule count(I:Int, .List{K}) => I::int
+rule count(Ks:KList) => count(0, Ks)
+rule count(I:Int, K:K,, Ks:KList) => count(I +Int 1, Ks)
+rule count(I:Int, .KList) => I::int
 
 //Elaborate all expressions once they reach the top of computation,
 //both in elaboration and in execution phase.
 //Performance: Using this rule instead of the rule above leads to execution performance decrease by 5%
 //in helloWorld, with medium execution time rising from 9.6s to 10.1s
 rule [elabExpressions]:
-    KL:KLabel(Ks:List{K}) => elab(KL(Ks))
+    KL:KLabel(Ks:KList) => elab(KL(Ks))
 when
     isExpressionLabel(KL)
 

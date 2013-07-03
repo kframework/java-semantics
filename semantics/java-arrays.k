@@ -19,20 +19,20 @@ rule [ArrayVarDecIdDesugar]:
       (T:Type => arrayOf T),,
       'ListWrap('VarDec('ArrayVarDecId(
           X:Id,,
-          'ListWrap(('Dim(.List{K}) => .List{K}) ,,_)
-      ),, _:List{K} //possible initializer
+          'ListWrap(('Dim(.KList) => .KList) ,,_)
+      ),, _:KList //possible initializer
     )))                                                 [structural, anywhere]
 
 rule [ArrayVarDecIdDiscard]:
     'LocalVarDec(_:K,, T:Type,, 'ListWrap('VarDec(
-        ( 'ArrayVarDecId( X:Id,, 'ListWrap(.List{K}) ) => X ),,
-        _:List{K} //possible initializer
+        ( 'ArrayVarDecId( X:Id,, 'ListWrap(.KList) ) => X ),,
+        _:KList //possible initializer
     )))                                                 [structural, anywhere]
 
 rule [VarDecWithArrayInitDesugar]:
     'LocalVarDec(_:K,, T:Type,, 'ListWrap('VarDec(
       X:Id,,
-      ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK)) )
+      ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.KList),, 'ArrayInit(InitK)) )
     )))                                                 [structural, anywhere]
 
 //same three rules for fields
@@ -43,20 +43,20 @@ rule [ArrayFieldDecIdDesugar]:
       (T:Type => arrayOf T),,
       'ListWrap('VarDec('ArrayVarDecId(
           X:Id,,
-          'ListWrap(('Dim(.List{K}) => .List{K}) ,,_)
-      ),, _:List{K} //possible initializer
+          'ListWrap(('Dim(.KList) => .KList) ,,_)
+      ),, _:KList //possible initializer
     )))                                                 [structural]
 
 rule [ArrayFieldDecIdDiscard]:
     'FieldDec(_:K,, T:Type,, 'ListWrap('VarDec(
-        ( 'ArrayVarDecId( X:Id,, 'ListWrap(.List{K}) ) => X ),,
-        _:List{K} //possible initializer
+        ( 'ArrayVarDecId( X:Id,, 'ListWrap(.KList) ) => X ),,
+        _:KList //possible initializer
     )))                                                 [structural]
 
 rule [FieldDecWithArrayInitDesugar]:
     'FieldDec(_:K,, T:Type,, 'ListWrap('VarDec(
       X:Id,,
-      ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.List{K}),, 'ArrayInit(InitK)) )
+      ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.KList),, 'ArrayInit(InitK)) )
     )))                                                 [structural]
 
 //first two rules - desugaring C-like array decs, for params
@@ -67,14 +67,14 @@ rule [ArrayParamIdDesugar]:
       (T:Type => arrayOf T),,
       'ArrayVarDecId(
           X:Id,,
-          'ListWrap(('Dim(.List{K}) => .List{K}) ,,_)
+          'ListWrap(('Dim(.KList) => .KList) ,,_)
       )
     )                                                   [structural]
 
 rule [ArrayParamIdDiscard]:
     'Param(
       _:K,, T:Type,,
-      ( 'ArrayVarDecId( X:Id,, 'ListWrap(.List{K}) ) => X )
+      ( 'ArrayVarDecId( X:Id,, 'ListWrap(.KList) ) => X )
     )                                                   [structural]
 
 /*@ \subsection{Array access}
@@ -102,10 +102,10 @@ rule [lookupArrayLocation]:
 rule [ArrayIndexOutOfBoundsException]:
     'ArrayAccess(arrayRef(_,_,M:Int) :: _,, N:Int::_)::_
     => 'Throw('NewInstance(
-      'None(.List{K}),,
+      'None(.KList),,
       (class String2Id("java.lang.ArrayIndexOutOfBoundsException")),,
       'ListWrap( Int2String(N) ),,
-      'None(.List{K})
+      'None(.KList)
     ))
 when notBool ((N >=Int 0) andBool (N <Int M))
         [structural, anywhere]
@@ -118,10 +118,10 @@ rule [LvalueIndexOutOfBoundsDesugar]:
 rule [arrayAccessNull]:
     'ArrayAccess(null::_ ,, _)::_
     => 'Throw('NewInstance(
-      'None(.List{K}),,
+      'None(.KList),,
       class String2Id("java.lang.NullPointerException"),,
       'ListWrap( null ),,
-      'None(.List{K})
+      'None(.KList)
     ))
         [structural, anywhere]
 
@@ -137,7 +137,7 @@ similar to that in untyped SIMPLE, but we have to enforce that the
 type of an array declaration be of the form \texttt{arrayOf $T$}
 and assign the right type ($T$) to the allocated array locations. */
 
-context newArrayImpl(_:Type, 'ListWrap(Dims:List{K},,HOLE,, _), _,_)::_
+context newArrayImpl(_:Type, 'ListWrap(Dims:KList,,HOLE,, _), _,_)::_
 when isKResult(Dims)
 
 //applies right after the previous rule, because HOLE is of the form 'Dim(K)
@@ -145,13 +145,13 @@ rule 'Dim(K:K) => K [structural]
 
 //when all dims were computed, check that dims are positive, and only
 //after that begin array allocation
-rule newArrayImpl(T:Type, 'ListWrap(Dims:List{K}), InitExp:K, .List{K})::_
+rule newArrayImpl(T:Type, 'ListWrap(Dims:KList), InitExp:K, .KList)::_
     => checkNonNegative(Dims) ~> newArrayAlloc(T, 'ListWrap(Dims), InitExp)
 when isKResult(Dims) andBool InitExp =/=K .K
 
 rule [newArrayWithInit]:
-    newArrayImpl(T, 'ListWrap(Dim:TypedVal), .K, InitContent:List{K})::_
-    => arrayInitAlloc(newArrayImpl(T, 'ListWrap(Dim), undefined :: T, .List{K}) :: arrayOf T, InitContent)
+    newArrayImpl(T, 'ListWrap(Dim:TypedVal), .K, InitContent:KList)::_
+    => arrayInitAlloc(newArrayImpl(T, 'ListWrap(Dim), undefined :: T, .KList) :: arrayOf T, InitContent)
 
 //same as newArrayImpl, but after dims were computed and checked
 syntax K ::= "newArrayAlloc" "("
@@ -163,27 +163,27 @@ syntax K ::= "newArrayAlloc" "("
 /*Computation designed to check that array creation expression dimensions are non-negative. If they are non-negative, checkNonNegative is dissolved. Otherwise NegativeArraySizeException is thrown.
 */
 syntax K ::= "checkNonNegative" "("
-                List{K}           // List{KResult} - computed array dimensions
+                KList           // List{KResult} - computed array dimensions
              ")"
 
-rule checkNonNegative((NI:Int::_ => .List{K}),, _)
+rule checkNonNegative((NI:Int::_ => .KList),, _)
 when NI >=Int 0
 
 rule [NegativeArraySizeException]:
     checkNonNegative((NI:Int::_),, _)
     => 'Throw('NewInstance(
-      'None(.List{K}),,
+      'None(.KList),,
       class String2Id("java.lang.NegativeArraySizeException"),,
       'ListWrap( null ),,
-      'None(.List{K})
+      'None(.KList)
     ))
 when
     NI <Int 0
 
-rule checkNonNegative(.List{K}) => .
+rule checkNonNegative(.KList) => .
 
 rule [newArrayAllocMultiDim]:
-    newArrayAlloc(T:Type, 'ListWrap(Dims:List{K},,Dim1K:TypedVal,,Dim2K:TypedVal), InitExp:K)
+    newArrayAlloc(T:Type, 'ListWrap(Dims:KList,,Dim1K:TypedVal,,Dim2K:TypedVal), InitExp:K)
     =>  newArrayAlloc(
           arrayOf T,
           'ListWrap(Dims,,Dim1K),
@@ -211,10 +211,10 @@ rule max(I1:Int, I2:Int) => #if I1 >=Int I2
                       #fi
         [anywhere]
 
-syntax K ::= "evalAndStore" "(" List{K}  "," K ")"
+syntax K ::= "evalAndStore" "(" KList  "," K ")"
 
 rule [evalAndStoreDesugar]:
-    evalAndStore((I1:Int,, I2:Int,, Ks:List{K}), InitExp:K)
+    evalAndStore((I1:Int,, I2:Int,, Ks:KList), InitExp:K)
     => evalAndStore(I1,InitExp) ~> evalAndStore((I2,,Ks),InitExp)
         [structural]
 
@@ -228,13 +228,13 @@ rule [evalAndStore]:
     <store>... L |-> (_ => V) :: elem T1:Type ...</store>
 
 rule [evalAndStoreEmpty]:
-    evalAndStore(.List{K}, _) => .
+    evalAndStore(.KList, _) => .
         [structural]
 
 //@ Sequences of locations
 
-syntax List{K} ::= Int ".." Int
-rule N1:Int..N2:Int => .List{K}              when N1  >Int N2 [anywhere]
+syntax KList ::= Int ".." Int
+rule N1:Int..N2:Int => .KList              when N1  >Int N2 [anywhere]
 rule N1:Int..N2:Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2 [anywhere]
 
 //@ \subsection{Array element assignment}
@@ -274,7 +274,7 @@ rule [assignImpl]:
 rule [ArrayStoreException]:
     assignImpl( false::bool, _, TV:TypedVal)
     =>  'Throw('NewInstance(
-          'None(.List{K}),,
+          'None(.KList),,
           (class String2Id("java.lang.ArrayStoreException")),,
           'ListWrap(
             //the ArrayStoreException argument is the assigned object type
@@ -282,13 +282,13 @@ rule [ArrayStoreException]:
               'MethodName(
                 'Invoke(
                   'MethodName(TV,, String2Id("getClass")),,
-                  'ListWrap(.List{K})
+                  'ListWrap(.KList)
                 ),,
                 String2Id("getName")),,
-              'ListWrap(.List{K})
+              'ListWrap(.KList)
             )
           ),,
-          'None(.List{K})
+          'None(.KList)
         ))
 
 //@ \subsection{Array initializer}
@@ -296,7 +296,7 @@ rule [ArrayStoreException]:
 //allocates the array based on previously computed size, the proceeds to array initialization
 syntax K ::= "arrayInitAlloc" "("
                                   K "," //newArrayAlloc(), reduces to arrayRef()
-                                  List{K} //InitContent - list of initialization expressions
+                                  KList //InitContent - list of initialization expressions
                               ")"
         [strict(1)]
 
@@ -304,19 +304,19 @@ syntax K ::= "arrayInitAlloc" "("
 context arrayInitAlloc(HOLE,_)
 
 rule [arrayInitAlloc]:
-    arrayInitAlloc(arrayRef(T:Type, L:Int, Len:Int)::T, InitContent:List{K})
+    arrayInitAlloc(arrayRef(T:Type, L:Int, Len:Int)::T, InitContent:KList)
     => arrayInitImpl(T, L, InitContent) ~> arrayRef(T, L, Len)::T
 
 syntax K ::= "arrayInitImpl" "("
                                   Type ","//T - array type
                                           //    used by inner ArrayInit's
                                   Int "," //L - location of first element in store
-                                  List{K} //InitContent - list of initialization expressions
+                                  KList //InitContent - list of initialization expressions
                               ")"
 
 rule [arrayInitImpl]:
     ( . => 'ExprStm(assignImpl(true, L, K)) )
-    ~> arrayInitImpl(_, (L:Int => L +Int 1), ((K:K => .List{K}),, _) )
+    ~> arrayInitImpl(_, (L:Int => L +Int 1), ((K:K => .KList),, _) )
 when
     getKLabel(K) =/=KLabel 'ArrayInit
 
@@ -329,11 +329,11 @@ rule [arrayInitImplInnerArrayInit]:
     ~> arrayInitImpl(
           arrayOf arrayOf T:Type,
           (L:Int => L +Int 1),
-          (('ArrayInit('ListWrap(InitContent:List{K})) => .List{K}),, _)
+          (('ArrayInit('ListWrap(InitContent:KList)) => .KList),, _)
        )
 
 rule [arrayInitImplDiscard]:
-    arrayInitImpl(_, _, .List{K}) => .
+    arrayInitImpl(_, _, .KList) => .
 
 //@ toString
 

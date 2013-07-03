@@ -104,10 +104,10 @@ rule /* I1 / I2    */ 'Div(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType => nor
 //todo test that the first argument is fully evaluated, right now it may be not evaluated
 rule                  'Div(_::_     ,, 0::_)::_
    => 'Throw('NewInstance(
-        'None(.List{K}),,
+        'None(.KList),,
         (class String2Id("java.lang.ArithmeticException")),,
         'ListWrap( "/ by zero" ),,
-        'None(.List{K})
+        'None(.KList)
       ))
 
 rule /* I1 % I2    */ 'Remain(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType => normalize( (I1 %Int I2) :: ResT )
@@ -116,10 +116,10 @@ rule /* I1 % I2    */ 'Remain(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType => 
 //todo test that the first argument is fully evaluated, right now it may be not evaluated
 rule                  'Remain(_::_     ,, 0::_)::_
    => 'Throw('NewInstance(
-        'None(.List{K}),,
+        'None(.KList),,
         (class String2Id("java.lang.ArithmeticException")),,
         'ListWrap( "/ by zero" ),,
-        'None(.List{K})
+        'None(.KList)
       ))
 
 // ++E

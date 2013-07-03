@@ -18,16 +18,16 @@ rule [staticInit]:
             StaticInit,,
             'ListWrap(
               'Catch(
-                'Param('ListWrap(.List{K}),,
+                'Param('ListWrap(.KList),,
                   objectClass,,
                   String2Id("e")
                 ),,
                 'Throw(
                   'NewInstance(
-                    'None(.List{K}),,
+                    'None(.KList),,
                     class String2Id("java.lang.ExceptionInInitializerError"),,
                     'ListWrap(localVar(String2Id("e")) :: objectClass),,
-                    'None(.List{K})
+                    'None(.KList)
                   )
                 )
               )

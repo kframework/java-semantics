@@ -37,7 +37,7 @@ rule [StartProcessCompUnitsPhase]:
 rule [CompilationUnit]:
     <k>
       'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),,
-          ImpDecs:K,, 'ListWrap(Ks:List{K})
+          ImpDecs:K,, 'ListWrap(Ks:KList)
       )
       => compUnitImportsStart(Pack) ~> ImpDecs ~> processTypeDecsInPCUPhase(Ks, Pack, noClass)
       ...
@@ -48,7 +48,7 @@ rule [CompilationUnit]:
 //this phase from other pre-processing phases
 //Type declarations are processed in this phase wrapped in a processTypeDecsInPCUPhase
 syntax K ::= "processTypeDecsInPCUPhase"  "("
-                                    List{K} //The list of terms from which we will
+                                    KList //The list of terms from which we will
                                             //process just type declarations
                                 "," PackageId // the package of the processed types
                                 "," ClassType // The outer class of this class, if any,
@@ -56,13 +56,13 @@ syntax K ::= "processTypeDecsInPCUPhase"  "("
                                 ")"
 
 rule [processTypeDecsInPCUPhaseElemDiscard]:
-    processTypeDecsInPCUPhase((Label:KLabel(_) => .List{K}),,_ ,_,_)
+    processTypeDecsInPCUPhase((Label:KLabel(_) => .KList),,_ ,_,_)
 when notBool( Label ==KLabel 'ClassDec orBool Label ==KLabel 'InterfaceDec
               orBool Label ==KLabel 'bodyAsList`(_`)  //todo semantics seems to work without this condition
             )
 
 rule [processTypeDecsInPCUPhaseDiscard]:
-    processTypeDecsInPCUPhase(.List{K}, _,_) => .K
+    processTypeDecsInPCUPhase(.KList, _,_) => .K
 
 
 /*@ \subsection{Class declaration processing}*/
@@ -72,7 +72,7 @@ rule [ClassDecNoExtendsDesugar]:
         ( 'None(_)
           => 'Some('SuperDec(
                 #if (getClassType(Pack,SimpleClass) =/=K objectClass)
-                  #then 'ClassType(objectClass,, 'None(.List{K}))
+                  #then 'ClassType(objectClass,, 'None(.KList))
                   #else noClass
                 #fi
               ))
@@ -82,13 +82,13 @@ rule [ClassDecNoExtendsDesugar]:
 
 rule [ClassDecNoImplementsDesugar]:
     processTypeDecsInPCUPhase('ClassDec('ClassDecHead(_:K,, SimpleClass:Id,, _:K,, _:K,,
-        ( 'None(.List{K}) => 'Some('ImplementsDec('ListWrap(.List{K}))) )
+        ( 'None(.KList) => 'Some('ImplementsDec('ListWrap(.KList))) )
       ),, _:K
     ),,_, _,_)                [structural]
 
 rule [InterfaceDecNoExtendsDesugar]:
     processTypeDecsInPCUPhase('InterfaceDec('InterfaceDecHead(_:K,, SimpleClass:Id,, _:K,,
-        ( 'None(.List{K}) => 'Some('ExtendsInterfaces('ListWrap(.List{K}))) )
+        ( 'None(.KList) => 'Some('ExtendsInterfaces('ListWrap(.KList))) )
       ),, _:K
     ),,_, _,_)                [structural]
 
@@ -100,9 +100,9 @@ rule [processTypeDecsInPCUPhaseClassDec]:
             'Some('SuperDec(BaseClassRaw:K)),,
             'Some('ImplementsDec(ImplTypesRaw:K))
           ),,
-          'ClassBody( 'ListWrap(Decls:List{K}) )
+          'ClassBody( 'ListWrap(Decls:KList) )
         ),,
-        Ks:List{K}, Pack:PackageId, OuterClass:ClassType
+        Ks:KList, Pack:PackageId, OuterClass:ClassType
       )
       => saveImportsInPCUPhase(getClassType(Pack, SimpleClass))
       ~> processTypeDecsInPCUPhase(Decls, toPackage(getClassType(Pack, SimpleClass)),
@@ -121,13 +121,13 @@ rule [processTypeDecsInPCUPhaseClassDec]:
                     //if there is a no-args constructor in Decls, it will overwrite this one
                     'ConstrDec(
                       'ConstrDecHead(
-                        'ListWrap('Public(.List{K})),,
-                        'None(.List{K}),,
+                        'ListWrap('Public(.KList)),,
+                        'None(.KList),,
                         SimpleClass,,
-                        'ListWrap(.List{K}),,
-                        'None(.List{K})
+                        'ListWrap(.KList),,
+                        'None(.KList)
                       ),,
-                      'ConstrBody('None(.List{K}),, 'ListWrap(.List{K}))
+                      'ConstrBody('None(.KList),, 'ListWrap(.KList))
                     ),,
                     Decls
                 )
@@ -144,9 +144,9 @@ rule [processTypeDecsInPCUPhaseInterfaceDec]:
           'InterfaceDecHead( _:K,, SimpleClass:Id,, _:K,,
             'Some('ExtendsInterfaces(ImplTypesRaw:K))
           ),,
-          'ListWrap(Decls:List{K})
+          'ListWrap(Decls:KList)
         ),,
-        Ks:List{K}, Pack:PackageId, OuterClass:ClassType
+        Ks:KList, Pack:PackageId, OuterClass:ClassType
       )
       => saveImportsInPCUPhase(getClassType(Pack, SimpleClass))
       ~> processTypeDecsInPCUPhase(Decls, toPackage(getClassType(Pack, SimpleClass)),

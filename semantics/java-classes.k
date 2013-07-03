@@ -102,7 +102,7 @@ when
 rule toString(objectClosure(I:Int, Obj:Bag) :: T:Type)
     =>  'Invoke(
           'MethodName(objectClosure(I, Obj) :: T,, String2Id("toString")),,
-          'ListWrap(.List{K})
+          'ListWrap(.KList)
         )
         [anywhere]
 
@@ -135,7 +135,7 @@ rule [NewInstance]:
       'NewInstance(
         _:K,,
         Class:ClassType,,
-        'ListWrap( Vals:List{K} ),,
+        'ListWrap( Vals:KList ),,
         _:K
       )::Class
       => staticInit(Class)
@@ -205,11 +205,11 @@ rule [storeObj]:
       ...
     </store>
 
-syntax K ::= "invokeConstr" "(" Int "," ClassType "," List{K} ")"
+syntax K ::= "invokeConstr" "(" Int "," ClassType "," KList ")"
 
 rule [invokeConstr]:
     <k>
-      invokeConstr(OL:Int, Class:ClassType, Vals:List{K})
+      invokeConstr(OL:Int, Class:ClassType, Vals:KList)
       => 'ExprStm('Invoke(
             'Method('MethodName( lookup(OL)::T,, getConsName(Class) )),,
             'ListWrap( Vals )
@@ -239,11 +239,11 @@ rule [CastRef]:
             subtype(typeOf(V), RT1),,
             (V::RT1),,
             'Throw('NewInstance(
-                    'None(.List{K}),,
+                    'None(.KList),,
                     (class String2Id("java.lang.ClassCastException")),,
                     'ListWrap( 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to ")::rtString,,
                         toString(RT1))::rtString ),,
-                    'None(.List{K})
+                    'None(.KList)
                   ))
           )
       ...

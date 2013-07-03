@@ -140,20 +140,20 @@ rule [subtypeArrayOfArrayRef]:
 /*@ \subsubsection{Subtyping lists of types}*/
 
 rule [subtypeList]:
-    subtypeList(types(T1:Type,,Ts:List{K}), types(Tp1:Type,,Tps:List{K}))
+    subtypeList(types(T1:Type,,Ts:KList), types(Tp1:Type,,Tps:KList))
     => 'LazyAnd( subtype(T1,Tp1),, subtypeList(types(Ts), types(Tps)) ) :: bool
         [structural]
 
 rule [subtypeListEmptyLeft]:
-    subtypeList(types(.List{K}), types(_:Type,,_)) => false
+    subtypeList(types(.KList), types(_:Type,,_)) => false
         [structural]
 
 rule [subtypeListEmptyRight]:
-    subtypeList(types(_:Type,,_) , types(.List{K})) => false
+    subtypeList(types(_:Type,,_) , types(.KList)) => false
         [structural]
 
 rule [subtypeEmptyBoth]:
-    subtypeList(types(.List{K}), types(.List{K})) => true
+    subtypeList(types(.KList), types(.KList)) => true
         [structural]
 
 endmodule

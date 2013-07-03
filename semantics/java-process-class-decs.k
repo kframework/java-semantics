@@ -71,7 +71,7 @@ rule [resolveBasesEnd]:
     <k> resolveBases(Class:ClassType) => . ...</k>
     <classType> Class </classType>
     <rawExtends> BaseClass:ClassType </rawExtends>
-    <rawImplements> 'ListWrap(ImplTypes:List{K}) </rawImplements>
+    <rawImplements> 'ListWrap(ImplTypes:KList) </rawImplements>
     <unprocessedBases> .K => 'ListWrap(BaseClass,,ImplTypes) </unprocessedBases>
     <preprocessingPhase> CreatedCPP => BasesResolvedCPP </preprocessingPhase>
 when isKResult(ImplTypes)
@@ -79,7 +79,7 @@ when isKResult(ImplTypes)
 rule [markBaseProcessed]:
     <k> processClassDecs(_) ...</k>
     <class>
-      <unprocessedBases> 'ListWrap((BaseClass:ClassType => .List{K}) ,,_) </unprocessedBases>
+      <unprocessedBases> 'ListWrap((BaseClass:ClassType => .KList) ,,_) </unprocessedBases>
       ...
     </class>
     <class>
@@ -91,7 +91,7 @@ rule [markBaseProcessed]:
 //this one is for class Object
 rule [markNoClassProcessed]:
     <k> processClassDecs(_) ...</k>
-    <unprocessedBases> 'ListWrap((noClass => .List{K}) ,,_) </unprocessedBases>
+    <unprocessedBases> 'ListWrap((noClass => .KList) ,,_) </unprocessedBases>
 
 rule [processClassDecEnd]:
     <k>
@@ -108,19 +108,19 @@ rule [processClassDecEnd]:
     <preprocessingPhase> BasesResolvedCPP => DecsProcessedCPP </preprocessingPhase>
     <extends> .K => BaseClass </extends>
     ( <rawExtends> BaseClass:ClassType </rawExtends>
-      <rawImplements> 'ListWrap(ImplTypes:List{K}) </rawImplements>
-      <unprocessedBases> 'ListWrap(.List{K}) </unprocessedBases> => .Bag)
+      <rawImplements> 'ListWrap(ImplTypes:KList) </rawImplements>
+      <unprocessedBases> 'ListWrap(.KList) </unprocessedBases> => .Bag)
 
 rule [processClassDecsDiscard]:
     processClassDecs(setWrap(.)) => .K
 
-//Converts a term of type List{K} into a Set
-syntax K ::= "kListToSet" "(" List{K} //a list of some K Terms
+//Converts a term of type KList into a Set
+syntax K ::= "kListToSet" "(" KList //a list of some K Terms
                           "," Set     //the result set
                           ")"
 
-rule kListToSet((K:K => .List{K}),,_ , (_ (.Set => SetItem(K) )))
-rule kListToSet(.List{K}, TypeSet:Set) => setWrap(TypeSet)
+rule kListToSet((K:K => .KList),,_ , (_ (.Set => SetItem(K) )))
+rule kListToSet(.KList, TypeSet:Set) => setWrap(TypeSet)
 
 //receives a kListToSet term ans saves the resulting set into <imports>
 syntax K ::= "saveImplements" "(" ClassType "," K ")" [strict(2)]
@@ -135,7 +135,7 @@ rule [saveImplements]:
 syntax K ::= "saveImports"  "(" ClassType //Class - the actual class
                             "," ClassType //The outer class of this class, if any,
                                           //or noClass if this is a top-level class
-                            "," List{K}   //The list of base classes
+                            "," KList   //The list of base classes
                             "," K         //The toPackage(ClassType), to be computed
                             "," K         //The inner types map of the given class
                             "," K         //The mapWrap(Imports), containing in the end
@@ -161,7 +161,7 @@ rule [saveImportsComputeOwnInnerMap]:
 
 rule [saveImportsInheritTypes]:
     <k>
-      saveImports(_,_, ((BaseClass:ClassType => .List{K}),, _), Pack:PackageId,
+      saveImports(_,_, ((BaseClass:ClassType => .KList),, _), Pack:PackageId,
         mapWrap(InnerTypesMap:Map) => mapUnion(BaseClassMap, InnerTypesMap),
         noValue
       )
@@ -171,13 +171,13 @@ rule [saveImportsInheritTypes]:
     <imports> BaseClassMap:Map </imports>
 
 rule [saveImportsDiscardNoClass]:
-    saveImports(_,_, ((noClass => .List{K}),, _), _,_,_)
+    saveImports(_,_, ((noClass => .KList),, _), _,_,_)
 
 //Compute the imports map for the ClassType computed at part 1
 //when this class is a top-level class
 rule [saveImportsComputeImportsTop]:
     <k>
-      saveImports(Class:ClassType, noClass, .List{K}, _, mapWrap(InnerTypesMap:Map),
+      saveImports(Class:ClassType, noClass, .KList, _, mapWrap(InnerTypesMap:Map),
         noValue => mapUnion(Imports, InnerTypesMap)
       )
       ...
@@ -189,7 +189,7 @@ rule [saveImportsComputeImportsTop]:
 //when this class is an inner class
 rule [saveImportsComputeImportsInner]:
     <k>
-      saveImports(_, OuterClass:ClassType, .List{K}, _, mapWrap(InnerTypesMap:Map),
+      saveImports(_, OuterClass:ClassType, .KList, _, mapWrap(InnerTypesMap:Map),
         noValue => mapUnion(Imports, InnerTypesMap)
       )
       ...

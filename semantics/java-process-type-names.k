@@ -6,29 +6,29 @@ module JAVA-PROCESS-TYPE-NAMES
 /*@ \subsection{First pass - processing top level names} */
 
 rule [PackageNameStart]:
-    'PackageName('ListWrap(Ks:List{K})) => packageNameImpl("", Ks:List{K})    [structural]
+    'PackageName('ListWrap(Ks:KList)) => packageNameImpl("", Ks:KList)    [structural]
 
 //Aux construct for processing packages
-syntax K ::= "packageNameImpl" "(" String "," List{K} ")"
+syntax K ::= "packageNameImpl" "(" String "," KList ")"
 
 rule [PackageNameFirstInnerDesugar]:
-    packageNameImpl(_:String, (X:Id => packageId(X)),, Ks:List{K}) [structural]
+    packageNameImpl(_:String, (X:Id => packageId(X)),, Ks:KList) [structural]
 
 rule [PackageNameFirstPack]:
-    packageNameImpl("", packageId(NextKId:Id),, Ks:List{K})
+    packageNameImpl("", packageId(NextKId:Id),, Ks:KList)
     => packageNameImpl(Id2String(NextKId), Ks)                                           [structural]
 
 rule [PackageNameNextPack]:
-    packageNameImpl(Str:String, packageId(NextKId:Id),, Ks:List{K})
+    packageNameImpl(Str:String, packageId(NextKId:Id),, Ks:KList)
     => packageNameImpl(Str +String "." +String Id2String(NextKId), Ks)
 when Str =/=String ""                                                                    [structural]
 
 rule [PackageNameEnd]:
-    packageNameImpl(Str:String, .List{K}) => packageId(String2Id(Str))                   [structural]
+    packageNameImpl(Str:String, .KList) => packageId(String2Id(Str))                   [structural]
 
 rule [DefaultPackageDesugar]:
     'CompilationUnit(
-      ( 'None(_) => 'Some('PackageDec(.K,, 'PackageName( 'ListWrap(.List{K}) ))) ),,
+      ( 'None(_) => 'Some('PackageDec(.K,, 'PackageName( 'ListWrap(.KList) ))) ),,
       _
     )
 
@@ -38,7 +38,7 @@ context 'CompilationUnit('Some('PackageDec(_:K,, HOLE)),, _)
 rule [CompilationUnit]:
     <k>
       'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _:K,,
-          'ListWrap(Decs:List{K})
+          'ListWrap(Decs:KList)
       ) => processTypeNames(Decs, Pack)
       ...
     </k>
@@ -48,7 +48,7 @@ rule [CompilationUnit]:
 
 //Wrapper of declarations inside a compilation unit. Used to distinguish
 //ProcessTypeNamesPhase from ProcessCompUnitsPhase
-syntax K ::= "processTypeNames" "(" List{K} //declarations inside a compilation unit
+syntax K ::= "processTypeNames" "(" KList //declarations inside a compilation unit
                               "," PackageId // the package of the processed types
                               ")"
 
@@ -64,7 +64,7 @@ when notBool PackId in keys(PackMap)
 rule [processTypeNames]:
     <k>
       processTypeNames(DecLabel:KLabel(_:KLabel(Modifiers:K,, SimpleClass:Id,, _),, CBody:K),,
-          Ks:List{K}, PackId:PackageId)
+          Ks:KList, PackId:PackageId)
       => processTypeNames(Ks, PackId)
          ~> processTypeNames(bodyAsList(CBody), toPackage(getClassType(PackId,SimpleClass)))
       ...
@@ -82,13 +82,13 @@ rule [processTypeNames]:
 when DecLabel ==KLabel 'ClassDec orBool DecLabel ==KLabel 'InterfaceDec
 
 rule [processTypeNamesElemDiscard]:
-    processTypeNames((Label:KLabel(_) => .List{K}),,_ ,_)
+    processTypeNames((Label:KLabel(_) => .KList),,_ ,_)
 when notBool( (Label ==KLabel 'ClassDec) orBool (Label ==KLabel 'InterfaceDec)
               orBool (Label ==KLabel 'bodyAsList`(_`)) //todo semantics seems to work without this condition
             )
 
 rule [processTypeNamesDiscard]:
-    processTypeNames(.List{K},_) => .K
+    processTypeNames(.KList,_) => .K
 
 //returns the fully qualified class name from given parameters
 syntax K ::= "getClassType" "(" PackageId // the Package Id
@@ -108,16 +108,16 @@ syntax K ::= "toPackage"  "(" ClassType //the class to be converted into package
 rule [toPackage]:
     toPackage(class Class:Id) => packageId(Class)  [structural, anywhere]
 
-//Receives a class/interface body as K, and extracts the List{K} part of it
+//Receives a class/interface body as K, and extracts the KList part of it
 syntax K ::= "bodyAsList"  "(" K         //The class body to be processed
                            ")"                            [function]
 
 //The difference between classes and interfaces structure is purely due to Java-Front syntax whim.
 rule [bodyAsListClass]:
-    bodyAsList('ClassBody('ListWrap(Ks:List{K}))) => Ks   [structural, anywhere]
+    bodyAsList('ClassBody('ListWrap(Ks:KList))) => Ks   [structural, anywhere]
 
 rule [bodyAsListInterface]:
-    bodyAsList('ListWrap(Ks:List{K})) => Ks               [structural, anywhere]
+    bodyAsList('ListWrap(Ks:KList)) => Ks               [structural, anywhere]
 
 //Returns the types map for the given package, or mapWrap(.Map) if there's no such package.
 syntax K ::= "getNamesMap"  "(" PackageId //The package for which we want to retrieve the types map

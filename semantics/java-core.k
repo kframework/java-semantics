@@ -61,7 +61,7 @@ configuration
           <metaType> .K </metaType>
 
           //'LocalVarDec for each field
-          <fieldDecs color="purple"> 'ListWrap(.List{K}) </fieldDecs>
+          <fieldDecs color="purple"> 'ListWrap(.KList) </fieldDecs>
 
           //Signatures of methods accessible to this class (declared or inherited)
           //Map[sig -> Class]
@@ -76,14 +76,14 @@ configuration
           //Used in elaboration phase
           <instanceEnv> .Map </instanceEnv>
 
-          <instanceInit> 'ListWrap(.List{K}) </instanceInit>
+          <instanceInit> 'ListWrap(.KList) </instanceInit>
 
           //The map of static fields declared in this class and superinterfaces, but not in superclasses.
           //Map[Id -> Location]
           <staticEnv> .Map </staticEnv>
 
           //The sequence of static initializers (that also includes field initializers)
-          <staticInit> 'ListWrap(.List{K}) </staticInit>
+          <staticInit> 'ListWrap(.KList) </staticInit>
           <br/>
 
           //Static fields declared in this class, not inherited. Used by static initialization.
@@ -350,12 +350,12 @@ rule getAccessMode('ListWrap('Public(_),,_))    => public     [structural, anywh
 rule getAccessMode('ListWrap('Protected(_),,_)) => protected  [structural, anywhere]
 rule getAccessMode('ListWrap('Private(_),,_))   => private    [structural, anywhere]
 
-rule getAccessMode('ListWrap((KL:KLabel(_) => .List{K}),, _))
+rule getAccessMode('ListWrap((KL:KLabel(_) => .KList),, _))
 when        (KL =/=KLabel 'Public)
     andBool (KL =/=KLabel 'Protected)
     andBool (KL =/=KLabel 'Private)                           [structural, anywhere]
 
-rule getAccessMode('ListWrap(.List{K})) => package            [structural, anywhere]
+rule getAccessMode('ListWrap(.KList)) => package            [structural, anywhere]
 
 //evaluates into a setWrap(S), containing all the classes in the program.
 //uses <typeNamesMap> to compute the result
@@ -386,8 +386,8 @@ syntax KResult ::= "stEnv" "(" Map ")"  //A layer of the static environment
                                  ")"
 
 //size of a KList
-syntax K ::= "klsize" "(" List{K} ")"               [function]
-rule klsize(.List{K}) => 0                          [anywhere]
-rule klsize(_:K,, Ks:List{K}) => klsize(Ks) +Int 1  [anywhere]
+syntax K ::= "klsize" "(" KList ")"               [function]
+rule klsize(.KList) => 0                          [anywhere]
+rule klsize(_:K,, Ks:KList) => klsize(Ks) +Int 1  [anywhere]
 
 endmodule

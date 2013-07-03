@@ -21,7 +21,7 @@ rule [StartExecutionPhase]:
           'ListWrap('NewArray(
               rtString,,
               'ListWrap('Dim(0 :: int)),,
-              'ListWrap(.List{K})))
+              'ListWrap(.KList)))
         )
       )
     </k>
@@ -58,11 +58,11 @@ rule [Block]:
         [structural]
 
 rule [ListOfStatements]:
-    'ListWrap(S1:K,, Ss:List{K}) => S1 ~> 'ListWrap(Ss)
+    'ListWrap(S1:K,, Ss:KList) => S1 ~> 'ListWrap(Ss)
         [structural]
 
 rule [DiscardEmptyList]:
-    <k> 'ListWrap(.List{K}) => . ...</k>
+    <k> 'ListWrap(.KList) => . ...</k>
         [structural]
 
 //@ \texttt{env}
@@ -129,34 +129,34 @@ rule [IfThenDesugar]:
 
 //@ \section{Assert statement}
 
-context 'AssertStm(HOLE,,_:List{K})
+context 'AssertStm(HOLE,,_:KList)
 
 rule [AssertStmTrueDiscard]:
-    'AssertStm(true::bool,, _:List{K}) => .
+    'AssertStm(true::bool,, _:KList) => .
 
 rule [AssertStmOneArg]:
     'AssertStm(false::bool) => 'Throw('NewInstance(
-      'None(.List{K}),,
+      'None(.KList),,
       (class String2Id("java.lang.AssertionError")),,
       'ListWrap(null),,
-      'None(.List{K})
+      'None(.KList)
     ))
 
 context 'AssertStm(false::bool,, HOLE)
 
 rule [AssertStmTwoArgs]:
     'AssertStm(false::bool,, TV:TypedVal) => 'Throw('NewInstance(
-      'None(.List{K}),,
+      'None(.KList),,
       (class String2Id("java.lang.AssertionError")),,
       'ListWrap( toString(TV) ),,
-      'None(.List{K})
+      'None(.KList)
     ))
 
 //@ \section{Switch statement}
 
 syntax K ::= "switchImpl" "("
                 TypedVal "," // TV - switch param
-                List{K} ","  // switch body - list of 'SwitchGroup labels
+                KList ","  // switch body - list of 'SwitchGroup labels
                 K            // DefaultStm - default block, if any
               ")"
             | "switchEnd"
@@ -165,12 +165,12 @@ context 'Switch(HOLE,,_)
 
 //The switchEnd in the right-hand side of => is required to properly interact with break.
 rule [Switch]:
-    'Switch(TV:TypedVal,, 'SwitchBlock('ListWrap(Ks:List{K}),, TrailingLabels:K))
+    'Switch(TV:TypedVal,, 'SwitchBlock('ListWrap(Ks:KList),, TrailingLabels:K))
     => switchImpl(TV, (Ks,, 'SwitchGroup(TrailingLabels,, .K)), .K)
     ~> switchEnd
 
 context switchImpl( _,
-          ( 'SwitchGroup('ListWrap('Case(HOLE),,_:List{K}),,_),, _:List{K} ), _)
+          ( 'SwitchGroup('ListWrap('Case(HOLE),,_:KList),,_),, _:KList ), _)
 
 //the type associated to V and V2 is not important for match, only the value.
 //JLS3 $14.11, page 377: Every case constant expression associated with
@@ -178,8 +178,8 @@ context switchImpl( _,
 
 rule [SwitchCaseNotMatch]:
     switchImpl( V:RawVal :: _, ( 'SwitchGroup('ListWrap(
-        ( 'Case(V2:RawVal :: _) => .List{K} ),,
-        _:List{K} ),,_),, _), _)
+        ( 'Case(V2:RawVal :: _) => .KList ),,
+        _:KList ),,_),, _), _)
 when
     V =/=K V2
 
@@ -188,25 +188,25 @@ by it's block. The execution rules for switch will discard switch-related
 constructs and will execute the statements. */
 
 rule [SwitchCaseMatch]:
-    switchImpl( V:RawVal :: _, ('SwitchGroup('ListWrap('Case(V :: _),,_:List{K}),,S:K),,Ks:List{K}), _)
+    switchImpl( V:RawVal :: _, ('SwitchGroup('ListWrap('Case(V :: _),,_:KList),,S:K),,Ks:KList), _)
     => 'ListWrap(S,,Ks)
 
 rule [SwitchDefaultSave]:
     switchImpl( TV:TypedVal, (
       'SwitchGroup('ListWrap(
-          ( 'Default(_) => .List{K} ),,
-          _:List{K}),, S:K),, Ks:List{K}
+          ( 'Default(_) => .KList ),,
+          _:KList),, S:K),, Ks:KList
       ),
       ( _:K => 'ListWrap(S,, Ks) )
     )
 
 rule [SwitchGroupDiscard]:
     switchImpl( TV:TypedVal,
-      (( 'SwitchGroup('ListWrap( .List{K} ),,_) => .List{K} ),,_),
+      (( 'SwitchGroup('ListWrap( .KList ),,_) => .KList ),,_),
     _)
 
 rule [SwitchDefaultExec]:
-    switchImpl( _, .List{K}, DefaultStm:K) => DefaultStm
+    switchImpl( _, .KList, DefaultStm:K) => DefaultStm
 
 rule [SwitchGroupExec]:
     'SwitchGroup(_:K,, S:K) => S
@@ -237,41 +237,41 @@ rule
 syntax K ::= "stm" "(" K ")"
 
 rule [stmDiscard]:
-    stm('ListWrap(.List{K})) => .
+    stm('ListWrap(.KList)) => .
         [structural]
 
 rule [stmList]:
-    stm('ListWrap(E:K,, Es:List{K})) => 'ExprStm(E) ~> stm('ListWrap(Es))
+    stm('ListWrap(E:K,, Es:KList)) => 'ExprStm(E) ~> stm('ListWrap(Es))
 when
     isTypedExp(E) ==K true                [structural]
 
 rule [stmLocalVarDec]:
-    stm('ListWrap(K:K,,Ks:List{K})) => 'ListWrap(K,,Ks)
+    stm('ListWrap(K:K,,Ks:KList)) => 'ListWrap(K,,Ks)
 when
     notBool (isTypedExp(K) ==K true)      [structural]
 
 rule [ForFirstArgV1Red]:
     'For((
-      'ListWrap(InitExps:List{K}) => stm('ListWrap(InitExps))
-    ),,_:List{K})
+      'ListWrap(InitExps:KList) => stm('ListWrap(InitExps))
+    ),,_:KList)
         [structural]
 
 //Works also in elaboration phase
 rule [ForFirstArgV2Red]:
     'For((
-      'LocalVarDec(Ks:List{K}) => stm('ListWrap('LocalVarDec(Ks)))
-    ),,_:List{K})
+      'LocalVarDec(Ks:KList) => stm('ListWrap('LocalVarDec(Ks)))
+    ),,_:KList)
         [structural]
 
 rule [ForSecondArgRed]:
     'For(_:K,,(
-      'None(.List{K}) => 'Some(true)
-    ),,_:List{K})
+      'None(.KList) => 'Some(true)
+    ),,_:KList)
         [structural]
 
 rule [ForThirdArgRed]:
     'For(_:K,,_:K,,(
-      'ListWrap(UpdExps:List{K}) => stm('ListWrap(UpdExps))
+      'ListWrap(UpdExps:KList) => stm('ListWrap(UpdExps))
     ),,_:K)
         [structural]
 
@@ -284,13 +284,13 @@ rule [For]:
 //stack consumer stm - Return, Throw, Break or Continue reaches tryFinallySL layer
 //todo test whether KL argument might be not KResult at the moment of this rule
 rule [StackConsumerStmInTryFinally]:
-    KL:KLabel(Ks:List{K}) ~> finallyBlock(FinallyS:K)
+    KL:KLabel(Ks:KList) ~> finallyBlock(FinallyS:K)
     => FinallyS ~> KL(Ks)
 when
   isStackConsumer(KL)
 
 rule [StackConsumerStmRestoreEnv]:
-    KL:KLabel(Ks:List{K}) ~> env(Env:Map)
+    KL:KLabel(Ks:KList) ~> env(Env:Map)
     => env(Env:Map) ~> KL(Ks)
 when
   isStackConsumer(KL)
@@ -374,11 +374,11 @@ expected type. */
 context 'Return('Some(HOLE))
 
 rule [ReturnNothingDesugar]:
-    'Return('None(.List{K}) => 'Some(nothing :: void))
+    'Return('None(.KList) => 'Some(nothing :: void))
         [structural]
 
 rule [ReturnPropagate]:
-    'Return('Some(TV:TypedVal)) ~> (KL:KLabel(Ks:List{K}) => .K)
+    'Return('Some(TV:TypedVal)) ~> (KL:KLabel(Ks:KList) => .K)
 when
             KL =/=KLabel 'env`(_`)
     andBool KL =/=KLabel 'finallyBlock`(_`)
@@ -421,10 +421,10 @@ rule [ThrowCheckedTrue]:
 
 rule [ThrowCheckedFalse]:
     (checkCatch(false::bool) => .)
-    ~> 'Throw(TV:TypedVal) ~> catchBlocks((catchImpl(_,_) => .List{K}),, _)
+    ~> 'Throw(TV:TypedVal) ~> catchBlocks((catchImpl(_,_) => .KList),, _)
 
 rule [ThrowCatchEmptyDiscard]:
-    'Throw(TV:TypedVal) ~> (catchBlocks(.List{K}) => .)
+    'Throw(TV:TypedVal) ~> (catchBlocks(.KList) => .)
 
 rule [ThrowPropagate]:
     'Throw(TV:TypedVal) ~> (KL:KLabel(_) => .)
@@ -463,8 +463,8 @@ rule [ThrowCausesThreadTermination]:
 //@ \section{Try statement}
 
 rule [TryCatchFinallyDesugar]:
-    'Try(TryS:K,, 'ListWrap(K:K,, Ks:List{K}),,FinallyS:K)
-    => 'Try('Try(TryS,,'ListWrap(K,,Ks)),,'ListWrap(.List{K}),,FinallyS)
+    'Try(TryS:K,, 'ListWrap(K:K,, Ks:KList),,FinallyS:K)
+    => 'Try('Try(TryS,,'ListWrap(K,,Ks)),,'ListWrap(.KList),,FinallyS)
         [structural]
 
 //@ \subsection{Execution of try–catch} JLS 14.20.1
@@ -484,11 +484,11 @@ syntax KResult ::= "catchImpl" "(" K //paramImpl term
 
 //The auxiliary constructs that hold catch clauses / finally clause
 //after try clause has been moved to the top of computation
-syntax K ::= "catchBlocks" "(" List{K} ")" //arg - list of catchImpl
+syntax K ::= "catchBlocks" "(" KList ")" //arg - list of catchImpl
            | "finallyBlock" "(" K ")"      //arg - finally block
 
 rule [TryCatch]:
-    'Try(TryS:K,, 'ListWrap(KRs:List{K})) => TryS ~> catchBlocks(KRs)
+    'Try(TryS:K,, 'ListWrap(KRs:KList)) => TryS ~> catchBlocks(KRs)
 when isKResult(KRs)
 
 rule [TryBlocksDiscard]:
@@ -497,7 +497,7 @@ rule [TryBlocksDiscard]:
 //@ \subsection{Execution of try-finally} JLS 14.20.2
 
 rule [TryFinally]:
-    'Try(TryS:K ,,'ListWrap(.List{K}),,FinallyS:K) => TryS ~> finallyBlock(FinallyS)
+    'Try(TryS:K ,,'ListWrap(.KList),,FinallyS:K) => TryS ~> finallyBlock(FinallyS)
 
 rule [TryFinallyNormalEnd]:
     finallyBlock(FinallyS:K) => FinallyS
