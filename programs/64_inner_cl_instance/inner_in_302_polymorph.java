@@ -3,7 +3,7 @@ Classes S, O, O.A < S, I1, I2. Cast the object of type A to S, I1, I2, access th
   S, I1, I2 should have each a method overwritten in O.A.
 */
 
-public class inner_in_32_polymorph {
+public class inner_in_302_polymorph {
   public static void main(String[] args) {
     O.A a = new O().new A();
     System.out.println(((S)a).sf());

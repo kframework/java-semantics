@@ -4,7 +4,7 @@ Triangle hierarchy: S, O < S, O.A < S. In any case the enclosing instance of A a
   Inside A, discriminate between outer S and base S by using S.this, this, super qualifier, also unqualified calls.
 */
 
-public class inner_in_36_triangle_hier {
+public class inner_in_306_triangle_hier {
   public static void main(String[] args) {
     new O().new A().test();
     System.out.println("Done!");

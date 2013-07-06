@@ -3,7 +3,7 @@ Classes O, O.A, O.B < O.A. Instantiate B from O simple.
   Also instantiate B from a static context, using a qualifier object of type O.
 */
 
-public class inner_in_33_in_deriv_from_in {
+public class inner_in_303_in_deriv_from_in {
   public static void main(String[] args) {
     System.out.println("new O(1).newB().test():");
     new O(1).newB().test();

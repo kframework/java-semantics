@@ -4,7 +4,7 @@ Classes O, O.A, B < O.A. Instantiate B from static context.
   the second one with an argument O, calling o.super() - a qualified superclass constructor call. Use both constructors.
 */
 
-public class inner_in_34_top_cl_deriv_inner {
+public class inner_in_304_top_cl_deriv_inner {
   public static void main(String[] args) {
     System.out.println("new B().test():");
     new B().test();

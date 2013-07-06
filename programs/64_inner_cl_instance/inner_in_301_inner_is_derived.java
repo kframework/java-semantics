@@ -2,7 +2,7 @@
 Classes S, O, O.A < S. Access members of S, O, A from A.
 */
 
-public class inner_in_31_inner_is_derived {
+public class inner_in_301_inner_is_derived {
   public static void main(String[] args) {
     new O().new A().test();
     System.out.println("Done!");

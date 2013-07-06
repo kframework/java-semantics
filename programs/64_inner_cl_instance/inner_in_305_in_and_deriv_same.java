@@ -6,7 +6,7 @@ Superposition of nesting and inheritance. Classes O, O.A < O. In any case the en
   also unqualified calls.
 */
 
-public class inner_in_35_in_and_deriv_same {
+public class inner_in_305_in_and_deriv_same {
   public static void main(String[] args) {
     new O(1).new A().test();
     System.out.println("Done!");

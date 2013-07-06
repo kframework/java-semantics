@@ -30,31 +30,55 @@ Part 2. Hierarchies involving outer classes.
   Members of A access the members of S.
 
 Part 3. Hierarchies involving inner classes.
-31. Classes S, O, O.A < S. Access members of S, O, A from A.
-32. Classes S, O, O.A < S, I1, I2. Cast the object of type A to S, I1, I2, access the respective members.
+301. Classes S, O, O.A < S. Access members of S, O, A from A.
+302. Classes S, O, O.A < S, I1, I2. Cast the object of type A to S, I1, I2, access the respective members.
   S, I1, I2 should have each a method overwritten in O.A.
-33. Classes O, O.A, O.B < O.A. Instantiate B from O simple.
+303. Classes O, O.A, O.B < O.A. Instantiate B from O simple.
   Also instantiate B from a static context, using a qualifier object of type O.
-34. Classes O, O.A, B < O.A. Instantiate B from static context.
+304. Classes O, O.A, B < O.A. Instantiate B from static context.
   B should have two constructors: One calling with no arguments, calling the second one with this(new O()),
   the second one with an argument O, calling o.super() - a qualified superclass constructor call. Use both constructors.
-35. Superposition of nesting and inheritance. Classes O, O.A < O. In any case the enclosing
+305. Superposition of nesting and inheritance. Classes O, O.A < O. In any case the enclosing
   instance of A and the base instance will be different instances.
   Instantiate a from O and from a static context.
   Inside A, discriminate between outer O and base O by using O.this, simple this and super as qualifier,
   also unqualified calls.
-36. Triangle hierarchy: S, O < S, O.A < S. In any case the enclosing instance of A and the base instance
+306. Triangle hierarchy: S, O < S, O.A < S. In any case the enclosing instance of A and the base instance
   will be different instances. Instantiate A from O, from static context via a qualifier of type O.
   Inside A, discriminate between outer S and base S by using S.this, this, super qualifier, also unqualified calls.
-37. Square hierarchy. S, A.S, O < S, O.B < A.S.
+307. Square hierarchy. S, A.S, O < S, O.B < A.S.
   Instantiate B from O, or from static context. In the first case enclosing instance of B and A will be the same,
   in the second - different. (Use two different constructors for B).
   In any case, constructor of B should call a qualified superclass constructor.
   (Try the opposite and confirm the compile-time error).
   Inside B, discriminate between outer S and base S by using no qualifier or indirection methods from A.
-38. Twisted square hierarchy. S, S.A < O.B, O < S, O.B.
+308. Base and derived, both inner to unrelated top-level classes.
+  O1, O2, O2.B < O1.A. Instantiate O2.B, with constructor arg of type O1. Print a field from O2, A,B.
+309. Twisted square hierarchy. S, S.A < O.B, O < S, O.B.
   Instantiate S.A with both the same outer instance as O.B or a different instance.
+  For this, use two constructors for A - one with argument O, for the base class,
+    and other with no argument. Argument for the base class will be S.this.
   Inside B, discriminate between outer S and base S by using no qualifier or indirection methods from A.
+310. Three-level branched nesting with inheritance:
+  - Outer
+    - Mid1
+    - Mid2
+      - Inner < Mid1. Inner constructor doesn't need to create/access
+    any extra instances. It could be left implicit.
+    Testing transitive search for appropriate outer class inside constructor call expression.
+    Instantiate two objects Inner, on two distinct objects Outer.
+    - test() of each class will print its immediate outer as well as base class.
+    - Outer.test() will print its id.
+311. Superposition of nesting and inheritance creating ambiguity:
+  - Outer:
+    - Mid1
+    - Mid2 < Outer
+      - Inner < Mid1. Inner constructor should be default.
+      Which instance of Outer will it choose as enclosing instance for Mid1?
+      The outermost Outer or Mid2?
+    Instantiate two objects Inner, on two distinct objects Outer.
+    - test() of each class will print its immediate outer as well as base class.
+    - Outer.test() will print its id.
 
 Part 4. Member hiding.
 41. Field and method hiding. O, O.A, O.A.B. O.v, O.f(), A.v, A.f(), B.v, B.f()

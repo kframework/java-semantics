@@ -7,7 +7,7 @@ Square hierarchy. S, A.S, O < S, O.B < A.S.
   Inside B, discriminate between outer S and base S by using no qualifier or indirection methods from A.
 */
 
-public class inner_in_37_square_hier {
+public class inner_in_307_square_hier {
   public static void main(String[] args) {
     O o = new O(1);
     System.out.println("o.newBSame().test():");
@@ -49,7 +49,9 @@ class O extends S {
 
   class B extends A {
 
-    B(){}
+    B(){
+      super();  //Same as default constructor.
+    }
 
     B(S s) {
       s.super();
