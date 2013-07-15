@@ -24,8 +24,14 @@ configuration
             <crntObj color="Fuchsia">
               //current class during elaboration and execution phase
               <crntClass> .K </crntClass>
-              <envStack> .List </envStack>
               <location multiplicity="?"> .K </location>
+
+              //the stack of all inheritance layers of the current object, from the actual runtime type
+              //to the primordial class Object.
+              <envStack> .List </envStack>
+
+              //typed objectClosure for the enclosing object, or noValue if there is none.
+              <enclosingObj> .K </enclosingObj>
             </crntObj>
           </control>
         </thread>
@@ -181,7 +187,7 @@ syntax ContextType ::= "staticCT" | "instanceCT"
 syntax KResult ::= ContextType
 
 syntax RawVal ::= "objectClosure" "(" Int //OL - object location
-                                  "," Bag //<envStack> - the object content
+                                  "," Bag //<envStack> - the object content, <enclosingObj>
                                   ")"
 
                 | "methodClosure" "("
@@ -249,6 +255,7 @@ rule toString(rtString) => "java.lang.String"
 
 syntax K ::= "typeOf" "(" K ")" [function]
 rule typeOf(_ :: T:Type) => T
+rule typeOf(T:Type) => T
 
 //default value of all types
 syntax K ::= "default" "(" Type ")"     [function]
@@ -268,8 +275,9 @@ rule defaultTyped(B:Bool) => B :: bool                                          
 rule defaultTyped(Str:String) => Str :: rtString                                      [structural]
 rule defaultTyped(null) => null :: nullType                                           [structural]
 rule defaultTyped(
-      objectClosure(OL:Int, <envStack>ListItem((Class:ClassType, BI:BagItem)) Rest:List</envStack>)
-    ) => objectClosure(OL, <envStack>ListItem((Class, BI)) Rest</envStack>) :: Class  [structural]
+      objectClosure(OL:Int, <envStack>ListItem((Class:ClassType, BI:BagItem)) Rest:List</envStack> RestObj:Bag)
+    ) => objectClosure(OL, <envStack>ListItem((Class, BI)) Rest</envStack> RestObj) :: Class
+                                                                                      [structural]
 rule defaultTyped(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T           [structural]
 
 //@ \subsubsection{Auxiliary constructs for other modules}

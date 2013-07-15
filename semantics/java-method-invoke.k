@@ -25,28 +25,19 @@ rule 'Method(K:K,, _:K,, Name:Id) => 'MethodName(K,, Name)  [structural, anywher
 
 rule [MethodNameUnqInstanceCT]:
     <k>
-      'MethodName(Name:Id) => 'MethodName('This(.KList)::Class,, Name)
+      'MethodName(Name:Id) => 'MethodName('QThis(Class)::Class,, Name)
       ...
     </k>
-    <crntClass> Class:ClassType </crntClass>
-    <contextType> instanceCT </contextType>                 [structural]
-
-rule [MethodNameUnqStaticCT]:
-    <k>
-      'MethodName(Name:Id) => 'MethodName(Class,, Name)
-      ...
-    </k>
-    <crntClass> Class:ClassType </crntClass>
-    <contextType> staticCT </contextType>                   [structural]
+    <crntClass> Class:ClassType </crntClass>                 [structural]
 
 rule [MethodName]:
     'MethodName(QualK:K,, Name:Id)
     => lookupMethodData(QualK, Name, notBool isTypedThis(QualK))        [structural]
 
-//True for 'This(_)::T, false otherwise
+//True for 'QThis(_)::T, false otherwise
 syntax K ::= "isTypedThis" "(" K ")"                                    [function]
 
-rule isTypedThis(K::_) => getKLabel(K) ==KLabel 'This
+rule isTypedThis(K::_) => getKLabel(K) ==KLabel 'QThis
 
 rule isTypedThis(K) => false
 when getKLabel(K) =/=KLabel '_::_
@@ -78,39 +69,53 @@ and then pop it when the method returns. */
 //First argument is reduced up to lookupMethodData.
 context elabDispose('Invoke(HOLE,, _))
 
-rule [InvokeToInvokeImplInstance]:
+//todo add search in enclosing classes here using ??
+rule [Invoke-to-lookupMethod-qualified]:
     elabDispose('Invoke(lookupMethodData(
-        Exp:K :: QualT:RefType,
+        Qual:K,
         MethodName:Id,
         IsQ:Bool
       ),,
       'ListWrap(ParamExps:KList))
     ) => lookupMethod(
-      QualT,
+      typeOf(Qual),
       MethodName,
       IsQ,
       noValue,
       false,
-      Exp::QualT,
+      Qual,
       ParamExps
     )
+when notBool isTypedThis(Qual)
 
-rule [InvokeToInvokeImplStatic]:
-    elabDispose('Invoke(lookupMethodData(
-        Class:ClassType,
-        MethodName:Id,
-        IsQ:Bool
-      ),,
-      'ListWrap(ParamExps:KList))
-    ) => lookupMethod(
-      Class,
-      MethodName,
-      IsQ,
-      noValue,
-      false,
-      noValue,
-      ParamExps
-    )
+rule [Invoke-to-lookupMethod-unqualified]:
+    <k>
+      elabDispose('Invoke(lookupMethodData(
+          'QThis(Class:ClassType)::Class,
+          MethodName:Id,
+          IsQ:Bool
+        ),,
+        'ListWrap(ParamExps:KList))
+      ) => lookupMethod(
+        Class,
+        MethodName,
+        IsQ,
+        noValue,
+        false,
+        'QThis(Class)::Class,
+        ParamExps
+      )
+      ?? elabDispose('Invoke(lookupMethodData(
+          'QThis(EnclosingClass)::EnclosingClass,
+          MethodName,
+          IsQ
+        ),,
+        'ListWrap(ParamExps))
+      )
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
 
 //Lookup the right methodClosure based on supplied parameters.
 //If the method is not found in the supplied class list, we should search for it in the
@@ -125,8 +130,8 @@ syntax K ::= "lookupMethod" "(" RefType //target ref class
                                           //Sig format: mapWrap(Sig |-> MethodTV)
                             "," Bool      //SigSearched: true if Sig was already searched for the current class, false otherwise.
                                           // Starts with false.
-                            "," K         //TypedExp - qualifier expression, or noValue for class qualifiers.
-                            "," KList   //ParamExps - parameter expressions of type TypedExp
+                            "," K         //TypedExp - qualifier expression, or Class for class qualifiers.
+                            "," KList     //ParamExps - parameter expressions of type TypedExp
                             ")"
         [strict(4)]
 
@@ -179,24 +184,8 @@ rule [lookupMethodSigFound]:
       true, QualK:K, ParamExps:KList
     ) => elabRes(methodInvokeRuntime(QualT, Sig, QualK, ParamExps, CT) :: RetT)
 
-rule [lookupMethodGotoEnclosing]:
-    <k>
-      lookupMethod(
-        Class:ClassType => EnclosingClass,
-        MethodName:Id,
-        _ => false,
-        noValue,
-        true => false,
-        _ => noValue,
-        _
-      )
-      ...
-    </k>
-    <classType> Class </classType>
-    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
-
-rule [lookupMethodDiscard]:
-    lookupMethod(noClass,_,_,_,_,_,_) => noValue
+rule [lookupMethodToNoValue]:
+    lookupMethod(_,_,_, noValue, true, _,_) => noValue
 
 //converts a List{TypedVal} to Types.
 syntax K ::= "getTypesFromValues" "("
@@ -345,7 +334,7 @@ rule [methodInvokeRuntimeInstanceOnClass]:
             Rest:List
             ListItem((Class:ClassType, BI:BagItem))
             ...
-          </envStack>)::_,
+          </envStack> _)::_,
           ParamVals:KList, instanceCT
       )::_
       => invokeImpl(
@@ -374,7 +363,7 @@ rule [methodInvokeRuntimeInstanceOnInterface]:
           <envStack>
             ListItem((ActualClass:ClassType, _))
             ...
-          </envStack>)::_,
+          </envStack> _)::_,
         ParamVals:KList, instanceCT
       )::_
       => invokeImpl(
@@ -427,14 +416,16 @@ when
 rule [superMethodEval]:
     <k>
       superMethod::BaseClass:ClassType
-      => objectClosure(OL, <envStack> EStack </envStack>)::BaseClass
+      => objectClosure(OL, <envStack> EStack </envStack> CrntObjRest)::BaseClass
       ...
     </k>
-    <crntClass> Class:ClassType </crntClass>
-    <location> OL:Int </location>
+    <crntObj>
+      <crntClass> Class:ClassType </crntClass>
+      <location> OL:Int </location>
+      <envStack>... ListItem((Class, _)) EStack:List </envStack>
+      CrntObjRest:Bag
+    </crntObj>
     <contextType> instanceCT </contextType>
-    <envStack>... ListItem((Class, _)) EStack:List </envStack>
-    <classType> Class </classType>
 
 //Converts a list of ListItem((Class, BI) into KList with elements of sort ClassType
 syntax K ::= "getClassList" "(" List ")"

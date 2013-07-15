@@ -365,18 +365,29 @@ when notBool (X in keys(StEnv))
 
 rule [elabFieldUnqualified]:
     <k>
-      elabDispose('Field(X:Id))
-      => elab('Field( 'This(.KList),, X )) ?? elab('Field( Class,, X))
-         ?? outerStaticField(Class, X)
+      elabDispose('Field(X:Id) => 'Field( 'QThis(Class),, X ))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
+
+rule [elabFieldWithQThis]:
+    <k>
+      elabDispose('Field( 'QThis(Class:ClassType),, X ))
+      => elab('Field( 'QThis(Class:ClassType) :: Class,, X )) ?? elab('Field( Class,, X))
+         ?? elabDispose('Field( 'QThis(EnclosingClass:ClassType),, X ))
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
 
 rule [FieldOfPackage]:
     elabDispose('Field( _:PackageId,, _:Id )) => noValue  [structural]
 
 rule [FieldOfNoValue]:
     elabDispose('Field( noValue,, _:Id )) => noValue      [structural]
+
+rule [FieldOfQThis-noClass]:
+    elabDispose('Field( 'QThis(noClass),, _:Id )) => noValue      [structural]
 
 //Computationof instance and static environment of a class
 //e.g. set of fields
@@ -413,13 +424,16 @@ when
 rule [elabLookupNotFound]:
     elabLookup(X:Id, noClass) => noValue
 
-rule [elabThisInstanceCT]:
-    <k> elabDispose('This(.KList)) => elabRes('This(.KList) :: Class) ...</k>
+rule [elabThis]:
+    <k> elabDispose('This(.KList) => 'QThis(Class)) ...</k>
     <crntClass> Class:ClassType </crntClass>
+
+rule [elabQThisInstanceCT]:
+    <k> elabDispose('QThis(Class)) => elabRes('QThis(Class) :: Class) ...</k>
     <contextType> instanceCT </contextType>
 
-rule [elabThisStaticCT]:
-    <k> elabDispose('This(.KList)) => noValue ...</k>
+rule [elabQThisStaticCT]:
+    <k> elabDispose('QThis(_)) => noValue ...</k>
     <contextType> staticCT </contextType>
 
 rule [elabFieldQualRef]:
@@ -433,7 +447,7 @@ rule [elabFieldQualClass]:
 rule [elabSuperField]:
     <k>
       elabDispose('SuperField(X:Id))
-      => elabTypedExp(lookupField('This(.KList)::Class, noClass, X), elabLookup(X, BaseClass))
+      => elabTypedExp(lookupField('QThis(Class)::Class, noClass, X), elabLookup(X, BaseClass))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -516,28 +530,12 @@ when
     ((Phase ==K ElaborateBlocksPhase) orBool (Phase ==K ExecutionPhase))
      andBool notBool (X in keys(Imp))
 
-/*@ \section{Outer static fields} */
-
-//Search for fields with this name in the outer classes of the given class, if any.
-syntax K ::= "outerStaticField" "(" ClassType //The original class. We will search in
-                                              //its outer classes
-                                "," Id        //The field name
-                                ")"
-
-rule [outerStaticField]:
-    <k>
-      outerStaticField(Class:ClassType, X:Id)
-      => elab('Field(EnclosingClass,, X)) ?? outerStaticField(EnclosingClass, X)
-      ...
-    </k>
-    <classType> Class </classType>
-    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
-
-rule [outerStaticFieldDiscard]:
-    outerStaticField(noClass, _) => noValue
-
 /*@ \section{Elaboration of numeric expressions} */
 
+//Expression labels are not converted by the default rule in the phase
+// elabDispose() => elabRes(...)
+//Each expression needs a specialised rule for disposing, that will compute, among others,
+//the type of the expression.
 syntax K ::= "isExpressionLabel" "(" KLabel ")" [function]
 rule isExpressionLabel(KL:KLabel) =>
            (KL ==KLabel 'localVar`(_`))
@@ -600,11 +598,13 @@ syntax K ::= "isNonNumericExp" "(" KLabel ")"       [function]
 rule isNonNumericExp(KL:KLabel) =>
            (KL ==KLabel 'ArrayAccess)
     orBool (KL ==KLabel 'NewInstance)
+    orBool (KL ==KLabel 'QNewInstance)
     orBool (KL ==KLabel 'InstanceOf)
     orBool (KL ==KLabel 'castImpl`(_`,_`))
     orBool (KL ==KLabel 'Invoke)
     //also in customElabChildren
     orBool (KL ==KLabel 'This)
+    orBool (KL ==KLabel 'QThis)
     orBool (KL ==KLabel 'AmbName)
     orBool (KL ==KLabel 'ExprName)
     orBool (KL ==KLabel 'Field)
@@ -726,8 +726,17 @@ rule [elabCastImplElabIndep]:
     elabDispose(castImpl(T1:Type, Exp:K :: T2:Type)) => elabRes(castImpl(T1, Exp::T2) :: T1)
 
 rule [elabNewInstance]:
-      elabDispose('NewInstance(Arg1:K,, T:RefType,, Arg3:K,, Arg4:K))
-      => elabRes('NewInstance(Arg1:K,, T:RefType,, Arg3:K,, Arg4:K) :: T)
+      elabDispose('NewInstance(Arg1:K,, T:RefType,, Arg3:K,, Arg4:K)
+      => 'QNewInstance(noValue,, Arg1:K,, T:RefType,, 'None(.KList),, Arg3:K,, Arg4:K))
+
+rule [elabQNewInstance-resolve-class]:
+      elabDispose('QNewInstance(_::class QualClassId:Id,, _:K,,
+        (X:Id => getClassType(packageId(QualClassId), X)),,
+      _))
+
+rule [elabQNewInstance]:
+      elabDispose('QNewInstance(Arg1:K,, Arg2:K,, T:RefType,, Arg4:K,, Arg5:K,, Arg6:K))
+      => elabRes('QNewInstance(Arg1,, Arg2,, T,, Arg4,, Arg5,, Arg6) :: T)
 
 rule [elabInstanceOf]:
     elabDispose('InstanceOf(TE:TypedExp,, RT2:RefType)) => elabRes('InstanceOf(TE,, RT2) :: bool)

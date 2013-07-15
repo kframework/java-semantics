@@ -28,19 +28,51 @@ rule [lvalueExprNameLocal]:
 /*@ \subsection{Self reference}
 Like in untyped KOOL. */
 
-//todo reconsider after elabration phase will work
-rule [This]:
+//todo <crntClass> Class </crntClass> should also play a role when looking up the correct this
+//test that this implementation is not correct
+rule [QThis]:
     <k>
-      'This(.KList)::Class:ClassType
-      => objectClosure(OL, Obj) :: Class
+      'QThis(Class:ClassType)::Class => lookupQThis(Class, objectClosure(OL, Obj)::CrntClass)
       ...
     </k>
     <crntObj>
-      Obj:Bag
-      <crntClass> Class </crntClass>
+      <crntClass> CrntClass:ClassType </crntClass>
       <location> OL:Int </location>
+      Obj:Bag
     </crntObj>
     <contextType> instanceCT </contextType>
+
+//This case may happen when a field/method is called by simple name in a static context.
+//Although there should be no qualifier, elaboration phase will introduce the qualifier 'QThis.
+rule [QThis-static]:
+    <k>
+      'QThis(_)::_ => noValue
+      ...
+    </k>
+    <contextType> staticCT </contextType>
+
+//Search for the right value representing QThis(Class) - an expression of type Class.this
+syntax K ::= "lookupQThis" "(" ClassType  //the type of this to look for
+                           "," TypedVal   //the objectClosure where the type should be found
+                           ")"
+
+rule [lookupQThis]:
+      lookupQThis(Class:ClassType, objectClosure(OL,
+        <envStack>ListItem((ClosureClass:ClassType, EnvBI:BagItem)) Rest:List</envStack>
+        <enclosingObj> EnclosingObj:KResult </enclosingObj>)::_
+      ) =>
+      'If(
+        subtype(ClosureClass, Class),,
+        objectClosure(OL, <envStack> ListItem((ClosureClass, EnvBI)) Rest </envStack>
+                          <enclosingObj> EnclosingObj </enclosingObj>
+        )::Class,,
+        lookupQThis(Class:ClassType, EnclosingObj)
+      )
+
+//This case may happen when a field/method is called by simple name in a static context.
+//Although there should be no qualifier, elaboration phase will introduce the qualifier noValue.
+rule [lookupQThis-on-noValue]:
+    lookupQThis(_, noValue) => noValue
 
 /*@ \subsection{Object member access} */
 
@@ -54,7 +86,7 @@ context lvalue(lookupField(HOLE,_,_)::_)
 rule [lookupField]:
     lookupField(
       objectClosure(_,
-          <envStack>... ListItem((TargetClass, <env>... X |-> L:Int ...</env>)) ...</envStack>
+          <envStack>... ListItem((TargetClass, <env>... X |-> L:Int ...</env>)) ...</envStack> _
         ) ::_,
       TargetClass:ClassType,
       X:Id

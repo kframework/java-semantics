@@ -114,7 +114,7 @@ get more from the existing SIMPLE constructs. */
 //@ \texttt{typeOf for raw values of reference type}
 rule typeOf(Str:String) => rtString [anywhere]
 rule typeOf(null) => nullType [anywhere]
-rule typeOf(objectClosure(_, (<envStack>ListItem((Class:ClassType, _)) _</envStack>)))
+rule typeOf(objectClosure(_, <envStack>ListItem((Class:ClassType, _)) _</envStack> _))
      => Class [anywhere]
 rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T [anywhere]
 
@@ -127,14 +127,20 @@ order to be recovered after the creation of the new object.  Only the
 first rule below needs to be changed; the others are identical to
 those in untyped KOOL. */
 
-//resolve new instance expression parameter values
-context 'NewInstance(_:K,,_:K,, 'ListWrap(_,,HOLE,,_),, _)::_
+//resolve new instance qualifier
+context 'QNewInstance(HOLE,, _:KList)::_
 
-rule [NewInstance]:
+//resolve new instance expression parameter values
+//todo test the expression order using state space search.
+context 'QNewInstance(_:KResult,,_:K,,_:K,,_:K,, 'ListWrap(_,,HOLE,,_),, _)::_
+
+rule [QNewInstance]:
     <k>
-      'NewInstance(
+      'QNewInstance(
+        EnclosingObj:KResult,,
         _:K,,
         Class:ClassType,,
+        _:K,,
         'ListWrap( Vals:KList ),,
         _:K
       )::Class
@@ -152,6 +158,7 @@ rule [NewInstance]:
       =>  <crntClass> .K </crntClass>
           <envStack> .List </envStack>
           <location> L </location>
+          <enclosingObj> EnclosingObj </enclosingObj>
     </crntObj>
     <contextType> CT:ContextType </contextType>
     <nextLoc> L:Int => L +Int 1 </nextLoc>

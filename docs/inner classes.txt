@@ -1,0 +1,19 @@
+1.ok. For now we implemented a comprehensive suite of tests, implementation-agnostic.
+2.ok. Configuration. We need at least two cells:
+  - <enclosingClass> - knows who is the enclosing class of a given class. Alteady exists.
+  We will use this information unchanged for now. We don't have any information saying if the
+  enclosing class is instance or static.
+  todo: Verify if this can lead to problems. If yes - add relevant tests.
+  - <enclosingObj> - the location of the enclosing object, at runtime.
+
+  Most of the preprocessing should happen at elaboration time. We need to implement the following:
+
+3.ok. Support for qualified new constructs.
+  obj.new Class() should add the relevant value in the <enclosingObj> cell.
+4.ok. Desugar all "this" qualifiers into Class.this
+5.ok. Support for resolving instance fields/methods from enclosing instance.
+  Each such reference should be desugared into Class.this.name.
+6. Instantiation of inner classes without qualifier.
+
+Status day 2: messing up with methods.
+  new and fields seem to work. 3 tests from inner classes suite fail. Why? - it is not clear.

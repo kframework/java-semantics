@@ -36,10 +36,10 @@ class O {
     }
 
     void test() {
-      System.out.println("O.A: v    = " + v);
-      System.out.println("O.A: f()  = " + f());
       System.out.println("O.A: va   = " + va);
       System.out.println("O.A: fa() = " + fa());
+      System.out.println("O.A: v    = " + v);
+      System.out.println("O.A: f()  = " + f());
     }
   }
 }
