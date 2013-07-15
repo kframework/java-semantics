@@ -171,7 +171,9 @@ rule [lookupMethodLookupSigGeneralRef]:
     <classType> ObjT:ClassType </classType>
     <methods> Env:Map </methods>
 when
-    (notBool (isClassType(QualT) ==K true)) andBool (objectClass ==K ObjT)
+            (notBool (isClassType(QualT) ==K true))
+    andBool (objectClass ==K ObjT)
+    andBool (Id2String(MethodName) =/=String "clone")
 
 //If resolved method is static, we cannot insert in the construct the actual method body,
 //because this body might not be elaborated.

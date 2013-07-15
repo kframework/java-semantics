@@ -116,7 +116,7 @@ when
 
 rule [elab-array-clone]:
     lookupMethod( arrayOf T:Type, MethodName:Id,
-      _, noValue, true, QualTE:TypedExp, .KList
+      _, noValue, false, QualTE:TypedExp, .KList
     ) => elabRes(methodInvokeRuntime(arrayOf T:Type, sig(MethodName, types(.KList)), QualTE, .KList, instanceCT) :: objectClass)
 when
     Id2String(MethodName) ==String "clone"

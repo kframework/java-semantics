@@ -30,7 +30,7 @@ class main {
   void cloneTest(RuntimeException[] v1, RuntimeException[] v2) {
     System.out.print((v1 == v2)+" : ");
     for(int i=0; i<v1.length; i++) {
-      System.out.print((v1[i] == v2[i]));
+      System.out.print((v1[i] == v2[i]) + " ");
     }
     System.out.println();
   }
