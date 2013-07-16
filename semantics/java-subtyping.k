@@ -137,6 +137,10 @@ when
 rule [subtypeArrayOfArrayRef]:
     subtype( arrayOf RefT1:RefType, arrayOf RefT2:RefType ) => subtype( RefT1, RefT2 )
 
+//used by lookupQThis, when QThis is an inferred qualifier for unqualified new instance creation.
+rule [subtypeOfNoClass]:
+    subtype( _, noClass ) => false
+
 /*@ \subsubsection{Subtyping lists of types}*/
 
 rule [subtypeList]:

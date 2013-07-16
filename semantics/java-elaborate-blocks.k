@@ -88,9 +88,13 @@ rule [elaborateBlocksStart]:
     <computationPhase> ProcessClassesPhase => ElaborateBlocksPhase </computationPhase>
     (<cuClass> _ </cuClass> => .Bag)
 
+//it is important to elaborate the instance initializers before the methods.
+//This way, when 'SuperConstrEnv is encountered, it inserts the already elaborated instance
+//initializer in its place, avoiding name collisions between consturctor args and fields
+//inside instance init.
 rule [elaborateBlocks]:
     <k>
-      (. => elabMethods(MethodDecs) ~> elabInstanceInit ~> elabStaticInit)
+      (. => elabInstanceInit ~> elabMethods(MethodDecs) ~> elabStaticInit)
       ~> elaborateBlocks(setWrap((SetItem(Class:ClassType) => .) _:Set))
       ...
     </k>
@@ -140,7 +144,23 @@ rule [elabMethodsCoolMethod]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <methodDecs>
-      Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:KList), _,_,_, FirstLine:K, CHOLE => Body) :: MethodType:Type
+      Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:KList), _,_, methodRT, FirstLine:K, CHOLE => Body) :: MethodType:Type
+      ...
+    </methodDecs>
+
+rule [elabMethodsCoolConstructor]:
+    <k>
+      (elabRes(Body:K) => .) ~> elabMethods(_:Map)
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    <methodDecs>
+      Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:KList), _,_,
+        constructorRT => methodRT,
+        FirstLine:K => noValue,
+        CHOLE => FirstLine ~> Body
+      ) :: MethodType:Type
       ...
     </methodDecs>
 
@@ -209,6 +229,9 @@ rule customElabChildren(KL:KLabel) =>
     orBool (KL ==KLabel 'Catch)
     orBool (KL ==KLabel 'LocalVarDecStm)
     orBool (KL ==KLabel 'LocalVarDec)
+    orBool (KL ==KLabel 'SuperConstrInv)
+    orBool (KL ==KLabel 'QSuperConstrInv)
+    orBool (KL ==KLabel 'AltConstrInv)
 
 //Will not match .K - is not isElabNaked. (.K) is matched by [elabDotK].
 rule [unwrapElabNaked]:
@@ -726,8 +749,13 @@ rule [elabCastImplElabIndep]:
     elabDispose(castImpl(T1:Type, Exp:K :: T2:Type)) => elabRes(castImpl(T1, Exp::T2) :: T1)
 
 rule [elabNewInstance]:
-      elabDispose('NewInstance(Arg1:K,, T:RefType,, Arg3:K,, Arg4:K)
-      => 'QNewInstance(noValue,, Arg1:K,, T:RefType,, 'None(.KList),, Arg3:K,, Arg4:K))
+    <k>
+      elabDispose('NewInstance(Arg1:K,, Class:ClassType,, Arg3:K,, Arg4:K)
+      => 'QNewInstance('QThis(EnclosingClass)::EnclosingClass,, Arg1,, Class,, 'None(.KList),, Arg3,, Arg4))
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
 
 rule [elabQNewInstance-resolve-class]:
       elabDispose('QNewInstance(_::class QualClassId:Id,, _:K,,
@@ -803,5 +831,58 @@ rule [elabResInExecutionPhase]:
     <computationPhase> ExecutionPhase </computationPhase>
 when
     KL =/=KLabel 'elab`(_`)
+
+//@Section elaboration of SuperConstrInv, AltConstrInv
+
+//Desugaring unqualified superclass constructor invocation into a qualified one
+rule [SuperConstrInv-desugar]:
+    <k>
+      elab(
+        'SuperConstrInv(K:K,, 'ListWrap( Args:KList ))
+        =>  'QSuperConstrInv(
+              'QThis(EnclosingClass) :: EnclosingClass,,
+              K,,
+              'ListWrap(Args)
+            )
+      )
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
+
+//todo continue implementing o.super() from here
+//Qualified superclass constructor invocation: Qual.super(Args);
+rule [QSuperConstrInv]:
+    <k>
+      elab(
+        'QSuperConstrInv(Qual:K,, _,, 'ListWrap( Args:KList ))
+        => 'ListWrap(
+              'ExprStm('Invoke(
+                'SuperMethod('None(.KList),, getConsName(BaseClass) ),,
+                'ListWrap(Args)
+              )),,
+              IInit
+            )
+      )
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    <extends> BaseClass:ClassType </extends>
+    <instanceInit> IInit:K </instanceInit>
+
+rule [AltConstrInv]:
+    <k>
+      elab(
+        'AltConstrInv(_,, 'ListWrap( Args:KList ))
+        => 'ExprStm('Invoke(
+                  'Method('MethodName( getConsName(Class) )),,
+                  'ListWrap(Args)
+            ))
+      )
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
 
 endmodule

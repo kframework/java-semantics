@@ -13,7 +13,8 @@
 4.ok. Desugar all "this" qualifiers into Class.this
 5.ok. Support for resolving instance fields/methods from enclosing instance.
   Each such reference should be desugared into Class.this.name.
-6. Instantiation of inner classes without qualifier.
-
-Status day 2: messing up with methods.
-  new and fields seem to work. 3 tests from inner classes suite fail. Why? - it is not clear.
+6.ok. Instantiation of inner classes without qualifier. Qualifier is properly inferred.
+7. Call to qualified superclass constructor. Here we need some refactoring.
+  Right now <enclosingObj> is associated to a whole object. It should be associated with
+  each object stack layer. This way base class could have a different enclosing object
+  than the derived class.

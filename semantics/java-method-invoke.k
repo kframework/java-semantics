@@ -186,7 +186,7 @@ rule [lookupMethodSigFound]:
       true, QualK:K, ParamExps:KList
     ) => elabRes(methodInvokeRuntime(QualT, Sig, QualK, ParamExps, CT) :: RetT)
 
-rule [lookupMethodToNoValue]:
+rule [lookupMethodSigNotFound]:
     lookupMethod(_,_,_, noValue, true, _,_) => noValue
 
 //converts a List{TypedVal} to Types.
@@ -581,7 +581,7 @@ when getKLabel(Body) =/=KLabel 'NoMethodBody
 rule [invokeImplStatic]:
     <k>
       invokeImpl(
-        methodClosure(Class:ClassType, 'ListWrap(Params:KList), staticCT, _,methodRT, noValue, Body:K)
+        methodClosure(Class:ClassType, 'ListWrap(Params:KList), staticCT, _,methodRT, _, Body:K)
             :: methodType(_, T:Type),
         _,
         'ListWrap(ParamValues:KList)
@@ -611,67 +611,6 @@ rule [invokeImplStatic]:
       C:Bag
     </control>
     <env> Env:Map => . </env>
-
-rule [invokeConstructor]:
-    <k>
-      invokeImpl(
-        methodClosure(
-          Class:ClassType, _,_,_,
-          constructorRT => methodRT,
-          FirstLine:K => noValue,
-          Body:K => FirstLine
-                  ~>  #if getKLabel(FirstLine) ==KLabel 'AltConstrInv
-                        #then .K
-                        #else freshEnv(IInit)
-                      #fi
-                  ~> Body
-        )::_, _,_
-      )
-      ...
-    </k>
-    <classType> Class </classType>
-    <instanceInit> IInit:K </instanceInit>
-
-//executes the given computation in a fresh environment, then restores the original environment.
-syntax K ::= "freshEnv" "(" K ")"
-rule [freshEnv]:
-    <k>
-      freshEnv(K:K) => K ~> env(Env)
-      ...
-    </k>
-    <env> Env:Map => . </env>
-
-context 'SuperConstrInv(_,, 'ListWrap(KRs:KList,, HOLE,, _) )
-when isKResult(KRs)
-
-rule [SuperConstrInv]:
-    <k>
-      'SuperConstrInv(_,, 'ListWrap( Vals:KList ))
-      => 'ExprStm('Invoke(
-                'SuperMethod('None(.KList),, getConsName(BaseClass) ),,
-                'ListWrap(Vals)
-          ))
-      ...
-    </k>
-    <crntClass> Class:ClassType </crntClass>
-    <classType> Class </classType>
-    <extends> BaseClass:ClassType </extends>
-when isKResult(Vals)
-
-context 'AltConstrInv(_,, 'ListWrap(KRs:KList,, HOLE,, _) )
-when isKResult(KRs)
-
-rule [AltConstrInv]:
-    <k>
-      'AltConstrInv(_,, 'ListWrap( Vals:KList ))
-      => 'ExprStm('Invoke(
-                'Method('MethodName( getConsName(Class) )),,
-                'ListWrap(Vals)
-          ))
-      ...
-    </k>
-    <crntClass> Class:ClassType </crntClass>
-when isKResult(Vals)
 
 //@ \texttt{bindto} also checks the well-formedness of the method parameters
 
