@@ -114,7 +114,7 @@ get more from the existing SIMPLE constructs. */
 //@ \texttt{typeOf for raw values of reference type}
 rule typeOf(Str:String) => rtString [anywhere]
 rule typeOf(null) => nullType [anywhere]
-rule typeOf(objectClosure(_, <envStack>ListItem((Class:ClassType, _)) _</envStack> _))
+rule typeOf(objectClosure(_, <envStack>ListItem((Class:ClassType, _,_)) _</envStack> _))
      => Class [anywhere]
 rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T [anywhere]
 
@@ -148,7 +148,7 @@ rule [QNewInstance]:
         ~> create(Class)
         ~> storeObj
         ~> restoreEnvObjContext(Env, Obj, CT)
-        ~> invokeConstr(L, Class, Vals)
+        ~> invokeConstr(L, Class, Vals, EnclosingObj)
         ~> typedLookup(L)
       ...
     </k>
@@ -158,7 +158,6 @@ rule [QNewInstance]:
       =>  <crntClass> .K </crntClass>
           <envStack> .List </envStack>
           <location> L </location>
-          <enclosingObj> EnclosingObj </enclosingObj>
     </crntObj>
     <contextType> CT:ContextType </contextType>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
@@ -194,7 +193,7 @@ rule [addEnvLayer]:
     <k> addEnvLayer => . ...</k>
     <env> Env:Map => . </env>
     <crntClass> Class:ClassType </crntClass>
-    <envStack> . => ListItem((Class, <env>Env</env>)) ...</envStack>
+    <envStack> . => ListItem((Class, <env>Env</env>, noValue)) ...</envStack>
         [structural]
 
 syntax K ::= "storeObj"
@@ -212,18 +211,28 @@ rule [storeObj]:
       ...
     </store>
 
-syntax K ::= "invokeConstr" "(" Int "," ClassType "," KList ")"
+syntax K ::= "invokeConstr" "(" Int       //OL - object location
+                            "," ClassType //The target class
+                            "," KList     //Arguments, evaluated
+                            "," K         //Encloser - the typed enclosing object. if any, or noValue
+                            ")"
 
+//todo simplify this rule. We could use <crntObj> instead of <store>
 rule [invokeConstr]:
     <k>
-      invokeConstr(OL:Int, Class:ClassType, Vals:KList)
+      invokeConstr(OL:Int, Class:ClassType, Vals:KList, Encloser:K)
       => 'ExprStm('Invoke(
             'Method('MethodName( lookup(OL)::T,, getConsName(Class) )),,
             'ListWrap( Vals )
           ))
       ...
     </k>
-    <store>... OL |-> _::T:Type ...</store>
+    <store>
+      ...
+      OL |->
+        objectClosure(_, <envStack> ListItem((Class,_, _ => Encloser)) ...</envStack>)::T:Type
+      ...
+    </store>
 when isKResult(Vals)
 
 /*@ \subsection{Instance Of}

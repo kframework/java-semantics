@@ -334,13 +334,13 @@ rule [methodInvokeRuntimeInstanceOnClass]:
         objectClosure(OL:Int,
           <envStack>
             Rest:List
-            ListItem((Class:ClassType, BI:BagItem))
+            ListItem((Class:ClassType, BI:BagItem, Encloser:KResult))
             ...
           </envStack> _)::_,
           ParamVals:KList, instanceCT
       )::_
       => invokeImpl(
-        lookupOverloadedMethod(Sig, getClassList(Rest ListItem((Class, BI))), mapWrap(.Map), noValue),
+        lookupOverloadedMethod(Sig, getClassList(Rest ListItem((Class, BI, Encloser))), mapWrap(.Map), noValue),
         OL, 'ListWrap(ParamVals)
       )      ...
     </k>
@@ -363,7 +363,7 @@ rule [methodInvokeRuntimeInstanceOnInterface]:
       methodInvokeRuntime(Class:ClassType, Sig:Signature,
         objectClosure(OL:Int,
           <envStack>
-            ListItem((ActualClass:ClassType, _))
+            ListItem((ActualClass:ClassType, _,_))
             ...
           </envStack> _)::_,
         ParamVals:KList, instanceCT
@@ -424,14 +424,14 @@ rule [superMethodEval]:
     <crntObj>
       <crntClass> Class:ClassType </crntClass>
       <location> OL:Int </location>
-      <envStack>... ListItem((Class, _)) EStack:List </envStack>
+      <envStack>... ListItem((Class, _,_)) EStack:List </envStack>
       CrntObjRest:Bag
     </crntObj>
     <contextType> instanceCT </contextType>
 
-//Converts a list of ListItem((Class, BI) into KList with elements of sort ClassType
+//Converts a list of ListItem((Class, BI, Encloser)) into KList with elements of sort ClassType
 syntax K ::= "getClassList" "(" List ")"
-rule (.KList => Class),, getClassList((ListItem((Class:ClassType, _)) => .List) _)
+rule (.KList => Class),, getClassList((ListItem((Class:ClassType, _,_)) => .List) _)
         [structural, anywhere]
 rule getClassList(.) => .KList
         [structural, anywhere]

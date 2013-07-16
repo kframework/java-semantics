@@ -58,15 +58,13 @@ syntax K ::= "lookupQThis" "(" ClassType  //the type of this to look for
 
 rule [lookupQThis]:
       lookupQThis(Class:ClassType, objectClosure(OL,
-        <envStack>ListItem((ClosureClass:ClassType, EnvBI:BagItem)) Rest:List</envStack>
-        <enclosingObj> EnclosingObj:KResult </enclosingObj>)::_
+        <envStack>ListItem((ClosureClass:ClassType, EnvBI:BagItem, Encloser:KResult)) Rest:List</envStack>)::_
       ) =>
       'If(
         subtype(ClosureClass, Class),,
-        objectClosure(OL, <envStack> ListItem((ClosureClass, EnvBI)) Rest </envStack>
-                          <enclosingObj> EnclosingObj </enclosingObj>
+        objectClosure(OL, <envStack> ListItem((ClosureClass, EnvBI, Encloser)) Rest </envStack>
         )::Class,,
-        lookupQThis(Class:ClassType, EnclosingObj)
+        lookupQThis(Class:ClassType, Encloser)
       )
 
 //This case may happen when a field/method is called by simple name in a static context.
@@ -86,7 +84,7 @@ context lvalue(lookupField(HOLE,_,_)::_)
 rule [lookupField]:
     lookupField(
       objectClosure(_,
-          <envStack>... ListItem((TargetClass, <env>... X |-> L:Int ...</env>)) ...</envStack> _
+          <envStack>... ListItem((TargetClass, <env>... X |-> L:Int ...</env>, _)) ...</envStack> _
         ) ::_,
       TargetClass:ClassType,
       X:Id

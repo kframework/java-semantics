@@ -29,9 +29,6 @@ configuration
               //the stack of all inheritance layers of the current object, from the actual runtime type
               //to the primordial class Object.
               <envStack> .List </envStack>
-
-              //typed objectClosure for the enclosing object, or noValue if there is none.
-              <enclosingObj> .K </enclosingObj>
             </crntObj>
           </control>
         </thread>
@@ -187,7 +184,7 @@ syntax ContextType ::= "staticCT" | "instanceCT"
 syntax KResult ::= ContextType
 
 syntax RawVal ::= "objectClosure" "(" Int //OL - object location
-                                  "," Bag //<envStack> - the object content, <enclosingObj>
+                                  "," Bag //<envStack> - the object content
                                   ")"
 
                 | "methodClosure" "("
@@ -275,8 +272,8 @@ rule defaultTyped(B:Bool) => B :: bool                                          
 rule defaultTyped(Str:String) => Str :: rtString                                      [structural]
 rule defaultTyped(null) => null :: nullType                                           [structural]
 rule defaultTyped(
-      objectClosure(OL:Int, <envStack>ListItem((Class:ClassType, BI:BagItem)) Rest:List</envStack> RestObj:Bag)
-    ) => objectClosure(OL, <envStack>ListItem((Class, BI)) Rest</envStack> RestObj) :: Class
+      objectClosure(OL:Int, <envStack>ListItem((Class:ClassType, BI:BagItem, Encloser:KResult)) Rest:List</envStack>)
+    ) => objectClosure(OL, <envStack>ListItem((Class, BI, Encloser)) Rest</envStack>) :: Class
                                                                                       [structural]
 rule defaultTyped(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T           [structural]
 
@@ -324,7 +321,10 @@ rule [restoreEnvObjContext]:
     <contextType> _ => CT </contextType>
 
 //The content of an <envStack> ListItem() </envStack>
-syntax K ::= "(" ClassType "," BagItem ")"
+syntax K ::= "(" ClassType //The class corresponding to the current layer
+              "," BagItem  //<env> instance fields </env>
+              "," K        //objectClosure(...)::_ - the enclosing object, or noValue for top-level classes
+              ")"
 
 //A wrapper for maps. Allows the usage of multy-level maps.
 //Also used as part of mapUnion operation in java-process-classes

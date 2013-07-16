@@ -65,7 +65,7 @@ rule [object-getClass-on-object]:
     </k>
     <store>
       ...
-      OL |-> objectClosure(_, <envStack>ListItem((T:ClassType, _)) _</envStack> _) :: _
+      OL |-> objectClosure(_, <envStack>ListItem((T:ClassType, _,_)) _</envStack> _) :: _
       ...
     </store>
 when
