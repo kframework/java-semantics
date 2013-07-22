@@ -44,6 +44,31 @@ syntax K ::= "elaborateBlocks" "(" K ")" [strict] //Elaborate the blocks inside 
 //it cannot be KResult. Actually it is not KResult for HOLE, but is for CHOLE.
 syntax K ::= "elabRes" "(" K ")"
 
+//sets the enclosing object for a given object.
+//Invoked by invokeConstr and QSuperConstrInv.
+//Defined in JAVA-CLASSES
+syntax K ::= "setEncloser" "(" TypedExp   //Evaluates to target object
+                           "," ClassType  //Class layer for which to set the encloser
+                           "," K          //The encloser
+                           ")"            [strict(1,3)]
+
+syntax K ::= "getElabResQThisSubclassOf" "(" ClassType //The context class in which qualifier is searched for.
+                                         "," ClassType //Qualifier should be subclass of this class
+                                         ")"            [strict(2)]
+
+rule [getElabResQThisSubclassOf]:
+    <k>
+      getElabResQThisSubclassOf(QualClass:ClassType, ReqClass:ClassType)
+      => 'If(
+            subtype(QualClass, ReqClass),,
+            elabRes('QThis(QualClass)::QualClass),,
+            getElabResQThisSubclassOf(QualEncloserClass, ReqClass)
+          )
+      ...
+    </k>
+    <classType> QualClass </classType>
+    <enclosingClass> QualEncloserClass:ClassType </enclosingClass>
+
 //Chain of responsibility.
 //Evaluate the first argument. if it is KResult (except noValue) or elabRes(), the result of the ?? expression is
 //the result of the first argument. Otherwise, if the first argument evaluates to noValue, the result of the
@@ -750,12 +775,12 @@ rule [elabCastImplElabIndep]:
 
 rule [elabNewInstance]:
     <k>
-      elabDispose('NewInstance(Arg1:K,, Class:ClassType,, Arg3:K,, Arg4:K)
-      => 'QNewInstance('QThis(EnclosingClass)::EnclosingClass,, Arg1,, Class,, 'None(.KList),, Arg3,, Arg4))
+      elabDispose('NewInstance(Arg1:K,, Class:ClassType,, Arg3:K,, Arg4:K))
+      => getElabResQThisSubclassOf(CrntClass, getEnclosingClass(Class))
+      ~> elab('QNewInstance(CHOLE,, Arg1,, Class,, 'None(.KList),, Arg3,, Arg4))
       ...
     </k>
-    <classType> Class </classType>
-    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
+    <crntClass> CrntClass:ClassType </crntClass>
 
 rule [elabQNewInstance-resolve-class]:
       elabDispose('QNewInstance(_::class QualClassId:Id,, _:K,,
@@ -763,8 +788,8 @@ rule [elabQNewInstance-resolve-class]:
       _))
 
 rule [elabQNewInstance]:
-      elabDispose('QNewInstance(Arg1:K,, Arg2:K,, T:RefType,, Arg4:K,, Arg5:K,, Arg6:K))
-      => elabRes('QNewInstance(Arg1,, Arg2,, T,, Arg4,, Arg5,, Arg6) :: T)
+    elabDispose('QNewInstance(Qual:K,, Arg2:K,, T:RefType,, Arg4:K,, Arg5:K,, Arg6:K))
+    => elabRes('QNewInstance(Qual,, Arg2,, T,, Arg4,, Arg5,, Arg6) :: T)
 
 rule [elabInstanceOf]:
     elabDispose('InstanceOf(TE:TypedExp,, RT2:RefType)) => elabRes('InstanceOf(TE,, RT2) :: bool)
@@ -851,13 +876,12 @@ rule [SuperConstrInv-desugar]:
     <classType> Class </classType>
     <enclosingClass> EnclosingClass:ClassType </enclosingClass>
 
-//todo continue implementing o.super() from here
-//Qualified superclass constructor invocation: Qual.super(Args);
 rule [QSuperConstrInv]:
     <k>
       elab(
         'QSuperConstrInv(Qual:K,, _,, 'ListWrap( Args:KList ))
         => 'ListWrap(
+              setEncloser('This(.KList), BaseClass, Qual),,
               'ExprStm('Invoke(
                 'SuperMethod('None(.KList),, getConsName(BaseClass) ),,
                 'ListWrap(Args)
@@ -884,5 +908,20 @@ rule [AltConstrInv]:
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
+
+//True for 'QThis(_)::T, false otherwise
+syntax K ::= "isTypedQThis" "(" K ")"                                    [function]
+
+rule isTypedQThis(K::_) => getKLabel(K) ==KLabel 'QThis
+
+rule isTypedQThis(K) => false
+when getKLabel(K) =/=KLabel '_::_
+
+syntax K ::= "getEnclosingClass" "(" ClassType ")"
+
+rule [getEnclosingClass]:
+    <k> getEnclosingClass(Class:ClassType) => EnclosingClass ...</k>
+    <classType> Class </classType>
+    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
 
 endmodule

@@ -217,23 +217,32 @@ syntax K ::= "invokeConstr" "(" Int       //OL - object location
                             "," K         //Encloser - the typed enclosing object. if any, or noValue
                             ")"
 
-//todo simplify this rule. We could use <crntObj> instead of <store>
+//This rule cannot be simplified - we have to alter the newly created object from the store.
+//The context inside <control> is the context that called "new Obj()" expression.
 rule [invokeConstr]:
+    invokeConstr(OL:Int, Class:ClassType, Vals:KList, Encloser:KResult)
+    => setEncloser(lookup(OL)::Class, Class, Encloser)
+    ~> 'ExprStm('Invoke(
+          'Method('MethodName( lookup(OL)::Class,, getConsName(Class) )),,
+          'ListWrap( Vals )
+        ))
+
+rule [setEncloser-value]:
     <k>
-      invokeConstr(OL:Int, Class:ClassType, Vals:KList, Encloser:K)
-      => 'ExprStm('Invoke(
-            'Method('MethodName( lookup(OL)::T,, getConsName(Class) )),,
-            'ListWrap( Vals )
-          ))
+      setEncloser(objectClosure(OL:Int, _)::_, Class:ClassType, EncloserRV:RawVal::_) => .
       ...
     </k>
     <store>
       ...
       OL |->
-        objectClosure(_, <envStack> ListItem((Class,_, _ => Encloser)) ...</envStack>)::T:Type
+        objectClosure(_, <envStack>... ListItem((Class,_, _ => EncloserRV::EncloserClass)) ...</envStack>)::_
       ...
     </store>
-when isKResult(Vals)
+    <classType> Class </classType>
+    <enclosingClass> EncloserClass:ClassType </enclosingClass>
+
+rule [setEncloser-noValue]:
+    setEncloser(_,_, noValue) => .
 
 /*@ \subsection{Instance Of}
 Like in untyped KOOL. */

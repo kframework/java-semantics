@@ -65,8 +65,13 @@ when
     Class1 =/=K Class
         [structural]
 
-rule [subtypeClassOfNoClassFalse]:
+rule [subtypeNoClassOfAnyFalse]:
     subtype( noClass, _ ) => false
+
+//The case subtype (noClass, noClass) should never be encoutnered
+//used by the rule [getElabResQThisSubclassOf]
+rule [subtypeAnyOfNoClassFalse]:
+    subtype( _, noClass ) => true
 
 rule [subtypeInterfaceOfClass]:
     <k> subtype( Class1:ClassType, Class:ClassType ) => Class ==K objectClass ...</k>

@@ -6,11 +6,11 @@ Classes O, O.A, B < O.A. Instantiate B from static context.
 
 public class inner_in_304_top_cl_deriv_inner {
   public static void main(String[] args) {
-    System.out.println("new B().test():");
-    new B().test();
-    System.out.println();
     System.out.println("new B(new O(1)).test():");
     new B(new O(1)).test();
+    System.out.println();
+    System.out.println("new B().test():");
+    new B().test();
     System.out.println("Done!");
   }
 }

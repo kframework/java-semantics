@@ -1,4 +1,5 @@
 require "java-core.k"
+require "java-elaborate-blocks.k"
 require "java-subtyping.k"
 require "java-process-classes.k"
 require "java-classes.k"
@@ -7,6 +8,7 @@ require "java-static-init.k"
 
 module JAVA-METHOD-INVOKE
     imports JAVA-CORE
+    imports JAVA-ELABORATE-BLOCKS
     imports JAVA-SUBTYPING
     imports JAVA-PROCESS-CLASSES
     imports JAVA-CLASSES
@@ -32,24 +34,22 @@ rule [MethodNameUnqInstanceCT]:
 
 rule [MethodName]:
     'MethodName(QualK:K,, Name:Id)
-    => lookupMethodData(QualK, Name, notBool isTypedThis(QualK))        [structural]
-
-//True for 'QThis(_)::T, false otherwise
-syntax K ::= "isTypedThis" "(" K ")"                                    [function]
-
-rule isTypedThis(K::_) => getKLabel(K) ==KLabel 'QThis
-
-rule isTypedThis(K) => false
-when getKLabel(K) =/=KLabel '_::_
+    => lookupMethodData(QualK, Name, notBool isTypedQThis(QualK))        [structural]
 
 // super.X(_)
-rule [SuperMethod]:
+rule [SuperMethod-desugar]:
     <k>
-      'SuperMethod(_:K,, Name:Id)
-      => lookupMethodData(superMethod::BaseClass, Name, false)
+      'SuperMethod(K:K,, Name:Id) => 'QSuperMethod(Class,, K:K,, Name:Id)
       ...
     </k>
-    <crntClass> Class:ClassType </crntClass>
+    <crntClass> Class:ClassType </crntClass>  [structural]
+
+rule [QSuperMethod]:
+    <k>
+      'QSuperMethod(Class:ClassType,, _:K,, Name:Id)
+      => lookupMethodData(qSuperQual('QThis(Class) :: Class)::BaseClass, Name, false)
+      ...
+    </k>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>  [structural]
 
@@ -58,7 +58,9 @@ syntax KResult ::= "lookupMethodData" "(" K         //TypedVal - typed obj closu
                                       "," Id        //method name
                                       "," Bool      //IsQ - isQualified
                     ")"
-                  | "superMethod"   //Elaboration result super keyword in super.m() call.
+                  //Elaboration result super keyword in A.super.m() call.
+                  | "qSuperQual" "(" K // is always equal to A.this - used to lookup the right qualifier closure.
+                                 ")"
 
 /*@ Closure application needs to also set a new return type in the
 \textsf{return} cell, in order for the values returned by its body to
@@ -86,7 +88,7 @@ rule [Invoke-to-lookupMethod-qualified]:
       Qual,
       ParamExps
     )
-when notBool isTypedThis(Qual)
+when notBool isTypedQThis(Qual)
 
 rule [Invoke-to-lookupMethod-unqualified]:
     <k>
@@ -138,6 +140,7 @@ syntax K ::= "lookupMethod" "(" RefType //target ref class
 //todo K 10341 it looks like [strict] above don't work
 context lookupMethod(_,_,_,HOLE,_,_,_)
 
+//todo somehow we get an inexisting Class causing this rule to not match.
 rule [lookupMethodLookupSig]:
     <k>
       lookupMethod(
@@ -415,19 +418,14 @@ rule [methodInvokeRuntimeOnNull]:
 when
     isKResult(ParamVals)
 
-rule [superMethodEval]:
-    <k>
-      superMethod::BaseClass:ClassType
-      => objectClosure(OL, <envStack> EStack </envStack> CrntObjRest)::BaseClass
-      ...
-    </k>
-    <crntObj>
-      <crntClass> Class:ClassType </crntClass>
-      <location> OL:Int </location>
-      <envStack>... ListItem((Class, _,_)) EStack:List </envStack>
-      CrntObjRest:Bag
-    </crntObj>
-    <contextType> instanceCT </contextType>
+context qSuperQual(HOLE)::_
+
+rule [qSuperQualEval]:
+    qSuperQual(objectClosure(
+      OL,
+      <envStack>... ListItem((BaseClass, BI:BagItem, Encloser:KResult)) Rest:List </envStack>
+    )::_) :: BaseClass:ClassType
+    => objectClosure(OL, <envStack> ListItem((BaseClass, BI, Encloser)) Rest </envStack>)::BaseClass
 
 //Converts a list of ListItem((Class, BI, Encloser)) into KList with elements of sort ClassType
 syntax K ::= "getClassList" "(" List ")"

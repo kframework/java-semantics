@@ -28,8 +28,6 @@ rule [lvalueExprNameLocal]:
 /*@ \subsection{Self reference}
 Like in untyped KOOL. */
 
-//todo <crntClass> Class </crntClass> should also play a role when looking up the correct this
-//test that this implementation is not correct
 rule [QThis]:
     <k>
       'QThis(Class:ClassType)::Class => lookupQThis(Class, objectClosure(OL, Obj)::CrntClass)
@@ -56,16 +54,20 @@ syntax K ::= "lookupQThis" "(" ClassType  //the type of this to look for
                            "," TypedVal   //the objectClosure where the type should be found
                            ")"
 
-rule [lookupQThis]:
-      lookupQThis(Class:ClassType, objectClosure(OL,
-        <envStack>ListItem((ClosureClass:ClassType, EnvBI:BagItem, Encloser:KResult)) Rest:List</envStack>)::_
-      ) =>
-      'If(
-        subtype(ClosureClass, Class),,
-        objectClosure(OL, <envStack> ListItem((ClosureClass, EnvBI, Encloser)) Rest </envStack>
-        )::Class,,
-        lookupQThis(Class:ClassType, Encloser)
-      )
+rule [lookupQThis-found]:
+      lookupQThis(Class:ClassType, RV:RawVal::Class) => RV::Class
+
+/*When we have Qthis target class Class, and we look for it in a target object with a different
+compile-time type ObjClass, we continue our search in the encloser of the layer corresponding to ObjClass.
+This way we may have O.B < O.A, with layers O.B and O.A having different enclosing instance of O,
+and we will be able to pick the correct encloser inside both O.A and O.B.
+*/
+rule [lookupQThis-next]:
+      lookupQThis(Class:ClassType,
+        objectClosure(_, <envStack>... ListItem((ObjClass,_, Encloser:KResult)) ...</envStack>) :: ObjClass:ClassType
+      ) => lookupQThis(Class:ClassType, Encloser)
+when
+    Class =/=K ObjClass
 
 //This case may happen when a field/method is called by simple name in a static context.
 //Although there should be no qualifier, elaboration phase will introduce the qualifier noValue.
