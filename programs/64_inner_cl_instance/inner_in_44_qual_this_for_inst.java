@@ -9,7 +9,7 @@ Various qualifiers to instantiate inner classes.
   as qualifiers for new instance creation.
 */
 
-public class inner_in_44_qual_super_for_inst {
+public class inner_in_44_qual_this_for_inst {
   public static void main(String[] args) {
     new O3().new C().test();
     System.out.println("Done!");

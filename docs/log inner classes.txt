@@ -19,9 +19,23 @@
   Right now <enclosingObj> is associated to a whole object. It should be associated with
   each object stack layer. This way base class could have a different enclosing object
   than the derived class.
-8. Add support for:
+8.ok. Add support for:
+  - QSuperConstrInv - a.super(...)
+
+9.ok. Maintain the compatibility with static inner classes when converting 'NewInstance to 'QNewInstance.
+
+10.ok. Correctly resolve classes in qualified new expressions like: a.new B();
+  B could be defined not in compile-time type of a, but in one of its superclasses.
+
+11.ok. Correctly resolve the qualifier of superclass constructor invocations, where
+  the correct qualifier is not the immediate enclosing class. Three-level hierarchy in action.
+
+12. Add support for:
   - QSuperField - A.super.f
   - QSuperMethod - A.super.m()
-  - QSuperConstrInv - a.super(...)
+
+13. Add tests that distinguish between static and instance inner classes.
+14. Implement the distinction between static and instance inner classes.
+15. Re-implement the link between inner class and its enclosing class not as specific semantics but as a field.
 
 X. Fix related todo-s.
