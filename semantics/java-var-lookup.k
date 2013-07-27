@@ -55,7 +55,7 @@ syntax K ::= "lookupQThis" "(" ClassType  //the type of this to look for
                            ")"
 
 rule [lookupQThis-found]:
-      lookupQThis(Class:ClassType, RV:RawVal::Class) => RV::Class
+    lookupQThis(Class:ClassType, RV:RawVal::Class) => RV::Class
 
 /*When we have Qthis target class Class, and we look for it in a target object with a different
 compile-time type ObjClass, we continue our search in the encloser of the layer corresponding to ObjClass.
@@ -63,9 +63,9 @@ This way we may have O.B < O.A, with layers O.B and O.A having different enclosi
 and we will be able to pick the correct encloser inside both O.A and O.B.
 */
 rule [lookupQThis-next]:
-      lookupQThis(Class:ClassType,
-        objectClosure(_, <envStack>... ListItem((ObjClass,_, Encloser:KResult)) ...</envStack>) :: ObjClass:ClassType
-      ) => lookupQThis(Class:ClassType, Encloser)
+    lookupQThis(Class:ClassType,
+      objectClosure(_, <envStack>... ListItem((ObjClass,_, Encloser:KResult)) ...</envStack>) :: ObjClass:ClassType
+    ) => lookupQThis(Class:ClassType, Encloser)
 when
     Class =/=K ObjClass
 

@@ -345,7 +345,8 @@ rule [methodInvokeRuntimeInstanceOnClass]:
       => invokeImpl(
         lookupOverloadedMethod(Sig, getClassList(Rest ListItem((Class, BI, Encloser))), mapWrap(.Map), noValue),
         OL, 'ListWrap(ParamVals)
-      )      ...
+      )
+      ...
     </k>
     <classType> Class </classType>
     <metaType> classMetaT </metaType>

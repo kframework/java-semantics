@@ -52,6 +52,9 @@ syntax K ::= "setEncloser" "(" TypedExp   //Evaluates to target object
                            "," K          //The encloser
                            ")"            [strict(1,3)]
 
+//Computes into an expression of the form elabRes('QThis(QualClass)::QualClass),
+//where QualClass is searched in the enclosing context of the first argument,
+//being a subclass of the second one.
 syntax K ::= "getElabResQThisSubclassOf" "(" ClassType //The context class in which qualifier is searched for.
                                          "," ClassType //Qualifier should be subclass of this class
                                          ")"            [strict(2)]
@@ -68,6 +71,15 @@ rule [getElabResQThisSubclassOf]:
     </k>
     <classType> QualClass </classType>
     <enclosingClass> QualEncloserClass:ClassType </enclosingClass>
+when
+    ReqClass =/=K noClass
+
+rule [getElabResQThisSubclassOf-top-level]:
+    getElabResQThisSubclassOf(_, noClass) => elabRes(noValue)
+
+//Happens for 'NewInstance expressions for static inner classes.
+rule [getElabResQThisSubclassOf-static]:
+    getElabResQThisSubclassOf(noClass, _) => elabRes(noValue)
 
 //Chain of responsibility.
 //Evaluate the first argument. if it is KResult (except noValue) or elabRes(), the result of the ?? expression is
@@ -287,6 +299,12 @@ rule [elabCoolExpression]:
 
 rule [elabCoolIndependent]:
     (ElabIndep => .) ~> elab(_:KLabel(_,, (CHOLE => ElabIndep),, _))
+when
+    isElabIndependent(ElabIndep)
+
+//required by the rule [elabQNewInstance-resolve-class]
+rule [elabDisposeCoolIndependent]:
+    (ElabIndep => .) ~> elabDispose(_:KLabel(_,, (CHOLE => ElabIndep),, _))
 when
     isElabIndependent(ElabIndep)
 
@@ -783,9 +801,39 @@ rule [elabNewInstance]:
     <crntClass> CrntClass:ClassType </crntClass>
 
 rule [elabQNewInstance-resolve-class]:
-      elabDispose('QNewInstance(_::class QualClassId:Id,, _:K,,
-        (X:Id => getClassType(packageId(QualClassId), X)),,
-      _))
+    (. => resolveInnerClass(QualClass, Name))
+    ~> elabDispose('QNewInstance(_::QualClass:ClassType,, _:K,,
+      (Name:Id => CHOLE),,
+    _))
+
+//resolve the simple name of an inner class to a fully qualified class name in
+//a qualified new like: o.new A(...);
+syntax K ::= "resolveInnerClass" "(" ClassType //QualClass - the type of the qualifier
+                                 "," Id        //Name - instantiated class simple name
+                                 ")"
+
+rule [resolveInnerClass]:
+    <k>
+      resolveInnerClass(QualClass:ClassType, Name:Id)
+      => 'If(
+            existsClass(toPackage(QualClass), Name),,
+            getClassType(toPackage(QualClass), Name),,
+            resolveInnerClass(BaseQualClass, Name)
+          )
+      ...
+    </k>
+    <classType> QualClass </classType>
+    <extends> BaseQualClass:ClassType </extends>
+
+//returns true if in the given package exists a class with given simple name, false otherwise.
+syntax K ::= "existsClass" "(" PackageId "," Id ")"
+
+rule [existsClass]:
+    <k>
+      existsClass(Pack:PackageId, Name:Id) => Name in keys(NamesToClasses)
+      ...
+    </k>
+    <typeNamesMap>... Pack:PackageId |-> mapWrap(NamesToClasses:Map) ...</typeNamesMap>
 
 rule [elabQNewInstance]:
     elabDispose('QNewInstance(Qual:K,, Arg2:K,, T:RefType,, Arg4:K,, Arg5:K,, Arg6:K))
@@ -860,12 +908,14 @@ when
 //@Section elaboration of SuperConstrInv, AltConstrInv
 
 //Desugaring unqualified superclass constructor invocation into a qualified one
+//todo what if 'QThis(EnclosingClass) :: EnclosingClass don't exist - correct that.
 rule [SuperConstrInv-desugar]:
     <k>
-      elab(
+      (. => getElabResQThisSubclassOf(EnclosingClass, SubEnclosingClass))
+      ~> elab(
         'SuperConstrInv(K:K,, 'ListWrap( Args:KList ))
         =>  'QSuperConstrInv(
-              'QThis(EnclosingClass) :: EnclosingClass,,
+              CHOLE,,
               K,,
               'ListWrap(Args)
             )
@@ -873,8 +923,17 @@ rule [SuperConstrInv-desugar]:
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-    <classType> Class </classType>
-    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
+    <class>
+      <classType> Class </classType>
+      <extends> SubClass:ClassType </extends>
+      <enclosingClass> EnclosingClass:ClassType </enclosingClass>
+      ...
+    </class>
+    <class>
+      <classType> SubClass </classType>
+      <enclosingClass> SubEnclosingClass:ClassType </enclosingClass>
+      ...
+    </class>
 
 rule [QSuperConstrInv]:
     <k>
