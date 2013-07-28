@@ -512,12 +512,17 @@ rule [elabFieldQualClass]:
 
 rule [elabSuperField]:
     <k>
-      elabDispose('SuperField(X:Id))
-      => elabTypedExp(lookupField('QThis(Class)::Class, noClass, X), elabLookup(X, BaseClass))
+      elabDispose('SuperField(X:Id) => 'QSuperField(Class,, X:Id))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-    <contextType> instanceCT </contextType>
+
+rule [elabQSuperField]:
+    <k>
+      elabDispose('QSuperField(Class:ClassType,, X:Id))
+      => elabTypedExp(lookupField('QThis(Class) :: Class, noClass, X), elabLookup(X, BaseClass))
+      ...
+    </k>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
@@ -675,6 +680,7 @@ rule isNonNumericExp(KL:KLabel) =>
     orBool (KL ==KLabel 'ExprName)
     orBool (KL ==KLabel 'Field)
     orBool (KL ==KLabel 'SuperField)
+    orBool (KL ==KLabel 'QSuperField)
     orBool (KL ==KLabel 'NewArray)
     orBool (KL ==KLabel 'CastPrim)
     orBool (KL ==KLabel 'CastRef)
