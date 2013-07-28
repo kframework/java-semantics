@@ -71,7 +71,6 @@ and then pop it when the method returns. */
 //First argument is reduced up to lookupMethodData.
 context elabDispose('Invoke(HOLE,, _))
 
-//todo add search in enclosing classes here using ??
 rule [Invoke-to-lookupMethod-qualified]:
     elabDispose('Invoke(lookupMethodData(
         Qual:K,
@@ -140,7 +139,6 @@ syntax K ::= "lookupMethod" "(" RefType //target ref class
 //todo K 10341 it looks like [strict] above don't work
 context lookupMethod(_,_,_,HOLE,_,_,_)
 
-//todo somehow we get an inexisting Class causing this rule to not match.
 rule [lookupMethodLookupSig]:
     <k>
       lookupMethod(

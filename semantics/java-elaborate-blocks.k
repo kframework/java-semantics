@@ -914,7 +914,6 @@ when
 //@Section elaboration of SuperConstrInv, AltConstrInv
 
 //Desugaring unqualified superclass constructor invocation into a qualified one
-//todo what if 'QThis(EnclosingClass) :: EnclosingClass don't exist - correct that.
 rule [SuperConstrInv-desugar]:
     <k>
       (. => getElabResQThisSubclassOf(EnclosingClass, SubEnclosingClass))

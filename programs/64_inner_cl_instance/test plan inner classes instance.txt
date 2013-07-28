@@ -170,3 +170,28 @@ Part 6. Misc.
 62. Qualified new instance creation execution order. Call a qualified constructor with
   three arguments. qualifier and all three arguments should be traced.
 
+Part 7. Interplay of static and non-static inner members. (If any).
+
+71. Top-level class O, static inner O.Mid, instance inner O.Mid.Inner.
+  From Inner call by simple name:
+  - inner field,
+  - inner method
+  - Mid instance field
+  - Mid instance method
+  - Mid static field
+  - Mid static method
+  - O static field
+  - O static method
+  Instantiate the class Inner from O: new Mid().new Inner()
+
+72. Interface I, "implicitly" static inner I.Mid (e.g. without keyword static), instance inner I.Mid.Inner.
+  Class A < I.
+  From Inner call by simple name:
+  - inner field,
+  - inner method
+  - Mid instance field
+  - Mid instance method
+  - Mid static field
+  - Mid static method
+  - I static field
+  Instantiate the class Inner from A: new Mid().new Inner()
