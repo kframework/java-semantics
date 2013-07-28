@@ -1,0 +1,55 @@
+Part 1. Anonymous classes and the immediate enclosing class.
+11. A simple anonymous class that extends a class A and prints something in the toString().
+12. An anonymous class that overwrites a method of the base class.
+13. An anonymous class that overwrites a method test() in the base class. Also have an own method and field,
+  accessed by test().
+14. An anonymous class implementing an interface with method test(). Also have an own method and field,
+  accessed by test().
+15. Anonymous class accessing fields and methods of the enclosing class by simple name.
+16. Anonymous class caling a superclass constructor with parameters.
+
+Part 2. Anonymous class whose base class is inner, but not instance inner.
+21. Base class is a static inner class, traced constructor with no args.
+22. Base class is a local class in a static method, traced consturctor with no args.
+23. Base class is a local class in a static initializer, traced constructor with no args.
+
+Part 3. Qualified new anonymous class expression.
+31. Base class is inner class from another lexical hierarchy, have a traced constructor with no arguments.
+  Anonymous class have a constructor with one argument - the qualifier of the base class.
+  Anonymous class's test() calls super.test() that prints something from its enclosing class.
+32. Base class is inner class from another lexical hierarchy, have traced a constructor with two arguments.
+  Anonymous class have a constructor with three arguments - one for qualifier, two for the base class args.
+  Anonymous class's test() calls super.test() that prints something from its enclosing class.
+33. Base class is a local class in instance context, have traced a constructor with two arguments.
+  Anonymous class have a constructor with three arguments - one for qualifier, two for the base class args.
+  Anonymous class's test() calls super.test() that prints something from its enclosing class.
+  The enclosing object is other than O.this.
+
+Part 4. Anonymous class and the enclosing block.
+41. Anonymous class accessing local vars of the enclosing class defined in one single block.
+42. Anonymous class accessing local vars of the enclosing class defined in nested blocks.
+43. Anonymous class accessing a local var that shadows a field of the enclosing class.
+44. Anonymous class accessing a field of the enclosing class, that will be shadowed by a local var of the
+  enclosing class after the body of the anonymous class.
+45. Anonymous class accessing a field of the enclosing class, that was shadowed by a local var of the
+  enclosing class before the body of the anonymous class, but whose scope is over.
+46. Anonymous class accessing its own field, that shadows a local var of the enclosing block.
+
+Part 5. Three-level nesting.
+51. Anonymous class inside an inner class inside a top-level class. Accessing fields and methods of inner
+  and top-level by simple name
+52. Anonymous class inside an inner class inside a top-level class. Field and method with the same name
+  in Outer, Mid and Anonymous. Discriminate among them using this, Mid.this, Outer.this.
+53. Three-level anonymous nesting. Anonymous class extending A. Inside it, anonymous class extending B.
+  Access final local vars from B.anonym.test(), A.anonym.test() and Outer.test() by simple name.
+54. Three-level anonymous nesting. Anonymous class extending A. Inside it, anonymous class extending B.
+  Inside Outer.test(): local vars a,b,c. Inside A.anonym.test(): local vars b,c. Inside B.anonym.test()
+  - local var c. Print a,b,c from B.anonym.test().
+55. Three-level anonymous nesting inside static methods.
+  Amonymous class extending A. Inside it, anonymous class extending B.
+  Inside Outer.test(): local vars a,b,c. Inside A.anonym.test(): local vars b,c. Inside B.anonym.test()
+  - local var c. Print a,b,c from B.anonym.test(). All methods are static.
+
+Part 6. Multiple anonymous classes.
+61. Inside the same method, two anonymous classes implementing I. I have method test().
+  Call the test of both of them, using the same local var, and observe the difference.

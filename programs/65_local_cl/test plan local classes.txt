@@ -1,0 +1,89 @@
+  Part 1. Local classes and the immediate enclosing class.
+
+11. A simple local class LB that extends a class A and prints something in the toString().
+12. A local class LB that overwrites a method of the base class A.
+13. A local class LB that overwrites a method test() in the base class A. Also have an own method and field,
+  accessed by test().
+14. A local class LB implementing an interface with method test(). Also have an own method and field,
+  accessed by test().
+15. Local class LB accessing fields and methods of the enclosing class by simple name.
+16. Local class LB caling a superclass constructor with parameters.
+
+  Part 2. Local class whose base class is inner, but not instance inner.
+
+21. Base class is a static inner class, traced constructor with no args.
+22. Base class is a local class in a static method, traced constructor with no args.
+23. Base class is a local class in a static initializer, traced constructor with no args.
+
+  Part 3. Local class with base class an inner or local class.
+
+31. Base class is inner class from another lexical hierarchy, have a traced constructor with no arguments.
+  Local class LB have a constructor with one argument - the qualifier of the base class.
+  Local class's test() calls super.test() that prints something from its enclosing class.
+32. Base class is inner class from another lexical hierarchy, have traced a constructor with two arguments.
+  Local class have a constructor with three arguments - one for qualifier, two for the base class args.
+  Local class's test() calls super.test() that prints something from its enclosing class.
+33. Base class LA is a local class in instance context, have traced a constructor with two arguments.
+  Local class LB have a constructor with three arguments - one for qualifier, two for the base class args.
+  Local class's test() calls super.test() that prints something from its enclosing class.
+  Instantiate two LB's - one with encloser O.this, other with another encloser.
+34. Local class LB extending another local class and implementing a global interface.
+  (Local interfaces are not allowed.) Testing polymorphism through casting the object
+  to the class and to the interface and calling a relevant method.
+
+  Part 4. Local class and the enclosing block.
+
+41. Local class accessing local vars of the enclosing class defined in one single block.
+42. Local class accessing local vars of the enclosing class defined in nested blocks.
+43. Local class accessing a local var that shadows a field of the enclosing class.
+44. Local class LA accessing a field of the enclosing class, that will be shadowed by a local var of the
+  enclosing class after the body of LA.
+45. Local class LA accessing a field of the enclosing class, that was shadowed by a local var of the
+  enclosing class before the body of LA, but whose scope is over.
+46. Local class accessing its own field, that shadows a local var of the enclosing block.
+
+  Part 5. Three-level nesting.
+
+51. Local class inside an inner class inside a top-level class. Accessing fields and methods of inner
+  and top-level by simple name
+52. Local class inside an inner class inside a top-level class. Field and method with the same name
+  in Outer, Mid and Local. Discriminate among them using this, Mid.this, Outer.this.
+53. Three-level local nesting. Local class LA extending A. Inside it, local class ILB extending B.
+  Access final local vars from ILB.test(), LA.test() and Outer.test() by simple name.
+54. Three-level local nesting. Local class LA extending A. Inside it, local class ILB extending B.
+  Inside Outer.test(): local vars a,b,c. Inside LA.test(): local vars b,c. Inside ILB.test()
+  - local var c. Print a,b,c from ILB.test().
+55. Three-level local nesting inside static methods.
+  Local class LA extending A. Inside it, local class ILB extending B.
+  Inside Outer.test(): local vars a,b,c. Inside LA.test(): local vars b,c. Inside ILB.test()
+  - local var c. Print a,b,c from ILB.test(). All methods are static.
+
+  Part 6. Multiple local classes.
+
+61. Inside the same method, two local classes implementing I. I have method test().
+  Call the test of both of them, using the same local var, and observe the difference.
+
+  Part 7. Instantiation of local classes in the context of hiding.
+71. Local class instantiating another local class from the same enclosing block.
+72. Local class instantiating two local classes defined in nested enclosing blocks.
+73. Local class instantiating a local class that shadows an inner class of the enclosing class.
+74. Local class LA instantiating an inner class of the enclosing class, that was shadowed by a local class of the
+  enclosing class before the body of LA, but whose scope is over.
+75. Local class LA instantiating its own inner class ILB , that shadows a local class of the enclosing block.
+
+  Part 8. Deriving from local classes in the context of hiding.
+81. Local class LB implements two local interfaces I1, I2 defined in nested enclosing blocks.
+82. Local class LB derived from a local class LA that shadows an inner class LA of the enclosing class.
+83. Local class LA derived from an inner class of the enclosing class, that was shadowed by a local class of the
+  enclosing class before the body of LA, but whose scope is over.
+
+  Part 9. Misc.
+
+91. Class O, method container(). Inside container local classes LA, LB.
+  Class LB defines the inner class ILB < LA.
+  Instantiate two instances if ILB - one where constructor if LA is unqualified.
+  In another one the call to superclass constructor is qualified with an instance of
+  O different than the instance enclosing LA.
+  From ILB call laTest(), lbTest(). both will print a field ov from its enclosing O.
+92. Local class derived from another class with static fields. Call the fields qualified with
+  the local class name.
