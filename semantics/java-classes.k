@@ -114,7 +114,7 @@ get more from the existing SIMPLE constructs. */
 //@ \texttt{typeOf for raw values of reference type}
 rule typeOf(Str:String) => rtString [anywhere]
 rule typeOf(null) => nullType [anywhere]
-rule typeOf(objectClosure(_, <envStack>ListItem((Class:ClassType, _,_)) _</envStack> _))
+rule typeOf(objectClosure(_, <envStack>ListItem(el(Class:ClassType, _,_)) _</envStack> _))
      => Class [anywhere]
 rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T [anywhere]
 
@@ -193,7 +193,7 @@ rule [addEnvLayer]:
     <k> addEnvLayer => . ...</k>
     <env> Env:Map => . </env>
     <crntClass> Class:ClassType </crntClass>
-    <envStack> . => ListItem((Class, <env>Env</env>, noValue)) ...</envStack>
+    <envStack> . => ListItem(el(Class, <env>Env</env>, noValue)) ...</envStack>
         [structural]
 
 syntax K ::= "storeObj"
@@ -235,7 +235,7 @@ rule [setEncloser-value]:
     <store>
       ...
       OL |->
-        objectClosure(_, <envStack>... ListItem((Class,_, _ => EncloserRV::EncloserClass)) ...</envStack>)::_
+        objectClosure(_, <envStack>... ListItem(el(Class,_, _ => EncloserRV::EncloserClass)) ...</envStack>)::_
       ...
     </store>
     <classType> Class </classType>

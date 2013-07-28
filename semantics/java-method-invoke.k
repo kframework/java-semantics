@@ -335,13 +335,13 @@ rule [methodInvokeRuntimeInstanceOnClass]:
         objectClosure(OL:Int,
           <envStack>
             Rest:List
-            ListItem((Class:ClassType, BI:BagItem, Encloser:KResult))
+            ListItem(el(Class:ClassType, BI:BagItem, Encloser:KResult))
             ...
           </envStack> _)::_,
           ParamVals:KList, instanceCT
       )::_
       => invokeImpl(
-        lookupOverloadedMethod(Sig, getClassList(Rest ListItem((Class, BI, Encloser))), mapWrap(.Map), noValue),
+        lookupOverloadedMethod(Sig, getClassList(Rest ListItem(el(Class, BI, Encloser))), mapWrap(.Map), noValue),
         OL, 'ListWrap(ParamVals)
       )
       ...
@@ -365,7 +365,7 @@ rule [methodInvokeRuntimeInstanceOnInterface]:
       methodInvokeRuntime(Class:ClassType, Sig:Signature,
         objectClosure(OL:Int,
           <envStack>
-            ListItem((ActualClass:ClassType, _,_))
+            ListItem(el(ActualClass:ClassType, _,_))
             ...
           </envStack> _)::_,
         ParamVals:KList, instanceCT
@@ -422,13 +422,13 @@ context qSuperQual(HOLE)::_
 rule [qSuperQualEval]:
     qSuperQual(objectClosure(
       OL,
-      <envStack>... ListItem((BaseClass, BI:BagItem, Encloser:KResult)) Rest:List </envStack>
+      <envStack>... ListItem(el(BaseClass, BI:BagItem, Encloser:KResult)) Rest:List </envStack>
     )::_) :: BaseClass:ClassType
-    => objectClosure(OL, <envStack> ListItem((BaseClass, BI, Encloser)) Rest </envStack>)::BaseClass
+    => objectClosure(OL, <envStack> ListItem(el(BaseClass, BI, Encloser)) Rest </envStack>)::BaseClass
 
-//Converts a list of ListItem((Class, BI, Encloser)) into KList with elements of sort ClassType
+//Converts a list of ListItem(el(Class, BI, Encloser)) into KList with elements of sort ClassType
 syntax K ::= "getClassList" "(" List ")"
-rule (.KList => Class),, getClassList((ListItem((Class:ClassType, _,_)) => .List) _)
+rule (.KList => Class),, getClassList((ListItem(el(Class:ClassType, _,_)) => .List) _)
         [structural, anywhere]
 rule getClassList(.) => .KList
         [structural, anywhere]

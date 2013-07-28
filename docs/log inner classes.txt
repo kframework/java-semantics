@@ -40,4 +40,12 @@
   - interfaces may only have public static inner members (including other interfaces).
 
 14.ok. There's nothing new to implement to make tests at p.13 to work. Everything works already.
-15. Re-implement the link between an inner class and its enclosing class not as new runtime semantics but as a field.
+15.cancel. Re-implement the link between an inner class and its enclosing class not as new runtime semantics but as a field.
+  relation from inner to outer class could be modelled as a field, if we add the functionality
+  to access x.super.f, x.super.m() for any qualifier x, not just class name. This way we could model qualified
+  super access. Still, when we will implement anonymous classes, we will need two more cells in the configuration -
+  <enclosingClassEnv> - at elaboration time, inside <class>, and <enclosingObjEnv> at runtime, inside objectClosure().
+  Enclosing environment will be the environment of the code block that defined this anonymous/local class.
+  It will function similarly to <enclosingClass>, or third argument of el(ClassType, BagItem, K).
+  Thus, the semantics won't change much overally. We better stick to the current implementation.
+

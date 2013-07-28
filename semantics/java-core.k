@@ -272,8 +272,8 @@ rule defaultTyped(B:Bool) => B :: bool                                          
 rule defaultTyped(Str:String) => Str :: rtString                                      [structural]
 rule defaultTyped(null) => null :: nullType                                           [structural]
 rule defaultTyped(
-      objectClosure(OL:Int, <envStack>ListItem((Class:ClassType, BI:BagItem, Encloser:KResult)) Rest:List</envStack>)
-    ) => objectClosure(OL, <envStack>ListItem((Class, BI, Encloser)) Rest</envStack>) :: Class
+      objectClosure(OL:Int, <envStack>ListItem(el(Class:ClassType, BI:BagItem, Encloser:KResult)) Rest:List</envStack>)
+    ) => objectClosure(OL, <envStack>ListItem(el(Class, BI, Encloser)) Rest</envStack>) :: Class
                                                                                       [structural]
 rule defaultTyped(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T           [structural]
 
@@ -321,7 +321,7 @@ rule [restoreEnvObjContext]:
     <contextType> _ => CT </contextType>
 
 //The content of an <envStack> ListItem() </envStack>
-syntax K ::= "(" ClassType //The class corresponding to the current layer
+syntax K ::= "el(" ClassType //The class corresponding to the current layer
               "," BagItem  //<env> instance fields </env>
               "," K        //objectClosure(...)::_ - the enclosing object, or noValue for top-level classes
               ")"
