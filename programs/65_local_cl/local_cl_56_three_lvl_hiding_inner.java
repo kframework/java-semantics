@@ -1,7 +1,7 @@
 /*
 Local class, inside instance method, inside another inner class,
   inside a top-level class. Class members:
-  - O: af(), av, bf(), bv, cf(), cv, test().
+  - O: af(), av, bf(), bv, cf(), cv.
   - Mid: af(), av, bf(), bv, test()
   - ILB: af(), av, test().
   All members are non-static.
@@ -11,7 +11,7 @@ Local class, inside instance method, inside another inner class,
 
 public class local_cl_56_three_lvl_hiding_inner {
   public static void main(String[] args) {
-    new O(). new Mid().test();
+    new O().new Mid().test();
     System.out.println("Done!");
   }
 }
@@ -43,12 +43,12 @@ class O {
     void test() {
       class ILB {
 
-        String av = "Mid.av";
+        String av = "ILB.av";
 
-        String af() {return "Mid.af()";}
+        String af() {return "ILB.af()";}
 
         void test() {
-          System.out.println("O.Mid.test()[\n"
+          System.out.println("O.Mid.test().ILB.test()[\n"
               +"av="+av+", af() = "+ af() + ",\n"
               +"bv="+bv+", bf() = "+ bf() + ",\n"
               +"cv="+cv+", cf() = "+ cf() + ",\n"

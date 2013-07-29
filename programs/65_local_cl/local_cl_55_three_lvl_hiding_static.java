@@ -43,12 +43,12 @@ class O {
     static String test() {
       class ILB {
 
-        String av = "Mid.av";
+        String av = "ILB.av";
 
-        String af() {return "Mid.af()";}
+        String af() {return "ILB.af()";}
 
         public String test() {
-          return "O.Mid.test().test()[\n"
+          return "O.Mid.test().ILB.test()[\n"
               +"av="+av+", af() = "+ af() + ",\n"
               +"bv="+bv+", bf() = "+ bf() + ",\n"
               +"cv="+cv+", cf() = "+ cf() + ",\n"

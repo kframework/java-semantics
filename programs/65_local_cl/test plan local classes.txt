@@ -68,7 +68,7 @@
 
 56. Local class, inside instance method, inside another inner class,
   inside a top-level class. Class members:
-  - O: af(), av, bf(), bv, cf(), cv, test().
+  - O: af(), av, bf(), bv, cf(), cv.
   - Mid: af(), av, bf(), bv, test()
   - ILB: af(), av, test().
   All members are non-static.

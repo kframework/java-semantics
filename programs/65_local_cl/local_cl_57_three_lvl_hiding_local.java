@@ -45,12 +45,12 @@ class O {
       void test() {
         class ILB {
 
-          String av = "Mid.av";
+          String av = "ILB.av";
 
-          String af() {return "Mid.af()";}
+          String af() {return "ILB.af()";}
 
           void test() {
-            System.out.println("O.Mid.test().test()[\n"
+            System.out.println("O.test().Mid.test().ILB.test()[\n"
                 +"av="+av+", af() = "+ af() + ",\n"
                 +"bv="+bv+", bf() = "+ bf() + ",\n"
                 +"cv="+cv+", cf() = "+ cf() + ",\n"
