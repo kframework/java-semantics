@@ -8,6 +8,10 @@
   accessed by test().
 15. Local class LB accessing fields and methods of the enclosing class by simple name.
 16. Local class LB caling a superclass constructor with parameters.
+17. Local class and hiding.
+  - Class O, members: av, af(), bv, bf(), test(),
+  - Class O.test().LA, members: av, af(), test().
+  From LA.test() call av, af(), bv, bf(), this.av(, this.af(), LA.this.av, LA.this.af(), O.this.av, O.this.af().
 
   Part 2. Local class whose base class is inner, but not instance inner.
 
@@ -45,23 +49,45 @@
   Part 5. Three-level nesting.
 
 51. Local class inside an inner class inside a top-level class. Accessing fields and methods of inner
-  and top-level by simple name
+  and top-level by simple name.
 52. Local class inside an inner class inside a top-level class. Field and method with the same name
   in Outer, Mid and Local. Discriminate among them using this, Mid.this, Outer.this.
-53. Three-level local nesting. Local class LA extending A. Inside it, local class ILB extending B.
-  Access final local vars from ILB.test(), LA.test() and Outer.test() by simple name.
-54. Three-level local nesting. Local class LA extending A. Inside it, local class ILB extending B.
-  Inside Outer.test(): local vars a,b,c. Inside LA.test(): local vars b,c. Inside ILB.test()
-  - local var c. Print a,b,c from ILB.test().
-55. Three-level local nesting inside static methods.
-  Local class LA extending A. Inside it, local class ILB extending B.
-  Inside Outer.test(): local vars a,b,c. Inside LA.test(): local vars b,c. Inside ILB.test()
-  - local var c. Print a,b,c from ILB.test(). All methods are static.
+53. Three-level local nesting. Local class LA extending I1Factory. Inside it, local class ILB extending I1.
+  Access final local vars from ILB.f(), LA.createI1() and O.createILB() by simple name.
+54. Three-level local nesting. Local class LA extending I1Factory. Inside it, local class ILB extending I1.
+  Inside O.createILB(): local vars a,b,c. Inside LA.createI1(): local vars a,b. Inside ILB.f()
+  - local var a. Print a,b,c from ILB.f().
+55. Local class, inside static method, inside a static inner class,
+  inside a top-level class. Class members:
+  - O: af(), av, bf(), bv, cf(), cv, test().
+  - Mid: af(), av, bf(), bv, test()
+  - ILB: af(), av, test().
+  All members are static, exept those of ILB.
+  Since all local classes are inner classes, they cannot have static methods.
+  Access them by simple name from ILB.test(). Also discriminate using class qualifier.
+
+56. Local class, inside instance method, inside another inner class,
+  inside a top-level class. Class members:
+  - O: af(), av, bf(), bv, cf(), cv, test().
+  - Mid: af(), av, bf(), bv, test()
+  - ILB: af(), av, test().
+  All members are non-static.
+  Access them by simple name from ILB.test(). Also discriminate using this, O.this, Mid.this, ILB.this.
+  See $8.1.3 for the precise semantics of inner classes.
+
+57. Local class, inside instance method, inside another local class,
+  inside a top-level class. Class members:
+  - O: af(), av, bf(), bv, cf(), cv, test().
+  - Mid: af(), av, bf(), bv, test()
+  - ILB: af(), av, test().
+  All members are non-static.
+  Access them by simple name from ILB.test(). Also discriminate using this, O.this, Mid.this, ILB.this.
+  See $8.1.3 for the precise semantics of inner classes.
 
   Part 6. Multiple local classes.
 
 61. Inside the same method, two local classes implementing I. I have method test().
-  Call the test of both of them, using the same local var, and observe the difference.
+  Call the test on both of them, using the same local var, and observe the difference.
 
   Part 7. Instantiation of local classes in the context of hiding.
 71. Local class instantiating another local class from the same enclosing block.

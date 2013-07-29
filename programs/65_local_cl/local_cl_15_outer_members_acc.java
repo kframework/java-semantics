@@ -31,7 +31,7 @@ class O {
     class LB implements I1 {
 
       public String f() {
-        return "O.container().f()[ov="+ov+", of() = "+ of() +"]";
+        return "O.createLB().f()[ov="+ov+", of() = "+ of() +"]";
       }
     }
 
