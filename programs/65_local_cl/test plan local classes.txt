@@ -86,30 +86,53 @@
 
   Part 6. Multiple local classes.
 
-61. Inside the same method, two local classes implementing I. I have method test().
+61. Inside the same method, two local classes implementing I. I have method f().
   Call the test on both of them, using the same local var, and observe the difference.
 
   Part 7. Instantiation of local classes in the context of hiding.
 71. Local class instantiating another local class from the same enclosing block.
 72. Local class instantiating two local classes defined in nested enclosing blocks.
-73. Local class instantiating a local class that shadows an inner class of the enclosing class.
-74. Local class LA instantiating an inner class of the enclosing class, that was shadowed by a local class of the
-  enclosing class before the body of LA, but whose scope is over.
-75. Local class LA instantiating its own inner class ILB , that shadows a local class of the enclosing block.
+73. Instantiating a local class that shadows an inner class of the enclosing class.
+  Instantiate and print the said class before the definition of the Local,
+  in the scope of the local class, and after it.
+74. Inner class A. After it - local class LA. After - local class A. LA prints A.
+  Instantiate LA in the scope of local A, and outside the scope. In both cases it should
+  refer to the local A.
+75. Local class LA instantiating its own inner class A , that shadows a local class of the enclosing block.
+76. An inner class A, two blocks each having a local class A.
+  Instantiate and print A inside each block and between blocks.
+77. Class O. Local classes A, Local, in the same block. Inside Local - local class DeepLocal.
+  Instantiate A from DeepLocal, first unqualified, then qualified with a different enclosing O.
+  Print both A, that should print a parameter from their encloser.
 
   Part 8. Deriving from local classes in the context of hiding.
-81. Local class LB implements two local interfaces I1, I2 defined in nested enclosing blocks.
-82. Local class LB derived from a local class LA that shadows an inner class LA of the enclosing class.
-83. Local class LA derived from an inner class of the enclosing class, that was shadowed by a local class of the
-  enclosing class before the body of LA, but whose scope is over.
+81. Local class LB1 derived from a local class A that shadows an inner class A of the enclosing class.
+  LB2 derived from A after the scope of local A, is thus derived from inner class A.
+82. Class O. Local classes A, Local, in the same block. Inside Local - local class DeepLocal derived from A.
+  Instantiate two DeepLocals, for different enclosing objects O.
+  Print a parameter of O from both DeepLocal and its base class.
 
   Part 9. Misc.
 
-91. Class O, method container(). Inside container local classes LA, LB.
-  Class LB defines the inner class ILB < LA.
-  Instantiate two instances if ILB - one where constructor if LA is unqualified.
-  In another one the call to superclass constructor is qualified with an instance of
-  O different than the instance enclosing LA.
-  From ILB call laTest(), lbTest(). both will print a field ov from its enclosing O.
-92. Local class derived from another class with static fields. Call the fields qualified with
+91. Class O. Local classes A, Local, in the same block. Inside Local - local class DeepLocal derived from A.
+  Instantiate one DeepLocal. Fields inside classes:
+  O: a,b
+  Local: a,c
+  A: a,d
+  DeepLocal: a,e
+  Print all 8 fields from DeepLocal, using qualified this/super where needed.
+
+92. Class O, method test(). Inside test() local classes LA.
+  Class LA defines the inner class InnerOfLA.
+  From LA, instantiate two instances of InnerOfLA - one without qualifier, another qualified with a newly
+    created instance of LA.
+  From InnerOfLA print a field from the enclosing LA.
+
+93. Local class derived from another class with static fields. Call the fields qualified with
   the local class name.
+
+94. Test that a local class may have the same name as a variable/field in the same scope.
+  Three local classes. One have the same name as a local var, other - as a field, third - as a method.
+  Define variables of type all three, instantiate and print them.
+  Also print the local var, field and method, accessing them by simple name.
+  All local classes have a no-arg traced constructor.
