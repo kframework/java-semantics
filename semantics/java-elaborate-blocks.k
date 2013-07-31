@@ -269,6 +269,7 @@ rule customElabChildren(KL:KLabel) =>
     orBool (KL ==KLabel 'SuperConstrInv)
     orBool (KL ==KLabel 'QSuperConstrInv)
     orBool (KL ==KLabel 'AltConstrInv)
+    orBool (KL ==KLabel 'ClassDecStm)
 
 //Will not match .K - is not isElabNaked. (.K) is matched by [elabDotK].
 rule [unwrapElabNaked]:

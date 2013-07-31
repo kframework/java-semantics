@@ -15,17 +15,25 @@ rule [StartProcessClassDecsPhase]:
 syntax K ::= "processClassDecs" "(" K //setWrap(Set) - the set of all classes
                                 ")"  [strict]
 
+/* Question: how do we know if bases were already resolved for this class or not?
+  Answer: When resolveBases(Class) is consumed by the rule [resolveBasesEnd], the class
+  clanges its state: CreatedCPP => BasesResolvedCPP
+*/
 rule [resolveBasesTopLevelStart]:
-    <k> (. => resolveBases(Class)) ~> processClassDecs(_) ...</k>
+    <k> (. => resolveBases(Class, RawExtends, RawImplements)) ~> processClassDecs(_) ...</k>
     <classType> Class:ClassType </classType>
+    <rawExtends> RawExtends:K </rawExtends>
+    <rawImplements> 'ListWrap(RawImplements:KList) </rawImplements>
     <enclosingClass> noClass </enclosingClass>
     <preprocessingPhase> CreatedCPP </preprocessingPhase>
     <cuClass> _ => Class </cuClass>
 
 rule [resolveBasesInnerStart]:
-    <k> (. => resolveBases(Class)) ~> processClassDecs(_) ...</k>
+    <k> (. => resolveBases(Class, RawExtends, RawImplements)) ~> processClassDecs(_) ...</k>
     <class>
       <classType> Class:ClassType </classType>
+      <rawExtends> RawExtends:K </rawExtends>
+      <rawImplements> 'ListWrap(RawImplements:KList) </rawImplements>
       <enclosingClass> OuterClass:ClassType </enclosingClass>
       <preprocessingPhase> CreatedCPP </preprocessingPhase>
       ...
@@ -38,40 +46,19 @@ rule [resolveBasesInnerStart]:
     <cuClass> _ => Class </cuClass>
 
 //Process the given class from CreatedCPP to BasesResolvedCPP.
-syntax K ::= "resolveBases" "(" ClassType ")"
+syntax K ::= "resolveBases" "(" ClassType //The class for which we resolve bases
+                            "," K         //Base class
+                            "," KList     //Implements clauses
+                            ")"
 
-//The hole used for resolving class bases - extends/implements clauses.
-syntax K ::= "BASES$HOLE"
+context resolveBases(_, HOLE, _)      //Heat extends dec
+context resolveBases(_,_, _,,HOLE,,_) //Heat implements decs
 
-//Resolving the base class
-rule [heatRawExtends]:
-    <k> (. => BaseClassRaw) ~> resolveBases(Class:ClassType) ...</k>
+rule [resolveBases]:
+    <k> resolveBases(Class, BaseClass:ClassType, ImplTypes:KList) => . ...</k>
     <classType> Class </classType>
-    <rawExtends> BaseClassRaw:K => BASES$HOLE </rawExtends>
-when notBool (isKResult(BaseClassRaw) ==K true)
-
-rule [coolRawExtends]:
-    <k> (BaseClass:ClassType => .) ~> resolveBases(Class:ClassType) ...</k>
-    <classType> Class </classType>
-    <rawExtends> BASES$HOLE => BaseClass </rawExtends>
-
-//Resolving superinterfaces of both classes and interfaces, order is not important
-rule [heatRawImplements]:
-    <k> (. => BaseInterfaceRaw) ~> resolveBases(Class:ClassType) ...</k>
-    <classType> Class </classType>
-    <rawImplements> 'ListWrap(_,, (BaseInterfaceRaw:K => BASES$HOLE),, _) </rawImplements>
-when notBool(isKResult(BaseInterfaceRaw) ==K true)
-
-rule [coolRawImplements]:
-    <k> (BaseInterface:ClassType => .) ~> resolveBases(Class:ClassType) ...</k>
-    <classType> Class </classType>
-    <rawImplements> 'ListWrap(_,, (BASES$HOLE => BaseInterface),, _) </rawImplements>
-
-rule [resolveBasesEnd]:
-    <k> resolveBases(Class:ClassType) => . ...</k>
-    <classType> Class </classType>
-    <rawExtends> BaseClass:ClassType </rawExtends>
-    <rawImplements> 'ListWrap(ImplTypes:KList) </rawImplements>
+    <rawExtends> _ => BaseClass </rawExtends>
+    <rawImplements> _ => 'ListWrap(ImplTypes) </rawImplements>
     <unprocessedBases> .K => 'ListWrap(BaseClass,,ImplTypes) </unprocessedBases>
     <preprocessingPhase> CreatedCPP => BasesResolvedCPP </preprocessingPhase>
 when isKResult(ImplTypes)
@@ -131,7 +118,8 @@ rule [saveImplements]:
     <implements> .Set => ImplSet </implements>
 
 //Computes the full names map used to resolve
-//classes by simple name inside the class specified by the arg 4.
+//classes by simple name inside the class specified by the arg 4,
+//and stores them inside <imports>.
 syntax K ::= "saveImports"  "(" ClassType //Class - the actual class
                             "," ClassType //The outer class of this class, if any,
                                           //or noClass if this is a top-level class
@@ -153,6 +141,7 @@ rule [saveImportsComputePackage]:
         noValue, noValue
     )
 
+//Retrieves the names map of the package corresponding to this class
 rule [saveImportsComputeOwnInnerMap]:
     saveImports(_,_,_, Pack:PackageId,
       noValue => getNamesMap(Pack),

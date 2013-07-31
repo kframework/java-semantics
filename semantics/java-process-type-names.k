@@ -90,7 +90,7 @@ when notBool( (Label ==KLabel 'ClassDec) orBool (Label ==KLabel 'InterfaceDec)
 rule [processTypeNamesDiscard]:
     processTypeNames(.KList,_) => .K
 
-//returns the fully qualified class name from given parameters
+//Converts a pair of PackagId, Id into a fully qualified class name
 syntax K ::= "getClassType" "(" PackageId // the Package Id
                             "," Id        // Simple class name
                             ")"                                 [function]
@@ -98,7 +98,19 @@ syntax K ::= "getClassType" "(" PackageId // the Package Id
 rule [getclassType]:
     getClassType(packageId(PackKId:Id), SimpleClass:Id)
     => class String2Id(Id2String(PackKId) +String "." +String Id2String(SimpleClass))
-        [structural, anywhere]
+
+//Converts a fully qualified class type into a simple name (Id)
+//todo this one don't work
+syntax K ::= "getSimpleName" "(" ClassType ")"                  [function]
+rule getSimpleName(class ClassId:Id)
+    => String2Id(substrString(
+      Id2String(ClassId),
+      rfindString(Id2String(ClassId), ".", lengthString(Id2String(ClassId))) +Int 1,
+
+      //actually if this value is larger
+      //than the amount of characters left in the string, the function will still work
+      lengthString(Id2String(ClassId))
+    ))
 
 //Converts a term of type Classtype into a term of type PackageId
 //Used to represent a class as a package for its inner classes
@@ -106,7 +118,7 @@ syntax K ::= "toPackage"  "(" ClassType //the class to be converted into package
                           ")"   [function]
 
 rule [toPackage]:
-    toPackage(class Class:Id) => packageId(Class)  [structural, anywhere]
+    toPackage(class Class:Id) => packageId(Class)
 
 //Receives a class/interface body as K, and extracts the KList part of it
 syntax K ::= "bodyAsList"  "(" K         //The class body to be processed
@@ -114,10 +126,10 @@ syntax K ::= "bodyAsList"  "(" K         //The class body to be processed
 
 //The difference between classes and interfaces structure is purely due to Java-Front syntax whim.
 rule [bodyAsListClass]:
-    bodyAsList('ClassBody('ListWrap(Ks:KList))) => Ks   [structural, anywhere]
+    bodyAsList('ClassBody('ListWrap(Ks:KList))) => Ks
 
 rule [bodyAsListInterface]:
-    bodyAsList('ListWrap(Ks:KList)) => Ks               [structural, anywhere]
+    bodyAsList('ListWrap(Ks:KList)) => Ks
 
 //Returns the types map for the given package, or mapWrap(.Map) if there's no such package.
 syntax K ::= "getNamesMap"  "(" PackageId //The package for which we want to retrieve the types map

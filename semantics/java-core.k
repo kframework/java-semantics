@@ -39,6 +39,9 @@ configuration
       <in color="magenta" stream="stdin"> .List </in>
       <out color="brown" stream="stdout"> .List </out>
       <nextLoc color="gray"> 0 </nextLoc>
+
+      //Used to generate unique package names for local classes
+      <nextLocalId> 1 </nextLocalId>
       <br/>
       //cell type: Map[PackageId->Map[Id->ClassType]], Id = simple name, ClassType = full name
       <typeNamesMap> .Map </typeNamesMap>
@@ -54,6 +57,8 @@ configuration
           //for Object this is noClass
           <extends color="Fuchsia"> .K </extends>
           <implements> .Set </implements>
+
+          //The set of all interfaces DIRECTLY implemented by this class, non-transitive.
           <implTrans> .Set </implTrans>
           <br/>
           <rawExtends> .K </rawExtends>
@@ -128,12 +133,62 @@ configuration
 
 //@ \section{Identifiers}
 
-syntax ComputationPhase ::= "ProcessTypeNamesPhase"
-                          | "ProcessCompUnitsPhase"
-                          | "ProcessClassDecsPhase"
-                          | "ProcessClassesPhase"
-                          | "ElaborateBlocksPhase"
-                          | "ExecutionPhase"
+syntax ComputationPhase ::=
+    /* The content of <typeNamesMap> is computed, of type
+      Map[PackageName -> Map[SimpleName -> FullyQualifiedName]]
+    */
+    "ProcessTypeNamesPhase"
+
+    /* Primary processing of type declarations, including nested.
+      For each 'ClassDec a <class> is saved, with the following cells:
+        <classType>
+        <enclosingClass>
+        <rawExtends>
+        <rawImplements>
+        <declarations>
+        <metaType>
+        <cuImports> - imports of the enclosing CU, for top-level classes only.
+      A class first registered in a <class> cell is in the state CreatedCPP.
+    */
+  | "ProcessCompUnitsPhase"
+
+  /* Resolve the fully qualified names of base classes an interfaces. Fills the content of:
+        <extends> - the base class
+        <implements> - the set of directly implemented interfaces
+        <imports> - the map from simple names to full names for use within this class.
+  */
+  | "ProcessClassDecsPhase"
+
+  /* Saves into appropriate cells the list of transitively implemented interfaces, and all the
+    content about this class members. Computes the following cells:
+        <implTrans>
+        <fieldDecs>
+        <methods>
+        <methodDecs>
+        <instanceInit>
+        <staticEnv>
+        <staticInit>
+        <staticInitLocations>
+  */
+  | "ProcessClassesPhase"
+
+  /* Elaborates the content of each code block. Specifically the content of the following cells:
+        <methodDecs>
+        <instanceInit>
+        <staticInit>
+    The following transformations over expressions are performed:
+      - each name is resolved to its specific meaning - fully qualified class name, local variable name, static/instance
+      field of a specific class, etc.
+      - for each method call the precise signature is resolved.
+      - each unqualified method/constructor call is converted into a qualified one with the appropriate qualifier
+      (that might be empty)
+      - each expression is elaborated into a typed expression.
+  */
+  | "ElaborateBlocksPhase"
+
+  /* When all preprocessing / elaboration phases are finished, the actual execution begins.
+  */
+  | "ExecutionPhase"
 
 syntax ClassPreprocessingPhase ::= "CreatedCPP"
                                  | "BasesResolvedCPP"

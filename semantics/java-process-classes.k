@@ -66,6 +66,7 @@ process inner declaraions. Compute the following class cells:
   <implTrans>
   <fieldDecs>
   <methods>
+  <methodDecs>
   <instanceInit>
   <staticEnv>
   <staticInit>

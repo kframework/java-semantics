@@ -6,6 +6,7 @@ require "java-process-class-decs.k"
 require "java-process-imports.k"
 require "java-process-classes.k"
 require "java-elaborate-blocks.k"
+require "java-process-local-classes.k"
 require "java-primitive-types.k"
 require "java-literals.k"
 require "java-subtyping.k"
@@ -27,6 +28,7 @@ module JAVA
     imports JAVA-PROCESS-IMPORTS
     imports JAVA-PROCESS-CLASSES
     imports JAVA-ELABORATE-BLOCKS
+    imports JAVA-PROCESS-LOCAL-CLASSES
     imports JAVA-PRIMITIVE-TYPES
     imports JAVA-LITERALS
     imports JAVA-SUBTYPING
