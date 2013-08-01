@@ -26,74 +26,10 @@ The only change to untyped KOOL's values is that closures are now typed
 //@ \subsection{Type labels}
 //@Here we rewrite java type ast into simple types
 
-//Hapens during process-imports sub-phase. This is of course an approximation.
+//Happens during process-imports sub-phase. This is of course an approximation.
 rule [TypeNameInProcessCompUnitsPhase]:
     <k> 'TypeName(X:Id) => noValue ...</k>
     <computationPhase> ProcessCompUnitsPhase </computationPhase>
-
-rule [TypeNameInProcessClassDecsPhaseTop]:
-    <k> 'TypeName(X:Id) => Class ...</k>
-    <computationPhase> ProcessClassDecsPhase </computationPhase>
-    <cuClass> CuClass:ClassType </cuClass>
-    <classType> CuClass </classType>
-    <enclosingClass> noClass </enclosingClass>
-    <cuImports>... X |-> Class:ClassType ...</cuImports>
-
-rule [TypeNameInProcessClassDecsPhaseTopFail]:
-    <k> 'TypeName(X:Id) => noValue ...</k>
-    <computationPhase> ProcessClassDecsPhase </computationPhase>
-    <cuClass> CuClass:ClassType </cuClass>
-    <classType> CuClass </classType>
-    <enclosingClass> noClass </enclosingClass>
-    <cuImports> Imp:Map </cuImports>
-when notBool X in keys(Imp)
-
-rule [TypeNameInProcessClassDecsPhaseInner]:
-    <k> 'TypeName(X:Id) => Class ...</k>
-    <computationPhase> ProcessClassDecsPhase </computationPhase>
-    <cuClass> CuClass:ClassType </cuClass>
-    <class>
-      <classType> CuClass </classType>
-      <enclosingClass> class Outer </enclosingClass>
-      ...
-    </class>
-    <class>
-      <classType> class Outer </classType>
-      <imports>... X |-> Class:ClassType ...</imports>
-      ...
-    </class>
-
-rule [TypeNameInProcessClassDecsPhaseInnerFail]:
-    <k> 'TypeName(X:Id) => noValue ...</k>
-    <computationPhase> ProcessClassDecsPhase </computationPhase>
-    <cuClass> CuClass:ClassType </cuClass>
-    <class>
-      <classType> CuClass </classType>
-      <enclosingClass> class Outer </enclosingClass>
-      ...
-    </class>
-    <class>
-      <classType> class Outer </classType>
-      <imports> Imp:Map </imports>
-      ...
-    </class>
-when notBool X in keys(Imp)
-
-rule [TypeNameInProcessClassesPhase]:
-    <k> 'TypeName(X:Id) => Class ...</k>
-    <computationPhase> ProcessClassesPhase </computationPhase>
-    <cuClass> CuClass:ClassType </cuClass>
-    <classType> CuClass </classType>
-    <imports>... X |-> Class:ClassType ...</imports>
-
-rule [TypeNameInProcessClassesPhaseFail]:
-    <k> 'TypeName(X:Id) => noValue ...</k>
-    <computationPhase> ProcessClassesPhase </computationPhase>
-    <cuClass> CuClass:ClassType </cuClass>
-    <classType> CuClass </classType>
-    <imports> Imp:Map </imports>
-when
-    notBool (X in keys(Imp))
 
 //@ \subsection{Auxiliary operations}
 

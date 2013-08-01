@@ -123,7 +123,6 @@ syntax K ::= "newArrayImpl" "("
 rule [elaborateBlocksStart]:
     <k> . => elaborateBlocks(getAllClasses) </k>
     <computationPhase> ProcessClassesPhase => ElaborateBlocksPhase </computationPhase>
-    (<cuClass> _ </cuClass> => .Bag)
 
 //it is important to elaborate the instance initializers before the methods.
 //This way, when 'SuperConstrEnv is encountered, it inserts the already elaborated instance
@@ -583,24 +582,29 @@ rule [TypeNameString]:
 when
     Id2String(X) ==String "String"                      [structural]
 
-rule [TypeNameInExecutionPhase]:
+rule [TypeName-Local-InExecutionPhase]:
     <k> 'TypeName(X:Id) => Class ...</k>
-    <computationPhase> Phase:ComputationPhase </computationPhase>
+    <localTypes>... X |-> Class:ClassType ...</localTypes>
+
+rule [TypeName-Global-InExecutionPhase]:
+    <k> 'TypeName(X:Id) => Class ...</k>
+    <localTypes> LocalTypes:Map </localTypes>
     <crntClass> CrntClass:ClassType </crntClass>
     <classType> CrntClass </classType>
+    <preprocessingPhase> MembersProcessedCPP </preprocessingPhase>
     <imports>... X |-> Class:ClassType ...</imports>
 when
-    (Phase ==K ElaborateBlocksPhase) orBool (Phase ==K ExecutionPhase)
+    notBool X in keys(LocalTypes)
 
 rule [TypeNameInExecutionPhaseFail]:
     <k> 'TypeName(X:Id) => noValue ...</k>
-    <computationPhase> Phase:ComputationPhase </computationPhase>
+    <localTypes> LocalTypes:Map </localTypes>
     <crntClass> CrntClass:ClassType </crntClass>
     <classType> CrntClass </classType>
+    <preprocessingPhase> MembersProcessedCPP </preprocessingPhase>
     <imports> Imp:Map </imports>
 when
-    ((Phase ==K ElaborateBlocksPhase) orBool (Phase ==K ExecutionPhase))
-     andBool notBool (X in keys(Imp))
+    notBool X in keys(LocalTypes) andBool notBool (X in keys(Imp))
 
 /*@ \section{Elaboration of numeric expressions} */
 

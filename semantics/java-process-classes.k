@@ -95,7 +95,7 @@ rule [ProcessType]:
       <preprocessingPhase> DecsProcessedCPP => MembersProcessedCPP </preprocessingPhase>
       ...
     </class>
-    <cuClass> _ => Class </cuClass>
+    <crntClass> _ => Class </crntClass>
 
 //compute <implTrans> cell - interfaces transitively implemented
 syntax K ::= "computeImplTrans" "(" Set ")"
@@ -106,7 +106,7 @@ rule [computeImplTrans]:
       ~> computeImplTrans( (SetItem(BaseItf:ClassType) => .) _)
       ...
     </k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <implTrans> ITrans:Set </implTrans>
     <classType> BaseItf </classType>
@@ -120,7 +120,7 @@ syntax K ::= "saveImplTrans" "(" K //setWrap(ISet) - transitive set of inherited
                              ")"  [strict]
 
 rule <k> saveImplTrans(setWrap(S1:Set)) => . ...</k>
-     <cuClass> Class:ClassType </cuClass>
+     <crntClass> Class:ClassType </crntClass>
      <classType> Class </classType>
      <implTrans> _ => S1 </implTrans>
 
@@ -172,7 +172,7 @@ rule [isInheritablePackage]:
       => isAccessibleForOverwriting(BaseClass, BaseAccessMode, Class)
       ...
     </k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
@@ -200,7 +200,7 @@ rule isAccessibleForOverwriting(_, private, _) => false
 //we're in trouble
 rule [inherit]:
     <k> inherit(Sig:K |-> DeclClass:ClassType) => . ...</k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
     <class>
       <classType> Class </classType>
       <methods> Env:Map => Env[DeclClass/Sig] </methods>
@@ -248,7 +248,7 @@ rule [MethodDec]:
             methodType(sig(Name, getTypesFromParams(Params)), ReturnType))
       ...
     </k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
 when
     isKResult(Params)                       [structural]
 
@@ -296,7 +296,7 @@ rule [storeMethod]:
           methodType(Sig:Signature, ReturnType:Type)) => .
       ...
     </k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <methods> Env:Map => Env[Class / Sig] </methods>
     <methodDecs>
@@ -319,7 +319,7 @@ rule [ConstrDecSuperCallDesugar]:
       )
       ...
     </k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
 when
     Class =/=K objectClass
 
@@ -336,7 +336,7 @@ rule [ConstrDecObjectDesugar]:
       )
       ...
     </k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
 when
     Class ==K objectClass
 
@@ -353,7 +353,7 @@ rule [ConstrDec]:
           methodType(sig(getConsName(Class), getTypesFromParams(Params)), void))
       ...
     </k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
 when isKResult(Params)
 
 //@get the internal constructor name for a given class
@@ -379,7 +379,7 @@ when
 
 rule [FieldDecToLocalVarDec]:
     <k> 'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id))) => . ...</k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <fieldDecs>
       'ListWrap(_,, ( .KList => 'LocalVarDec(.K,, T,, 'ListWrap('VarDec(X))) ))
@@ -391,7 +391,7 @@ when
 
 rule [InstanceInitSave]:
     <k> 'InstanceInit(K:K) => . ...</k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <instanceInit> 'ListWrap(_,,(.KList => K)) </instanceInit>
         [structural]
@@ -406,7 +406,7 @@ when
 
 rule [StaticFieldDecToLocalVarDec]:
     <k> 'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id))) => . ...</k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticEnv> Env:Map => Env[L/X] </staticEnv>
     <staticInitLocations> _ (. => SetItem(L)) </staticInitLocations>
@@ -418,7 +418,7 @@ when
 
 rule [StaticInitSave]:
     <k> 'StaticInit(K:K) => . ...</k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticInit> 'ListWrap(_,,(.KList => K)) </staticInit>
         [structural]
@@ -439,7 +439,7 @@ rule [ClassDecDiscard]: 'ClassDec(_) => .
 rule [InterfaceDecDiscard]: 'InterfaceDec(_) => .
 
 /*@ This procedure adds all the fields in <staticEnv> of all implemented interfaces
-into the <staticEnv> of the current class (<cuClass>), in order to be resolved
+into the <staticEnv> of the current class (<crntClass>), in order to be resolved
 by variable lookup algorithms.
 This procedure is invoked before processing class declarations,
 thus class declarations override declarations inherited from interfaces.
@@ -451,7 +451,7 @@ syntax K ::= "inheritInterfaceFields"
 
 rule [inheritInterfaceFieldsStart]:
     <k> inheritInterfaceFields => inheritInterfaceFields(ISet, mapWrap(.Map)) ...</k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <implements> ISet:Set </implements>
 
@@ -469,7 +469,7 @@ rule [inheritInterfaceFieldsEnd]:
       inheritInterfaceFields(.Set, mapWrap(Env:Map)) => .
       ...
     </k>
-    <cuClass> Class:ClassType </cuClass>
+    <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticEnv> _ => Env </staticEnv>
 

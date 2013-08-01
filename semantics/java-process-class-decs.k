@@ -26,7 +26,7 @@ rule [resolveBasesTopLevelStart]:
     <rawImplements> 'ListWrap(RawImplements:KList) </rawImplements>
     <enclosingClass> noClass </enclosingClass>
     <preprocessingPhase> CreatedCPP </preprocessingPhase>
-    <cuClass> _ => Class </cuClass>
+    <crntClass> _ => Class </crntClass>
 
 rule [resolveBasesInnerStart]:
     <k> (. => resolveBases(Class, RawExtends, RawImplements)) ~> processClassDecs(_) ...</k>
@@ -40,10 +40,12 @@ rule [resolveBasesInnerStart]:
     </class>
     <class>
       <classType> OuterClass </classType>
-      <preprocessingPhase> DecsProcessedCPP </preprocessingPhase>
+      <preprocessingPhase> OuterClassPhase:ClassPreprocessingPhase </preprocessingPhase>
       ...
     </class>
-    <cuClass> _ => Class </cuClass>
+    <crntClass> _ => Class </crntClass>
+when
+    OuterClassPhase ==K DecsProcessedCPP orBool OuterClassPhase ==K MembersProcessedCPP
 
 //Process the given class from CreatedCPP to BasesResolvedCPP.
 syntax K ::= "resolveBases" "(" ClassType //The class for which we resolve bases
@@ -71,9 +73,11 @@ rule [markBaseProcessed]:
     </class>
     <class>
       <classType> BaseClass </classType>
-      <preprocessingPhase> DecsProcessedCPP </preprocessingPhase>
+      <preprocessingPhase> BaseClassPhase:ClassPreprocessingPhase </preprocessingPhase>
       ...
     </class>
+when
+    BaseClassPhase ==K DecsProcessedCPP orBool BaseClassPhase ==K MembersProcessedCPP
 
 //this one is for class Object
 rule [markNoClassProcessed]:
@@ -196,5 +200,53 @@ rule [saveImports]:
     <classType> Class </classType>
     <imports> _ => Imports </imports>
     (<cuImports> _ </cuImports> => .Bag)
+
+rule [TypeNameInProcessClassDecsPhaseTop]:
+    <k> 'TypeName(X:Id) => Class ...</k>
+    <crntClass> CuClass:ClassType </crntClass>
+    <classType> CuClass </classType>
+    <preprocessingPhase> CreatedCPP </preprocessingPhase>
+    <enclosingClass> noClass </enclosingClass>
+    <cuImports>... X |-> Class:ClassType ...</cuImports>
+
+rule [TypeNameInProcessClassDecsPhaseTopFail]:
+    <k> 'TypeName(X:Id) => noValue ...</k>
+    <crntClass> CuClass:ClassType </crntClass>
+    <classType> CuClass </classType>
+    <preprocessingPhase> CreatedCPP </preprocessingPhase>
+    <enclosingClass> noClass </enclosingClass>
+    <cuImports> Imp:Map </cuImports>
+when notBool X in keys(Imp)
+
+rule [TypeNameInProcessClassDecsPhaseInner]:
+    <k> 'TypeName(X:Id) => Class ...</k>
+    <crntClass> CuClass:ClassType </crntClass>
+    <class>
+      <classType> CuClass </classType>
+      <preprocessingPhase> CreatedCPP </preprocessingPhase>
+      <enclosingClass> class Outer </enclosingClass>
+      ...
+    </class>
+    <class>
+      <classType> class Outer </classType>
+      <imports>... X |-> Class:ClassType ...</imports>
+      ...
+    </class>
+
+rule [TypeNameInProcessClassDecsPhaseInnerFail]:
+    <k> 'TypeName(X:Id) => noValue ...</k>
+    <crntClass> CuClass:ClassType </crntClass>
+    <class>
+      <classType> CuClass </classType>
+      <preprocessingPhase> CreatedCPP </preprocessingPhase>
+      <enclosingClass> class Outer </enclosingClass>
+      ...
+    </class>
+    <class>
+      <classType> class Outer </classType>
+      <imports> Imp:Map </imports>
+      ...
+    </class>
+when notBool X in keys(Imp)
 
 endmodule

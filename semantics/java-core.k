@@ -22,8 +22,9 @@ configuration
             <contextType> staticCT </contextType>
             <br/>
             <crntObj color="Fuchsia">
-              //current class during elaboration and execution phase
+              //current class during all phases, including early preprocessing
               <crntClass> .K </crntClass>
+
               <location multiplicity="?"> .K </location>
 
               //the stack of all inheritance layers of the current object, from the actual runtime type
@@ -42,6 +43,9 @@ configuration
 
       //Used to generate unique package names for local classes
       <nextLocalId> 1 </nextLocalId>
+
+      //Map of local classes, used only in the elaboration phase
+      <localTypes> .Map </localTypes>
       <br/>
       //cell type: Map[PackageId->Map[Id->ClassType]], Id = simple name, ClassType = full name
       <typeNamesMap> .Map </typeNamesMap>
@@ -110,8 +114,6 @@ configuration
       //current compilation unit package
       <cuPackage> .K </cuPackage>
 
-      //Current class during process-classes phase.
-      <cuClass> .K </cuClass>
       <compUnitImports> .Map </compUnitImports>
 
       //A map from types to objectClosure() terms that represent their T.class value
