@@ -41,11 +41,6 @@ configuration
       <out color="brown" stream="stdout"> .List </out>
       <nextLoc color="gray"> 0 </nextLoc>
 
-      //Used to generate unique package names for local classes
-      <nextLocalId> 1 </nextLocalId>
-
-      //Map of local classes, used only in the elaboration phase
-      <localTypes> .Map </localTypes>
       <br/>
       //cell type: Map[PackageId->Map[Id->ClassType]], Id = simple name, ClassType = full name
       <typeNamesMap> .Map </typeNamesMap>
@@ -121,8 +116,14 @@ configuration
       <br/>
 
       //The local variables environment during elaboration
-      //Represents a stack
+      //Represents a stack. each ListItem contains a Map[Id -> Type]
       <elabEnv> ListItem(stEnv(.Map)) </elabEnv>
+
+      //Map of local classes, used only in the elaboration phase
+      <localTypes> ListItem(stEnv(.Map)) </localTypes>
+
+      //Used to generate unique package names for local classes
+      <nextLocalId> 1 </nextLocalId>
 
       <computationPhase> ProcessTypeNamesPhase </computationPhase>
       //required in ProcessCompUnitsPhase

@@ -143,7 +143,7 @@ rule [elaborateBlocksDiscard]:
 
 rule [elabMethodsHeatMethodFirstLine]:
     <k>
-      (. => elabParams(Params) ~> elab(FirstLine))
+      (. => addElabEnv ~> elabParams(Params) ~> elab(FirstLine))
       ~> elabMethods( (Sig |-> _ => .Map) _)
       ...
     </k>
@@ -154,7 +154,6 @@ rule [elabMethodsHeatMethodFirstLine]:
       ...
     </methodDecs>
     <contextType> _ => CT </contextType>
-    <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
 
 //Required when processing first constructor line of Object, which is .K
 rule [elabDotK]:
@@ -174,7 +173,7 @@ rule [elabMethodsHeatMethodBody]:
 
 rule [elabMethodsCoolMethod]:
     <k>
-      (elabRes(Body:K) => .) ~> elabMethods(_:Map)
+      (elabRes(Body:K) => removeLastElabEnv) ~> elabMethods(_:Map)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -186,7 +185,7 @@ rule [elabMethodsCoolMethod]:
 
 rule [elabMethodsCoolConstructor]:
     <k>
-      (elabRes(Body:K) => .) ~> elabMethods(_:Map)
+      (elabRes(Body:K) => removeLastElabEnv) ~> elabMethods(_:Map)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -204,37 +203,52 @@ rule [elabMethodsEnd]:
     elabMethods( .Map ) => .
 
 rule [elabInstanceHeat]:
-    <k> (. => elab(K)) ~> elabInstanceInit ...</k>
+    <k> (. => addElabEnv ~> elab(K)) ~> elabInstanceInit ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <instanceInit> K:K => CHOLE </instanceInit>
     <contextType> _ => instanceCT </contextType>
-    <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
 when K =/=K CHOLE
 
 rule [elabInstanceEnd]:
-    <k> elabRes(K) ~> elabInstanceInit => . ...</k>
+    <k> elabRes(K) ~> elabInstanceInit => removeLastElabEnv ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <instanceInit> CHOLE => K </instanceInit>
 
 rule [elabStaticHeat]:
-    <k> (. => elab(K)) ~> elabStaticInit ...</k>
+    <k> (. => addElabEnv ~> elab(K)) ~> elabStaticInit ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticInit> K:K => CHOLE </staticInit>
     <contextType> _ => staticCT </contextType>
-    <elabEnv> _ => ListItem(stEnv(.Map)) </elabEnv>
 when K =/=K CHOLE
 
 rule [elabStaticEnd]:
-    <k> elabRes(K) ~> elabStaticInit => . ...</k>
+    <k> elabRes(K) ~> elabStaticInit => removeLastElabEnv ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticInit> CHOLE => K </staticInit>
 
-//Adds params to the <elabEnv>.
-syntax K ::= "elabParams" "(" KList ")"
+syntax K ::=
+    //Adds a new empty layer to <elabEnv>
+      "addElabEnv"
+    //Removes the last layer from <elabEnv>
+    | "removeLastElabEnv"
+
+    //Adds params to the <elabEnv>.
+    | "elabParams" "(" KList ")"
+
+rule [addElabEnv]:
+    <k> addElabEnv => . ...</k>
+    <elabEnv> . => ListItem(stEnv(.Map)) ...</elabEnv>
+    <localTypes> . => ListItem(stEnv(.Map)) ...</localTypes>
+
+rule [removeLastElabEnv]:
+    <k> removeLastElabEnv => . ...</k>
+    <elabEnv> ListItem(_) => . ...</elabEnv>
+    <localTypes> ListItem(_) => . ...</localTypes>
+
 rule [elabParams]:
     <k> elabParams((paramImpl(T:Type, X:Id) => .KList) ,,_) ...</k>
     <elabEnv> ListItem(stEnv((. => X |-> T) _)) ...</elabEnv>
@@ -349,10 +363,12 @@ rule haveNoElabRes(.KList) => true
 rule [elabBlockHeat]:
     <k> elab('Block('ListWrap(Ks:KList))) => elab('ListWrap(Ks)) ~> elab('Block(CHOLE)) ...</k>
     <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
+    <localTypes> (. => ListItem(LocTypesK)) ListItem(LocTypesK:K) ...</localTypes>
 
 rule [elabForHeatFirstSubterm]:
     <k> (.=> elab(K)) ~> elab('For((K:K => CHOLE),, Ks:KList)) ...</k>
     <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
+    <localTypes> (. => ListItem(LocTypesK)) ListItem(LocTypesK:K) ...</localTypes>
 when getKLabel(K) =/=KLabel 'elabRes`(_`)
 
 rule [elabForHeatOtherSubterms]:
@@ -367,10 +383,12 @@ when getKLabel(HOLE) =/=KLabel 'elabRes`(_`)
 rule [elabCatch]:
     <k> elab('Catch(Param:KResult,, Body:K)) => elabParams(Param) ~> elab(Body) ~> elab('Catch(elabRes(Param),, CHOLE)) ...</k>
     <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
+    <localTypes> (. => ListItem(LocTypesK)) ListItem(LocTypesK:K) ...</localTypes>
 
 rule [elabDisposeBlockForOrCatch]:
     <k> elab(KL:KLabel(ElabResL:KList)) => elabDispose(KL(ElabResL)) ...</k>
     <elabEnv> (ListItem(_) => .) ...</elabEnv>
+    <localTypes> (ListItem(_) => .) ...</localTypes>
 when
     isElab(ElabResL)
     andBool ((KL ==KLabel 'Block) orBool (KL ==KLabel 'For) orBool (KL ==KLabel 'Catch))
@@ -494,6 +512,9 @@ rule [elabThis]:
     <k> elabDispose('This(.KList) => 'QThis(Class)) ...</k>
     <crntClass> Class:ClassType </crntClass>
 
+    <contextType> CT:ContextType </contextType>//for debug purposes
+    <debug>... . => ListItem('ListWrap('QThis(Class),, CT)) </debug>
+
 rule [elabQThisInstanceCT]:
     <k> elabDispose('QThis(Class)) => elabRes('QThis(Class) :: Class) ...</k>
     <contextType> instanceCT </contextType>
@@ -582,13 +603,13 @@ rule [TypeNameString]:
 when
     Id2String(X) ==String "String"                      [structural]
 
-rule [TypeName-Local-InExecutionPhase]:
+rule [TypeName-Local--in-any-Phase]:
     <k> 'TypeName(X:Id) => Class ...</k>
-    <localTypes>... X |-> Class:ClassType ...</localTypes>
+    <localTypes> ListItem(stEnv(X |-> Class:ClassType _)) ...</localTypes>
 
 rule [TypeName-Global-InExecutionPhase]:
     <k> 'TypeName(X:Id) => Class ...</k>
-    <localTypes> LocalTypes:Map </localTypes>
+    <localTypes> ListItem(stEnv(LocalTypes:Map)) ...</localTypes>
     <crntClass> CrntClass:ClassType </crntClass>
     <classType> CrntClass </classType>
     <preprocessingPhase> MembersProcessedCPP </preprocessingPhase>
@@ -598,7 +619,7 @@ when
 
 rule [TypeNameInExecutionPhaseFail]:
     <k> 'TypeName(X:Id) => noValue ...</k>
-    <localTypes> LocalTypes:Map </localTypes>
+    <localTypes> ListItem(stEnv(LocalTypes:Map)) ...</localTypes>
     <crntClass> CrntClass:ClassType </crntClass>
     <classType> CrntClass </classType>
     <preprocessingPhase> MembersProcessedCPP </preprocessingPhase>

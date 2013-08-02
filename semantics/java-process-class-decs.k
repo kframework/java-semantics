@@ -203,23 +203,29 @@ rule [saveImports]:
 
 rule [TypeNameInProcessClassDecsPhaseTop]:
     <k> 'TypeName(X:Id) => Class ...</k>
+    <localTypes> ListItem(stEnv(LocalTypes:Map)) ...</localTypes>
     <crntClass> CuClass:ClassType </crntClass>
     <classType> CuClass </classType>
     <preprocessingPhase> CreatedCPP </preprocessingPhase>
     <enclosingClass> noClass </enclosingClass>
     <cuImports>... X |-> Class:ClassType ...</cuImports>
+when
+    notBool X in keys(LocalTypes)
 
 rule [TypeNameInProcessClassDecsPhaseTopFail]:
     <k> 'TypeName(X:Id) => noValue ...</k>
+    <localTypes> ListItem(stEnv(LocalTypes:Map)) ...</localTypes>
     <crntClass> CuClass:ClassType </crntClass>
     <classType> CuClass </classType>
     <preprocessingPhase> CreatedCPP </preprocessingPhase>
     <enclosingClass> noClass </enclosingClass>
     <cuImports> Imp:Map </cuImports>
-when notBool X in keys(Imp)
+when
+    notBool X in keys(LocalTypes) andBool notBool X in keys(Imp)
 
 rule [TypeNameInProcessClassDecsPhaseInner]:
     <k> 'TypeName(X:Id) => Class ...</k>
+    <localTypes> ListItem(stEnv(LocalTypes:Map)) ...</localTypes>
     <crntClass> CuClass:ClassType </crntClass>
     <class>
       <classType> CuClass </classType>
@@ -232,9 +238,12 @@ rule [TypeNameInProcessClassDecsPhaseInner]:
       <imports>... X |-> Class:ClassType ...</imports>
       ...
     </class>
+when
+    notBool X in keys(LocalTypes)
 
 rule [TypeNameInProcessClassDecsPhaseInnerFail]:
     <k> 'TypeName(X:Id) => noValue ...</k>
+    <localTypes> ListItem(stEnv(LocalTypes:Map)) ...</localTypes>
     <crntClass> CuClass:ClassType </crntClass>
     <class>
       <classType> CuClass </classType>
@@ -247,6 +256,7 @@ rule [TypeNameInProcessClassDecsPhaseInnerFail]:
       <imports> Imp:Map </imports>
       ...
     </class>
-when notBool X in keys(Imp)
+when
+    notBool X in keys(LocalTypes) andBool notBool X in keys(Imp)
 
 endmodule

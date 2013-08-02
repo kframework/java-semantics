@@ -155,6 +155,7 @@ syntax K ::= "invokeConstr" "(" Int       //OL - object location
 
 //This rule cannot be simplified - we have to alter the newly created object from the store.
 //The context inside <control> is the context that called "new Obj()" expression.
+//Constructor calls are elaborated during execution phase
 rule [invokeConstr]:
     invokeConstr(OL:Int, Class:ClassType, Vals:KList, Encloser:KResult)
     => setEncloser(lookup(OL)::Class, Class, Encloser)

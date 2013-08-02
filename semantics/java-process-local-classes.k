@@ -45,20 +45,21 @@ rule [processLocalClassDecStep2]:
         ~> elaborateBlocks(setWrap(SetItem(Class)))
 
         // processClassDecs will alter <crntClass>, that's why we have to restore it at the end
-        ~> restoreAfterProcessLocalClass(OldCrntClass, OldLocalTypes[Class/Name])
+        ~> restoreAfterProcessLocalClass(OldCrntClass, CT)
       ...
     </k>
     <crntClass> OldCrntClass:ClassType </crntClass>
-    <localTypes> OldLocalTypes:Map => OldLocalTypes[Class/Name] </localTypes>
+    <localTypes> ListItem(stEnv(LocalTypes:Map => LocalTypes[Class/Name])) ...</localTypes>
+    <contextType> CT:ContextType </contextType>
     <typeNamesMap>... GeneratedPack |-> mapWrap(Name:Id |-> Class:ClassType) ...</typeNamesMap>
 
-//restore the content of <crntClass> and <localTypes> with the given class
+//restore the content of <crntClass> and <contextType> with the given class
 syntax K ::= "restoreAfterProcessLocalClass" "(" ClassType //old content of <crntClass>
-                                             "," Map       //old content of <localTypes>
+                                             "," ContextType //old content of <contextType>
                                              ")"
 rule [restoreAfterProcessLocalClass]:
-    <k> restoreAfterProcessLocalClass(Class:ClassType, LocalTypes:Map) => . ...</k>
+    <k> restoreAfterProcessLocalClass(Class:ClassType, CT:ContextType) => . ...</k>
     <crntClass> _ => Class </crntClass>
-    <localTypes> _ => LocalTypes </localTypes>
+    <contextType> _ => CT </contextType>
 
 endmodule

@@ -1,8 +1,14 @@
 /*
-Base class LA is a local class in instance context, have traced a constructor with two arguments.
-  Local class LB have a constructor with three arguments - one for qualifier, two for the base class args.
+33. Base class LA is a local class in instance context, have traced a constructor with two arguments.
+  Local class LB have two constructors:
+    - constructor with two arguments - two for the base class args. Calls unqualified superclass constructor.
+    - constructor with three arguments - one for qualifier, two for the base class args.
+      Calls qualified superclass constructor.
   Local class's test() calls super.test() that prints something from its enclosing class.
-  Instantiate two LB's - one with encloser O.this, other with another encloser.
+  Instantiate 3 LB's:
+    - using two-args constructor
+    - using three-args constructor, base encloser O.this
+    - using three-args constructor, base encloser new O(...)
 */
 
 public class local_cl_33_base_local_inst {
@@ -39,6 +45,10 @@ class O {
 
     class LB extends LA {
 
+      LB(int a, int b) {
+        super(a,b);
+      }
+
       LB(O o, int a, int b) {
         o.super(a,b);
       }
@@ -48,7 +58,9 @@ class O {
       }
     }
 
-    System.out.println(new LB(this, 1,2));
-    System.out.println(new LB(new O(20), 3,4));
+    System.out.println(new LB(1,2));
+    System.out.println(new LB(this, 3,4));
+    Object obj = O.this;//just for test
+    System.out.println(new LB(new O(20), 5,6));
   }
 }

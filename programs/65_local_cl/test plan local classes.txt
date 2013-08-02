@@ -24,13 +24,22 @@
 31. Base class is inner class from another lexical hierarchy, have a traced constructor with no arguments.
   Local class LB have a constructor with one argument - the qualifier of the base class.
   Local class's test() calls super.test() that prints something from its enclosing class.
+
 32. Base class is inner class from another lexical hierarchy, have traced a constructor with two arguments.
   Local class have a constructor with three arguments - one for qualifier, two for the base class args.
   Local class's test() calls super.test() that prints something from its enclosing class.
+
 33. Base class LA is a local class in instance context, have traced a constructor with two arguments.
-  Local class LB have a constructor with three arguments - one for qualifier, two for the base class args.
+  Local class LB have two constructors:
+    - constructor with two arguments - two for the base class args. Calls unqualified superclass constructor.
+    - constructor with three arguments - one for qualifier, two for the base class args.
+      Calls qualified superclass constructor.
   Local class's test() calls super.test() that prints something from its enclosing class.
-  Instantiate two LB's - one with encloser O.this, other with another encloser.
+  Instantiate 3 LB's:
+    - using two-args constructor
+    - using three-args constructor, base encloser O.this
+    - using three-args constructor, base encloser new O(...)
+
 34. Local class LB extending another local class and implementing a global interface.
   (Local interfaces are not allowed.) Testing polymorphism through casting the object
   to the class and to the interface and calling a relevant method.
