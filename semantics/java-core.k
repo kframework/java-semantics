@@ -97,6 +97,8 @@ configuration
           <staticInitLocations> .Set </staticInitLocations>
           <staticInitDone> false </staticInitDone>
           <cuImports> .Map </cuImports> //imports of the enclosing CU, for top-level classes only.
+
+          //Map[Id -> ClassType]. Map of classes accessible by simple name inside this class.
           <imports> .Map </imports>
           <enclosingClass> noClass </enclosingClass> //noClass if this is a top-level class,
                                                      //ClassType of the enclosing class otherwise
@@ -124,6 +126,10 @@ configuration
 
       //Used to generate unique package names for local classes
       <nextLocalId> 1 </nextLocalId>
+
+      //The map of classes accessible by simple name for declarations within current compilation unit.
+      //Used in process-class-decs phase.
+      <crntCuImports> .Map </crntCuImports>
 
       <computationPhase> ProcessTypeNamesPhase </computationPhase>
       //required in ProcessCompUnitsPhase
@@ -396,11 +402,12 @@ rule objectClass => class String2Id("java.lang.Object") [structural, anywhere]
 
 //Subsection mapUnion, union of maps. Remove when +Map will be implemented.
 //In this operation, elements of the second map overwrite elements of the first map
-//if they collide. This is not really important for the only application of this function
-//in our definition.
-syntax K ::= "mapUnion" "(" Map "," Map ")"
-rule mapUnion(M1:Map, M2:Map K1:K |-> K2:K) => mapUnion(M1[K2/K1], M2)
-rule mapUnion(M1:Map, .Map) => mapWrap(M1)
+//if they collide.
+syntax K ::= "mapUnion" "(" K //mapWrap(Map)
+                        "," K //mapWrap(Map)
+                        ")"                   [strict]
+rule mapUnion(mapWrap(M1:Map), mapWrap(M2:Map K1:K |-> K2:K)) => mapUnion(mapWrap(M1[K2/K1]), mapWrap(M2))
+rule mapUnion(mapWrap(M1:Map), mapWrap(.Map)) => mapWrap(M1)
 
 //subsection setUnion, union of sets. Remove when +Set will be implemented.
 syntax K ::= "setUnion" "(" Set "," Set ")"

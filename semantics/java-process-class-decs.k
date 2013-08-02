@@ -25,8 +25,10 @@ rule [resolveBasesTopLevelStart]:
     <rawExtends> RawExtends:K </rawExtends>
     <rawImplements> 'ListWrap(RawImplements:KList) </rawImplements>
     <enclosingClass> noClass </enclosingClass>
+    <cuImports> CuImports:Map </cuImports>
     <preprocessingPhase> CreatedCPP </preprocessingPhase>
-    <crntClass> _ => Class </crntClass>
+    <crntClass> _ => noClass </crntClass>
+    <crntCuImports> _ => CuImports </crntCuImports>
 
 rule [resolveBasesInnerStart]:
     <k> (. => resolveBases(Class, RawExtends, RawImplements)) ~> processClassDecs(_) ...</k>
@@ -43,7 +45,8 @@ rule [resolveBasesInnerStart]:
       <preprocessingPhase> OuterClassPhase:ClassPreprocessingPhase </preprocessingPhase>
       ...
     </class>
-    <crntClass> _ => Class </crntClass>
+    <crntClass> _ => OuterClass </crntClass>
+    <crntCuImports> _ => .Map </crntCuImports>
 when
     OuterClassPhase ==K DecsProcessedCPP orBool OuterClassPhase ==K MembersProcessedCPP
 
@@ -87,7 +90,7 @@ rule [markNoClassProcessed]:
 rule [processClassDecEnd]:
     <k>
       (. => saveImplements(Class, kListToSet(ImplTypes, .Set))
-         ~> saveImports(Class, OuterClass, (BaseClass,,ImplTypes), .K, noValue, noValue)
+         ~> saveImports(Class, OuterClass, (BaseClass,,ImplTypes), noValue, mapWrap(.Map), noValue)
       )
       ~> processClassDecs(setWrap( (SetItem(Class:ClassType) => .Set) _:Set ))
       ...
@@ -127,36 +130,45 @@ rule [saveImplements]:
 syntax K ::= "saveImports"  "(" ClassType //Class - the actual class
                             "," ClassType //The outer class of this class, if any,
                                           //or noClass if this is a top-level class
-                            "," KList   //The list of base classes
-                            "," K         //The toPackage(ClassType), to be computed
-                            "," K         //The inner types map of the given class
-                            "," K         //The mapWrap(Imports), containing in the end
-                                          //the desired Imports map
-                            ")"   [strict(5,6)]
+                            "," KList     //The list of base classes
+                            "," K         //mapWrap(outer classes), to be computed
+                            "," K         //mapWrap(inherited classes), to be computed. Starts with mapWrap(.Map)
+                            "," K         //the result map, to be computed
+                            ")"   [strict(4,5,6)]
 
 //todo K 10341 it looks like [strict] above don't work
+context saveImports(_,_,_,HOLE,_,_)
 context saveImports(_,_,_,_,HOLE,_)
 context saveImports(_,_,_,_,_,HOLE)
 
-//Compute the ClassType and the Package representing the given class
-rule [saveImportsComputePackage]:
-    saveImports(Class:ClassType, _,_,
-        .K => toPackage(Class),
-        noValue, noValue
-    )
+//Compute outer classes if this class is a top-level class
+rule [saveImportsComputeExternalTop]:
+    <k>
+      saveImports(Class:ClassType, noClass, _,
+        noValue => mapWrap(ExternalMap),
+      _,_)
+      ...
+    </k>
+    <classType> Class </classType>
+    <cuImports> ExternalMap:Map </cuImports>
 
-//Retrieves the names map of the package corresponding to this class
-rule [saveImportsComputeOwnInnerMap]:
-    saveImports(_,_,_, Pack:PackageId,
-      noValue => getNamesMap(Pack),
-      noValue
-    )
+//Compute outer classes if this class is an inner class.
+rule [saveImportsComputeExternalInner]:
+    <k>
+      saveImports(_, OuterClass:ClassType, _,
+        noValue => mapWrap(ExternalMap),
+      _,_)
+      ...
+    </k>
+    <classType> OuterClass </classType>
+    <imports> ExternalMap:Map </imports>
 
+//Second add names inherited from each base type, but don't override inner classes
 rule [saveImportsInheritTypes]:
     <k>
-      saveImports(_,_, ((BaseClass:ClassType => .KList),, _), Pack:PackageId,
-        mapWrap(InnerTypesMap:Map) => mapUnion(BaseClassMap, InnerTypesMap),
-        noValue
+      saveImports(_,_, ((BaseClass:ClassType => .KList),, _), _,
+        mapWrap(InheritedMap:Map) => mapUnion(mapWrap(InheritedMap), mapWrap(BaseClassMap)),
+        _
       )
       ...
     </k>
@@ -166,30 +178,29 @@ rule [saveImportsInheritTypes]:
 rule [saveImportsDiscardNoClass]:
     saveImports(_,_, ((noClass => .KList),, _), _,_,_)
 
-//Compute the imports map for the ClassType computed at part 1
-//when this class is a top-level class
-rule [saveImportsComputeImportsTop]:
+/*Compute the final result - the combined accessibe classes map, with this components in order:
+  - external names
+  - local block names (for local classes only)
+  - inherited names
+  - inner names
+*/
+rule [saveImportsComputeResult]:
     <k>
-      saveImports(Class:ClassType, noClass, .KList, _, mapWrap(InnerTypesMap:Map),
-        noValue => mapUnion(Imports, InnerTypesMap)
+      saveImports(Class:ClassType,_, .KList, mapWrap(ExternalMap:Map), mapWrap(InheritedMap:Map),
+        noValue => mapUnion(
+          mapUnion(
+            mapWrap(ExternalMap),
+            mapWrap(LocalTypes)),
+          mapUnion(
+            mapWrap(InheritedMap),
+            getNamesMap(toPackage(Class)))
+        )
       )
       ...
     </k>
-    <classType> Class </classType>
-    <cuImports> Imports:Map </cuImports>
-
-//Compute the imports map for the ClassType computed at part 1
-//when this class is an inner class
-rule [saveImportsComputeImportsInner]:
-    <k>
-      saveImports(_, OuterClass:ClassType, .KList, _, mapWrap(InnerTypesMap:Map),
-        noValue => mapUnion(Imports, InnerTypesMap)
-      )
-      ...
-    </k>
-    <classType> OuterClass </classType>
-    <imports> Imports:Map </imports>
-when OuterClass =/=K noClass
+    <localTypes> ListItem(stEnv(LocalTypes:Map)) ...</localTypes>
+    <classType> BaseClass </classType>
+    <imports> BaseClassMap:Map </imports>
 
 //Save the computed Imports map into the <imports> cell of the given class
 rule [saveImports]:
@@ -201,61 +212,21 @@ rule [saveImports]:
     <imports> _ => Imports </imports>
     (<cuImports> _ </cuImports> => .Bag)
 
+//When the class whose declaration is processed is an inner class,
+//usual rules for 'TypeName apply.
 rule [TypeNameInProcessClassDecsPhaseTop]:
     <k> 'TypeName(X:Id) => Class ...</k>
     <localTypes> ListItem(stEnv(LocalTypes:Map)) ...</localTypes>
-    <crntClass> CuClass:ClassType </crntClass>
-    <classType> CuClass </classType>
-    <preprocessingPhase> CreatedCPP </preprocessingPhase>
-    <enclosingClass> noClass </enclosingClass>
-    <cuImports>... X |-> Class:ClassType ...</cuImports>
+    <crntClass> noClass </crntClass>
+    <crntCuImports>... X |-> Class:ClassType ...</crntCuImports>
 when
     notBool X in keys(LocalTypes)
 
 rule [TypeNameInProcessClassDecsPhaseTopFail]:
     <k> 'TypeName(X:Id) => noValue ...</k>
     <localTypes> ListItem(stEnv(LocalTypes:Map)) ...</localTypes>
-    <crntClass> CuClass:ClassType </crntClass>
-    <classType> CuClass </classType>
-    <preprocessingPhase> CreatedCPP </preprocessingPhase>
-    <enclosingClass> noClass </enclosingClass>
-    <cuImports> Imp:Map </cuImports>
-when
-    notBool X in keys(LocalTypes) andBool notBool X in keys(Imp)
-
-rule [TypeNameInProcessClassDecsPhaseInner]:
-    <k> 'TypeName(X:Id) => Class ...</k>
-    <localTypes> ListItem(stEnv(LocalTypes:Map)) ...</localTypes>
-    <crntClass> CuClass:ClassType </crntClass>
-    <class>
-      <classType> CuClass </classType>
-      <preprocessingPhase> CreatedCPP </preprocessingPhase>
-      <enclosingClass> class Outer </enclosingClass>
-      ...
-    </class>
-    <class>
-      <classType> class Outer </classType>
-      <imports>... X |-> Class:ClassType ...</imports>
-      ...
-    </class>
-when
-    notBool X in keys(LocalTypes)
-
-rule [TypeNameInProcessClassDecsPhaseInnerFail]:
-    <k> 'TypeName(X:Id) => noValue ...</k>
-    <localTypes> ListItem(stEnv(LocalTypes:Map)) ...</localTypes>
-    <crntClass> CuClass:ClassType </crntClass>
-    <class>
-      <classType> CuClass </classType>
-      <preprocessingPhase> CreatedCPP </preprocessingPhase>
-      <enclosingClass> class Outer </enclosingClass>
-      ...
-    </class>
-    <class>
-      <classType> class Outer </classType>
-      <imports> Imp:Map </imports>
-      ...
-    </class>
+    <crntClass> noClass </crntClass>
+    <crntCuImports> Imp:Map </crntCuImports>
 when
     notBool X in keys(LocalTypes) andBool notBool X in keys(Imp)
 

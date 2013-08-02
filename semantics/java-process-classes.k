@@ -458,7 +458,7 @@ rule [inheritInterfaceFieldsStart]:
 rule [inheritInterfaceFields]:
     <k>
       inheritInterfaceFields(SetItem(Intf:ClassType) ISet:Set, mapWrap(Env:Map))
-      => inheritInterfaceFields(ISet, mapUnion(Env, IntfEnv))
+      => inheritInterfaceFields(ISet, mapUnion(mapWrap(Env), mapWrap(IntfEnv)))
       ...
     </k>
     <classType> Intf </classType>

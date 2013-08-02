@@ -386,9 +386,7 @@ rule [elabCatch]:
     <localTypes> (. => ListItem(LocTypesK)) ListItem(LocTypesK:K) ...</localTypes>
 
 rule [elabDisposeBlockForOrCatch]:
-    <k> elab(KL:KLabel(ElabResL:KList)) => elabDispose(KL(ElabResL)) ...</k>
-    <elabEnv> (ListItem(_) => .) ...</elabEnv>
-    <localTypes> (ListItem(_) => .) ...</localTypes>
+    <k> elab(KL:KLabel(ElabResL:KList)) => removeLastElabEnv ~> elabDispose(KL(ElabResL)) ...</k>
 when
     isElab(ElabResL)
     andBool ((KL ==KLabel 'Block) orBool (KL ==KLabel 'For) orBool (KL ==KLabel 'Catch))
@@ -512,9 +510,6 @@ rule [elabThis]:
     <k> elabDispose('This(.KList) => 'QThis(Class)) ...</k>
     <crntClass> Class:ClassType </crntClass>
 
-    <contextType> CT:ContextType </contextType>//for debug purposes
-    <debug>... . => ListItem('ListWrap('QThis(Class),, CT)) </debug>
-
 rule [elabQThisInstanceCT]:
     <k> elabDispose('QThis(Class)) => elabRes('QThis(Class) :: Class) ...</k>
     <contextType> instanceCT </contextType>
@@ -603,26 +598,24 @@ rule [TypeNameString]:
 when
     Id2String(X) ==String "String"                      [structural]
 
-rule [TypeName-Local--in-any-Phase]:
+rule [TypeName-Local-in-any-Phase]:
     <k> 'TypeName(X:Id) => Class ...</k>
     <localTypes> ListItem(stEnv(X |-> Class:ClassType _)) ...</localTypes>
 
-rule [TypeName-Global-InExecutionPhase]:
+rule [TypeName-Global]:
     <k> 'TypeName(X:Id) => Class ...</k>
     <localTypes> ListItem(stEnv(LocalTypes:Map)) ...</localTypes>
     <crntClass> CrntClass:ClassType </crntClass>
     <classType> CrntClass </classType>
-    <preprocessingPhase> MembersProcessedCPP </preprocessingPhase>
     <imports>... X |-> Class:ClassType ...</imports>
 when
     notBool X in keys(LocalTypes)
 
-rule [TypeNameInExecutionPhaseFail]:
+rule [TypeName-Global-Fail]:
     <k> 'TypeName(X:Id) => noValue ...</k>
     <localTypes> ListItem(stEnv(LocalTypes:Map)) ...</localTypes>
     <crntClass> CrntClass:ClassType </crntClass>
     <classType> CrntClass </classType>
-    <preprocessingPhase> MembersProcessedCPP </preprocessingPhase>
     <imports> Imp:Map </imports>
 when
     notBool X in keys(LocalTypes) andBool notBool (X in keys(Imp))
