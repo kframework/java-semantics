@@ -243,8 +243,11 @@ syntax K ::=
 
 rule [addElabEnv]:
     <k> addElabEnv => . ...</k>
-    <elabEnv> . => ListItem(stEnv(.Map)) ...</elabEnv>
+    <elabEnv> . => ListItem(stEnv(EnclosingLocalEnv)) ...</elabEnv>
     <localTypes> . => ListItem(stEnv(.Map)) ...</localTypes>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    <enclosingLocalEnv> EnclosingLocalEnv:Map </enclosingLocalEnv>
 
 rule [removeLastElabEnv]:
     <k> removeLastElabEnv => . ...</k>

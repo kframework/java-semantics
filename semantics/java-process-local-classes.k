@@ -40,7 +40,8 @@ syntax K ::= "processLocalClassDecStep2" "(" PackageId //the generated package
 rule [processLocalClassDecStep2]:
     <k>
       processLocalClassDecStep2(GeneratedPack:PackageId)
-      =>   processClassDecs(setWrap(SetItem(Class)))
+      =>   setEnclosingLocalEnv(Class)
+        ~> processClassDecs(setWrap(SetItem(Class)))
         ~> processTypeWithDepends(Class)
         ~> elaborateBlocks(setWrap(SetItem(Class)))
 
@@ -52,6 +53,13 @@ rule [processLocalClassDecStep2]:
     <localTypes> ListItem(stEnv(LocalTypes:Map => LocalTypes[Class/Name])) ...</localTypes>
     <contextType> CT:ContextType </contextType>
     <typeNamesMap>... GeneratedPack |-> mapWrap(Name:Id |-> Class:ClassType) ...</typeNamesMap>
+
+//Seths the enclosing local environment for this class, from the cell <elabEnv>
+syntax K ::= "setEnclosingLocalEnv" "(" ClassType ")"
+rule <k> setEnclosingLocalEnv(Class:ClassType) => . ...</k>
+     <elabEnv> ListItem(stEnv(EnclosingLocalEnv:Map)) ...</elabEnv>
+     <classType> Class </classType>
+     <enclosingLocalEnv> _ => EnclosingLocalEnv </enclosingLocalEnv>
 
 //restore the content of <crntClass> and <contextType> with the given class
 syntax K ::= "restoreAfterProcessLocalClass" "(" ClassType //old content of <crntClass>

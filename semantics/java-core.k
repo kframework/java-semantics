@@ -53,13 +53,17 @@ configuration
           //sort ClassType. Contains the fully qualified class name.
           <classType color="Fuchsia"> .K </classType>
 
-          //for Object this is noClass
+          //The base class, or noClass for Object. For interfaces: Object.
           <extends color="Fuchsia"> .K </extends>
+
+          //Directly implemented interfaces, the resolved content of implements clause.
           <implements> .Set </implements>
 
-          //The set of all interfaces DIRECTLY implemented by this class, non-transitive.
+          //Transitively implemented interfaces.
           <implTrans> .Set </implTrans>
+
           <br/>
+
           <rawExtends> .K </rawExtends>
           <rawImplements> .K </rawImplements>
           <unprocessedBases> .K </unprocessedBases>//base classes that didn't
@@ -95,21 +99,30 @@ configuration
 
           //Static fields declared in this class, not inherited. Used by static initialization.
           <staticInitLocations> .Set </staticInitLocations>
+
+          //True if this class was statically initialized, false otherwise. ExecutionPhase.
           <staticInitDone> false </staticInitDone>
+
           <cuImports> .Map </cuImports> //imports of the enclosing CU, for top-level classes only.
 
           //Map[Id -> ClassType]. Map of classes accessible by simple name inside this class.
           <imports> .Map </imports>
           <enclosingClass> noClass </enclosingClass> //noClass if this is a top-level class,
                                                      //ClassType of the enclosing class otherwise
-          <preprocessingPhase> .K </preprocessingPhase> //The major phase of <class> lifetime.
-                                                        //see ClassPreprocessingPhase definition
+
+          //For local classes only. Map[Id -> Type] of vars accessible from the enclosing local env.
+          //Used during elaboration phase only.
+          <enclosingLocalEnv> .Map </enclosingLocalEnv>
+
+          //The major phase of <class> lifetime. See ClassPreprocessingPhase definition.
+          <preprocessingPhase> .K </preprocessingPhase>
         </class>
       </classes>
+
       <br/>
+
+      //Main class, passed as krun argument. We need it from the outside, just like JDK Java.
       <mainClass> $MainClass:ListItem </mainClass>
-      //current compilation unit package
-      <cuPackage> .K </cuPackage>
 
       <compUnitImports> .Map </compUnitImports>
 
@@ -248,7 +261,19 @@ syntax ContextType ::= "staticCT" | "instanceCT"
 syntax KResult ::= ContextType
 
 syntax RawVal ::= "objectClosure" "(" Int //OL - object location
-                                  "," Bag //<envStack> - the object content
+
+                                  /*The object content, of the form:
+                                    <envStack>
+                                    ListItem(el(
+                                      Class,
+                                      <env>Env</env>,
+                                      enclosingObjClosure::T,
+                                      enclosingLocalEnv:Map
+                                    ))
+                                      ...
+                                    </envStack>
+                                  */
+                                  "," Bag
                                   ")"
 
                 | "methodClosure" "("
@@ -335,9 +360,10 @@ rule defaultTyped(I:Int) => I :: int                                            
 rule defaultTyped(B:Bool) => B :: bool                                                [structural]
 rule defaultTyped(Str:String) => Str :: rtString                                      [structural]
 rule defaultTyped(null) => null :: nullType                                           [structural]
-rule defaultTyped(
-      objectClosure(OL:Int, <envStack>ListItem(el(Class:ClassType, BI:BagItem, Encloser:KResult)) Rest:List</envStack>)
-    ) => objectClosure(OL, <envStack>ListItem(el(Class, BI, Encloser)) Rest</envStack>) :: Class
+rule defaultTyped( objectClosure(
+      OL:Int,
+      <envStack>ListItem(el(Class:ClassType, BI:BagItem, Encloser:KResult, LocalEnv:Map)) Rest:List</envStack>
+    )) => objectClosure(OL, <envStack>ListItem(el(Class, BI, Encloser, LocalEnv)) Rest</envStack>) :: Class
                                                                                       [structural]
 rule defaultTyped(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T           [structural]
 
@@ -390,10 +416,11 @@ rule [restoreEnvObjContext]:
     <contextType> _ => CT </contextType>
 
 //The content of an <envStack> ListItem() </envStack>
-syntax K ::= "el(" ClassType //The class corresponding to the current layer
-              "," BagItem  //<env> instance fields </env>
-              "," K        //objectClosure(...)::_ - the enclosing object, or noValue for top-level classes
-              ")"
+syntax K ::= "el" "(" ClassType //The class corresponding to the current layer
+                  "," BagItem   //<env> instance fields </env>
+                  "," K         //objectClosure(...)::_ - the enclosing object, or noValue for top-level classes
+                  "," Map       //Map[Id ->Loc], enclosingLocalEnv, local classes only.
+                  ")"
 
 //A wrapper for maps. Allows the usage of multy-level maps.
 //Also used as part of mapUnion operation in java-process-classes

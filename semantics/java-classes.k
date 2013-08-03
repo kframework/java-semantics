@@ -48,11 +48,11 @@ to take advantage of the richer KOOL semantic infrastructure and thus
 get more from the existing SIMPLE constructs. */
 
 //@ \texttt{typeOf for raw values of reference type}
-rule typeOf(Str:String) => rtString [anywhere]
-rule typeOf(null) => nullType [anywhere]
-rule typeOf(objectClosure(_, <envStack>ListItem(el(Class:ClassType, _,_)) _</envStack> _))
-     => Class [anywhere]
-rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T [anywhere]
+rule typeOf(Str:String) => rtString
+rule typeOf(null) => nullType
+rule typeOf(objectClosure(_, <envStack>ListItem(el(Class:ClassType, _,_,_)) _</envStack> _))
+     => Class
+rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T
 
 /*@ \subsection{New}
 The semantics of \texttt{new} in dynamically typed KOOL is also
@@ -85,6 +85,7 @@ rule [QNewInstance]:
         ~> storeObj
         ~> restoreEnvObjContext(Env, Obj, CT)
         ~> invokeConstr(L, Class, Vals, EnclosingObj)
+        ~> setOuterLocalEnv(L, Class)
         ~> typedLookup(L)
       ...
     </k>
@@ -129,7 +130,7 @@ rule [addEnvLayer]:
     <k> addEnvLayer => . ...</k>
     <env> Env:Map => . </env>
     <crntClass> Class:ClassType </crntClass>
-    <envStack> . => ListItem(el(Class, <env>Env</env>, noValue)) ...</envStack>
+    <envStack> . => ListItem(el(Class, <env>Env</env>, noValue, .Map)) ...</envStack>
         [structural]
 
 syntax K ::= "storeObj"
@@ -172,7 +173,7 @@ rule [setEncloser-value]:
     <store>
       ...
       OL |->
-        objectClosure(_, <envStack>... ListItem(el(Class,_, _ => EncloserRV::EncloserClass)) ...</envStack>)::_
+        objectClosure(_, <envStack>... ListItem(el(Class,_, _ => EncloserRV::EncloserClass, _)) ...</envStack>)::_
       ...
     </store>
     <classType> Class </classType>
@@ -180,6 +181,23 @@ rule [setEncloser-value]:
 
 rule [setEncloser-noValue]:
     setEncloser(_,_, noValue) => .
+
+//Set the current <env> as outerLocalEnv for all layers of the <crntObj>.
+//Approximate implementation
+syntax K ::= "setOuterLocalEnv" "(" Int "," ClassType ")"
+rule [setOuterLocalEnv]:
+    <k> setOuterLocalEnv(OL:Int, Class:ClassType => BaseClass) ...</k>
+    <env> CurrentEnv:Map </env>
+    <store>
+      ...
+      OL |->
+        objectClosure(_, <envStack>... ListItem(el(Class,_,_, _ => CurrentEnv)) ...</envStack>)::_
+      ...
+    </store>
+    <classType> Class </classType>
+    <extends> BaseClass:ClassType </extends>
+
+rule setOuterLocalEnv(_, noClass) => .
 
 /*@ \subsection{Instance Of}
 Like in untyped KOOL. */

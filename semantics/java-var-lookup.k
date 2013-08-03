@@ -64,7 +64,7 @@ and we will be able to pick the correct encloser inside both O.A and O.B.
 */
 rule [lookupQThis-next]:
     lookupQThis(Class:ClassType,
-      objectClosure(_, <envStack>... ListItem(el(ObjClass,_, Encloser:KResult)) ...</envStack>) :: ObjClass:ClassType
+      objectClosure(_, <envStack>... ListItem(el(ObjClass,_, Encloser:KResult, _)) ...</envStack>) :: ObjClass:ClassType
     ) => lookupQThis(Class:ClassType, Encloser)
 when
     Class =/=K ObjClass
@@ -86,7 +86,7 @@ context lvalue(lookupField(HOLE,_,_)::_)
 rule [lookupField]:
     lookupField(
       objectClosure(_,
-          <envStack>... ListItem(el(TargetClass, <env>... X |-> L:Int ...</env>, _)) ...</envStack> _
+          <envStack>... ListItem(el(TargetClass, <env>... X |-> L:Int ...</env>, _,_)) ...</envStack> _
         ) ::_,
       TargetClass:ClassType,
       X:Id

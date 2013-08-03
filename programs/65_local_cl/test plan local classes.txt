@@ -145,3 +145,18 @@
   Define variables of type all three, instantiate and print them.
   Also print the local var, field and method, accessing them by simple name.
   All local classes have a no-arg traced constructor.
+
+Implementation of enclosing local env. To test:
+1.ok. Own fields should have higher priority than enclosing locals.
+  Already present: test 46.
+2. Base class fields should have higher priority than enclosing locals.
+3. Static base class fields should have higher priority than enclosing locals.
+4. Inner of local: Ability to accesses vars from enclosing local env of the enclosing Local.
+5. Inner of local: Fields of Local should have higher priority than enclosing local vars.
+6. Inner of local: Fields inherited by Local should have higher priority than enclosing local vars.
+7. Inner of local: Static fields inherited by Local should have higher priority than enclosing local vars.
+8. Outer local vars are accessible inside the constructor.
+9. Class declared in a place where "a" have one val, instantiated where "a" have another val,
+  but in both places a is a local var. Check the difference.
+10. Base class and derived class with different local environments. Same outer local var
+  referred in base and derived of the same object should yield different result.

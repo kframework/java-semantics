@@ -335,13 +335,15 @@ rule [methodInvokeRuntimeInstanceOnClass]:
         objectClosure(OL:Int,
           <envStack>
             Rest:List
-            ListItem(el(Class:ClassType, BI:BagItem, Encloser:KResult))
+            ListItem(el(Class:ClassType, BI:BagItem, Encloser:KResult, LocalEnv:Map))
             ...
           </envStack> _)::_,
           ParamVals:KList, instanceCT
       )::_
       => invokeImpl(
-        lookupOverloadedMethod(Sig, getClassList(Rest ListItem(el(Class, BI, Encloser))), mapWrap(.Map), noValue),
+        lookupOverloadedMethod(
+          Sig, getClassList(Rest ListItem(el(Class, BI, Encloser, LocalEnv))), mapWrap(.Map), noValue
+        ),
         OL, 'ListWrap(ParamVals)
       )
       ...
@@ -365,7 +367,7 @@ rule [methodInvokeRuntimeInstanceOnInterface]:
       methodInvokeRuntime(Class:ClassType, Sig:Signature,
         objectClosure(OL:Int,
           <envStack>
-            ListItem(el(ActualClass:ClassType, _,_))
+            ListItem(el(ActualClass:ClassType, _,_,_))
             ...
           </envStack> _)::_,
         ParamVals:KList, instanceCT
@@ -422,13 +424,13 @@ context qSuperQual(HOLE)::_
 rule [qSuperQualEval]:
     qSuperQual(objectClosure(
       OL,
-      <envStack>... ListItem(el(BaseClass, BI:BagItem, Encloser:KResult)) Rest:List </envStack>
+      <envStack>... ListItem(el(BaseClass, BI:BagItem, Encloser:KResult, LocalEnv:Map)) Rest:List </envStack>
     )::_) :: BaseClass:ClassType
-    => objectClosure(OL, <envStack> ListItem(el(BaseClass, BI, Encloser)) Rest </envStack>)::BaseClass
+    => objectClosure(OL, <envStack> ListItem(el(BaseClass, BI, Encloser, LocalEnv)) Rest </envStack>)::BaseClass
 
-//Converts a list of ListItem(el(Class, BI, Encloser)) into KList with elements of sort ClassType
+//Converts a list of ListItem(el(Class, BI, Encloser, _)) into KList with elements of sort ClassType
 syntax K ::= "getClassList" "(" List ")"
-rule (.KList => Class),, getClassList((ListItem(el(Class:ClassType, _,_)) => .List) _)
+rule (.KList => Class),, getClassList((ListItem(el(Class:ClassType, _,_,_)) => .List) _)
         [structural, anywhere]
 rule getClassList(.) => .KList
         [structural, anywhere]
@@ -543,7 +545,7 @@ rule [invokeImplInstance]:
         OL:Int,
         'ListWrap(ParamValues:KList)
       ) ~> K:K
-       => bindto Params, ParamValues ~> Body ~> 'Return('None(.KList))
+       => setRuntimeEnclosingLocalEnv(OL) ~> bindto Params, ParamValues ~> Body ~> 'Return('None(.KList))
     </k>
     <control>
       <stack>
@@ -608,6 +610,15 @@ rule [invokeImplStatic]:
       C:Bag
     </control>
     <env> Env:Map => . </env>
+
+syntax K ::= "setRuntimeEnclosingLocalEnv" "(" Int ")"
+rule <k> setRuntimeEnclosingLocalEnv(OL:Int) => . ...</k>
+     <env> _ => OuterLocalEnv </env>
+     <store>
+      ...
+      OL |-> objectClosure(_, <envStack> ListItem(el(_,_,_,OuterLocalEnv:Map)) ...</envStack>) :: _
+      ...
+     </store>
 
 //@ \texttt{bindto} also checks the well-formedness of the method parameters
 

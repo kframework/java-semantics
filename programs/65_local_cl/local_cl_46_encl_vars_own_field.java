@@ -18,8 +18,10 @@ class O {
     class LB {
       int a = 30;
 
-      public String toString() {return "O.meth().LB: a="+a + " ,b="+b+", this.a="+this.a;}
+      public String toString() {return "O.createLB().LB: a="+a + " ,b="+b+", this.a="+this.a;}
     }
+
+    System.out.println("O.createLB(): a="+a + " ,b="+b);
 
     return new LB();
   }
