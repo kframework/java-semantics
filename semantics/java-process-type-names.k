@@ -63,10 +63,11 @@ when notBool PackId in keys(PackMap)
 //  - 'InterfaceDec('InterfaceDecHead(...))
 rule [processTypeNames]:
     <k>
-      processTypeNames(DecLabel:KLabel(_:KLabel(Modifiers:K,, SimpleClass:Id,, _),, CBody:K),,
-          Ks:KList, PackId:PackageId)
-      => processTypeNames(Ks, PackId)
-         ~> processTypeNames(bodyAsList(CBody), toPackage(getClassType(PackId,SimpleClass)))
+      processTypeNames(
+        (DecLabel:KLabel(_:KLabel(Modifiers:K,, SimpleClass:Id,, _),, CBody:K) => .KList),, _,
+        PackId:PackageId
+      )
+      ~> ( . => processTypeNames(bodyAsList(CBody), toPackage(getClassType(PackId,SimpleClass))) )
       ...
     </k>
     <typeNamesMap>
@@ -111,14 +112,6 @@ rule getSimpleName(class ClassId:Id)
       //than the amount of characters left in the string, the function will still work
       lengthString(Id2String(ClassId))
     ))
-
-//Converts a term of type Classtype into a term of type PackageId
-//Used to represent a class as a package for its inner classes
-syntax K ::= "toPackage"  "(" ClassType //the class to be converted into package
-                          ")"   [function]
-
-rule [toPackage]:
-    toPackage(class Class:Id) => packageId(Class)
 
 //Receives a class/interface body as K, and extracts the KList part of it
 syntax K ::= "bodyAsList"  "(" K         //The class body to be processed

@@ -30,9 +30,9 @@ syntax K ::= "processClasses" "("
 /*@ \subsection{Third pass - processing class members} */
 
 //We need to process Object first. Thus when we will process any interfaces,
-//Object class will be already processed.
+//Object class will already be processed.
 rule [StartProcessClassesPhase]:
-    <k> . => processTypeWithDepends(objectClass) ~> processClasses(getAllClasses) </k>
+    <k> . => processTypeWithDepends(objectClass) ~> processClasses(getTopLevelClasses) </k>
     <computationPhase> ProcessClassDecsPhase => ProcessClassesPhase </computationPhase>
 
 rule [processClasses]:
@@ -46,6 +46,7 @@ rule [processTypeWithDepends]:
     <k>
       processTypeWithDepends(Class:ClassType)
       => processTypeWithDepends(BaseClass) ~> processClasses(setWrap(ISet)) ~> processType(Class)
+      ~> processClasses(getInnerClasses(Class))
       ...
     </k>
     <classType> Class </classType>
@@ -97,12 +98,18 @@ rule [ProcessType]:
     </class>
     <crntClass> _ => Class </crntClass>
 
+//Could happen when hierarchies of inheritance and that of enclosing get messed up.
+rule [processType-discard]:
+    <k> processType(Class:ClassType) => . ...</k>
+    <classType> Class </classType>
+    <preprocessingPhase> MembersProcessedCPP </preprocessingPhase>
+
 //compute <implTrans> cell - interfaces transitively implemented
 syntax K ::= "computeImplTrans" "(" Set ")"
 
 rule [computeImplTrans]:
     <k>
-      (. => saveImplTrans(setUnion(ITrans, BaseItfITrans)))
+      (. => saveImplTrans(setUnion(setWrap(ITrans), setWrap(BaseItfITrans))))
       ~> computeImplTrans( (SetItem(BaseItf:ClassType) => .) _)
       ...
     </k>

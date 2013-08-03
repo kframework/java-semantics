@@ -121,7 +121,7 @@ syntax K ::= "newArrayImpl" "("
 
 
 rule [elaborateBlocksStart]:
-    <k> . => elaborateBlocks(getAllClasses) </k>
+    <k> . => elaborateBlocks(getTopLevelClasses) </k>
     <computationPhase> ProcessClassesPhase => ElaborateBlocksPhase </computationPhase>
 
 //it is important to elaborate the instance initializers before the methods.
@@ -130,7 +130,9 @@ rule [elaborateBlocksStart]:
 //inside instance init.
 rule [elaborateBlocks]:
     <k>
-      (. => elabInstanceInit ~> elabMethods(MethodDecs) ~> elabStaticInit)
+      (. => elabInstanceInit ~> elabMethods(MethodDecs) ~> elabStaticInit
+        ~> elaborateBlocks(getInnerClasses(Class))
+      )
       ~> elaborateBlocks(setWrap((SetItem(Class:ClassType) => .) _:Set))
       ...
     </k>

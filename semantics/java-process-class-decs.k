@@ -7,13 +7,13 @@ module JAVA-PROCESS-CLASS-DECS
 
 /*@ \subsection{Third pass - processing class dependencies and imports} */
 
-rule [StartProcessClassDecsPhase]:
-    <k> . => processClassDecs(getAllClasses) </k>
-    <computationPhase> ProcessCompUnitsPhase => ProcessClassDecsPhase </computationPhase>
-
 //Processes all classes from CreatedCPP to DecsProcessedCPP.
 syntax K ::= "processClassDecs" "(" K //setWrap(Set) - the set of all classes
                                 ")"  [strict]
+
+rule [StartProcessClassDecsPhase]:
+    <k> . => processClassDecs(getTopLevelClasses) </k>
+    <computationPhase> ProcessCompUnitsPhase => ProcessClassDecsPhase </computationPhase>
 
 /* Question: how do we know if bases were already resolved for this class or not?
   Answer: When resolveBases(Class) is consumed by the rule [resolveBasesEnd], the class
@@ -89,10 +89,10 @@ rule [markNoClassProcessed]:
 
 rule [processClassDecEnd]:
     <k>
-      (. => saveImplements(Class, kListToSet(ImplTypes, .Set))
-         ~> saveImports(Class, OuterClass, (BaseClass,,ImplTypes), noValue, mapWrap(.Map), noValue)
-      )
-      ~> processClassDecs(setWrap( (SetItem(Class:ClassType) => .Set) _:Set ))
+      processClassDecs(setWrap( SetItem(Class:ClassType) RestClasses:Set ))
+      =>   saveImplements(Class, kListToSet(ImplTypes, .Set))
+        ~> saveImports(Class, OuterClass, (BaseClass,,ImplTypes), noValue, mapWrap(.Map), noValue)
+        ~> processClassDecs(setUnion(setWrap(RestClasses), getInnerClasses(Class)))
       ...
     </k>
     <classType> Class </classType>

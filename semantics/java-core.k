@@ -346,7 +346,12 @@ rule defaultTyped(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T     
 syntax PackageId ::= "packageId" "(" Id ")"
 syntax KResult ::= PackageId
 
-//The argument should evaluatge to ClassType
+//Converts a term of type ClassType into a term of type PackageId
+//Used to represent a class as a package for its inner classes
+syntax K ::= "toPackage"  "(" ClassType ")"   [function]
+rule toPackage(class Class:Id) => packageId(Class)
+
+//Returns the package of the given class
 syntax K ::= "getPackage" "(" K ")"               [strict]
 rule [getPackage]:
     <k> getPackage(Class:ClassType) => Pack ...</k>
@@ -398,7 +403,7 @@ syntax KResult ::= "mapWrap" "(" Map ")"
 syntax KResult ::= "noValue"
 
 syntax K ::= "objectClass"                              [function]
-rule objectClass => class String2Id("java.lang.Object") [structural, anywhere]
+rule objectClass => class String2Id("java.lang.Object")
 
 //Subsection mapUnion, union of maps. Remove when +Map will be implemented.
 //In this operation, elements of the second map overwrite elements of the first map
@@ -406,42 +411,82 @@ rule objectClass => class String2Id("java.lang.Object") [structural, anywhere]
 syntax K ::= "mapUnion" "(" K //mapWrap(Map)
                         "," K //mapWrap(Map)
                         ")"                   [strict]
-rule mapUnion(mapWrap(M1:Map), mapWrap(M2:Map K1:K |-> K2:K)) => mapUnion(mapWrap(M1[K2/K1]), mapWrap(M2))
+
+rule mapUnion(mapWrap( M1:Map => M1[K2/K1] ), mapWrap( M2:Map (K1:K |-> K2:K => .Map) ))
 rule mapUnion(mapWrap(M1:Map), mapWrap(.Map)) => mapWrap(M1)
 
-//subsection setUnion, union of sets. Remove when +Set will be implemented.
-syntax K ::= "setUnion" "(" Set "," Set ")"
-rule setUnion(S1:Set, S2:Set SetItem(K:K)) => setUnion(S1 SetItem(K), S2)
-    when notBool(K in S1)
-rule setUnion(S1:Set SetItem(K), S2:Set SetItem(K:K)) => setUnion(S1 SetItem(K), S2)
-rule setUnion(S1:Set, .Set) => setWrap(S1)
+//Subsection setUnion, union of sets. Remove when +Set will be implemented.
+syntax K ::= "setUnion" "(" K //setWrap(Set)
+                        "," K //setWrap(Set)
+                        ")"                   [strict]
+
+rule setUnion(setWrap( S1:Set (. => SetItem(K)) ), setWrap( S2:Set (SetItem(K:K) => .) ))
+when
+    notBool(K in S1)
+rule setUnion(setWrap( S1:Set SetItem(K) ), setWrap( S2:Set (SetItem(K:K) => .) ))
+rule setUnion(setWrap(S1:Set), setWrap(.Set)) => setWrap(S1)
 
 syntax K ::= "getAccessMode" "(" K //'ListWrap(...) - the list of class/method attributes
                              ")"                              [function]
 
-rule getAccessMode('ListWrap('Public(_),,_))    => public     [structural, anywhere]
-rule getAccessMode('ListWrap('Protected(_),,_)) => protected  [structural, anywhere]
-rule getAccessMode('ListWrap('Private(_),,_))   => private    [structural, anywhere]
+rule getAccessMode('ListWrap('Public(_),,_))    => public
+rule getAccessMode('ListWrap('Protected(_),,_)) => protected
+rule getAccessMode('ListWrap('Private(_),,_))   => private
 
 rule getAccessMode('ListWrap((KL:KLabel(_) => .KList),, _))
 when        (KL =/=KLabel 'Public)
     andBool (KL =/=KLabel 'Protected)
-    andBool (KL =/=KLabel 'Private)                           [structural, anywhere]
+    andBool (KL =/=KLabel 'Private)
 
-rule getAccessMode('ListWrap(.KList)) => package            [structural, anywhere]
+rule getAccessMode('ListWrap(.KList)) => package
 
-//evaluates into a setWrap(S), containing all the classes in the program.
-//uses <typeNamesMap> to compute the result
-syntax K ::= "getAllClasses"
-           | "getAllClasses" "(" Map "," Set ")"
+//Returns a setWrap(Set[ClassType]), containing all top level classes in the program.
+//Uses <typeNamesMap> to compute the result.
+syntax K ::= "getTopLevelClasses"
+           | "getTopLevelClasses" "(" Map "," Set ")"
 
-rule [getAllClassesStart]:
-    <k> getAllClasses => getAllClasses(NamesMap, .Set) ...</k>
+rule [getTopLevelClasses-start]:
+    <k> getTopLevelClasses => getTopLevelClasses(NamesMap, .Set) ...</k>
     <typeNamesMap> NamesMap:Map </typeNamesMap>
 
-rule getAllClasses(_ _ |-> mapWrap(_ (_ |-> Class:ClassType => .Map)), _ (.Set => SetItem(Class)))
-rule getAllClasses(_ (_ |-> mapWrap(.Map) => .Map), _)
-rule getAllClasses(.Map, ClassesSet:Set) => setWrap(ClassesSet)
+rule [getTopLevelClasses-top-level]:
+    <k>
+      getTopLevelClasses(_ _ |-> mapWrap(_ (_ |-> Class:ClassType => .Map)), _ (.Set => SetItem(Class)))
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> noClass </enclosingClass>
+
+rule [getTopLevelClasses-not-top-level]:
+    <k>
+      getTopLevelClasses(_ _ |-> mapWrap(_ (_ |-> Class:ClassType => .Map)), _)
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> class _ </enclosingClass>
+
+rule getTopLevelClasses(_ (_ |-> mapWrap(.Map) => .Map), _)
+rule getTopLevelClasses(.Map, ClassesSet:Set) => setWrap(ClassesSet)
+
+//Returns a setWrap(Set[ClassType]), containing all direct inner classes of the given class.
+//Uses <typeNamesMap> to compute the result.
+syntax K ::= "getInnerClasses" "(" ClassType ")"
+           | "getInnerClasses" "(" Map "," Set ")"
+
+rule [getInnerClasses-start-have-inner]:
+    <k> getInnerClasses(Class:ClassType) => getInnerClasses(InnerClassesMap, .Set) ...</k>
+    <typeNamesMap>... Pack:PackageId |-> mapWrap(InnerClassesMap:Map) ...</typeNamesMap>
+when
+    Pack ==K toPackage(Class)
+
+rule getInnerClasses( (_ |-> Class:ClassType => .Map) _, (.Set => SetItem(Class)) _)
+rule getInnerClasses(.Map, ClassesSet:Set) => setWrap(ClassesSet)
+
+rule [getInnerClasses-no-inners]:
+    <k> getInnerClasses(Class:ClassType) => setWrap(.Set) ...</k>
+    <typeNamesMap> TypeNamesMap:Map </typeNamesMap>
+when
+    notBool toPackage(Class) in keys(TypeNamesMap)
 
 // Auxiliary constructs for elaboration.
 

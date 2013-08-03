@@ -41,7 +41,7 @@ rule [processLocalClassDecStep2]:
     <k>
       processLocalClassDecStep2(GeneratedPack:PackageId)
       =>   processClassDecs(setWrap(SetItem(Class)))
-        ~> processType(Class)
+        ~> processTypeWithDepends(Class)
         ~> elaborateBlocks(setWrap(SetItem(Class)))
 
         // processClassDecs will alter <crntClass>, that's why we have to restore it at the end
