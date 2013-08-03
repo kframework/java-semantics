@@ -149,12 +149,14 @@ Distinction between "cheat" implementations and a complete one.
   Local class accessing its own field, that shadows a local var of the enclosing block.
 902. Base class fields should have higher priority than enclosing locals.
 903. Static base class fields should have higher priority than enclosing locals.
-904. Inner of local: Ability to accesses vars from enclosing local env of the enclosing Local.
-905. Inner of local: Fields of Local should have higher priority than enclosing local vars.
-906. Inner of local: Fields inherited by Local should have higher priority than enclosing local vars.
-907. Inner of local: Static fields inherited by Local should have higher priority than enclosing local vars.
-908. Outer local vars are accessible inside the constructor.
-909. Class declared in a place where "a" have one val, instantiated where "a" have another val,
+904. Base interface fields should have higher priority than enclosing locals.
+905. Inner of local: Ability to accesses vars from enclosing local env of the enclosing Local.
+906. Inner of local: Fields of Local should have higher priority than enclosing local vars.
+907. Inner of local: Fields inherited by Local should have higher priority than enclosing local vars.
+908. Inner of local: Static fields inherited by Local should have higher priority than enclosing local vars.
+909. Inner of local: Interface fields inherited by Local should have higher priority than enclosing local vars.
+910. Outer local vars are accessible inside the constructor, but are shadowed by constructor args.
+911. Class declared in a place where "a" have one val, instantiated where "a" have another val,
   but in both places a is a local var. Check the difference.
-910. Base class and derived class with different local environments. Same outer local var
+912. Base class and derived class with different local environments. Same outer local var
   referred in base and derived of the same object should yield different result.

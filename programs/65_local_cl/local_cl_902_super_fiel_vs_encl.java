@@ -1,13 +1,16 @@
 /*
-Own fields should have higher priority than enclosing locals.
-  Local class accessing its own field, that shadows a local var of the enclosing block.
+Base class fields should have higher priority than enclosing locals.
 */
 
-public class local_cl_901_own_f_vs_encl_prior {
+public class local_cl_902_super_fiel_vs_encl {
   public static void main(String[] args) {
     System.out.println(new O().createLB());
     System.out.println("Done!");
   }
+}
+
+class A {
+  int a = 400;
 }
 
 class O {
@@ -16,9 +19,7 @@ class O {
 
     final int a = 1, b = 20;
 
-    class LB {
-      int a = 30;
-
+    class LB extends A {
       public String toString() {return "O.createLB().LB: a="+a + " ,b="+b+", this.a="+this.a;}
     }
 
