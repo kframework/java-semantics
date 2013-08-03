@@ -3,7 +3,7 @@ An inner class A, two blocks each having a local class A.
   Instantiate and print A inside each block and between blocks.
 */
 
-public class local_cl_76_two_local_diff_scope {
+public class local_cl_716_two_local_diff_scope {
   public static void main(String[] args) {
     new O().test();
     System.out.println("Done!");

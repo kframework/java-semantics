@@ -2,7 +2,7 @@
 Local class instantiating another local class from the same enclosing block.
 */
 
-public class local_cl_71_inst_encl_cl {
+public class local_cl_711_inst_encl_cl {
   public static void main(String[] args) {
     System.out.println(new O().createLB());
     System.out.println("Done!");

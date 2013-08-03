@@ -4,7 +4,7 @@ Class O. Local classes A, Local, in the same block. Inside Local - local class D
   we cannot call the constructor for A qualified.
 */
 
-public class local_cl_77_inst_nesting_uncle {
+public class local_cl_717_inst_nesting_uncle {
   public static void main(String[] args) {
     new O(10).test();
     System.out.println("Done!");

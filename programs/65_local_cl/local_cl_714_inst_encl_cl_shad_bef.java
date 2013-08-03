@@ -4,7 +4,7 @@ Inner class A. After it - local class LA. After - local class A. LA prints A.
   refer to the local A.
 */
 
-public class local_cl_74_inst_encl_cl_shad_bef {
+public class local_cl_714_inst_encl_cl_shad_bef {
   public static void main(String[] args) {
     new O().test();
     System.out.println("Done!");

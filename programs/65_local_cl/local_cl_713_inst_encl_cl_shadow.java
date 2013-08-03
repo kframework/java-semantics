@@ -4,7 +4,7 @@ Instantiating a local class that shadows an inner class of the enclosing class.
   in the scope of the local class, and after it.
 */
 
-public class local_cl_73_inst_encl_cl_shadow {
+public class local_cl_713_inst_encl_cl_shadow {
   public static void main(String[] args) {
     new O().test();
     System.out.println("Done!");

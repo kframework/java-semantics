@@ -8,7 +8,7 @@ Class O. Local classes A, Local, in the same block. Inside Local - local class D
   Print all 8 fields from DeepLocal, using qualified this/super where needed.
 */
 
-public class local_cl_91_extends_local_uncle {
+public class local_cl_81_extends_local_uncle {
   public static void main(String[] args) {
     new O().test();
     System.out.println("Done!");

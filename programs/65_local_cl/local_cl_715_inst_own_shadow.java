@@ -2,7 +2,7 @@
 Local class LA instantiating its own inner class A , that shadows a local class of the enclosing block.
 */
 
-public class local_cl_75_inst_own_shadow {
+public class local_cl_715_inst_own_shadow {
   public static void main(String[] args) {
     new O().test();
     System.out.println("Done!");

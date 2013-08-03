@@ -6,7 +6,7 @@ Test that a local class may have the same name as a variable/field in the same s
   All local classes have a no-arg traced constructor.
 */
 
-public class local_cl_94_name_coll_with_fields {
+public class local_cl_84_name_coll_with_fields {
   public static void main(String[] args) {
     new O().test();
     System.out.println("Done!");

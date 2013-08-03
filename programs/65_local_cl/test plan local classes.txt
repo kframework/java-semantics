@@ -53,7 +53,6 @@
   enclosing class after the body of LA.
 45. Local class LA accessing a field of the enclosing class, that was shadowed by a local var of the
   enclosing class before the body of LA, but whose scope is over.
-46. Local class accessing its own field, that shadows a local var of the enclosing block.
 
   Part 5. Three-level nesting.
 
@@ -98,32 +97,29 @@
 61. Inside the same method, two local classes implementing I. I have method f().
   Call the test on both of them, using the same local var, and observe the difference.
 
-  Part 7. Instantiation of local classes in the context of hiding.
-71. Local class instantiating another local class from the same enclosing block.
-72. Local class instantiating two local classes defined in nested enclosing blocks.
-73. Instantiating a local class that shadows an inner class of the enclosing class.
+  Part 7.1. Instantiation of local classes in the context of hiding.
+711. Local class instantiating another local class from the same enclosing block.
+712. Local class instantiating two local classes defined in nested enclosing blocks.
+713. Instantiating a local class that shadows an inner class of the enclosing class.
   Instantiate and print the said class before the definition of the Local,
   in the scope of the local class, and after it.
-74. Inner class A. After it - local class LA. After - local class A. LA prints A.
+714. Inner class A. After it - local class LA. After - local class A. LA prints A.
   Instantiate LA in the scope of local A, and outside the scope. In both cases it should
   refer to the local A.
-75. Local class LA instantiating its own inner class A , that shadows a local class of the enclosing block.
-76. An inner class A, two blocks each having a local class A.
+715. Local class LA instantiating its own inner class A , that shadows a local class of the enclosing block.
+716. An inner class A, two blocks each having a local class A.
   Instantiate and print A inside each block and between blocks.
-77. Class O. Local classes A, Local, in the same block. Inside Local - local class DeepLocal.
+717. Class O. Local classes A, Local, in the same block. Inside Local - local class DeepLocal.
   Instantiate A from DeepLocal, first unqualified, then qualified with a different enclosing O.
   Print both A, that should print a parameter from their encloser.
 
-  Part 8. Deriving from local classes in the context of hiding.
-81. Local class LB1 derived from a local class A that shadows an inner class A of the enclosing class.
+  Part 7.2. Deriving from local classes in the context of hiding.
+721. Local class LB1 derived from a local class A that shadows an inner class A of the enclosing class.
   LB2 derived from A after the scope of local A, is thus derived from inner class A.
-82. Class O. Local classes A, Local, in the same block. Inside Local - local class DeepLocal derived from A.
-  Instantiate two DeepLocals, for different enclosing objects O.
-  Print a parameter of O from both DeepLocal and its base class.
 
-  Part 9. Misc.
+  Part 8. Misc.
 
-91. Class O. Local classes A, Local, in the same block. Inside Local - local class DeepLocal derived from A.
+81. Class O. Local classes A, Local, in the same block. Inside Local - local class DeepLocal derived from A.
   Instantiate one DeepLocal. Fields inside classes:
   O: a,b
   Local: a,c
@@ -131,32 +127,34 @@
   DeepLocal: a,e
   Print all 8 fields from DeepLocal, using qualified this/super where needed.
 
-92. Class O, method test(). Inside test() local classes LA.
+82. Class O, method test(). Inside test() local classes LA.
   Class LA defines the inner class InnerOfLA.
   From LA, instantiate two instances of InnerOfLA - one without qualifier, another qualified with a newly
     created instance of LA.
   From InnerOfLA print a field from the enclosing LA.
 
-93. Local class derived from another class with static fields. Call the fields qualified with
+83. Local class derived from another class with static fields. Call the fields qualified with
   the local class name.
 
-94. Test that a local class may have the same name as a variable/field in the same scope.
+84. Test that a local class may have the same name as a variable/field in the same scope.
   Three local classes. One have the same name as a local var, other - as a field, third - as a method.
   Define variables of type all three, instantiate and print them.
   Also print the local var, field and method, accessing them by simple name.
   All local classes have a no-arg traced constructor.
 
-Implementation of enclosing local env. To test:
-1.ok. Own fields should have higher priority than enclosing locals.
-  Already present: test 46.
-2. Base class fields should have higher priority than enclosing locals.
-3. Static base class fields should have higher priority than enclosing locals.
-4. Inner of local: Ability to accesses vars from enclosing local env of the enclosing Local.
-5. Inner of local: Fields of Local should have higher priority than enclosing local vars.
-6. Inner of local: Fields inherited by Local should have higher priority than enclosing local vars.
-7. Inner of local: Static fields inherited by Local should have higher priority than enclosing local vars.
-8. Outer local vars are accessible inside the constructor.
-9. Class declared in a place where "a" have one val, instantiated where "a" have another val,
+  Part 9. Advanced tests related to enclosing local vars.
+Distinction between "cheat" implementations and a complete one.
+
+901. Own fields should have higher priority than enclosing locals.
+  Local class accessing its own field, that shadows a local var of the enclosing block.
+902. Base class fields should have higher priority than enclosing locals.
+903. Static base class fields should have higher priority than enclosing locals.
+904. Inner of local: Ability to accesses vars from enclosing local env of the enclosing Local.
+905. Inner of local: Fields of Local should have higher priority than enclosing local vars.
+906. Inner of local: Fields inherited by Local should have higher priority than enclosing local vars.
+907. Inner of local: Static fields inherited by Local should have higher priority than enclosing local vars.
+908. Outer local vars are accessible inside the constructor.
+909. Class declared in a place where "a" have one val, instantiated where "a" have another val,
   but in both places a is a local var. Check the difference.
-10. Base class and derived class with different local environments. Same outer local var
+910. Base class and derived class with different local environments. Same outer local var
   referred in base and derived of the same object should yield different result.

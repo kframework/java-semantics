@@ -3,7 +3,7 @@ Local class derived from another class with static fields. Call the fields quali
   the local class name.
 */
 
-public class local_cl_93_inherit_static_fields {
+public class local_cl_83_inherit_static_fields {
   public static void main(String[] args) {
     new O().test();
     System.out.println("Done!");

@@ -2,7 +2,7 @@
 Local class instantiating two local classes defined in nested enclosing blocks.
 */
 
-public class local_cl_72_inst_encl_cl_nested {
+public class local_cl_712_inst_encl_cl_nested {
   public static void main(String[] args) {
     System.out.println(new O().createLB());
     System.out.println("Done!");

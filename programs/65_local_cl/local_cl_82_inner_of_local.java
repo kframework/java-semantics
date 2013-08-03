@@ -6,7 +6,7 @@ Class O, method test(). Inside test() local classes LA.
   From InnerOfLA print a field from the enclosing LA.
 */
 
-public class local_cl_92_inner_of_local {
+public class local_cl_82_inner_of_local {
   public static void main(String[] args) {
     new O().test();
     System.out.println("Done!");

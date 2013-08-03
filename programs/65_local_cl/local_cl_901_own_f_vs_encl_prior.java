@@ -1,8 +1,9 @@
 /*
-Local class accessing its own field, that shadows a local var of the enclosing block.
+Own fields should have higher priority than enclosing locals.
+  Local class accessing its own field, that shadows a local var of the enclosing block.
 */
 
-public class local_cl_46_encl_vars_own_field {
+public class local_cl_901_own_f_vs_encl_prior {
   public static void main(String[] args) {
     System.out.println(new O().createLB());
     System.out.println("Done!");
