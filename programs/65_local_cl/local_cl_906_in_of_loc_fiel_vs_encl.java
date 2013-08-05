@@ -19,15 +19,15 @@ class O {
 
       int a = 2, b = 20;
 
-      class DeepInner {
+      class InnerOfLocal {
         int a = 3;
 
-        public String toString() {return "O.test().Local: a="+a + " ,b="+b+", c="+c;}
+        public String toString() {return "O.test().Local.InnerOfLocal: a="+a + " ,b="+b+", c="+c;}
       }
     }
 
     System.out.println("O.test(): a="+a + " ,b="+b + " ,c="+c);
 
-    return new Local().new DeepLocal();
+    return new Local().new InnerOfLocal();
   }
 }

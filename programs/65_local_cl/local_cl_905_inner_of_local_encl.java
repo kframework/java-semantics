@@ -17,12 +17,12 @@ class O {
 
     class Local {
 
-      class DeepInner {
+      class InnerOfLocal {
 
-        public String toString() {return "O.test().Local: a="+a + " ,b="+b+", c="+c;}
+        public String toString() {return "O.test().Local.InnerOfLocal: a="+a + " ,b="+b+", c="+c;}
       }
     }
 
-    return new Local().new DeepLocal();
+    return new Local().new InnerOfLocal();
   }
 }

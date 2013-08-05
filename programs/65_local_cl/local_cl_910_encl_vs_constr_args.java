@@ -21,8 +21,7 @@ class O {
       }
     }
 
-    new Local(2);
-
     System.out.println("O.test(): a="+a + " ,b="+b + " ,c="+c);
+    new Local(2);
   }
 }

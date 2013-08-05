@@ -25,7 +25,7 @@ class O {
     class Local2 {
 
       void test() {
-        int a = 2, b = 20;
+        final int a = 2, b = 20;
 
         class DeepLocal extends Local1 {
           public String toString() {
@@ -44,8 +44,8 @@ class O {
       }
     }
 
-    new Local2().test();
+    System.out.println("O.test(): a="+a + " ,b="+b + " ,c="+c+"\n");
 
-    System.out.println("O.test(): a="+a + " ,b="+b + " ,c="+c);
+    new Local2().test();
   }
 }
