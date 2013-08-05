@@ -84,8 +84,8 @@ rule [QNewInstance]:
         ~> create(Class)
         ~> storeObj
         ~> restoreEnvObjContext(Env, Obj, CT)
-        ~> invokeConstr(L, Class, Vals, EnclosingObj)
         ~> setOuterLocalEnv(L, Class)
+        ~> invokeConstr(L, Class, Vals, EnclosingObj)
         ~> typedLookup(L)
       ...
     </k>

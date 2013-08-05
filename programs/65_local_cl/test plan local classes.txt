@@ -160,3 +160,11 @@ Distinction between "cheat" implementations and a complete one.
   but in both places a is a local var. Check the difference.
 912. Base class and derived class with different local environments. Same outer local var
   referred in base and derived of the same object should yield different result.
+913. Local vars of one method don't influence name resolution inside local classes of another method.
+  Class O.
+  Two fields: a,b.
+  Two methods: test1 - local var a, test2 - local var b.
+  Each have a local class: Local1, Local2. Local classes access both a and b.
+914. Own fields should have higher priority than enclosing locals, that have higher
+  priority than enclosing fields, that have higher priority than enclosing env
+  of the enclosing class. E.g. test 901, but on 3 levels of nesting.

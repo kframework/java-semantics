@@ -112,6 +112,9 @@ configuration
 
           //For local classes only. Map[Id -> Type] of vars accessible from the enclosing local env.
           //Used during elaboration phase only.
+
+          //todo: make it to be from the DIRECT enclosing local env only. This way we can give the semantics to own fields
+          //to have higher priority than enclosing vars, and to do this on multiple levels.
           <enclosingLocalEnv> .Map </enclosingLocalEnv>
 
           //The major phase of <class> lifetime. See ClassPreprocessingPhase definition.
