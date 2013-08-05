@@ -243,11 +243,8 @@ syntax K ::=
 
 rule [addElabEnv]:
     <k> addElabEnv => . ...</k>
-    <elabEnv> . => ListItem(stEnv(EnclosingLocalEnv)) ...</elabEnv>
+    <elabEnv> . => ListItem(stEnv(.Map)) ...</elabEnv>
     <localTypes> . => ListItem(stEnv(.Map)) ...</localTypes>
-    <crntClass> Class:ClassType </crntClass>
-    <classType> Class </classType>
-    <enclosingLocalEnv> EnclosingLocalEnv:Map </enclosingLocalEnv>
 
 rule [removeLastElabEnv]:
     <k> removeLastElabEnv => . ...</k>
@@ -436,7 +433,49 @@ when
     haveNoElabRes(Ks)
 
 rule [elabExprNameSimple]:
-    elabDispose('ExprName(X:Id)) => elabDispose(localVar(X)) ?? elabDispose('Field(X))
+    <k> elabDispose('ExprName(X:Id)) => elabDispose(localVar(X)) ?? externalVar(X, Class) ...</k>
+    <crntClass> Class:ClassType </crntClass>
+
+//This could be either a field, or a local var of some enclosing block.
+syntax K ::= "externalVar" "(" Id         //X - var name
+                           "," ClassType  //Class - innermost class where the name should be searched
+                           ")"
+
+rule [externalVar]:
+    <k>
+      externalVar(X:Id, Class:ClassType)
+      => elabDispose('Field( 'QThis(Class),, X )) ?? outerLocalVar(X, Class) ?? externalVar(X, EnclosingClass)
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
+
+rule [externalVar-noClass]:
+    externalVar(_, noClass) => noValue
+
+//Attempt to resolve this expression into a local var from the enclosign local environment
+//of precisely the specified class.
+syntax K ::= "outerLocalVar" "(" Id         //X - var name
+                             "," ClassType  //Class - the class where the name should be searched
+                             ")"
+
+rule [outerLocalVar-ok]:
+    <k>
+      outerLocalVar(X:Id, Class:ClassType) => elabRes(localVar(X) :: T)
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingLocalEnv>... X |-> T:Type ...</enclosingLocalEnv>
+
+rule [outerLocalVar-not-found]:
+    <k>
+      outerLocalVar(X:Id, Class:ClassType) => noValue
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingLocalEnv> EnclosingLocalEnv:Map </enclosingLocalEnv>
+when
+    notBool X in keys(EnclosingLocalEnv)
 
 rule [elabExprNameQualified]:
     elabDispose('ExprName(QualK:K,,X:Id)) => elabDispose('Field(QualK,,X))
@@ -450,22 +489,11 @@ rule [elabLocalVarNoValue]:
   <elabEnv> ListItem(stEnv(StEnv:Map)) ...</elabEnv>
 when notBool (X in keys(StEnv))
 
-rule [elabFieldUnqualified]:
-    <k>
-      elabDispose('Field(X:Id) => 'Field( 'QThis(Class),, X ))
-      ...
-    </k>
-    <crntClass> Class:ClassType </crntClass>
-
 rule [elabFieldWithQThis]:
-    <k>
-      elabDispose('Field( 'QThis(Class:ClassType),, X ))
-      => elab('Field( 'QThis(Class:ClassType) :: Class,, X )) ?? elab('Field( Class,, X))
-         ?? elabDispose('Field( 'QThis(EnclosingClass:ClassType),, X ))
-      ...
-    </k>
-    <classType> Class </classType>
-    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
+    elabDispose('Field( 'QThis(Class:ClassType),, X ))
+    => elab('Field( 'QThis(Class:ClassType) :: Class,, X )) ?? elab('Field( Class,, X))
+when
+    Class =/=K noClass
 
 rule [FieldOfPackage]:
     elabDispose('Field( _:PackageId,, _:Id )) => noValue  [structural]
