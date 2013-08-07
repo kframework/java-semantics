@@ -197,3 +197,5 @@ Distinction between "cheat" implementations and a complete one.
   - From outside for, use the two isntances of Local2 to instantiate and display
     two instances of Local1.
   - instances of Local1 print diffrent values for a.
+
+918. Instantiate a local class from an instance initializer.
