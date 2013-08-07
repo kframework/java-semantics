@@ -168,3 +168,32 @@ Distinction between "cheat" implementations and a complete one.
 914. Own fields should have higher priority than enclosing locals, that have higher
   priority than enclosing fields, that have higher priority than enclosing env
   of the enclosing class. E.g. test 901, but on 3 levels of nesting.
+
+915. <localClassesEnv> is correctly restored when exiting a block. With outer variables.
+  Local classed DeepLocal followed by Local. Inside Local.test() - another DeepLocal.
+  Instantiate DeepLocal in three places, all inside Local.test():
+  - Before the second DeepLocal, in the same block.
+  - After the second DeepLocal, in the same block,
+  - After the second DeepLocal, after its block, and outside the second DeepLocal scope.
+  variables:
+  - int a, before the first DeepLocal.
+  - int a, before the second DeepLocal.
+  Both classes DeepLocal print a.
+
+916. <localClassesEnv> is correctly restored when exiting a method call. With outer variables.
+  class O, method f(int level). f() structure:
+  - class Local(), printing level
+  - instantiate Local
+  - if level == 1, call f(2) - recursive call.
+  - if level == 1, instantiate Local.
+  Here we are testing that after returning from the call to f(2), the new instance of Local
+  will have access to level 1, not 2 as it was in the innermost call to f().
+
+917. Two instances of the same Local, declared inside a for may see different values
+  for the same vars. If they instantiate another local class from the smae for,
+  they will also see different <localClassesEnv>.
+  Test:
+  - for i = 1..2, a = i, class Local1, class Local2, instantiate Local2 and save it.
+  - From outside for, use the two isntances of Local2 to instantiate and display
+    two instances of Local1.
+  - instances of Local1 print diffrent values for a.

@@ -2,6 +2,7 @@ require "java-core.k"
 require "java-var-lookup.k"
 require "java-process-type-names.k"
 require "java-process-classes.k"
+require "java-process-local-classes.k"
 
 /* Elaborate the composition of code blocks of a class - the last step of preprocessing.
 During this phase we inspect the contents of method bodies, instance initializers and
@@ -25,9 +26,10 @@ static initializers of a class and perform the following transformations:
 
 module JAVA-ELABORATE-BLOCKS
     imports JAVA-CORE
-    imports JAVA-VAR-LOOKUP //for localVar
-    imports JAVA-PROCESS-TYPE-NAMES //for toPackage()
-    imports JAVA-PROCESS-CLASSES //for paramImpl
+    imports JAVA-VAR-LOOKUP             //for localVar
+    imports JAVA-PROCESS-TYPE-NAMES     //for toPackage()
+    imports JAVA-PROCESS-CLASSES        //for paramImpl
+    imports JAVA-PROCESS-LOCAL-CLASSES  //for outerLocalVar
 
 syntax K ::= "elaborateBlocks" "(" K ")" [strict] //Elaborate the blocks inside all classes.
                                         //K = setWrap(Set) - the set of all classes.
@@ -444,7 +446,7 @@ syntax K ::= "externalVar" "(" Id         //X - var name
 rule [externalVar]:
     <k>
       externalVar(X:Id, Class:ClassType)
-      => elabDispose('Field( 'QThis(Class),, X )) ?? outerLocalVar(X, Class) ?? externalVar(X, EnclosingClass)
+      => elabDispose('Field( 'QThis(Class),, X )) ?? elabOuterLocalVar(X, Class) ?? externalVar(X, EnclosingClass)
       ...
     </k>
     <classType> Class </classType>
@@ -455,21 +457,21 @@ rule [externalVar-noClass]:
 
 //Attempt to resolve this expression into a local var from the enclosign local environment
 //of precisely the specified class.
-syntax K ::= "outerLocalVar" "(" Id         //X - var name
-                             "," ClassType  //Class - the class where the name should be searched
-                             ")"
+syntax K ::= "elabOuterLocalVar" "(" Id         //X - var name
+                                 "," ClassType  //Class - the class where the name should be searched
+                                 ")"
 
-rule [outerLocalVar-ok]:
+rule [elabOuterLocalVar-ok]:
     <k>
-      outerLocalVar(X:Id, Class:ClassType) => elabRes(localVar(X) :: T)
+      elabOuterLocalVar(X:Id, Class:ClassType) => elabRes(outerLocalVar(X) :: T)
       ...
     </k>
     <classType> Class </classType>
     <enclosingLocalEnv>... X |-> T:Type ...</enclosingLocalEnv>
 
-rule [outerLocalVar-not-found]:
+rule [elabOuterLocalVar-not-found]:
     <k>
-      outerLocalVar(X:Id, Class:ClassType) => noValue
+      elabOuterLocalVar(X:Id, Class:ClassType) => noValue
       ...
     </k>
     <classType> Class </classType>

@@ -35,7 +35,7 @@ rule [StartExecutionPhase]:
 syntax K ::=
     "("
       K ","   //K - rest of computation
-      Map "," //Env
+      Bag "," //The content of <envGroup>
       Bag     //C - rest of control
     ")"
 
@@ -390,11 +390,11 @@ rule [ReturnMethodEnd]:
       'Return('Some(V:RawVal :: T2:Type))
       => subtype(T2, T1) ~> true? ~> (V::T1) ~> K    </k>
     <control>
-      <stack> ListItem((K:K, Env:Map, C:Bag)) => . ...</stack>
+      <stack> ListItem((K:K, EnvGroup:Bag, C:Bag)) => . ...</stack>
       (<return> T1:Type </return>
        _:Bag => C)
     </control>
-    <env> _ => Env </env>
+    <envGroup> _ => EnvGroup </envGroup>
 
 /*@ \section{Throw statement}
 Exceptions are propagated now until a catch that can bind them is
@@ -438,10 +438,10 @@ rule [ThrowMethodEnd]:
       'Throw(TV:TypedVal) ~> (. => K)
     </k>
     <control>
-      <stack> ListItem((K:K, Env:Map, C:Bag)) => . ...</stack>
+      <stack> ListItem((K:K, EnvGroup:Bag, C:Bag)) => . ...</stack>
       (_ => C)
     </control>
-    <env> _ => Env </env>
+    <envGroup> _ => EnvGroup </envGroup>
 
 rule [ThrowCausesThreadTermination]:
     <k>

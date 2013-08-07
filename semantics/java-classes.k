@@ -50,7 +50,7 @@ get more from the existing SIMPLE constructs. */
 //@ \texttt{typeOf for raw values of reference type}
 rule typeOf(Str:String) => rtString
 rule typeOf(null) => nullType
-rule typeOf(objectClosure(_, <envStack>ListItem(el(Class:ClassType, _,_,_)) _</envStack> _))
+rule typeOf(objectClosure(_, <envStack> ListItem(el(Class:ClassType, _,_,_)) _</envStack> _))
      => Class
 rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T
 
@@ -182,20 +182,29 @@ rule [setEncloser-value]:
 rule [setEncloser-noValue]:
     setEncloser(_,_, noValue) => .
 
-//Set the current <env> as outerLocalEnv for all layers of the <crntObj>.
+//Set the outerLocalEnv for all layers of the <crntObj>, from the cell <localClassesEnv>
 //Approximate implementation
 syntax K ::= "setOuterLocalEnv" "(" Int "," ClassType ")"
-rule [setOuterLocalEnv]:
+
+rule [setOuterLocalEnv-local]:
     <k> setOuterLocalEnv(OL:Int, Class:ClassType => BaseClass) ...</k>
-    <env> CurrentEnv:Map </env>
     <store>
       ...
       OL |->
         objectClosure(_, <envStack>... ListItem(el(Class,_,_, _ => CurrentEnv)) ...</envStack>)::_
       ...
     </store>
+    <localClassesEnv>... Class |-> mapWrap(CurrentEnv:Map) ...</localClassesEnv>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
+
+rule [setOuterLocalEnv-not-local]:
+    <k> setOuterLocalEnv(OL:Int, Class:ClassType => BaseClass) ...</k>
+    <localClassesEnv> LocalClassesEnv:Map </localClassesEnv>
+    <classType> Class </classType>
+    <extends> BaseClass:ClassType </extends>
+when
+    notBool Class in keys(LocalClassesEnv)
 
 rule setOuterLocalEnv(_, noClass) => .
 

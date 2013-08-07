@@ -8,8 +8,19 @@ configuration
       <threads color="orange">
         <thread multiplicity="*" color="yellow">
           <k color="green"> $PGM:K </k>
-          <env color="violet"> .Map </env>
+          <envGroup>
+            <env color="violet"> .Map </env>
+
+            //Map[Id -> mapWrap(Map[Id -> Loc])]
+            //A map associating to any local class accessible in this environment its outer lcoal environment.
+            //The local environment is determined in the place where the class is declared.
+            //When a local class is instantiated, its enclosing environment is taken from this map.
+            //This cell have the same lifecycle as <env>, that is why they are both grouped to <envGroup>
+            <localClassesEnv> .Map </localClassesEnv>
+          </envGroup>
+
           <holds color="black"> .Map </holds>
+
           <br/>
           <control color="cyan">
             <stack color="blue"> .List </stack>
@@ -364,8 +375,8 @@ rule defaultTyped(Str:String) => Str :: rtString                                
 rule defaultTyped(null) => null :: nullType                                           [structural]
 rule defaultTyped( objectClosure(
       OL:Int,
-      <envStack>ListItem(el(Class:ClassType, BI:BagItem, Encloser:KResult, LocalEnv:Map)) Rest:List</envStack>
-    )) => objectClosure(OL, <envStack>ListItem(el(Class, BI, Encloser, LocalEnv)) Rest</envStack>) :: Class
+      <envStack> ListItem(el(Class:ClassType, BI:BagItem, Encloser:KResult, LocalEnv:Map)) Rest:List </envStack>
+    )) => objectClosure(OL, <envStack> ListItem(el(Class, BI, Encloser, LocalEnv)) Rest </envStack>) :: Class
                                                                                       [structural]
 rule defaultTyped(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T           [structural]
 

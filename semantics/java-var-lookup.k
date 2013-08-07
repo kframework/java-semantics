@@ -13,15 +13,14 @@ module JAVA-VAR-LOOKUP
 
 //@ \subsection{Names}
 
-//lookup the given local var by name. Return noValue if none found.
-syntax K ::= "localVar" "(" Id //the var name
-                        ")"
+//lookup the given local var by name.
+syntax K ::= "localVar" "(" Id ")" //the var name
 
-rule [localVarOK]:
+rule [localVar]:
     <k> localVar(X:Id)::_ => typedLookup(L) ...</k>
     <env>... X |-> L:Int ...</env>
 
-rule [lvalueExprNameLocal]:
+rule [lvalueLocalVar]:
     <k> lvalue(localVar(X:Id)::_) => typedLoc(L) ...</k>
     <env>... X |-> L:Int ...</env>
 

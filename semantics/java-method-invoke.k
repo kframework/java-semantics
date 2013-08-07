@@ -545,11 +545,11 @@ rule [invokeImplInstance]:
         OL:Int,
         'ListWrap(ParamValues:KList)
       ) ~> K:K
-       => setRuntimeEnclosingLocalEnv(OL) ~> bindto Params, ParamValues ~> Body ~> 'Return('None(.KList))
+       => bindto Params, ParamValues ~> Body ~> 'Return('None(.KList))
     </k>
     <control>
       <stack>
-        . =>  ListItem((K, Env,
+        . =>  ListItem((K, <env> Env </env> LocalClassesEnv,
                   (
                     <crntObj> OldObj </crntObj>
                     <return> OldT </return>
@@ -569,7 +569,9 @@ rule [invokeImplInstance]:
       <contextType> OldCT:ContextType => instanceCT </contextType>
       C:Bag
     </control>
-    <env> Env:Map => . </env>
+    <envGroup>
+      <env> Env:Map => . </env> LocalClassesEnv:Bag
+    </envGroup>
     <store>
       ...
       OL |-> objectClosure(NewOL:Int, Obj:Bag) :: _
@@ -589,7 +591,7 @@ rule [invokeImplStatic]:
     </k>
     <control>
       <stack>
-        . =>  ListItem((K, Env,
+        . =>  ListItem((K, <env> Env </env> LocalClassesEnv,
                   (
                     <crntObj> OldObj </crntObj>
                     <return> OldT </return>
@@ -609,16 +611,9 @@ rule [invokeImplStatic]:
       <contextType> OldCT:ContextType => staticCT </contextType>
       C:Bag
     </control>
-    <env> Env:Map => . </env>
-
-syntax K ::= "setRuntimeEnclosingLocalEnv" "(" Int ")"
-rule <k> setRuntimeEnclosingLocalEnv(OL:Int) => . ...</k>
-     <env> _ => OuterLocalEnv </env>
-     <store>
-      ...
-      OL |-> objectClosure(_, <envStack> ListItem(el(_,_,_,OuterLocalEnv:Map)) ...</envStack>) :: _
-      ...
-     </store>
+    <envGroup>
+      <env> Env:Map => . </env> LocalClassesEnv:Bag
+    </envGroup>
 
 //@ \texttt{bindto} also checks the well-formedness of the method parameters
 
