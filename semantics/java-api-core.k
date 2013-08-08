@@ -65,7 +65,7 @@ rule [object-getClass-on-object]:
     </k>
     <store>
       ...
-      OL |-> objectClosure(_, <envStack>ListItem(el(T:ClassType, _,_,_)) _</envStack> _) :: _
+      OL |-> objectClosure(_, <envStack>ListItem(el(T:ClassType, _,_,_)) _</envStack> _, _) :: _
       ...
     </store>
 when
@@ -106,7 +106,7 @@ rule [object-hashCode]:
     </k>
     <store>
       ...
-      OL |-> objectClosure(NewOL:Int, _) :: _
+      OL |-> objectClosure(NewOL:Int, _,_) :: _
       ...
     </store>
 when

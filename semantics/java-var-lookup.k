@@ -29,15 +29,17 @@ Like in untyped KOOL. */
 
 rule [QThis]:
     <k>
-      'QThis(Class:ClassType)::Class => lookupQThis(Class, objectClosure(OL, Obj)::CrntClass)
+      'QThis(Class:ClassType)::Class => lookupQThis(Class, RV::CrntClass)
       ...
     </k>
-    <crntObj>
-      <crntClass> CrntClass:ClassType </crntClass>
-      <location> OL:Int </location>
-      Obj:Bag
-    </crntObj>
+    <crntClass> CrntClass:ClassType </crntClass>
+    <location> OL:Int </location>
     <contextType> instanceCT </contextType>
+    <store>
+      ...
+      OL |-> RV:RawVal :: _
+      ...
+    </store>
 
 //This case may happen when a field/method is called by simple name in a static context.
 //Although there should be no qualifier, elaboration phase will introduce the qualifier 'QThis.
@@ -63,7 +65,8 @@ and we will be able to pick the correct encloser inside both O.A and O.B.
 */
 rule [lookupQThis-next]:
     lookupQThis(Class:ClassType,
-      objectClosure(_, <envStack>... ListItem(el(ObjClass,_, Encloser:KResult, _)) ...</envStack>) :: ObjClass:ClassType
+      objectClosure(_, <envStack>... ListItem(el(ObjClass,_, Encloser:KResult, _)) ...</envStack>, _)
+        :: ObjClass:ClassType
     ) => lookupQThis(Class:ClassType, Encloser)
 when
     Class =/=K ObjClass
@@ -85,7 +88,7 @@ context lvalue(lookupField(HOLE,_,_)::_)
 rule [lookupField]:
     lookupField(
       objectClosure(_,
-          <envStack>... ListItem(el(TargetClass, <env>... X |-> L:Int ...</env>, _,_)) ...</envStack> _
+          <envStack>... ListItem(el(TargetClass, <env>... X |-> L:Int ...</env>, _,_)) ...</envStack> _, _
         ) ::_,
       TargetClass:ClassType,
       X:Id

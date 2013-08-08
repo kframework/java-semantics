@@ -33,10 +33,13 @@ rule [staticInit]:
               )
             )
           )
-      ~> restoreEnvObjContext(Env, Obj, CT)
+      ~> restoreEnvObjContext(<env> Env </env> LocalClassesEnv, Obj, CT)
       ...
     </k>
-    <env> Env:Map => . </env>
+    <envGroup>
+      <env> Env:Map => . </env>
+      (LocalClassesEnv:Bag => <localClassesEnv> .Map </localClassesEnv>)
+    </envGroup>
     <crntObj>
       Obj:Bag
       =>  <crntClass> Class </crntClass>

@@ -337,7 +337,7 @@ rule [methodInvokeRuntimeInstanceOnClass]:
             Rest:List
             ListItem(el(Class:ClassType, BI:BagItem, Encloser:KResult, LocalEnv:Map))
             ...
-          </envStack> _)::_,
+          </envStack> _, _)::_,
           ParamVals:KList, instanceCT
       )::_
       => invokeImpl(
@@ -369,7 +369,7 @@ rule [methodInvokeRuntimeInstanceOnInterface]:
           <envStack>
             ListItem(el(ActualClass:ClassType, _,_,_))
             ...
-          </envStack> _)::_,
+          </envStack> _, _)::_,
         ParamVals:KList, instanceCT
       )::_
       => invokeImpl(
@@ -424,9 +424,14 @@ context qSuperQual(HOLE)::_
 rule [qSuperQualEval]:
     qSuperQual(objectClosure(
       OL,
-      <envStack>... ListItem(el(BaseClass, BI:BagItem, Encloser:KResult, LocalEnv:Map)) Rest:List </envStack>
+      <envStack>... ListItem(el(BaseClass, BI:BagItem, Encloser:KResult, LocalEnv:Map)) Rest:List </envStack>,
+      ObjLocalClassesEnv:Map
     )::_) :: BaseClass:ClassType
-    => objectClosure(OL, <envStack> ListItem(el(BaseClass, BI, Encloser, LocalEnv)) Rest </envStack>)::BaseClass
+    => objectClosure(
+      OL,
+      <envStack> ListItem(el(BaseClass, BI, Encloser, LocalEnv)) Rest </envStack>,
+      ObjLocalClassesEnv
+    )::BaseClass
 
 //Converts a list of ListItem(el(Class, BI, Encloser, _)) into KList with elements of sort ClassType
 syntax K ::= "getClassList" "(" List ")"
@@ -570,11 +575,12 @@ rule [invokeImplInstance]:
       C:Bag
     </control>
     <envGroup>
-      <env> Env:Map => . </env> LocalClassesEnv:Bag
+      <env> Env:Map => . </env>
+      (LocalClassesEnv:Bag => <localClassesEnv> ObjLocalClassesEnv </localClassesEnv>)
     </envGroup>
     <store>
       ...
-      OL |-> objectClosure(NewOL:Int, Obj:Bag) :: _
+      OL |-> objectClosure(NewOL:Int, Obj:Bag, ObjLocalClassesEnv:Map) :: _
       ...
     </store>
 when getKLabel(Body) =/=KLabel 'NoMethodBody
@@ -612,7 +618,8 @@ rule [invokeImplStatic]:
       C:Bag
     </control>
     <envGroup>
-      <env> Env:Map => . </env> LocalClassesEnv:Bag
+      <env> Env:Map => . </env>
+      (LocalClassesEnv:Bag => <localClassesEnv> .Map </localClassesEnv>)
     </envGroup>
 
 //@ \texttt{bindto} also checks the well-formedness of the method parameters

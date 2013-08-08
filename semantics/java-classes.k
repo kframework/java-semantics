@@ -35,9 +35,9 @@ rule [TypeNameInProcessCompUnitsPhase]:
 
 //@ \texttt{typeOf and toString}
 
-rule toString(objectClosure(I:Int, Obj:Bag) :: T:Type)
+rule toString(objectClosure(I:Int, Obj:Bag, ObjLocalClassesEnv:Map) :: T:Type)
     =>  'Invoke(
-          'MethodName(objectClosure(I, Obj) :: T,, String2Id("toString")),,
+          'MethodName(objectClosure(I, Obj, ObjLocalClassesEnv) :: T,, String2Id("toString")),,
           'ListWrap(.KList)
         )
         [anywhere]
@@ -50,7 +50,7 @@ get more from the existing SIMPLE constructs. */
 //@ \texttt{typeOf for raw values of reference type}
 rule typeOf(Str:String) => rtString
 rule typeOf(null) => nullType
-rule typeOf(objectClosure(_, <envStack> ListItem(el(Class:ClassType, _,_,_)) _</envStack> _))
+rule typeOf(objectClosure(_, <envStack> ListItem(el(Class:ClassType, _,_,_)) _</envStack>, _))
      => Class
 rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T
 
@@ -83,13 +83,17 @@ rule [QNewInstance]:
       => staticInit(Class)
         ~> create(Class)
         ~> storeObj
-        ~> restoreEnvObjContext(Env, Obj, CT)
+        ~> restoreEnvObjContext(<env> Env </env> LocalClassesEnv, Obj, CT)
         ~> setOuterLocalEnv(L, Class)
+        ~> setObjLocalClassesEnv(L)
         ~> invokeConstr(L, Class, Vals, EnclosingObj)
         ~> typedLookup(L)
       ...
     </k>
-    <env> Env:Map => . </env>
+    <envGroup>
+      <env> Env:Map => . </env>
+      (LocalClassesEnv:Bag => <localClassesEnv> .Map </localClassesEnv>)
+    </envGroup>
     <crntObj>
       Obj:Bag
       =>  <crntClass> .K </crntClass>
@@ -144,7 +148,7 @@ rule [storeObj]:
     </crntObj>
     <store>
       ...
-      . => L |-> objectClosure(L, Obj) :: Class
+      . => L |-> objectClosure(L, Obj, .Map) :: Class
       ...
     </store>
 
@@ -167,13 +171,13 @@ rule [invokeConstr]:
 
 rule [setEncloser-value]:
     <k>
-      setEncloser(objectClosure(OL:Int, _)::_, Class:ClassType, EncloserRV:RawVal::_) => .
+      setEncloser(objectClosure(OL:Int, _,_)::_, Class:ClassType, EncloserRV:RawVal::_) => .
       ...
     </k>
     <store>
       ...
       OL |->
-        objectClosure(_, <envStack>... ListItem(el(Class,_, _ => EncloserRV::EncloserClass, _)) ...</envStack>)::_
+        objectClosure(_, <envStack>... ListItem(el(Class,_, _ => EncloserRV::EncloserClass, _)) ...</envStack>, _)::_
       ...
     </store>
     <classType> Class </classType>
@@ -191,7 +195,7 @@ rule [setOuterLocalEnv-local]:
     <store>
       ...
       OL |->
-        objectClosure(_, <envStack>... ListItem(el(Class,_,_, _ => CurrentEnv)) ...</envStack>)::_
+        objectClosure(_, <envStack>... ListItem(el(Class,_,_, _ => CurrentEnv)) ...</envStack>, _)::_
       ...
     </store>
     <localClassesEnv>... Class |-> mapWrap(CurrentEnv:Map) ...</localClassesEnv>
@@ -207,6 +211,18 @@ when
     notBool Class in keys(LocalClassesEnv)
 
 rule setOuterLocalEnv(_, noClass) => .
+
+//Set the content of <localClassesEnv> - in the 3rd argument of objectClosure().
+syntax K ::= "setObjLocalClassesEnv" "(" Int ")"
+
+rule [setObjLocalClassesEnv]:
+    <k> setObjLocalClassesEnv(OL:Int) => . ...</k>
+    <store>
+      ...
+      OL |-> objectClosure(_,_, _ => LocalClassesEnv)::_
+      ...
+    </store>
+    <localClassesEnv> LocalClassesEnv:Map </localClassesEnv>
 
 /*@ \subsection{Instance Of}
 Like in untyped KOOL. */

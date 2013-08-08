@@ -89,13 +89,13 @@ rule [outerLocalVar-dispatch]:
 rule [outerLocalVar-found]:
     outerLocalVar(
       X:Id,
-      objectClosure(_, <envStack>... ListItem(el(Class, _,_, X |-> L:Int _)) ...</envStack>) :: Class:ClassType
+      objectClosure(_, <envStack>... ListItem(el(Class, _,_, X |-> L:Int _)) ...</envStack>, _) :: Class:ClassType
     ) => typedLookup(L)
 
 rule [outerLocalVar-not-found]:
     outerLocalVar(
       X:Id,
-      objectClosure(_, <envStack>... ListItem(el(Class, _, Encloser:TypedVal, OuterEnv:Map)) ...</envStack>)
+      objectClosure(_, <envStack>... ListItem(el(Class, _, Encloser:TypedVal, OuterEnv:Map)) ...</envStack>, _)
         :: Class:ClassType
       => Encloser
     )

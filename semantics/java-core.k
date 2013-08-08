@@ -285,8 +285,12 @@ syntax RawVal ::= "objectClosure" "(" Int //OL - object location
                                     ))
                                       ...
                                     </envStack>
+
                                   */
                                   "," Bag
+
+                                  /*the init content of <localClassesEnv> when methods are invoked*/
+                                  "," Map
                                   ")"
 
                 | "methodClosure" "("
@@ -375,8 +379,14 @@ rule defaultTyped(Str:String) => Str :: rtString                                
 rule defaultTyped(null) => null :: nullType                                           [structural]
 rule defaultTyped( objectClosure(
       OL:Int,
-      <envStack> ListItem(el(Class:ClassType, BI:BagItem, Encloser:KResult, LocalEnv:Map)) Rest:List </envStack>
-    )) => objectClosure(OL, <envStack> ListItem(el(Class, BI, Encloser, LocalEnv)) Rest </envStack>) :: Class
+      <envStack> ListItem(el(Class:ClassType, BI:BagItem, Encloser:KResult, LocalEnv:Map)) Rest:List </envStack>,
+      ObjLocalClassesEnv:Map
+    ))
+    => objectClosure(
+      OL,
+      <envStack> ListItem(el(Class, BI, Encloser, LocalEnv)) Rest </envStack>,
+      ObjLocalClassesEnv
+    ) :: Class
                                                                                       [structural]
 rule defaultTyped(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T           [structural]
 
@@ -420,11 +430,15 @@ rule [getTopLevel]:
 syntax K ::= "eqAux" "(" K "," K ")"                  [seqstrict]
 rule eqAux(KR1:KResult, KR2:KResult) => KR1 ==K KR2
 
-syntax K ::= "restoreEnvObjContext" "(" Map "," Bag "," ContextType ")"
+//restore the content of cells <envGroup>, <crntObj>, <contextType>
+syntax K ::= "restoreEnvObjContext" "(" Bag         //The content of <envGroup>
+                                    "," Bag         //The content of <crntObj>
+                                    "," ContextType //The content of <contextType>
+                                    ")"
 
 rule [restoreEnvObjContext]:
-    <k> restoreEnvObjContext(Env:Map, Obj:Bag, CT:ContextType) => . ...</k>
-    <env> _ => Env </env>
+    <k> restoreEnvObjContext(EnvGroup:Bag, Obj:Bag, CT:ContextType) => . ...</k>
+    <envGroup> _ => EnvGroup </envGroup>
     <crntObj> _ => Obj </crntObj>
     <contextType> _ => CT </contextType>
 
