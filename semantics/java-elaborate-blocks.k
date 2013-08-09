@@ -29,7 +29,6 @@ module JAVA-ELABORATE-BLOCKS
     imports JAVA-VAR-LOOKUP             //for localVar
     imports JAVA-PROCESS-TYPE-NAMES     //for toPackage()
     imports JAVA-PROCESS-CLASSES        //for paramImpl
-    imports JAVA-PROCESS-LOCAL-CLASSES  //for outerLocalVar
 
 syntax K ::= "elaborateBlocks" "(" K ")" [strict] //Elaborate the blocks inside all classes.
                                         //K = setWrap(Set) - the set of all classes.
@@ -463,7 +462,7 @@ syntax K ::= "elabOuterLocalVar" "(" Id         //X - var name
 
 rule [elabOuterLocalVar-ok]:
     <k>
-      elabOuterLocalVar(X:Id, Class:ClassType) => elabRes(outerLocalVar(X) :: T)
+      elabOuterLocalVar(X:Id, Class:ClassType) => elabRes(localVar(X) :: T)
       ...
     </k>
     <classType> Class </classType>

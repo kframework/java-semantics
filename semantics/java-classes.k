@@ -83,16 +83,16 @@ rule [QNewInstance]:
       => staticInit(Class)
         ~> create(Class)
         ~> storeObj
-        ~> restoreEnvObjContext(<env> Env </env> LocalClassesEnv, Obj, CT)
-        ~> setOuterLocalEnv(L, Class)
+        ~> restoreEnvObjContext(OldEnvGroup, Obj, CT)
+        ~> setOuterLocalEnvForHierarchy(L, Class)
         ~> setObjLocalClassesEnv(L)
         ~> invokeConstr(L, Class, Vals, EnclosingObj)
         ~> typedLookup(L)
       ...
     </k>
     <envGroup>
-      <env> Env:Map => . </env>
-      (LocalClassesEnv:Bag => <localClassesEnv> .Map </localClassesEnv>)
+      OldEnvGroup:Bag
+      => <env> .Map </env> <localClassesEnv> .Map </localClassesEnv>
     </envGroup>
     <crntObj>
       Obj:Bag
@@ -186,31 +186,54 @@ rule [setEncloser-value]:
 rule [setEncloser-noValue]:
     setEncloser(_,_, noValue) => .
 
-//Set the outerLocalEnv for all layers of the <crntObj>, from the cell <localClassesEnv>
-//Approximate implementation
-syntax K ::= "setOuterLocalEnv" "(" Int "," ClassType ")"
+//Set the outerLocalEnv for all layers of the <crntObj>, from the cell <localClassesEnv>,
+//for the given class and its bases
+syntax K ::= "setOuterLocalEnvForHierarchy" "(" Int "," ClassType ")"
 
-rule [setOuterLocalEnv-local]:
-    <k> setOuterLocalEnv(OL:Int, Class:ClassType => BaseClass) ...</k>
+//Set outerLocalEnv for precisely the class layer Class. If sourceCalss is registered in
+//<localClassesEnv>, take from there.
+           | "setOuterLocalEnvForClass" "(" Int       //OL - object location
+                                        "," ClassType //Class - the layer for which we aim to set outerLocalEnv
+                                        "," ClassType //SourceClass - the candidate source class
+                                                      //registered in <localClassesEnv>
+                                        ")"
+
+rule [setOuterLocalEnvForHierarchy]:
+    <k>
+      (. => setOuterLocalEnvForClass(OL, Class, Class))
+      ~> setOuterLocalEnvForHierarchy(OL:Int, Class:ClassType => BaseClass)
+      ...
+    </k>
+    <classType> Class </classType>
+    <extends> BaseClass:ClassType </extends>
+
+rule setOuterLocalEnvForHierarchy(_, noClass) => .
+
+//if SourceClass is registered in <localClassesEnv> we will take its corresponding Env, and set is
+//as outerLocalEnv for the layer Class.
+rule [setOuterLocalEnvForClass-found]:
+    <k> setOuterLocalEnvForClass(OL:Int, Class:ClassType, SourceClass:ClassType) => . ...</k>
     <store>
       ...
       OL |->
         objectClosure(_, <envStack>... ListItem(el(Class,_,_, _ => CurrentEnv)) ...</envStack>, _)::_
       ...
     </store>
-    <localClassesEnv>... Class |-> mapWrap(CurrentEnv:Map) ...</localClassesEnv>
-    <classType> Class </classType>
-    <extends> BaseClass:ClassType </extends>
+    <localClassesEnv>... SourceClass |-> mapWrap(CurrentEnv:Map) ...</localClassesEnv>
 
-rule [setOuterLocalEnv-not-local]:
-    <k> setOuterLocalEnv(OL:Int, Class:ClassType => BaseClass) ...</k>
+//If SourceClass is not registered in <localClassesEnv>, it is not a direct local class.
+//We attempt to replace it with its enclosing class,
+//until evenually we will reach a local class.
+rule [setOuterLocalEnvForClass-not-found]:
+    <k> setOuterLocalEnvForClass(OL:Int, Class:ClassType, SourceClass:ClassType => SourceEnclosingClass) ...</k>
     <localClassesEnv> LocalClassesEnv:Map </localClassesEnv>
-    <classType> Class </classType>
-    <extends> BaseClass:ClassType </extends>
+    <classType> SourceClass </classType>
+    <enclosingClass> SourceEnclosingClass:ClassType </enclosingClass>
 when
-    notBool Class in keys(LocalClassesEnv)
+    notBool SourceClass in keys(LocalClassesEnv)
 
-rule setOuterLocalEnv(_, noClass) => .
+//Otherwise we will reach noClass, and the whole term will be discarded.
+rule setOuterLocalEnvForClass(_,_, noClass) => .
 
 //Set the content of <localClassesEnv> - in the 3rd argument of objectClosure().
 syntax K ::= "setObjLocalClassesEnv" "(" Int ")"

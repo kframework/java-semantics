@@ -9,10 +9,12 @@ configuration
         <thread multiplicity="*" color="yellow">
           <k color="green"> $PGM:K </k>
           <envGroup>
+
+            //The map from local vars to their location in store. Also inclused outer lcoal ars, for local classes.
             <env color="violet"> .Map </env>
 
             //Map[Id -> mapWrap(Map[Id -> Loc])]
-            //A map associating to any local class accessible in this environment its outer lcoal environment.
+            //A map associating to any local class accessible in this environment its outer local environment.
             //The local environment is determined in the place where the class is declared.
             //When a local class is instantiated, its enclosing environment is taken from this map.
             //This cell have the same lifecycle as <env>, that is why they are both grouped to <envGroup>

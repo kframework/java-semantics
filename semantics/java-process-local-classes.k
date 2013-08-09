@@ -76,32 +76,6 @@ rule [restoreAfterProcessLocalClass]:
 
 //\section{Local classes - runtime}
 
-//lookup the given local var from the enclosing class. For local classes only.
-//Outer local vars may be only read, never written.
-syntax K ::= "outerLocalVar" "(" Id ")" //the var name
-           | "outerLocalVar" "(" Id "," TypedVal ")" //TypedVal - the object where to search, or enclosing ones
-                             [strict(2)]
-
-rule [outerLocalVar-dispatch]:
-    <k> outerLocalVar(X:Id)::_ => outerLocalVar(X, 'QThis(Class)::Class) ...</k>
-    <crntClass> Class:ClassType </crntClass>
-
-rule [outerLocalVar-found]:
-    outerLocalVar(
-      X:Id,
-      objectClosure(_, <envStack>... ListItem(el(Class, _,_, X |-> L:Int _)) ...</envStack>, _) :: Class:ClassType
-    ) => typedLookup(L)
-
-rule [outerLocalVar-not-found]:
-    outerLocalVar(
-      X:Id,
-      objectClosure(_, <envStack>... ListItem(el(Class, _, Encloser:TypedVal, OuterEnv:Map)) ...</envStack>, _)
-        :: Class:ClassType
-      => Encloser
-    )
-when
-    notBool X in keys(OuterEnv)
-
 //Initialize the registration of local environment, when a local class declaration is encoutered.
 //This environment is precisely <env>. It don't contain local vars of the outer env for enclosign classes,
 //in case of multi-level local classes.
