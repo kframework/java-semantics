@@ -1,5 +1,5 @@
 /*
-Static initializer throwing exc. The remaining field and static inits are not executed.
+Static initializer throwing exc. The remaining field and static initializers are not executed.
 */
 
 class A {

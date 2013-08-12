@@ -1,6 +1,6 @@
 /*
 Fields with initializer throwing an exception. Test that all the remaining initializers
-  and the constructor are not executed.
+  and the constructor are not executed. Catch ExceptionInInitializerError in main.
 */
 
 class A {
