@@ -31,9 +31,9 @@ rule [staticInit]:
                   )
                 )
               )
-            )
+            ),,
+            restoreEnvObjContext(OldEnvGroup, Obj, CT)
           )
-      ~> restoreEnvObjContext(OldEnvGroup, Obj, CT)
       ...
     </k>
     <envGroup>
