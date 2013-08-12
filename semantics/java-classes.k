@@ -35,7 +35,7 @@ rule [TypeNameInProcessCompUnitsPhase]:
 
 //@ \texttt{typeOf and toString}
 
-rule toString(objectClosure(I:Int, Obj:Bag, ObjLocalClassesEnv:Map) :: T:Type)
+rule toString(objectClosure(I:Int, Obj:List, ObjLocalClassesEnv:Map) :: T:Type)
     =>  'Invoke(
           'MethodName(objectClosure(I, Obj, ObjLocalClassesEnv) :: T,, String2Id("toString")),,
           'ListWrap(.KList)
@@ -50,7 +50,7 @@ get more from the existing SIMPLE constructs. */
 //@ \texttt{typeOf for raw values of reference type}
 rule typeOf(Str:String) => rtString
 rule typeOf(null) => nullType
-rule typeOf(objectClosure(_, <envStack> ListItem(el(Class:ClassType, _,_,_)) _</envStack>, _))
+rule typeOf(objectClosure(_, ListItem(el(Class:ClassType, _,_,_)) _:List, _))
      => Class
 rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T
 
@@ -82,7 +82,6 @@ rule [QNewInstance]:
       )::Class
       => staticInit(Class)
         ~> create(Class)
-        ~> storeObj
         ~> restoreEnvObjContext(OldEnvGroup, Obj, CT)
         ~> setOuterLocalEnvForHierarchy(L, Class)
         ~> setObjLocalClassesEnv(L)
@@ -97,10 +96,14 @@ rule [QNewInstance]:
     <crntObj>
       Obj:Bag
       =>  <crntClass> .K </crntClass>
-          <envStack> .List </envStack>
           <location> L </location>
     </crntObj>
     <contextType> CT:ContextType </contextType>
+    <store>
+      ...
+      . => L |-> objectClosure(L, .List, .Map) :: Class
+      ...
+    </store>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 when isKResult(Vals)
 
@@ -134,23 +137,14 @@ rule [addEnvLayer]:
     <k> addEnvLayer => . ...</k>
     <env> Env:Map => . </env>
     <crntClass> Class:ClassType </crntClass>
-    <envStack> . => ListItem(el(Class, <env>Env</env>, noValue, .Map)) ...</envStack>
-        [structural]
-
-syntax K ::= "storeObj"
-
-rule [storeObj]:
-    <k> storeObj => . ...</k>
-    <crntObj>
-      Obj:Bag
-      <crntClass> Class:ClassType </crntClass>
-      <location> L:Int </location>
-    </crntObj>
+    <location> L:Int </location>
     <store>
       ...
-      . => L |-> objectClosure(L, Obj, .Map) :: Class
+      L |-> objectClosure(L,
+          ( . => ListItem(el(Class, <env>Env</env>, noValue, .Map)) ) _:List, _)::_
       ...
     </store>
+        [structural]
 
 syntax K ::= "invokeConstr" "(" Int       //OL - object location
                             "," ClassType //The target class
@@ -177,7 +171,7 @@ rule [setEncloser-value]:
     <store>
       ...
       OL |->
-        objectClosure(_, <envStack>... ListItem(el(Class,_, _ => EncloserRV::EncloserClass, _)) ...</envStack>, _)::_
+        objectClosure(_, _:List ListItem(el(Class,_, _ => EncloserRV::EncloserClass, _)) _:List, _)::_
       ...
     </store>
     <classType> Class </classType>
@@ -216,7 +210,7 @@ rule [setOuterLocalEnvForClass-found]:
     <store>
       ...
       OL |->
-        objectClosure(_, <envStack>... ListItem(el(Class,_,_, _ => CurrentEnv)) ...</envStack>, _)::_
+        objectClosure(_, _:List ListItem(el(Class,_,_, _ => CurrentEnv)) _:List, _)::_
       ...
     </store>
     <localClassesEnv>... SourceClass |-> mapWrap(CurrentEnv:Map) ...</localClassesEnv>

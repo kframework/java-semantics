@@ -333,12 +333,10 @@ rule [methodInvokeRuntimeInstanceOnClass]:
     <k>
       methodInvokeRuntime(Class:ClassType, Sig:Signature,
         objectClosure(OL:Int,
-          <envStack>
-            Rest:List
-            ListItem(el(Class:ClassType, BI:BagItem, Encloser:KResult, LocalEnv:Map))
-            ...
-          </envStack> _, _)::_,
-          ParamVals:KList, instanceCT
+          Rest:List
+          ListItem(el(Class:ClassType, BI:BagItem, Encloser:KResult, LocalEnv:Map)) _,
+        _)::_,
+        ParamVals:KList, instanceCT
       )::_
       => invokeImpl(
         lookupOverloadedMethod(
@@ -366,10 +364,8 @@ rule [methodInvokeRuntimeInstanceOnInterface]:
     <k>
       methodInvokeRuntime(Class:ClassType, Sig:Signature,
         objectClosure(OL:Int,
-          <envStack>
-            ListItem(el(ActualClass:ClassType, _,_,_))
-            ...
-          </envStack> _, _)::_,
+          ListItem(el(ActualClass:ClassType, _,_,_)) _,
+        _)::_,
         ParamVals:KList, instanceCT
       )::_
       => invokeImpl(
@@ -424,12 +420,12 @@ context qSuperQual(HOLE)::_
 rule [qSuperQualEval]:
     qSuperQual(objectClosure(
       OL,
-      <envStack>... ListItem(el(BaseClass, BI:BagItem, Encloser:KResult, LocalEnv:Map)) Rest:List </envStack>,
+      _:List ListItem(el(BaseClass, BI:BagItem, Encloser:KResult, LocalEnv:Map)) Rest:List,
       ObjLocalClassesEnv:Map
     )::_) :: BaseClass:ClassType
     => objectClosure(
       OL,
-      <envStack> ListItem(el(BaseClass, BI, Encloser, LocalEnv)) Rest </envStack>,
+      ListItem(el(BaseClass, BI, Encloser, LocalEnv)) Rest,
       ObjLocalClassesEnv
     )::BaseClass
 
@@ -568,7 +564,6 @@ rule [invokeImplInstance]:
         OldObj:Bag
         => <crntClass> Class </crntClass>
            <location> NewOL </location>
-           Obj
       </crntObj>
       <return> OldT:Type => T </return>
       <contextType> OldCT:ContextType => instanceCT </contextType>
@@ -581,7 +576,7 @@ rule [invokeImplInstance]:
     </envGroup>
     <store>
       ...
-      OL |-> objectClosure(NewOL:Int, Obj:Bag, ObjLocalClassesEnv:Map) :: _
+      OL |-> objectClosure(NewOL:Int, Obj:List, ObjLocalClassesEnv:Map) :: _
       ...
     </store>
 when getKLabel(Body) =/=KLabel 'NoMethodBody
@@ -611,7 +606,6 @@ rule [invokeImplStatic]:
       <crntObj>
         OldObj:Bag
         => <crntClass> Class </crntClass>
-           <envStack> .List </envStack>
            <location> noValue </location>
       </crntObj>
       <return> OldT:Type => T </return>
@@ -629,7 +623,7 @@ rule <k> setRuntimeEnclosingLocalEnv(OL:Int) => . ...</k>
      <env> _ => OuterLocalEnv </env>
      <store>
       ...
-      OL |-> objectClosure(_, <envStack>... ListItem(el(Class,_,_,OuterLocalEnv:Map)) ...</envStack>, _) :: _
+      OL |-> objectClosure(_, _:List ListItem(el(Class,_,_,OuterLocalEnv:Map)) _:List, _) :: _
       ...
      </store>
 

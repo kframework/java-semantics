@@ -39,10 +39,6 @@ configuration
               <crntClass> .K </crntClass>
 
               <location multiplicity="?"> .K </location>
-
-              //the stack of all inheritance layers of the current object, from the actual runtime type
-              //to the primordial class Object.
-              <envStack> .List </envStack>
             </crntObj>
           </control>
         </thread>
@@ -278,20 +274,18 @@ syntax KResult ::= ContextType
 syntax RawVal ::= "objectClosure" "(" Int //OL - object location
 
                                   /*The object content, of the form:
-                                    <envStack>
                                     ListItem(el(
                                       Class,
                                       <env>Env</env>,
                                       enclosingObjClosure::T,
                                       enclosingLocalEnv:Map
                                     ))
-                                      ...
-                                    </envStack>
-
+                                    ...
                                   */
-                                  "," Bag
+                                  "," List
 
-                                  /*the init content of <localClassesEnv> when methods are invoked*/
+                                  /*The init content of <localClassesEnv> when methods are invoked.
+                                    For local classes only */
                                   "," Map
                                   ")"
 
@@ -381,12 +375,12 @@ rule defaultTyped(Str:String) => Str :: rtString                                
 rule defaultTyped(null) => null :: nullType                                           [structural]
 rule defaultTyped( objectClosure(
       OL:Int,
-      <envStack> ListItem(el(Class:ClassType, BI:BagItem, Encloser:KResult, LocalEnv:Map)) Rest:List </envStack>,
+      ListItem(el(Class:ClassType, BI:BagItem, Encloser:KResult, LocalEnv:Map)) Rest:List,
       ObjLocalClassesEnv:Map
     ))
     => objectClosure(
       OL,
-      <envStack> ListItem(el(Class, BI, Encloser, LocalEnv)) Rest </envStack>,
+      ListItem(el(Class, BI, Encloser, LocalEnv)) Rest,
       ObjLocalClassesEnv
     ) :: Class
                                                                                       [structural]
@@ -444,7 +438,7 @@ rule [restoreEnvObjContext]:
     <crntObj> _ => Obj </crntObj>
     <contextType> _ => CT </contextType>
 
-//The content of an <envStack> ListItem() </envStack>
+//The content of an ListItem() representing the old <envStack>
 syntax K ::= "el" "(" ClassType //The class corresponding to the current layer
                   "," BagItem   //<env> instance fields </env>
                   "," K         //objectClosure(...)::_ - the enclosing object, or noValue for top-level classes

@@ -43,7 +43,6 @@ rule [staticInit]:
     <crntObj>
       Obj:Bag
       =>  <crntClass> Class </crntClass>
-          <envStack> .List </envStack>
           <location> noValue </location>
     </crntObj>
     <contextType> CT:ContextType => staticCT </contextType>
