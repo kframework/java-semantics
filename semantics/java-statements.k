@@ -1,13 +1,13 @@
-require "java-core.k"
-require "java-subtyping.k"
-require "java-var-lookup.k"
-require "java-api-core.k"
+require "core.k"
+require "subtyping.k"
+require "var-lookup.k"
+require "api-core.k"
 
-module JAVA-STATEMENTS
-    imports JAVA-CORE
-    imports JAVA-SUBTYPING
-    imports JAVA-VAR-LOOKUP
-    imports JAVA-API-CORE //for rtSystemOut
+module STATEMENTS
+    imports CORE
+    imports SUBTYPING
+    imports VAR-LOOKUP
+    imports API-CORE //for rtSystemOut
 
 //@ \section{Initiation of execution}
 

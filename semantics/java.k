@@ -1,44 +1,44 @@
-require "java-labels.k"
-require "java-core.k"
-require "java-process-type-names.k"
-require "java-process-comp-units.k"
-require "java-process-class-decs.k"
-require "java-process-imports.k"
-require "java-process-classes.k"
-require "java-elaborate-blocks.k"
-require "java-process-local-classes.k"
-require "java-primitive-types.k"
-require "java-literals.k"
-require "java-subtyping.k"
-require "java-expressions.k"
-require "java-statements.k"
-require "java-arrays.k"
-require "java-static-init.k"
-require "java-classes.k"
-require "java-var-lookup.k"
-require "java-method-invoke.k"
-require "java-api-core.k"
+require "labels.k"
+require "core.k"
+require "process-type-names.k"
+require "process-comp-units.k"
+require "process-class-decs.k"
+require "process-imports.k"
+require "process-classes.k"
+require "elaborate-blocks.k"
+require "process-local-classes.k"
+require "primitive-types.k"
+require "literals.k"
+require "subtyping.k"
+require "expressions.k"
+require "statements.k"
+require "arrays.k"
+require "static-init.k"
+require "classes.k"
+require "var-lookup.k"
+require "method-invoke.k"
+require "api-core.k"
 
 module JAVA
-    imports JAVA-LABELS
-    imports JAVA-CORE
-    imports JAVA-PROCESS-TYPE-NAMES
-    imports JAVA-PROCESS-COMP-UNITS
-    imports JAVA-PROCESS-CLASS-DECS
-    imports JAVA-PROCESS-IMPORTS
-    imports JAVA-PROCESS-CLASSES
-    imports JAVA-ELABORATE-BLOCKS
-    imports JAVA-PROCESS-LOCAL-CLASSES
-    imports JAVA-PRIMITIVE-TYPES
-    imports JAVA-LITERALS
-    imports JAVA-SUBTYPING
-    imports JAVA-EXPRESSIONS
-    imports JAVA-STATEMENTS
-    imports JAVA-ARRAYS
-    imports JAVA-STATIC-INIT
-    imports JAVA-CLASSES
-    imports JAVA-VAR-LOOKUP
-    imports JAVA-METHOD-INVOKE
-    imports JAVA-API-CORE
+    imports LABELS
+    imports CORE
+    imports PROCESS-TYPE-NAMES
+    imports PROCESS-COMP-UNITS
+    imports PROCESS-CLASS-DECS
+    imports PROCESS-IMPORTS
+    imports PROCESS-CLASSES
+    imports ELABORATE-BLOCKS
+    imports PROCESS-LOCAL-CLASSES
+    imports PRIMITIVE-TYPES
+    imports LITERALS
+    imports SUBTYPING
+    imports EXPRESSIONS
+    imports STATEMENTS
+    imports ARRAYS
+    imports STATIC-INIT
+    imports CLASSES
+    imports VAR-LOOKUP
+    imports METHOD-INVOKE
+    imports API-CORE
 
 endmodule

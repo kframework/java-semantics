@@ -1,12 +1,12 @@
-require "java-core.k"
-require "java-classes.k"
-require "java-method-invoke.k"
+require "core.k"
+require "classes.k"
+require "method-invoke.k"
 
-module JAVA-API-CORE
-    imports JAVA-CORE
-    imports JAVA-CLASSES
-    imports JAVA-METHOD-INVOKE
-    imports JAVA-VAR-LOOKUP
+module API-CORE
+    imports CORE
+    imports CLASSES
+    imports METHOD-INVOKE
+    imports VAR-LOOKUP
 
 // This module contains the minimal part of java API required to perform
 // console read/write operations, as well as a few other API functions mentioned in JLS.

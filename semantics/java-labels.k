@@ -1,4 +1,4 @@
-module JAVA-LABELS
+module LABELS
 
 syntax KLabel ::= "'ListWrap"
                 | "'Some"

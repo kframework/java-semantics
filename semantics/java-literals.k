@@ -1,9 +1,9 @@
-require "java-core.k"
-require "java-primitive-types.k"
+require "core.k"
+require "primitive-types.k"
 
-module JAVA-LITERALS
-    imports JAVA-CORE
-    imports JAVA-PRIMITIVE-TYPES
+module LITERALS
+    imports CORE
+    imports PRIMITIVE-TYPES
 
 //@ \section{Auxiliary constructs}
 

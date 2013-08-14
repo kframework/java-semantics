@@ -1,23 +1,23 @@
-require "java-core.k"
-require "java-process-type-names.k"
-require "java-subtyping.k"
-require "java-process-classes.k"
-require "java-expressions.k"
-require "java-statements.k"
-require "java-arrays.k"
-require "java-static-init.k"
-require "java-var-lookup.k"
+require "core.k"
+require "process-type-names.k"
+require "subtyping.k"
+require "process-classes.k"
+require "expressions.k"
+require "statements.k"
+require "arrays.k"
+require "static-init.k"
+require "var-lookup.k"
 
-module JAVA-CLASSES
-    imports JAVA-CORE
-    imports JAVA-PROCESS-TYPE-NAMES
-    imports JAVA-SUBTYPING
-    imports JAVA-PROCESS-CLASSES
-    imports JAVA-EXPRESSIONS
-    imports JAVA-STATEMENTS
-    imports JAVA-ARRAYS
-    imports JAVA-STATIC-INIT
-    imports JAVA-VAR-LOOKUP
+module CLASSES
+    imports CORE
+    imports PROCESS-TYPE-NAMES
+    imports SUBTYPING
+    imports PROCESS-CLASSES
+    imports EXPRESSIONS
+    imports STATEMENTS
+    imports ARRAYS
+    imports STATIC-INIT
+    imports VAR-LOOKUP
 
 /*@ \section{Object and method closures}
 The only change to untyped KOOL's values is that closures are now typed

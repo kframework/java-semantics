@@ -1,15 +1,15 @@
-require "java-core.k"
-require "java-subtyping.k"
-require "java-process-classes.k"
-require "java-static-init.k"
-require "java-expressions.k"
+require "core.k"
+require "subtyping.k"
+require "process-classes.k"
+require "static-init.k"
+require "expressions.k"
 
-module JAVA-VAR-LOOKUP
-    imports JAVA-CORE
-    imports JAVA-SUBTYPING
-    imports JAVA-PROCESS-CLASSES
-    imports JAVA-STATIC-INIT
-    imports JAVA-EXPRESSIONS
+module VAR-LOOKUP
+    imports CORE
+    imports SUBTYPING
+    imports PROCESS-CLASSES
+    imports STATIC-INIT
+    imports EXPRESSIONS
 
 //@ \subsection{Names}
 

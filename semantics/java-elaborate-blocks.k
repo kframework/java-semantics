@@ -1,8 +1,8 @@
-require "java-core.k"
-require "java-var-lookup.k"
-require "java-process-type-names.k"
-require "java-process-classes.k"
-require "java-process-local-classes.k"
+require "core.k"
+require "var-lookup.k"
+require "process-type-names.k"
+require "process-classes.k"
+require "process-local-classes.k"
 
 /* Elaborate the composition of code blocks of a class - the last step of preprocessing.
 During this phase we inspect the contents of method bodies, instance initializers and
@@ -24,11 +24,11 @@ static initializers of a class and perform the following transformations:
     During elaboration, elaborated members will be wrapped into elab().
 */
 
-module JAVA-ELABORATE-BLOCKS
-    imports JAVA-CORE
-    imports JAVA-VAR-LOOKUP             //for localVar
-    imports JAVA-PROCESS-TYPE-NAMES     //for toPackage()
-    imports JAVA-PROCESS-CLASSES        //for paramImpl
+module ELABORATE-BLOCKS
+    imports CORE
+    imports VAR-LOOKUP             //for localVar
+    imports PROCESS-TYPE-NAMES     //for toPackage()
+    imports PROCESS-CLASSES        //for paramImpl
 
 syntax K ::= "elaborateBlocks" "(" K ")" [strict] //Elaborate the blocks inside all classes.
                                         //K = setWrap(Set) - the set of all classes.
@@ -47,7 +47,7 @@ syntax K ::= "elabRes" "(" K ")"
 
 //sets the enclosing object for a given object.
 //Invoked by invokeConstr and QSuperConstrInv.
-//Defined in JAVA-CLASSES
+//Defined in CLASSES
 syntax K ::= "setEncloser" "(" TypedExp   //Evaluates to target object
                            "," ClassType  //Class layer for which to set the encloser
                            "," K          //The encloser

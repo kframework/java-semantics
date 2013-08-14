@@ -1,7 +1,7 @@
-require "java-core.k"
+require "core.k"
 
-module JAVA-PROCESS-IMPORTS
-    imports JAVA-CORE
+module PROCESS-IMPORTS
+    imports CORE
 
 // Rules related to processing import declarations. Part of ProcessCompUnitsPhase.
 

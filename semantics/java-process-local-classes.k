@@ -1,13 +1,13 @@
-require "java-core.k"
-require "java-process-comp-units.k"
-require "java-process-class-decs.k"
-require "java-elaborate-blocks.k"
+require "core.k"
+require "process-comp-units.k"
+require "process-class-decs.k"
+require "elaborate-blocks.k"
 
-module JAVA-PROCESS-LOCAL-CLASSES
-    imports JAVA-CORE
-    imports JAVA-PROCESS-COMP-UNITS
-    imports JAVA-PROCESS-CLASS-DECS
-    imports JAVA-ELABORATE-BLOCKS
+module PROCESS-LOCAL-CLASSES
+    imports CORE
+    imports PROCESS-COMP-UNITS
+    imports PROCESS-CLASS-DECS
+    imports ELABORATE-BLOCKS
 
 rule [elab-ClassDecStm]:
     <k>

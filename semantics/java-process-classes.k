@@ -1,9 +1,9 @@
-require "java-core.k"
-require "java-elaborate-blocks.k"
+require "core.k"
+require "elaborate-blocks.k"
 
-module JAVA-PROCESS-CLASSES
-    imports JAVA-CORE
-    imports JAVA-ELABORATE-BLOCKS
+module PROCESS-CLASSES
+    imports CORE
+    imports ELABORATE-BLOCKS
 
 syntax K ::= "getContextType" "(" K //'ListWrap(...) - the list of method attributes
                               ")"                           [function]

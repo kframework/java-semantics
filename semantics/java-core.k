@@ -1,4 +1,4 @@
-module JAVA-CORE
+module CORE
 
 /*@ \section{Configuration}
 The configuration is almost identical to that of typed KOOL.*/

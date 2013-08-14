@@ -1,7 +1,7 @@
-require "java-core.k"
+require "core.k"
 
-module JAVA-PROCESS-TYPE-NAMES
-    imports JAVA-CORE
+module PROCESS-TYPE-NAMES
+    imports CORE
 
 /*@ \subsection{First pass - processing top level names} */
 

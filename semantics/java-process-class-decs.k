@@ -1,9 +1,9 @@
-require "java-core.k"
-require "java-process-type-names.k"
+require "core.k"
+require "process-type-names.k"
 
-module JAVA-PROCESS-CLASS-DECS
-    imports JAVA-CORE
-    imports JAVA-PROCESS-TYPE-NAMES
+module PROCESS-CLASS-DECS
+    imports CORE
+    imports PROCESS-TYPE-NAMES
 
 /*@ \subsection{Third pass - processing class dependencies and imports} */
 

@@ -1,9 +1,9 @@
-require "java-core.k"
-require "java-process-classes.k"
+require "core.k"
+require "process-classes.k"
 
-module JAVA-SUBTYPING
-    imports JAVA-CORE
-    imports JAVA-PROCESS-CLASSES
+module SUBTYPING
+    imports CORE
+    imports PROCESS-CLASSES
 
 //Checks whether first type is a subtype of the second
 syntax K ::= "subtype" "("

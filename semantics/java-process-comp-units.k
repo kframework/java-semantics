@@ -1,6 +1,6 @@
-require "java-core.k"
-require "java-process-type-names.k"
-require "java-process-imports.k"
+require "core.k"
+require "process-type-names.k"
+require "process-imports.k"
 
 /*
 ProcessCompUnitsPhase:
@@ -21,10 +21,10 @@ ProcessCompUnitsPhase:
   This way we will have fast access to the declaration of a class, and will be able to
 process declarations in a less-restricted order.
 */
-module JAVA-PROCESS-COMP-UNITS
-    imports JAVA-CORE
-    imports JAVA-PROCESS-TYPE-NAMES
-    imports JAVA-PROCESS-IMPORTS
+module PROCESS-COMP-UNITS
+    imports CORE
+    imports PROCESS-TYPE-NAMES
+    imports PROCESS-IMPORTS
 
 /*@ \subsection{Second pass - processing declarations} */
 
@@ -33,7 +33,7 @@ rule [StartProcessCompUnitsPhase]:
     (<programBackup> Pgm:K </programBackup> => .)
     <computationPhase> ProcessTypeNamesPhase => ProcessCompUnitsPhase </computationPhase>
 
-//ImpDecs will be processed in the module JAVA-PROCESS-IMPORTS
+//ImpDecs will be processed in the module PROCESS-IMPORTS
 rule [CompilationUnit]:
     <k>
       'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),,

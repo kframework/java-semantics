@@ -1,11 +1,11 @@
-require "java-core.k"
-require "java-subtyping.k"
-require "java-expressions.k"
+require "core.k"
+require "subtyping.k"
+require "expressions.k"
 
-module JAVA-ARRAYS
-    imports JAVA-CORE
-    imports JAVA-SUBTYPING
-    imports JAVA-EXPRESSIONS
+module ARRAYS
+    imports CORE
+    imports SUBTYPING
+    imports EXPRESSIONS
 
 syntax K ::= RawVal "::" "elem" Type
 

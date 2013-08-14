@@ -1,7 +1,7 @@
-require "java-core.k"
+require "core.k"
 
-module JAVA-PRIMITIVE-TYPES
-    imports JAVA-CORE
+module PRIMITIVE-TYPES
+    imports CORE
 
 //@ \subsection{Type labels}
 //@Here we rewrite java type ast into simple types

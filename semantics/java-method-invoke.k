@@ -1,19 +1,19 @@
-require "java-core.k"
-require "java-elaborate-blocks.k"
-require "java-subtyping.k"
-require "java-process-classes.k"
-require "java-classes.k"
-require "java-statements.k"
-require "java-static-init.k"
+require "core.k"
+require "elaborate-blocks.k"
+require "subtyping.k"
+require "process-classes.k"
+require "classes.k"
+require "statements.k"
+require "static-init.k"
 
-module JAVA-METHOD-INVOKE
-    imports JAVA-CORE
-    imports JAVA-ELABORATE-BLOCKS
-    imports JAVA-SUBTYPING
-    imports JAVA-PROCESS-CLASSES
-    imports JAVA-CLASSES
-    imports JAVA-STATEMENTS
-    imports JAVA-STATIC-INIT
+module METHOD-INVOKE
+    imports CORE
+    imports ELABORATE-BLOCKS
+    imports SUBTYPING
+    imports PROCESS-CLASSES
+    imports CLASSES
+    imports STATEMENTS
+    imports STATIC-INIT
 
 /*@\subsection{Method invocation}
 The method lookup is the same as in untyped KOOL.

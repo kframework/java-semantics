@@ -1,11 +1,11 @@
-require "java-core.k"
-require "java-subtyping.k"
-require "java-primitive-types.k"
+require "core.k"
+require "subtyping.k"
+require "primitive-types.k"
 
-module JAVA-EXPRESSIONS
-    imports JAVA-CORE
-    imports JAVA-SUBTYPING
-    imports JAVA-PRIMITIVE-TYPES
+module EXPRESSIONS
+    imports CORE
+    imports SUBTYPING
+    imports PRIMITIVE-TYPES
 
 //@ \section{Operators}
 
