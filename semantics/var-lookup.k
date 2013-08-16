@@ -115,7 +115,7 @@ rule [lookupStaticField]:
       ...
     </k>
     <classType> TargetClass </classType>
-    <staticEnv>... X |-> L ...</staticEnv>
+    <staticEnv>... X |-> L:Int ...</staticEnv>
 
 rule [lvalue-lookupStaticField]:
     <k>
@@ -128,7 +128,7 @@ rule [lvalue-lookupStaticField]:
       ...
     </k>
     <classType> TargetClass </classType>
-    <staticEnv>... X |-> L ...</staticEnv>
+    <staticEnv>... X |-> L:Int ...</staticEnv>
 
 /*@ \subsection{lvalue and loc} */
 

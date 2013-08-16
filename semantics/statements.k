@@ -412,7 +412,7 @@ context checkCatch(HOLE)
 
 rule [ThrowCheckedTrue]:
     checkCatch(true::bool) ~> 'Throw(TV:TypedVal)
-    ~> catchBlocks(catchImpl(paramImpl(T:Type, X:Id), CatchS),, _)
+    ~> catchBlocks(catchImpl(paramImpl(T:Type, X:Id), CatchS:K),, _)
     => 'Block('ListWrap(
           'LocalVarDec(.K,, T,, 'ListWrap('VarDec(X))),,
           'ExprStm('Assign(localVar(X)::T,, TV)::T),,

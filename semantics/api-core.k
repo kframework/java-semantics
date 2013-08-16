@@ -7,6 +7,7 @@ module API-CORE
     imports CLASSES
     imports METHOD-INVOKE
     imports VAR-LOOKUP
+    imports LITERALS  //for string-related functions
 
 // This module contains the minimal part of java API required to perform
 // console read/write operations, as well as a few other API functions mentioned in JLS.
@@ -54,6 +55,7 @@ rule [scanner-nextInt]:
     <in> ListItem(I:Int) => . ...</in>
 when
     Id2String(MethodName) ==String "nextInt"
+        [read]
 
 rule [object-getClass-on-object]:
     <k>
@@ -73,7 +75,7 @@ when
 
 rule [object-getClass-on-String]:
     invokeImpl(
-      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), Str::rtString,
+      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), Str:String::rtString,
       'ListWrap(.KList)
     ) => 'Lit('Class(rtString))
 when
@@ -89,7 +91,7 @@ when
 
 rule [object-toString-on-String]:
     invokeImpl(
-      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), Str::rtString,
+      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), Str:String::rtString,
       'ListWrap(.KList)
     ) => Str::rtString
 when
@@ -199,23 +201,23 @@ rule [ClassLiteral]:
 
 rule [ClassNameTopLevelWithPackage]:
     <k>
-      toString(class ClassId:Id)
-      => Id2String(ClassId)
+      toString(class ClassId:Id) => Id2String(ClassId)
       ...
     </k>
     <classType> class ClassId </classType>
     <enclosingClass> noClass </enclosingClass>
-when substrString(Id2String(ClassId), 0, 1) =/=String "."
+when
+    retainHead(Id2String(ClassId), 1) =/=String "."
 
 rule [ClassNameTopLevelWithDefaultPackage]:
     <k>
-      toString(class ClassId:Id)
-      => substrString(Id2String(ClassId), 1, lengthString(Id2String(ClassId)) -Int 1)
+      toString(class ClassId:Id) => trimHead(Id2String(ClassId), 1)
       ...
     </k>
     <classType> class ClassId </classType>
     <enclosingClass> noClass </enclosingClass>
-when substrString(Id2String(ClassId), 0, 1) ==String "."
+when
+    retainHead(Id2String(ClassId), 1) ==String "."
 
 rule [ClassNameInner]:
     <k>

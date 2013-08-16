@@ -2,6 +2,7 @@ require "core.k"
 
 module PROCESS-TYPE-NAMES
     imports CORE
+    imports LITERALS // for retainTail
 
 /*@ \subsection{First pass - processing top level names} */
 
@@ -104,13 +105,9 @@ rule [getclassType]:
 //todo this one don't work
 syntax K ::= "getSimpleName" "(" ClassType ")"                  [function]
 rule getSimpleName(class ClassId:Id)
-    => String2Id(substrString(
+    => String2Id(retainTail(
       Id2String(ClassId),
-      rfindString(Id2String(ClassId), ".", lengthString(Id2String(ClassId))) +Int 1,
-
-      //actually if this value is larger
-      //than the amount of characters left in the string, the function will still work
-      lengthString(Id2String(ClassId))
+      rfindString(Id2String(ClassId), ".", lengthString(Id2String(ClassId))) +Int 1
     ))
 
 //Receives a class/interface body as K, and extracts the KList part of it

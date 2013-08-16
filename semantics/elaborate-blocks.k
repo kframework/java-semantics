@@ -214,7 +214,7 @@ rule [elabInstanceHeat]:
 when K =/=K CHOLE
 
 rule [elabInstanceEnd]:
-    <k> elabRes(K) ~> elabInstanceInit => removeLastElabEnv ...</k>
+    <k> elabRes(K:K) ~> elabInstanceInit => removeLastElabEnv ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <instanceInit> CHOLE => K </instanceInit>
@@ -228,7 +228,7 @@ rule [elabStaticHeat]:
 when K =/=K CHOLE
 
 rule [elabStaticEnd]:
-    <k> elabRes(K) ~> elabStaticInit => removeLastElabEnv ...</k>
+    <k> elabRes(K:K) ~> elabStaticInit => removeLastElabEnv ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticInit> CHOLE => K </staticInit>
@@ -294,7 +294,7 @@ when
     isElabNaked(K)
 
 syntax K ::= "isElabNaked" "(" K ")"                            [function]
-rule isElabNaked(K) =>
+rule isElabNaked(K:K) =>
            (isRawVal(K) ==K true)
     orBool (getKLabel(K) ==KLabel 'TypeName)
     orBool (getKLabel(K) ==KLabel 'ClassOrInterfaceType)
@@ -315,13 +315,13 @@ rule [elabCoolExpression]:
     (elabRes(TExp:TypedExp) => .) ~> elab(_:KLabel(_,, (CHOLE => TExp),, _))
 
 rule [elabCoolIndependent]:
-    (ElabIndep => .) ~> elab(_:KLabel(_,, (CHOLE => ElabIndep),, _))
+    (ElabIndep:K => .) ~> elab(_:KLabel(_,, (CHOLE => ElabIndep),, _))
 when
     isElabIndependent(ElabIndep)
 
 //required by the rule [elabQNewInstance-resolve-class]
 rule [elabDisposeCoolIndependent]:
-    (ElabIndep => .) ~> elabDispose(_:KLabel(_,, (CHOLE => ElabIndep),, _))
+    (ElabIndep:K => .) ~> elabDispose(_:KLabel(_,, (CHOLE => ElabIndep),, _))
 when
     isElabIndependent(ElabIndep)
 
@@ -491,7 +491,7 @@ rule [elabLocalVarNoValue]:
 when notBool (X in keys(StEnv))
 
 rule [elabFieldWithQThis]:
-    elabDispose('Field( 'QThis(Class:ClassType),, X ))
+    elabDispose('Field( 'QThis(Class:ClassType),, X:Id ))
     => elab('Field( 'QThis(Class:ClassType) :: Class,, X )) ?? elab('Field( Class,, X))
 when
     Class =/=K noClass
@@ -515,16 +515,16 @@ syntax K ::= "elabLookup" "("
                                   ")"
 
 rule [elabLookupFoundInstance]:
-    <k> elabLookup(X, CT:ClassType) => FEntry ...</k>
+    <k> elabLookup(X:Id, CT:ClassType) => FEntry ...</k>
     <classType> CT </classType>
     <instanceEnv>... X |-> FEntry:K ...</instanceEnv>
 
 rule [elabLookupFoundStatic]:
-    <k> elabLookup(X, CT:ClassType) => fieldEntry(CT,X,T, staticCT) ...</k>
+    <k> elabLookup(X:Id, CT:ClassType) => fieldEntry(CT,X,T, staticCT) ...</k>
     <classType> CT </classType>
     <instanceEnv> InstanceEnv:Map </instanceEnv>
     <staticEnv>... X |-> L:Int ...</staticEnv>
-    <store>... L |-> _ :: T  ...</store>
+    <store>... L |-> _ :: T:Type  ...</store>
 when
     notBool (X in keys(InstanceEnv))
 
@@ -545,7 +545,7 @@ rule [elabThis]:
     <crntClass> Class:ClassType </crntClass>
 
 rule [elabQThisInstanceCT]:
-    <k> elabDispose('QThis(Class)) => elabRes('QThis(Class) :: Class) ...</k>
+    <k> elabDispose('QThis(Class:ClassType)) => elabRes('QThis(Class) :: Class) ...</k>
     <contextType> instanceCT </contextType>
 
 rule [elabQThisStaticCT]:
@@ -959,7 +959,7 @@ when
 
 //Unwrap elaborated terms in execution phase, so that they could be executed.
 rule [elabResInExecutionPhase]:
-    <k> (elabRes(K:K) => K) ~> KL(_) ...</k>
+    <k> (elabRes(K:K) => K) ~> KL:KLabel(_) ...</k>
     <computationPhase> ExecutionPhase </computationPhase>
 when
     KL =/=KLabel 'elab`(_`)
@@ -1029,9 +1029,9 @@ rule [AltConstrInv]:
 //True for 'QThis(_)::T, false otherwise
 syntax K ::= "isTypedQThis" "(" K ")"                                    [function]
 
-rule isTypedQThis(K::_) => getKLabel(K) ==KLabel 'QThis
+rule isTypedQThis(K:K::_) => getKLabel(K) ==KLabel 'QThis
 
-rule isTypedQThis(K) => false
+rule isTypedQThis(K:K) => false
 when getKLabel(K) =/=KLabel '_::_
 
 syntax K ::= "getEnclosingClass" "(" ClassType ")"

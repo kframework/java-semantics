@@ -419,7 +419,7 @@ context qSuperQual(HOLE)::_
 
 rule [qSuperQualEval]:
     qSuperQual(objectClosure(
-      OL,
+      OL:Int,
       _:List ListItem(el(BaseClass, BI:BagItem, Encloser:KResult, LocalEnv:Map)) Rest:List,
       ObjLocalClassesEnv:Map
     )::_) :: BaseClass:ClassType

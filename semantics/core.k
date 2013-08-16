@@ -341,7 +341,7 @@ rule true::bool ~> true? => .  [structural]
 syntax K ::= "toString" "(" K ")"   [strict]
 
 rule toString(Str:String :: _) => Str
-rule toString(I:Int :: char) => charString(I)
+rule toString(I:Int :: char) => chrChar(I)
 rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
 rule toString(true::_) => "true"
@@ -462,7 +462,7 @@ syntax K ::= "mapUnion" "(" K //mapWrap(Map)
                         "," K //mapWrap(Map)
                         ")"                   [strict]
 
-rule mapUnion(mapWrap( M1:Map => M1[K2/K1] ), mapWrap( M2:Map (K1:K |-> K2:K => .Map) ))
+rule mapUnion(mapWrap( M1:Map => M1[K2/K1] ), mapWrap( _:Map (K1:K |-> K2:K => .Map) ))
 rule mapUnion(mapWrap(M1:Map), mapWrap(.Map)) => mapWrap(M1)
 
 //Subsection setUnion, union of sets. Remove when +Set will be implemented.

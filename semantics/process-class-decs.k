@@ -60,7 +60,7 @@ context resolveBases(_, HOLE, _)      //Heat extends dec
 context resolveBases(_,_, _,,HOLE,,_) //Heat implements decs
 
 rule [resolveBases]:
-    <k> resolveBases(Class, BaseClass:ClassType, ImplTypes:KList) => . ...</k>
+    <k> resolveBases(Class:ClassType, BaseClass:ClassType, ImplTypes:KList) => . ...</k>
     <classType> Class </classType>
     <rawExtends> _ => BaseClass </rawExtends>
     <rawImplements> _ => 'ListWrap(ImplTypes) </rawImplements>
@@ -199,7 +199,7 @@ rule [saveImportsComputeResult]:
       ...
     </k>
     <localTypes> ListItem(stEnv(LocalTypes:Map)) ...</localTypes>
-    <classType> BaseClass </classType>
+    <classType> BaseClass:ClassType </classType>
     <imports> BaseClassMap:Map </imports>
 
 //Save the computed Imports map into the <imports> cell of the given class

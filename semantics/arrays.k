@@ -150,7 +150,7 @@ rule newArrayImpl(T:Type, 'ListWrap(Dims:KList), InitExp:K, .KList)::_
 when isKResult(Dims) andBool InitExp =/=K .K
 
 rule [newArrayWithInit]:
-    newArrayImpl(T, 'ListWrap(Dim:TypedVal), .K, InitContent:KList)::_
+    newArrayImpl(T:Type, 'ListWrap(Dim:TypedVal), .K, InitContent:KList)::_
     => arrayInitAlloc(newArrayImpl(T, 'ListWrap(Dim), undefined :: T, .KList) :: arrayOf T, InitContent)
 
 //same as newArrayImpl, but after dims were computed and checked
@@ -233,19 +233,19 @@ rule [evalAndStoreEmpty]:
 
 //@ Sequences of locations
 
-syntax KList ::= Int ".." Int
-rule N1:Int..N2:Int => .KList              when N1  >Int N2 [anywhere]
-rule N1:Int..N2:Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2 [anywhere]
+syntax KList ::= Int ".." Int                                   [function]
+rule N1:Int..N2:Int => .KList              when N1  >Int N2
+rule N1:Int..N2:Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2
 
 //@ \subsection{Array element assignment}
 
 rule [AssignInArrayExact]:
-    <k> 'Assign(loc(L:Int)::_,, V:RawVal::_)::T => V::T ...</k>
+    <k> 'Assign(loc(L:Int)::_,, V:RawVal::_)::T:Type => V::T ...</k>
     <store>... L |-> (_ => V)::elem T ...</store>
 
 rule [AssignInArrayWithCheck]:
     <k>
-      'Assign(loc(L:Int)::_,, V:RawVal::_)::T
+      'Assign(loc(L:Int)::_,, V:RawVal::_)::T:Type
       => assignImpl(
           subtype(typeOf(V), StoreType),
           L,
