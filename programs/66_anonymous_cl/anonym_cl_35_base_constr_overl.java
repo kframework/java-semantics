@@ -1,6 +1,6 @@
 /*
 Superclass have two constructors - one-arg and two-args one. Create anonymous classes for both.
-  Traced consturctors, nothing more.
+  Traced constructors, nothing more.
 */
 
 public class anonym_cl_35_base_constr_overl {

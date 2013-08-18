@@ -286,6 +286,8 @@ rule customElabChildren(KL:KLabel) =>
     orBool (KL ==KLabel 'QSuperConstrInv)
     orBool (KL ==KLabel 'AltConstrInv)
     orBool (KL ==KLabel 'ClassDecStm)
+    orBool (KL ==KLabel 'NewInstance)
+    orBool (KL ==KLabel 'QNewInstance)
 
 //Will not match .K - is not isElabNaked. (.K) is matched by [elabDotK].
 rule [unwrapElabNaked]:
@@ -309,10 +311,12 @@ rule isElabNaked(K:K) =>
 rule [elabCoolStatement]:
     (elabRes(K:K) => .) ~> elab(_:KLabel(_,, (CHOLE => elabRes(K)),, _))
 when
-    notBool (isTypedExp(K) ==K true)
+    notBool isElabIndependent(K)
 
-rule [elabCoolExpression]:
-    (elabRes(TExp:TypedExp) => .) ~> elab(_:KLabel(_,, (CHOLE => TExp),, _))
+rule [elabCoolExpressionOrKResult]:
+    (elabRes(ElabIndep:K) => .) ~> elab(_:KLabel(_,, (CHOLE => ElabIndep),, _))
+when
+    isElabIndependent(ElabIndep)
 
 rule [elabCoolIndependent]:
     (ElabIndep:K => .) ~> elab(_:KLabel(_,, (CHOLE => ElabIndep),, _))
@@ -721,12 +725,11 @@ rule isCompoundAssignLabel(KL:KLabel) =>
 syntax K ::= "isNonNumericExp" "(" KLabel ")"       [function]
 rule isNonNumericExp(KL:KLabel) =>
            (KL ==KLabel 'ArrayAccess)
-    orBool (KL ==KLabel 'NewInstance)
-    orBool (KL ==KLabel 'QNewInstance)
+    orBool (KL ==KLabel 'NewInstance)   // also in customElabChildren
+    orBool (KL ==KLabel 'QNewInstance)  // also in customElabChildren
     orBool (KL ==KLabel 'InstanceOf)
     orBool (KL ==KLabel 'castImpl`(_`,_`))
     orBool (KL ==KLabel 'Invoke)
-    //also in customElabChildren
     orBool (KL ==KLabel 'This)
     orBool (KL ==KLabel 'QThis)
     orBool (KL ==KLabel 'AmbName)
@@ -737,6 +740,7 @@ rule isNonNumericExp(KL:KLabel) =>
     orBool (KL ==KLabel 'NewArray)
     orBool (KL ==KLabel 'CastPrim)
     orBool (KL ==KLabel 'CastRef)
+    orBool (KL ==KLabel 'stmtAndExp`(_`,_`))
 
 //It looks like isTypedExp(KList) doesn't work.
 rule [elabBoolOnlyResultExpBinary]:
@@ -850,18 +854,42 @@ rule elabDispose('CastPrim(T:Type,, TExp:TypedExp) => castImpl(T, TExp))      [s
 rule [elabCastImplElabIndep]:
     elabDispose(castImpl(T1:Type, Exp:K :: T2:Type)) => elabRes(castImpl(T1, Exp::T2) :: T1)
 
+//heat the class name
+context elab('NewInstance(_:K,, HOLE,, _))
+
+//heat the unqualified constructor arguments
+//required if this class is anonymous
+rule (. => elab(K)) ~> elab('NewInstance(_:K,,_:K,, (K:K => CHOLE),, _:K))
+when
+    notBool isElab(K)
+
 rule [elabNewInstance]:
     <k>
-      elabDispose('NewInstance(Arg1:K,, Class:ClassType,, Arg3:K,, Arg4:K))
+      elab('NewInstance(Arg1:K,, Class:ClassType,, ActualArgsList:K,, 'None(.KList)))
       => getElabResQThisSubclassOf(CrntClass, getEnclosingClass(Class))
-      ~> elab('QNewInstance(CHOLE,, Arg1,, Class,, 'None(.KList),, Arg3,, Arg4))
+      ~> elab('QNewInstance(CHOLE,, Arg1,, Class,, 'None(.KList),, ActualArgsList,, 'None(.KList)))
       ...
     </k>
     <crntClass> CrntClass:ClassType </crntClass>
 
+//heat the qualifier in 'QNewInstance
+rule (. => elab(K)) ~> elab('QNewInstance((K:K => CHOLE),, _))
+when
+    notBool isElab(K)
+
+//heat the qualified constructor arguments
+rule (. => elab(K)) ~> elab('QNewInstance(_:K,,_:K,,_:K,,_:K,, (K:K => CHOLE),, _:K))
+when
+    notBool isElab(K)
+
+//heat the class name, if it could be resolved to a type
+context elab('QNewInstance(_:K,,_:K,, HOLE,, _))
+when
+    notBool isId(HOLE)
+
 rule [elabQNewInstance-resolve-class]:
     (. => resolveInnerClass(QualClass, Name))
-    ~> elabDispose('QNewInstance(_::QualClass:ClassType,, _:K,,
+    ~> elab('QNewInstance(_::QualClass:ClassType,, _:K,,
       (Name:Id => CHOLE),,
     _))
 
@@ -894,9 +922,11 @@ rule [existsClass]:
     </k>
     <typeNamesMap>... Pack:PackageId |-> mapWrap(NamesToClasses:Map) ...</typeNamesMap>
 
-rule [elabQNewInstance]:
-    elabDispose('QNewInstance(Qual:K,, Arg2:K,, T:RefType,, Arg4:K,, Arg5:K,, Arg6:K))
-    => elabRes('QNewInstance(Qual,, Arg2,, T,, Arg4,, Arg5,, Arg6) :: T)
+rule [elab-QNewInstance]:
+    elab('QNewInstance(Qual:K,, Arg2:K,, T:RefType,, Arg4:K,, elabRes(ActualArgsList:K),, 'None(.KList)))
+    => elabRes('QNewInstance(Qual,, Arg2,, T,, Arg4,, ActualArgsList,, 'None(.KList)) :: T)
+when
+    isElabIndependent(Qual)
 
 rule [elabInstanceOf]:
     elabDispose('InstanceOf(TE:TypedExp,, RT2:RefType)) => elabRes('InstanceOf(TE,, RT2) :: bool)

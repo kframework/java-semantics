@@ -1,5 +1,5 @@
 /*
-Anonymous class caling a superclass constructor with parameters.
+Anonymous class calling a superclass constructor with parameters.
 */
 
 public class anonym_cl_13_super_constr {

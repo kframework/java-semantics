@@ -7,25 +7,25 @@ module PROCESS-TYPE-NAMES
 /*@ \subsection{First pass - processing top level names} */
 
 rule [PackageNameStart]:
-    'PackageName('ListWrap(Ks:KList)) => packageNameImpl("", Ks:KList)    [structural]
+    'PackageName('ListWrap(Ks:KList)) => packageNameImpl("", Ks:KList)                  [structural]
 
 //Aux construct for processing packages
 syntax K ::= "packageNameImpl" "(" String "," KList ")"
 
 rule [PackageNameFirstInnerDesugar]:
-    packageNameImpl(_:String, (X:Id => packageId(X)),, Ks:KList) [structural]
+    packageNameImpl(_:String, (X:Id => packageId(X)),, Ks:KList)                        [structural]
 
 rule [PackageNameFirstPack]:
     packageNameImpl("", packageId(NextKId:Id),, Ks:KList)
-    => packageNameImpl(Id2String(NextKId), Ks)                                           [structural]
+    => packageNameImpl(Id2String(NextKId), Ks)                                          [structural]
 
 rule [PackageNameNextPack]:
     packageNameImpl(Str:String, packageId(NextKId:Id),, Ks:KList)
     => packageNameImpl(Str +String "." +String Id2String(NextKId), Ks)
-when Str =/=String ""                                                                    [structural]
+when Str =/=String ""                                                                   [structural]
 
 rule [PackageNameEnd]:
-    packageNameImpl(Str:String, .KList) => packageId(String2Id(Str))                   [structural]
+    packageNameImpl(Str:String, .KList) => packageId(String2Id(Str))                    [structural]
 
 rule [DefaultPackageDesugar]:
     'CompilationUnit(
@@ -89,8 +89,10 @@ when notBool( (Label ==KLabel 'ClassDec) orBool (Label ==KLabel 'InterfaceDec)
               orBool (Label ==KLabel 'bodyAsList`(_`)) //todo semantics seems to work without this condition
             )
 
+//We match PackId in <typeNamesMap> just to be sure that the package was added to the map.
 rule [processTypeNamesDiscard]:
-    processTypeNames(.KList,_) => .K
+    <k> processTypeNames(.KList, PackId:PackageId) => .K ...</k>
+    <typeNamesMap>... PackId |-> _ ...</typeNamesMap>
 
 //Converts a pair of PackagId, Id into a fully qualified class name
 syntax K ::= "getClassType" "(" PackageId // the Package Id
@@ -102,7 +104,6 @@ rule [getclassType]:
     => class String2Id(Id2String(PackKId) +String "." +String Id2String(SimpleClass))
 
 //Converts a fully qualified class type into a simple name (Id)
-//todo this one don't work
 syntax K ::= "getSimpleName" "(" ClassType ")"                  [function]
 rule getSimpleName(class ClassId:Id)
     => String2Id(retainTail(
@@ -112,7 +113,7 @@ rule getSimpleName(class ClassId:Id)
 
 //Receives a class/interface body as K, and extracts the KList part of it
 syntax K ::= "bodyAsList"  "(" K         //The class body to be processed
-                           ")"                            [function]
+                           ")"                                  [function]
 
 //The difference between classes and interfaces structure is purely due to Java-Front syntax whim.
 rule [bodyAsListClass]:

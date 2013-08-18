@@ -1,16 +1,16 @@
-JLS: $15.9.5, although this clapter is quite terse and have little relevance to programmer's point of view.
+JLS: $15.9.5, although this chapter is quite terse and have little relevance to programmer's point of view.
 
   Part 1. Anonymous classes and the immediate enclosing class.
 
 11. An anonymous class implementing an interface with method test(). Also have an own method and field,
   accessed by test().
 12. Anonymous class accessing fields and methods of the enclosing class by simple name.
-13. Anonymous class caling a superclass constructor with parameters.
+13. Anonymous class calling a superclass constructor with parameters.
 
   Part 2. Anonymous class whose base class is static inner, but not instance inner.
 
 21. Base class is a static inner class, traced constructor with no args.
-22. Base class is a local class in a static method, traced consturctor with no args.
+22. Base class is a local class in a static method, traced constructor with no args.
 
   Part 3. Anonymous class and superclass constructor.
 
@@ -29,7 +29,7 @@ JLS: $15.9.5, although this clapter is quite terse and have little relevance to 
   Anonymous class's test() calls super.test() that prints something from its enclosing class.
   The enclosing object is other than O.this.
 35. Superclass have two constructors - one-arg and two-args one. Create anonymous classes for both.
-  Traced consturctors, nothing more.
+  Traced constructors, nothing more.
 
   Part 4. Anonymous class and the enclosing block.
 
@@ -60,4 +60,6 @@ JLS: $15.9.5, although this clapter is quite terse and have little relevance to 
 
 71. Anonymous class implementing an interface as static field initializer. Access other static fields.
 72. Anonymous class implementing an interface as instance field initializer. Access other instance and static fields.
-73. Anonymous class inside superclass contructor invocation expression. Access parameters and static fields.
+73. Anonymous class inside superclass constructor invocation expression. Access parameters and static fields.
+74. Anonymous class inside for first clause - initializer, the clause is expression.
+75. Anonymous class inside for first clause - initializer, the clause is expression declaration.

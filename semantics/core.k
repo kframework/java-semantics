@@ -78,6 +78,8 @@ configuration
           <unprocessedBases> .K </unprocessedBases>//base classes that didn't
                                                    //reached the state DecsProcessedCPP yet.
           <declarations color="purple"> .K </declarations>
+
+          //Either classMetaT or interfaceMetaT
           <metaType> .K </metaType>
 
           //'LocalVarDec for each field
