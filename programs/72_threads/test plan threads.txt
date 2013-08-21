@@ -1,0 +1,102 @@
+For testing threads we will use model checking for most cases.
+
+  Part I. Threads creation and interleaved execution.
+11. Two threads print a message to the console. Check that we have two states at the output.
+  Extend the class Thread.
+12. Two threads print a message to the console. Check that we have two states at the output.
+  Implement Runnable.
+13. Two threads print a message to the console. Extend the class Thread.
+  Call the method run() on threads instead of start().
+14. Two threads assign different value to a static field and print it.
+  How many states?
+  - th1 - v1, th2 - v1
+  - th1 - v1, th2 - v2
+  - th1 - v2, th2 - v2
+  - other 3 states for th2 followed by th1.
+
+  Part II. Thread join.
+21. Simple join.
+  - thread 1: print a message to the console.
+  - thread 2: join thread 1, then print a message. We shall see one output.
+
+22. 3 threads:
+  - thread 1: assign to a var val 1, print the val.
+  - thread 2: assign to a var val 2, print the val.
+  - thread 3: join first two threads in order, then print val.
+  We shall observe 8 states.
+
+  Part III. Synchronization and locks.
+31. Writing and printing a value in a synchronized block.
+  - thread 1: read val, assign 1, print val, all in a synchronized block.
+  - thread 1: read val, assign 1, print val, all in a synchronized block.
+  Synchronization is done in a static synchronized method.
+  We shall see just two outputs: thread 1 first and thread 2 first.
+
+32. Writing and printing a value in a synchronized block.
+  - thread 1: read val, assign 1, print val, all in a synchronized block.
+  - thread 1: read val, assign 1, print val, all in a synchronized block.
+  Synchronization is done in an instance synchronized method.
+  We shall see just two outputs: thread 1 first and thread 2 first.
+
+33. Writing and printing a value in a synchronized block.
+  - thread 1: read val, assign 1, print val, all in a synchronized block.
+  - thread 1: read val, assign 1, print val, all in a synchronized block.
+  Synchronization is done in a synchronized block with argument a Class object.
+  We shall see just two outputs: thread 1 first and thread 2 first.
+
+34. Writing and printing a value in a synchronized block.
+  - thread 1: read val, assign 1, print val, all in a synchronized block.
+  - thread 1: read val, assign 1, print val, all in a synchronized block.
+  Synchronization is done in a synchronized block with argument an object.
+  We shall see just two outputs: thread 1 first and thread 2 first.
+
+35. When two threads synchronize on different objects, it is as no synchronization
+  occurred at all. Same as 31, use synchronized blocks on different newly created instances of Object.
+
+36. Two threads, two locks on different objects in the same order.
+  Thread 1 locks on 1 then 2, thread 2 locks on 1 then 2. In lock 1 assign to var a, in lock 2 assign to b.
+  Print a and b inside inner lock, and after inner lock.
+  See only 2 states.
+
+37. Deadlock. Two threads, two locks on different objects in different order.
+  Thread 1 locks on 2 then 1, thread 2 locks on 1 then 2. In lock 1 assign to var a, in lock 2 assign to b.
+  Print a and b inside inner lock, and after inner lock.
+  See multiple states and some deadlocks.
+
+38. Two threads, two locks on different objects, but not nested. No deadlocks.
+  Thread 1: lock 1, assign and print a, lock 2 - assign and print b.
+  Thread 2: lock 2, assign and print b, lock 1 - assign and print a.
+  See multiple states, but no deadlocks.
+
+  Part IV. Methods wait (with no timeout), notify and notifyAll.
+41. Two threads, assigning different values to a var. Ech thread does the following:
+  - if val == 0, assign value and wait. Then, in any case, notify.
+
+42. One thread waiting, two threads notifying.
+  Thread 1: assign a, notify.
+  Thread 2: assign b, notify.
+  Thread 3: while a == 0 or b == 0, print a, b, wait.
+
+43. notify is not notifyAll. Same as 42, but use two threads waiting.
+  Notifying threads call notify().
+
+44. notify is not notifyAll. Same as 42 but use two threads waiting.
+  Notifying threads call notifyAll().
+
+45. Test that synchronization status is preserved among method calls.
+  Same as 41, but do synchronize() in one method, and wait() in a method called by the first one.
+
+  Part V. Exceptions during waiting/notifying.
+51. Synchronizing on null should throw NullPoitnerException.
+
+52. Attempt to wait, notify, notifyAll on a thread with no lock acquired.
+  Catch IllegalMonitorStateException.
+
+53. Interrupting a waiting thread.
+  thread 1: synchronize, notify, print, then wait print, then catch InterruptedException, print. At the end: print.
+  thread 2: synchronize, print - interrupt the second thread, then print - join the second thread,
+  then print "Done!".
+
+54. Interrupting a thread locked in join().
+  thread 1: start thread 2, join - print , catch interrupted exception - print.
+  thread 2: print, interrupt thread 1, print.
