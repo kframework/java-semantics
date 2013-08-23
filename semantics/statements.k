@@ -502,26 +502,4 @@ rule [TryFinally]:
 rule [TryFinallyNormalEnd]:
     finallyBlock(FinallyS:K) => FinallyS
 
-//@ \section{Auxiliary operations}
-
-rule [ThreadTermination]:
-    ( <thread>
-        ...
-        <k>.K</k>
-        <holds> H:Map </holds>
-        ...
-      </thread>
-    => .)
-    <busy> Busy:Set => Busy -Set keys(H) </busy>
-    <computationPhase> ExecutionPhase </computationPhase>
-    <dissolveEmptyK> true </dissolveEmptyK>
-
-//Debug aid. Dissolves classes cell so that configuration is not overbloated, at the end
-//of the execution.
-rule [DissolveClasses]:
-    (<classes> _:Bag </classes> => .)
-    <threads> .Bag </threads>
-    <computationPhase> ExecutionPhase </computationPhase>
-    <dissolveClasses> true </dissolveClasses>
-
 endmodule

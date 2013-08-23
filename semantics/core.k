@@ -41,11 +41,12 @@ configuration
               <location multiplicity="?"> .K </location>
             </crntObj>
           </control>
+
+          <tid color="pink"> 0 </tid>
         </thread>
       </threads>
       <br/>
       <store color="white"> .Map </store>
-      <busy color="cyan">.Set</busy>
       <in color="magenta" stream="stdin"> .List </in>
       <out color="brown" stream="stdout"> .List </out>
       <nextLoc color="gray"> 0 </nextLoc>
@@ -108,11 +109,9 @@ configuration
           <staticInit> 'ListWrap(.KList) </staticInit>
           <br/>
 
-          //Static fields declared in this class, not inherited. Used by static initialization.
-          <staticInitLocations> .Set </staticInitLocations>
-
-          //True if this class was statically initialized, false otherwise. ExecutionPhase.
-          <staticInitDone> false </staticInitDone>
+          //Initialization status of this class
+          //see static-init.k for more details.
+          <staticInitStatus> StaticUninitialized </staticInitStatus>
 
           <cuImports> .Map </cuImports> //imports of the enclosing CU, for top-level classes only.
 
@@ -161,8 +160,16 @@ configuration
       //required in ProcessCompUnitsPhase
       <programBackup> $PGM:K </programBackup>
 
+      <busy color="cyan"> .Set </busy>
+      <terminated color="red"> .Set </terminated>
+
       <dissolveEmptyK> true </dissolveEmptyK>
       <dissolveClasses> true </dissolveClasses>
+
+      //When computation finishes, dissolve all cells except <out>,
+      //in order to avoid duplicate solutions during model checking.
+      <dissolveAllExceptOut> true </dissolveAllExceptOut>
+
       <debug> .List </debug>
     </T>
 
@@ -203,7 +210,6 @@ syntax ComputationPhase ::=
         <instanceInit>
         <staticEnv>
         <staticInit>
-        <staticInitLocations>
   */
   | "ProcessClassesPhase"
 
@@ -229,6 +235,11 @@ syntax ClassPreprocessingPhase ::= "CreatedCPP"
                                  | "BasesResolvedCPP"
                                  | "DecsProcessedCPP"
                                  | "MembersProcessedCPP"
+
+//static initialization of a class. See static-init.k for more details.
+syntax StaticInitStatus ::= "StaticUninitialized"
+                          | "StaticInitializing" "(" Int ")"
+                          | "StaticInitialized"
 
 rule 'Id(Str:String) => String2Id(Str)                [structural, anywhere]
 

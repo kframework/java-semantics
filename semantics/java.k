@@ -18,6 +18,7 @@ require "classes.k"
 require "var-lookup.k"
 require "method-invoke.k"
 require "api-core.k"
+require "api-threads.k"
 
 module JAVA
     imports LABELS
@@ -40,5 +41,6 @@ module JAVA
     imports VAR-LOOKUP
     imports METHOD-INVOKE
     imports API-CORE
+    imports API-THREADS
 
 endmodule

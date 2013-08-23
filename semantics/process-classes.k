@@ -71,7 +71,6 @@ process inner declaraions. Compute the following class cells:
   <instanceInit>
   <staticEnv>
   <staticInit>
-  <staticInitLocations>
 */
 rule [ProcessType]:
     <k>
@@ -416,8 +415,7 @@ rule [StaticFieldDecToLocalVarDec]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticEnv> Env:Map => Env[L/X] </staticEnv>
-    <staticInitLocations> _ (. => SetItem(L)) </staticInitLocations>
-    <store>... . => L |-> uninitialized(Class,T)::T ...</store>
+    <store>... . => L |-> default(T) ...</store>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 when
     getContextType(Modifiers) ==K staticCT
@@ -479,13 +477,6 @@ rule [inheritInterfaceFieldsEnd]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticEnv> _ => Env </staticEnv>
-
-/*@Initial value of static fields. Used to detect the moment when static initialziation
-should be triggered, especially for interfaces.
-*/
-syntax K ::= "uninitialized" "(" ClassType "," // Class - the declaring class
-                                 Type          // Type of the variable
-                             ")"
 
 /*@Section process 'Param labels*/
 

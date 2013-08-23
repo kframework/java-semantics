@@ -5,6 +5,22 @@ module STATIC-INIT
     imports CORE
     imports PROCESS-CLASSES
 
+/*Triggers static initialization of a class.
+
+Detailed initializaton procedure is described in JLS $12.4.2. Here we implement an approximation of that algorithm,
+that does not use the traditional Java synchronization mechanism, but instead relies on term rewriting
+capabilities to implement locks. This algorithm is required to avoid multithreaded issues during static initialization.
+This may happen when two threads access an uninitialized class at the same time.
+
+Initialization status of a class may have 3 states: StaticUninitialized, StaticInitializing(TId), StaticInitialized.
+//Here TId is the id of the thread that initiated the initializing process.
+//Now when we reach staticInit(Class), depending on hte initialization status of class we should do the following:
+1. status = StaticUninitialized => perform the initialization
+2. status = StaticInitializing(TId), TId = this thread => this is a recursive initialziation request, discard the term.
+3. status = StaticInitializing(TId), IID = another thread => we should wait until the initialization is completed
+  by another thread. Do not match this case.
+4. status = StaticInitialized => the class have been already initialized. Discard the term.
+*/
 syntax K ::= "staticInit" "(" ClassType // Class - the ClassType to be initialized,
                                         // or noClass if this term should be discarded.
                           ")"
@@ -12,8 +28,7 @@ syntax K ::= "staticInit" "(" ClassType // Class - the ClassType to be initializ
 rule [staticInit]:
     <k>
       staticInit(Class:ClassType)
-      => preInitLocations(LocSet)
-      ~> staticInit(BaseClass)
+      => staticInit(BaseClass)
       ~>  'Try(
             StaticInit,,
             'ListWrap(
@@ -33,6 +48,7 @@ rule [staticInit]:
               )
             ),,
             restoreEnvObjContext(OldEnvGroup, Obj, CT)
+            ~> staticInitDone(Class)
           )
       ...
     </k>
@@ -46,35 +62,45 @@ rule [staticInit]:
           <location> noValue </location>
     </crntObj>
     <contextType> CT:ContextType => staticCT </contextType>
+    <tid> TId:Int </tid>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
     <staticInit> StaticInit:K </staticInit>
-    <staticInitLocations> LocSet:Set </staticInitLocations>
-    <staticInitDone> false => true </staticInitDone>
+    <staticInitStatus> StaticUninitialized => StaticInitializing(TId) </staticInitStatus>
 
-rule [staticInitDiscard]:
+rule [staticInit-already-initialized-discard]:
     <k>
       staticInit(Class:ClassType) => .
       ...
     </k>
     <classType> Class </classType>
-    <staticInitDone> true </staticInitDone>
+    <staticInitStatus> StaticInitialized </staticInitStatus>
+
+rule [staticInit-recursive-initializing-discard]:
+    <k>
+      staticInit(Class:ClassType) => .
+      ...
+    </k>
+    <tid> TId:Int </tid>
+    <classType> Class </classType>
+    <staticInitStatus> StaticInitializing(TId) </staticInitStatus>
 
 rule [staticInitEmpty]:
     staticInit(noClass) => .K
 
-/*@initialize the given set of locations to their default value.
-First step of the static initializing of a class/interface.
+/*Triggers the last step of static initialization:
+static init status transitions from StaticInitializing to StaticInitialized.
 */
-syntax K ::= "preInitLocations" "(" Set //The set of locations to be initialized
-                                        //to their default value.
-                                ")"
+syntax K ::= "staticInitDone" "(" ClassType // The class whose initialization just finished
+                              ")"
 
-rule [preInitLocations]:
-    <k> preInitLocations((SetItem(L:Int) => .) _) ...</k>
-    <store>... L |-> (uninitialized(_, T:Type) :: _ => default(T)) ...</store>
-
-rule [preInitLocationsDiscard]:
-    preInitLocations(.) => .
+rule [staticInitDone]:
+    <k>
+      staticInitDone(Class:ClassType) => .
+      ...
+    </k>
+    <tid> TId:Int </tid>
+    <classType> Class </classType>
+    <staticInitStatus> StaticInitializing(TId) => StaticInitialized </staticInitStatus>
 
 endmodule

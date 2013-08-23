@@ -103,15 +103,15 @@ rule [lookupFieldOfNull]:
           'ListWrap( null ),,
           'None(.KList)
         ))
-        [structural, anywhere]
+        [anywhere]
 
-//Cannot put mark this rule with [anywhwre] to avoid duplicate, because it will be matched in ElaborateBlocks phase.
 rule [lookupStaticField]:
     <k>
       lookupStaticField(
         TargetClass:ClassType,
         X:Id
-      )::_ => typedLookup(L)
+      )::_
+      => staticInit(TargetClass) ~> typedLookup(L)
       ...
     </k>
     <classType> TargetClass </classType>
@@ -119,12 +119,11 @@ rule [lookupStaticField]:
 
 rule [lvalue-lookupStaticField]:
     <k>
-      lvalue(
-        lookupStaticField(
+      lvalue(lookupStaticField(
           TargetClass:ClassType,
           X:Id
-        )::_ => typedLookup(L)
-      )
+      )::_ )
+      => staticInit(TargetClass) ~> lvalue(typedLookup(L))
       ...
     </k>
     <classType> TargetClass </classType>
@@ -164,9 +163,6 @@ rule [lookupLocation]:
       ...
     </k>
     <store>... L |-> V:RawVal :: T2:Type ...</store>
-
-rule [lookupUninitialized]:
-    <k> (. => staticInit(Class)) ~> lookup(L:Int) :: _ ...</k>
-    <store>... L |-> uninitialized(Class:ClassType, _) :: _ ...</store>
+        [threading-transition]
 
 endmodule

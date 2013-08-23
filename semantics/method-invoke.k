@@ -403,7 +403,6 @@ when
             (Id2String(MethodName) =/=String "clone")
     andBool isKResult(ParamVals)
 
-
 rule [methodInvokeRuntimeOnNull]:
     methodInvokeRuntime(_,_, null::_, ParamVals:KList, instanceCT)::_
     =>  'Throw('NewInstance(

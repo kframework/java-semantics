@@ -98,6 +98,7 @@ rule [lookupArrayLocation]:
       ...
     </k>
     <store>... L |-> V:RawVal ::elem T2:Type ...</store>
+        [threading-transition]
 
 rule [ArrayIndexOutOfBoundsException]:
     'ArrayAccess(arrayRef(_,_,M:Int) :: _,, N:Int::_)::_
@@ -226,6 +227,7 @@ rule [evalAndStore]:
       ...
     </k>
     <store>... L |-> (_ => V) :: elem T1:Type ...</store>
+        [threading-transition]
 
 rule [evalAndStoreEmpty]:
     evalAndStore(.KList, _) => .
@@ -242,6 +244,7 @@ rule N1:Int..N2:Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2
 rule [AssignInArrayExact]:
     <k> 'Assign(loc(L:Int)::_,, V:RawVal::_)::T:Type => V::T ...</k>
     <store>... L |-> (_ => V)::elem T ...</store>
+        [threading-transition]
 
 rule [AssignInArrayWithCheck]:
     <k>
@@ -270,6 +273,7 @@ context assignImpl(_:KResult, _, HOLE)
 rule [assignImpl]:
     <k> assignImpl( true::bool, L:Int, V:RawVal :: T:Type) => V::T ...</k>
     <store>... L |-> (_ => V) :: elem _ ...</store>
+        [threading-transition]
 
 rule [ArrayStoreException]:
     assignImpl( false::bool, _, TV:TypedVal)
