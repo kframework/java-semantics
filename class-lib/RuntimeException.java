@@ -1,32 +1,24 @@
 package java.lang;
 
-public class RuntimeException {
-    private String detailMessage;
-    private RuntimeException cause;
+public class RuntimeException extends Exception {
 
-    public RuntimeException() {}
+    public RuntimeException() {
+        super();
+    }
 
     public RuntimeException(String message) {
-        detailMessage = message;
+        super(message);
     }
 
     public RuntimeException(RuntimeException cause) {
-        detailMessage = (cause==null ? null : cause.toString());
-        this.cause = cause;
+        super(cause);
     }
 
     public RuntimeException(String message, RuntimeException cause) {
-        detailMessage = message;
-        this.cause = cause;
+        super(message, cause);
     }
 
     public String getMessage() {
         return detailMessage;
-    }
-
-    public String toString() {
-        String s = getClass().getName();
-        String message = getMessage();
-        return (message != null) ? (s + ": " + message) : s;
     }
 }

@@ -26,9 +26,9 @@ rule [system-out-print-string]:
 when
     Id2String(MethodName) ==String "print"
 
-  //With [threading-transition], the time to produce 2 solutions for the test threads_11_two_th_msg is 14s.
-  //But with [strictness-transition], the same test takes 3m52s, with java heap = 16GB.
-        [threading-transition]
+  //With [transition-threading], the time to produce 2 solutions for the test threads_11_two_th_msg is 14s.
+  //But with [transition-strictness], the same test takes 3m52s, with java heap = 16GB.
+        [transition-threading]
 
 //Is only used for primitive type arguments. Object arguments are converted by java code inside the class PrintWriter.
 rule [system-out-print-convert]:

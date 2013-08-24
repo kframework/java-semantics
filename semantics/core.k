@@ -168,7 +168,7 @@ configuration
 
       //When computation finishes, dissolve all cells except <out>,
       //in order to avoid duplicate solutions during model checking.
-      <dissolveAllExceptOut> true </dissolveAllExceptOut>
+      <dissolveAllExceptOut> $ModelCheck:Bool </dissolveAllExceptOut>
 
       <debug> .List </debug>
     </T>

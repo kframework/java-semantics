@@ -21,8 +21,8 @@ KRUN_CMD="krun --parser=cat \
   --compiled-def=\"$SEMANTICS_DIR/java-kompiled\" \
   --main-module=JAVA
   -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\"
-   -cModelCheck=\"false\"
-  --output-mode=none $KAST_FILE"
+  -cModelCheck=\"true\"
+  --search-final $KAST_FILE | grep \"Solution\" | wc -l"
 
 eval $PARSER_CMD >/dev/null
 cd $SEMANTICS_DIR

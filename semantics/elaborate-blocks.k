@@ -262,7 +262,7 @@ rule [elabParamsEnd]:
 /*@ \section{Elaboration of code blocks} */
 
 //Heating arguments for both expression and statement terms.
-//The attribute [strictness-transition] is used as transition attribute for testing strictness.
+//The attribute [transition-strictness] is used as transition attribute for testing strictness.
 //This is a rule that may lead to unexpected nondeterminism if it is wrongly implemented.
 //In order to expose incorrect nondeterminism we need to modelcheck a program that exposes the nondeterminism.
 rule [elabHeatDefault]:
@@ -272,7 +272,7 @@ when
     andBool notBool isElab(K)
     andBool notBool isElabNaked(KL(HeadKs,,K,,TailKs))
     andBool isElab(HeadKs)    //Forces elaboration left-to-right. Required when KL == 'ListWrap of statements.
-    [strictness-transition]
+    [transition-strictness]
 
 //True if children of this label should not be automatically heated for elaboration.
 syntax K ::= "customElabChildren" "(" KLabel ")"                [function]

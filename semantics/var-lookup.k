@@ -163,6 +163,6 @@ rule [lookupLocation]:
       ...
     </k>
     <store>... L |-> V:RawVal :: T2:Type ...</store>
-        [threading-transition]
+        [transition-threading]
 
 endmodule

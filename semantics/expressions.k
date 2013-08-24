@@ -157,7 +157,7 @@ context 'Assign(_:KResult,,HOLE)::_
 rule [Assign]:
     <k> 'Assign(loc(L:Int) :: _,, V:RawVal :: _) :: ResT:Type => V::ResT ...</k>
     <store>... L |-> (_:RawVal => V)::ResT ...</store>
-        [threading-transition]
+        [transition-threading]
 
 rule [expLValueHeat]:
     (. => lvalue(K)) ~> KL:KLabel((K:K => HOLE),, _)::_

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Run a java program with krun.
+# Run a java program with krun, with option --output-mode=raw
 
 if [ $# -ne 1 ] && [ $# -ne 2 ]; then
     echo "Usage: `basename $0` <javaFile>"
@@ -19,8 +19,8 @@ TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # and $JAVA_FILE may also be a dir
 if [ $# == 1 ];
 then
-    time timeout 30 krun --parser=aux-kjprep.sh --output-mode=raw -cMainClass="ListItem(\"$MAIN_CLASS\")" $JAVA_FILE
+    time timeout 30 krun --parser=aux-kjprep.sh --output-mode=raw -cMainClass="ListItem(\"$MAIN_CLASS\")" -cModelCheck="false" $JAVA_FILE
 else
-    krun --parser=aux-kjprep.sh --output-mode=raw -cMainClass="ListItem(\"$MAIN_CLASS\")" --debug $JAVA_FILE
+    krun --parser=aux-kjprep.sh --output-mode=raw -cMainClass="ListItem(\"$MAIN_CLASS\")" -cModelCheck="false" --debug $JAVA_FILE
 fi
 
