@@ -577,11 +577,11 @@ rule [elabQThisStaticCT]:
 
 rule [elabFieldQualRef]:
     elabDispose('Field(Qual:K :: Class:ClassType,, X:Id))
-    => elabTypedExp(lookupField(Qual::Class, noClass, X), elabLookup(X, Class))
+    => elabFieldImpl(Qual::Class, X, elabLookup(X, Class))
 
 rule [elabFieldQualClass]:
     elabDispose('Field(Class:ClassType,, X:Id))
-    => elabTypedExp(lookupStaticField(noClass,X), elabLookup(X, Class))
+    => elabFieldImpl(noValue, X, elabLookup(X, Class))
 
 rule [elabSuperField]:
     <k>
@@ -593,31 +593,25 @@ rule [elabSuperField]:
 rule [elabQSuperField]:
     <k>
       elabDispose('QSuperField(Class:ClassType,, X:Id))
-      => elabTypedExp(lookupField('QThis(Class) :: Class, noClass, X), elabLookup(X, BaseClass))
+      => elabFieldImpl('QThis(Class) :: Class, X, elabLookup(X, BaseClass))
       ...
     </k>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
-/*todo eliminate the redundancy associated with elabTypedExp(lookupField()), elabTypedExp(lookupStaticField()).
-Only elabTypedExp is required.
-*/
-
 //Computed the TypedExp expression for a given expression and its type
-syntax K ::= "elabTypedExp" "(" K //The original expression to be typed
-                            "," K //elabLookup(...), computes into fieldEntry(...) or noValue
-                            ")"  [strict(2)]
+syntax K ::= "elabFieldImpl" "(" K  // Field qualifier exp (noValue for fields qualified by a class)
+                             "," Id // X - the field name
+                             "," K  //elabLookup(...), computes into fieldEntry(...) or noValue
+                             ")"  [strict(3)]
 
-rule elabTypedExp(lookupField(TE:TypedExp,_,X:Id), fieldEntry(Class:ClassType,_,T:Type, instanceCT))
-    => elabRes(lookupField(TE,Class,X) :: T)
+rule elabFieldImpl(SourceExp:K, X:Id, fieldEntry(Class:ClassType,_,T:Type, instanceCT))
+    => elabRes(lookupField(SourceExp,Class,X) :: T)
 
-rule elabTypedExp(lookupField( _:TypedExp,_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT))
+rule elabFieldImpl(_, X:Id, fieldEntry(Class:ClassType,_,T:Type, staticCT))
     => elabRes(lookupStaticField(Class,X) :: T)
 
-rule elabTypedExp(lookupStaticField(_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT))
-    => elabRes(lookupStaticField(Class,X) :: T)
-
-rule elabTypedExp(_, noValue) => noValue
+rule elabFieldImpl(_,_, noValue) => noValue
 
 /*@ \section{Elaboration of types} */
 
