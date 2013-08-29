@@ -95,13 +95,13 @@ configuration
 
           <br/>
           //The map of instance fields declared in this class, but not in superclasses.
-          //Map[Id -> fieldEntry(Class, X, T, ConType)] (declaring class, field name, field type)
+          //Map[Id -> fieldEntry(Class, X, T, ContextType)] (declaring class, field name, field type)
           //Used in elaboration phase
           <instanceEnv> .Map </instanceEnv>
 
           <instanceInit> 'ListWrap(.KList) </instanceInit>
 
-          //The map of static fields declared in this class and superinterfaces, but not in superclasses.
+          //The map of static fields declared in this class only, and NOT in superclasses or superinterfaces.
           //Map[Id -> Location]
           <staticEnv> .Map </staticEnv>
 
@@ -560,9 +560,9 @@ syntax KResult ::= "stEnv" "(" Map ")"  //A layer of the static environment
                                         //Map[name -> Type]
                   | "classEnv" "(" Map ")"  //The declaration environment of a class
                                             //Map[name -> fieldEntry(...)]
-                  | "fieldEntry" "(" ClassType // target class
-                                 "," Id        //X - field name
-                                 "," Type      // Field type
+                  | "fieldEntry" "(" ClassType   // target class
+                                 "," Id          // X - field name
+                                 "," Type        // Field type
                                  "," ContextType // staticCT | instanceCT
                                  ")"
 

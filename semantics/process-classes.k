@@ -81,7 +81,6 @@ rule [ProcessType]:
           ~> 'If((MetaT ==K interfaceMetaT),, tryInherit(objectClass))
 
           ~> tryInherit(BaseClass)
-          ~> inheritInterfaceFields
           ~> Decls
       ...
     </k>
@@ -442,41 +441,6 @@ rule [ConstantDecDesugar]:
 //respective <class> tag is encountered as part of processClasses
 rule [ClassDecDiscard]: 'ClassDec(_) => .
 rule [InterfaceDecDiscard]: 'InterfaceDec(_) => .
-
-/*@ This procedure adds all the fields in <staticEnv> of all implemented interfaces
-into the <staticEnv> of the current class (<crntClass>), in order to be resolved
-by variable lookup algorithms.
-This procedure is invoked before processing class declarations,
-thus class declarations override declarations inherited from interfaces.
-*/
-syntax K ::= "inheritInterfaceFields"
-           | "inheritInterfaceFields" "(" Set "," //set of interfaces to be inherited
-                                          K       //mapWrap(Env) map of inherited fields,
-                                      ")"         [strict(2)]
-
-rule [inheritInterfaceFieldsStart]:
-    <k> inheritInterfaceFields => inheritInterfaceFields(ISet, mapWrap(.Map)) ...</k>
-    <crntClass> Class:ClassType </crntClass>
-    <classType> Class </classType>
-    <implements> ISet:Set </implements>
-
-rule [inheritInterfaceFields]:
-    <k>
-      inheritInterfaceFields(SetItem(Intf:ClassType) ISet:Set, mapWrap(Env:Map))
-      => inheritInterfaceFields(ISet, mapUnion(mapWrap(Env), mapWrap(IntfEnv)))
-      ...
-    </k>
-    <classType> Intf </classType>
-    <staticEnv> IntfEnv:Map </staticEnv>
-
-rule [inheritInterfaceFieldsEnd]:
-    <k>
-      inheritInterfaceFields(.Set, mapWrap(Env:Map)) => .
-      ...
-    </k>
-    <crntClass> Class:ClassType </crntClass>
-    <classType> Class </classType>
-    <staticEnv> _ => Env </staticEnv>
 
 /*@Section process 'Param labels*/
 

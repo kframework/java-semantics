@@ -512,11 +512,15 @@ rule [FieldOfQThis-noClass]:
 //Computationof instance and static environment of a class
 //e.g. set of fields
 
-//Searches the given field name in the given type, both static and instance context.
+//Searches the given field name in the given type (types), both static and instance context.
 syntax K ::= "elabLookup" "("
                                       Id ","    //The field to search
                                       ClassType //The current class under search
-                                  ")"
+                          ")"
+           | "elabLookup" "("
+                                      Id ","    //The field to search
+                                      Set       //A set of interfaces under search
+                          ")"
 
 rule [elabLookupFoundInstance]:
     <k> elabLookup(X:Id, CT:ClassType) => FEntry ...</k>
@@ -532,10 +536,18 @@ rule [elabLookupFoundStatic]:
 when
     notBool (X in keys(InstanceEnv))
 
+/*If X is not found in the current class, search for it first in base interfaces, then in the base class.
+This order is necessary to avoit the case when base class have a private field X, and base
+interfaces have a public one. In this case we should choose the field from the interface.
+*/
 rule [elabLookupNextClass]:
-    <k> elabLookup(X:Id, CT:ClassType) => elabLookup(X, BaseClass) ...</k>
+    <k>
+      elabLookup(X:Id, CT:ClassType) => elabLookup(X, BaseInterfaces) ?? elabLookup(X, BaseClass)
+      ...
+    </k>
     <classType> CT </classType>
     <extends> BaseClass:ClassType </extends>
+    <implements> BaseInterfaces:Set </implements>
     <instanceEnv> InstanceEnv:Map </instanceEnv>
     <staticEnv> StaticEnv:Map </staticEnv>
 when
@@ -543,6 +555,13 @@ when
 
 rule [elabLookupNotFound]:
     elabLookup(X:Id, noClass) => noValue
+
+rule [elabLookup-Set]:
+    elabLookup(X:Id, SetItem(Class:ClassType) Rest:Set)
+    => elabLookup(X, Class) ?? elabLookup(X, Rest)
+
+rule [elabLookup-Set-NotFound]:
+    elabLookup(_, .Set) => noValue
 
 rule [elabThis]:
     <k> elabDispose('This(.KList) => 'QThis(Class)) ...</k>
@@ -580,14 +599,24 @@ rule [elabQSuperField]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
+/*todo eliminate the redundancy associated with elabTypedExp(lookupField()), elabTypedExp(lookupStaticField()).
+Only elabTypedExp is required.
+*/
+
 //Computed the TypedExp expression for a given expression and its type
 syntax K ::= "elabTypedExp" "(" K //The original expression to be typed
                             "," K //elabLookup(...), computes into fieldEntry(...) or noValue
                             ")"  [strict(2)]
 
-rule elabTypedExp(lookupField(TE:TypedExp,_,X:Id), fieldEntry(Class:ClassType,_,T:Type, instanceCT)) => elabRes(lookupField(TE,Class,X) :: T)
-rule elabTypedExp(lookupField(TE:TypedExp,_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT)) => elabRes(lookupStaticField(Class,X) :: T)
-rule elabTypedExp(lookupStaticField(_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT)) => elabRes(lookupStaticField(Class,X) :: T)
+rule elabTypedExp(lookupField(TE:TypedExp,_,X:Id), fieldEntry(Class:ClassType,_,T:Type, instanceCT))
+    => elabRes(lookupField(TE,Class,X) :: T)
+
+rule elabTypedExp(lookupField( _:TypedExp,_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT))
+    => elabRes(lookupStaticField(Class,X) :: T)
+
+rule elabTypedExp(lookupStaticField(_,X:Id), fieldEntry(Class:ClassType,_,T:Type, staticCT))
+    => elabRes(lookupStaticField(Class,X) :: T)
+
 rule elabTypedExp(_, noValue) => noValue
 
 /*@ \section{Elaboration of types} */

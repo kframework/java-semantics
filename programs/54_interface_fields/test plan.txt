@@ -39,13 +39,13 @@ Part 3. Multiple inheritance, no ambiguities.
     Suppose that interface field resolving algorithm takes the set <implTrans>
     of implemented interfaces of the target class, and checks the presence of the field in them in the
     order in which they were added to the set.
-    Can we desigh a test such that this behavior would be wrong, and we would need a list with strict
+    Can we design a test such that this behaviour would be wrong, and we would need a list with strict
       order of implemented interface checking?
     This problem don't appear in field hiding inside class, because the collection of superclasses is
       always a list. We have the problem with interfaces, because of multiple inheritance.
-    The only way to conceive this test is to have the "master itnerface" - the one with the field
+    The only way to conceive this test is to have the "master interface" - the one with the field
       hiding other fields, indirectly implemented, with as many child interfaces as possible,
-      and child interfaces should have names lexicographically both befor and after the master
+      and child interfaces should have names lexicographically both before and after the master
       interface. Something like:
 
       IA < (I1, I5, I9); I5 < I6; I6{v} < (I3, I7) I3{v} < (I2{v}, I4{v}), I7{v} < (I4{v}, I8{v})
@@ -90,11 +90,11 @@ Part 7. Field initializers, no hierarchy.
   static int a=...;
   static int b=..., c=...;
   Test their values. Do not implement the interface. We are interested only in preprocessing.
-  All field iniitalizers have tracing.
+  All field initializers have tracing.
 
 Part 8. Field initializers, hierarchy:
 
-81. I2 < I1. Fields with initializer, refering to superclass static fields
+81. I2 < I1. Fields with initializer, referring to superclass static fields
   by simple name. Test that superclass fields are initialized.
 82. Hierarchy of type I3 < (I1,I2). Interfaces all with fields with initializer,
   Fields in I3 refer to I2 then I1 by simple name.
@@ -102,10 +102,10 @@ Part 8. Field initializers, hierarchy:
 83. Hierarchy type A < I1. A class init accesses fields in I1 unqualified.
   static sequence in A: {trace} {access to I1} {trace}. Static sequence of I1 is also traced.
 
-Part 9. Other tests, arised during implementation.
+Part 9. Other tests, arisen during implementation.
 
 91. Testing various array constructs as interface fields.
-  This test checks taht interface field desugaring is done properly.
+  This test checks that interface field desugaring is done properly.
   Array fields with array initializer in the most complex fashion:
   Combination of multi field declaration, field with [] in declarator, array initializer.
 
@@ -121,7 +121,7 @@ Part 9. Other tests, arised during implementation.
   This semantics is wrong. Instead, we should search for a field in the following order:
   - inherited interface member (because those are always public)
   - instance member or class member, this layer
-  - instance member or class member, some superlayer.
+  - instance member or class member, some super-layer.
 
     Another possibility would be to add to the environment of every class/interface
   the fields of implemented interfaces. In this case, it is important to add interface fields
@@ -129,7 +129,7 @@ Part 9. Other tests, arised during implementation.
   will fail).
     In this case the following algorithm will work:
   - instance member or class member of this layer, or member of an interface inherited by this layer.
-  - instance member or class member of some superlayer,
+  - instance member or class member of some super-layer,
     or member of an interface inherited by this layer.
 
   All we should to to correctly implement interface field access is to add
@@ -139,3 +139,10 @@ Part 9. Other tests, arised during implementation.
   (All additional tests were already made in the test static_f_106_hiding.
     Other important tests: 24.25 in this suite.
     So, no more tests to add.)
+
+92. Interface field hides a private field inherited from superclass.
+  Testing that interface field will be chosen.
+  Class B < A,I1. A: private static x, I1: public x. Access x in B, also B.x outside B.
+
+93. Protected class field hides an interface field. In a derived class, base class field will be chosen.
+  Class B < A, A < I1 A: protected static x, I1: public x. Access x in B, also B.x outside B.
