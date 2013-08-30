@@ -21,13 +21,13 @@ generator will be executed only for tests which don't have a corresponding
 true.
 
 -run test-runner - Optional. Path to a program used to run the tests. At
-least one of -gen and -run should be specified.
+least one of the arguments -gen and -run should be specified.
 
 -taskExt test-file-extension - Optional. Extension of test files. If not
 specified, all files in the target directory will be considered tests,
 except those having extensions with test input/output. If specified,
 then directories with name ending in .taskExt will be considered individual
-tasks, not directories ith tasks. This allows individual tasks
+tasks, not directories with tasks. This allows individual tasks
 to contain an arbitrary number of files and directories.
 
 -timeout test-timeout - Optional. Amount of time to wait, in seconds, until
@@ -43,8 +43,8 @@ executed. Default is 1.
 -rep report-file - Optional. Name xml file where test suite report will be
 written. Default is test-results.xml .
 
--inExt input-extension - Optional. Extension of files containing standart
-input for a test. Not all tests should have standart input, in this case no
+-inExt input-extension - Optional. Extension of files containing standard
+input for a test. Not all tests should have standard input, in this case no
 input will be redirected to them. Default is "in".
 
 -expectedOutExt expected-out-extension - Optional. Extension of files
@@ -56,15 +56,15 @@ specified). Default is "out".
 -actualOutExt actual-out-extension - Optional. Extension of files where
 actual test output will be stored. Default is "stdout".
 
--errExt standart-error-extension - Optional. Extension of files where
-standart error stream will be redirected. Default is "stderr".
+-errExt standard-error-extension - Optional. Extension of files where
+standard error stream will be redirected. Default is "stderr".
 
--generrExt generator-standart-error-extension - Optional. Extension of
-files where generator standart error stream will be stored. Default is
+-generrExt generator-standard-error-extension - Optional. Extension of
+files where generator standard error stream will be stored. Default is
 "generr".
 
--compExt - comparation-extension - Optional. Extension of files where
-comparation result of expected output and actual output will be stored.
+-compExt - comparison-extension - Optional. Extension of files where
+comparison result of expected output and actual output will be stored.
 This file will be generated only for failing tests. Default is "comp".
 
 -testsuiteName - name - Optional. Display name of the test suite, in the
@@ -76,7 +76,7 @@ that contain tests, or just their simple name. Default is complete.
 
 -encodeXML - Optional. Default is false. If false, error and failure messages
   are inserted into the test report in their original form. If true,
-  special characters are encoded to be compatible with the XML standart.
+  special characters are encoded to be compatible with the XML standard.
   Value false is recommended for visual inspection. Value true - for
   integration with Jenkins.
 

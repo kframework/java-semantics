@@ -4,4 +4,4 @@
 # if several arguments are provided as directories - running
 # tests inside that directories.
 
-aux-kjsearch-test.sh -threads 6 -clean false ${@}
+aux-kjtest.sh -mode search -threads 6 -timeout 600 -encodeXML false -clean false ${@}

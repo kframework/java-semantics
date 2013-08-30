@@ -8,19 +8,22 @@
 
 TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-if [ $# -le 3 ]; then
-    echo "`basename $0` -threads <num_threads> -clean <true/false> [target files/dirs]"
+if [ $# -le 9 ]; then
+    echo "`basename $0` -mode <run/search> -threads <num_threads> -timeout <timeout in s> -encodeXML <true/false> -clean <true/false> [target files/dirs]"
     exit
 fi
 
-if [ $# == 4 ]; then
+if [ $# == 10 ]; then
     $TOOLS_DIR/aux-kjtest.sh ${@} $TOOLS_DIR/../programs/
     exit
 fi
 
-THREADS=$2
-CLEAN=$4
-shift 4
+MODE=$2
+THREADS=$4
+TIMEOUT=$6
+ENCODE_XML=$8
+CLEAN=$10
+shift 10
 
 START=$(date +%s)
 PRETTYARGS=$(find ${@} -maxdepth 0)
@@ -28,13 +31,24 @@ echo "Running tests for"
 echo "$PRETTYARGS"
 echo
 
+if [ $MODE == "run" ];
+  then RUN_CMD="$TOOLS_DIR/aux-kjrun.sh"
+  else RUN_CMD="$TOOLS_DIR/aux-kjsearch.sh"
+fi
+
 # We don't use external script for deleting temp dir,
 # since it have the same performance as standart delete from java.
 java -jar $TOOLS_DIR/test-runner.jar \
-  -gen $TOOLS_DIR/aux-jdk-run.sh -run $TOOLS_DIR/aux-kjrun.sh \
-  -taskExt java -threads $THREADS -timeout 120 -testsuiteName java-semantics \
+  -gen $TOOLS_DIR/aux-jdk-run.sh \
+  -run $RUN_CMD \
+  -taskExt java \
+  -testsuiteName java-semantics \
   -classnameStyle simple \
-  -clean $CLEAN ${@}
+  -threads $THREADS \
+  -timeout $TIMEOUT \
+  -encodeXML $ENCODE_XML \
+  -clean $CLEAN \
+  ${@}
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))
