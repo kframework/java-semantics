@@ -9,7 +9,7 @@
 TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ $# -le 9 ]; then
-    echo "`basename $0` -mode <run/search> -threads <num_threads> -timeout <timeout in s> -encodeXML <true/false> -clean <true/false> [target files/dirs]"
+    echo "Usage: `basename $0` -mode <run/search> -threads <num_threads> -timeout <timeout in s> -encodeXML <true/false> -clean <true/false> [target files/dirs]"
     exit
 fi
 
