@@ -13,7 +13,7 @@ rule [thread-start]:
         invokeImpl(
           methodClosure(class ThreadId,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
           OL:Int,
-          'ListWrap(.KList)
+          'ListWrap(TId:Int :: _)
         ) => nothing::void
         ...
       </k>
@@ -44,9 +44,23 @@ rule [thread-start]:
       </thread>
     )
 when
-            Id2String(MethodName) ==String "start"
+            Id2String(MethodName) ==String "startImpl"
     andBool Id2String(ThreadId) ==String "java.lang.Thread"
-    andBool fresh(TId:Int)
+
+//@ \section{Threading related methods}
+
+rule [thread-join]:
+    <k>
+      invokeImpl(
+        methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
+        'ListWrap(TId:Int :: _)
+      ) => nothing::void
+      ...
+    </k>
+    <terminated>... SetItem(TId) ...</terminated>
+when
+            Class ==K class String2Id("java.lang.Thread")
+    andBool Id2String(MethodName) ==String "joinImpl"
 
 //@ \section{Thread termination}
 

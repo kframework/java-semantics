@@ -95,6 +95,8 @@ rule [lookupField]:
     )::_ => typedLookup(L)
         [anywhere]
 
+//todo uncomment
+        /*
 rule [lookupFieldOfNull]:
     lookupField(null::_, _, _)::_
     =>  'Throw('NewInstance(
@@ -104,7 +106,7 @@ rule [lookupFieldOfNull]:
           'None(.KList)
         ))
         [anywhere]
-
+*/
 rule [lookupStaticField]:
     <k>
       lookupStaticField(

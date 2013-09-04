@@ -4,6 +4,9 @@
   - thread 2: assign to a var val 2, print the val.
   - thread 3: join first two threads in order, then print val.
   We shall observe 8 states.
+
+  Apparently we cannot test this program because of hardware limitations.
+  Even if I set krun heap to be 20GB, I end up with OutOfMemoryError after 9 min of run.
 */
 
 public class threads_22_join_two_threads {

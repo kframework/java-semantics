@@ -2,7 +2,10 @@ package java.lang;
 
 public class Thread implements Runnable {
 
+  private static int nextTid = 1;
+
   private Runnable runnable;
+  private int tid = nextTid++;
 
   public Thread() {
     this.runnable = this;
@@ -14,8 +17,18 @@ public class Thread implements Runnable {
 
   public void run() {}
 
-  public native void start();
-  public native synchronized void join() throws InterruptedException;
+  public void start() {
+    startImpl(tid);
+  }
+
+  private native void startImpl(int tid);
+
+  public synchronized void join() throws InterruptedException {
+    joinImpl(tid);
+  }
+
+  public native void joinImpl(int tid) throws InterruptedException;
+
   public native void interrupt();
   public static native Thread currentThread();
 }
