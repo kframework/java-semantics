@@ -68,6 +68,21 @@ For testing threads we will use model checking for most cases.
   Thread 2: lock 2, assign and print b, lock 1 - assign and print a.
   See multiple states, but no deadlocks.
 
+391. Two threads assign different value to a static field and print it.
+  The pair of statements assignment and printing is synchronized in both threads.
+  We shall have just 2 cases: thread 1 first, and thread 2 first.
+  Simplified version of the test 34.
+
+392. Two threads assign different value to a static field and print it.
+  The pair of statements assignment and printing is a synchronized method in both threads.
+  We shall have just 2 cases: thread 1 first, and thread 2 first.
+  Simplified version of the test 32.
+
+393. Two threads assign different value to a static field and print it.
+  The pair of statements assignment and printing is a synchronized static method in both threads.
+  We shall have just 2 cases: thread 1 first, and thread 2 first.
+  Simplified version of the test 31.
+
   Part IV. Methods wait (with no timeout), notify and notifyAll.
 41. Two threads, assigning different values to a var. Ech thread does the following:
   - if val == 0, assign value and wait. Then, in any case, notify.

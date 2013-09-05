@@ -47,6 +47,61 @@ when
             Id2String(MethodName) ==String "startImpl"
     andBool Id2String(ThreadId) ==String "java.lang.Thread"
 
+//@ \section{Synchronized}
+
+//evaluate the expression
+context 'Synchronized(HOLE,, _)
+
+rule [Synchronized-first-time]:
+    <k>
+      'Synchronized(objectClosure(OL:Int,_,_)::_,, Block:K)
+      => 'Try(Block,, 'ListWrap(.KList),, releaseLock(OL))
+      ...
+    </k>
+    <holds>... (. => OL |-> 1) ...</holds>
+    <busy> Busy:Set (. => SetItem(OL)) </busy>
+when
+    notBool (OL in Busy)
+        [transition-threading]
+
+rule [Synchronized-nested]:
+    <k>
+      'Synchronized(objectClosure(OL:Int,_,_)::_,, Block:K)
+      => 'Try(Block,, 'ListWrap(.KList),, releaseLock(OL))
+      ...
+    </k>
+    <holds>... OL |-> (Level:Int => Level +Int 1) ...</holds>
+        [transition-threading]
+
+//Release one level of lock for the given object
+syntax K ::= "releaseLock" "(" Int ")"
+
+rule [releaseLock]:
+    <k>
+      releaseLock(OL:Int) => .
+      ...
+    </k>
+    <holds>... OL |-> (Level:Int => Level -Int 1) ...</holds>
+        [transition-threading]
+
+rule [monitor-completely-released]:
+    <holds>... (OL:Int |-> 0 => .) ...</holds>
+    <busy>... (SetItem(OL) => .) ...</busy>
+
+rule [synchronized-method-inst-desugar]:
+    storeMethod(_, instanceCT, _, (true => false)::bool, _,_,
+        Body:K => 'Synchronized('This(.KList),, Body),
+        _)
+
+rule [synchronized-method-static-desugar]:
+    <k>
+      storeMethod(_, staticCT, _, (true => false)::bool, _,_,
+          Body:K => 'Synchronized('Lit('Class(Class)),, Body),
+          _)
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+
 //@ \section{Threading related methods}
 
 rule [thread-join]:
@@ -61,12 +116,13 @@ rule [thread-join]:
 when
             Class ==K class String2Id("java.lang.Thread")
     andBool Id2String(MethodName) ==String "joinImpl"
+        [transition-threading]
 
 //@ \section{Thread termination}
 
 rule [ThreadTermination]:
     ( <thread>
-        <k>.K</k>
+        <k> .K </k>
         <holds> H:Map </holds>
         <tid> TId:Int </tid>
         ...

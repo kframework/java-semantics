@@ -175,6 +175,10 @@ rule [storeCopyDiscard]:
 
 //\subsection{Class literal}
 
+//we need to synchronize access to class literals to avoid instantiation of the came .class by multiple threads.
+//this is done by the term temp in <classLiteralsMap>
+//We cannot use 'Synchronized because it required an objectClousre as argument, and we might not have any
+//objects instantiated at the moment.
 rule [ClassLiteralInstantiate]:
     <k>
         (. => saveClassLiteral(T, 'NewInstance(
@@ -187,8 +191,9 @@ rule [ClassLiteralInstantiate]:
         ~> 'Lit('Class(T:Type))::_
       ...
     </k>
-    <classLiteralsMap> CLMap:Map </classLiteralsMap>
+    <classLiteralsMap> CLMap:Map (. => T |-> temp) </classLiteralsMap>
 when notBool T in keys(CLMap)
+        [transition-threading]
 
 // wraps a newly created java.lang.Class object
 syntax K ::= "saveClassLiteral" "(" Type  // The type for this class literal is being instantiated
@@ -197,11 +202,13 @@ syntax K ::= "saveClassLiteral" "(" Type  // The type for this class literal is 
 
 rule [saveClassLiteral]:
     <k> saveClassLiteral(T:Type, TV:TypedVal) => . ...</k>
-    <classLiteralsMap> CLMap:Map => CLMap[TV/T] </classLiteralsMap>
+    <classLiteralsMap>... T |-> (temp => TV) ...</classLiteralsMap>
 
 rule [ClassLiteral]:
     <k> 'Lit('Class(T:Type))::_ => TV ...</k>
     <classLiteralsMap>... T |-> TV:TypedVal ...</classLiteralsMap>
+
+syntax K ::= "temp" //Used inside <classLiteralsMap> only for synchronization purposes
 
 rule [ClassNameTopLevelWithPackage]:
     <k>

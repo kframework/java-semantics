@@ -8,12 +8,23 @@ module PROCESS-CLASSES
 syntax K ::= "getContextType" "(" K //'ListWrap(...) - the list of method attributes
                               ")"                           [function]
 
-rule getContextType('ListWrap('Static(_),,_)) => staticCT   [anywhere]
+rule getContextType('ListWrap('Static(_),,_)) => staticCT
 
 rule getContextType('ListWrap((KL:KLabel(_) => .KList),, _))
-when        KL =/=KLabel 'Static                            [anywhere]
+when        KL =/=KLabel 'Static
 
-rule getContextType('ListWrap(.KList))      => instanceCT [anywhere]
+rule getContextType('ListWrap(.KList))      => instanceCT
+
+//evaluates to true::bool if synchronized is among modifiers, false otherwise
+syntax K ::= "isSynchronized" "(" K //'ListWrap(...) - the list of method attributes
+                              ")"                           [function]
+
+rule isSynchronized('ListWrap('Synchronized(_),,_)) => true::bool
+
+rule isSynchronized('ListWrap((KL:KLabel(_) => .KList),, _))
+when        KL =/=KLabel 'Synchronized
+
+rule isSynchronized('ListWrap(.KList)) => false::bool
 
 //@ \section{Process type list}
 syntax K ::= "processClasses" "("
@@ -249,7 +260,7 @@ rule [MethodDec]:
         S:K
       )
       => storeMethod('ListWrap(Params),
-            getContextType(Modifiers), getAccessMode(Modifiers), methodRT, noValue, S,
+            getContextType(Modifiers), getAccessMode(Modifiers), isSynchronized(Modifiers), methodRT, noValue, S,
             methodType(sig(Name, getTypesFromParams(Params)), ReturnType))
       ...
     </k>
@@ -268,6 +279,7 @@ syntax K ::= "storeMethod" "("
                               K ","           //'ListWrap(Params)
                               K ","           //will evaluate to ContextType - staticCT or instanceCT
                               K ","           //will evaluate to AccessMode
+                              K ","           //IsSync:bool - whether method is synchronized or not
                               RoutineType "," //either methodRT or constructorRT
                               K ","           //FirstLine for constructor, noValue for method.
                               K ","           //S - method body
@@ -297,7 +309,7 @@ rule getTypesFromParams(Ts:KList, .KList) => types(Ts)
 
 rule [storeMethod]:
     <k>
-      storeMethod('ListWrap(Params:KList), CT:ContextType, Acc:AccessMode, RT:RoutineType, FirstLine:K, Body:K,
+      storeMethod('ListWrap(Params:KList), CT:ContextType, Acc:AccessMode, false::bool, RT:RoutineType, FirstLine:K, Body:K,
           methodType(Sig:Signature, ReturnType:Type)) => .
       ...
     </k>
@@ -354,7 +366,7 @@ rule [ConstrDec]:
           'ConstrBody(
         'Some(FirstLine:K) ,,S:K))
       => storeMethod('ListWrap(Params),
-          instanceCT, getAccessMode(Modifiers), constructorRT, FirstLine, S,
+          instanceCT, getAccessMode(Modifiers), isSynchronized(Modifiers), constructorRT, FirstLine, S,
           methodType(sig(getConsName(Class), getTypesFromParams(Params)), void))
       ...
     </k>

@@ -4,6 +4,10 @@ Writing and printing a value in a synchronized block.
   - thread 1: read val, assign 1, print val, all in a synchronized block.
   Synchronization is done in a synchronized block with argument an object.
   We shall see just two outputs: thread 1 first and thread 2 first.
+
+  Crashed with OOMError in 17 min with 20GB heap setting.
+  Look at the test 391 - tested the same situation, but that one is simple enough
+  to be handled by fmse server.
 */
 
 public class threads_34_sync_obj {

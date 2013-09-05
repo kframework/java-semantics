@@ -21,6 +21,7 @@ configuration
             <localClassesEnv> .Map </localClassesEnv>
           </envGroup>
 
+          //Map[OL |-> Count] - the amount of times this thread holds the monitor objects referred bu the keys
           <holds color="black"> .Map </holds>
 
           <br/>
@@ -160,6 +161,7 @@ configuration
       //required in ProcessCompUnitsPhase
       <programBackup> $PGM:K </programBackup>
 
+      //Set[OL:Int] - the set of locations of used monitor objects
       <busy color="cyan"> .Set </busy>
       <terminated color="red"> .Set </terminated>
 
