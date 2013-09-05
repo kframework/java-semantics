@@ -29,6 +29,9 @@ public class Thread implements Runnable {
 
   public native void joinImpl(int tid) throws InterruptedException;
 
-  public native void interrupt();
-  public static native Thread currentThread();
+  public void interrupt() {
+    interruptImpl(tid);
+  }
+
+  public native void interruptImpl(int tid);
 }

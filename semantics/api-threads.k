@@ -73,6 +73,15 @@ rule [Synchronized-nested]:
     <holds>... OL |-> (Level:Int => Level +Int 1) ...</holds>
         [transition-threading]
 
+rule [Synchronized-on-null]:
+    'Synchronized(null::_,,_)
+    =>  'Throw('NewInstance(
+          'None(.KList),,
+          class String2Id("java.lang.NullPointerException"),,
+          'ListWrap( null ),,
+          'None(.KList)
+        ))
+
 //Release one level of lock for the given object
 syntax K ::= "releaseLock" "(" Int ")"
 
@@ -112,11 +121,220 @@ rule [thread-join]:
       ) => nothing::void
       ...
     </k>
+    <interrupted> false </interrupted>
     <terminated>... SetItem(TId) ...</terminated>
 when
             Class ==K class String2Id("java.lang.Thread")
     andBool Id2String(MethodName) ==String "joinImpl"
         [transition-threading]
+
+rule [thread-join-interrupted]:
+    <k>
+      invokeImpl(
+        methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
+        'ListWrap(TId:Int :: _)
+      )
+      =>  'Throw('NewInstance(
+            'None(.KList),,
+            class String2Id("java.lang.InterruptedException"),,
+            'ListWrap( null ),,
+            'None(.KList)
+          ))
+      ...
+    </k>
+    <interrupted> true => false </interrupted>
+when
+            Class ==K class String2Id("java.lang.Thread")
+    andBool Id2String(MethodName) ==String "joinImpl"
+        [transition-threading]
+
+//when waiting, we release the lock on the OL in the cell <busy>, but don't delete this cell from <holds>
+rule [object-wait]:
+    <k>
+      invokeImpl(
+        methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
+        OL:Int, 'ListWrap(.KList)
+      ) => waitImpl(OL)
+      ...
+    </k>
+    <tid> TId:Int </tid>
+    <holds>... OL |-> HoldLevel:Int ...</holds>
+    <busy>... (SetItem(OL) => .) ...</busy>
+    <waitingThreads>... (. => TId |-> OL ) ...</waitingThreads>
+when
+            Class ==K class String2Id("java.lang.Object")
+    andBool Id2String(MethodName) ==String "wait"
+    andBool HoldLevel >=Int 1
+        [transition-threading]
+
+rule [object-wait-notify-notifyAll-without-sync]:
+    <k>
+      invokeImpl(
+        methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
+        OL:Int, 'ListWrap(.KList)
+      )
+      =>  'Throw('NewInstance(
+            'None(.KList),,
+            class String2Id("java.lang.IllegalMonitorStateException"),,
+            'ListWrap( null ),,
+            'None(.KList)
+          ))
+      ...
+    </k>
+    <holds> Holds:Map </holds>
+when
+            Class ==K class String2Id("java.lang.Object")
+    andBool (
+             Id2String(MethodName) ==String "wait"
+      orBool Id2String(MethodName) ==String "notify"
+      orBool Id2String(MethodName) ==String "notifyAll"
+    )
+    andBool notBool OL in keys(Holds)
+
+//Second part of a wait. waiting was already registered to <waitingThreads>.
+//When the record in <waitingThreads> will be deleted, waiting itself shall end.
+syntax K ::= "waitImpl" "(" Int ")" //Monitor object location
+
+rule [waitImpl-end]:
+    <k>
+      waitImpl(OL:Int) => nothing::void
+      ...
+    </k>
+    <tid> TId:Int </tid>
+    <busy> Busy:Set (. => SetItem(OL)) </busy>
+    <interrupted> false </interrupted>
+    <waitingThreads> WT:Map </waitingThreads>
+when
+            (notBool OL in Busy)
+    andBool (notBool TId in keys(WT))
+        [transition-threading]
+
+rule [waitImpl-interrupted]:
+    <k>
+      waitImpl(OL:Int)
+      =>  'Throw('NewInstance(
+            'None(.KList),,
+            class String2Id("java.lang.InterruptedException"),,
+            'ListWrap( null ),,
+            'None(.KList)
+          ))
+      ...
+    </k>
+    <tid> TId:Int </tid>
+    <busy> Busy:Set (. => SetItem(OL)) </busy>
+    <interrupted> true => false </interrupted>
+when
+      notBool OL in Busy
+        [transition-threading]
+
+rule [object-notify]:
+    <k>
+      invokeImpl(
+        methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
+        OL:Int, 'ListWrap(.KList)
+      ) => deleteAnyFromWaitingThreads(OL)
+      ...
+    </k>
+    <holds>... OL |-> HoldLevel:Int ...</holds>
+when
+            Class ==K class String2Id("java.lang.Object")
+    andBool Id2String(MethodName) ==String "notify"
+    andBool HoldLevel >=Int 1
+
+rule [object-notifyAll]:
+    <k>
+      invokeImpl(
+        methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
+        OL:Int, 'ListWrap(.KList)
+      ) => deleteAllFromWaitingThreads(OL)
+      ...
+    </k>
+    <holds>... OL |-> HoldLevel:Int ...</holds>
+when
+            Class ==K class String2Id("java.lang.Object")
+    andBool Id2String(MethodName) ==String "notifyAll"
+    andBool HoldLevel >=Int 1
+
+//Implementation of Object.notify(), extracted here to avoid rule superfluosity
+syntax K ::= "deleteAnyFromWaitingThreads" "(" Int //store key of the monitor object
+                                           ")"
+
+rule [object-notify-impl-someone-waiting]:
+    <k>
+      deleteAnyFromWaitingThreads(OL:Int) => nothing::void
+      ...
+    </k>
+    <waitingThreads>... (_ |-> OL => .Map) ...</waitingThreads>
+        [transition-threading]
+
+rule [object-notify-impl-no-one-waiting]:
+    <k>
+      deleteAnyFromWaitingThreads(OL:Int) => nothing::void
+      ...
+    </k>
+    <waitingThreads> WT:Map </waitingThreads>
+when
+    notBool OL in values(WT)
+        [transition-threading]
+
+//Implementation of Object.notifyAll(), extracted here to avoid rule superfluosity
+syntax K ::= "deleteAllFromWaitingThreads" "(" Int //store key of the monitor object
+                                           ")"
+
+rule [object-notifyAll-impl-someone-waiting]:
+    <k>
+      deleteAllFromWaitingThreads(OL:Int)
+      ...
+    </k>
+    <waitingThreads>... (_ |-> OL => .Map) ...</waitingThreads>
+        [transition-threading]
+
+rule [object-notifyAll-impl-no-one-waiting]:
+    <k>
+      deleteAllFromWaitingThreads(OL:Int) => nothing::void
+      ...
+    </k>
+    <waitingThreads> WT:Map </waitingThreads>
+when
+    notBool OL in values(WT)
+        [transition-threading]
+
+rule [thread-interrupt]:
+    <thread>
+      <k>
+        invokeImpl(
+          methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
+          OL:Int,
+          'ListWrap(TId:Int :: _)
+        ) => nothing::void
+        ...
+      </k>
+      ...
+    </thread>
+
+    <thread>
+      <tid> TId </tid>
+      <interrupted> _ => true </interrupted>
+      ...
+    </thread>
+when
+            Class ==K class String2Id("java.lang.Thread")
+    andBool Id2String(MethodName) ==String "interruptImpl"
+        [transition-threading]
+
+rule [thread-interrupt-ended-thread]:
+    <k>
+      invokeImpl(
+        methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
+        OL:Int,
+        'ListWrap(TId:Int :: _)
+      ) => nothing::void
+      ...
+    </k>
+    <terminated>... SetItem(TId) ...</terminated>
+when
+            Class ==K class String2Id("java.lang.Thread")
+    andBool Id2String(MethodName) ==String "interruptImpl"
 
 //@ \section{Thread termination}
 

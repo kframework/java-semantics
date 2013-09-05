@@ -12,4 +12,10 @@ public class Object {
     public final native Class getClass();
 
     public native int hashCode();
+
+    public native void wait() throws InterruptedException, IllegalMonitorStateException;
+
+    public native void notify() throws IllegalMonitorStateException;
+
+    public native void notifyAll() throws IllegalMonitorStateException;
 }

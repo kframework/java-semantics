@@ -21,9 +21,6 @@ configuration
             <localClassesEnv> .Map </localClassesEnv>
           </envGroup>
 
-          //Map[OL |-> Count] - the amount of times this thread holds the monitor objects referred bu the keys
-          <holds color="black"> .Map </holds>
-
           <br/>
           <control color="cyan">
             <stack color="blue"> .List </stack>
@@ -43,7 +40,16 @@ configuration
             </crntObj>
           </control>
 
+          //Threading-related cells
+
+          //Thread Id
           <tid color="pink"> 0 </tid>
+
+          //Map[OL |-> Count] - the amount of times this thread holds the monitor objects referred bu the keys
+          <holds color="black"> .Map </holds>
+
+          //Whether this thread was interrupted by another thread by a call to Thread.interrupt()
+          <interrupted> false </interrupted>
         </thread>
       </threads>
       <br/>
@@ -163,6 +169,11 @@ configuration
 
       //Set[OL:Int] - the set of locations of used monitor objects
       <busy color="cyan"> .Set </busy>
+
+      //Map[ThreadId:Int |-> OL:Int] - map from threads to objects they are waiting on
+      //waiting on those objects used by methods Object.wait(), Object.notify(), Object.notifyAll().
+      <waitingThreads> .Map </waitingThreads>
+
       <terminated color="red"> .Set </terminated>
 
       <dissolveEmptyK> true </dissolveEmptyK>

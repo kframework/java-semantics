@@ -3,7 +3,7 @@ Attempt to wait, notify, notifyAll on a thread with no lock acquired.
   Catch IllegalMonitorStateException.
 */
 
-public class threads_52_IMStateException {
+public class threads_62_IMStateException {
 
   public static void main(String[] args) {
     Object monitor = new Object();

@@ -532,7 +532,7 @@ rule getMethConsClosureClass( methodClosure(Class:ClassType, _,_,_,_,_,_) ::_ ) 
 
 syntax K ::= "invokeImpl" "(" K   //lookupOverloadedMethod statement, evaluates to typed methodClosure
                           "," K   //OL - object location, target type for methods on non-object refs,
-                                  // or noValue for static methods
+                                  //or noValue for static methods
                           "," K   //evaluates to 'ListWrap(ParamValues:List{KResult})
                           ")"
         [strict(1)]

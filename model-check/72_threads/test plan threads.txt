@@ -101,17 +101,36 @@ For testing threads we will use model checking for most cases.
 45. Test that synchronization status is preserved among method calls.
   Same as 41, but do synchronize() in one method, and wait() in a method called by the first one.
 
+46. Wait-notify one way:
+  Main thread: In synchronized block instantiate thread 2 and wait.
+  Thread 2: In synchronized block notify.
+  Messages: Before wait, after wait, before notify, after notify.
+
+47. Wait-notify, test that just one thread from 2 are awakened.
+  Main thread in sync block: instantiate thread 2, wait, instantiate thread 3, wait.
+  Thread 2 in sync block: notify, wait.
+  Thread 3: sync block - notify, sync block - notify.
+  Messages: around each wait and notify.
+
+48. Wait-notifyAll, test that all threads are awakened.
+  Main thread in sync block: instantiate thread 2, wait, instantiate thread 3, wait.
+  Thread 2 in sync block: notify, wait.
+  Thread 3 in sync block: notifyAll.
+  Messages: around each wait, notify, notifyAll.
+
   Part V. Exceptions during waiting/notifying.
-51. Synchronizing on null should throw NullPoitnerException.
+51. Interrupting a waiting thread.
+  thread 1: synchronize, start thread 2, wait, catch InterruptedException.
+  thread 2: synchronize, interrupt the second thread.
 
-52. Attempt to wait, notify, notifyAll on a thread with no lock acquired.
-  Catch IllegalMonitorStateException.
-
-53. Interrupting a waiting thread.
-  thread 1: synchronize, notify, print, then wait print, then catch InterruptedException, print. At the end: print.
-  thread 2: synchronize, print - interrupt the second thread, then print - join the second thread,
-  then print "Done!".
-
-54. Interrupting a thread locked in join().
+52. Interrupting a thread locked in join().
   thread 1: start thread 2, join - print , catch interrupted exception - print.
   thread 2: print, interrupt thread 1, print.
+
+  Part VI. Exceptions during waiting/notifying, tests to be run, not model checked.
+  (Look in the directory programs/72_threads_run for the tests)
+
+61. Synchronizing on null should throw NullPoitnerException.
+
+62. Attempt to wait, notify, notifyAll on a thread with no lock acquired.
+  Catch IllegalMonitorStateException.

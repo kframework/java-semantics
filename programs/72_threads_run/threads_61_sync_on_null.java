@@ -2,7 +2,7 @@
 Synchronizing on null should throw NullPoitnerException.
 */
 
-public class threads_51_sync_on_null {
+public class threads_61_sync_on_null {
 
   public static void main(String[] args) {
     Object monitor = null;
