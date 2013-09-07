@@ -259,7 +259,9 @@ rule 'Id(Str:String) => String2Id(Str)                [structural, anywhere]
 //@ \section{Types}
 
 syntax IntOrLongType ::= "int" | "long"
-syntax NumericType ::= "byte" | "short" | IntOrLongType | "char"
+syntax NumericType ::= IntType | FloatType
+syntax IntType ::= "byte" | "short" | IntOrLongType | "char"
+syntax FloatType ::= "float" | "double"
 syntax PrimitiveType ::= NumericType | "bool"
 syntax RefType ::= "rtString" | "nullType"
 
@@ -269,7 +271,7 @@ syntax Type ::= PrimitiveType
               | "rtType"
               | MethodType
 
-syntax RawVal ::= Int | Bool | String
+syntax RawVal ::= Int | Float | Bool | String
                 | "null"
                 | "nothing"
                 | "undefined" [latex(\bot_{#1})]
@@ -370,6 +372,7 @@ rule toString(Str:String :: _) => Str
 rule toString(I:Int :: char) => chrChar(I)
 rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
+rule toString(Fl:Float :: _) => Float2String(Fl)
 rule toString(true::_) => "true"
 rule toString(false::_) => "false"
 rule toString(null::_) => "null"

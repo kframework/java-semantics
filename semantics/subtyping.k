@@ -25,21 +25,27 @@ rule [subtypeRefTrue]:
 
 /*@ \subsubsection{Subtyping among primitive types} */
 
-rule subtype( byte, T:Type ) => (T ==K short) orBool (T ==K int) orBool (T ==K long)
+rule subtype( byte, T:Type ) => (T ==K short) orBool (T ==K int) orBool (T ==K long) orBool (isFloatType(T) ==K true)
 when T =/=K byte [structural]
 
-rule subtype( short, T:Type ) => (T ==K int) orBool (T ==K long)
+rule subtype( short, T:Type ) => (T ==K int) orBool (T ==K long) orBool (isFloatType(T) ==K true)
 
 when T =/=K short [structural]
 
-rule subtype( int, T:Type ) => T ==K long
+rule subtype( int, T:Type ) => (T ==K long orBool isFloatType(T) ==K true)
 when T =/=K int [structural]
 
-rule subtype( long, T:Type ) => false
+rule subtype( long, T:Type ) => isFloatType(T) ==K true
 when T =/=K long [structural]
 
-rule subtype( char, T:Type ) => (T ==K int) orBool (T ==K long)
+rule subtype( char, T:Type ) => (T ==K int) orBool (T ==K long) orBool (isFloatType(T) ==K true)
 when T =/=K char [structural]
+
+rule subtype( float, T:Type ) => (T ==K double)
+when T =/=K float [structural]
+
+rule subtype( double, T:Type ) => false
+when T =/=K double [structural]
 
 rule subtype( bool, T:Type ) => false
 when T =/=K bool [structural]

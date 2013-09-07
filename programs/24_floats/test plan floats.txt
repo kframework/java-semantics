@@ -9,10 +9,10 @@ Notes:
 11. Simple double literal, like 1.23, 0.017: print it.
 12. Float and double literals with a letter at the end: 1.2f, 1.3F, 1.4d, 1.5D.
 
-    Part II. Float operations.
+    Part II. Float operators.
 
 21. Plus: double + double.
-22: All numeric operators: unary +, -, binary *, /, %, +, -, ++, --, (prefix/postfix)
+22: All numeric operators: unary +, -, binary *, /, %, +, - . Also ++, --, (prefix/postfix)
 23. Comparison operators: <, <=, >, >=, ==, !=.
 24. Conditional operator (one case: one op double, another one integer).
 25. String concatenation operator: positive, negative, positive sub-zero and negative sub-zero doubles + another String.

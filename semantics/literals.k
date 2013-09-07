@@ -113,6 +113,18 @@ rule [LitOcta]:
           #else normalize(octaToInt(trimHead(Str,              1)) :: int )
         #fi
 
+//@ \section{float literals}
+
+rule [LitFloat]:
+    'Lit('Float(Str:String))
+    =>  #if (lastChar(Str) ==String "f") orBool (lastChar(Str) ==String "F")
+          #then String2Float(trimTail(Str, 1)) :: float
+          #else #if (lastChar(Str) ==String "d") orBool (lastChar(Str) ==String "D")
+                  #then String2Float(trimTail(Str, 1)) :: double
+                  #else String2Float(Str             ) :: double
+                #fi
+        #fi
+
 //@ \section{bool literals}
 rule 'Lit('Bool('True(.KList))) => true
 

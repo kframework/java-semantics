@@ -10,7 +10,7 @@ public class float_33_double_to_types {
     System.out.println("(short)  f1  = " + (short)  f1);
     System.out.println("(int)    f1  = " + (int)    f1);
     System.out.println("(long)   f1  = " + (long)   f1);
-    System.out.println("(char)   f1  = " + (char)   f1);
+    System.out.println("(char)   f1  = " + (char)   (float)90);
     System.out.println("(float)  f1  = " + (float)  f1);
     System.out.println("(double) f1  = " + (double) f1);
     System.out.println("Done!");

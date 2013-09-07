@@ -689,7 +689,7 @@ when
 //the type of the expression.
 syntax K ::= "isExpressionLabel" "(" KLabel ")" [function]
 rule isExpressionLabel(KL:KLabel) =>
-           (KL ==KLabel 'localVar`(_`))
+                     (KL ==KLabel 'localVar`(_`))
 
     //Infix operators
     /* ||  */ orBool (KL ==KLabel 'LazyOr)
@@ -789,7 +789,8 @@ when
     orBool (KL ==KLabel 'And)
 
 rule [elabBinaryNumOperandNumResultExp]:
-    elabDispose(KL:KLabel(Exp1:K::NT1:NumericType,, Exp2:K::NT2:NumericType)) => elabRes(KL(Exp1::NT1,, Exp2::NT2) :: normalizeType(NT1,NT2))
+    elabDispose(KL:KLabel(Exp1:K::NT1:NumericType,, Exp2:K::NT2:NumericType))
+    => computeType(KL(Exp1::NT1,, Exp2::NT2), normalizeType(NT1,NT2))
 when
            (KL ==KLabel 'Or)
     orBool (KL ==KLabel 'ExcOr)
@@ -801,18 +802,24 @@ when
     orBool (KL ==KLabel 'Remain)
 
 rule [elabBitShift]:
-    elabDispose(KL:KLabel(Exp1:K::NT1:NumericType,, Exp2:K::NT2:NumericType)) => elabRes(KL(Exp1::NT1,, Exp2::NT2) :: normalizeType(NT1))
+    elabDispose(KL:KLabel(Exp1:K::NT1:NumericType,, Exp2:K::NT2:NumericType))
+    => computeType(KL(Exp1::NT1,, Exp2::NT2), normalizeType(NT1))
 when
            (KL ==KLabel 'LeftShift)
     orBool (KL ==KLabel 'RightShift)
     orBool (KL ==KLabel 'URightShift)
 
 rule [elabUnaryNumeric]:
-    elabDispose(KL:KLabel(Exp:K::NT:NumericType)) => elabRes(KL(Exp::NT) :: normalizeType(NT))
+    elabDispose(KL:KLabel(Exp:K::NT:NumericType)) => computeType(KL(Exp::NT), normalizeType(NT))
 when
            (KL ==KLabel 'Plus)
     orBool (KL ==KLabel 'Minus)
     orBool (KL ==KLabel 'Complement)
+
+//Computes a type (second arg) for an untyped expression (first arg)
+//When type is computed, rewrites the result into elabRes(TypedExp)
+syntax K ::= "computeType" "(" K "," K ")"  [strict(2)]
+rule computeType(K:K, T:Type) => elabRes(K::T)
 
 rule [elabPrefixPostfix]:
     elabDispose(KL:KLabel(Exp:K::NT:NumericType)) => elabRes(KL(Exp::NT) :: NT)
@@ -853,14 +860,16 @@ when
 rule [condTypeFirstChar]:
     condType(char, T2:Type) => 'If(subtype(char, T2),, T2,, int)
 
-rule [elabAssign]:
-    elabDispose('Assign(Exp1:K::T1:Type,, Exp2:K::T2:Type))
-    =>
-        #if (isNumericType(T1) ==K true)
-          #then isInRange(Exp2::T1)::bool
-          #else subtype(T2, T1)
-        #fi ~> true? ~>
-        elabRes('Assign(Exp1::T1,, Exp2::T2) :: T1)
+rule [elabAssignSameType]:
+    elabDispose('Assign(Exp1:K::T1:Type,, Exp2:K::T1)) => elabRes('Assign(Exp1::T1,, Exp2::T1) :: T1)
+
+rule [elabAssignDiffType]:
+    elabDispose('Assign(
+       Exp1:K::T1:Type,,
+      (Exp2:K::T2:Type => castImpl(T1, Exp2::T2)::T1)
+    ))
+when
+    T1 =/=K T2
 
 rule [elabCompoundAssign]:
     elabDispose(KL:KLabel(Exp1:K::T1:Type,, TE:TypedExp)) => elabRes(KL(Exp1::T1,, TE) :: T1)
