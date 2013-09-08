@@ -1,0 +1,3 @@
+f(float  f = 100) : float  a = 1.0e+2
+f(double d = 100) : double a = 1.0e+2
+Done!

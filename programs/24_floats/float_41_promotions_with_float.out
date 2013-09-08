@@ -1,0 +1,9 @@
+byte + float: float  a = 1.01e+2
+short + float: float  a = 1.01e+2
+int + float: float  a = 1.01e+2
+long + float: float  a = 1.01e+2
+char + float: float  a = 1.01e+2
+float + float: float  a = 1.01e+2
+double + float: double a = 1.01e+2
+float + int: float  a = 1.01e+2
+Done!
