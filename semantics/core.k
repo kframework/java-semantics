@@ -112,6 +112,11 @@ configuration
           //Map[Id -> Location]
           <staticEnv> .Map </staticEnv>
 
+          //The map of compile-time constant fields. We consider compile-time constants only final static fields
+          //initialized with a literal expression.
+          //Map[Id -> TypedVal]
+          <constantEnv> .Map </constantEnv>
+
           //The sequence of static initializers (that also includes field initializers)
           <staticInit> 'ListWrap(.KList) </staticInit>
           <br/>

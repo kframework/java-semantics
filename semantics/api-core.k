@@ -118,6 +118,33 @@ rule [object-hashCode]:
 when
     Id2String(MethodName) ==String "hashCode"
 
+//\subsection{String methods}
+
+rule [elab-String-length]:
+    lookupMethod( rtString, MethodName:Id,
+      _, noValue, false, QualTE:TypedExp, .KList
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualTE, .KList, instanceCT) :: objectClass)
+when
+    Id2String(MethodName) ==String "length"
+
+rule [methodInvokeRuntime-String-length]:
+    methodInvokeRuntime(rtString, sig(MethodName:Id, _), Str:String::rtString, _,_ )::_
+    => lengthString(Str) :: int
+when Id2String(MethodName) ==String "length"
+
+//static native String valueOf(int i);
+rule [elab-String-valueOf]:
+    lookupMethod( rtString, MethodName:Id,
+      _, noValue, false, QualK:K, ParamExp:TypedExp
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, ParamExp, instanceCT) :: objectClass)
+when
+    Id2String(MethodName) ==String "valueOf"
+
+rule [methodInvokeRuntime-String-valueOf]:
+    methodInvokeRuntime(rtString, sig(MethodName:Id, _), _, I:Int :: int,_ )::_
+    => Int2String(I) :: rtString
+when Id2String(MethodName) ==String "valueOf"
+
 //\subsection{Array clone}
 
 rule [elab-array-clone]:

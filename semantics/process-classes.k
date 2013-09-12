@@ -26,6 +26,17 @@ when        KL =/=KLabel 'Synchronized
 
 rule isSynchronized('ListWrap(.KList)) => false::bool
 
+//used to provide an approximate implementation of the distinction between static constant and non-constant fields.
+syntax K ::= "isFinal" "(" K //'ListWrap(...) - the list of method attributes
+                              ")"                           [function]
+
+rule isFinal('ListWrap('Final(_),,_)) => true
+
+rule isFinal('ListWrap((KL:KLabel(_) => .KList),, _))
+when        KL =/=KLabel 'Final
+
+rule isFinal('ListWrap(.KList))      => false
+
 //@ \section{Process type list}
 syntax K ::= "processClasses" "("
                                   K //setWrap(Set) - the set of all classes
@@ -413,12 +424,19 @@ rule [InstanceInitSave]:
     <instanceInit> 'ListWrap(_,,(.KList => K)) </instanceInit>
         [structural]
 
+//Desugaring a static field declaration with initializer ito a declaration without initializer
+//Followed by a static initializer block, if this field is not a compile-time constant.
 rule [FieldDecStaticInitDesugar]:
     'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .KList)) ))
     ~> (. => 'StaticInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
     andBool (getContextType(Modifiers) ==K staticCT)
+
+    //condition for not being compile-time constant
+    andBool notBool(        isFinal(Modifiers)
+                    andBool (getKLabel(InitExp) ==KLabel 'Lit orBool isKResult(InitExp) ==K true)
+                   )
         [structural]
 
 rule [StaticFieldDecToLocalVarDec]:
@@ -441,6 +459,7 @@ rule [StaticInitSave]:
 
 /*@ The parser represents interface fields as 'ConstantDec labels.
   This rule desugars them into 'FieldDec labels and adds the modifiers "public static final".
+  Interface fileds are not necessarily compile-time constants.
 */
 rule [ConstantDecDesugar]:
     'ConstantDec('ListWrap(ModifiersKs:KList),, TypeK:K,, VarDecs:K)
@@ -448,6 +467,27 @@ rule [ConstantDecDesugar]:
           'ListWrap(ModifiersKs,, 'Public(.KList),, 'Static(.KList),, 'Final(.KList)),,
           TypeK,, VarDecs
         )
+
+/*@Subsection compile-time constants*/
+
+//compute the value of a compile-time constant
+context 'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,, HOLE) ))
+when
+            getContextType(Modifiers) ==K staticCT
+    //condition for not being compile-time constant
+    andBool isFinal(Modifiers) andBool getKLabel(HOLE) ==KLabel 'Lit
+
+rule [compile-time-constant]:
+    <k>
+      'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,, TV:TypedVal) )) => .
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    <constantEnv> Env:Map => Env[TV/X] </constantEnv>
+when
+            getContextType(Modifiers) ==K staticCT
+    andBool isFinal(Modifiers)
 
 //Discard inner class declarations at this phase. They are processed when their
 //respective <class> tag is encountered as part of processClasses

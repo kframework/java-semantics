@@ -124,7 +124,7 @@ rule [Invoke-to-lookupMethod-unqualified]:
 //First we search for the signature - lookupSignature construct.
 //Afterwards we search for the right implementation in the hierarchy, once the signature is known
 // - lookupMethodSigKnown.
-syntax K ::= "lookupMethod" "(" RefType //target ref class
+syntax K ::= "lookupMethod" "(" RefType   //target ref type (not necessarily class, could be String or array)
                             "," Id        //method name
                             "," Bool      //IsQ - isQualified
                             "," K         //Evaluates to the signature to be called, or noValue if no signature was found yet
@@ -379,16 +379,18 @@ when
     isKResult(ParamVals)
 
 rule [methodInvokeRuntimeOnString]:
-    methodInvokeRuntime(_, Sig:Signature,
+    methodInvokeRuntime(_, sig(MethodName:Id, Ts:Types),
         Str:String::_,
         ParamVals:KList, _
     )::_
     => invokeImpl(
-      lookupOverloadedMethod(Sig, objectClass, mapWrap(.Map), noValue),
+      lookupOverloadedMethod(sig(MethodName, Ts), objectClass, mapWrap(.Map), noValue),
       Str::rtString, 'ListWrap(ParamVals)
     )
 when
-    isKResult(ParamVals)
+            (Id2String(MethodName) =/=String "length")
+    andBool (Id2String(MethodName) =/=String "valueOf")
+    andBool isKResult(ParamVals)
 
 rule [methodInvokeRuntimeOnArray]:
     methodInvokeRuntime(_, sig(MethodName:Id, Ts:Types),
@@ -442,7 +444,7 @@ rule getClassList(.) => .KList
 //Evaluates into typed method closure.
 syntax K ::= "lookupOverloadedMethod" "("
                               K ","       //sig(Name, SigTL) - Method signature
-                              KList "," //Class list, elems of type ClassType,
+                              KList ","   //Class list, elems of type ClassType,
                                           // from derived to base.
                                           // To be processed from base to derived when methods map will be exhausted.
                               K ","       //mapWrap(Map) - methods map of current LayerClass

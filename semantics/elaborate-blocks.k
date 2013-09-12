@@ -530,11 +530,13 @@ rule [elabLookupFoundInstance]:
 rule [elabLookupFoundStatic]:
     <k> elabLookup(X:Id, CT:ClassType) => fieldEntry(CT,X,T, staticCT) ...</k>
     <classType> CT </classType>
-    <instanceEnv> InstanceEnv:Map </instanceEnv>
     <staticEnv>... X |-> L:Int ...</staticEnv>
     <store>... L |-> _ :: T:Type  ...</store>
-when
-    notBool (X in keys(InstanceEnv))
+
+rule [elabLookupFoundConstant]:
+    <k> elabLookup(X:Id, CT:ClassType) => TV ...</k>
+    <classType> CT </classType>
+    <constantEnv>... X |-> TV:TypedVal ...</constantEnv>
 
 /*If X is not found in the current class, search for it first in base interfaces, then in the base class.
 This order is necessary to avoit the case when base class have a private field X, and base
@@ -550,8 +552,9 @@ rule [elabLookupNextClass]:
     <implements> BaseInterfaces:Set </implements>
     <instanceEnv> InstanceEnv:Map </instanceEnv>
     <staticEnv> StaticEnv:Map </staticEnv>
+    <constantEnv> ConstantEnv:Map </constantEnv>
 when
-    notBool ((X in keys(InstanceEnv)) orBool (X in keys(StaticEnv)))
+    notBool ((X in keys(InstanceEnv)) orBool (X in keys(StaticEnv)) orBool (X in keys(ConstantEnv)))
 
 rule [elabLookupNotFound]:
     elabLookup(X:Id, noClass) => noValue
@@ -610,6 +613,9 @@ rule elabFieldImpl(SourceExp:K, X:Id, fieldEntry(Class:ClassType,_,T:Type, insta
 
 rule elabFieldImpl(_, X:Id, fieldEntry(Class:ClassType,_,T:Type, staticCT))
     => elabRes(lookupStaticField(Class,X) :: T)
+
+//for constant fields
+rule elabFieldImpl(_,_, TV:TypedVal) => TV
 
 rule elabFieldImpl(_,_, noValue) => noValue
 
