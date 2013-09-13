@@ -1,0 +1,4 @@
+This test suite is based on the example programs provided with JBook. We operated the following changes:
+- removed all the programs that intentionally don't compile. Our semantics doesn't check for compile-time errors.
+- removed a non-deterministic program related to multithreading.
+- Added "public" modifier for main methods, to make programs compilable.
