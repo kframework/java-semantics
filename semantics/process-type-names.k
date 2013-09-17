@@ -1,5 +1,7 @@
 require "core.k"
 
+//todo: investigate why the execution hangs at the very beginning
+
 module PROCESS-TYPE-NAMES
     imports CORE
     imports LITERALS // for retainTail

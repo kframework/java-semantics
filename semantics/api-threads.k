@@ -11,7 +11,7 @@ rule [thread-start]:
     <thread>
       <k>
         invokeImpl(
-          methodClosure(class ThreadId,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
+          methodClosure(class ThreadId:Id,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
           OL:Int,
           'ListWrap(TId:Int :: _)
         ) => nothing::void

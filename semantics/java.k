@@ -44,3 +44,7 @@ module JAVA
     imports API-THREADS
 
 endmodule
+
+module JAVA-SYNTAX
+// No syntax needed, we are using an external parser.
+endmodule

@@ -208,7 +208,7 @@ syntax KResult ::= "resultListWrap" "(" KList ")"
 rule buildConstructorFormalParams(
       (_::T:Type => .KList),, _,
       _,, (.KList => 'Param('ListWrap(.KList),,T,,String2Id("$" +String Int2String(Num) ))),
-      Num => Num +Int 1
+      Num:Int => Num +Int 1
     )
 
 rule buildConstructorFormalParams(.KList, Ks:KList, _) => resultListWrap(Ks)
@@ -216,7 +216,7 @@ rule buildConstructorFormalParams(.KList, Ks:KList, _) => resultListWrap(Ks)
 rule buildConstructorFirstLineArgs(
       (_:K => .KList),, _,
       _,, (.KList => 'ExprName(String2Id("$" +String Int2String(Num) ))),
-      Num => Num +Int 1
+      Num:Int => Num +Int 1
     )
 
 rule buildConstructorFirstLineArgs(.KList, Ks:KList, _) => resultListWrap(Ks)
