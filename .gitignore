@@ -1,1 +1,10 @@
+/semantics/.test
+/semantics/.k
+/semantics/java-kompiled
+
+/semantics/test-results.xml
+/semantics/workspace.xml
 /semantics/java.pdf
+
+/class-lib/*.kast
+/test-runner/out
