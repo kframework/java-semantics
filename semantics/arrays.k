@@ -2,6 +2,8 @@ require "core.k"
 require "subtyping.k"
 require "expressions.k"
 
+//@ \section{Module ARRAYS}
+
 module ARRAYS
     imports CORE
     imports SUBTYPING

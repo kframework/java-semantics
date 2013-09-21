@@ -1,6 +1,8 @@
 require "core.k"
 require "process-type-names.k"
 
+//@ \section{Module PROCESS-CLASS-DECS}
+
 module PROCESS-CLASS-DECS
     imports CORE
     imports PROCESS-TYPE-NAMES

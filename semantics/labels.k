@@ -1,3 +1,5 @@
+//@ \section{Module LABELS}
+
 module LABELS
 
 syntax KLabel ::= "'ListWrap"

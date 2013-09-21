@@ -4,7 +4,8 @@ require "process-type-names.k"
 require "process-classes.k"
 require "process-local-classes.k"
 
-/* Elaborate the composition of code blocks of a class - the last step of preprocessing.
+/*@ \section{Module ELABORATE-BLOCKS}
+Elaborate the composition of code blocks of a class - the last step of preprocessing.
 During this phase we inspect the contents of method bodies, instance initializers and
 static initializers of a class and perform the following transformations:
   - each variable name x is resolved into either:
@@ -259,7 +260,7 @@ rule [elabParams]:
 rule [elabParamsEnd]:
     elabParams(.KList) => .K
 
-/*@ \section{Elaboration of code blocks} */
+/*@ \subsection{Elaboration of code blocks} */
 
 //Heating arguments for both expression and statement terms.
 //The attribute [transition-strictness] is used as transition attribute for testing strictness.
@@ -619,7 +620,7 @@ rule elabFieldImpl(_,_, TV:TypedVal) => TV
 
 rule elabFieldImpl(_,_, noValue) => noValue
 
-/*@ \section{Elaboration of types} */
+/*@ \subsection{Elaboration of types} */
 
 rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK [structural]
 rule 'InterfaceType(TypeK:K,, _) => TypeK        [structural]
@@ -687,7 +688,7 @@ rule [TypeName-Global-Fail]:
 when
     notBool X in keys(LocalTypes) andBool notBool (X in keys(Imp))
 
-/*@ \section{Elaboration of numeric expressions} */
+/*@ \subsection{Elaboration of numeric expressions} */
 
 //Expression labels are not converted by the default rule in the phase
 // elabDispose() => elabRes(...)
@@ -882,7 +883,7 @@ rule [elabCompoundAssign]:
 when
     isCompoundAssignLabel(KL)
 
-/*@ \section{Elaboration of non-numeric expressions} */
+/*@ \subsection{Elaboration of non-numeric expressions} */
 
 //elab cast
 rule elabDispose('CastRef(T:Type,, TExp:TypedExp)  => castImpl(T, TExp))      [structural]

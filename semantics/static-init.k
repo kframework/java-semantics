@@ -1,13 +1,15 @@
 require "core.k"
 require "process-classes.k"
 
+//@ \section{Module STATIC-INIT}
+
 module STATIC-INIT
     imports CORE
     imports PROCESS-CLASSES
 
 /*Triggers static initialization of a class.
 
-Detailed initializaton procedure is described in JLS $12.4.2. Here we implement an approximation of that algorithm,
+Detailed initializaton procedure is described in JLS \$12.4.2. Here we implement an approximation of that algorithm,
 that does not use the traditional Java synchronization mechanism, but instead relies on term rewriting
 capabilities to implement locks. This algorithm is required to avoid multithreaded issues during static initialization.
 This may happen when two threads access an uninitialized class at the same time.

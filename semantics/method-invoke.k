@@ -6,6 +6,8 @@ require "classes.k"
 require "statements.k"
 require "static-init.k"
 
+//@ \section{Module METHOD-INVOKE}
+
 module METHOD-INVOKE
     imports CORE
     imports ELABORATE-BLOCKS
@@ -321,12 +323,12 @@ syntax K ::= "methodInvokeRuntime" "(" RefType    //Compile-time target class, o
                                    ")"
 
 //Evaluate the qualifier
-//JLS $15.12.4.1 - Compute Target Reference
+//JLS \$15.12.4.1 - Compute Target Reference
 context methodInvokeRuntime(_,_, HOLE, _,_)::_
 
 //todo a test for expression order exists, but is unable expose the error in this rule.
 //Waiting for an alternative from K guys.
-//JLS $15.12.4.2 - Evaluate Arguments
+//JLS \$15.12.4.2 - Evaluate Arguments
 context methodInvokeRuntime(_,_,_:KResult, (_,,HOLE,,_), _)::_
 
 rule [methodInvokeRuntimeInstanceOnClass]:

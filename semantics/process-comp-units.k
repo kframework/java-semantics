@@ -2,7 +2,7 @@ require "core.k"
 require "process-type-names.k"
 require "process-imports.k"
 
-/*
+/*@ \section{Module PROCESS-COMP-UNITS}
 ProcessCompUnitsPhase:
   For each CompUnit separately:
 1. Process import decs. Build <compUnitImports>.

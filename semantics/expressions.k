@@ -1,13 +1,15 @@
 require "core.k"
 require "subtyping.k"
 require "primitive-types.k"
+require "elaborate-blocks.k"
+
+//@ \section{Module EXPRESSIONS}
 
 module EXPRESSIONS
     imports CORE
     imports SUBTYPING
     imports PRIMITIVE-TYPES
-
-//@ \section{Operators}
+    imports ELABORATE-BLOCKS //for "isCompoundAssignLabel
 
 //Infix operators
 context /* ||  */'LazyOr(HOLE,,_)::_
@@ -80,7 +82,7 @@ rule /* I1 >= I2 */ 'GtEq(I1:Int :: _,, I2:Int :: _) :: bool => I1 >=Int I2
 rule                'GtEq(F1:Float :: _,, F2:Float :: _) :: bool => F1 >=Float F2
 
 rule /* I1 <<  I2 */ 'LeftShift(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType
-    => normalize( (I1 <<Int (I2 &Int (bitCount(ResT) -Int 1))) :: ResT ) //JLS 15.19
+    => normalize( (I1 <<Int (I2 &Int (bitCount(ResT) -Int 1))) :: ResT ) //JLS \$15.19
 rule /* I1 >>  I2 */ 'RightShift(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType
     => normalize( (I1 >>Int (I2 &Int (bitCount(ResT) -Int 1))) :: ResT )
 rule /* I1 >>> I2 */ 'URightShift(I1:Int :: _,, I2:Int :: NT:NumericType) :: ResT:NumericType
@@ -185,7 +187,7 @@ rule rightTypedNumber(I:Int, IntT:IntType) => I::IntT
 rule rightTypedNumber(I:Int, FloatT:FloatType) => Int2Float(I)::FloatT
 
 //Conditional expression : ?: . Desugared into an if with cast.
-//The biggest difficulty is computing the expression type, according to JLS1 $15.24
+//The biggest difficulty is computing the expression type, according to JLS1 \$15.24
 rule 'Cond(CondExp:TypedExp,, TrueExp:TypedExp,, FalseExp:TypedExp) :: ResT:Type
     => castImpl(ResT, 'If(CondExp,, TrueExp,, FalseExp)) :: ResT
 

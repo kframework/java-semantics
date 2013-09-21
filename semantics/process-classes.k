@@ -1,9 +1,13 @@
 require "core.k"
 require "elaborate-blocks.k"
 
+//@ \section{Module PROCESS-CLASSES}
+
 module PROCESS-CLASSES
     imports CORE
     imports ELABORATE-BLOCKS
+
+//@ \subsection{Auxiliary functions}
 
 syntax K ::= "getContextType" "(" K //'ListWrap(...) - the list of method attributes
                               ")"                           [function]
@@ -37,7 +41,8 @@ when        KL =/=KLabel 'Final
 
 rule isFinal('ListWrap(.KList))      => false
 
-//@ \section{Process type list}
+/*@ \subsection{Third pass - processing class members} */
+
 syntax K ::= "processClasses" "("
                                   K //setWrap(Set) - the set of all classes
                               ")"         [strict]
@@ -48,8 +53,6 @@ syntax K ::= "processClasses" "("
            | "processType" "("
                                 ClassType  //the class to be processed
                             ")"
-
-/*@ \subsection{Third pass - processing class members} */
 
 //We need to process Object first. Thus when we will process any interfaces,
 //Object class will already be processed.
@@ -151,7 +154,7 @@ rule <k> saveImplTrans(setWrap(S1:Set)) => . ...</k>
      <classType> Class </classType>
      <implTrans> _ => S1 </implTrans>
 
-//inherits the methods of the base class, based on rules in JLS $8.4.8 paragraph 1
+//inherits the methods of the base class, based on rules in JLS \$8.4.8 paragraph 1
 syntax K ::= "tryInheritSet" "(" Set ")"
            | "tryInherit" "(" ClassType ")"
            | "tryInheritImpl" "(" Map ")"
@@ -296,10 +299,6 @@ syntax K ::= "storeMethod" "("
                               K ","           //S - method body
                               MethodType      //method closure type: methodType(Signature, ReturnType)
                            ")"
-
-syntax Types ::= "types" "(" KList // list of Type elements, when processed
-                         ")"
-syntax KResult ::= Types
 
 syntax K     ::= "getTypesFromParams" "(" KList // list of paramImpl terms,
                                                // to be processed into Type terms

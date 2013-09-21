@@ -2,6 +2,8 @@ require "core.k"
 require "classes.k"
 require "method-invoke.k"
 
+//@ \section{Module API-CORE}
+
 module API-CORE
     imports CORE
     imports CLASSES
@@ -49,17 +51,19 @@ when
     Id2String(MethodName) ==String "print"
 
 rule [scanner-nextInt]:
-    <k>
-      invokeImpl(
-        methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
-        'ListWrap(.KList)
-      ) => I :: int
-      ...
-    </k>
-    <in> ListItem(I:Int) => . ...</in>
+    invokeImpl(
+      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
+      'ListWrap(.KList)
+    ) => readInt
 when
     Id2String(MethodName) ==String "nextInt"
-        [read]
+
+//An intermediate construct for reading from console, meant mostly to simplify debugging.
+syntax K ::= "readInt"
+
+rule [readInt]:
+    <k> readInt => I :: int ...</k>
+    <in> ListItem(I:Int) => . ...</in>
 
 rule [object-getClass-on-object]:
     <k>

@@ -1,12 +1,16 @@
 require "core.k"
+require "aux-strings.k"
 
-//todo: investigate why the execution hangs at the very beginning
+/*@ \section{Module PROCESS-TYPE-NAMES}
+First pass - collecting globally accessible names in the program. This includes packages,
+top-level classes and inner classes. In each compilation unit just class declarations
+(both global and inner) are processed. Results are stored in the cell <typeNamesMap>.*/
 
 module PROCESS-TYPE-NAMES
     imports CORE
-    imports LITERALS // for retainTail
+    imports AUX-STRINGS // for retainTail
 
-/*@ \subsection{First pass - processing top level names} */
+/*@ \subsection{Compilation units and packages}*/
 
 rule [PackageNameStart]:
     'PackageName('ListWrap(Ks:KList)) => packageNameImpl("", Ks:KList)                  [structural]
@@ -95,6 +99,8 @@ when notBool( (Label ==KLabel 'ClassDec) orBool (Label ==KLabel 'InterfaceDec)
 rule [processTypeNamesDiscard]:
     <k> processTypeNames(.KList, PackId:PackageId) => .K ...</k>
     <typeNamesMap>... PackId |-> _ ...</typeNamesMap>
+
+/*@ \subsection{Auxiliary constructs}*/
 
 //Converts a pair of PackagId, Id into a fully qualified class name
 syntax K ::= "getClassType" "(" PackageId // the Package Id

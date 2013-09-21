@@ -3,6 +3,8 @@ require "process-comp-units.k"
 require "process-class-decs.k"
 require "elaborate-blocks.k"
 
+//@ \section{Module PROCESS-LOCAL-CLASSES}
+
 module PROCESS-LOCAL-CLASSES
     imports CORE
     imports PROCESS-COMP-UNITS

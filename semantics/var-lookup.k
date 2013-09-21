@@ -4,6 +4,8 @@ require "process-classes.k"
 require "static-init.k"
 require "expressions.k"
 
+//@ \section{Module VAR-LOOKUP}
+
 module VAR-LOOKUP
     imports CORE
     imports SUBTYPING

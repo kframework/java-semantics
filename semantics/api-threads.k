@@ -1,6 +1,8 @@
 require "core.k"
 require "method-invoke.k"
 
+//@ \section{Module API-THREADS}
+
 module API-THREADS
     imports CORE
     imports METHOD-INVOKE
@@ -47,7 +49,7 @@ when
             Id2String(MethodName) ==String "startImpl"
     andBool Id2String(ThreadId) ==String "java.lang.Thread"
 
-//@ \section{Synchronized}
+//@ \subsection{Synchronized}
 
 //evaluate the expression
 context 'Synchronized(HOLE,, _)
@@ -111,7 +113,7 @@ rule [synchronized-method-static-desugar]:
     </k>
     <crntClass> Class:ClassType </crntClass>
 
-//@ \section{Threading related methods}
+//@ \subsection{Threading related methods}
 
 rule [thread-join]:
     <k>
@@ -336,7 +338,7 @@ when
             Class ==K class String2Id("java.lang.Thread")
     andBool Id2String(MethodName) ==String "interruptImpl"
 
-//@ \section{Thread termination}
+//@ \subsection{Thread termination}
 
 rule [ThreadTermination]:
     ( <thread>

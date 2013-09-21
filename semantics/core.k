@@ -1,6 +1,8 @@
+//@ \section{Module CORE}
+
 module CORE
 
-/*@ \section{Configuration}
+/*@ \subsection{Configuration}
 The configuration is almost identical to that of typed KOOL.*/
 
 configuration
@@ -40,6 +42,7 @@ configuration
             </crntObj>
           </control>
 
+          <br/>
           //Threading-related cells
 
           //Thread Id
@@ -52,6 +55,7 @@ configuration
           <interrupted> false </interrupted>
         </thread>
       </threads>
+
       <br/>
       <store color="white"> .Map </store>
       <in color="magenta" stream="stdin"> .List </in>
@@ -63,6 +67,7 @@ configuration
       <typeNamesMap> .Map </typeNamesMap>
 
       <classesToAccessModes> .Map </classesToAccessModes>
+
       <br/>
       <classes color="Fuchsia">
         <class multiplicity="*" color="Fuchsia">
@@ -85,10 +90,14 @@ configuration
           <rawImplements> .K </rawImplements>
           <unprocessedBases> .K </unprocessedBases>//base classes that didn't
                                                    //reached the state DecsProcessedCPP yet.
+
+          <br/>
           <declarations color="purple"> .K </declarations>
 
           //Either classMetaT or interfaceMetaT
           <metaType> .K </metaType>
+
+          <br/>
 
           //'LocalVarDec for each field
           <fieldDecs color="purple"> 'ListWrap(.KList) </fieldDecs>
@@ -117,18 +126,21 @@ configuration
           //Map[Id -> TypedVal]
           <constantEnv> .Map </constantEnv>
 
+          <br/>
           //The sequence of static initializers (that also includes field initializers)
           <staticInit> 'ListWrap(.KList) </staticInit>
-          <br/>
 
           //Initialization status of this class
           //see static-init.k for more details.
           <staticInitStatus> StaticUninitialized </staticInitStatus>
 
+          <br/>
           <cuImports> .Map </cuImports> //imports of the enclosing CU, for top-level classes only.
 
           //Map[Id -> ClassType]. Map of classes accessible by simple name inside this class.
           <imports> .Map </imports>
+
+          <br/>
           <enclosingClass> noClass </enclosingClass> //noClass if this is a top-level class,
                                                      //ClassType of the enclosing class otherwise
 
@@ -138,6 +150,7 @@ configuration
           //Used during elaboration phase only.
           <enclosingLocalEnv> .Map </enclosingLocalEnv>
 
+          <br/>
           //The major phase of <class> lifetime. See ClassPreprocessingPhase definition.
           <preprocessingPhase> .K </preprocessingPhase>
         </class>
@@ -164,6 +177,8 @@ configuration
       //Used to generate unique package names for local classes
       <nextLocalId> 1 </nextLocalId>
 
+      <br/>
+
       //The map of classes accessible by simple name for declarations within current compilation unit.
       //Used in process-class-decs phase.
       <crntCuImports> .Map </crntCuImports>
@@ -171,6 +186,8 @@ configuration
       <computationPhase> ProcessTypeNamesPhase </computationPhase>
       //required in ProcessCompUnitsPhase
       <programBackup> $PGM:K </programBackup>
+
+      <br/>
 
       //Set[OL:Int] - the set of locations of used monitor objects
       <busy color="cyan"> .Set </busy>
@@ -180,6 +197,8 @@ configuration
       <waitingThreads> .Map </waitingThreads>
 
       <terminated color="red"> .Set </terminated>
+
+      <br/>
 
       <dissolveEmptyK> true </dissolveEmptyK>
       <dissolveClasses> true </dissolveClasses>
@@ -191,7 +210,7 @@ configuration
       <debug> .List </debug>
     </T>
 
-//@ \section{Identifiers}
+//@ \subsection{Identifiers}
 
 syntax ComputationPhase ::=
     /* The content of <typeNamesMap> is computed, of type
@@ -261,7 +280,7 @@ syntax StaticInitStatus ::= "StaticUninitialized"
 
 rule 'Id(Str:String) => String2Id(Str)                [structural, anywhere]
 
-//@ \section{Types}
+//@ \subsection{Types}
 
 syntax IntOrLongType ::= "int" | "long"
 syntax NumericType ::= IntType | FloatType
@@ -279,7 +298,7 @@ syntax Type ::= PrimitiveType
 syntax RawVal ::= Int | Float | Bool | String
                 | "null"
                 | "nothing"
-                | "undefined" [latex(\bot_{#1})]
+                | "undefined" [latex(\bot)]
 
 syntax ProtoMethodType ::= "methodType" "(" K ","             // to be processed into Types
                                             Type              // return type
@@ -299,10 +318,16 @@ syntax ClassType ::= "class" Id
                    | "noClass"
 
 syntax RefType ::= ClassType
-                 | "arrayOf" Type       [latex({#1}\texttt{\char91\char93})]
+                 | "arrayOf" Type
 
 syntax ContextType ::= "staticCT" | "instanceCT"
 syntax KResult ::= ContextType
+
+syntax Types ::= "types" "(" KList // list of Type elements, when processed
+                         ")"
+syntax KResult ::= Types
+
+//@ \subsection{Values}
 
 syntax RawVal ::= "objectClosure" "(" Int //OL - object location
 
@@ -366,7 +391,7 @@ computation to continue only if a prefix guard evaluates to true.  */
 syntax K ::= "true?"
 rule true::bool ~> true? => .  [structural]
 
-/*@ \section{auxiliary constructs} */
+/*@ \subsection{auxiliary constructs} */
 
 
 /*toString - Converts various result types to string type, mainly for printing.*/
@@ -396,7 +421,7 @@ rule default(NT:NumericType) => 0 :: NT
 rule default(bool) => false :: bool
 rule default(RT:RefType) => null :: RT
 
-//@ \subsection{Default types for raw values}
+//@ \subsubsection{Default types for raw values}
 
 //Converts a RawVal into a TypedVal, adding a default type for the given value.
 //Greatly simplifies many rules, because now we can use raw vals in the RHS, instead of typed vals.

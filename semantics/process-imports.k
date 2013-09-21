@@ -1,11 +1,11 @@
 require "core.k"
 
+/*@ \section{Module PROCESS-IMPORTS}
+Rules related to processing import declarations. Part of ProcessCompUnitsPhase.
+*/
+
 module PROCESS-IMPORTS
     imports CORE
-
-// Rules related to processing import declarations. Part of ProcessCompUnitsPhase.
-
-/*@ \section{Second pass - processing imports} */
 
 syntax K ::= "compUnitImportsStart" "(" PackageId // The package of the current compilation unit
                                     ")"

@@ -8,6 +8,10 @@ require "arrays.k"
 require "static-init.k"
 require "var-lookup.k"
 
+/*@ \section{Module CLASSES}
+Object closures. The only change to untyped KOOL's values is that closures are now typed
+(their last argument holds their type).
+*/
 module CLASSES
     imports CORE
     imports PROCESS-TYPE-NAMES
@@ -18,10 +22,6 @@ module CLASSES
     imports ARRAYS
     imports STATIC-INIT
     imports VAR-LOOKUP
-
-/*@ \section{Object and method closures}
-The only change to untyped KOOL's values is that closures are now typed
-(their last argument holds their type). */
 
 //@ \subsection{Type labels}
 //@Here we rewrite java type ast into simple types
@@ -54,7 +54,7 @@ rule typeOf(objectClosure(_, ListItem(el(Class:ClassType, _,_,_)) _:List, _))
      => Class
 rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T
 
-/*@ \subsection{New}
+/*@ \subsection{New instance creation}
 The semantics of \texttt{new} in dynamically typed KOOL is also
 similar to that in untyped KOOL, the main difference being the
 management of the return types.  Indeed, when a new object is created

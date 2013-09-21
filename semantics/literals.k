@@ -1,30 +1,15 @@
 require "core.k"
+require "aux-strings.k"
 require "primitive-types.k"
+
+//@ \section{Module LITERALS}
 
 module LITERALS
     imports CORE
+    imports AUX-STRINGS
     imports PRIMITIVE-TYPES
 
-//@ \section{Auxiliary constructs}
-
-//Retain the first Count chars in the string
-syntax K ::= "retainHead" "(" String "," Int ")"                        [function]
-rule retainHead(Str:String, Count:Int) => substrString(Str, 0, Count)
-
-//Retain the last Count chars in the string
-syntax K ::= "retainTail" "(" String "," Int ")"                        [function]
-rule retainTail(Str:String, Count:Int) => substrString(Str, lengthString(Str) -Int Count, lengthString(Str))
-
-//Trim the first Count chars in the string
-syntax K ::= "trimHead" "(" String "," Int ")"                          [function]
-rule trimHead(Str:String, Count:Int) => substrString(Str, Count, lengthString(Str))
-
-//Trim the last Count chars in the string
-syntax K ::= "trimTail" "(" String "," Int ")"                          [function]
-rule trimTail(Str:String, Count:Int) => substrString(Str, 0, lengthString(Str) -Int Count)
-
-syntax K ::= "lastChar" "(" String ")"                                  [function]
-rule lastChar(Str:String) => retainTail(Str, 1)
+//@ \subsection{Auxiliary constructs}
 
 syntax K ::= "hexToInt" "(" String ")"                                  [function]
 rule hexToInt(Str:String) => hexToInt(0, Str)
@@ -90,7 +75,7 @@ rule octaAsciiToInt(I:Int) => octaDigitToInt(chrChar(I))
 syntax K ::= "hexAsciiToInt" "(" Int ")"                                [function]
 rule hexAsciiToInt(I:Int) => hexDigitToInt(chrChar(I))
 
-//@ \section{Integer literals}
+//@ \subsection{Integer literals}
 
 rule [LitDeci]:
     'Lit('Deci(Str:String))
@@ -113,7 +98,7 @@ rule [LitOcta]:
           #else normalize(octaToInt(trimHead(Str,              1)) :: int )
         #fi
 
-//@ \section{float literals}
+//@ \subsection{float literals}
 
 rule [LitFloat]:
     'Lit('Float(Str:String))
@@ -125,12 +110,12 @@ rule [LitFloat]:
                 #fi
         #fi
 
-//@ \section{bool literals}
+//@ \subsection{bool literals}
 rule 'Lit('Bool('True(.KList))) => true
 
 rule 'Lit('Bool('False(.KList))) => false
 
-//@ \section{char literals}
+//@ \subsection{char literals}
 //@ Chars are represented as int values, as described in java specification.
 
 rule 'Lit('Char('Single( I:Int ))) => I :: char
@@ -164,7 +149,7 @@ rule 'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
      +Int hexAsciiToInt(I3) *Int   16
      +Int hexAsciiToInt(I4)           :: char
 
-//@ \section{String literals}
+//@ \subsection{String literals}
 
 rule  'Lit('String('ListWrap(K1:K,, K2:K,, Ks:KList)))
       => 'Plus('Lit('String('ListWrap(K1))),,
@@ -178,7 +163,7 @@ when getKLabel(K) =/=KLabel 'Chars
 
 rule 'Lit('String('ListWrap(.KList))) => ""
 
-//@ \section{Null literal}
+//@ \subsection{Null literal}
 
 rule 'Lit('Null(.KList)) => null
 

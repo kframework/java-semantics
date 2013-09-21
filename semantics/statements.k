@@ -1,15 +1,15 @@
 require "core.k"
 require "subtyping.k"
 require "var-lookup.k"
-require "api-core.k"
+
+//@ \section{Module STATEMENTS}
 
 module STATEMENTS
     imports CORE
     imports SUBTYPING
     imports VAR-LOOKUP
-    imports API-CORE //for rtSystemOut
 
-//@ \section{Initiation of execution}
+//@ \subsection{Call of main method}
 
 //For now main class may only be placed in the default package.
 rule [StartExecutionPhase]:
@@ -29,7 +29,7 @@ rule [StartExecutionPhase]:
     <mainClass> ListItem(MainClassS:String) </mainClass>
     <computationPhase> ElaborateBlocksPhase => ExecutionPhase </computationPhase>
 
-//@ \section{Program stack}
+//@ \subsection{Program stack}
 
 //ListItem content as a stack layer
 syntax K ::=
@@ -50,7 +50,7 @@ rule isStackConsumer (KL:KLabel) =>
     orBool (KL ==KLabel 'Break)
     orBool (KL ==KLabel 'Continue) [anywhere]
 
-//@ \section{Blocks} JLS $14.2
+//@ \subsection{Blocks} JLS \$14.2
 
 rule [Block]:
     <k> 'Block(S:K) => S ~> env(Env:Map) ...</k>
@@ -65,9 +65,7 @@ rule [DiscardEmptyList]:
     <k> 'ListWrap(.KList) => . ...</k>
         [structural]
 
-//@ \texttt{env}
-
-//restore the env cell content from env(...) statement argument
+//@ \texttt{env} Restore the env cell content from env(...) statement argument
 syntax K ::= "env" "(" Map ")"
 
 rule [env]:
@@ -79,7 +77,7 @@ rule [envDiscard]:
     (env(_) => .) ~> env(_)
         [structural]
 
-//@ \section{Local Variable Declaration Statements} JLS $14.4
+//@ \subsection{Local Variable Declaration Statements} JLS \$14.4
 //@ Not only local but fields also
 
 /*In Java current version of semantics only int and boolean primitive
@@ -91,12 +89,12 @@ rule [LocalVarDec]:
     <store>... . => L |-> default(T) ...</store>
     <nextLoc> L => L +Int 1 </nextLoc>
 
-//@ \section{Empty statement} JLS $14.6
+//@ \subsection{Empty statement} JLS \$14.6
 
 rule [Empty]:
     'Empty(_) => .
 
-//@ \section{Labeled statements} JLS $14.7
+//@ \subsection{Labeled statements} JLS \$14.7
 
 rule [Labeled]:
     'Labeled(X:Id,, S:K) => S ~> labeledImpl(X)
@@ -107,14 +105,14 @@ rule [labeledImplDiscard]:
 //processed version of the labeled statement
 syntax K ::= "labeledImpl" "(" Id ")"
 
-//@ \section{Expression statements} JLS $14.8
+//@ \subsection{Expression statements} JLS \$14.8
 
 context 'ExprStm(HOLE)
 
 rule [ExprStm]:
     'ExprStm(_:TypedVal) => .
 
-//@ \section{If statement}
+//@ \subsection{If statement}
 
 context 'If(HOLE,,_,,_)
 
@@ -127,7 +125,7 @@ rule [IfFalse]:
 rule [IfThenDesugar]:
     'If(E:K,,S1:K) => 'If(E:K,, S1:K,, .K)
 
-//@ \section{Assert statement}
+//@ \subsection{Assert statement}
 
 context 'AssertStm(HOLE,,_:KList)
 
@@ -152,7 +150,7 @@ rule [AssertStmTwoArgs]:
       'None(.KList)
     ))
 
-//@ \section{Switch statement}
+//@ \subsection{Switch statement}
 
 syntax K ::= "switchImpl" "("
                 TypedVal "," // TV - switch param
@@ -173,7 +171,7 @@ context switchImpl( _,
           ( 'SwitchGroup('ListWrap('Case(HOLE),,_:KList),,_),, _:KList ), _)
 
 //the type associated to V and V2 is not important for match, only the value.
-//JLS3 $14.11, page 377: Every case constant expression associated with
+//JLS3 \$14.11, page 377: Every case constant expression associated with
 //a switch statement must be assignable (§5.2) to the type of the switch Expression.
 
 rule [SwitchCaseNotMatch]:
@@ -214,7 +212,7 @@ rule [SwitchGroupExec]:
 rule [SwitchEndDiscard]:
     switchEnd => .K
 
-//@ \section{While statement} and loop infrastructure.
+//@ \subsection{While statement} and loop infrastructure.
 
 rule [While]:
     'While(E:K,,S:K) => whileImpl(E, S)         [structural]
@@ -227,11 +225,11 @@ syntax K ::= "whileImpl" "("
 rule [whileImpl]:
     whileImpl(E:K, S:K) => 'If(E,, 'Block(S ~> whileImpl(E, S)),, .K)     [structural]
 
-//@ \section{Do statement}
+//@ \subsection{Do statement}
 rule
     'DoWhile(S:K,,E:K) => S ~> whileImpl(E, S)  [structural]
 
-//@ \section{For statement}
+//@ \subsection{For statement}
 
 //wrapper of certain clauses of for statement
 syntax K ::= "stm" "(" K ")"
@@ -295,7 +293,7 @@ rule [StackConsumerStmRestoreEnv]:
 when
   isStackConsumer(KL)
 
-//@ \section{Break statement}
+//@ \subsection{Break statement}
 
 rule [BreakUnlabeledPropagate]:
     'Break('None(_)) ~> (KL:KLabel(_) => .)
@@ -326,7 +324,7 @@ when
 rule [BreakLabeledMatch]:
     'Break('Some(X:Id)) ~> labeledImpl(X:Id) => .
 
-//@ \section{Continue statement}
+//@ \subsection{Continue statement}
 
 rule [ContinuePropagate]:
     'Continue(_) ~> (KL:KLabel(_) => .)
@@ -365,7 +363,7 @@ when
             KL =/=KLabel 'env`(_`)
     andBool KL =/=KLabel 'labeledImpl`(_`)
 
-/*@\section{Return} At method return, we have to check that the type
+/*@\subsection{Return} At method return, we have to check that the type
 of the returned
 value is a subtype of the expected return type.  Moreover, if that is
 the case, then we also upcast the returned value to one of the
@@ -396,7 +394,7 @@ rule [ReturnMethodEnd]:
     </control>
     <envGroup> _ => EnvGroup </envGroup>
 
-/*@ \section{Throw statement}
+/*@ \subsection{Throw statement}
 Exceptions are propagated now until a catch that can bind them is
 encountered. */
 
@@ -460,14 +458,15 @@ rule [ThrowCausesThreadTermination]:
     </k>
     <stack> .List </stack>
 
-//@ \section{Try statement}
+//@ \subsection{Try statement}
 
 rule [TryCatchFinallyDesugar]:
     'Try(TryS:K,, 'ListWrap(K:K,, Ks:KList),,FinallyS:K)
     => 'Try('Try(TryS,,'ListWrap(K,,Ks)),,'ListWrap(.KList),,FinallyS)
         [structural]
 
-//@ \subsection{Execution of try–catch} JLS 14.20.1
+/*@ \subsubsection{Execution of try-catch} JLS \$14.20.1
+*/
 
 //resolve the catch clauses of try statement
 context 'Try(_:K,,'ListWrap(_,, HOLE,, _))
@@ -494,7 +493,8 @@ when isKResult(KRs)
 rule [TryBlocksDiscard]:
     catchBlocks(_) => .K
 
-//@ \subsection{Execution of try-finally} JLS 14.20.2
+/*@ \subsubsection{Execution of try-finally} JLS \$14.20.2
+*/
 
 rule [TryFinally]:
     'Try(TryS:K ,,'ListWrap(.KList),,FinallyS:K) => TryS ~> finallyBlock(FinallyS)

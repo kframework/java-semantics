@@ -1,6 +1,8 @@
 require "core.k"
 require "subtyping.k"
 
+//@ \section{Module PRIMITIVE-TYPES}
+
 module PRIMITIVE-TYPES
     imports CORE
     imports SUBTYPING

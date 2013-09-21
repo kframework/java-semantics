@@ -1,9 +1,9 @@
 require "core.k"
-require "process-classes.k"
+
+//@ \section{Module SUBTYPING}
 
 module SUBTYPING
     imports CORE
-    imports PROCESS-CLASSES
 
 //Checks whether first type is a subtype of the second
 syntax K ::= "subtype" "("
@@ -23,7 +23,7 @@ rule [subtypeRefTrue]:
     subtype( T:Type, T ) => true
         [structural]
 
-/*@ \subsubsection{Subtyping among primitive types} */
+/*@ \subsection{Subtyping among primitive types} */
 
 rule subtype( byte, T:Type ) => (T ==K short) orBool (T ==K int) orBool (T ==K long) orBool (isFloatType(T) ==K true)
 when T =/=K byte [structural]
@@ -50,7 +50,7 @@ when T =/=K double [structural]
 rule subtype( bool, T:Type ) => false
 when T =/=K bool [structural]
 
-/*@ \subsubsection{Subtyping among reference types}
+/*@ \subsection{Subtyping among reference types}
 The subclass relation introduces a subtyping relation. */
 
 rule [subtypeClassOfClassRed]:
@@ -152,7 +152,7 @@ rule [subtypeArrayOfArrayRef]:
 rule [subtypeOfNoClass]:
     subtype( _, noClass ) => false
 
-/*@ \subsubsection{Subtyping lists of types}*/
+/*@ \subsection{Subtyping lists of types}*/
 
 rule [subtypeList]:
     subtypeList(types(T1:Type,,Ts:KList), types(Tp1:Type,,Tps:KList))
