@@ -1,4 +1,5 @@
 require "labels.k"
+require "configuration.k"
 require "core.k"
 require "aux-strings.k"
 require "process-type-names.k"
@@ -23,6 +24,7 @@ require "api-threads.k"
 
 module JAVA
     imports LABELS
+    imports CONFIGURATION
     imports CORE
     imports AUX-STRINGS
     imports PROCESS-TYPE-NAMES
