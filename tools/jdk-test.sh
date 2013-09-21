@@ -31,7 +31,7 @@ echo
 # since it have the same performance as standart delete from java.
 java -jar $TOOLS_DIR/test-runner.jar \
   -gen $TOOLS_DIR/aux-jdk-run.sh -run $TOOLS_DIR/aux-echo.sh \
-  -taskExt java -threads 22 -timeout 120 -testsuiteName java-semantics \
+  -taskExt java -threads 12 -timeout 120 -testsuiteName java-semantics \
   -clean $CLEAN ${@:STARTARG}
 
 END=$(date +%s)
