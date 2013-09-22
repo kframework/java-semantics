@@ -1,0 +1,2 @@
+stored a[0] and a[1]
+Thread terminated with exception: java.lang.ArrayStoreException: java.lang.Double
