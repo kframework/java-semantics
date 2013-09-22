@@ -141,6 +141,7 @@ syntax K ::= "lookupMethod" "(" RefType   //target ref type (not necessarily cla
 //todo K 10341 it looks like [strict] above don't work
 context lookupMethod(_,_,_,HOLE,_,_,_)
 
+//Regular case - target type is a class
 rule [lookupMethodLookupSig]:
     <k>
       lookupMethod(
@@ -157,7 +158,8 @@ rule [lookupMethodLookupSig]:
     <classType> Class </classType>
     <methods> Env:Map </methods>
 
-//When qualifier is not a class, lookup the method in the class Object
+//Target type is not class but another ref type, lookup the method in the class Object,
+//with some exceptions
 rule [lookupMethodLookupSigGeneralRef]:
     <k>
       lookupMethod(

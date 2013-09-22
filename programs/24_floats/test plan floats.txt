@@ -67,3 +67,6 @@ Test structure: an overloaded method with one argument of all possible numeric t
 52. Double is larger than any other numeric type.
   Method f(double).
   Call the method with arguments byte, short, int, long ,char, float, double.
+
+  Part VI. Printing double.
+61. print(some double), println(some double).

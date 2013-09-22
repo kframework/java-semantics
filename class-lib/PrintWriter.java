@@ -3,6 +3,7 @@ package java.io;
 public class PrintWriter {
     public native void print(String s);
     public native void print(long l);
+    public native void print(double d);
     public native void print(boolean b);
 
     public void print(Object o) {
@@ -23,6 +24,10 @@ public class PrintWriter {
 
     public void println(long l) {
       print(l + "\n");
+    }
+
+    public void println(double d) {
+      print(d + "\n");
     }
 
     public void println(boolean b) {
