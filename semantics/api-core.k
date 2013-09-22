@@ -58,12 +58,25 @@ rule [scanner-nextInt]:
 when
     Id2String(MethodName) ==String "nextInt"
 
+rule [scanner-nextInt]:
+    invokeImpl(
+      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
+      'ListWrap(.KList)
+    ) => readString
+when
+    Id2String(MethodName) ==String "nextLine"
+
 //An intermediate construct for reading from console, meant mostly to simplify debugging.
 syntax K ::= "readInt"
+           | "readString"
 
 rule [readInt]:
     <k> readInt => I :: int ...</k>
     <in> ListItem(I:Int) => . ...</in>
+
+rule [readString]:
+    <k> readString => Str :: rtString ...</k>
+    <in> ListItem(Str:String) => . ...</in>
 
 rule [object-getClass-on-object]:
     <k>

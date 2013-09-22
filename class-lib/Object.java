@@ -18,4 +18,6 @@ public class Object {
     public native void notify() throws IllegalMonitorStateException;
 
     public native void notifyAll() throws IllegalMonitorStateException;
+
+    protected native Object clone();
 }
