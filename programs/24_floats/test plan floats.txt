@@ -68,5 +68,10 @@ Test structure: an overloaded method with one argument of all possible numeric t
   Method f(double).
   Call the method with arguments byte, short, int, long ,char, float, double.
 
-  Part VI. Printing double.
+  Part VI. Other tests (discoveder while running examples from Java Precisely.)
+
 61. print(some double), println(some double).
+
+62. Initialization of floats.
+  - Class with double field. Print the value of (field + 1).
+  Will get stuck if double is initialzied as int.

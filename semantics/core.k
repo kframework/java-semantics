@@ -203,13 +203,14 @@ rule toString(rtString) => "java.lang.String"
 
 //@ \texttt{typeOf definition}
 
-syntax K ::= "typeOf" "(" K ")" [function]
+syntax K ::= "typeOf" "(" K ")"                           [function]
 rule typeOf(_ :: T:Type) => T
 rule typeOf(T:Type) => T
 
 //default value of all types
-syntax K ::= "default" "(" Type ")"     [function]
-rule default(NT:NumericType) => 0 :: NT
+syntax K ::= "default" "(" Type ")"                       [function]
+rule default(IntT:IntType) => 0 :: IntT
+rule default(FloatT:FloatType) => 0.0 :: FloatT
 rule default(bool) => false :: bool
 rule default(RT:RefType) => null :: RT
 
