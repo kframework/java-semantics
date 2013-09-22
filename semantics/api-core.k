@@ -127,7 +127,7 @@ when
 rule [elab-String-length]:
     lookupMethod( rtString, MethodName:Id,
       _, noValue, false, QualTE:TypedExp, .KList
-    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualTE, .KList, instanceCT) :: objectClass)
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualTE, .KList, instanceCT) :: int)
 when
     Id2String(MethodName) ==String "length"
 
@@ -139,20 +139,20 @@ when Id2String(MethodName) ==String "length"
 rule [elab-String-charAt]:
     lookupMethod( rtString, MethodName:Id,
       _, noValue, false, QualTE:TypedExp, ParamExp:TypedExp
-    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualTE, ParamExp, instanceCT) :: objectClass)
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualTE, ParamExp, instanceCT) :: char)
 when
     Id2String(MethodName) ==String "charAt"
 
 rule [methodInvokeRuntime-String-charAt]:
     methodInvokeRuntime(rtString, sig(MethodName:Id, _), Str:String::rtString, I:Int :: int, _ )::_
-    => substrString(Str, I, I +Int 1) :: char
+    => ordChar(substrString(Str, I, I +Int 1)) :: char
 when Id2String(MethodName) ==String "charAt"
 
 //static native String valueOf(int i);
 rule [elab-String-valueOf]:
     lookupMethod( rtString, MethodName:Id,
       _, noValue, false, QualK:K, ParamExp:TypedExp
-    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, ParamExp, instanceCT) :: objectClass)
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, ParamExp, instanceCT) :: rtString)
 when
     Id2String(MethodName) ==String "valueOf"
 
