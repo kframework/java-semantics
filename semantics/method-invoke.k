@@ -393,6 +393,7 @@ rule [methodInvokeRuntimeOnString]:
     )
 when
             (Id2String(MethodName) =/=String "length")
+    andBool (Id2String(MethodName) =/=String "charAt")
     andBool (Id2String(MethodName) =/=String "valueOf")
     andBool isKResult(ParamVals)
 

@@ -136,6 +136,18 @@ rule [methodInvokeRuntime-String-length]:
     => lengthString(Str) :: int
 when Id2String(MethodName) ==String "length"
 
+rule [elab-String-charAt]:
+    lookupMethod( rtString, MethodName:Id,
+      _, noValue, false, QualTE:TypedExp, ParamExp:TypedExp
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualTE, ParamExp, instanceCT) :: objectClass)
+when
+    Id2String(MethodName) ==String "charAt"
+
+rule [methodInvokeRuntime-String-charAt]:
+    methodInvokeRuntime(rtString, sig(MethodName:Id, _), Str:String::rtString, I:Int :: int, _ )::_
+    => substrString(Str, I, I +Int 1) :: char
+when Id2String(MethodName) ==String "charAt"
+
 //static native String valueOf(int i);
 rule [elab-String-valueOf]:
     lookupMethod( rtString, MethodName:Id,
