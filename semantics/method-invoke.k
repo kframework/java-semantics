@@ -382,6 +382,9 @@ rule [methodInvokeRuntimeInstanceOnInterface]:
 when
     isKResult(ParamVals)
 
+/*
+If the method is not one of the supported methods of class String, look it up in the class Object.
+*/
 rule [methodInvokeRuntimeOnString]:
     methodInvokeRuntime(_, sig(MethodName:Id, Ts:Types),
         Str:String::_,
@@ -395,6 +398,9 @@ when
             (Id2String(MethodName) =/=String "length")
     andBool (Id2String(MethodName) =/=String "charAt")
     andBool (Id2String(MethodName) =/=String "valueOf")
+    andBool (Id2String(MethodName) =/=String "equals")
+    andBool (Id2String(MethodName) =/=String "toString")
+    andBool (Id2String(MethodName) =/=String "compareTo")
     andBool isKResult(ParamVals)
 
 rule [methodInvokeRuntimeOnArray]:
