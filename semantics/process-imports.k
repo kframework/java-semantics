@@ -18,7 +18,7 @@ rule [compUnitImportsStart]:
     <typeNamesMap>... Pack |-> mapWrap(PackMap:Map) ...</typeNamesMap>
     <compUnitImports> _ => PackMap </compUnitImports>
 
-//Process kast terms 'TypeImportDec or 'TypeImportOnDemandDec
+//Process K-AST terms 'TypeImportDec or 'TypeImportOnDemandDec
 
 context 'TypeImportDec(HOLE)
 
@@ -52,7 +52,7 @@ rule [importOnDemandImplPackage]:
 rule [importOnDemandImplDiscard]:
     importOnDemandImpl(.) => .K
 
-//importing an unexisting package have no effect.
+//importing a nonexistent package have no effect.
 //This is required because some tests import some packages from JDK that are not included in
 //class-lib.
 rule [TypeImportOnDemandUnexisting]:

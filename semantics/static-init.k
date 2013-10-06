@@ -1,24 +1,27 @@
 require "core.k"
 require "process-classes.k"
+require "var-lookup.k"
 
 //@ \section{Module STATIC-INIT}
 
 module STATIC-INIT
     imports CORE
     imports PROCESS-CLASSES
+    imports CLASSES               //for restoreMethContext
+    imports VAR-LOOKUP            //for localVar
 
 /*Triggers static initialization of a class.
 
-Detailed initializaton procedure is described in JLS \$12.4.2. Here we implement an approximation of that algorithm,
+Detailed initialization procedure is described in JLS \$12.4.2. Here we implement an approximation of that algorithm,
 that does not use the traditional Java synchronization mechanism, but instead relies on term rewriting
 capabilities to implement locks. This algorithm is required to avoid multithreaded issues during static initialization.
 This may happen when two threads access an uninitialized class at the same time.
 
 Initialization status of a class may have 3 states: StaticUninitialized, StaticInitializing(TId), StaticInitialized.
 //Here TId is the id of the thread that initiated the initializing process.
-//Now when we reach staticInit(Class), depending on hte initialization status of class we should do the following:
+//Now when we reach staticInit(Class), depending on the initialization status of class we should do the following:
 1. status = StaticUninitialized => perform the initialization
-2. status = StaticInitializing(TId), TId = this thread => this is a recursive initialziation request, discard the term.
+2. status = StaticInitializing(TId), TId = this thread => this is a recursive initialization request, discard the term.
 3. status = StaticInitializing(TId), IID = another thread => we should wait until the initialization is completed
   by another thread. Do not match this case.
 4. status = StaticInitialized => the class have been already initialized. Discard the term.
@@ -33,6 +36,8 @@ rule [staticInit]:
       => staticInit(BaseClass)
       ~>  'Try(
             StaticInit,,
+
+            //catch clause of 'Try
             'ListWrap(
               'Catch(
                 'Param('ListWrap(.KList),,
@@ -49,21 +54,27 @@ rule [staticInit]:
                 )
               )
             ),,
-            restoreEnvObjContext(OldEnvGroup, Obj, CT)
+
+            //finally clause of 'Try
+            restoreMethContext(<envGroup> OldEnvGroup </envGroup> <crntObj> OldCrntObj </crntObj> RestMethContext)
             ~> staticInitDone(Class)
           )
       ...
     </k>
-    <envGroup>
-      OldEnvGroup:Bag
-      => <env> .Map </env> <localClassesEnv> .Map </localClassesEnv>
-    </envGroup>
-    <crntObj>
-      Obj:Bag
+
+    <methodContext>
+      <envGroup>
+        OldEnvGroup:Bag
+        => <env> .Map </env> <localClassesEnv> .Map </localClassesEnv>
+      </envGroup>
+      <crntObj>
+        OldCrntObj:Bag
       =>  <crntClass> Class </crntClass>
           <location> noValue </location>
-    </crntObj>
-    <contextType> CT:ContextType => staticCT </contextType>
+      </crntObj>
+      RestMethContext:Bag
+    </methodContext>
+
     <tid> TId:Int </tid>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>

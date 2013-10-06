@@ -11,9 +11,9 @@ module ARRAYS
 
 syntax K ::= RawVal "::" "elem" Type
 
-//@ \subsection{Array declarators with c-style dimensions and inits}
+//@ \subsection{Array declarators with c-style dimensions and initializers}
 
-//C-style array dec
+//C-style array declaration
 //Applied in both elaboration and execution phase
 rule [ArrayVarDecIdDesugar]:
     'LocalVarDec(
@@ -61,7 +61,7 @@ rule [FieldDecWithArrayInitDesugar]:
       ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.KList),, 'ArrayInit(InitK)) )
     )))                                                 [structural]
 
-//first two rules - desugaring C-like array decs, for params
+//first two rules - desugaring C-like array declarations, for params
 
 rule [ArrayParamIdDesugar]:
     'Param(

@@ -16,7 +16,7 @@ syntax ComputationPhase ::=
         <enclosingClass>
         <rawExtends>
         <rawImplements>
-        <declarations>
+        <rawDeclarations>
         <metaType>
         <cuImports> - imports of the enclosing CU, for top-level classes only.
       A class first registered in a <class> cell is in the state CreatedCPP.
@@ -147,7 +147,7 @@ syntax RawVal ::= "objectClosure" "(" Int //OL - object location
                     RoutineType "," // Either methodRT or constructorRT
                     K ","           // first line, constructors only. Either of:
                                     //   'SuperInv - superclass constructor invocation
-                                    //   'AltConstrInv - alternate this class consturctor invocation
+                                    //   'AltConstrInv - alternate this class constructor invocation
                                     //   .K - none, if this class is Object
                                     //   For methods it is noValue
                     K               // S - method body
@@ -227,12 +227,12 @@ rule defaultTyped(Str:String) => Str :: rtString                                
 rule defaultTyped(null) => null :: nullType                                           [structural]
 rule defaultTyped( objectClosure(
       OL:Int,
-      ListItem(el(Class:ClassType, BI:BagItem, Encloser:KResult, LocalEnv:Map)) Rest:List,
+      ListItem(el(Class:ClassType, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map)) Rest:List,
       ObjLocalClassesEnv:Map
     ))
     => objectClosure(
       OL,
-      ListItem(el(Class, BI, Encloser, LocalEnv)) Rest,
+      ListItem(el(Class, BI, EnclosingObj, LocalEnv)) Rest,
       ObjLocalClassesEnv
     ) :: Class
                                                                                       [structural]
@@ -278,18 +278,6 @@ rule [getTopLevel]:
 syntax K ::= "eqAux" "(" K "," K ")"                  [seqstrict]
 rule eqAux(KR1:KResult, KR2:KResult) => KR1 ==K KR2
 
-//restore the content of cells <envGroup>, <crntObj>, <contextType>
-syntax K ::= "restoreEnvObjContext" "(" Bag         //The content of <envGroup>
-                                    "," Bag         //The content of <crntObj>
-                                    "," ContextType //The content of <contextType>
-                                    ")"
-
-rule [restoreEnvObjContext]:
-    <k> restoreEnvObjContext(EnvGroup:Bag, Obj:Bag, CT:ContextType) => . ...</k>
-    <envGroup> _ => EnvGroup </envGroup>
-    <crntObj> _ => Obj </crntObj>
-    <contextType> _ => CT </contextType>
-
 //The content of an ListItem() representing the old <envStack>
 syntax K ::= "el" "(" ClassType //The class corresponding to the current layer
                   "," BagItem   //<env> instance fields </env>
@@ -297,7 +285,7 @@ syntax K ::= "el" "(" ClassType //The class corresponding to the current layer
                   "," Map       //Map[Id ->Loc], enclosingLocalEnv, local classes only.
                   ")"
 
-//A wrapper for maps. Allows the usage of multy-level maps.
+//A wrapper for maps. Allows the usage of multi-level maps.
 //Also used as part of mapUnion operation in java-process-classes
 syntax KResult ::= "mapWrap" "(" Map ")"
                  | "setWrap" "(" Set ")"

@@ -19,7 +19,7 @@ rule [StartProcessClassDecsPhase]:
 
 /* Question: how do we know if bases were already resolved for this class or not?
   Answer: When resolveBases(Class) is consumed by the rule [resolveBasesEnd], the class
-  clanges its state: CreatedCPP => BasesResolvedCPP
+  changes its state: CreatedCPP => BasesResolvedCPP
 */
 rule [resolveBasesTopLevelStart]:
     <k> (. => resolveBases(Class, RawExtends, RawImplements)) ~> processClassDecs(_) ...</k>
@@ -58,8 +58,8 @@ syntax K ::= "resolveBases" "(" ClassType //The class for which we resolve bases
                             "," KList     //Implements clauses
                             ")"
 
-context resolveBases(_, HOLE, _)      //Heat extends dec
-context resolveBases(_,_, _,,HOLE,,_) //Heat implements decs
+context resolveBases(_, HOLE, _)      //Heat extends declaration
+context resolveBases(_,_, _,,HOLE,,_) //Heat implements declarations
 
 rule [resolveBases]:
     <k> resolveBases(Class:ClassType, BaseClass:ClassType, ImplTypes:KList) => . ...</k>
@@ -99,7 +99,7 @@ rule [processClassDecEnd]:
     </k>
     <classType> Class </classType>
     <enclosingClass> OuterClass:ClassType </enclosingClass>
-    <declarations> CBody:K </declarations>
+    <rawDeclarations> CBody:K </rawDeclarations>
     <metaType> MetaT:MetaType </metaType>
     <preprocessingPhase> BasesResolvedCPP => DecsProcessedCPP </preprocessingPhase>
     <extends> .K => BaseClass </extends>
@@ -180,7 +180,7 @@ rule [saveImportsInheritTypes]:
 rule [saveImportsDiscardNoClass]:
     saveImports(_,_, ((noClass => .KList),, _), _,_,_)
 
-/*Compute the final result - the combined accessibe classes map, with this components in order:
+/*Compute the final result - the combined accessible classes map, with this components in order:
   - external names
   - local block names (for local classes only)
   - inherited names

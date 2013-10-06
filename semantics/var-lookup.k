@@ -1,6 +1,6 @@
 require "core.k"
-require "subtyping.k"
 require "process-classes.k"
+require "subtyping.k"
 require "static-init.k"
 require "expressions.k"
 
@@ -8,9 +8,9 @@ require "expressions.k"
 
 module VAR-LOOKUP
     imports CORE
-    imports SUBTYPING
     imports PROCESS-CLASSES
-    imports STATIC-INIT
+    imports SUBTYPING
+    imports STATIC-INIT         //for staticInit()
     imports EXPRESSIONS
 
 //@ \subsection{Names}
@@ -60,16 +60,16 @@ syntax K ::= "lookupQThis" "(" ClassType  //the type of this to look for
 rule [lookupQThis-found]:
     lookupQThis(Class:ClassType, RV:RawVal::Class) => RV::Class
 
-/*When we have Qthis target class Class, and we look for it in a target object with a different
-compile-time type ObjClass, we continue our search in the encloser of the layer corresponding to ObjClass.
+/*When we have QThis target class Class, and we look for it in a target object with a different
+compile-time type ObjClass, we continue our search in the enclosing object of the layer corresponding to ObjClass.
 This way we may have O.B < O.A, with layers O.B and O.A having different enclosing instance of O,
-and we will be able to pick the correct encloser inside both O.A and O.B.
+and we will be able to pick the correct enclosing object inside both O.A and O.B.
 */
 rule [lookupQThis-next]:
     lookupQThis(Class:ClassType,
-      objectClosure(_, _:List ListItem(el(ObjClass,_, Encloser:KResult, _)) _:List, _)
+      objectClosure(_, _:List ListItem(el(ObjClass,_, EnclosingObj:KResult, _)) _:List, _)
         :: ObjClass:ClassType
-    ) => lookupQThis(Class:ClassType, Encloser)
+    ) => lookupQThis(Class:ClassType, EnclosingObj)
 when
     Class =/=K ObjClass
 

@@ -8,7 +8,7 @@ module PRIMITIVE-TYPES
     imports SUBTYPING
 
 //@ \subsection{Type labels}
-//@Here we rewrite java type ast into simple types
+//@Here we rewrite Java AST terms for primitive types into their corresponding Type.
 
 rule 'Byte(.KList) => byte      [structural, anywhere]
 rule 'Short(.KList) => short    [structural, anywhere]

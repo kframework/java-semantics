@@ -5,7 +5,7 @@ require "process-imports.k"
 /*@ \section{Module PROCESS-COMP-UNITS}
 ProcessCompUnitsPhase:
   For each CompUnit separately:
-1. Process import decs. Build <compUnitImports>.
+1. Process import declarations. Build <compUnitImports>.
 
   For each class C in CompUnit separately:
 2. For each class save the <class> cell with just the following:
@@ -24,13 +24,13 @@ process declarations in a less-restricted order.
 module PROCESS-COMP-UNITS
     imports CORE
     imports PROCESS-TYPE-NAMES
-    imports PROCESS-IMPORTS
+    imports PROCESS-IMPORTS     //for compUnitImportsStart()
 
 /*@ \subsection{Second pass - processing declarations} */
 
 rule [StartProcessCompUnitsPhase]:
-    <k> . => Pgm </k>
-    (<programBackup> Pgm:K </programBackup> => .)
+    <k> . => Program </k>
+    (<programBackup> Program:K </programBackup> => .)
     <computationPhase> ProcessTypeNamesPhase => ProcessCompUnitsPhase </computationPhase>
 
 //ImpDecs will be processed in the module PROCESS-IMPORTS
@@ -44,8 +44,8 @@ rule [CompilationUnit]:
     </k>
     <computationPhase> ProcessCompUnitsPhase </computationPhase>
 
-//Wrapper over a list of type decs and possible other terms, required to distinguish
-//this phase from other pre-processing phases
+//Wrapper over a list of type declarations and possible other terms, required to distinguish
+//this phase from other preprocessing phases
 //Type declarations are processed in this phase wrapped in a processTypeDecsInPCUPhase
 syntax K ::= "processTypeDecsInPCUPhase"  "("
                                     KList     //The list of terms from which we will
@@ -122,10 +122,10 @@ rule [processTypeDecsInPCUPhaseClassDec]:
               <enclosingClass> OuterClass </enclosingClass>
               <rawExtends> BaseClassRaw </rawExtends>
               <rawImplements> ImplTypesRaw </rawImplements>
-              <declarations>
+              <rawDeclarations>
                 'ListWrap(
                     //default constructor
-                    //if there is a no-args constructor in Decls, it will overwrite this one
+                    //if there is a no-arguments constructor in Decls, it will overwrite this one
                     'ConstrDec(
                       'ConstrDecHead(
                         'ListWrap('Public(.KList)),,
@@ -138,7 +138,7 @@ rule [processTypeDecsInPCUPhaseClassDec]:
                     ),,
                     Decls
                 )
-              </declarations>
+              </rawDeclarations>
               <metaType> classMetaT </metaType>
               <preprocessingPhase> CreatedCPP </preprocessingPhase>
               ...
@@ -164,7 +164,7 @@ rule [processTypeDecsInPCUPhaseInterfaceDec]:
               <enclosingClass> OuterClass </enclosingClass>
               <rawExtends> noClass </rawExtends>
               <rawImplements> ImplTypesRaw </rawImplements>
-              <declarations> 'ListWrap(Decls) </declarations>
+              <rawDeclarations> 'ListWrap(Decls) </rawDeclarations>
               <metaType> interfaceMetaT </metaType>
               <preprocessingPhase> CreatedCPP </preprocessingPhase>
               ...

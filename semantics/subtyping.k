@@ -12,7 +12,7 @@ syntax K ::= "subtype" "("
                        ")"                      [strict]
 
 //Checks whether the each type in the first list of types is a subtype
-//of the type at the same position inthe second list.
+//of the type at the same position in the second list.
 //If lists have different size, the function will evaluate to false.
 //Used in method call overloading resolution.
             | "subtypeList" "(" Types ","
@@ -74,7 +74,7 @@ when
 rule [subtypeNoClassOfAnyFalse]:
     subtype( noClass, _ ) => false
 
-//The case subtype (noClass, noClass) should never be encoutnered
+//The case subtype (noClass, noClass) should never be encountered
 //used by the rule [getElabResQThisSubclassOf]
 rule [subtypeAnyOfNoClassFalse]:
     subtype( _, noClass ) => true

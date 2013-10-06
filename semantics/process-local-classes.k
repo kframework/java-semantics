@@ -59,7 +59,7 @@ rule [processLocalClassDecStep2]:
     <contextType> CT:ContextType </contextType>
     <typeNamesMap>... GeneratedPack |-> mapWrap(Name:Id |-> Class:ClassType) ...</typeNamesMap>
 
-//Seths the enclosing local environment for this class, from the cell <elabEnv>
+//Sets the enclosing local environment for this class, from the cell <elabEnv>
 syntax K ::= "setEnclosingLocalEnv" "(" ClassType ")"
 rule <k> setEnclosingLocalEnv(Class:ClassType) => . ...</k>
      <elabEnv> ListItem(stEnv(EnclosingLocalEnv:Map)) ...</elabEnv>
@@ -78,8 +78,8 @@ rule [restoreAfterProcessLocalClass]:
 
 //\section{Local classes - runtime}
 
-//Initialize the registration of local environment, when a local class declaration is encoutered.
-//This environment is precisely <env>. It don't contain local vars of the outer env for enclosign classes,
+//Initialize the registration of local environment, when a local class declaration is encountered.
+//This environment is precisely <env>. It don't contain local vars of the outer env for enclosing classes,
 //in case of multi-level local classes.
 rule [ClassDecStm-runtime]:
     <k> 'ClassDecStm(Class:ClassType) => . ...</k>
@@ -143,10 +143,10 @@ syntax K ::= "processAnonymousClass" "("
       KList ","     //ActualArgs
       KList ","     //Anonymous class block decs
       K ","         //To be processed into resultListWrap(constructor formal params)
-      K             //To be processed into resultListWrap(constructor first line args)
+      K             //To be processed into resultListWrap(constructor first line arguments)
     ")"
 
-//heat consturctor formal params and first line args
+//heat constructor formal params and first line arguments
 context processAnonymousClass(_,_,_,_,_,_,HOLE,_)
 context processAnonymousClass(_,_,_,_,_,_,_,HOLE)
 
@@ -197,10 +197,10 @@ rule [processAnonymousClass]:
     )
 
 //Build the part of the constructor of an anonymous class definition corresponding
-//to formal params, and args of the superclass constructor invocation, respectively
-//First KList - list of actual args
+//to formal params, and arguments of the superclass constructor invocation, respectively
+//First KList - list of actual arguments
 //Second KList - the result
-//Thirs arg - a counter used to generate var names
+//Third arg - a counter used to generate var names
 syntax K ::= "buildConstructorFormalParams" "(" KList "," KList "," Int ")"
            | "buildConstructorFirstLineArgs" "(" KList "," KList "," Int ")"
 
@@ -249,15 +249,15 @@ rule [elabAnonymous-QNewInstance-extends-class]:
 syntax K ::= "processQAnonymousClass" "("
       Id ","        //Class name
       ClassType "," //Base class
-      TypedExp ","  //Qual - qualifer
+      TypedExp ","  //Qual - qualifier
       K ","         //'NewInstance Arg2
       KList ","     //ActualArgs
       KList ","     //Anonymous class block decs
       K ","         //To be processed into resultListWrap(constructor formal params)
-      K             //To be processed into resultListWrap(constructor first line args)
+      K             //To be processed into resultListWrap(constructor first line arguments)
     ")"
 
-//heat consturctor formal params and first line args
+//heat constructor formal params and first line arguments
 context processQAnonymousClass(_,_,_,_,_,_,HOLE,_)
 context processQAnonymousClass(_,_,_,_,_,_,_,HOLE)
 

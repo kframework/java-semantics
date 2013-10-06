@@ -24,7 +24,7 @@ module CLASSES
     imports VAR-LOOKUP
 
 //@ \subsection{Type labels}
-//@Here we rewrite java type ast into simple types
+//@Here we rewrite raw Java type terms into Type values
 
 //Happens during process-imports sub-phase. This is of course an approximation.
 rule [TypeNameInProcessCompUnitsPhase]:
@@ -82,23 +82,25 @@ rule [QNewInstance]:
       )::Class
       => staticInit(Class)
         ~> create(Class)
-        ~> restoreEnvObjContext(OldEnvGroup, Obj, CT)
+        ~> restoreMethContext(<envGroup> OldEnvGroup </envGroup> <crntObj> OldCrntObj </crntObj> RestMethContext)
         ~> setOuterLocalEnvForHierarchy(L, Class)
         ~> setObjLocalClassesEnv(L)
         ~> invokeConstr(L, Class, Vals, EnclosingObj)
         ~> typedLookup(L)
       ...
     </k>
-    <envGroup>
-      OldEnvGroup:Bag
-      => <env> .Map </env> <localClassesEnv> .Map </localClassesEnv>
-    </envGroup>
-    <crntObj>
-      Obj:Bag
-      =>  <crntClass> .K </crntClass>
-          <location> L </location>
-    </crntObj>
-    <contextType> CT:ContextType </contextType>
+    <methodContext>
+      <envGroup>
+        OldEnvGroup:Bag
+        => <env> .Map </env> <localClassesEnv> .Map </localClassesEnv>
+      </envGroup>
+      <crntObj>
+        OldCrntObj:Bag
+        =>  <crntClass> .K </crntClass>
+            <location> L </location>
+      </crntObj>
+      RestMethContext:Bag
+    </methodContext>
     <store>
       ...
       . => L |-> objectClosure(L, .List, .Map) :: Class
@@ -149,15 +151,15 @@ rule [addEnvLayer]:
 syntax K ::= "invokeConstr" "(" Int       //OL - object location
                             "," ClassType //The target class
                             "," KList     //Arguments, evaluated
-                            "," K         //Encloser - the typed enclosing object. if any, or noValue
+                            "," K         //EnclosingObj - the typed enclosing object. if any, or noValue
                             ")"
 
 //This rule cannot be simplified - we have to alter the newly created object from the store.
-//The context inside <control> is the context that called "new Obj()" expression.
+//The context inside <methodContext> is the context that called "new Obj()" expression.
 //Constructor calls are elaborated during execution phase
 rule [invokeConstr]:
-    invokeConstr(OL:Int, Class:ClassType, Vals:KList, Encloser:KResult)
-    => setEncloser(lookup(OL)::Class, Class, Encloser)
+    invokeConstr(OL:Int, Class:ClassType, Vals:KList, EnclosingObj:KResult)
+    => setEncloser(lookup(OL)::Class, Class, EnclosingObj)
     ~> 'ExprStm('Invoke(
           'Method('MethodName( lookup(OL)::Class,, getConsName(Class) )),,
           'ListWrap( Vals )
@@ -179,6 +181,14 @@ rule [setEncloser-value]:
 
 rule [setEncloser-noValue]:
     setEncloser(_,_, noValue) => .
+
+//restore the content of the cell <methodContext>
+syntax K ::= "restoreMethContext" "(" Bag         //The content of <methodContext>
+                              ")"
+
+rule [restoreMethContext]:
+    <k> restoreMethContext(MethContext:Bag) => . ...</k>
+    <methodContext> _ => MethContext </methodContext>
 
 //Set the outerLocalEnv for all layers of the <crntObj>, from the cell <localClassesEnv>,
 //for the given class and its bases
@@ -217,7 +227,7 @@ rule [setOuterLocalEnvForClass-found]:
 
 //If SourceClass is not registered in <localClassesEnv>, it is not a direct local class.
 //We attempt to replace it with its enclosing class,
-//until evenually we will reach a local class.
+//until eventually we will reach a local class.
 rule [setOuterLocalEnvForClass-not-found]:
     <k> setOuterLocalEnvForClass(OL:Int, Class:ClassType, SourceClass:ClassType => SourceEnclosingClass) ...</k>
     <localClassesEnv> LocalClassesEnv:Map </localClassesEnv>

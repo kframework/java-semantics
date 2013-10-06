@@ -257,7 +257,7 @@ when
     andBool Id2String(MethodName) ==String "notifyAll"
     andBool HoldLevel >=Int 1
 
-//Implementation of Object.notify(), extracted here to avoid rule superfluosity
+//Implementation of Object.notify(), extracted here to avoid rule superfluousness
 syntax K ::= "deleteAnyFromWaitingThreads" "(" Int //store key of the monitor object
                                            ")"
 
@@ -279,7 +279,7 @@ when
     notBool OL in values(WT)
         [transition-threading]
 
-//Implementation of Object.notifyAll(), extracted here to avoid rule superfluosity
+//Implementation of Object.notifyAll(), extracted here to avoid rule superfluousness
 syntax K ::= "deleteAllFromWaitingThreads" "(" Int //store key of the monitor object
                                            ")"
 
@@ -353,7 +353,7 @@ rule [ThreadTermination]:
     <computationPhase> ExecutionPhase </computationPhase>
     <dissolveEmptyK> true </dissolveEmptyK>
 
-//Debug aid. Dissolves classes cell so that configuration is not overbloated, at the end
+//Debug aid. Dissolves classes cell so that configuration is not over-bloated, at the end
 //of the execution.
 rule [DissolveClasses]:
     (<classes> _:Bag </classes> => .)

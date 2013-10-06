@@ -14,7 +14,7 @@ module STATEMENTS
 //For now main class may only be placed in the default package.
 rule [StartExecutionPhase]:
     <k> . =>
-      //k-ast for new <MainClass>().main(new String[0]);
+      //K-AST for new <MainClass>().main(new String[0]);
       'ExprStm(
         'Invoke(
           'MethodName('TypeName(packageId(String2Id("")),,String2Id(MainClassS)),, String2Id("main")),,
@@ -33,10 +33,9 @@ rule [StartExecutionPhase]:
 
 //ListItem content as a stack layer
 syntax K ::=
-    "("
+    "sl" "("
       K ","   //K - rest of computation
-      Bag "," //The content of <envGroup>
-      Bag     //C - rest of control
+      Bag     //MethContext - the content of <methodContext>
     ")"
 
 //bug in K? we cannot use the constructions below, they will give some errors related to k-prelude.
@@ -58,7 +57,7 @@ rule [Block]:
         [structural]
 
 rule [ListOfStatements]:
-    'ListWrap(S1:K,, Ss:KList) => S1 ~> 'ListWrap(Ss)
+    'ListWrap(S1:K,, Stmts:KList) => S1 ~> 'ListWrap(Stmts)
         [structural]
 
 rule [DiscardEmptyList]:
@@ -153,7 +152,7 @@ rule [AssertStmTwoArgs]:
 //@ \subsection{Switch statement}
 
 syntax K ::= "switchImpl" "("
-                TypedVal "," // TV - switch param
+                TypedVal "," // TV - switch argument
                 KList ","  // switch body - list of 'SwitchGroup labels
                 K            // DefaultStm - default block, if any
               ")"
@@ -366,7 +365,7 @@ when
 /*@\subsection{Return} At method return, we have to check that the type
 of the returned
 value is a subtype of the expected return type.  Moreover, if that is
-the case, then we also upcast the returned value to one of the
+the case, then we also up-cast the returned value to one of the
 expected type. */
 
 context 'Return('Some(HOLE))
@@ -382,17 +381,15 @@ when
     andBool KL =/=KLabel 'finallyBlock`(_`)
 
 //bug workaround: (V::T1) needs to be taken between parentheses, because K
-//wrongly considers ~> to be more prioritary than ::
+//wrongly considers ~> to have higher priority than ::
 rule [ReturnMethodEnd]:
     <k>
       'Return('Some(V:RawVal :: T2:Type))
       => subtype(T2, T1) ~> true? ~> (V::T1) ~> K    </k>
-    <control>
-      <stack> ListItem((K:K, EnvGroup:Bag, C:Bag)) => . ...</stack>
-      (<return> T1:Type </return>
-       _:Bag => C)
-    </control>
-    <envGroup> _ => EnvGroup </envGroup>
+    <stack> ListItem( sl(K:K, MethContext:Bag) ) => . ...</stack>
+    <methodContext>
+      <return> T1:Type </return> _:Bag => MethContext
+    </methodContext>
 
 /*@ \subsection{Throw statement}
 Exceptions are propagated now until a catch that can bind them is
@@ -435,11 +432,8 @@ rule [ThrowMethodEnd]:
     <k>
       'Throw(TV:TypedVal) ~> (. => K)
     </k>
-    <control>
-      <stack> ListItem((K:K, EnvGroup:Bag, C:Bag)) => . ...</stack>
-      (_ => C)
-    </control>
-    <envGroup> _ => EnvGroup </envGroup>
+    <stack> ListItem( sl(K:K, MethContext:Bag) ) => . ...</stack>
+    <methodContext> _ => MethContext </methodContext>
 
 rule [ThrowCausesThreadTermination]:
     <k>
@@ -476,7 +470,7 @@ context 'Catch(HOLE,, _)
 
 rule 'Catch(KR:KResult,, S:K) => catchImpl(KR,S)
 
-//internal representation of a pre-processed catch clause
+//internal representation of a preprocessed catch clause
 syntax KResult ::= "catchImpl" "(" K //paramImpl term
                                "," K //the code block
                                ")"

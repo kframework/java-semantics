@@ -1,11 +1,9 @@
 require "core.k"
-require "elaborate-blocks.k"
 
 //@ \section{Module PROCESS-CLASSES}
 
 module PROCESS-CLASSES
     imports CORE
-    imports ELABORATE-BLOCKS
 
 //@ \subsection{Auxiliary functions}
 
@@ -88,7 +86,7 @@ rule [processTypeWithDependsDiscard2]:
     processTypeWithDepends(noClass) => .K
 
 /*For each class compute the set of inherited interfaces, inherit all the members,
-process inner declaraions. Compute the following class cells:
+process inner declarations. Compute the following class cells:
   <implTrans>
   <fieldDecs>
   <methods>
@@ -114,7 +112,7 @@ rule [ProcessType]:
       <extends> BaseClass:ClassType </extends>
       <implements> ISet:Set </implements>
       <implTrans> . => ISet </implTrans>
-      ( <declarations> Decls:K </declarations> => .Bag)
+      ( <rawDeclarations> Decls:K </rawDeclarations> => .Bag)
       <metaType> MetaT:MetaType </metaType>
       <preprocessingPhase> DecsProcessedCPP => MembersProcessedCPP </preprocessingPhase>
       ...
@@ -423,7 +421,7 @@ rule [InstanceInitSave]:
     <instanceInit> 'ListWrap(_,,(.KList => K)) </instanceInit>
         [structural]
 
-//Desugaring a static field declaration with initializer ito a declaration without initializer
+//Desugaring a static field declaration with initializer into a declaration without initializer
 //Followed by a static initializer block, if this field is not a compile-time constant.
 rule [FieldDecStaticInitDesugar]:
     'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .KList)) ))
@@ -458,7 +456,7 @@ rule [StaticInitSave]:
 
 /*@ The parser represents interface fields as 'ConstantDec labels.
   This rule desugars them into 'FieldDec labels and adds the modifiers "public static final".
-  Interface fileds are not necessarily compile-time constants.
+  Interface fields are not necessarily compile-time constants.
 */
 rule [ConstantDecDesugar]:
     'ConstantDec('ListWrap(ModifiersKs:KList),, TypeK:K,, VarDecs:K)

@@ -57,7 +57,7 @@ context /* ~   */ 'Complement(HOLE)::_
 
 rule /* true  || _ */ 'LazyOr(true :: bool,, _) :: bool => true
 
-//We use K:K instead of TE:TypedList becuase 'LazyAnd is used inside the semantics, not only in the source program.
+//We use K:K instead of TE:TypedList because 'LazyAnd is used inside the semantics, not only in the source program.
 rule /* false || K */ 'LazyOr(false :: bool,, K:K) :: bool => K
 rule /* true  && K */ 'LazyAnd(true :: bool,, K:K) :: bool => K
 

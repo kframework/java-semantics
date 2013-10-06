@@ -338,13 +338,13 @@ rule [methodInvokeRuntimeInstanceOnClass]:
       methodInvokeRuntime(Class:ClassType, Sig:Signature,
         objectClosure(OL:Int,
           Rest:List
-          ListItem(el(Class:ClassType, BI:BagItem, Encloser:KResult, LocalEnv:Map)) _,
+          ListItem(el(Class:ClassType, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map)) _,
         _)::_,
         ParamVals:KList, instanceCT
       )::_
       => invokeImpl(
         lookupOverloadedMethod(
-          Sig, getClassList(Rest ListItem(el(Class, BI, Encloser, LocalEnv))), mapWrap(.Map), noValue
+          Sig, getClassList(Rest ListItem(el(Class, BI, EnclosingObj, LocalEnv))), mapWrap(.Map), noValue
         ),
         OL, 'ListWrap(ParamVals)
       )
@@ -432,16 +432,16 @@ context qSuperQual(HOLE)::_
 rule [qSuperQualEval]:
     qSuperQual(objectClosure(
       OL:Int,
-      _:List ListItem(el(BaseClass, BI:BagItem, Encloser:KResult, LocalEnv:Map)) Rest:List,
+      _:List ListItem(el(BaseClass, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map)) Rest:List,
       ObjLocalClassesEnv:Map
     )::_) :: BaseClass:ClassType
     => objectClosure(
       OL,
-      ListItem(el(BaseClass, BI, Encloser, LocalEnv)) Rest,
+      ListItem(el(BaseClass, BI, EnclosingObj, LocalEnv)) Rest,
       ObjLocalClassesEnv
     )::BaseClass
 
-//Converts a list of ListItem(el(Class, BI, Encloser, _)) into KList with elements of sort ClassType
+//Converts a list of ListItem(el(Class, BI, EnclosingObj, _)) into KList with elements of sort ClassType
 syntax K ::= "getClassList" "(" List ")"
 rule (.KList => Class),, getClassList((ListItem(el(Class:ClassType, _,_,_)) => .List) _)
         [structural, anywhere]
@@ -455,7 +455,7 @@ rule getClassList(.) => .KList
 //Evaluates into typed method closure.
 syntax K ::= "lookupOverloadedMethod" "("
                               K ","       //sig(Name, SigTL) - Method signature
-                              KList ","   //Class list, elems of type ClassType,
+                              KList ","   //Class list, elements of type ClassType,
                                           // from derived to base.
                                           // To be processed from base to derived when methods map will be exhausted.
                               K ","       //mapWrap(Map) - methods map of current LayerClass
@@ -560,32 +560,33 @@ rule [invokeImplInstance]:
       ) ~> K:K
        => setRuntimeEnclosingLocalEnv(OL) ~> bindto Params, ParamValues ~> Body ~> 'Return('None(.KList))
     </k>
-    <control>
-      <stack>
-        . =>  ListItem((K, OldEnvGroup,
-                  (
-                    <crntObj> OldObj </crntObj>
-                    <return> OldT </return>
-                    <contextType> OldCT </contextType>
-                    C
-                  )
-              ))
-        ...
-      </stack>
+    <stack>
+      . =>  ListItem(sl(K,
+              (
+                <envGroup> OldEnvGroup </envGroup>
+                <return> OldT </return>
+                <contextType> OldCT </contextType>
+                <crntObj> OldObj </crntObj>
+                RestMethContext
+              )
+            ))
+      ...
+    </stack>
+    <methodContext>
+      <envGroup>
+        OldEnvGroup:Bag
+        => <env> .Map </env> //will be populated later by setRuntimeEnclosingLocalEnv()
+           <localClassesEnv> ObjLocalClassesEnv </localClassesEnv>
+      </envGroup>
+      <return> OldT:Type => T </return>
+      <contextType> OldCT:ContextType => instanceCT </contextType>
       <crntObj>
         OldObj:Bag
         => <crntClass> Class </crntClass>
            <location> NewOL </location>
       </crntObj>
-      <return> OldT:Type => T </return>
-      <contextType> OldCT:ContextType => instanceCT </contextType>
-      C:Bag
-    </control>
-    <envGroup>
-      OldEnvGroup:Bag
-      => <env> .Map </env> //will be populated later by setRuntimeEnclosingLocalEnv()
-         <localClassesEnv> ObjLocalClassesEnv </localClassesEnv>
-    </envGroup>
+      RestMethContext:Bag
+    </methodContext>
     <store>
       ...
       OL |-> objectClosure(NewOL:Int, Obj:List, ObjLocalClassesEnv:Map) :: _
@@ -603,31 +604,32 @@ rule [invokeImplStatic]:
       ) ~> K:K
        => staticInit(Class) ~> bindto Params, ParamValues ~> Body ~> 'Return('None(.KList))
     </k>
-    <control>
-      <stack>
-        . =>  ListItem((K, OldEnvGroup,
-                  (
-                    <crntObj> OldObj </crntObj>
-                    <return> OldT </return>
-                    <contextType> OldCT </contextType>
-                    C
-                  )
-              ))
-        ...
-      </stack>
+    <stack>
+      . =>  ListItem(sl(K,
+              (
+                <envGroup> OldEnvGroup </envGroup>
+                <return> OldT </return>
+                <contextType> OldCT </contextType>
+                <crntObj> OldObj </crntObj>
+                RestMethContext
+              )
+            ))
+      ...
+    </stack>
+    <methodContext>
+      <envGroup>
+        OldEnvGroup:Bag
+        => <env> .Map </env> <localClassesEnv> .Map </localClassesEnv>
+      </envGroup>
+      <return> OldT:Type => T </return>
+      <contextType> OldCT:ContextType => staticCT </contextType>
       <crntObj>
         OldObj:Bag
         => <crntClass> Class </crntClass>
            <location> noValue </location>
       </crntObj>
-      <return> OldT:Type => T </return>
-      <contextType> OldCT:ContextType => staticCT </contextType>
-      C:Bag
-    </control>
-    <envGroup>
-      OldEnvGroup:Bag
-      => <env> .Map </env> <localClassesEnv> .Map </localClassesEnv>
-    </envGroup>
+      RestMethContext:Bag
+    </methodContext>
 
 syntax K ::= "setRuntimeEnclosingLocalEnv" "(" Int ")"
 rule <k> setRuntimeEnclosingLocalEnv(OL:Int) => . ...</k>
