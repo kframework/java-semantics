@@ -34,6 +34,7 @@ fi
 
 KRUN_CMD="$KRUN_CMD krun \
                       --parser=aux-kjprep.sh \
+                      --color extended \
                       -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\" \
                       -cModelCheck=\"false\""
 

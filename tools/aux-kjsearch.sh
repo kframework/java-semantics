@@ -18,7 +18,7 @@ SEMANTICS_DIR=$TOOLS_DIR/../semantics
 PARSER_CMD="aux-kjparser.sh $WORK_DIR $JAVA_FILE"
 
 KRUN_CMD="krun --parser=cat \
-  --compiled-def=\"$SEMANTICS_DIR/java-kompiled\" \
+  --directory=\"$SEMANTICS_DIR\" \
   --main-module=JAVA
   -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\"
   -cModelCheck=\"true\"

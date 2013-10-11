@@ -56,23 +56,23 @@ rule [staticInit]:
             ),,
 
             //finally clause of 'Try
-            restoreMethContext(<envGroup> OldEnvGroup </envGroup> <crntObj> OldCrntObj </crntObj> RestMethContext)
+            restoreMethContext(MethContext)
             ~> staticInitDone(Class)
           )
       ...
     </k>
 
     <methodContext>
-      <envGroup>
-        OldEnvGroup:Bag
-        => <env> .Map </env> <localClassesEnv> .Map </localClassesEnv>
-      </envGroup>
-      <crntObj>
-        OldCrntObj:Bag
-      =>  <crntClass> Class </crntClass>
-          <location> noValue </location>
-      </crntObj>
-      RestMethContext:Bag
+      MethContext:Bag
+      =>  <envGroup>
+            <env> .Map </env> <localClassesEnv> .Map </localClassesEnv>
+          </envGroup>
+          <crntObj>
+            <crntClass> Class </crntClass>
+            <location> noValue </location>
+          </crntObj>
+          <return> void </return>
+          <contextType> staticCT </contextType>
     </methodContext>
 
     <tid> TId:Int </tid>

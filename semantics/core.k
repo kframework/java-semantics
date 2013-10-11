@@ -83,9 +83,8 @@ syntax RefType ::= "rtString" | "nullType"
 
 syntax Type ::= PrimitiveType
               | RefType
-              | "void"
-              | "rtType"
               | MethodType
+              | "void"
 
 syntax RawVal ::= Int | Float | Bool | String
                 | "null"
@@ -97,7 +96,7 @@ syntax ProtoMethodType ::= "methodType" "(" K ","             // to be processed
                                         ")"
                           | MethodType
 
-syntax MethodType ::= "methodType" "(" Signature "," // Method signature
+syntax MethodType ::= "methodType" "(" Signature "," // method signature
                                        Type          // return type
                                    ")"
 

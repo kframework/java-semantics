@@ -14,41 +14,41 @@ configuration
         <thread multiplicity="*" color="GreenYellow">
           <k color="Green"> $PGM:K </k>
 
-          <stack color="Blue"> .List </stack>
+          <stack color="LimeGreen"> .List </stack>
 
           //! \smallskip
           <br/>
 
           //The execution context of the current method - local names environment, return type,
           //context type and current object.
-          <methodContext color="Cyan">
+          <methodContext color="LightBlue">
 
             <envGroup color="Yellow">
 
               //@The map from local vars to their location in the store. Also includes outer local vars, for local classes.
-              <env color="Violet"> .Map </env>
+              <env color="LightBlue"> .Map </env>
 
               /*@ Map[Id -> mapWrap(Map[Id -> Loc])] */
               //A map associating to any local class accessible in this environment its outer local environment.
               //The local environment is determined in the place where the class is declared.
               //When a local class is instantiated, its enclosing environment is taken from this map.
               //This cell have the same lifecycle as <env>, that is why they are both grouped to <envGroup>
-              <localClassesEnv> .Map </localClassesEnv>
+              <localClassesEnv color="LightBlue"> .Map </localClassesEnv>
             </envGroup>
 
             <br/>
-            <return color="LimeGreen"> void </return> // holds method return type
+            <return color="Cyan"> void </return> // holds method return type
 
             /*Current method/block context type - either staticCT or instanceCT
             Used both during elaboration and execution*/
-            <contextType> staticCT </contextType>
+            <contextType color="Cyan"> staticCT </contextType>
 
             <br/>
             <crntObj color="Fuchsia">
               //current class during all phases, including early preprocessing
-              <crntClass> .K </crntClass>
+              <crntClass color="Fuchsia"> .K </crntClass>
 
-              <location multiplicity="?"> .K </location>
+              <location color="Fuchsia" multiplicity="?"> .K </location>
             </crntObj>
           </methodContext>
 
@@ -62,10 +62,10 @@ configuration
             <tid color="Pink"> 0 </tid>
 
             //Map[OL |-> Count] - the amount of times this thread holds the monitor objects referred bu the keys
-            <holds color="Black"> .Map </holds>
+            <holds color="Pink"> .Map </holds>
 
             //Whether this thread was interrupted by another thread by a call to Thread.interrupt()
-            <interrupted> false </interrupted>
+            <interrupted color="Pink"> false </interrupted>
 
           </threadData>
         </thread>
