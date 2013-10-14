@@ -30,7 +30,7 @@ rule [resolveBasesTopLevelStart]:
     <cuImports> CuImports:Map </cuImports>
     <preprocessingPhase> CreatedCPP </preprocessingPhase>
     <crntClass> _ => noClass </crntClass>
-    <crntCuImports> _ => CuImports </crntCuImports>
+    <compUnitImports> _ => CuImports </compUnitImports>
 
 rule [resolveBasesInnerStart]:
     <k> (. => resolveBases(Class, RawExtends, RawImplements)) ~> processClassDecs(_) ...</k>
@@ -48,7 +48,7 @@ rule [resolveBasesInnerStart]:
       ...
     </class>
     <crntClass> _ => OuterClass </crntClass>
-    <crntCuImports> _ => .Map </crntCuImports>
+    <compUnitImports> _ => .Map </compUnitImports>
 when
     OuterClassPhase ==K DecsProcessedCPP orBool OuterClassPhase ==K MembersProcessedCPP
 
@@ -104,8 +104,8 @@ rule [processClassDecEnd]:
     <preprocessingPhase> BasesResolvedCPP => DecsProcessedCPP </preprocessingPhase>
     <extends> .K => BaseClass </extends>
     ( <rawExtends> BaseClass:ClassType </rawExtends>
-      <rawImplements> 'ListWrap(ImplTypes:KList) </rawImplements>
-      <unprocessedBases> 'ListWrap(.KList) </unprocessedBases> => .Bag)
+      <rawImplements> 'ListWrap(ImplTypes:KList) </rawImplements> => .Bag)
+    ( <unprocessedBases> 'ListWrap(.KList) </unprocessedBases> => .Bag)
 
 rule [processClassDecsDiscard]:
     processClassDecs(setWrap(.)) => .K
@@ -213,23 +213,5 @@ rule [saveImports]:
     <classType> Class </classType>
     <imports> _ => Imports </imports>
     (<cuImports> _ </cuImports> => .Bag)
-
-//When the class whose declaration is processed is an inner class,
-//usual rules for 'TypeName apply.
-rule [TypeNameInProcessClassDecsPhaseTop]:
-    <k> 'TypeName(X:Id) => Class ...</k>
-    <localTypes> ListItem(stEnv(LocalTypes:Map)) ...</localTypes>
-    <crntClass> noClass </crntClass>
-    <crntCuImports>... X |-> Class:ClassType ...</crntCuImports>
-when
-    notBool X in keys(LocalTypes)
-
-rule [TypeNameInProcessClassDecsPhaseTopFail]:
-    <k> 'TypeName(X:Id) => noValue ...</k>
-    <localTypes> ListItem(stEnv(LocalTypes:Map)) ...</localTypes>
-    <crntClass> noClass </crntClass>
-    <crntCuImports> Imp:Map </crntCuImports>
-when
-    notBool X in keys(LocalTypes) andBool notBool X in keys(Imp)
 
 endmodule

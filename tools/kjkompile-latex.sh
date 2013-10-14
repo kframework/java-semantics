@@ -1,1 +1,1 @@
-kompile -v -pdf -style "style=math" java
+kompile -v --backend pdf --doc-style "style=math" java

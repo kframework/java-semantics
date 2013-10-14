@@ -690,6 +690,21 @@ rule [TypeName-Global-Fail]:
 when
     notBool X in keys(LocalTypes) andBool notBool (X in keys(Imp))
 
+//This two rules may only apply during processing of extends/implements clauses of top-level classes.
+//When the class whose declaration is processed is an inner class,
+//usual rules for 'TypeName apply.
+rule [TypeNameInProcessClassDecsPhaseTop]:
+    <k> 'TypeName(X:Id) => Class ...</k>
+    <crntClass> noClass </crntClass>
+    <compUnitImports>... X |-> Class:ClassType ...</compUnitImports>
+
+rule [TypeNameInProcessClassDecsPhaseTopFail]:
+    <k> 'TypeName(X:Id) => noValue ...</k>
+    <crntClass> noClass </crntClass>
+    <compUnitImports> Imp:Map </compUnitImports>
+when
+    notBool X in keys(Imp)
+
 /*@ \subsection{Elaboration of numeric expressions} */
 
 //Expression labels are not converted by the default rule in the phase

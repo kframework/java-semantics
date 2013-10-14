@@ -23,14 +23,6 @@ module CLASSES
     imports STATIC-INIT
     imports VAR-LOOKUP
 
-//@ \subsection{Type labels}
-//@Here we rewrite raw Java type terms into Type values
-
-//Happens during process-imports sub-phase. This is of course an approximation.
-rule [TypeNameInProcessCompUnitsPhase]:
-    <k> 'TypeName(X:Id) => noValue ...</k>
-    <computationPhase> ProcessCompUnitsPhase </computationPhase>
-
 //@ \subsection{Auxiliary operations}
 
 //@ \texttt{typeOf and toString}
