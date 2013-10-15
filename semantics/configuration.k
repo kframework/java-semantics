@@ -5,9 +5,50 @@ require "core.k"
 module CONFIGURATION
     imports CORE
 
-//todo for now we organized the cells inside <class> based on the phase where they are used.
-//It would make more sense to organize them based on when they are computed, to reflect the way the configuration
-//evolves across phases.
+/*@
+The configuration is divided into three large cell groups. The group $\kall{threads}{}$ contains one or multiple cells $\kall{thread}{}$. Here is the data related to the execution of a thread, such as the computation, stack, local environment. The second group
+is contained inside $\kall{classes}{}$ that have multiple $\kall{class}{}$ cells -- anything class-related.
+What remains are the top-level cells -- the third group. Top-level cells are related to memory store,
+global thread-synchronization data and auxiliary cells for debugging.
+
+Some cells in this configuration are not used within the rules. They serve only for grouping other cells by context. Grouping cells are colored yellow, whereas actual semantics cells have other colors.
+
+From the evaluation standpoint, the semantics is divided into several preprocessing phases followed by the actual program execution.
+Preprocessing phases are roughly equivalent to java compilation. They perform all the computations that would be traditionally expected from the compiler. The evaluation phases are:
+
+\begin{itemize}
+\item Process type names
+\item Process compilation units
+\item Process class declarations
+\item Process classes
+\item Elaboration
+\item Execution
+\end{itemize}
+
+While describing the configuration we will denote with $\kall{cell}{\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}}$ a container cell, holding another cells, and with $\kall{cell}{Type}$ a leaf cell and its type.
+
+During the preprocessing phase there is only one $\kall{thread}{\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}}$ where the whole program with all its classes is preprocessed. During execution phase there might be multiple $\kall{thread}{}$ cells -- one per actual running thread. The cell $\kall{thread}{}$ contains leaf-cells $\kall{k}{}$ and $\kall{stack}{}$ and container cells $\kall{methodContext}{\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}}$ and $\kall{threadData}{\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}}$. The cell $\kall{k}{}$ is the actual computation, both during preprocessing and execution. When after a preprocessing phase the cell $\kall{k}{}$ remains empty, evaluation transitions into the next phase. If the cell $\kall{k}{}$ remains empty during the execution phase, the enclosing thread is terminated. The cell $\kall{stack}{}$ is the thread stack.
+
+Inside the cell $\kall{methodContext}{\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}}$ we have various data holding the context of the currently executing method. Here we have:
+
+\begin{itemize}
+\item $\kall{env}{Map[Id\mapsto{}Int]}$ -- the map from local variable names to their location inside $\kall{store}{}$.
+\item $\kall{localClassesEnv}{}$ is related to local classes and will be explained later.
+\item $\kall{return}{Type}$ -- method return type.
+\item $\kall{contextType}{ContextType}$ -- may have one of two values: staticCT or instanceCT, depending on whether the current method is static or non-static.
+\item $\kall{crntObj}{\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}}$ -- the object associated with the current running method, if any. In non-static contexts $\kall{crntClass}{ClassType}$ contains the compile-time class associated to the current method, and $\kall{location}{Int}$ holds the location of the current object in the store. For static contexts cells have empty values: noClass and $\dotCt{K}$ respectively.
+\end{itemize}
+
+The group of cells $\kall{threadData}{\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}}$ contains:
+
+\begin{itemize}
+\item $\kall{tid}{Int}$ -- the thread id.
+\item $\kall{holds}{Map[Int\mapsto{}Int]}$ -- a map from Object locations to integer numbers. Map keys are monitor objects on which the current thread have the locks. Map values hold the number of times the lock was acquired.
+\item $\kall{interrupted}{Bool}$ -- boolean value signaling whether the current thread was interrupted.
+\end{itemize}
+
+\pagebreak
+*/
 configuration
     <T>
       <threads color="GreenYellow">
@@ -19,20 +60,20 @@ configuration
           //! \smallskip
           <br/>
 
-          //The execution context of the current method - local names environment, return type,
-          //context type and current object.
+          /*The execution context of the current method - local names environment, return type,
+            context type and current object.*/
           <methodContext color="Orange">
 
             <envGroup color="Yellow">
 
-              //@The map from local vars to their location in the store. Also includes outer local vars, for local classes.
+              //The map from local vars to their location in the store. Also includes outer local vars, for local classes.
               <env color="Crimson"> .Map </env>
 
-              /*@ Map[Id -> mapWrap(Map[Id -> Loc])] */
-              //A map associating to any local class accessible in this environment its outer local environment.
-              //The local environment is determined in the place where the class is declared.
-              //When a local class is instantiated, its enclosing environment is taken from this map.
-              //This cell have the same lifecycle as <env>, that is why they are both grouped to <envGroup>
+              /* Map[Id -> mapWrap(Map[Id -> Loc])]
+              A map associating to any local class accessible in this environment its outer local environment.
+              The local environment is determined in the place where the class is declared.
+              When a local class is instantiated, its enclosing environment is taken from this map.
+              This cell have the same lifecycle as <env>, that is why they are both grouped to <envGroup>*/
               <localClassesEnv color="Crimson"> .Map </localClassesEnv>
             </envGroup>
 
@@ -120,13 +161,13 @@ configuration
             //The base class, or noClass for Object. For interfaces: Object.
             <extends color="SpringGreen"> .K </extends>
 
-            //Directly implemented interfaces, the resolved content of implements clause.
-            //Only used during preprocessing. Mostly to compute <implTrans>, and when transitive list of
-            //interfaces is not needed.
+            /*Directly implemented interfaces, the resolved content of implements clause.
+              Only used during preprocessing. Mostly to compute <implTrans>, and when transitive list of
+              interfaces is not needed.*/
             <implements color="SpringGreen"> .Set </implements>
 
-            //Map[Id -> ClassType]. Map of classes accessible by simple name inside this class.
-            //Used by type resolution in elaboration phase.
+            /*Map[Id -> ClassType]. Map of classes accessible by simple name inside this class.
+              Used by type resolution in elaboration phase.*/
             <imports color="SpringGreen"> .Map </imports>
 
           </cppDecs>
@@ -138,13 +179,13 @@ configuration
             //Transitively implemented interfaces. Used by subtyping rules.
             <implTrans color="DeepPink"> .Set </implTrans>
 
-            //Signatures of methods accessible to this class (both declared and inherited)
-            //Map[Sig -> Class]
-            //Used in elaboration of method calls.
+            /*Signatures of methods accessible to this class (both declared and inherited)
+              Map[Sig -> Class]
+              Used in elaboration of method calls.*/
             <methods color="Blue"> .Map </methods>
 
-            //All methods declared in this class. Map[Sig -> methodClosure :: MethodType ]
-            //Used in elaboration of method calls.
+            /*All methods declared in this class. Map[Sig -> methodClosure :: MethodType ]
+              Used in elaboration of method calls.*/
             <methodDecs color="Blue"> .Map </methodDecs>
 
             <br/>
@@ -152,22 +193,22 @@ configuration
             //a "ListWrap containing a 'LocalVarDec for each field. Used during object instantiation.
             <fieldDecs color="Indigo"> 'ListWrap(.KList) </fieldDecs>
 
-            //The map of instance fields declared in this class, but not in superclasses.
-            //Map[Id -> fieldEntry(Class, X, T, ContextType)] (declaring class, field name, field type)
-            //created in ProcessClassesPhase along with <fieldDecs>, used in elaboration phase.
+            /*The map of instance fields declared in this class, but not in superclasses.
+              Map[Id -> fieldEntry(Class, X, T, ContextType)] (declaring class, field name, field type)
+              created in ProcessClassesPhase along with <fieldDecs>, used in elaboration phase.*/
             <instanceEnv color="Indigo"> .Map </instanceEnv>
 
             <br/>
 
-            //Contains concatenated instance initializer blocks and instance field initializers.
-            //Used by constructor invocation elaboration.
+            /*Contains concatenated instance initializer blocks and instance field initializers.
+              Used by constructor invocation elaboration.*/
             <instanceInit color="Indigo"> 'ListWrap(.KList) </instanceInit>
 
             <br/>
 
-            //The map of static fields declared in this class only, and NOT in superclasses or superinterfaces.
-            //Map[Id -> Location]
-            //Used during object instantiation.
+            /*The map of static fields declared in this class only, and NOT in superclasses or superinterfaces.
+              Map[Id -> Location]
+              Used during object instantiation.*/
             <staticEnv color="DarkSlateGray"> .Map </staticEnv>
 
             //The sequence of static initializers (that also includes field initializers)
