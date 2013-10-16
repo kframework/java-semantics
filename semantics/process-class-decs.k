@@ -9,17 +9,17 @@ module PROCESS-CLASS-DECS
 
 /*@ \subsection{Third pass - processing class dependencies and imports} */
 
-//Processes all classes from CreatedCPP to DecsProcessedCPP.
+//Processes all classes from CreatedCPhase to DecsProcessedCPhase.
 syntax K ::= "processClassDecs" "(" K //setWrap(Set) - the set of all classes
                                 ")"  [strict]
 
-rule [StartProcessClassDecsPhase]:
+rule [StartProcClassDecsPhase]:
     <k> . => processClassDecs(getTopLevelClasses) </k>
-    <computationPhase> ProcessCompUnitsPhase => ProcessClassDecsPhase </computationPhase>
+     <globalPhase> ProcCompUnitsPhase => ProcClassDecsPhase  </globalPhase>
 
 /* Question: how do we know if bases were already resolved for this class or not?
   Answer: When resolveBases(Class) is consumed by the rule [resolveBasesEnd], the class
-  changes its state: CreatedCPP => BasesResolvedCPP
+  changes its state: CreatedCPhase => BasesResolvedCPhase
 */
 rule [resolveBasesTopLevelStart]:
     <k> (. => resolveBases(Class, RawExtends, RawImplements)) ~> processClassDecs(_) ...</k>
@@ -28,7 +28,7 @@ rule [resolveBasesTopLevelStart]:
     <rawImplements> 'ListWrap(RawImplements:KList) </rawImplements>
     <enclosingClass> noClass </enclosingClass>
     <cuImports> CuImports:Map </cuImports>
-    <preprocessingPhase> CreatedCPP </preprocessingPhase>
+    <classPhase> CreatedCPhase </classPhase>
     <crntClass> _ => noClass </crntClass>
     <compUnitImports> _ => CuImports </compUnitImports>
 
@@ -39,20 +39,20 @@ rule [resolveBasesInnerStart]:
       <rawExtends> RawExtends:K </rawExtends>
       <rawImplements> 'ListWrap(RawImplements:KList) </rawImplements>
       <enclosingClass> OuterClass:ClassType </enclosingClass>
-      <preprocessingPhase> CreatedCPP </preprocessingPhase>
+      <classPhase> CreatedCPhase </classPhase>
       ...
     </class>
     <class>
       <classType> OuterClass </classType>
-      <preprocessingPhase> OuterClassPhase:ClassPreprocessingPhase </preprocessingPhase>
+      <classPhase> OuterClassPhase:ClassPhase </classPhase>
       ...
     </class>
     <crntClass> _ => OuterClass </crntClass>
     <compUnitImports> _ => .Map </compUnitImports>
 when
-    OuterClassPhase ==K DecsProcessedCPP orBool OuterClassPhase ==K MembersProcessedCPP
+    OuterClassPhase ==K DecsProcessedCPhase orBool OuterClassPhase ==K MembersProcessedCPhase
 
-//Process the given class from CreatedCPP to BasesResolvedCPP.
+//Process the given class from CreatedCPhase to BasesResolvedCPhase.
 syntax K ::= "resolveBases" "(" ClassType //The class for which we resolve bases
                             "," K         //Base class
                             "," KList     //Implements clauses
@@ -67,7 +67,7 @@ rule [resolveBases]:
     <rawExtends> _ => BaseClass </rawExtends>
     <rawImplements> _ => 'ListWrap(ImplTypes) </rawImplements>
     <unprocessedBases> .K => 'ListWrap(BaseClass,,ImplTypes) </unprocessedBases>
-    <preprocessingPhase> CreatedCPP => BasesResolvedCPP </preprocessingPhase>
+    <classPhase> CreatedCPhase => BasesResolvedCPhase </classPhase>
 when isKResult(ImplTypes)
 
 rule [markBaseProcessed]:
@@ -78,11 +78,11 @@ rule [markBaseProcessed]:
     </class>
     <class>
       <classType> BaseClass </classType>
-      <preprocessingPhase> BaseClassPhase:ClassPreprocessingPhase </preprocessingPhase>
+      <classPhase> BaseClassPhase:ClassPhase </classPhase>
       ...
     </class>
 when
-    BaseClassPhase ==K DecsProcessedCPP orBool BaseClassPhase ==K MembersProcessedCPP
+    BaseClassPhase ==K DecsProcessedCPhase orBool BaseClassPhase ==K MembersProcessedCPhase
 
 //this one is for class Object
 rule [markNoClassProcessed]:
@@ -101,7 +101,7 @@ rule [processClassDecEnd]:
     <enclosingClass> OuterClass:ClassType </enclosingClass>
     <rawDeclarations> CBody:K </rawDeclarations>
     <metaType> MetaT:MetaType </metaType>
-    <preprocessingPhase> BasesResolvedCPP => DecsProcessedCPP </preprocessingPhase>
+    <classPhase> BasesResolvedCPhase => DecsProcessedCPhase </classPhase>
     <extends> .K => BaseClass </extends>
     ( <rawExtends> BaseClass:ClassType </rawExtends>
       <rawImplements> 'ListWrap(ImplTypes:KList) </rawImplements> => .Bag)

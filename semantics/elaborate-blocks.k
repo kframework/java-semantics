@@ -43,7 +43,7 @@ syntax K ::= "elaborateBlocks" "(" K ")" [strict] //Elaborate the blocks inside 
            | "elabDispose" "(" K ")"    //Intermediate state between elab and elabRes - all subterms were already elaborated.
                                         //Responsible for deleting the elabRes() wrappers of subterms.
 
-//Wraps the elaboration result. Since elaboration may happen at both ElaborateBlocksPhase and ExecutionPhase,
+//Wraps the elaboration result. Since elaboration may happen at both ElaborationPhase and ExecutionPhase,
 //it cannot be KResult. Actually it is not KResult for HOLE, but is for CHOLE.
 syntax K ::= "elabRes" "(" K ")"
 
@@ -125,7 +125,7 @@ syntax K ::= "newArrayImpl" "("
 
 rule [elaborateBlocksStart]:
     <k> . => elaborateBlocks(getTopLevelClasses) </k>
-    <computationPhase> ProcessClassesPhase => ElaborateBlocksPhase </computationPhase>
+     <globalPhase> ProcClassMembersPhase => ElaborationPhase  </globalPhase>
 
 //it is important to elaborate the instance initializers before the methods.
 //This way, when 'SuperConstrEnv is encountered, it inserts the already elaborated instance
@@ -693,12 +693,12 @@ when
 //This two rules may only apply during processing of extends/implements clauses of top-level classes.
 //When the class whose declaration is processed is an inner class,
 //usual rules for 'TypeName apply.
-rule [TypeNameInProcessClassDecsPhaseTop]:
+rule [TypeNameInProcClassDecsPhaseTop]:
     <k> 'TypeName(X:Id) => Class ...</k>
     <crntClass> noClass </crntClass>
     <compUnitImports>... X |-> Class:ClassType ...</compUnitImports>
 
-rule [TypeNameInProcessClassDecsPhaseTopFail]:
+rule [TypeNameInProcClassDecsPhaseTopFail]:
     <k> 'TypeName(X:Id) => noValue ...</k>
     <crntClass> noClass </crntClass>
     <compUnitImports> Imp:Map </compUnitImports>
@@ -976,7 +976,7 @@ rule [existsClass]:
       existsClass(Pack:PackageId, Name:Id) => Name in keys(NamesToClasses)
       ...
     </k>
-    <typeNamesMap>... Pack:PackageId |-> mapWrap(NamesToClasses:Map) ...</typeNamesMap>
+    <namesToClasses>... Pack:PackageId |-> mapWrap(NamesToClasses:Map) ...</namesToClasses>
 
 rule [elab-QNewInstance]:
     elab('QNewInstance(Qual:K,, Arg2:K,, T:RefType,, Arg4:K,, elabRes(ActualArgsList:K),, 'None(.KList)))
@@ -1046,7 +1046,7 @@ when
 //Unwrap elaborated terms in execution phase, so that they could be executed.
 rule [elabResInExecutionPhase]:
     <k> (elabRes(K:K) => K) ~> KL:KLabel(_) ...</k>
-    <computationPhase> ExecutionPhase </computationPhase>
+     <globalPhase> ExecutionPhase  </globalPhase>
 when
     KL =/=KLabel 'elab`(_`)
 

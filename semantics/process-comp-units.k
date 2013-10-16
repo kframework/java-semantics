@@ -3,7 +3,7 @@ require "process-type-names.k"
 require "process-imports.k"
 
 /*@ \section{Module PROCESS-COMP-UNITS}
-ProcessCompUnitsPhase:
+ProcCompUnitsPhase:
   For each CompUnit separately:
 1. Process import declarations. Build <compUnitImports>.
 
@@ -28,10 +28,10 @@ module PROCESS-COMP-UNITS
 
 /*@ \subsection{Second pass - processing declarations} */
 
-rule [StartProcessCompUnitsPhase]:
+rule [StartProcCompUnitsPhase]:
     <k> . => Program </k>
-    (<programBackup> Program:K </programBackup> => .)
-    <computationPhase> ProcessTypeNamesPhase => ProcessCompUnitsPhase </computationPhase>
+    (<program> Program:K </program> => .)
+     <globalPhase> ProcTypeNamesPhase => ProcCompUnitsPhase  </globalPhase>
 
 //ImpDecs will be processed in the module PROCESS-IMPORTS
 rule [CompilationUnit]:
@@ -42,7 +42,7 @@ rule [CompilationUnit]:
       => compUnitImportsStart(Pack) ~> ImpDecs ~> processTypeDecsInPCUPhase(Ks, Pack, noClass)
       ...
     </k>
-    <computationPhase> ProcessCompUnitsPhase </computationPhase>
+     <globalPhase> ProcCompUnitsPhase  </globalPhase>
 
 //Wrapper over a list of type declarations and possible other terms, required to distinguish
 //this phase from other preprocessing phases
@@ -140,7 +140,7 @@ rule [processTypeDecsInPCUPhaseClassDec]:
                 )
               </rawDeclarations>
               <metaType> classMetaT </metaType>
-              <preprocessingPhase> CreatedCPP </preprocessingPhase>
+              <classPhase> CreatedCPhase </classPhase>
               ...
             </class> )
 
@@ -166,7 +166,7 @@ rule [processTypeDecsInPCUPhaseInterfaceDec]:
               <rawImplements> ImplTypesRaw </rawImplements>
               <rawDeclarations> 'ListWrap(Decls) </rawDeclarations>
               <metaType> interfaceMetaT </metaType>
-              <preprocessingPhase> CreatedCPP </preprocessingPhase>
+              <classPhase> CreatedCPhase </classPhase>
               ...
             </class> )
 

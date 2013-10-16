@@ -1,3 +1,4 @@
+require "java-doc.k"
 require "labels.k"
 require "configuration.k"
 require "core.k"
@@ -6,7 +7,7 @@ require "process-type-names.k"
 require "process-comp-units.k"
 require "process-imports.k"
 require "process-class-decs.k"
-require "process-classes.k"
+require "process-class-members.k"
 require "elaborate-blocks.k"
 require "process-local-classes.k"
 require "primitive-types.k"
@@ -31,7 +32,7 @@ module JAVA
     imports PROCESS-COMP-UNITS
     imports PROCESS-IMPORTS
     imports PROCESS-CLASS-DECS
-    imports PROCESS-CLASSES
+    imports PROCESS-CLASS-MEMBERS
     imports ELABORATE-BLOCKS
     imports PROCESS-LOCAL-CLASSES
     imports PRIMITIVE-TYPES

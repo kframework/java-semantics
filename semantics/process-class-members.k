@@ -1,6 +1,6 @@
 require "core.k"
 
-//@ \section{Module PROCESS-CLASSES}
+//@ \section{Module PROCESS-CLASS-MEMBERS}
 
 module PROCESS-CLASSES
     imports CORE
@@ -54,9 +54,9 @@ syntax K ::= "processClasses" "("
 
 //We need to process Object first. Thus when we will process any interfaces,
 //Object class will already be processed.
-rule [StartProcessClassesPhase]:
+rule [StartProcClassMembersPhase]:
     <k> . => processTypeWithDepends(objectClass) ~> processClasses(getTopLevelClasses) </k>
-    <computationPhase> ProcessClassDecsPhase => ProcessClassesPhase </computationPhase>
+     <globalPhase> ProcClassDecsPhase => ProcClassMembersPhase  </globalPhase>
 
 rule [processClasses]:
     (. => processTypeWithDepends(Class))
@@ -75,12 +75,12 @@ rule [processTypeWithDepends]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
     <implements> ISet:Set </implements>
-    <preprocessingPhase> DecsProcessedCPP </preprocessingPhase>
+    <classPhase> DecsProcessedCPhase </classPhase>
 
 rule [processTypeWithDependsDiscard]:
     <k> processTypeWithDepends(Class:ClassType) => . ...</k>
     <classType> Class </classType>
-    <preprocessingPhase> MembersProcessedCPP </preprocessingPhase>
+    <classPhase> MembersProcessedCPhase </classPhase>
 
 rule [processTypeWithDependsDiscard2]:
     processTypeWithDepends(noClass) => .K
@@ -114,7 +114,7 @@ rule [ProcessType]:
       <implTrans> . => ISet </implTrans>
       ( <rawDeclarations> Decls:K </rawDeclarations> => .Bag)
       <metaType> MetaT:MetaType </metaType>
-      <preprocessingPhase> DecsProcessedCPP => MembersProcessedCPP </preprocessingPhase>
+      <classPhase> DecsProcessedCPhase => MembersProcessedCPhase </classPhase>
       ...
     </class>
     <crntClass> _ => Class </crntClass>
@@ -123,7 +123,7 @@ rule [ProcessType]:
 rule [processType-discard]:
     <k> processType(Class:ClassType) => . ...</k>
     <classType> Class </classType>
-    <preprocessingPhase> MembersProcessedCPP </preprocessingPhase>
+    <classPhase> MembersProcessedCPhase </classPhase>
 
 //compute <implTrans> cell - interfaces transitively implemented
 syntax K ::= "computeImplTrans" "(" Set ")"

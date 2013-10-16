@@ -4,11 +4,11 @@ module CORE
 
 //@ \subsection{Identifiers}
 
-syntax ComputationPhase ::=
-    /* The content of <typeNamesMap> is computed, of type
+syntax GlobalPhase ::=
+    /* The content of <namesToClasses> is computed, of type
       Map[PackageName -> Map[SimpleName -> FullyQualifiedName]]
     */
-    "ProcessTypeNamesPhase"
+    "ProcTypeNamesPhase"
 
     /* Primary processing of type declarations, including nested.
       For each 'ClassDec a <class> is saved, with the following cells:
@@ -19,16 +19,16 @@ syntax ComputationPhase ::=
         <rawDeclarations>
         <metaType>
         <cuImports> - imports of the enclosing CU, for top-level classes only.
-      A class first registered in a <class> cell is in the state CreatedCPP.
+      A class first registered in a <class> cell is in the state CreatedCPhase.
     */
-  | "ProcessCompUnitsPhase"
+  | "ProcCompUnitsPhase"
 
   /* Resolve the fully qualified names of base classes an interfaces. Fills the content of:
         <extends> - the base class
         <implements> - the set of directly implemented interfaces
         <imports> - the map from simple names to full names for use within this class.
   */
-  | "ProcessClassDecsPhase"
+  | "ProcClassDecsPhase"
 
   /* Saves into appropriate cells the list of transitively implemented interfaces, and all the
     content about this class members. Computes the following cells:
@@ -40,7 +40,7 @@ syntax ComputationPhase ::=
         <staticEnv>
         <staticInit>
   */
-  | "ProcessClassesPhase"
+  | "ProcessClassMembersPhase"
 
   /* Elaborates the content of each code block. Specifically the content of the following cells:
         <methodDecs>
@@ -54,16 +54,17 @@ syntax ComputationPhase ::=
       (that might be empty)
       - each expression is elaborated into a typed expression.
   */
-  | "ElaborateBlocksPhase"
+  | "ElaborationPhase"
 
   /* When all preprocessing / elaboration phases are finished, the actual execution begins.
   */
   | "ExecutionPhase"
 
-syntax ClassPreprocessingPhase ::= "CreatedCPP"
-                                 | "BasesResolvedCPP"
-                                 | "DecsProcessedCPP"
-                                 | "MembersProcessedCPP"
+syntax ClassPhase ::=
+    "CreatedCPhase"
+  | "BasesResolvedCPhase"
+  | "DecsProcessedCPhase"
+  | "MembersProcessedCPhase"
 
 //static initialization of a class. See static-init.k for more details.
 syntax StaticInitStatus ::= "StaticUninitialized"
@@ -251,7 +252,7 @@ rule toPackage(class Class:Id) => packageId(Class)
 syntax K ::= "getPackage" "(" K ")"               [strict]
 rule [getPackage]:
     <k> getPackage(Class:ClassType) => Pack ...</k>
-    <typeNamesMap>... Pack:PackageId |-> mapWrap(_ |-> Class _) ...</typeNamesMap>
+    <namesToClasses>... Pack:PackageId |-> mapWrap(_ |-> Class _) ...</namesToClasses>
 
 //Returns the top-level class enclosing this class
 syntax K ::= "getTopLevel" "(" ClassType ")"
@@ -330,13 +331,13 @@ when        (KL =/=KLabel 'Public)
 rule getAccessMode('ListWrap(.KList)) => package
 
 //Returns a setWrap(Set[ClassType]), containing all top level classes in the program.
-//Uses <typeNamesMap> to compute the result.
+//Uses <namesToClasses> to compute the result.
 syntax K ::= "getTopLevelClasses"
            | "getTopLevelClasses" "(" Map "," Set ")"
 
 rule [getTopLevelClasses-start]:
     <k> getTopLevelClasses => getTopLevelClasses(NamesMap, .Set) ...</k>
-    <typeNamesMap> NamesMap:Map </typeNamesMap>
+    <namesToClasses> NamesMap:Map </namesToClasses>
 
 rule [getTopLevelClasses-top-level]:
     <k>
@@ -358,13 +359,13 @@ rule getTopLevelClasses(_ (_ |-> mapWrap(.Map) => .Map), _)
 rule getTopLevelClasses(.Map, ClassesSet:Set) => setWrap(ClassesSet)
 
 //Returns a setWrap(Set[ClassType]), containing all direct inner classes of the given class.
-//Uses <typeNamesMap> to compute the result.
+//Uses <namesToClasses> to compute the result.
 syntax K ::= "getInnerClasses" "(" ClassType ")"
            | "getInnerClasses" "(" Map "," Set ")"
 
 rule [getInnerClasses-start-have-inner]:
     <k> getInnerClasses(Class:ClassType) => getInnerClasses(InnerClassesMap, .Set) ...</k>
-    <typeNamesMap>... Pack:PackageId |-> mapWrap(InnerClassesMap:Map) ...</typeNamesMap>
+    <namesToClasses>... Pack:PackageId |-> mapWrap(InnerClassesMap:Map) ...</namesToClasses>
 when
     Pack ==K toPackage(Class)
 
@@ -373,7 +374,7 @@ rule getInnerClasses(.Map, ClassesSet:Set) => setWrap(ClassesSet)
 
 rule [getInnerClasses-no-inners]:
     <k> getInnerClasses(Class:ClassType) => setWrap(.Set) ...</k>
-    <typeNamesMap> TypeNamesMap:Map </typeNamesMap>
+    <namesToClasses> TypeNamesMap:Map </namesToClasses>
 when
     notBool toPackage(Class) in keys(TypeNamesMap)
 

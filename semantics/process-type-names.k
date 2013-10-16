@@ -4,7 +4,7 @@ require "aux-strings.k"
 /*@ \section{Module PROCESS-TYPE-NAMES}
 First pass - collecting globally accessible names in the program. This includes packages,
 top-level classes and inner classes. In each compilation unit just class declarations
-(both global and inner) are processed. Results are stored in the cell <typeNamesMap>.*/
+(both global and inner) are processed. Results are stored in the cell <namesToClasses>.*/
 
 module PROCESS-TYPE-NAMES
     imports CORE
@@ -49,19 +49,19 @@ rule [CompilationUnit]:
       ) => processTypeNames(Decs, Pack)
       ...
     </k>
-    <computationPhase> ProcessTypeNamesPhase </computationPhase>
+     <globalPhase> ProcTypeNamesPhase  </globalPhase>
 
 /*@ \subsection{Class declaration}*/
 
 //Wrapper of declarations inside a compilation unit. Used to distinguish
-//ProcessTypeNamesPhase from ProcessCompUnitsPhase
+//ProcTypeNamesPhase from ProcCompUnitsPhase
 syntax K ::= "processTypeNames" "(" KList //declarations inside a compilation unit
                               "," PackageId // the package of the processed types
                               ")"
 
 rule [processTypeNamesAddPackage]:
     <k> processTypeNames(_, PackId:PackageId) ...</k>
-    <typeNamesMap> PackMap:Map => PackMap[mapWrap(.Map) / PackId] </typeNamesMap>
+    <namesToClasses> PackMap:Map => PackMap[mapWrap(.Map) / PackId] </namesToClasses>
 when notBool PackId in keys(PackMap)
 
 //May be both class or interface name
@@ -77,13 +77,13 @@ rule [processTypeNames]:
       ~> ( . => processTypeNames(bodyAsList(CBody), toPackage(getClassType(PackId,SimpleClass))) )
       ...
     </k>
-    <typeNamesMap>
+    <namesToClasses>
       ...
       PackId |-> mapWrap(
         ClassesMap:Map => ClassesMap[getClassType(PackId,SimpleClass) / SimpleClass]
       )
       ...
-    </typeNamesMap>
+    </namesToClasses>
     <classesToAccessModes>
       _ (. => getClassType(PackId,SimpleClass) |-> getAccessMode(Modifiers))
     </classesToAccessModes>
@@ -95,10 +95,10 @@ when notBool( (Label ==KLabel 'ClassDec) orBool (Label ==KLabel 'InterfaceDec)
               orBool (Label ==KLabel 'bodyAsList`(_`)) //todo semantics seems to work without this condition
             )
 
-//We match PackId in <typeNamesMap> just to be sure that the package was added to the map.
+//We match PackId in <namesToClasses> just to be sure that the package was added to the map.
 rule [processTypeNamesDiscard]:
     <k> processTypeNames(.KList, PackId:PackageId) => .K ...</k>
-    <typeNamesMap>... PackId |-> _ ...</typeNamesMap>
+    <namesToClasses>... PackId |-> _ ...</namesToClasses>
 
 /*@ \subsection{Auxiliary constructs}*/
 
@@ -136,11 +136,11 @@ syntax K ::= "getNamesMap"  "(" PackageId //The package for which we want to ret
 
 rule [getTypesMapFound]:
     <k> getNamesMap(Pack:PackageId) => mapWrap(NamesMap) ...</k>
-    <typeNamesMap>... Pack |-> mapWrap(NamesMap:Map) ...</typeNamesMap>
+    <namesToClasses>... Pack |-> mapWrap(NamesMap:Map) ...</namesToClasses>
 
 rule [getTypesMapNotFound]:
     <k> getNamesMap(Pack:PackageId) => mapWrap(.Map) ...</k>
-    <typeNamesMap> BigMap:Map </typeNamesMap>
+    <namesToClasses> BigMap:Map </namesToClasses>
 when notBool Pack in keys(BigMap)
 
 endmodule

@@ -333,6 +333,6 @@ rule [ClassNameInner]:
     </k>
     <classType> class ClassId </classType>
     <enclosingClass> class OuterClassId:Id </enclosingClass>
-    <typeNamesMap>... _ |-> mapWrap(SimpleName:Id |-> class ClassId _:Map) ...</typeNamesMap>
+    <namesToClasses>... _ |-> mapWrap(SimpleName:Id |-> class ClassId _:Map) ...</namesToClasses>
 
 endmodule

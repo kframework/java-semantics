@@ -1,54 +1,9 @@
 require "core.k"
-
-//@ \section{Module CONFIGURATION}
+require "configuration-doc.k"
 
 module CONFIGURATION
     imports CORE
 
-/*@
-The configuration is divided into three large cell groups. The group $\kall{threads}{}$ contains one or multiple cells $\kall{thread}{}$. Here is the data related to the execution of a thread, such as the computation, stack, local environment. The second group
-is contained inside $\kall{classes}{}$ that have multiple $\kall{class}{}$ cells -- anything class-related.
-What remains are the top-level cells -- the third group. Top-level cells are related to memory store,
-global thread-synchronization data and auxiliary cells for debugging.
-
-Some cells in this configuration are not used within the rules. They serve only for grouping other cells by context. Grouping cells are colored yellow, whereas actual semantics cells have other colors.
-
-From the evaluation standpoint, the semantics is divided into several preprocessing phases followed by the actual program execution.
-Preprocessing phases are roughly equivalent to java compilation. They perform all the computations that would be traditionally expected from the compiler. The evaluation phases are:
-
-\begin{itemize}
-\item Process type names
-\item Process compilation units
-\item Process class declarations
-\item Process classes
-\item Elaboration
-\item Execution
-\end{itemize}
-
-While describing the configuration we will denote with $\kall{cell}{\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}}$ a container cell, holding another cells, and with $\kall{cell}{Type}$ a leaf cell and its type.
-
-During the preprocessing phase there is only one $\kall{thread}{\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}}$ where the whole program with all its classes is preprocessed. During execution phase there might be multiple $\kall{thread}{}$ cells -- one per actual running thread. The cell $\kall{thread}{}$ contains leaf-cells $\kall{k}{}$ and $\kall{stack}{}$ and container cells $\kall{methodContext}{\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}}$ and $\kall{threadData}{\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}}$. The cell $\kall{k}{}$ is the actual computation, both during preprocessing and execution. When after a preprocessing phase the cell $\kall{k}{}$ remains empty, evaluation transitions into the next phase. If the cell $\kall{k}{}$ remains empty during the execution phase, the enclosing thread is terminated. The cell $\kall{stack}{}$ is the thread stack.
-
-Inside the cell $\kall{methodContext}{\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}}$ we have various data holding the context of the currently executing method. Here we have:
-
-\begin{itemize}
-\item $\kall{env}{Map[Id\mapsto{}Int]}$ -- the map from local variable names to their location inside $\kall{store}{}$.
-\item $\kall{localClassesEnv}{}$ is related to local classes and will be explained later.
-\item $\kall{return}{Type}$ -- method return type.
-\item $\kall{contextType}{ContextType}$ -- may have one of two values: staticCT or instanceCT, depending on whether the current method is static or non-static.
-\item $\kall{crntObj}{\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}}$ -- the object associated with the current running method, if any. In non-static contexts $\kall{crntClass}{ClassType}$ contains the compile-time class associated to the current method, and $\kall{location}{Int}$ holds the location of the current object in the store. For static contexts cells have empty values: noClass and $\dotCt{K}$ respectively.
-\end{itemize}
-
-The group of cells $\kall{threadData}{\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}}$ contains:
-
-\begin{itemize}
-\item $\kall{tid}{Int}$ -- the thread id.
-\item $\kall{holds}{Map[Int\mapsto{}Int]}$ -- a map from Object locations to integer numbers. Map keys are monitor objects on which the current thread have the locks. Map values hold the number of times the lock was acquired.
-\item $\kall{interrupted}{Bool}$ -- boolean value signaling whether the current thread was interrupted.
-\end{itemize}
-
-\pagebreak
-*/
 configuration
     <T>
       <threads color="GreenYellow">
@@ -123,12 +78,12 @@ configuration
           //Either classMetaT or interfaceMetaT. Used in many semantics phases, including execution.
           <metaType color="Maroon"> .K </metaType>
 
-          //The major phase of <class> lifecycle. See ClassPreprocessingPhase definition.
-          <preprocessingPhase color="Maroon"> .K </preprocessingPhase>
+          //The major phase of <class> lifecycle. See ClassPhase definition.
+          <classPhase color="Maroon"> .K </classPhase>
 
           <br/>
 
-          <cppCreated color="Yellow">
+          <cphCreated color="Yellow">
 
             //Used by object instantiation
             <enclosingClass color="DarkGoldenrod"> noClass </enclosingClass> //noClass if this is a top-level class,
@@ -142,21 +97,21 @@ configuration
             //The list of class members, in their raw form.
             <rawDeclarations color="DarkGoldenrod"> .K </rawDeclarations>
 
-            //Created in ProcessCompUnitsPhase, used in ProcessClassDecsPhase
+            //Created in ProcCompUnitsPhase, used in ProcClassDecsPhase
             <cuImports color="DarkGoldenrod"> .Map </cuImports> //imports of the enclosing CU, for top-level classes only.
 
-          </cppCreated>
+          </cphCreated>
 
           <br/>
 
-          <cppBases color="Yellow">
+          <cphBases color="Yellow">
             <unprocessedBases color="Olive"> .K </unprocessedBases>//base classes that didn't
-                                                     //reached the state DecsProcessedCPP yet.
-          </cppBases>
+                                                     //reached the state DecsProcessedCPhase yet.
+          </cphBases>
 
           <br/>
 
-          <cppDecs color="Yellow">
+          <cphDecs color="Yellow">
 
             //The base class, or noClass for Object. For interfaces: Object.
             <extends color="SpringGreen"> .K </extends>
@@ -170,11 +125,11 @@ configuration
               Used by type resolution in elaboration phase.*/
             <imports color="SpringGreen"> .Map </imports>
 
-          </cppDecs>
+          </cphDecs>
 
           <br/>
 
-          <cppMembers color="Yellow">
+          <cphMembers color="Yellow">
 
             //Transitively implemented interfaces. Used by subtyping rules.
             <implTrans color="DeepPink"> .Set </implTrans>
@@ -195,7 +150,7 @@ configuration
 
             /*The map of instance fields declared in this class, but not in superclasses.
               Map[Id -> fieldEntry(Class, X, T, ContextType)] (declaring class, field name, field type)
-              created in ProcessClassesPhase along with <fieldDecs>, used in elaboration phase.*/
+              created in ProcClassMembersPhase along with <fieldDecs>, used in elaboration phase.*/
             <instanceEnv color="Indigo"> .Map </instanceEnv>
 
             <br/>
@@ -222,7 +177,7 @@ configuration
             //Map[Id -> TypedVal]
             <constantEnv color="DarkSlateGray"> .Map </constantEnv>
 
-          </cppMembers>
+          </cphMembers>
 
           <br/>
 
@@ -254,14 +209,14 @@ configuration
       <br/>
       <br/>
 
-      <computationPhase  color="YellowGreen"> ProcessTypeNamesPhase </computationPhase>
+      <globalPhase  color="YellowGreen"> ProcTypeNamesPhase  </globalPhase>
 
       <br/>
 
       <phStart color="Yellow">
 
-        //required in ProcessCompUnitsPhase
-        <programBackup color="LightSteelBlue"> $PGM:K </programBackup>
+        //required in ProcCompUnitsPhase
+        <program color="LightSteelBlue"> $PGM:K </program>
 
         //Main class, passed as krun argument. We need it from the outside, just like JDK Java.
         <mainClass color="LightSteelBlue"> $MainClass:ListItem </mainClass>
@@ -273,11 +228,11 @@ configuration
       <phTN color="Yellow">
 
         //cell type: Map[PackageId->Map[Id->ClassType]], Id = simple name, ClassType = full name
-        //Computed during ProcessTypeNamesPhase. Used in all the elaboration phases.
-        <typeNamesMap color="OrangeRed"> .Map </typeNamesMap>
+        //Computed during ProcTypeNamesPhase. Used in all the elaboration phases.
+        <namesToClasses color="OrangeRed"> .Map </namesToClasses>
 
         //cell type: Map[ClassType->AccessMode]
-        //Computed during ProcessTypeNamesPhase. Used in ProcessCompUnitsPhase, module PROCESS-IMPORTS
+        //Computed during ProcTypeNamesPhase. Used in ProcCompUnitsPhase, module PROCESS-IMPORTS
         <classesToAccessModes color="OrangeRed"> .Map </classesToAccessModes>
 
       </phTN>
@@ -287,8 +242,8 @@ configuration
       <phCU color="Yellow">
 
         //Types imported by the current compilation unit. Created in module PROCESS-IMPORTS, part of
-        //ProcessCompUnitsPhase. Used in ProcessCompUnitsPhase when imports for a compilation unit are computed,
-        //and in ProcessClassdecsPhase, when they are used to lookup extends/implements clauses.
+        //ProcCompUnitsPhase. Used in ProcCompUnitsPhase when imports for a compilation unit are computed,
+        //and in ProcClassDecsPhase, when they are used to lookup extends/implements clauses.
         //Type: Map[Id -> ClassType]
         <compUnitImports color="LightCoral"> .Map </compUnitImports>
 

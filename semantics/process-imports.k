@@ -1,7 +1,7 @@
 require "core.k"
 
 /*@ \section{Module PROCESS-IMPORTS}
-Rules related to processing import declarations. Part of ProcessCompUnitsPhase.
+Rules related to processing import declarations. Part of ProcCompUnitsPhase.
 */
 
 module PROCESS-IMPORTS
@@ -15,7 +15,7 @@ rule [compUnitImportsStart]:
       compUnitImportsStart(Pack:PackageId) => 'TypeImportOnDemandDec(packageId(String2Id("java.lang")))
       ...
     </k>
-    <typeNamesMap>... Pack |-> mapWrap(PackMap:Map) ...</typeNamesMap>
+    <namesToClasses>... Pack |-> mapWrap(PackMap:Map) ...</namesToClasses>
     <compUnitImports> _ => PackMap </compUnitImports>
 
 //Process K-AST terms 'TypeImportDec or 'TypeImportOnDemandDec
@@ -24,7 +24,7 @@ context 'TypeImportDec(HOLE)
 
 rule [TypeImportDec]:
     <k> 'TypeImportDec(Class:ClassType) => . ...</k>
-    <typeNamesMap>... _ |-> mapWrap(X:Id |-> Class _) ...</typeNamesMap>
+    <namesToClasses>... _ |-> mapWrap(X:Id |-> Class _) ...</namesToClasses>
     <compUnitImports> Imp:Map => Imp[Class / X] </compUnitImports>
 
 context 'TypeImportOnDemandDec(HOLE)
@@ -34,7 +34,7 @@ rule [TypeImportOnDemandDec]:
       'TypeImportOnDemandDec(Pack:PackageId) => importOnDemandImpl(PackMap)
       ...
     </k>
-    <typeNamesMap>... Pack |-> mapWrap(PackMap:Map) ...</typeNamesMap>
+    <namesToClasses>... Pack |-> mapWrap(PackMap:Map) ...</namesToClasses>
     <compUnitImports> Imp:Map </compUnitImports>
 
 //import to <compUnitImports> cell public packages in the given map.
@@ -60,7 +60,7 @@ rule [TypeImportOnDemandUnexisting]:
       'TypeImportOnDemandDec(Pack:PackageId) => .
       ...
     </k>
-    <typeNamesMap> PackMap:Map </typeNamesMap>
+    <namesToClasses> PackMap:Map </namesToClasses>
 when notBool Pack in keys(PackMap)
 
 endmodule

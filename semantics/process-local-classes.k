@@ -57,7 +57,7 @@ rule [processLocalClassDecStep2]:
     <crntClass> OldCrntClass:ClassType </crntClass>
     <localTypes> ListItem(stEnv(LocalTypes:Map => LocalTypes[Class/Name])) ...</localTypes>
     <contextType> CT:ContextType </contextType>
-    <typeNamesMap>... GeneratedPack |-> mapWrap(Name:Id |-> Class:ClassType) ...</typeNamesMap>
+    <namesToClasses>... GeneratedPack |-> mapWrap(Name:Id |-> Class:ClassType) ...</namesToClasses>
 
 //Sets the enclosing local environment for this class, from the cell <elabEnv>
 syntax K ::= "setEnclosingLocalEnv" "(" ClassType ")"
