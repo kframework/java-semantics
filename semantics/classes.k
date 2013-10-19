@@ -1,7 +1,7 @@
 require "core.k"
 require "process-type-names.k"
 require "subtyping.k"
-require "process-classes.k"
+require "process-class-members.k"
 require "expressions.k"
 require "statements.k"
 require "arrays.k"
@@ -16,7 +16,7 @@ module CLASSES
     imports CORE
     imports PROCESS-TYPE-NAMES
     imports SUBTYPING
-    imports PROCESS-CLASSES
+    imports PROCESS-CLASS-MEMBERS
     imports EXPRESSIONS
     imports STATEMENTS
     imports ARRAYS

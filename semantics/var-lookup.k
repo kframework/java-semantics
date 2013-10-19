@@ -1,5 +1,5 @@
 require "core.k"
-require "process-classes.k"
+require "process-class-members.k"
 require "subtyping.k"
 require "static-init.k"
 require "expressions.k"
@@ -8,7 +8,7 @@ require "expressions.k"
 
 module VAR-LOOKUP
     imports CORE
-    imports PROCESS-CLASSES
+    imports PROCESS-CLASS-MEMBERS
     imports SUBTYPING
     imports STATIC-INIT         //for staticInit()
     imports EXPRESSIONS

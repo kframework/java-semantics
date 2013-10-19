@@ -40,7 +40,7 @@ syntax GlobalPhase ::=
         <staticEnv>
         <staticInit>
   */
-  | "ProcessClassMembersPhase"
+  | "ProcClassMembersPhase"
 
   /* Elaborates the content of each code block. Specifically the content of the following cells:
         <methodDecs>
@@ -286,7 +286,7 @@ syntax K ::= "el" "(" ClassType //The class corresponding to the current layer
                   ")"
 
 //A wrapper for maps. Allows the usage of multi-level maps.
-//Also used as part of mapUnion operation in java-process-classes
+//Also used as part of mapUnion operation in java-process-class-members
 syntax KResult ::= "mapWrap" "(" Map ")"
                  | "setWrap" "(" Set ")"
 

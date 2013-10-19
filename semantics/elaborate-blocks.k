@@ -1,6 +1,6 @@
 require "core.k"
 require "process-type-names.k"
-require "process-classes.k"
+require "process-class-members.k"
 require "subtyping.k"
 require "var-lookup.k"
 
@@ -28,7 +28,7 @@ static initializers of a class and perform the following transformations:
 module ELABORATE-BLOCKS
     imports CORE
     imports PROCESS-TYPE-NAMES     //for toPackage()
-    imports PROCESS-CLASSES        //for paramImpl
+    imports PROCESS-CLASS-MEMBERS        //for paramImpl
     imports SUBTYPING
     imports VAR-LOOKUP             //for localVar
 

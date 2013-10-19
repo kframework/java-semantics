@@ -2,7 +2,7 @@ require "core.k"
 
 //@ \section{Module PROCESS-CLASS-MEMBERS}
 
-module PROCESS-CLASSES
+module PROCESS-CLASS-MEMBERS
     imports CORE
 
 //@ \subsection{Auxiliary functions}
