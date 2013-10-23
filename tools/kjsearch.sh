@@ -15,5 +15,5 @@ TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # The last argument is not used, we put it here just to overcome file presence checking of krun
 # We cannot put $JAVA_FILE directly because krun expects only files,
 # and $JAVA_FILE may also be a dir
-time krun --parser=aux-kjprep.sh -cMainClass="ListItem(\"$MAIN_CLASS\")" -cModelCheck="true" --search-final $JAVA_FILE
-
+time krun --parser=aux-kjprep.sh -cMainClass="ListItem(\"$MAIN_CLASS\")" -cModelCheck="true" \
+  --search-final --color=extended $JAVA_FILE
