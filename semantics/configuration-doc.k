@@ -50,12 +50,16 @@ Both cells are initialized with arguments passed through command-line, as is the
 
 The remaining global cells are grouped by the phase when they first come into play. Thus, the cells within $\kall{phTN}{}$ are populated during Process Type Names phase, the cells from $\kall{phCU}{}$ -- during Process Compilation Unit and so on. The last group of global cells, $\kall{groupDebug}{}$ serve for debugging purposes only.
 
+\bigskip
+
 In the phase Process Type Names the semantics passes through all compilation units and computes two global cells:
 
 \begin{itemize}
 \item $\kall{namesToClasses}{Map[PackageId\mapsto{}Map[Id\mapsto{}ClassType]]}$ A two-level map. First level is a map from package names to another map. That second-level map maps simple class names within a package to fully-qualified class names. This cell is extensively used through the semantics. The map contains both top-level and inner classes. for inner classes, the package where they are registered is the fully qualified class name of the directly enclosing class.
 \item $\kall{classesToAccessModes}{Map[ClassType\mapsto{}AccessMode]}$ -- A map from class names to their respective access mode, for each class registered in the previous cell.
 \end{itemize}
+
+\bigskip
 
 The phase Process Compilation Units takes again as input the whole program, and thoroughly processes each compilation unit. This time data collected at the previous phase is used to process compilation unit imports. Imports data is stored temporarily in the cell:
 
@@ -91,6 +95,8 @@ In addition to the three cells above, during Process Compilation Units the follo
 
 As we can see, the cells saved during the class phase Created contain all the data of the original class AST. Thus, initial AST representation of the program is no longer needed. In fact, the cell $\kall{program}{}$ is discarded at the end of Process Compilation Units. Future preprocessing phases will use class data in this initial form to compute other cells within $\kall{class}{}$, finally used for execution.
 
+\bigskip
+
 Next phase is Process Class Declarations. Here each class passes through two more class phases: Bases Processed and Declarations Processed. First, for each class the semantics attempts to resolve its extends/implements clauses into fully qualified class names. The order in which dependencies are resolved depends on both class inheritance relationships as well as nesting relationships. Once the dependencies of a class are resolved, they are stored into a temporary cell:
 
 \begin{itemize}
@@ -117,6 +123,8 @@ The need to cover all these cases leads to the intricate order in which class de
 
 When a class enters the phase Declarations Processed, the cells $\kall{rawExtends}{}$, $\kall{rawImplements}{}$ and $\kall{unprocessedBases}{K}$ are no longer needed and are discarded. Once all classes reach the phase Declarations Processed the computation proceeds to the next global phase.
 
+\bigskip
+
 During the global phase Process Class Members each class processes its members and reaches the state Members Processes. Until then the class body is stored inside $\kall{rawDeclarations}{}$. The class members could be:
 
 \begin{itemize}
@@ -141,6 +149,62 @@ Based on this data, the following cells are computed:
 \end{itemize}
 
 Once all the cells above are computed the class proceeds into the phase Members Processed and the cell $\kall{rawDeclarations}{}$ is deleted.
+
+\bigskip
+
+The last preprocessing phase is Elaboration. Here all the code blocks are processed - method and constructor bodies, static and instance initializers. Most of the information traditionally inferred by the compiler is computed at this phase. More precisely elaboration performs the following:
+
+\begin{itemize}
+\item Each name is resolved into local variable, field, method, class or package. While method may be distinguished from others purely syntactically, other categories are inferred based on the names existing in the current context.
+\item Class names are resolved into fully qualified class names. Hereafter all the class names in the code are fully qualified.
+\item For all expressions the type is inferred. Thus, when the code reaches execution phase, expressions are no longer in their initial form, but are annotated with types.
+\item for each method call the precise signature in inferred.
+\item Local and anonymous classes are processed. Elaboration is the first phase where local classes could be reached. Still, local classes have all the features of other classes and need to be passed through all the preprocessing steps. All this is performed during the global phase elaboration.
+\end{itemize}
+
+Despite this phase being the most complex preprocessing phase of all, it introduces relatively few new cells. Most of them are related to local classes. Inside $\kall{class}{}$ there is just one new cell:
+
+\begin{itemize}
+\item $\kall{enclosingLocalEnv}{Map[Id \mapsto Type]}$ -- The map from local variables defined in enclosing blocks to their types. for local classes only.
+\end{itemize}
+
+Among top-level cells there are the following:
+
+\begin{itemize}
+\item $\kall{elabEnv}{List[stEnv(Map[Id \mapsto Type])]}$ -- A stack where each layer is a map of local variables. Each layer of the stack represents a code block, in their nesting order. Inside each layer, the map is from local variables accessible in that layer to variable types.
+\item $\kall{localTypes}{List[stEnv(Map[Id \mapsto ClassType])]}$ -- A cell similar in structure to the previous one. This time, map keys are local class names.
+\item $\kall{nextLocalId}{Int}$ -- a number used to generate unique fully-qualified class names for local classes.
+\end{itemize}
+
+During the elaboration phase no cells are consumed. Instead, the code blocks stored inside $\kall{methodDecs}{}$, $\kall{instanceInit}{}$, $\kall{staticInit}{}$ are processed and stored back into the same cell. After elaboration classes remain in the same phase as before -- Members Processes. This is in fact the last phase in the lifecycle of the cell $\kall{class}{}$.
+
+\bigskip
+
+When evaluation reaches the last phase, execution, classes have one more cell to enter into play:
+
+\begin{itemize}
+\item $\kall{staticInitStatus}{}$ -- a flag indicating whether the class was statically initialized or not.
+\end{itemize}
+
+There are more global cells related to execution:
+
+\begin{itemize}
+\item $\kall{store}{Location:Int \mapsto Value:TypedVal}$ -- the program memory. Map from memory locations to actual values. the single most important cell of the execution phase.
+\item $\kall{nextLoc}{Int}$ -- the number of allocated memory locations. Used to generate unique memory addresses for each allocation.
+\item $\kall{in}{List}$ -- standard input, represented as pre-parsed list of elements of type Int or String.
+\item $\kall{out}{List}$ -- standard output, visible to the semantics also as a list.
+\item $\kall{classLiteralsMap}{Map[Type \mapsto TypedVal]}$ -- a map from types T to objects that represent T.class for that T. Used, as mentioned, bu ".class" operator.
+
+\item the remaining cells are related to threads:
+\begin{itemize}
+\item $\kall{busy}{Set[ObjLocation:Int]}$ -- the set of busy objects. E.g. objects for which there is a thread holding the monitor for the object.
+\item $\kall{waitingThreads}{Map[ThreadId:Int \mapsto OL:Int]}$ -- The map from threads to objects they are waiting on. Used by the methods Object.wait(), Object.notify(), Object.notifyAll().
+\item $\kall{terminated}{Set[ThreadId:Int]}$ -- the set of terminated threads.
+\end{itemize}
+
+\end{itemize}
+
+The cells that remain are related to debugging.
 
 \pagebreak
 */

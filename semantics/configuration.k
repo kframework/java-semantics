@@ -299,6 +299,7 @@ configuration
         //waiting on those objects used by methods Object.wait(), Object.notify(), Object.notifyAll().
         <waitingThreads color="LightGreen"> .Map </waitingThreads>
 
+        //Set[ThreadId:Int] The set of terminated threads.
         <terminated color="LightGreen"> .Set </terminated>
 
       </phExec>
