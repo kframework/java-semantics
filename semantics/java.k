@@ -47,6 +47,7 @@ module JAVA
     imports METHOD-INVOKE
     imports API-CORE
     imports API-THREADS
+    imports JAVA-SYNTAX
 
 endmodule
 

@@ -23,7 +23,7 @@ KRUN_CMD="krun --parser=cat \
   --main-module=JAVA
   -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\"
    -cModelCheck=\"false\"
-  --output-mode=none $KAST_FILE"
+  --output=none $KAST_FILE"
 
 eval $PARSER_CMD >/dev/null
 cd $SEMANTICS_DIR

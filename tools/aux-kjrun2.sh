@@ -43,7 +43,7 @@ if [ $DEBUG == true ]; then
 fi
 
 if [ $DISPLAY_CONFIG == false ]; then
-    KRUN_CMD="$KRUN_CMD --output-mode=none"
+    KRUN_CMD="$KRUN_CMD --output=none"
 fi
 
 KRUN_CMD="$KRUN_CMD $JAVA_FILE"
