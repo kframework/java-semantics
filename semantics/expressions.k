@@ -73,7 +73,7 @@ rule /* B1 & B2 */ 'And(B1:Bool :: bool,, B2:Bool :: bool) :: bool => B1 andBool
 rule /* I1 == I2 */ 'Eq(I1:Int   :: _,, I2:Int   :: _) :: bool => (I1 ==Int I2) :: bool
 rule /* F1 == F2 */ 'Eq(F1:Float :: _,, F2:Float :: _) :: bool => (F1 ==Float F2) :: bool
 rule /* B1 == B2 */ 'Eq(B1:Bool  :: _,, B2:Bool  :: _) :: bool => (B1 ==Bool B2) :: bool
-rule /* Ref1 == Ref2 */ 'Eq(Ref1:RawRefVal :: _,, Ref1:RawRefVal :: _) :: bool => (Ref1 ==K Ref1) :: bool
+rule /* Ref1 == Ref2 */ 'Eq(Ref1:RawRefVal :: _,, Ref2:RawRefVal :: _) :: bool => (Ref1 ==K Ref2) :: bool
 
 rule /* V1 != V2 */ 'NotEq(TE1:TypedExp,, TE2:TypedExp) :: bool => 'Not('Eq(TE1,,TE2)::bool)::bool
 
