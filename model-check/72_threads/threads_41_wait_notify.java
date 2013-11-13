@@ -1,5 +1,5 @@
 /*
-Two threads, assigning different values to a var. Ech thread does the following:
+Two threads, assigning different values to a var. Each thread does the following:
   - if val == 0, assign value and wait. Then, in any case, notify.
 */
 

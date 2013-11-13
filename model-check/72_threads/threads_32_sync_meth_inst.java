@@ -31,11 +31,11 @@ class MyRunnable implements Runnable {
 
   MyRunnable() {}
 
-  public void run() {
+  public synchronized void run() {
     sync(++id);
   }
 
-  public synchronized void sync(int id) {
+  public void sync(int id) {
     System.out.println("Thread" + id + " before: v = " + v);
     v = id;
     System.out.println("Thread" + id + " after:  v = " + v);

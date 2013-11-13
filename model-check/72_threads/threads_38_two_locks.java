@@ -3,6 +3,13 @@ Two threads, two locks on different objects, but not nested. No deadlocks.
   Thread 1: lock 1, assign and print a, lock 2 - assign and print b.
   Thread 2: lock 2, assign and print b, lock 1 - assign and print a.
   See multiple states, but no deadlocks.
+  Message order: all permutations:
+  - 1 1 2 2
+  - 1 2 1 2
+  - 1 2 2 1
+  - 2 1 1 2
+  - 2 1 2 1
+  - 2 2 1 1
 */
 
 public class threads_38_two_locks {

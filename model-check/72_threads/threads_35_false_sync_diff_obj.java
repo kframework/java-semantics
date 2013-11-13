@@ -1,6 +1,14 @@
 /*
 36. When two threads synchronize on different objects, it is as no synchronization
   occurred at all. Same as 31, use synchronized blocks on different newly created instances of Object.
+  7 outputs. Message interleaving possibilities:
+
+    1122 2v
+    1212 1
+    1221 1v
+    2112 1v
+    2121 1v
+    2211 1v
 */
 
 public class threads_35_false_sync_diff_obj {
@@ -31,14 +39,14 @@ class MyThread extends Thread {
   }
 
   public void run() {
-    sync(id);
+    synchronized(monitor) {
+      sync(id);
+    }
   }
 
   public void sync(int id) {
-    synchronized(monitor) {
-      System.out.println("Thread" + id + " before: v = " + v);
-      v = id;
-      System.out.println("Thread" + id + " after:  v = " + v);
-    }
+    System.out.println("Thread" + id + " before: v = " + v);
+    v = id;
+    System.out.println("Thread" + id + " after:  v = " + v);
   }
 }

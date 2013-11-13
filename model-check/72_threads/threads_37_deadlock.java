@@ -3,6 +3,10 @@ Deadlock. Two threads, two locks on different objects in different order.
   Thread 1 locks on 2 then 1, thread 2 locks on 1 then 2. In lock 1 assign to var a, in lock 2 assign to b.
   Print a and b inside inner lock, and after inner lock.
   See multiple states and some deadlocks.
+  Possible messages:
+  1 1 2 2
+  2 2 1 1
+  deadlock
 */
 
 public class threads_37_deadlock {

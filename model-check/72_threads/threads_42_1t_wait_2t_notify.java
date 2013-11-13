@@ -3,6 +3,18 @@ One thread waiting, two threads notifying.
   Thread 1: assign a, notify.
   Thread 2: assign b, notify.
   Thread 3: while a == 0 or b == 0, print a, b, wait.
+
+  Thread interleaving:
+  1 2 3
+  1 3 2 3
+  3 1 3 2 3
+  3 1 2 3
+  2 1 3
+  2 3 1 3
+  3 2 3 1 3
+  3 2 1 3
+
+  8 cases.
 */
 
 public class threads_42_1t_wait_2t_notify {
