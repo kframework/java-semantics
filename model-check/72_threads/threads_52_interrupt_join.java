@@ -26,6 +26,13 @@ class WaitingRunnable implements Runnable {
     } catch (InterruptedException e) {
       System.out.println("Thread 1: " + e);
     }
+
+    //required for synchronization of println("Done!")
+    try {
+      thread3.join();
+    } catch (InterruptedException e) {
+      System.out.println("unreachable");
+    }
     System.out.println("Done!");
   }
 }

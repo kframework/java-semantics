@@ -9,10 +9,18 @@ Writing and printing a value in a synchronized block.
 public class threads_32_sync_meth_inst {
 
   public static void main(String[] args) {
-    Runnable runnable = new MyRunnable();
-    Thread thread2 = new Thread(runnable);
+    final Test test = new Test();
+    Thread thread2 = new Thread(new Runnable() {
+      public void run() {
+        test.sync(1);
+      }
+    });
     thread2.start();
-    Thread thread3 = new Thread(runnable);
+    Thread thread3 = new Thread(new Runnable() {
+      public void run() {
+        test.sync(2);
+      }
+    });
     thread3.start();
     try {
       thread2.join();
@@ -24,20 +32,13 @@ public class threads_32_sync_meth_inst {
   }
 }
 
-class MyRunnable implements Runnable {
+class Test {
 
   static int v;
-  int id;
 
-  MyRunnable() {}
-
-  public synchronized void run() {
-    sync(++id);
-  }
-
-  public void sync(int id) {
-    System.out.println("Thread" + id + " before: v = " + v);
+  public synchronized void sync(int id) {
+    System.out.println("Thread " + id + " before: v = " + v);
     v = id;
-    System.out.println("Thread" + id + " after:  v = " + v);
+    System.out.println("Thread " + id + " after:  v = " + v);
   }
 }

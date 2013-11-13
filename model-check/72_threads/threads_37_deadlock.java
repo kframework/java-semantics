@@ -4,8 +4,10 @@ Deadlock. Two threads, two locks on different objects in different order.
   Print a and b inside inner lock, and after inner lock.
   See multiple states and some deadlocks.
   Possible messages:
-  1 1 2 2
-  2 2 1 1
+  22 22 33 33
+  22 23 33 33
+  33 33 22 22
+  33 23 22 22
   deadlock
 */
 
