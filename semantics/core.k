@@ -87,10 +87,12 @@ syntax Type ::= PrimitiveType
               | MethodType
               | "void"
 
-syntax RawVal ::= Int | Float | Bool | String
-                | "null"
+syntax RawVal ::= Int | Float | Bool | RawRefVal
                 | "nothing"
                 | "undefined" [latex(\bot)]
+
+syntax RawRefVal ::= String
+                   | "null"
 
 syntax ProtoMethodType ::= "methodType" "(" K ","             // to be processed into Types
                                             Type              // return type
@@ -121,7 +123,7 @@ syntax KResult ::= Types
 
 //@ \subsection{Values}
 
-syntax RawVal ::= "objectClosure" "(" Int //OL - object location
+syntax RawRefVal ::= "objectClosure" "(" Int //OL - object location
 
                                   /*The object content, of the form:
                                     ListItem(el(

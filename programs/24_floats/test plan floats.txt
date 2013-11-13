@@ -58,6 +58,19 @@ Test structure: an overloaded method with one argument of all possible numeric t
   - double += int
   - String += double
 
+45. Comparison among different numeric types:
+  - float == double
+  - double == float
+  - float == int
+  - double == int
+  - int == double
+  - double == long
+  - long == double
+  - int == long
+  - float != double
+  - double != int
+
+
   Part V. Float subtyping with method overloading.
 
 51. Float is larger than integer types, but smaller than double.
@@ -68,10 +81,10 @@ Test structure: an overloaded method with one argument of all possible numeric t
   Method f(double).
   Call the method with arguments byte, short, int, long ,char, float, double.
 
-  Part VI. Other tests (discoveder while running examples from Java Precisely.)
+  Part VI. Other tests (discovered while running examples from Java Precisely.)
 
 61. print(some double), println(some double).
 
 62. Initialization of floats.
   - Class with double field. Print the value of (field + 1).
-  Will get stuck if double is initialzied as int.
+  Will get stuck if double is initialized as int.

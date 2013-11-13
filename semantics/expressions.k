@@ -22,8 +22,8 @@ context /* &   */ 'And(HOLE,,_)::_
 context           'And(_:KResult,,HOLE)::_
 context /* ==  */ 'Eq(HOLE,,_)::_
 context           'Eq(_:KResult,,HOLE)::_
-context /* !=  */ 'NotEq(HOLE,,_)::_
-context           'NotEq(_:KResult,,HOLE)::_
+        /* !=  - no context rules*/
+
 context /* <   */ 'Lt(HOLE,,_)::_
 context           'Lt(_:KResult,,HOLE)::_
 context /* >   */ 'Gt(HOLE,,_)::_
@@ -70,8 +70,13 @@ rule /* B1 ^ B2 */ 'ExcOr(B1:Bool :: bool,, B2:Bool :: bool) :: bool => B1 xorBo
 rule /* I1 & I2 */ 'And(I1:Int :: _,, I2:Int :: _) :: ResT:NumericType => normalize( (I1 &Int I2) :: ResT )
 rule /* B1 & B2 */ 'And(B1:Bool :: bool,, B2:Bool :: bool) :: bool => B1 andBool B2
 
-rule /* V1 == V2 */ 'Eq(V1:RawVal :: _,, V2:RawVal :: _) :: bool => (V1 ==K V2) :: bool
-rule /* V1 != V2 */ 'NotEq(V1:RawVal :: _,, V2:RawVal :: _) :: bool => V1 =/=K V2
+rule /* I1 == I2 */ 'Eq(I1:Int   :: _,, I2:Int   :: _) :: bool => (I1 ==Int I2) :: bool
+rule /* F1 == F2 */ 'Eq(F1:Float :: _,, F2:Float :: _) :: bool => (F1 ==Float F2) :: bool
+rule /* B1 == B2 */ 'Eq(B1:Bool  :: _,, B2:Bool  :: _) :: bool => (B1 ==Bool B2) :: bool
+rule /* Ref1 == Ref2 */ 'Eq(Ref1:RawRefVal :: _,, Ref1:RawRefVal :: _) :: bool => (Ref1 ==K Ref1) :: bool
+
+rule /* V1 != V2 */ 'NotEq(TE1:TypedExp,, TE2:TypedExp) :: bool => 'Not('Eq(TE1,,TE2)::bool)::bool
+
 rule /* I1 <  I2 */ 'Lt(I1:Int :: _,, I2:Int :: _) :: bool => I1 <Int I2
 rule                'Lt(F1:Float :: _,, F2:Float :: _) :: bool => F1 <Float F2
 rule /* I1 >  I2 */ 'Gt(I1:Int :: _,, I2:Int :: _) :: bool => I1 >Int I2
@@ -249,7 +254,6 @@ rule [CastBool]: castImpl(bool, B:Bool::bool)::bool => B
 
 syntax K ::= "lvalue" "(" K ")"
 
-//both lookup and loc are RawVal expressions. How will we give lookup context syntax?
 syntax RawVal ::= "loc" "(" Int ")"
 
 //lookup result is of sort RawType
