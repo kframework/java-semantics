@@ -169,6 +169,9 @@ Part 6. Misc.
 
 62. Qualified new instance creation execution order. Call a qualified constructor with
   three arguments. qualifier and all three arguments should be traced.
+  
+63. Inner class with alternate constructor call.
+  Referencing fields of the outer class in the alternate constructor call of the inner class.
 
 Part 7. Interplay of static and non-static inner members. (If any).
 
