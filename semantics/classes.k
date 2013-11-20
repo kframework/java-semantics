@@ -25,7 +25,7 @@ module CLASSES
 
 //@ \subsection{Auxiliary operations}
 
-//@ \texttt{typeOf and toString}
+//@ \texttt{toString for objectClosure}
 
 rule toString(objectClosure(I:Int, Obj:List, ObjLocalClassesEnv:Map) :: T:Type)
     =>  'Invoke(
@@ -34,34 +34,24 @@ rule toString(objectClosure(I:Int, Obj:List, ObjLocalClassesEnv:Map) :: T:Type)
         )
         [anywhere]
 
-/*@ \subsection{Changes to SIMPLE Semantics}
-We extend/change the semantics of several SIMPLE constructs in order
-to take advantage of the richer KOOL semantic infrastructure and thus
-get more from the existing SIMPLE constructs. */
+//@ \texttt{typeOf for reference types}
 
-//@ \texttt{typeOf for raw values of reference type}
 rule typeOf(Str:String) => rtString
 rule typeOf(null) => nullType
 rule typeOf(objectClosure(_, ListItem(el(Class:ClassType, _,_,_)) _:List, _))
      => Class
 rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T
 
-/*@ \subsection{New instance creation}
-The semantics of \texttt{new} in dynamically typed KOOL is also
-similar to that in untyped KOOL, the main difference being the
-management of the return types.  Indeed, when a new object is created
-we also have to stack the current type in the \textsf{return} cell in
-order to be recovered after the creation of the new object.  Only the
-first rule below needs to be changed; the others are identical to
-those in untyped KOOL. */
+/*@ \subsection{New instance creation}*/
 
-//resolve new instance qualifier
+//@Resolve new instance qualifier
 context 'QNewInstance(HOLE,, _:KList)::_
 
-//resolve new instance expression parameter values
+//@ Resolve new instance expression parameter values
 //todo test the expression order using state space search.
 context 'QNewInstance(_:KResult,,_:K,,_:K,,_:K,, 'ListWrap(_,,HOLE,,_),, _)::_
 
+/*@ Qualified new instance creation expression. Unqualified new expressions are rewritten into qualified ones by other rules and also reach this point.*/
 rule [QNewInstance]:
     <k>
       'QNewInstance(
@@ -146,9 +136,9 @@ syntax K ::= "invokeConstr" "(" Int       //OL - object location
                             "," K         //EnclosingObj - the typed enclosing object. if any, or noValue
                             ")"
 
-//This rule cannot be simplified - we have to alter the newly created object from the store.
-//The context inside <methodContext> is the context that called "new Obj()" expression.
-//Constructor calls are elaborated during execution phase
+//@ This rule cannot be simplified - we have to alter the newly created object from the store.
+//@ The context inside <methodContext> is the context that called "new Obj()" expression.
+// Constructor calls are elaborated during execution phase.
 rule [invokeConstr]:
     invokeConstr(OL:Int, Class:ClassType, Vals:KList, EnclosingObj:KResult)
     => setEncloser(lookup(OL)::Class, Class, EnclosingObj)
@@ -174,7 +164,7 @@ rule [setEncloser-value]:
 rule [setEncloser-noValue]:
     setEncloser(_,_, noValue) => .
 
-//restore the content of the cell <methodContext>
+//@ Restore the content of the cell <methodContext>
 syntax K ::= "restoreMethContext" "(" Bag         //The content of <methodContext>
                               ")"
 
@@ -182,12 +172,12 @@ rule [restoreMethContext]:
     <k> restoreMethContext(MethContext:Bag) => . ...</k>
     <methodContext> _ => MethContext </methodContext>
 
-//Set the outerLocalEnv for all layers of the <crntObj>, from the cell <localClassesEnv>,
-//for the given class and its bases
+//@ Set the outerLocalEnv for all layers of the <crntObj>, from the cell <localClassesEnv>,
+//@ for the given class and its bases
 syntax K ::= "setOuterLocalEnvForHierarchy" "(" Int "," ClassType ")"
 
-//Set outerLocalEnv for precisely the class layer Class. If sourceCalss is registered in
-//<localClassesEnv>, take from there.
+//@ Set outerLocalEnv for precisely the class layer Class. If sourceCalss is registered in
+//@ <localClassesEnv>, take from there.
            | "setOuterLocalEnvForClass" "(" Int       //OL - object location
                                         "," ClassType //Class - the layer for which we aim to set outerLocalEnv
                                         "," ClassType //SourceClass - the candidate source class
@@ -205,8 +195,8 @@ rule [setOuterLocalEnvForHierarchy]:
 
 rule setOuterLocalEnvForHierarchy(_, noClass) => .
 
-//if SourceClass is registered in <localClassesEnv> we will take its corresponding Env, and set is
-//as outerLocalEnv for the layer Class.
+//@ If SourceClass is registered in <localClassesEnv> we will take its corresponding Env, and set is
+//@ as outerLocalEnv for the layer Class.
 rule [setOuterLocalEnvForClass-found]:
     <k> setOuterLocalEnvForClass(OL:Int, Class:ClassType, SourceClass:ClassType) => . ...</k>
     <store>
@@ -217,9 +207,9 @@ rule [setOuterLocalEnvForClass-found]:
     </store>
     <localClassesEnv>... SourceClass |-> mapWrap(CurrentEnv:Map) ...</localClassesEnv>
 
-//If SourceClass is not registered in <localClassesEnv>, it is not a direct local class.
-//We attempt to replace it with its enclosing class,
-//until eventually we will reach a local class.
+//@ If SourceClass is not registered in <localClassesEnv>, it is not a direct local class.
+//@ We attempt to replace it with its enclosing class,
+//@ until eventually we will reach a local class.
 rule [setOuterLocalEnvForClass-not-found]:
     <k> setOuterLocalEnvForClass(OL:Int, Class:ClassType, SourceClass:ClassType => SourceEnclosingClass) ...</k>
     <localClassesEnv> LocalClassesEnv:Map </localClassesEnv>
@@ -228,10 +218,10 @@ rule [setOuterLocalEnvForClass-not-found]:
 when
     notBool SourceClass in keys(LocalClassesEnv)
 
-//Otherwise we will reach noClass, and the whole term will be discarded.
+//@ Otherwise we will reach noClass, and the whole term will be discarded.
 rule setOuterLocalEnvForClass(_,_, noClass) => .
 
-//Set the content of <localClassesEnv> - in the 3rd argument of objectClosure().
+//@ Set the content of <localClassesEnv> - in the 3rd argument of objectClosure().
 syntax K ::= "setObjLocalClassesEnv" "(" Int ")"
 
 rule [setObjLocalClassesEnv]:
@@ -243,8 +233,7 @@ rule [setObjLocalClassesEnv]:
     </store>
     <localClassesEnv> LocalClassesEnv:Map </localClassesEnv>
 
-/*@ \subsection{Instance Of}
-Like in untyped KOOL. */
+/*@ \subsection{Instance Of} */
 
 context 'InstanceOf(HOLE,,_)::_
 
@@ -252,9 +241,7 @@ rule [InstanceOf]:
     'InstanceOf(V:RawVal::_,, RT2:RefType) :: bool
     =>  'LazyAnd((V =/=K null),, subtype(typeOf(V), RT2))::bool
 
-/*@ \subsection{Cast}
-Unlike in untyped KOOL, in typed KOOL we actually check that the object
-can indeed be cast to the claimed type. */
+/*@ \subsection{Cast} */
 
 rule [CastRef]:
     <k>

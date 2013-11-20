@@ -8,3 +8,6 @@
 
 /class-lib/*.kast
 /test-runner/out
+
+/semantics/java.tex
+/semantics/k.sty

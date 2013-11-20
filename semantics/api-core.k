@@ -11,10 +11,9 @@ module API-CORE
     imports VAR-LOOKUP
     imports LITERALS  //for string-related functions
 
-// This module contains the minimal part of java API required to perform
-// console read/write operations, as well as a few other API functions mentioned in JLS.
+/*@ This module contains the minimal part of java API required to perform console read/write operations, as well as a few other API functions mentioned in JLS.*/
 
-//@ For integers and strings, print their value. For classes, print class type.
+//@ System.out.print(). For integers and strings, print their value. For classes, print class type.
 
 rule [system-out-print-string]:
     <k>
@@ -32,7 +31,7 @@ when
   //But with [transition-strictness], the same test takes 3m52s, with java heap = 16GB.
         [transition-threading]
 
-//Is only used for primitive type arguments. Object arguments are converted by java code inside the class PrintWriter.
+//@Is only used for primitive type arguments. Object arguments are converted by java code inside the class PrintWriter.
 rule [system-out-print-convert]:
     invokeImpl(
       methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
@@ -41,7 +40,7 @@ rule [system-out-print-convert]:
 when
     (Id2String(MethodName) ==String "print") andBool notBool (isString(RV) ==K true)
 
-//system-out-print-convert heat argument
+//@system-out-print-convert heat argument
 context
     invokeImpl(
       methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
@@ -50,6 +49,7 @@ context
 when
     Id2String(MethodName) ==String "print"
 
+/*@Scanner.nextInt(), used to read from the console.*/
 rule [scanner-nextInt]:
     invokeImpl(
       methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
@@ -66,7 +66,7 @@ rule [scanner-nextInt]:
 when
     Id2String(MethodName) ==String "nextLine"
 
-//An intermediate construct for reading from console, meant mostly to simplify debugging.
+//@An intermediate construct for reading from console, meant mostly to simplify debugging.
 syntax K ::= "readInt"
            | "readString"
 
@@ -78,6 +78,7 @@ rule [readString]:
     <k> readString => Str :: rtString ...</k>
     <in> ListItem(Str:String) => . ...</in>
 
+/*@ object.getClass()*/
 rule [object-getClass-on-object]:
     <k>
       invokeImpl(
@@ -110,6 +111,7 @@ rule [object-getClass-on-array]:
 when
     Id2String(MethodName) ==String "getClass"
 
+/*@ String.toString(). For Object.toString() the implementation is in the library java code.*/
 rule [object-toString-on-String]:
     invokeImpl(
       methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), Str:String::rtString,
@@ -118,7 +120,7 @@ rule [object-toString-on-String]:
 when
     Id2String(MethodName) ==String "toString"
 
-//hashCode will always return 0 for now
+/*@Object.hashCode(). Returns the canonical memory location of the objectClosure. */
 rule [object-hashCode]:
     <k>
       invokeImpl(
@@ -135,8 +137,9 @@ rule [object-hashCode]:
 when
     Id2String(MethodName) ==String "hashCode"
 
-//\subsection{String methods}
+//@\subsection{String methods}
 
+//@int String.length()
 rule [elab-String-length]:
     lookupMethod( rtString, MethodName:Id,
       _, noValue, false, QualTE:TypedExp, .KList
@@ -161,7 +164,7 @@ rule [methodInvokeRuntime-String-charAt]:
     => ordChar(substrString(Str, I, I +Int 1)) :: char
 when Id2String(MethodName) ==String "charAt"
 
-//static native String valueOf(int i);
+//@static native String String.valueOf(int i);
 rule [elab-String-valueOf]:
     lookupMethod( rtString, MethodName:Id,
       _, noValue, false, QualK:K, ParamExp:TypedExp
@@ -174,6 +177,7 @@ rule [methodInvokeRuntime-String-valueOf]:
     => Int2String(I) :: rtString
 when Id2String(MethodName) ==String "valueOf"
 
+//@boolean String.equals(Object)
 rule [elab-String-equals]:
     lookupMethod( rtString, MethodName:Id,
       _, noValue, false, QualK:K, ParamExp:TypedExp
@@ -186,6 +190,7 @@ rule [methodInvokeRuntime-String-equals]:
     => 'Eq(ThisStr,, ParamStr)
 when Id2String(MethodName) ==String "equals"
 
+//@String.toString()
 rule [elab-String-toString]:
     lookupMethod( rtString, MethodName:Id,
       _, noValue, false, QualK:K, .KList
@@ -198,6 +203,7 @@ rule [methodInvokeRuntime-String-toString]:
     => ThisStr
 when Id2String(MethodName) ==String "toString"
 
+//@String.compareTo(Object)
 rule [elab-String-compareTo]:
     lookupMethod( rtString, MethodName:Id,
       _, noValue, false, QualK:K, ParamExp:TypedExp
@@ -210,7 +216,7 @@ rule [methodInvokeRuntime-String-compareTo]:
     => 'If(ThisStr <String ParamStr,, -1,, 'If(ThisStr ==String ParamStr,, 0,, 1))
 when Id2String(MethodName) ==String "compareTo"
 
-//\subsection{Array clone}
+//@\subsection{Array clone}
 
 rule [elab-array-clone]:
     lookupMethod( arrayOf T:Type, MethodName:Id,
@@ -229,8 +235,7 @@ rule [methodInvokeRuntime-array-clone]:
       )
 when Id2String(MethodName) ==String "clone"
 
-//construct to copy content of an array to another
-//after copy, the term is rewritten into the destination array
+//@Construct to copy content of an array to another after copy, the term is rewritten into the destination array.
 syntax K ::=  "arrayCopy" "("
                               TypedVal "," // source array
                               K            // destination array, computes to TypedVal
@@ -240,7 +245,7 @@ syntax K ::=  "arrayCopy" "("
 rule arrayCopy(arrayRef(T:Type, L1:Int, Len:Int)::_, arrayRef(T, L2:Int, Len)::_)
     => storeCopy(L1, L2, Len) ~> arrayRef(T,L2:Int,Len)::T
 
-//copy a sequence of store values from one place to another
+//@Copy a sequence of store values from one place to another.
 syntax K ::=  "storeCopy" "("
                               Int "," //source address in store
                               Int "," //destination address in store
@@ -265,12 +270,9 @@ when
 rule [storeCopyDiscard]:
     storeCopy(_, _, 0) => .
 
-//\subsection{Class literal}
+//@\subsection{Class literal - <Class>.class}
 
-//we need to synchronize access to class literals to avoid instantiation of the came .class by multiple threads.
-//this is done by the term temp in <classLiteralsMap>
-//We cannot use 'Synchronized because it required an objectClousre as argument, and we might not have any
-//objects instantiated at the moment.
+//@We need to synchronize access to class literals to avoid instantiation of the came .class by multiple threads. This is done by the term temp in <classLiteralsMap>. We cannot use 'Synchronized because it required an objectClousre as argument, and we might not have any objects instantiated at the moment.
 rule [ClassLiteralInstantiate]:
     <k>
         (. => saveClassLiteral(T, 'NewInstance(
@@ -287,7 +289,7 @@ rule [ClassLiteralInstantiate]:
 when notBool T in keys(CLMap)
         [transition-threading]
 
-// wraps a newly created java.lang.Class object
+//@ Wraps a newly created java.lang.Class object
 syntax K ::= "saveClassLiteral" "(" Type  // The type for this class literal is being instantiated
                                 "," K     // The class literal instantiation expression
                                 ")"         [strict(2)]
@@ -300,7 +302,8 @@ rule [ClassLiteral]:
     <k> 'Lit('Class(T:Type))::_ => TV ...</k>
     <classLiteralsMap>... T |-> TV:TypedVal ...</classLiteralsMap>
 
-syntax K ::= "temp" //Used inside <classLiteralsMap> only for synchronization purposes
+//@Used inside <classLiteralsMap> only for synchronization purposes
+syntax K ::= "temp"
 
 rule [ClassNameTopLevelWithPackage]:
     <k>

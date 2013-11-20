@@ -7,8 +7,9 @@ module API-THREADS
     imports CORE
     imports METHOD-INVOKE
 
-//Java API related to threads and locks. Just the core part.
+/*@Java API related to threads and locks. Just the core part.*/
 
+//@ \subsection{Method Thread.start()}
 rule [thread-start]:
     <thread>
       <k>
@@ -49,7 +50,7 @@ when
             Id2String(MethodName) ==String "startImpl"
     andBool Id2String(ThreadId) ==String "java.lang.Thread"
 
-//@ \subsection{Synchronized}
+//@ \subsection{Synchronized statement}
 
 //evaluate the expression
 context 'Synchronized(HOLE,, _)
@@ -84,7 +85,7 @@ rule [Synchronized-on-null]:
           'None(.KList)
         ))
 
-//Release one level of lock for the given object
+/*@Release one level of lock for the given object.*/
 syntax K ::= "releaseLock" "(" Int ")"
 
 rule [releaseLock]:
@@ -113,7 +114,7 @@ rule [synchronized-method-static-desugar]:
     </k>
     <crntClass> Class:ClassType </crntClass>
 
-//@ \subsection{Threading related methods}
+//@ \subsection{Thread.join()}
 
 rule [thread-join]:
     <k>
@@ -150,7 +151,9 @@ when
     andBool Id2String(MethodName) ==String "joinImpl"
         [transition-threading]
 
-//when waiting, we release the lock on the OL in the cell <busy>, but don't delete this cell from <holds>
+//@ \subsection{Object.wait()}
+
+/*@When waiting, we release the lock on the OL in the cell <busy>, but don't delete this cell from <holds>.*/
 rule [object-wait]:
     <k>
       invokeImpl(
@@ -193,8 +196,9 @@ when
     )
     andBool notBool OL in keys(Holds)
 
-//Second part of a wait. waiting was already registered to <waitingThreads>.
-//When the record in <waitingThreads> will be deleted, waiting itself shall end.
+/*@Second part of a wait. Waiting was already registered to <waitingThreads>.
+When the record in <waitingThreads> will be deleted, waiting itself shall end.
+*/
 syntax K ::= "waitImpl" "(" Int ")" //Monitor object location
 
 rule [waitImpl-end]:
@@ -229,6 +233,8 @@ when
       notBool OL in Busy
         [transition-threading]
 
+//@ \subsection{Object.notify(),Object.notifyAll()}
+
 rule [object-notify]:
     <k>
       invokeImpl(
@@ -257,7 +263,7 @@ when
     andBool Id2String(MethodName) ==String "notifyAll"
     andBool HoldLevel >=Int 1
 
-//Implementation of Object.notify(), extracted here to avoid rule superfluousness
+/*@Implementation of Object.notify(), extracted here to avoid rule superfluousness*/
 syntax K ::= "deleteAnyFromWaitingThreads" "(" Int //store key of the monitor object
                                            ")"
 
@@ -279,7 +285,7 @@ when
     notBool OL in values(WT)
         [transition-threading]
 
-//Implementation of Object.notifyAll(), extracted here to avoid rule superfluousness
+/*@Implementation of Object.notifyAll(), extracted here to avoid rule superfluousness*/
 syntax K ::= "deleteAllFromWaitingThreads" "(" Int //store key of the monitor object
                                            ")"
 
@@ -300,6 +306,8 @@ rule [object-notifyAll-impl-no-one-waiting]:
 when
     notBool OL in values(WT)
         [transition-threading]
+
+//@ \subsection{Thread.interrupt()}
 
 rule [thread-interrupt]:
     <thread>
@@ -353,17 +361,16 @@ rule [ThreadTermination]:
      <globalPhase> ExecutionPhase  </globalPhase>
     <dissolveEmptyK> true </dissolveEmptyK>
 
-//Debug aid. Dissolves classes cell so that configuration is not over-bloated, at the end
-//of the execution.
+//@ \subsection{Debug aids}
+
+/*@Dissolves classes cell so that configuration is not over-bloated, at the end of the execution.*/
 rule [DissolveClasses]:
     (<classes> _:Bag </classes> => .)
     <threads> .Bag </threads>
      <globalPhase> ExecutionPhase  </globalPhase>
     <dissolveClasses> true </dissolveClasses>
 
-//Debug aid. Dissolve all cells except <out> for the purpose of model checking.
-//We will avoid duplicates caused by the same <out> but different order of content in other
-//cells.
+/*@Dissolve all cells except <out> for the purpose of model checking. We will avoid duplicates caused by the same <out> but different order of content in other cells.*/
 rule [DissolveAllExceptOut]:
     <T>
       <out> Out:List </out>

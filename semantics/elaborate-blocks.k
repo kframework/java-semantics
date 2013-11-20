@@ -8,20 +8,27 @@ require "var-lookup.k"
 Elaborate the composition of code blocks of a class - the last step of preprocessing.
 During this phase we inspect the contents of method bodies, instance initializers and
 static initializers of a class and perform the following transformations:
-  - each variable name x is resolved into either:
-    - x - a local var
-    - Class.x - a static var defined in the class Class
-    - field(obj, Class, x) - a field of object obj declared in the class Class.
-      obj could also be 'This.
-  - each method name is resolved into either:
-    - Class.m - a static method defined in the class Class
-    - method(obj, Class, x) - an instance method of object obj declared in the class Class.
-      obj could also be 'This. The actual version of the method will be looked up at runtime.
-  - each method signature is resolved into its appropriate overloaded version. To
+\begin{itemize}
+  \item each variable name x is resolved into either:
+  \begin{itemize}
+    \item x - a local var
+    \item Class.x - a static var defined in the class Class
+    \item field(obj, Class, x) - a field of object obj declared in the class Class.
+      Term obj could also be 'This.
+  \end{itemize}
+  \item each method name is resolved into either:
+  \begin{itemize}
+    \item Class.m - a static method defined in the class Class
+    \item method(obj, Class, x) - an instance method of object obj declared in the class Class.
+      Term obj could also be 'This. The actual version of the method will be looked up at runtime.
+  \end{itemize}
+  \item each method signature is resolved into its appropriate overloaded version. To
     denote the version, each actual parameter will be casted to the type of the actual parameter.
-  - each expression Exp will be replaced with a corresponding typed expression Exp :: T,
+  \item each expression Exp will be replaced with a corresponding typed expression Exp :: T,
     T being the compile-time type of the expression.
+\end{itemize}
 
+    /smallskip
     During elaboration, elaborated members will be wrapped into elab().
 */
 
@@ -32,32 +39,39 @@ module ELABORATE-BLOCKS
     imports SUBTYPING
     imports VAR-LOOKUP             //for localVar
 
-syntax K ::= "elaborateBlocks" "(" K ")" [strict] //Elaborate the blocks inside all classes.
-                                        //K = setWrap(Set) - the set of all classes.
-           | "elabMethods" "(" Map ")"  //Elaborates the methods of the current class.
-                                        //The map contains already elaborated methods.
-                                        //Initially the map is empty.
-           | "elabInstanceInit"
-           | "elabStaticInit"
-           | "elab" "(" K ")"           //Elaborates the given statement/expression. The first step of elaboration.
-           | "elabDispose" "(" K ")"    //Intermediate state between elab and elabRes - all subterms were already elaborated.
-                                        //Responsible for deleting the elabRes() wrappers of subterms.
+/*@Custom hole used for custom heating/cooling rules in the elaboration phase.*/
+syntax K ::= "CHOLE"
 
-//Wraps the elaboration result. Since elaboration may happen at both ElaborationPhase and ExecutionPhase,
-//it cannot be KResult. Actually it is not KResult for HOLE, but is for CHOLE.
+/*@ Elaborate the blocks inside all classes.
+Argument K = setWrap(Set) - the set of all classes.
+*/
+syntax K ::= "elaborateBlocks" "(" K ")" [strict]
+
+//@ Elaborates the methods of the current class. The map contains already elaborated methods. Initially the map is empty.
+syntax K ::= "elabMethods" "(" Map ")"
+syntax K ::= "elabInstanceInit"
+           | "elabStaticInit"
+
+//@Elaborates the given statement/expression. The first step of elaboration.
+syntax K ::= "elab" "(" K ")"
+
+//@ Intermediate state between elab and elabRes - all subterms were already elaborated. Responsible for deleting the elabRes() wrappers of subterms.
+syntax K ::= "elabDispose" "(" K ")"
+
+//@ Wraps the elaboration result. Since elaboration may happen at both ElaborationPhase and ExecutionPhase, it cannot be KResult. Actually it is not KResult for HOLE, but is for CHOLE.
 syntax K ::= "elabRes" "(" K ")"
 
-//sets the enclosing object for a given object.
-//Invoked by invokeConstr and QSuperConstrInv.
-//Defined in CLASSES
+//@Sets the enclosing object for a given object.
+//@Invoked by invokeConstr and QSuperConstrInv.
+//@Defined in CLASSES
 syntax K ::= "setEncloser" "(" TypedExp   //Evaluates to source object
                            "," ClassType  //Class layer in the source object for which to set the enclosing object.
                            "," K          //The enclosing object
                            ")"            [strict(1,3)]
 
-//Computes into an expression of the form elabRes('QThis(QualClass)::QualClass),
-//where QualClass is searched in the enclosing context of the first argument,
-//being a subclass of the second one.
+//@Computes into an expression of the form elabRes('QThis(QualClass)::QualClass),
+//@where QualClass is searched in the enclosing context of the first argument,
+//@being a subclass of the second one.
 syntax K ::= "getElabResQThisSubclassOf" "(" ClassType //The context class in which qualifier is searched for.
                                          "," ClassType //Qualifier should be subclass of this class
                                          ")"            [strict(2)]
@@ -80,14 +94,14 @@ when
 rule [getElabResQThisSubclassOf-top-level]:
     getElabResQThisSubclassOf(_, noClass) => elabRes(noValue)
 
-//Happens for 'NewInstance expressions for static inner classes.
+//@Happens for 'NewInstance expressions for static inner classes.
 rule [getElabResQThisSubclassOf-static]:
     getElabResQThisSubclassOf(noClass, _) => elabRes(noValue)
 
-//Chain of responsibility.
-//Evaluate the first argument. if it is KResult (except noValue) or elabRes(), the result of the ?? expression is
-//the result of the first argument. Otherwise, if the first argument evaluates to noValue, the result of the
-//?? expression is the result of the second argument.
+//@Chain of responsibility.
+//@Evaluate the first argument. if it is KResult (except noValue) or elabRes(), the result of the ?? expression is
+//@the result of the first argument. Otherwise, if the first argument evaluates to noValue, the result of the
+//@?? expression is the result of the second argument.
 syntax K ::= K "??" K [right]
 
 rule [chainOfResponsibilityHeat]:
@@ -102,17 +116,17 @@ when isElab(ElabRes) andBool (ElabRes =/=K noValue)
 rule [chainOfResponsibilityResult2]:
     noValue ~> (CHOLE ?? K:K) => K
 
-//Elaboration result of a field access exp.
+//@Elaboration result of a field access exp.
 syntax K ::= "lookupField" "(" K    //Qualifier exp
                            "," Type //Precise type where the field is defined
                            "," Id   //X - field name
                            ")"
-//Elaboration result of a static field access expression
+//@Elaboration result of a static field access expression
             | "lookupStaticField" "(" Type //Precise type where the field is defined
                                   "," Id   //X - field name
                                   ")"
 
-//Elaboration result of expressions new T[]...
+//@Elaboration result of expressions new T[]...
 syntax K ::= "newArrayImpl" "("
                 Type ","  // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
                 K ","     // 'ListWrap(Dims) - array dimensions
@@ -127,10 +141,10 @@ rule [elaborateBlocksStart]:
     <k> . => elaborateBlocks(getTopLevelClasses) </k>
      <globalPhase> ProcClassMembersPhase => ElaborationPhase  </globalPhase>
 
-//it is important to elaborate the instance initializers before the methods.
-//This way, when 'SuperConstrEnv is encountered, it inserts the already elaborated instance
-//initializer in its place, avoiding name collisions between constructor arguments and fields
-//inside instance init.
+//@It is important to elaborate the instance initializers before the methods.
+//@This way, when 'SuperConstrEnv is encountered, it inserts the already elaborated instance
+//@initializer in its place, avoiding name collisions between constructor arguments and fields
+//@inside instance init.
 rule [elaborateBlocks]:
     <k>
       (. => elabInstanceInit ~> elabMethods(MethodDecs) ~> elabStaticInit
@@ -160,7 +174,7 @@ rule [elabMethodsHeatMethodFirstLine]:
     </methodDecs>
     <contextType> _ => CT </contextType>
 
-//Required when processing first constructor line of Object, which is .K
+//@Required when processing first constructor line of Object, which is .K
 rule [elabDotK]:
     elab(.K) => elabRes(.K)
 
@@ -235,14 +249,14 @@ rule [elabStaticEnd]:
     <classType> Class </classType>
     <staticInit> CHOLE => K </staticInit>
 
-syntax K ::=
-    //Adds a new empty layer to <elabEnv>
-      "addElabEnv"
-    //Removes the last layer from <elabEnv>
-    | "removeLastElabEnv"
+//@Adds a new empty layer to <elabEnv>
+syntax K ::= "addElabEnv"
 
-    //Adds params to the <elabEnv>.
-    | "elabParams" "(" KList ")"
+//@Removes the last layer from <elabEnv>
+syntax K ::= "removeLastElabEnv"
+
+//@Adds params to the <elabEnv>.
+syntax K ::= "elabParams" "(" KList ")"
 
 rule [addElabEnv]:
     <k> addElabEnv => . ...</k>
@@ -263,10 +277,10 @@ rule [elabParamsEnd]:
 
 /*@ \subsection{Elaboration of code blocks} */
 
-//Heating arguments for both expression and statement terms.
-//The attribute [transition-strictness] is used as transition attribute for testing strictness.
-//This is a rule that may lead to unexpected nondeterminism if it is wrongly implemented.
-//In order to expose incorrect nondeterminism we need to model-check a program that exposes the nondeterminism.
+//@ Heating arguments for both expression and statement terms.
+//@ The attribute [transition-strictness] is used as transition attribute for testing strictness.
+//@ This is a rule that may lead to unexpected nondeterminism if it is wrongly implemented.
+//@ In order to expose incorrect nondeterminism we need to model-check a program that exposes the nondeterminism.
 rule [elabHeatDefault]:
     (. => elab(K)) ~> elab(KL:KLabel(HeadKs:KList,, (K:K => CHOLE),, TailKs:KList))
 when
@@ -276,7 +290,7 @@ when
     andBool isElab(HeadKs)    //Forces elaboration left-to-right. Required when KL == 'ListWrap of statements.
     [transition-strictness]
 
-//True if children of this label should not be automatically heated for elaboration.
+//@ True if children of this label should not be automatically heated for elaboration.
 syntax K ::= "customElabChildren" "(" KLabel ")"                [function]
 rule customElabChildren(KL:KLabel) =>
            (KL ==KLabel 'Block)
@@ -291,7 +305,7 @@ rule customElabChildren(KL:KLabel) =>
     orBool (KL ==KLabel 'NewInstance)
     orBool (KL ==KLabel 'QNewInstance)
 
-//Will not match .K - is not isElabNaked. (.K) is matched by [elabDotK].
+//@ Will not match .K - is not isElabNaked. (.K) is matched by [elabDotK].
 rule [unwrapElabNaked]:
     elab(K:K) => K
 when
@@ -325,7 +339,7 @@ rule [elabCoolIndependent]:
 when
     isElabIndependent(ElabIndep)
 
-//required by the rule [elabQNewInstance-resolve-class]
+//@ Required by the rule [elabQNewInstance-resolve-class]
 rule [elabDisposeCoolIndependent]:
     (ElabIndep:K => .) ~> elabDispose(_:KLabel(_,, (CHOLE => ElabIndep),, _))
 when
@@ -351,7 +365,7 @@ rule isElabIndependent(K:K) =>
                (isKResult(K) ==K true)
     orBool (isTypedExp(K) ==K true)
 
-//Computes to true if the given argument is a list of elaboration results, false otherwise.
+//@ Computes to true if the given argument is a list of elaboration results, false otherwise.
 syntax K ::= "isElab" "(" KList ")"                 [function]
 rule isElab(K:K,, Ks:KList)
      =>      ((getKLabel(K) ==KLabel 'elabRes`(_`)) orBool (isElabIndependent(K) ==K true))
@@ -359,15 +373,14 @@ rule isElab(K:K,, Ks:KList)
 
 rule isElab(.KList) => true
 
-//Computes to true if the given argument is a list of terms with none being elab-result only,
-//false otherwise.
+//@ Computes to true if the given argument is a list of terms with none being elab-result only, false otherwise.
 syntax K ::= "haveNoElabRes" "(" KList ")"          [function]
 rule haveNoElabRes(K:K,, Ks:KList)
      => (getKLabel(K) =/=KLabel 'elabRes`(_`)) andBool haveNoElabRes(Ks)
 
 rule haveNoElabRes(.KList) => true
 
-//Elaboration of blocks
+//@ Elaboration of blocks
 
 rule [elabBlockHeat]:
     <k> elab('Block('ListWrap(Ks:KList))) => elab('ListWrap(Ks)) ~> elab('Block(CHOLE)) ...</k>
@@ -384,11 +397,11 @@ rule [elabForHeatOtherSubterms]:
     (.=> elab(K)) ~> elab('For(_,, elabRes(_),, (K:K => CHOLE),, _))
 when getKLabel(K) =/=KLabel 'elabRes`(_`)
 
-//HOLE is transformed into paramImpl
+//@ HOLE is transformed into paramImpl
 context elab('Catch(HOLE,, _))
 when getKLabel(HOLE) =/=KLabel 'elabRes`(_`)
 
-//Catch creates a new env layer and saves its argument.
+//@ Catch creates a new env layer and saves its argument.
 rule [elabCatch]:
     <k> elab('Catch(Param:KResult,, Body:K)) => elabParams(Param) ~> elab(Body) ~> elab('Catch(elabRes(Param),, CHOLE)) ...</k>
     <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
@@ -400,14 +413,14 @@ when
     isElab(ElabResL)
     andBool ((KL ==KLabel 'Block) orBool (KL ==KLabel 'For) orBool (KL ==KLabel 'Catch))
 
-//Local var declarations desugaring
+//@ Local var declarations desugaring
 
 rule [LocalVarDecStmRed]:
     elab('LocalVarDecStm('LocalVarDec(Ks:KList))
       => 'LocalVarDec(Ks)
     )                                                   [structural]
 
-//Resolve the local var type, required to register the var in <elabEnv>
+//@ Resolve the local var type, required to register the var in <elabEnv>
 context elab('LocalVarDec(_:K,, HOLE,, _:K))
 
 rule [VarDecMultiDesugar]:
@@ -431,20 +444,20 @@ rule [elabLocalVarDec]:
     </k>
     <elabEnv> ListItem(stEnv((. => X |-> T) _)) ...</elabEnv>
 
-//Elaboration of rules in java-var-lookup
+//@ Elaboration of rules in java-var-lookup
 
-//Both unqualified and qualified AmbName.
+//@ Both unqualified and qualified AmbName.
 rule [elabAmbName]:
     elabDispose('AmbName(Ks:KList)) => elabDispose('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName('ListWrap(Ks))
 when
     haveNoElabRes(Ks)
 
-// "localVar" is defined in the module VAR-LOOKUP.
+//@ "localVar" is defined in the module VAR-LOOKUP.
 rule [elabExprNameSimple]:
     <k> elabDispose('ExprName(X:Id)) => elabDispose(localVar(X)) ?? externalVar(X, Class) ...</k>
     <crntClass> Class:ClassType </crntClass>
 
-//This could be either a field, or a local var of some enclosing block.
+//@ This could be either a field, or a local var of some enclosing block.
 syntax K ::= "externalVar" "(" Id         //X - var name
                            "," ClassType  //Class - innermost class where the name should be searched
                            ")"
@@ -461,8 +474,8 @@ rule [externalVar]:
 rule [externalVar-noClass]:
     externalVar(_, noClass) => noValue
 
-//Attempts to resolve this expression into a local var from the enclosing local environment
-//of type being precisely the given class.
+//@Attempts to resolve this expression into a local var from the enclosing local environment
+//@of type being precisely the given class.
 syntax K ::= "elabOuterLocalVar" "(" Id         //X - var name
                                  "," ClassType  //Class - the class where the name should be searched
                                  ")"
@@ -512,10 +525,9 @@ rule [FieldOfNoValue]:
 rule [FieldOfQThis-noClass]:
     elabDispose('Field( 'QThis(noClass),, _:Id )) => noValue      [structural]
 
-//Computation of instance and static environment of a class
-//e.g. set of fields
+//@Computation of instance and static environment of a class, e.g. set of fields
 
-//Searches the given field name in the given type (types), both static and instance context.
+//@Searches the given field name in the given type (types), both static and instance context.
 syntax K ::= "elabLookup" "("
                                       Id ","    //The field to search
                                       ClassType //The current class under search
@@ -541,7 +553,7 @@ rule [elabLookupFoundConstant]:
     <classType> CT </classType>
     <constantEnv>... X |-> TV:TypedVal ...</constantEnv>
 
-/*If X is not found in the current class, search for it first in base interfaces, then in the base class.
+/*@If X is not found in the current class, search for it first in base interfaces, then in the base class.
 This order is necessary to avoid the case when base class have a private field X, and base
 interfaces have a public one. In this case we should choose the field from the interface.
 */
@@ -605,7 +617,7 @@ rule [elabQSuperField]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
-//Computed the TypedExp expression for a given expression and its type
+//@Computed the TypedExp expression for a given expression and its type
 syntax K ::= "elabFieldImpl" "(" K  // Field qualifier exp (noValue for fields qualified by a class)
                              "," Id // X - the field name
                              "," K  //elabLookup(...), computes into fieldEntry(...) or noValue
@@ -617,7 +629,7 @@ rule elabFieldImpl(SourceExp:K, X:Id, fieldEntry(Class:ClassType,_,T:Type, insta
 rule elabFieldImpl(_, X:Id, fieldEntry(Class:ClassType,_,T:Type, staticCT))
     => elabRes(lookupStaticField(Class,X) :: T)
 
-//for constant fields
+//@for constant fields
 rule elabFieldImpl(_,_, TV:TypedVal) => TV
 
 rule elabFieldImpl(_,_, noValue) => noValue
@@ -628,17 +640,16 @@ rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK [structural]
 rule 'InterfaceType(TypeK:K,, _) => TypeK        [structural]
 rule 'ClassType(TypeK:K,, _) => TypeK            [structural]
 
-//resolving fully qualified type names
-// A name pack.p2.A is represented as:
-// 'TypeName('PackageOrTypeName('PackageOrTypeName(pack),,p2),,A)
+//@Resolving fully qualified type names A name pack.p2.A is represented as:
+//@ 'TypeName('PackageOrTypeName('PackageOrTypeName(pack),,p2),,A)
 
 context 'PackageOrTypeName(HOLE,, _:K)
 
 rule 'PackageOrTypeName(KRs:KList,, K:K) => 'TypeName(KRs,,K) ?? 'PackageName('ListWrap(KRs,,K))
 when isKResult(KRs)                              [structural]
 
-//When we search for a class qualified by another class, we simply convert
-//the qualifier into a package.
+//@When we search for a class qualified by another class, we simply convert
+//@the qualifier into a package.
 
 context 'TypeName(HOLE,,_:Id)
 
@@ -648,7 +659,7 @@ rule [TypeNameQualifiedClass]:
 rule [TypeNameQualifiedPackage]:
     'TypeName(Pack:PackageId,, X:Id) => typeNameQualifiedImpl(getNamesMap(Pack), X)   [structural]
 
-//Retrieves the ClassType for the given names map and simple class name
+//@Retrieves the ClassType for the given names map and simple class name
 syntax K ::= "typeNameQualifiedImpl" "(" K "," Id ")" [strict(1)]
 
 rule [typeNameQualifiedImplFound]:
@@ -657,12 +668,12 @@ rule [typeNameQualifiedImplFound]:
 rule [typeNameQualifiedImplNotFound]:
     typeNameQualifiedImpl(mapWrap(NamesMap:Map), X:Id) => noValue
 when notBool X in keys(NamesMap)
-//end of section
 
-//limitations:
-// - All string types should be referred by simple name "String".
-//    Fully qualified name java.lang.String is not allowed.
-// - No other classes with name "String" are possible.
+//Elaboration the type String
+//@limitations:
+//@ - All string types should be referred by simple name "String".
+//@    Fully qualified name java.lang.String is not allowed.
+//@ - No other classes with name "String" are possible.
 rule [TypeNameString]:
     'TypeName(X:Id) => rtString
 when
@@ -690,9 +701,9 @@ rule [TypeName-Global-Fail]:
 when
     notBool X in keys(LocalTypes) andBool notBool (X in keys(Imp))
 
-//This two rules may only apply during processing of extends/implements clauses of top-level classes.
-//When the class whose declaration is processed is an inner class,
-//usual rules for 'TypeName apply.
+//@ This two rules may only apply during processing of extends/implements clauses of top-level classes.
+//@ When the class whose declaration is processed is an inner class,
+//@ usual rules for 'TypeName apply.
 rule [TypeNameInProcClassDecsPhaseTop]:
     <k> 'TypeName(X:Id) => Class ...</k>
     <crntClass> noClass </crntClass>
@@ -707,10 +718,10 @@ when
 
 /*@ \subsection{Elaboration of numeric expressions} */
 
-//Expression labels are not converted by the default rule in the phase
-// elabDispose() => elabRes(...)
-//Each expression needs a specialized rule for disposing, that will compute, among others,
-//the type of the expression.
+//@ Expression labels are not converted by the default rule in the phase
+//@  elabDispose() => elabRes(...)
+//@ Each expression needs a specialized rule for disposing, that will compute, among others,
+//@ the type of the expression.
 syntax K ::= "isExpressionLabel" "(" KLabel ")" [function]
 rule isExpressionLabel(KL:KLabel) =>
                      (KL ==KLabel 'localVar`(_`))
@@ -789,7 +800,7 @@ rule isNonNumericExp(KL:KLabel) =>
     orBool (KL ==KLabel 'CastRef)
     orBool (KL ==KLabel 'stmtAndExp`(_`,_`))
 
-//It looks like isTypedExp(KList) doesn't work.
+//@ It looks like isTypedExp(KList) doesn't work.
 rule [elabBoolOnlyResultExpBinary]:
     elabDispose(KL:KLabel(TE1:TypedExp,, TE2:TypedExp)) => elabRes(KL(TE1,,TE2) :: bool)
 when
@@ -840,8 +851,8 @@ when
     orBool (KL ==KLabel 'Minus)
     orBool (KL ==KLabel 'Complement)
 
-//Heats the second argument, that is reduced into a type.
-//The whole expression is then rewritten into elabRes(FirstArg::SecondArgAsType)
+//@ Heats the second argument, that is reduced into a type.
+//@ The whole expression is then rewritten into elabRes(FirstArg::SecondArgAsType)
 syntax K ::= "elabExpAndType" "(" K "," K ")"  [strict(2)]
 rule elabExpAndType(K:K, T:Type) => elabRes(K::T)
 
@@ -863,12 +874,12 @@ rule [elabCond]:
     elabDispose('Cond(CondTE:TypedExp,, Exp1:K::T1:Type,, Exp2:K::T2:Type))
     => condType(T1, T2) ~> elabRes('Cond(CondTE,, Exp1::T1,, Exp2::T2) :: CHOLE)
 
-//Used for the type of 'Cond and newArrayImpl
+//@ Used for the type of 'Cond and newArrayImpl
 rule [elabResCoolExpType]:
     (T:Type => .K) ~> elabRes(_ :: (CHOLE => T))
 
-//computes the type of a conditional expression
-//Operands evaluate into types
+//@ computes the type of a conditional expression
+//@ Operands evaluate into types
 syntax K ::= "condType" "(" Type "," Type ")" [strict]
 
 rule [condTypeNoChar]:
@@ -902,19 +913,19 @@ when
 
 /*@ \subsection{Elaboration of non-numeric expressions} */
 
-//elab cast
+//@ elab cast
 rule elabDispose('CastRef(T:Type,, TExp:TypedExp)  => castImpl(T, TExp))      [structural]
 rule elabDispose('CastPrim(T:Type,, TExp:TypedExp) => castImpl(T, TExp))      [structural]
 
-//Case when Exp was initially a literal, and now is Val::Type
+//@ Case when Exp was initially a literal, and now is Val::Type
 rule [elabCastImplElabIndep]:
     elabDispose(castImpl(T1:Type, Exp:K :: T2:Type)) => elabRes(castImpl(T1, Exp::T2) :: T1)
 
-//heat the class name
+//@ Heat the class name
 context elab('NewInstance(_:K,, HOLE,, _))
 
-//heat the unqualified constructor arguments
-//required if this class is anonymous
+//@ Heat the unqualified constructor arguments.
+//@ Required if this class is anonymous
 rule (. => elab(K)) ~> elab('NewInstance(_:K,,_:K,, (K:K => CHOLE),, _:K))
 when
     notBool isElab(K)
@@ -928,17 +939,17 @@ rule [elabNewInstance]:
     </k>
     <crntClass> CrntClass:ClassType </crntClass>
 
-//heat the qualifier in 'QNewInstance
+//@ Heat the qualifier in 'QNewInstance
 rule (. => elab(K)) ~> elab('QNewInstance((K:K => CHOLE),, _))
 when
     notBool isElab(K)
 
-//heat the qualified constructor arguments
+//@ Heat the qualified constructor arguments
 rule (. => elab(K)) ~> elab('QNewInstance(_:K,,_:K,,_:K,,_:K,, (K:K => CHOLE),, _:K))
 when
     notBool isElab(K)
 
-//heat the class name, if it could be resolved to a type
+//@ Heat the class name, if it could be resolved to a type
 context elab('QNewInstance(_:K,,_:K,, HOLE,, _))
 when
     notBool isId(HOLE)
@@ -949,8 +960,8 @@ rule [elabQNewInstance-resolve-class]:
       (Name:Id => CHOLE),,
     _))
 
-//resolve the simple name of an inner class to a fully qualified class name in
-//a qualified new like: o.new A(...);
+//@ Resolve the simple name of an inner class to a fully qualified class name in
+//@ a qualified new like: o.new A(...);
 syntax K ::= "resolveInnerClass" "(" ClassType //QualClass - the type of the qualifier
                                  "," Id        //Name - instantiated class simple name
                                  ")"
@@ -968,7 +979,7 @@ rule [resolveInnerClass]:
     <classType> QualClass </classType>
     <extends> BaseQualClass:ClassType </extends>
 
-//returns true if in the given package exists a class with given simple name, false otherwise.
+//@ Returns true if in the given package exists a class with given simple name, false otherwise.
 syntax K ::= "existsClass" "(" PackageId "," Id ")"
 
 rule [existsClass]:
@@ -1014,7 +1025,7 @@ rule [NewArray]:
     => getArrayType(T, Dims) ~> elabRes(newArrayImpl(T, 'ListWrap(Dims), default(T), .KList) :: CHOLE)
         [structural]
 
-//computes the array type based on allocated elem type and number of allocated dimensions.
+//@ Computes the array type based on allocated elem type and number of allocated dimensions.
 syntax K ::= "getArrayType" "(" Type "," KList ")"
 rule getArrayType(T:Type, K:K,,Dims:KList) => getArrayType(arrayOf T, Dims) [structural]
 rule getArrayType(T:Type, .KList) => T                                      [structural]
@@ -1026,7 +1037,7 @@ rule [ArrayInit]:
     elabDispose('NewArray(arrayOf T:Type,, 'ListWrap(.KList),, 'ArrayInit('ListWrap(InitContent:KList))))
     => elabRes(newArrayImpl(T, 'ListWrap(count(InitContent)), .K, InitContent) :: arrayOf T)
 
-//counts the number of elements in the KList list. Evaluates to an Int::int .
+//@ Counts the number of elements in the KList list. Evaluates to an Int::int .
 syntax K ::= "count" "(" KList ")"
            | "count" "(" Int "," KList ")"
 
@@ -1034,25 +1045,27 @@ rule count(Ks:KList) => count(0, Ks)
 rule count(I:Int, K:K,, Ks:KList) => count(I +Int 1, Ks)
 rule count(I:Int, .KList) => I::int
 
-//Elaborate all expressions once they reach the top of computation,
-//both in elaboration and in execution phase.
-//Performance: Using this rule instead of the rule above leads to execution performance decrease by 5%
-//in helloWorld, with medium execution time rising from 9.6s to 10.1s
+//todo latex workaround: manual character escape: \%
+
+//@ Elaborate all expressions once they reach the top of computation,
+//@ both in elaboration and in execution phase.
+//@ Performance: Using this rule instead of the rule above leads to execution performance decrease by 5\%
+//@ in helloWorld, with medium execution time rising from 9.6s to 10.1s
 rule [elabExpressions]:
     KL:KLabel(Ks:KList) => elab(KL(Ks))
 when
     isExpressionLabel(KL)
 
-//Unwrap elaborated terms in execution phase, so that they could be executed.
+//@ Unwrap elaborated terms in execution phase, so that they could be executed.
 rule [elabResInExecutionPhase]:
     <k> (elabRes(K:K) => K) ~> KL:KLabel(_) ...</k>
      <globalPhase> ExecutionPhase  </globalPhase>
 when
     KL =/=KLabel 'elab`(_`)
 
-//@subsection elaboration of SuperConstrInv, AltConstrInv
+//@\subsection elaboration of SuperConstrInv, AltConstrInv
 
-//Desugaring unqualified superclass constructor invocation into a qualified one
+//@ Desugaring unqualified superclass constructor invocation into a qualified one
 rule [SuperConstrInv-desugar]:
     <k>
       (. => getElabResQThisSubclassOf(EnclosingClass, SubEnclosingClass))
@@ -1112,7 +1125,8 @@ rule [AltConstrInv]:
     </k>
     <crntClass> Class:ClassType </crntClass>
 
-//True for 'QThis(_)::T, false otherwise
+//todo latex workaround: manual character escape.
+//@ True for 'QThis(\_)::T, false otherwise
 syntax K ::= "isTypedQThis" "(" K ")"                                    [function]
 
 rule isTypedQThis(K:K::_) => getKLabel(K) ==KLabel 'QThis
