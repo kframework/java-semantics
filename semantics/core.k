@@ -144,15 +144,6 @@ The object closure have the following structure:
 \end{verbatim}
 \item Map -- The init content of <localClassesEnv> when methods are invoked. For local classes only.
 \end{itemize}
-
-\bigskip
-
-The arrayRef have the following structure:
-\begin{itemize}
-\item Type -- type of the array
-\item Int -- location of the first element
-\item Int -- array length
-\end{itemize}
 */
 syntax RawRefVal ::=
                    "objectClosure" "(" Int //OL - object location
@@ -172,14 +163,42 @@ syntax RawRefVal ::=
                                     For local classes only. */
                                   "," Map
                                   ")"
-                | "arrayRef" "("
+
+/*@
+The arrayRef have the following structure:
+\begin{itemize}
+\item Type -- type of the array
+\item Int -- location of the first element
+\item Int -- array length
+\end{itemize}
+*/
+syntax RawRefVal ::=
+                  "arrayRef" "("
                     Type ","  // Type of the array
                     Int ","   // Location of the first element
                     Int       // Length
                   ")"
-                | String
-                | "null"
 
+syntax RawRefVal ::= String | "null"
+
+/*@
+Represents either a method or a constructor. This record contains all the information stored in the method/constructor definition, except the name, plus other info:
+\begin{itemize}
+\item Class:ClassType -- class defining the method
+\item 'ListWrap(Params):K -- params
+\item ContextType -- Either staticCT, instanceCT
+\item AccessMode -- The access mode
+\item RoutineType -- Either methodRT or constructorRT
+\item K -- first line, constructors only. Either of:
+  \begin{itemize}
+  \item 'SuperInv -- superclass constructor invocation
+  \item 'AltConstrInv -- alternate this class constructor invocation
+  \item .K -- none, if this class is Object
+  \end{itemize}
+    For methods this argument is noValue
+\item S:K -- method body
+\end{itemize}
+*/
 syntax RawVal ::= "methodClosure" "("
                     ClassType ","   // Class - class defining the method
                     K ","           // 'ListWrap(Params) - params
@@ -190,29 +209,46 @@ syntax RawVal ::= "methodClosure" "("
                                     //   'SuperInv - superclass constructor invocation
                                     //   'AltConstrInv - alternate this class constructor invocation
                                     //   .K - none, if this class is Object
-                                    //   For methods it is noValue
+                                    //   For methods this argument is noValue
                     K               // S - method body
                   ")"
-
+/*@
+A typed value is a pair of of a raw value and a type. Anywhere during execution we will evaluated typed expressions into typed values, never into raw values alone.
+*/
 syntax TypedVal ::= RawVal "::" Type
+
+/*@
+The three most common forms of computation result are Typed value, Type or Id. Those are most common results we will encounter during elaboration. Other result types are more context-specific.
+*/
 syntax KResult ::= TypedVal | Type | Id
 
+/*@
+A Typed expression is an expression followed by its compile-time type. This, among with Type is the most common form of computation result during elaboration. However, TypedExp is not a result during execution. This is why we cannot subsort it to KResult.
+*/
 syntax TypedExp ::= K "::" Type
                   | TypedVal
 
+/*
+todo: wait a full regression test to see if this is still needed.
 syntax ProtoTypedExp ::= K "::" K       [strict(2)]
                        | TypedExp
+*/
 
+/*@ Member access modes*/
 syntax AccessMode ::= "public" | "protected" | "package" | "private"
-syntax RoutineType ::= "methodRT" | "constructorRT"
 syntax KResult ::= AccessMode
 
-//bug cannot call this construct ClassType:
-//collision between sort ClassType and KLabel 'ClassType
-//causes infinite loop on any program
+/*@ Types of routines represented by a method closure*/
+syntax RoutineType ::= "methodRT" | "constructorRT"
+
+/*K limitation: this construct cannot be called ClassType. If we do this, any execution will result in an infinite loop.
+*/
+/*@ The two possibilities for a type represented by an objectClosure: class or interface.*/
 syntax MetaType ::= "classMetaT" | "interfaceMetaT"
 
 /*@ \subsection{Identifiers}*/
+
+/*@Convert the AST representation of an Id into an K Id.*/
 rule 'Id(Str:String) => String2Id(Str)                [structural, anywhere]
 
 //@ \subsection{Packages}
@@ -253,7 +289,7 @@ rule [getTopLevel]:
     <classType> Class </classType>
     <enclosingClass> noClass </enclosingClass>
 
-/*@ \subsection{auxiliary constructs} */
+/*@ \subsection{Auxiliary constructs} */
 
 /*@ \texttt{Generic guard.}
 A generic computational guard (should be builtin): it allows the computation to continue only if a prefix guard evaluates to true.
@@ -261,8 +297,8 @@ A generic computational guard (should be builtin): it allows the computation to 
 syntax K ::= "true?"
 rule true::bool ~> true? => .  [structural]
 
-/*toString - Converts various result types to string type, mainly for printing.*/
-
+//todo move toString to a separate file, collect implementation from all other files.
+/*@Converts all possible Java values into String. Used mostly for printing and String + operator. Conversion for other value forms is defined in other modules.*/
 syntax K ::= "toString" "(" K ")"   [strict]
 
 rule toString(Str:String :: _) => Str
@@ -276,23 +312,27 @@ rule toString(null::_) => "null"
 
 rule toString(rtString) => "java.lang.String"
 
-//@ \texttt{typeOf definition}
+//@ \texttt{Type of a value}
 
+/*todo move into separate file*/
+/*@For a type - the type itself. for a typed expression - the type component. For some raw values - their most common type.
+The semantics uses both typeOf(RawVal) and typeOf(TypedVal). Not sure about typeOf(Type)
+*/
 syntax K ::= "typeOf" "(" K ")"                           [function]
 rule typeOf(_ :: T:Type) => T
 rule typeOf(T:Type) => T
 
-//default value of all types
+/*@The default value for all types. Used for field initializers.*/
 syntax K ::= "default" "(" Type ")"                       [function]
 rule default(IntT:IntType) => 0 :: IntT
 rule default(FloatT:FloatType) => 0.0 :: FloatT
 rule default(bool) => false :: bool
 rule default(RT:RefType) => null :: RT
 
-//@ \subsubsection{Default types for raw values}
-
-//Converts a RawVal into a TypedVal, adding a default type for the given value.
-//Greatly simplifies many rules, because now we can use raw vals in the RHS, instead of typed vals.
+/*@
+Converts a RawVal into a TypedVal, by adding a default type for the given value.
+Greatly simplifies many rules, because now we can use raw values in the RHS, instead of typed values.
+*/
 syntax K ::= "defaultTyped" "(" RawVal ")"
 
 rule Val:RawVal => defaultTyped(Val)                                                  [structural]
@@ -315,19 +355,24 @@ rule defaultTyped(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T     
 
 //@ \subsubsection{Other auxiliary constructs}
 
-//Auxiliary construct - generalized equality suitable to compare not only TypedVal-s but any K terms.
+/*@
+Generalized equality with strictness, suitable to compare not only TypedVal-s but any K terms.
+*/
 syntax K ::= "eqAux" "(" K "," K ")"                  [seqstrict]
 rule eqAux(KR1:KResult, KR2:KResult) => KR1 ==K KR2
 
-//The content of an ListItem() representing the old <envStack>
+//todo move this somewhere else
+/*@
+The content of a ListItem() representing the old <envStack>
+*/
 syntax K ::= "el" "(" ClassType //The class corresponding to the current layer
                   "," BagItem   //<env> instance fields </env>
                   "," K         //objectClosure(...)::_ - the enclosing object, or noValue for top-level classes
                   "," Map       //Map[Id ->Loc], enclosingLocalEnv, local classes only.
                   ")"
 
-//A wrapper for maps. Allows the usage of multi-level maps.
-//Also used as part of mapUnion operation in java-process-class-members
+/*@A wrapper for maps. Allows holding maps inside an arbitrary expression where a K term is required. Also used as part of mapUnion operation in PROCESS-CLASS-MEMBERS
+*/
 syntax KResult ::= "mapWrap" "(" Map ")"
                  | "setWrap" "(" Set ")"
 
@@ -336,9 +381,8 @@ syntax KResult ::= "noValue"
 syntax K ::= "objectClass"                              [function]
 rule objectClass => class String2Id("java.lang.Object")
 
-//Subsection mapUnion, union of maps. Remove when +Map will be implemented.
-//In this operation, elements of the second map overwrite elements of the first map
-//if they collide.
+/*@The union of two maps. Arguments are of the form mapWrap(Map). In this operation, elements of the second map overwrite elements of the first map if they collide.
+*/
 syntax K ::= "mapUnion" "(" K //mapWrap(Map)
                         "," K //mapWrap(Map)
                         ")"                   [strict]
@@ -346,7 +390,10 @@ syntax K ::= "mapUnion" "(" K //mapWrap(Map)
 rule mapUnion(mapWrap( M1:Map => M1[K2/K1] ), mapWrap( _:Map (K1:K |-> K2:K => .Map) ))
 rule mapUnion(mapWrap(M1:Map), mapWrap(.Map)) => mapWrap(M1)
 
-//Subsection setUnion, union of sets. Remove when +Set will be implemented.
+/*@A wrapper for sets, similar to the one for maps.*/
+syntax KResult ::= "setWrap" "(" Set ")"
+
+/*The union of two sets. Arguments are of the form setWrap(Set).*/
 syntax K ::= "setUnion" "(" K //setWrap(Set)
                         "," K //setWrap(Set)
                         ")"                   [strict]
@@ -357,6 +404,7 @@ when
 rule setUnion(setWrap( S1:Set SetItem(K) ), setWrap( S2:Set (SetItem(K:K) => .) ))
 rule setUnion(setWrap(S1:Set), setWrap(.Set)) => setWrap(S1)
 
+/*@Extracts the access mode from the list of modifiers of some Java entity.*/
 syntax K ::= "getAccessMode" "(" K //'ListWrap(...) - the list of class/method attributes
                              ")"                              [function]
 
@@ -371,8 +419,8 @@ when        (KL =/=KLabel 'Public)
 
 rule getAccessMode('ListWrap(.KList)) => package
 
-//Returns a setWrap(Set[ClassType]), containing all top level classes in the program.
-//Uses <namesToClasses> to compute the result.
+/*@Returns a setWrap(Set[ClassType]), containing all top level classes in the program. Uses <namesToClasses> to compute the result. Used by the starting rule of several preprocessing phases.
+*/
 syntax K ::= "getTopLevelClasses"
            | "getTopLevelClasses" "(" Map "," Set ")"
 
@@ -399,8 +447,8 @@ rule [getTopLevelClasses-not-top-level]:
 rule getTopLevelClasses(_ (_ |-> mapWrap(.Map) => .Map), _)
 rule getTopLevelClasses(.Map, ClassesSet:Set) => setWrap(ClassesSet)
 
-//Returns a setWrap(Set[ClassType]), containing all direct inner classes of the given class.
-//Uses <namesToClasses> to compute the result.
+/*@Returns a setWrap(Set[ClassType]), containing all direct inner classes of the given class. Uses <namesToClasses> to compute the result.
+*/
 syntax K ::= "getInnerClasses" "(" ClassType ")"
            | "getInnerClasses" "(" Map "," Set ")"
 
@@ -419,24 +467,13 @@ rule [getInnerClasses-no-inners]:
 when
     notBool toPackage(Class) in keys(TypeNamesMap)
 
-// Auxiliary constructs for elaboration.
-
-//Custom hole used for custom heating/cooling rules across the semantics.
-syntax K ::= "CHOLE"
-
+/*@Wrappers for some terms used in multiple preprocessing phases.*/
 syntax KResult ::= "stEnv" "(" Map ")"  //A layer of the static environment
                                         //Map[name -> Type]
-                  | "classEnv" "(" Map ")"  //The declaration environment of a class
-                                            //Map[name -> fieldEntry(...)]
                   | "fieldEntry" "(" ClassType   // target class
                                  "," Id          // X - field name
                                  "," Type        // Field type
                                  "," ContextType // staticCT | instanceCT
                                  ")"
-
-//size of a KList
-syntax K ::= "klsize" "(" KList ")"               [function]
-rule klsize(.KList) => 0                          [anywhere]
-rule klsize(_:K,, Ks:KList) => klsize(Ks) +Int 1  [anywhere]
 
 endmodule
