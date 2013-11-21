@@ -225,7 +225,7 @@ rule [expLValueCool]:
 //question: Why can't we move this desugaring into elaboration phase?
 rule [CompoundAssign]:
     KL:KLabel(loc(L:Int) :: T1:Type,, Exp2:K::T2:Type) :: T1:Type
-    => 'Assign(loc(L)::T1,, castImpl(T1, getOpLabel(KL)(lookup(L)::T1,, Exp2::T2)::normalizeType(T1,T2))::T1)::T1
+    => 'Assign(loc(L)::T1,, castImpl(T1, getOpLabel(KL)(lookup(L)::T1,, Exp2::T2) :: normalizeType(T1,T2))::T1)::T1
 when isCompoundAssignLabel(KL)
 
 //only for Compound Assign KLabel's
