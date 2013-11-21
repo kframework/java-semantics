@@ -1063,7 +1063,7 @@ rule [elabResInExecutionPhase]:
 when
     KL =/=KLabel 'elab`(_`)
 
-//@\subsection elaboration of SuperConstrInv, AltConstrInv
+//@\subsection{Elaboration of SuperConstrInv, AltConstrInv}
 
 //@ Desugaring unqualified superclass constructor invocation into a qualified one
 rule [SuperConstrInv-desugar]:
