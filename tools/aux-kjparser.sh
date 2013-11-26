@@ -12,33 +12,33 @@ fi
 OUT_DIR=$1
 JAVA_FILE=$2
 BASE_JAVA_FILE=`basename $2`
-KAST_FILE=$OUT_DIR/$BASE_JAVA_FILE.kast
+KAST_FILE=${OUT_DIR}/${BASE_JAVA_FILE}.kast
 TOOLS_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
-if [ ! -f $KAST_FILE ];
+if [ ! -f ${KAST_FILE} ];
 then
     # echo "$KAST_FILE not found"
-    aux-kjprep.sh $JAVA_FILE > $KAST_FILE
+    aux-kjprep.sh ${JAVA_FILE} > ${KAST_FILE}
 else
     # case regular file
-    if [ -f $JAVA_FILE ];
+    if [ -f ${JAVA_FILE} ];
     then
-      if test $JAVA_FILE -nt $KAST_FILE
+      if test ${JAVA_FILE} -nt ${KAST_FILE}
       then
           # echo "$KAST_FILE is too old"
-          aux-kjprep.sh $JAVA_FILE > $KAST_FILE
+          aux-kjprep.sh ${JAVA_FILE} > ${KAST_FILE}
       fi
     else
       # case directory
-      if [ -d $JAVA_FILE ];
+      if [ -d ${JAVA_FILE} ];
       then
-        LAST_MODIFIED_FILE=$(find $JAVA_FILE -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -f2- -d" ")
+        LAST_MODIFIED_FILE=$(find ${JAVA_FILE} -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -f2- -d" ")
         # TEST_TIME=$(stat -c %Y $LAST_MODIFIED_FILE)
         # KAST_TIME=$(stat -c %Y $KAST_FILE)
-        if [ $LAST_MODIFIED_FILE -nt $KAST_FILE ];
+        if [ ${LAST_MODIFIED_FILE} -nt ${KAST_FILE} ];
         then
           # echo "$KAST_FILE is too old"
-          aux-kjprep.sh $JAVA_FILE > $KAST_FILE
+          aux-kjprep.sh ${JAVA_FILE} > ${KAST_FILE}
         fi
         # echo $TEST_TIME
         # echo $KAST_TIME

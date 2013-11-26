@@ -27,12 +27,17 @@ echo "Running tests for"
 echo "$PRETTYARGS"
 echo
 
+TEST_RUNNER_JAR=$(cross-path.sh ${TOOLS_DIR}/test-runner.jar)
+GEN_CMD=$(cross-script.sh ${TOOLS_DIR}/aux-jdk-run.sh)
+RUN_CMD=$(cross-script.sh ${TOOLS_DIR}/aux-echo.sh)
+
 # We don't use external script for deleting temp dir,
-# since it have the same performance as standart delete from java.
-java -jar $TOOLS_DIR/test-runner.jar \
-  -gen $TOOLS_DIR/aux-jdk-run.sh -run $TOOLS_DIR/aux-echo.sh \
+# since it have the same performance as standard delete from java.
+java -jar ${TEST_RUNNER_JAR} \
+  -gen \"${GEN_CMD}\" \
+  -run \"${RUN_CMD}\" \
   -taskExt java -threads 12 -timeout 120 -testsuiteName java-semantics \
-  -clean $CLEAN ${@:STARTARG}
+  -clean ${CLEAN} ${@:STARTARG}
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))

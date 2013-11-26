@@ -8,7 +8,10 @@
 # pdf - compile into pdf
 
 if [ $# -gt 1 ]; then
-    echo "Usage: `basename $0` or `basename $0` <exec|strictness|threading|latex|pdf>"
+    echo "Your command:"
+    echo `basename $0` $@
+    echo "Usage: `basename $0`"
+    echo "Or:    `basename $0` <exec|strictness|threading|latex|pdf>"
     exit
 fi
 

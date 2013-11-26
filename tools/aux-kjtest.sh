@@ -22,7 +22,7 @@ MODE=$2
 THREADS=$4
 TIMEOUT=$6
 ENCODE_XML=$8
-CLEAN=$10
+CLEAN=${10}
 shift 10
 
 START=$(date +%s)
@@ -31,16 +31,19 @@ echo "Running tests for"
 echo "$PRETTYARGS"
 echo
 
+TEST_RUNNER_JAR=$(cross-path.sh ${TOOLS_DIR}/test-runner.jar)
+GEN_CMD=$(cross-script.sh ${TOOLS_DIR}/aux-jdk-run.sh)
+
 if [ $MODE == "run" ];
-  then RUN_CMD="$TOOLS_DIR/aux-kjrun.sh"
+  then RUN_CMD="$(cross-script.sh ${TOOLS_DIR}/kjrun.sh) none"
   else RUN_CMD="$TOOLS_DIR/aux-kjsearch.sh"
 fi
 
 # We don't use external script for deleting temp dir,
-# since it have the same performance as standart delete from java.
-java -jar $TOOLS_DIR/test-runner.jar \
-  -gen $TOOLS_DIR/aux-jdk-run.sh \
-  -run $RUN_CMD \
+# since it have the same performance as standard delete from java.
+java -jar ${TEST_RUNNER_JAR} \
+  -gen \"${GEN_CMD}\" \
+  -run \"${RUN_CMD}\" \
   -taskExt java \
   -testsuiteName java-semantics \
   -classnameStyle simple \
