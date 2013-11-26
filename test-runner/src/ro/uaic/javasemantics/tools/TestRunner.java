@@ -2,9 +2,12 @@ package ro.uaic.javasemantics.tools;
 
 import java.io.*;
 import java.nio.CharBuffer;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -33,7 +36,7 @@ public class TestRunner {
 
     ExecutorService taskExecutor = newExecutorService();
     processExecutor = newExecutorService();
-    List<Future<TestResult>> results = new ArrayList<Future<TestResult>>();
+    List<Future<TestResult>> results = new ArrayList<>();
 
     try {
       boolean createDir = args.getTargetFileDirs().size() > 1 ||
@@ -43,6 +46,8 @@ public class TestRunner {
       }
 
       new XmlBuilder(args, results, start).buildXml();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     } finally {
       //Required to shutdown executor threads. Otherwise the runner will not terminate.
       //Calling shutdownNow() instead of shutdown() guarantees that child processes are properly
@@ -108,7 +113,7 @@ public class TestRunner {
 
   private void gatherTasks(File runParent, File target, boolean createDir,
                            List<Future<TestResult>> results,
-                           ExecutorService executor) {
+                           ExecutorService executor) throws IOException {
     File targetRunDir;
     if (createDir) {
       String targetDirName =
@@ -121,10 +126,16 @@ public class TestRunner {
     if (isTest(target)) {
       results.add(executor.submit(new Task(targetRunDir, target)));
     } else {
-      File[] children = target.listFiles(new TestFileFilter());
-      Arrays.sort(children);
-      for (File child : children) {
-        gatherTasks(targetRunDir, child, true, results, executor);
+      List<Path> children = new ArrayList<>();
+      try (DirectoryStream<Path> stream = Files.newDirectoryStream(target.toPath(), new TestFileFilter())) {
+        for (Path path : stream) {
+          children.add(path);
+        }
+      }
+
+      Collections.sort(children);
+      for (Path child : children) {
+        gatherTasks(targetRunDir, child.toFile(), true, results, executor);
       }
     }
   }
@@ -217,6 +228,14 @@ public class TestRunner {
     return sb.toString();
   }
 
+  private boolean isInQuotes(String str) {
+    return str != null && str.startsWith("\"") && str.endsWith("\"");
+  }
+
+  private String stripQuotes(String str) {
+    return str.substring(1, str.length() - 1);
+  }
+
   public class Task implements Callable<TestResult> {
 
     private File runDir, target;
@@ -233,10 +252,18 @@ public class TestRunner {
       result.setName(target.toString());
 
       File testFile = target.getAbsoluteFile();
-      File generator = args.getGenerator() != null ?
-          new File(args.getGenerator()).getAbsoluteFile() : null;
-      File runner = args.getRunner() != null ?
-          new File(args.getRunner()).getAbsoluteFile() : null;
+      String generator = args.getGenerator() != null ?
+          (isInQuotes(args.getGenerator())
+              ? args.getGenerator()
+              : new File(args.getGenerator()).getAbsoluteFile().toString()
+          )
+          : null;
+      String runner = args.getRunner() != null ?
+          (isInQuotes(args.getGenerator())
+              ? args.getRunner()
+              : new File(args.getRunner()).getAbsoluteFile().toString()
+          )
+          : null;
       boolean goodExpectedOutExists =
           expectedOutExistsFromStart(runDir, testFile);
 
@@ -354,12 +381,13 @@ public class TestRunner {
   }
 
   private class ProcessCallable implements Callable<Integer> {
-    File processDir, runner, test, in, out, err;
+    File processDir, test, in, out, err;
+    String runner;
 
     /**
      * All args are absolute paths
      */
-    private ProcessCallable(File processDir, File runner, File test, File in,
+    private ProcessCallable(File processDir, String runner, File test, File in,
                             File out, File err) {
       this.processDir = processDir;
       this.runner = runner;
@@ -373,7 +401,18 @@ public class TestRunner {
     public Integer call() throws Exception {
       ProcessBuilder procBuilder = new ProcessBuilder();
       procBuilder.directory(processDir);
-      procBuilder.command(runner.toString(), test.toString());
+
+      List<String> command;
+
+      if (isInQuotes(runner)) {
+        command = new ArrayList<>(Arrays.asList(stripQuotes(runner).split("\\s+")));
+      } else {
+        command = new ArrayList<>();
+        command.add(runner);
+      }
+      command.add(test.toString());
+      procBuilder.command(command);
+
       boolean inFileExists = in.exists();
       if (inFileExists) {
         procBuilder.redirectInput(in);
@@ -399,9 +438,11 @@ public class TestRunner {
     }
   }
 
-  private class TestFileFilter implements FileFilter {
+  private class TestFileFilter implements DirectoryStream.Filter<Path> {
+
     @Override
-    public boolean accept(File pathname) {
+    public boolean accept(Path entry) throws IOException {
+      File pathname = entry.toFile();
       if (pathname.isDirectory()) {
         return true;
       }

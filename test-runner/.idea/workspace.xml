@@ -7,23 +7,37 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" name="Default" comment="jenkins integr">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/XmlBuilder.java" afterPath="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/XmlBuilder.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ArgsCombiner.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../tools/test-runner.jar" afterPath="$PROJECT_DIR$/../tools/test-runner.jar" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../.idea/dictionaries/Denis.xml" afterPath="$PROJECT_DIR$/../.idea/dictionaries/Denis.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/Main.java" afterPath="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/Main.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/RunnerArgs.java" afterPath="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/RunnerArgs.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestRunner.java" afterPath="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestRunner.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../tools/aux-kjparser.sh" afterPath="$PROJECT_DIR$/../tools/aux-kjparser.sh" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../tools/aux-kjrun2.sh" afterPath="$PROJECT_DIR$/../tools/aux-kjrun2.sh" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../tools/aux-kjtest.sh" afterPath="$PROJECT_DIR$/../tools/aux-kjtest.sh" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../tools/kjkompile.sh" afterPath="$PROJECT_DIR$/../tools/kjkompile.sh" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../tools/kjrun.sh" afterPath="$PROJECT_DIR$/../tools/kjrun.sh" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="test-runner.iws" />
     <ignored path=".idea/workspace.xml" />
     <file path="/XmlBuilder.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1366706122896" ignored="false" />
     <file path="/a.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1364383560598" ignored="false" />
-    <file path="/Main.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1364396396775" ignored="false" />
+    <file path="/Main.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1385491048005" ignored="false" />
     <file path="/dev-list.txt" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1355065859657" ignored="false" />
-    <file path="/TestRunner.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1364418386934" ignored="false" />
+    <file path="/TestRunner.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1385493520676" ignored="false" />
     <file path="/TestResult.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1366439812501" ignored="false" />
-    <file path="/RunnerArgs.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1366437125696" ignored="false" />
+    <file path="/RunnerArgs.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1385492190347" ignored="false" />
     <file path="/help.txt" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1366437662375" ignored="false" />
-    <file path="/fragment.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1364415660215" ignored="false" />
-    <file path="/Dummy.txt" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1377867466457" ignored="false" />
+    <file path="/fragment.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1385490108060" ignored="false" />
+    <file path="/Dummy.txt" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1385490583099" ignored="false" />
     <file path="/ProcessUtil.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1364419458300" ignored="false" />
     <file path="Z:/idea_projects/asm-java-wrapper/src/Main.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1364396397982" ignored="false" />
+    <file path="/ArgsParser.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1385491523622" ignored="false" />
+    <file path="/ArgsCombiner.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1385491417168" ignored="false" />
+    <file path="$PROJECT_DIR$/../../k-framework/src/.idea/workspace.xml" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1385491585339" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,19 +99,22 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="TestRunner.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="TestRunner.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestRunner.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="392" column="36" selection-start="12856" selection-end="12856" vertical-scroll-proportion="0.0">
-              <folding />
+            <state line="416" column="28" selection-start="13468" selection-end="13468" vertical-scroll-proportion="0.6912281">
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#382#421#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="XmlBuilder.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="XmlBuilder.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/XmlBuilder.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="45" column="0" selection-start="1477" selection-end="1477" vertical-scroll-proportion="0.557783">
+            <state line="45" column="0" selection-start="1477" selection-end="1477" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -115,7 +132,7 @@
       <file leaf-file-name="RunnerArgs.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/RunnerArgs.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="55" column="0" selection-start="1655" selection-end="1655" vertical-scroll-proportion="0.0">
+            <state line="196" column="0" selection-start="5235" selection-end="5235" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -142,8 +159,19 @@
       <file leaf-file-name="Main.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/Main.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="29" column="0" selection-start="677" selection-end="677" vertical-scroll-proportion="0.0">
+            <state line="37" column="0" selection-start="990" selection-end="990" vertical-scroll-proportion="0.0">
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ArgsCombiner.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ArgsCombiner.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="16" column="0" selection-start="435" selection-end="435" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -182,8 +210,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ResultBuilder.java" />
-        <option value="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/OutputBuilder.java" />
         <option value="$PROJECT_DIR$/interpreterDir/waitGen.bat" />
         <option value="$PROJECT_DIR$/interpreterDir/waitInt.bat" />
         <option value="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/help.txt" />
@@ -191,13 +217,15 @@
         <option value="$PROJECT_DIR$/testDir/dirTest.test/testXYZ.test" />
         <option value="$PROJECT_DIR$/workingDir/test-results.xml" />
         <option value="$PROJECT_DIR$/dev-list.txt" />
-        <option value="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/Main.java" />
         <option value="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ProcessUtil.java" />
-        <option value="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestRunner.java" />
-        <option value="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/RunnerArgs.java" />
         <option value="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestResult.java" />
         <option value="$PROJECT_DIR$/src/help.txt" />
         <option value="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/XmlBuilder.java" />
+        <option value="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ArgsParser.java" />
+        <option value="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/Main.java" />
+        <option value="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ArgsCombiner.java" />
+        <option value="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/RunnerArgs.java" />
+        <option value="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestRunner.java" />
       </list>
     </option>
   </component>
@@ -240,7 +268,7 @@
     <ConfirmationsSetting value="0" id="Remove" />
   </component>
   <component name="ProjectReloadState">
-    <option name="STATE" value="0" />
+    <option name="STATE" value="2" />
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1" splitterProportion="0.5">
@@ -255,6 +283,16 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -335,37 +373,34 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope">
-        <subPane subId="Project Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="project.structure.last.edited" value="Artifacts" />
-    <property name="GoToFile.includeJavaFiles" value="false" />
-    <property name="project.structure.proportion" value="0.15" />
+    <property name="GenerateAntBuildDialog.generateIdeaHomeProperty" value="false" />
+    <property name="project.structure.last.edited" value="Project" />
     <property name="OverrideImplement.combined" value="true" />
+    <property name="project.structure.proportion" value="0.15" />
     <property name="options.splitter.main.proportions" value="0.3" />
-    <property name="options.lastSelected" value="vcs.Git" />
-    <property name="MemberChooser.sorted" value="false" />
     <property name="recentsLimit" value="5" />
+    <property name="MemberChooser.sorted" value="false" />
+    <property name="GenerateAntBuildDialog.generateSingleFile" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="project.structure.side.proportion" value="0.2" />
-    <property name="MemberChooser.copyJavadoc" value="false" />
+    <property name="GenerateAntBuildDialog.inclineRuntiemClasspath" value="false" />
+    <property name="GenerateAntBuildDialog.outputFileNameProperty" value="test-runner" />
+    <property name="GenerateAntBuildDialog.enableUiFormCompile" value="true" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
-    <property name="restartRequiresConfirmation" value="true" />
     <property name="FullScreen" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
     <property name="GoToClass.includeLibraries" value="false" />
-    <property name="dynamic.classpath" value="false" />
     <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="GoToFile.includeJavaFiles" value="false" />
+    <property name="options.lastSelected" value="vcs.Git" />
+    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="GenerateAntBuildDialog.forceTargetJdk" value="true" />
+    <property name="MemberChooser.copyJavadoc" value="false" />
+    <property name="restartRequiresConfirmation" value="true" />
+    <property name="GenerateAntBuildDialog.backupFiles" value="true" />
+    <property name="dynamic.classpath" value="false" />
     <property name="options.searchVisible" value="true" />
   </component>
   <component name="RecentsManager">
@@ -393,19 +428,6 @@
       <option name="PORT" value="5005" />
       <method />
     </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <method />
-    </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -431,6 +453,19 @@
       <envs />
       <properties />
       <listeners />
+      <method />
+    </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
       <method />
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
@@ -1016,6 +1051,7 @@
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3286424" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.45639864" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.42434585" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3287827" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
@@ -1026,14 +1062,13 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="true" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.1802139" sideWeight="0.67121726" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.49829352" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" x="27" y="299" width="1226" height="378" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17982924" sideWeight="0.5028313" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.49716875" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" x="27" y="299" width="1226" height="378" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4573379" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="FindBugs-IDEA" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.398773" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Metrics" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Analysis" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Metrics" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
@@ -1103,13 +1138,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ProcessUtil.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="61" column="3" selection-start="1831" selection-end="1831" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/help.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state line="35" column="25" selection-start="1663" selection-end="1687" vertical-scroll-proportion="0.0">
@@ -1153,30 +1181,9 @@
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/RunnerArgs.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="55" column="0" selection-start="1655" selection-end="1655" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/dev-list.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state line="16" column="0" selection-start="802" selection-end="802" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestRunner.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="392" column="36" selection-start="12856" selection-end="12856" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/Main.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="29" column="0" selection-start="677" selection-end="677" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
@@ -1204,8 +1211,41 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/XmlBuilder.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="45" column="0" selection-start="1477" selection-end="1477" vertical-scroll-proportion="0.557783">
+        <state line="45" column="0" selection-start="1477" selection-end="1477" vertical-scroll-proportion="0.0">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ArgsCombiner.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="16" column="0" selection-start="435" selection-end="435" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/Main.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="37" column="0" selection-start="990" selection-end="990" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/RunnerArgs.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="196" column="0" selection-start="5235" selection-end="5235" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestRunner.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="416" column="28" selection-start="13468" selection-end="13468" vertical-scroll-proportion="0.6912281">
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#382#421#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

@@ -2,6 +2,8 @@ package ro.uaic.javasemantics.tools;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Date: 23.05.2012
@@ -20,8 +22,17 @@ public class Main {
       final Thread mainThread = new Thread(new Runnable() {
         @Override
         public void run() {
-          RunnerArgs runnerArgs = new RunnerArgs(args);
-          new TestRunner(runnerArgs).run();
+          List<String> combinedArgs = ArgsCombiner.combine(Arrays.asList(args));
+          try {
+            RunnerArgs runnerArgs = new RunnerArgs(combinedArgs);
+            new TestRunner(runnerArgs).run();
+          } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Program parameters: ");
+            for(String arg : combinedArgs) {
+              System.out.println(arg);
+            }
+          }
         }
       });
 

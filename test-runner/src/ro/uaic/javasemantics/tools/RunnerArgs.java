@@ -31,12 +31,12 @@ public class RunnerArgs {
   private boolean classnameStyleComplete;
   private boolean encodeXML;
 
-  public RunnerArgs(String[] args) {
-    if (args.length == 0) {
+  public RunnerArgs(List<String> args) {
+    if (args.size() == 0) {
       throw new IllegalArgumentException(
           "Test runner should have at least one argument.");
     }
-    Map<String, String> argsMap = new LinkedHashMap<String, String>();
+    Map<String, String> argsMap = new LinkedHashMap<>();
     argsMap.put("-gen", null);
     argsMap.put("-condGen", "true");
     argsMap.put("-run", null);
@@ -57,18 +57,18 @@ public class RunnerArgs {
     argsMap.put("-rm", null);
     argsMap.put("-clean", "true");
     argsMap.put("-smartGen", "true");
-    Set<String> allOptions = new HashSet<String>(argsMap.keySet());
+    Set<String> allOptions = new HashSet<>(argsMap.keySet());
     int i;
-    for (i = 0; i < args.length; i += 2) {
-      if (args[i].charAt(0) == '-') {
-        argsMap.put(args[i], args[i + 1]);
+    for (i = 0; i < args.size(); i += 2) {
+      if (args.get(i).charAt(0) == '-') {
+        argsMap.put(args.get(i), args.get(i + 1));
       } else {
         break;//the remaining arguments are target file/dirs.
       }
     }
 
-    targetFileDirs = new ArrayList<String>();
-    targetFileDirs.addAll(Arrays.asList(args).subList(i, args.length));
+    targetFileDirs = new ArrayList<>();
+    targetFileDirs.addAll(args.subList(i, args.size()));
     if (targetFileDirs.isEmpty()) {
       throw new IllegalArgumentException(
           "At least one target file or dir should be specified.");
