@@ -23,17 +23,22 @@ TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 KRUN_CMD="time"
 
+# Option time
 if [ $SHOW_TIME == true ];
   then KRUN_CMD="time"
   else KRUN_CMD=""
 fi
 
+# Option timeout
 if [ $TIMEOUT -ne 0 ]; then
     KRUN_CMD="$KRUN_CMD timeout $TIMEOUT"
 fi
 
-KRUN_CMD="$KRUN_CMD krun \
-                      --parser=aux-kjprep.sh \
+# OS-dependent selection or krun and parser.
+KRUN_CMD="$KRUN_CMD $(cross-k.sh krun) --parser=\"$(cross-script.sh aux-kjprep.sh)\""
+
+KRUN_CMD="$KRUN_CMD \
+                      --debug-info \
                       --color extended \
                       -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\" \
                       -cModelCheck=\"false\""

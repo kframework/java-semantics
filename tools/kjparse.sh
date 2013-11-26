@@ -1,15 +1,14 @@
 #!/bin/bash
 
-#Parte the given java file
+#Parse the given java file
 
 if [  $# == 0 ]; then
     echo "Usage: `basename $0` <javaFile>"
     exit 1
 fi
 
-JAVA_FILE=$1
+JAVA_FILE=$(cross-path.sh $1)
 TOOLS_DIR="$( cd "$( dirname "$0" )" && pwd )"
+PARSER_JAR=$(cross-path.sh $TOOLS_DIR/../parser/JavaParser.jar)
 
-echo "'ListWrap("
-
-java -jar $TOOLS_DIR/../parser/JavaParser.jar $JAVA_FILE
+java -jar $PARSER_JAR $JAVA_FILE

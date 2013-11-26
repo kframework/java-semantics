@@ -10,4 +10,10 @@ fi
 
 JAVA_FILE=$1
 
-aux-kjrun2.sh --time true --timeout 30 --debug false --display-config true $JAVA_FILE
+# OS-dependent choice of default timeout
+if [[ $(uname) == *Linux* ]]
+  then DEFALUT_TIMEOUT=30
+  else DEFALUT_TIMEOUT=120
+fi
+
+aux-kjrun2.sh --time true --timeout $DEFALUT_TIMEOUT --debug false --display-config true $JAVA_FILE

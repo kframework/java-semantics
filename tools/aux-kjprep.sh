@@ -15,12 +15,12 @@ echo "'ListWrap("
 
 if [ -f $javaFile ];
 then
-  java -jar $TOOLS_DIR/../parser/JavaParser.jar $javaFile
+  kjparse.sh $javaFile
   echo ",,"
 else
   find -P $javaFile -name "*.java" -type f |
   while read FILE; do
-    java -jar $TOOLS_DIR/../parser/JavaParser.jar $FILE
+    kjparse.sh $FILE
     echo ",,"
   done
 fi
@@ -31,15 +31,16 @@ find $TOOLS_DIR/../class-lib -type f \( -name "*java" \) |
     if [ ! -f $kastFile ];
     then
         # echo "$kastFile not found"
-        java -jar $TOOLS_DIR/../parser/JavaParser.jar $libFile > $kastFile
+        kjparse.sh $libFile > $kastFile
     else
         if test $libFile -nt $kastFile
         then
             # echo "$kastFile is too old"
-            java -jar $TOOLS_DIR/../parser/JavaParser.jar $libFile > $kastFile
+            kjparse.sh $libFile > $kastFile
         fi
     fi
 
+    # $kastFile
     cat $kastFile
     echo ",,"
   done
