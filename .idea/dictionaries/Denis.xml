@@ -2,7 +2,10 @@
   <dictionary name="Denis">
     <words>
       <w>basename</w>
+      <w>kjrun</w>
+      <w>kjtest</w>
       <w>kompilation</w>
+      <w>kompile</w>
     </words>
   </dictionary>
 </component>
