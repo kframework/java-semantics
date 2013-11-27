@@ -18,27 +18,27 @@ if [[ $1 == --keep-temp ]];
     KEEP_TEMP=false
 fi
 
-javaFile=$1
+JAVA_FILE=$1
 
-mainFile=`basename $javaFile`
-mainClass=`echo "$mainFile" | cut -d'.' -f1`
+mainFile=`basename ${JAVA_FILE}`
+MAIN_CLASS=`echo "$mainFile" | cut -d'.' -f1`
 
-if [ -f $javaFile ];
+if [ -f ${JAVA_FILE} ];
 then
   #if the file starts with a package declaration, add package to the main class name
-  read -r IN < $javaFile
+  read -r IN < ${JAVA_FILE}
   PACKAGE_STR=${IN:0:7}
   if [ "$PACKAGE_STR" == "package" ];
-    then mainClass="${IN:8:${#IN}-9}.$mainClass"
+    then MAIN_CLASS="${IN:8:${#IN}-9}.$MAIN_CLASS"
   fi
-  JAVAC_ARG=$javaFile
+  JAVAC_ARG=${JAVA_FILE}
 else
-  JAVAC_ARG=$(find -P $javaFile -name "*.java" -type f)
+  JAVAC_ARG=$(find -P ${JAVA_FILE} -name "*.java" -type f)
 fi
 
 mkdir .jdk-run
-javac -d .jdk-run $JAVAC_ARG
-java -ea -cp .jdk-run $mainClass
+javac -d .jdk-run ${JAVAC_ARG}
+java -ea -Dline.separator=$'\n' -cp .jdk-run ${MAIN_CLASS}
 
 if [ "${KEEP_TEMP}" == "false" ];
   then rm -rf .jdk-run
