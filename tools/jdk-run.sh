@@ -2,9 +2,20 @@
 
 # Compiles the given java program, run it and removes the remaining class file.
 
-if [ $# -ne 1 ]; then
+if (( "$#" < 1 )) || (( "$#" > 2 )); then
+    echo "Your command:"
+    echo `basename $0` $@
     echo "Usage: `basename $0` <javaFile or dir>"
+    echo "Or:    `basename $0` <--keep-temp> <javaFile or dir>"
     exit 1
+fi
+
+if [[ $1 == --keep-temp ]];
+  then
+    KEEP_TEMP=true
+    shift
+  else
+    KEEP_TEMP=false
 fi
 
 javaFile=$1
@@ -28,4 +39,7 @@ fi
 mkdir .jdk-run
 javac -d .jdk-run $JAVAC_ARG
 java -ea -cp .jdk-run $mainClass
-rm -r -f .jdk-run
+
+if [ "${KEEP_TEMP}" == "false" ];
+  then rm -rf .jdk-run
+fi

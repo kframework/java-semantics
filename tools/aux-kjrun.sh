@@ -10,8 +10,10 @@
 if (( "$#" != 11 )); then
     echo "Your command:"
     echo `basename $0` $@
-    echo "Usage: `basename $0` --time <true/false> --timeout <timeout in s> \
-      --debug <true/false> --output <true/false> --kast-cache <true/false> <javaFile>"
+    echo "Usage: `basename $0` --time <true|false> --timeout <timeout in s> \
+      --mode <run|search|search-count|debug> --output <none|raw|pretty> \
+      --kast-cache <true|false> \
+      <javaFile>"
     exit 1
 fi
 
@@ -20,7 +22,7 @@ fi
 
 SHOW_TIME=$2
 TIMEOUT=$4
-DEBUG=$6
+MODE=$6
 OUTPUT=$8
 KAST_CACHE=${10}
 JAVA_FILE=${11}
@@ -30,7 +32,7 @@ BASE_JAVA_FILE=`basename ${JAVA_FILE}`
 MAIN_CLASS=`echo "$BASE_JAVA_FILE" | cut -d'.' -f1`
 TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 WORK_DIR="$(pwd)"
-SEMANTICS_DIR=$(cross-path.sh ${TOOLS_DIR}/../semantics)
+SEMANTICS_DIR=$(cross-path-native.sh ${TOOLS_DIR}/../semantics)
 
 KRUN_CMD="time"
 
@@ -53,26 +55,35 @@ KRUN_CMD="$KRUN_CMD \
                       --color extended \
                       --directory=\"$SEMANTICS_DIR\" \
                       --main-module=JAVA \
-                      -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\" \
-                      -cModelCheck=\"false\""
+                      -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
 
-if [ $DEBUG == true ]; then
-    KRUN_CMD="$KRUN_CMD --debug"
-fi
+case "$MODE" in
+"run")
+    KRUN_CMD="$KRUN_CMD -cModelCheck=\"false\""
+    ;;
+"search"|"search-count")
+    KRUN_CMD="$KRUN_CMD --search-final -cModelCheck=\"true\""
+    ;;
+"debug")
+    KRUN_CMD="$KRUN_CMD --debug -cModelCheck=\"false\""
+    ;;
+*)
+    echo "Invalid MODE: ${MODE}"
+    exit 1
+    ;;
+esac
 
 KRUN_CMD="$KRUN_CMD --output=$OUTPUT"
 
 if [ ${KAST_CACHE} == false ];
   then
     # OS-dependent selection of the parser.
-    KRUN_CMD="$KRUN_CMD --parser=\"$(cross-script.sh aux-kjprep.sh)\""
+    KRUN_CMD="$KRUN_CMD --parser=\"$(cross-sh.sh kj-parse-aggreg.sh)\""
 
     KRUN_CMD="$KRUN_CMD $JAVA_FILE"
-    # echo ${KRUN_CMD}
-    eval ${KRUN_CMD}
   else
     KAST_FILE=${WORK_DIR}/${BASE_JAVA_FILE}.kast
-    PARSER_CMD="aux-kjparser.sh $WORK_DIR $(cross-lin-path.sh ${JAVA_FILE})"
+    PARSER_CMD="kj-parse-cache.sh $WORK_DIR $(cross-path-unix.sh ${JAVA_FILE})"
 
     KRUN_CMD="$KRUN_CMD --parser=cat"
     KRUN_CMD="$KRUN_CMD $KAST_FILE"
@@ -80,9 +91,12 @@ if [ ${KAST_CACHE} == false ];
     # echo "PARSER_CMD"
     # echo ${PARSER_CMD}
     eval ${PARSER_CMD}
-    # cd ${SEMANTICS_DIR}
-
-    # echo KRUN_CMD
-    # echo ${KRUN_CMD}
-    eval ${KRUN_CMD}
 fi
+
+if [ ${MODE} == "search-count" ];
+  then KRUN_CMD="$KRUN_CMD  | grep \"Solution\" | wc -l"
+fi
+
+# echo KRUN_CMD
+# echo ${KRUN_CMD}
+eval ${KRUN_CMD}

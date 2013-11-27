@@ -7,8 +7,8 @@ if [  $# == 0 ]; then
     exit 1
 fi
 
-JAVA_FILE=$(cross-path.sh $1)
+JAVA_FILE=$(cross-path-native.sh $1)
 TOOLS_DIR="$( cd "$( dirname "$0" )" && pwd )"
-PARSER_JAR=$(cross-path.sh $TOOLS_DIR/../parser/JavaParser.jar)
+PARSER_JAR=$(cross-path-native.sh $TOOLS_DIR/../parser/JavaParser.jar)
 
 java -jar $PARSER_JAR $JAVA_FILE

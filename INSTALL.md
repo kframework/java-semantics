@@ -24,11 +24,11 @@ Now you can execute programs bundled with the semantics:
 $ kjrun.sh ../programs/01_smoke_tests/helloWorld.java
 ```
 
-Now you can test the execution of multiple programs at once using bundled tool t1-kjtest.
+Now you can test the execution of multiple programs at once using bundled tool kjtest.
 (Make sure you run a program with kjrun.sh first, it needs to perform some initializations.)
 
 ```
-$ t1-kjtest.sh ../programs/01_smoke_tests/
+$ kjtest.sh --t1 ../programs/01_smoke_tests/
 ```
 
 This tool executes each program in the given directory with both Java Semantics and JDK and compares the results. Testing result is summarized in test-results.xml.

@@ -18,7 +18,7 @@ TOOLS_DIR="$( cd "$( dirname "$0" )" && pwd )"
 if [ ! -f ${KAST_FILE} ];
 then
     # echo "$KAST_FILE not found"
-    aux-kjprep.sh ${JAVA_FILE} > ${KAST_FILE}
+    kj-parse-aggreg.sh ${JAVA_FILE} > ${KAST_FILE}
 else
     # case regular file
     if [ -f ${JAVA_FILE} ];
@@ -26,7 +26,7 @@ else
       if test ${JAVA_FILE} -nt ${KAST_FILE}
       then
           # echo "$KAST_FILE is too old"
-          aux-kjprep.sh ${JAVA_FILE} > ${KAST_FILE}
+          kj-parse-aggreg.sh ${JAVA_FILE} > ${KAST_FILE}
       fi
     else
       # case directory
@@ -38,7 +38,7 @@ else
         if [ ${LAST_MODIFIED_FILE} -nt ${KAST_FILE} ];
         then
           # echo "$KAST_FILE is too old"
-          aux-kjprep.sh ${JAVA_FILE} > ${KAST_FILE}
+          kj-parse-aggreg.sh ${JAVA_FILE} > ${KAST_FILE}
         fi
         # echo $TEST_TIME
         # echo $KAST_TIME
