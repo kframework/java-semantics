@@ -7,37 +7,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" name="Default" comment="jenkins integr">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ArgsCombiner.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../tools/test-runner.jar" afterPath="$PROJECT_DIR$/../tools/test-runner.jar" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../.idea/dictionaries/Denis.xml" afterPath="$PROJECT_DIR$/../.idea/dictionaries/Denis.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/Main.java" afterPath="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/Main.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/RunnerArgs.java" afterPath="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/RunnerArgs.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestRunner.java" afterPath="$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestRunner.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../tools/aux-kjparser.sh" afterPath="$PROJECT_DIR$/../tools/aux-kjparser.sh" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../tools/aux-kjrun2.sh" afterPath="$PROJECT_DIR$/../tools/aux-kjrun2.sh" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../tools/aux-kjtest.sh" afterPath="$PROJECT_DIR$/../tools/aux-kjtest.sh" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../tools/kjkompile.sh" afterPath="$PROJECT_DIR$/../tools/kjkompile.sh" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../tools/kjrun.sh" afterPath="$PROJECT_DIR$/../tools/kjrun.sh" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../.idea/copyright/profiles_settings.xml" afterPath="$PROJECT_DIR$/../.idea/copyright/profiles_settings.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../semantics/statements.k" afterPath="$PROJECT_DIR$/../semantics/statements.k" />
     </list>
     <ignored path="test-runner.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/XmlBuilder.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1366706122896" ignored="false" />
-    <file path="/a.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1364383560598" ignored="false" />
-    <file path="/Main.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1385491048005" ignored="false" />
-    <file path="/dev-list.txt" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1355065859657" ignored="false" />
-    <file path="/TestRunner.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1385493520676" ignored="false" />
-    <file path="/TestResult.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1366439812501" ignored="false" />
-    <file path="/RunnerArgs.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1385492190347" ignored="false" />
-    <file path="/help.txt" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1366437662375" ignored="false" />
-    <file path="/fragment.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1385490108060" ignored="false" />
-    <file path="/Dummy.txt" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1385490583099" ignored="false" />
-    <file path="/ProcessUtil.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1364419458300" ignored="false" />
-    <file path="Z:/idea_projects/asm-java-wrapper/src/Main.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1364396397982" ignored="false" />
-    <file path="/ArgsParser.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1385491523622" ignored="false" />
-    <file path="/ArgsCombiner.java" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1385491417168" ignored="false" />
-    <file path="$PROJECT_DIR$/../../k-framework/src/.idea/workspace.xml" changelist="3b1e34f5-54b4-45f6-be34-7a7f57a072d3" time="1385491585339" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -102,10 +77,9 @@
       <file leaf-file-name="TestRunner.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestRunner.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="416" column="28" selection-start="13468" selection-end="13468" vertical-scroll-proportion="0.6912281">
+            <state line="428" column="48" selection-start="13791" selection-end="13791" vertical-scroll-proportion="0.30805135" vertical-offset="9152" max-vertical-offset="10406">
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#382#421#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -114,7 +88,7 @@
       <file leaf-file-name="XmlBuilder.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/XmlBuilder.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="45" column="0" selection-start="1477" selection-end="1477" vertical-scroll-proportion="0.0">
+            <state line="45" column="0" selection-start="1477" selection-end="1477" vertical-scroll-proportion="0.0" vertical-offset="990" max-vertical-offset="3498">
               <folding />
             </state>
           </provider>
@@ -123,7 +97,7 @@
       <file leaf-file-name="dev-list.txt" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/dev-list.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="16" column="0" selection-start="802" selection-end="802" vertical-scroll-proportion="0.0">
+            <state line="16" column="0" selection-start="802" selection-end="802" vertical-scroll-proportion="0.0" vertical-offset="352" max-vertical-offset="616">
               <folding />
             </state>
           </provider>
@@ -132,7 +106,7 @@
       <file leaf-file-name="RunnerArgs.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/RunnerArgs.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="196" column="0" selection-start="5235" selection-end="5235" vertical-scroll-proportion="0.0">
+            <state line="196" column="0" selection-start="5235" selection-end="5235" vertical-scroll-proportion="0.0" vertical-offset="4312" max-vertical-offset="4444">
               <folding />
             </state>
           </provider>
@@ -141,7 +115,7 @@
       <file leaf-file-name="help.txt" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/help.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="54" column="0" selection-start="2640" selection-end="2640" vertical-scroll-proportion="0.0">
+            <state line="54" column="0" selection-start="2640" selection-end="2640" vertical-scroll-proportion="0.0" vertical-offset="1188" max-vertical-offset="2222">
               <folding />
             </state>
           </provider>
@@ -150,7 +124,7 @@
       <file leaf-file-name="TestResult.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestResult.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="17" column="0" selection-start="299" selection-end="299" vertical-scroll-proportion="0.0">
+            <state line="17" column="0" selection-start="299" selection-end="299" vertical-scroll-proportion="0.0" vertical-offset="374" max-vertical-offset="3168">
               <folding />
             </state>
           </provider>
@@ -159,7 +133,7 @@
       <file leaf-file-name="Main.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/Main.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="37" column="0" selection-start="990" selection-end="990" vertical-scroll-proportion="0.0">
+            <state line="37" column="0" selection-start="990" selection-end="990" vertical-scroll-proportion="0.0" vertical-offset="814" max-vertical-offset="1540">
               <folding />
             </state>
           </provider>
@@ -168,10 +142,8 @@
       <file leaf-file-name="ArgsCombiner.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ArgsCombiner.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="16" column="0" selection-start="435" selection-end="435" vertical-scroll-proportion="0.0">
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
+            <state line="16" column="0" selection-start="435" selection-end="435" vertical-scroll-proportion="0.0" vertical-offset="352" max-vertical-offset="880">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -179,7 +151,7 @@
       <file leaf-file-name="ProcessUtil.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ProcessUtil.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="61" column="3" selection-start="1831" selection-end="1831" vertical-scroll-proportion="0.0">
+            <state line="61" column="3" selection-start="1831" selection-end="1831" vertical-scroll-proportion="0.0" vertical-offset="1342" max-vertical-offset="1870">
               <folding />
             </state>
           </provider>
@@ -268,7 +240,7 @@
     <ConfirmationsSetting value="0" id="Remove" />
   </component>
   <component name="ProjectReloadState">
-    <option name="STATE" value="2" />
+    <option name="STATE" value="0" />
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1" splitterProportion="0.5">
@@ -283,16 +255,6 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scope">
-        <subPane subId="Project Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -359,6 +321,16 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="PackagesPane">
         <subPane>
           <PATH>
@@ -414,7 +386,7 @@
     </key>
   </component>
   <component name="RunManager" selected="Application.gen dir">
-    <configuration default="true" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin">
+    <configuration default="true" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin" singleton="true">
       <module name="" />
       <option name="VM_PARAMETERS" value="-Xmx512m -Xms256m -XX:MaxPermSize=250m" />
       <option name="PROGRAM_PARAMETERS" />
@@ -426,6 +398,19 @@
       <option name="SHMEM_ADDRESS" value="javadebug" />
       <option name="HOST" value="localhost" />
       <option name="PORT" value="5005" />
+      <method />
+    </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
       <method />
     </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
@@ -453,19 +438,6 @@
       <envs />
       <properties />
       <listeners />
-      <method />
-    </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
       <method />
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
@@ -1046,89 +1018,49 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-9" y="-9" width="1938" height="1050" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
+      <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3286424" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.45639864" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.42434585" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3287827" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.29693252" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="true" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17982924" sideWeight="0.5028313" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17944622" sideWeight="0.5028313" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.49716875" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" x="27" y="299" width="1226" height="378" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3286424" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.45639864" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="FindBugs-IDEA" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.398773" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Analysis" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.29693252" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Metrics" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Analysis" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
     </layout>
+  </component>
+  <component name="Vcs.Log.UiProperties">
+    <option name="RECENTLY_FILTERED_USERS">
+      <collection />
+    </option>
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <option name="OFFER_MOVE_TO_ANOTHER_CHANGELIST_ON_PARTIAL_COMMIT" value="true" />
-    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
-    <option name="CHECK_NEW_TODO" value="true" />
     <option name="myTodoPanelSettings">
-      <value>
-        <are-packages-shown value="false" />
-        <are-modules-shown value="false" />
-        <flatten-packages value="false" />
-        <is-autoscroll-to-source value="false" />
-      </value>
+      <TodoPanelSettings />
     </option>
-    <option name="PERFORM_UPDATE_IN_BACKGROUND" value="true" />
-    <option name="PERFORM_COMMIT_IN_BACKGROUND" value="true" />
-    <option name="PERFORM_EDIT_IN_BACKGROUND" value="true" />
-    <option name="PERFORM_CHECKOUT_IN_BACKGROUND" value="true" />
-    <option name="PERFORM_ADD_REMOVE_IN_BACKGROUND" value="true" />
-    <option name="PERFORM_ROLLBACK_IN_BACKGROUND" value="false" />
-    <option name="CHECK_LOCALLY_CHANGED_CONFLICTS_IN_BACKGROUND" value="false" />
-    <option name="CHANGED_ON_SERVER_INTERVAL" value="60" />
-    <option name="SHOW_ONLY_CHANGED_IN_SELECTION_DIFF" value="true" />
-    <option name="CHECK_COMMIT_MESSAGE_SPELLING" value="true" />
-    <option name="DEFAULT_PATCH_EXTENSION" value="patch" />
-    <option name="SHORT_DIFF_HORIZONTALLY" value="true" />
-    <option name="SHORT_DIFF_EXTRA_LINES" value="2" />
-    <option name="SOFT_WRAPS_IN_SHORT_DIFF" value="true" />
-    <option name="INCLUDE_TEXT_INTO_PATCH" value="false" />
-    <option name="INCLUDE_TEXT_INTO_SHELF" value="false" />
-    <option name="SHOW_FILE_HISTORY_DETAILS" value="true" />
-    <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
-    <option name="SHOW_DIRTY_RECURSIVELY" value="false" />
-    <option name="LIMIT_HISTORY" value="true" />
-    <option name="MAXIMUM_HISTORY_ROWS" value="1000" />
-    <option name="UPDATE_FILTER_SCOPE_NAME" />
-    <option name="USE_COMMIT_MESSAGE_MARGIN" value="false" />
-    <option name="COMMIT_MESSAGE_MARGIN_SIZE" value="72" />
-    <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
-    <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" />
-    <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
-    <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
-    <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
-    <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="false" />
-    <option name="REFORMAT_BEFORE_FILE_COMMIT" value="false" />
-    <option name="FILE_HISTORY_DIALOG_COMMENTS_SPLITTER_PROPORTION" value="0.8" />
-    <option name="FILE_HISTORY_DIALOG_SPLITTER_PROPORTION" value="0.5" />
-    <option name="ACTIVE_VCS_NAME" />
-    <option name="UPDATE_GROUP_BY_PACKAGES" value="false" />
-    <option name="UPDATE_GROUP_BY_CHANGELIST" value="false" />
-    <option name="UPDATE_FILTER_BY_SCOPE" value="false" />
-    <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
-    <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -1138,113 +1070,175 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/help.txt">
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestRunner.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="35" column="25" selection-start="1663" selection-end="1687" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestResult.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="0" selection-start="299" selection-end="299" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/Main.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="29" column="0" selection-start="677" selection-end="677" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ProcessUtil.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="61" column="3" selection-start="1831" selection-end="1831" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/testDir/testAbc.test">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1" column="0" selection-start="22" selection-end="22" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/lib/commons-lang3-3.1.jar!/org/apache/commons/lang3/StringEscapeUtils.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="38" column="39" selection-start="2297" selection-end="2297" vertical-scroll-proportion="0.34320986" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/META-INF/MANIFEST.MF">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/dev-list.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="0" selection-start="802" selection-end="802" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ProcessUtil.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="61" column="3" selection-start="1831" selection-end="1831" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestResult.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="0" selection-start="299" selection-end="299" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/help.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="54" column="0" selection-start="2640" selection-end="2640" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/XmlBuilder.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="45" column="0" selection-start="1477" selection-end="1477" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ArgsCombiner.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="0" selection-start="435" selection-end="435" vertical-scroll-proportion="0.0">
+        <state line="416" column="28" selection-start="13468" selection-end="13468" vertical-scroll-proportion="0.0" vertical-offset="9152" max-vertical-offset="10406">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/Main.java">
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/XmlBuilder.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="37" column="0" selection-start="990" selection-end="990" vertical-scroll-proportion="0.0">
+        <state line="45" column="0" selection-start="1477" selection-end="1477" vertical-scroll-proportion="0.0" vertical-offset="990" max-vertical-offset="3498">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dev-list.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="16" column="0" selection-start="802" selection-end="802" vertical-scroll-proportion="0.0" vertical-offset="352" max-vertical-offset="616">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/RunnerArgs.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="196" column="0" selection-start="5235" selection-end="5235" vertical-scroll-proportion="0.0">
+        <state line="196" column="0" selection-start="5235" selection-end="5235" vertical-scroll-proportion="0.0" vertical-offset="4312" max-vertical-offset="4444">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/help.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="54" column="0" selection-start="2640" selection-end="2640" vertical-scroll-proportion="0.0" vertical-offset="1188" max-vertical-offset="2222">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestResult.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="17" column="0" selection-start="299" selection-end="299" vertical-scroll-proportion="0.0" vertical-offset="374" max-vertical-offset="3168">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/Main.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="37" column="0" selection-start="990" selection-end="990" vertical-scroll-proportion="0.0" vertical-offset="814" max-vertical-offset="1540">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ArgsCombiner.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="16" column="0" selection-start="435" selection-end="435" vertical-scroll-proportion="0.0" vertical-offset="352" max-vertical-offset="880">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ProcessUtil.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="61" column="3" selection-start="1831" selection-end="1831" vertical-scroll-proportion="0.0" vertical-offset="1342" max-vertical-offset="1870">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/help.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="35" column="25" selection-start="1663" selection-end="1687" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestResult.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="17" column="0" selection-start="299" selection-end="299" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/Main.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="29" column="0" selection-start="677" selection-end="677" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ProcessUtil.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="61" column="3" selection-start="1831" selection-end="1831" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/testDir/testAbc.test">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1" column="0" selection-start="22" selection-end="22" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/lib/commons-lang3-3.1.jar!/org/apache/commons/lang3/StringEscapeUtils.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="38" column="39" selection-start="2297" selection-end="2297" vertical-scroll-proportion="0.34320986" vertical-offset="0" max-vertical-offset="0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/META-INF/MANIFEST.MF">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dev-list.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="16" column="0" selection-start="802" selection-end="802" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ProcessUtil.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="61" column="3" selection-start="1831" selection-end="1831" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestResult.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="17" column="0" selection-start="299" selection-end="299" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/help.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="54" column="0" selection-start="2640" selection-end="2640" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/XmlBuilder.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="45" column="0" selection-start="1477" selection-end="1477" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/ArgsCombiner.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="16" column="0" selection-start="435" selection-end="435" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/Main.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="37" column="0" selection-start="990" selection-end="990" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/RunnerArgs.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="196" column="0" selection-start="5235" selection-end="5235" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/ro/uaic/javasemantics/tools/TestRunner.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="416" column="28" selection-start="13468" selection-end="13468" vertical-scroll-proportion="0.6912281">
+        <state line="428" column="48" selection-start="13791" selection-end="13791" vertical-scroll-proportion="0.30805135" vertical-offset="9152" max-vertical-offset="10406">
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#382#421#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1308,7 +1302,7 @@
             <option name="proportions">
               <list>
                 <option value="0.2" />
-                <option value="0.5" />
+                <option value="0.6" />
               </list>
             </option>
           </splitter-proportions>

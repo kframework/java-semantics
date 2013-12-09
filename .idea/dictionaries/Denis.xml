@@ -2,10 +2,18 @@
   <dictionary name="Denis">
     <words>
       <w>basename</w>
+      <w>elab</w>
+      <w>initializers</w>
       <w>kjrun</w>
       <w>kjtest</w>
       <w>kompilation</w>
       <w>kompile</w>
+      <w>kool</w>
+      <w>meth</w>
+      <w>multithreading</w>
+      <w>preprocessing</w>
+      <w>smallskip</w>
+      <w>texttt</w>
     </words>
   </dictionary>
 </component>

@@ -27,7 +27,7 @@ rule [StartExecutionPhase]:
     </k>
     <env> . </env>
     <mainClass> ListItem(MainClassS:String) </mainClass>
-     <globalPhase> ElaborationPhase => ExecutionPhase  </globalPhase>
+    <globalPhase> ElaborationPhase => ExecutionPhase  </globalPhase>
 
 //@ \subsection{Program stack}
 
@@ -171,7 +171,7 @@ context switchImpl( _,
 
 //the type associated to V and V2 is not important for match, only the value.
 //JLS3 \$14.11, page 377: Every case constant expression associated with
-//a switch statement must be assignable (§5.2) to the type of the switch Expression.
+//a switch statement must be assignable (ï¿½5.2) to the type of the switch Expression.
 
 rule [SwitchCaseNotMatch]:
     switchImpl( V:RawVal :: _, ( 'SwitchGroup('ListWrap(
