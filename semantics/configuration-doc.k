@@ -37,7 +37,7 @@ From the evaluation standpoint, the semantics is divided into several preprocess
 \item Execution
 \end{itemize}
 
-The evaluation phase of the semantics is stored in $\kall{globalPhase}{}$. The cell is initialized with the id of the first phase - ProcTypeNamesPhase.
+The current evaluation phase of the semantics is stored in $\kall{globalPhase}{}$. The cell is initialized with the id of the first phase - ProcTypeNamesPhase.
 
 Next are the cells from the group $\kall{phStart}{\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}}$ that exist since the program beginning:
 
@@ -46,33 +46,33 @@ Next are the cells from the group $\kall{phStart}{\begin{array}{@{}c@{}}{\kall{}
 \item $\kall{mainClass}{String}$ -- The initial class, containing the method main().
 \end{itemize}
 
-Both cells are initialized with arguments passed through command-line, as is the case with JDK Java.
+Both cells are initialized with arguments passed through command-line, same way as for JDK Java.
 
-The remaining global cells are grouped by the phase when they first come into play. Thus, the cells within $\kall{phTN}{}$ are populated during Process Type Names phase, the cells from $\kall{phCU}{}$ -- during Process Compilation Unit and so on. The last group of global cells, $\kall{groupDebug}{}$ serve for debugging purposes only.
+The remaining global cells are grouped by the phase when they first come into play. Thus, the cells within $\kall{phTN}{}$ are populated during Process Type Names phase, the cells from $\kall{phCU}{}$ -- during Process Compilation Unit and so on. The last group of global cells, $\kall{groupDebug}{}$ serve for debugging.
 
 \bigskip
 
 In the phase Process Type Names the semantics passes through all compilation units and computes two global cells:
 
 \begin{itemize}
-\item $\kall{namesToClasses}{Map[PackageId\mapsto{}Map[Id\mapsto{}ClassType]]}$ A two-level map. First level is a map from package names to another map. That second-level map maps simple class names within a package to fully-qualified class names. This cell is extensively used through the semantics. The map contains both top-level and inner classes. for inner classes, the package where they are registered is the fully qualified class name of the directly enclosing class.
-\item $\kall{classesToAccessModes}{Map[ClassType\mapsto{}AccessMode]}$ -- A map from class names to their respective access mode, for each class registered in the previous cell.
+\item $\kall{namesToClasses}{Map[PackageId\mapsto{}Map[Id\mapsto{}ClassType]]}$ A two-level map. First level is a map from package names to another map. That second-level map maps simple class names within a package to fully-qualified class names. This cell is extensively used through the semantics. The map contains both top-level and inner classes. For inner classes, their enclosing package is the fully qualified class name of the directly enclosing class.
+\item $\kall{classesToAccessModes}{Map[ClassType\mapsto{}AccessMode]}$ -- A map from class names to their respective access mode, for all classes.
 \end{itemize}
 
 \bigskip
 
-The phase Process Compilation Units takes again as input the whole program, and thoroughly processes each compilation unit. This time data collected at the previous phase is used to process compilation unit imports. Imports data is stored temporarily in the cell:
+The phase Process Compilation Units takes again as input the whole program and analyzes it at a deeper level. This time data collected at the previous phase is used to process compilation unit imports. Imports data is stored temporarily in the cell:
 
 \begin{itemize}
-\item $\kall{compUnitImports}{Map[Id\mapsto{}ClassType]}$ A map from all type names accessible in this compilation unit to their respective fully qualified class names. This includes both names imported through imports declarations and classes declared in the same package.
+\item $\kall{compUnitImports}{Map[Id\mapsto{}ClassType]}$ A map from all type names accessible in this compilation unit to their respective fully qualified class names. This includes both classes accessible through imports declarations and classes declared in the package of the current compilation unit.
 \end{itemize}
 
-Next during this phase each class declaration is first processed and stored in a separate $\kall{class}{}$ cell. Again, both top-level and inner classes are considered. Each class have three cells that are central to the semantics:
+Next during this phase each class is stored into a $\kall{class}{}$ cell. Again, both top-level and inner classes are covered. In a newly created a $\kall{class}{}$ just a few sub-cells are initialized with data. Among them three have a central role in the whole semantics:
 
 \begin{itemize}
 \item $\kall{className}{ClassType}$ -- The fully qualified class name.
-\item $\kall{metaType}{MetaType}$ -- Whether this type is class or interface. To avoid terminology superfluousness, we will refer from now on to both classes and interfaces as "classes", making distinctions only when necessary.
-\item $\kall{classPhase}{ClassPhase}$ -- class processing phase. In addition to global computation phase, each class have its own phase of existence. Class phases are directly related to global phases. Thus, during each global phase each class should transition to a certain class phase. However the relationship is not one-to-one: we might observe several per-class transitions in one global phase, and none in another. Class phases are required because the order in which classes are preprocessed is generally not their literal order, and cannot be predicted upfront. As we will see later, classes are processed in the order of their dependencies. The class phases are:
+\item $\kall{metaType}{MetaType}$ -- Whether the type stored in this cell is class or interface. To avoid terminology superfluousness, we will refer from now on to both classes and interfaces as "classes", making distinctions only when necessary.
+\item $\kall{classPhase}{ClassPhase}$ -- represents the state of this class. In addition to the global computation phase, each class have its own lifecycle phase. Class phases are required to keep track which classes were processed in the current global phase and which were not. During each global phase all classes should transition to a certain class phase. However the relationship between global phases and class phases is not one-to-one. There could be several per-class transitions in one global phase, and none in another. The order in which classes are preprocessed is not their literal order but the order imposed by their dependency relationship. More details will be presented below. The class phases are:
 
 \begin{itemize}
 \item Created -- the initial phase. At the end of Process Compilation Units all classes are registered as "created".
@@ -83,17 +83,17 @@ Next during this phase each class declaration is first processed and stored in a
 
 \end{itemize}
 
-In addition to the three cells above, during Process Compilation Units the following cells are computed for each class. They are grouped under $\kall{cphCreated}{\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}}$ :
+In addition to the three cells above, during Process Compilation Units a few more cells are saved. They are grouped under $\kall{cphCreated}{\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}}$ :
 
 \begin{itemize}
 \item $\kall{enclosingClass}{ClassType}$ -- the directly enclosing class, for inner classes. The value noClass fr top-level classes.
-\item $\kall{rawExtends}{K}$ -- The extends clause of this class, in its original AST form.
+\item $\kall{rawExtends}{K}$ -- The extends clause of this class, in its raw form.
 \item $\kall{rawImplements}{K}$ -- The implements clause, in AST form.
 \item $\kall{rawDeclarations}{K}$ -- The class body, in AST form.
-\item $\kall{cuImports}{Map[Id\mapsto{}ClassType]}$ -- For top-level classes, the content of the cell $\kall{compUnitImports}{}$ for this compilation unit. For inner classes - an empty map. With this cell, each top-level class have access to the names map required to resolve its extends/implements clauses.
+\item $\kall{cuImports}{Map[Id\mapsto{}ClassType]}$ -- For top-level classes, the content of this cell copies $\kall{compUnitImports}{}$ computed for this compilation unit. For inner classes the cell is empty. The classes in this cell are required to resolve extends/implements clauses of top-level cells.
 \end{itemize}
 
-As we can see, the cells saved during the class phase Created contain all the data of the original class AST. Thus, initial AST representation of the program is no longer needed. In fact, the cell $\kall{program}{}$ is discarded at the end of Process Compilation Units. Future preprocessing phases will use class data in this initial form to compute other cells within $\kall{class}{}$, finally used for execution.
+As we can see, the cells saved during the class phase Created contain all the data of the original AST of the class. Thus, initial AST representation of the program is no longer needed. In fact, the cell $\kall{program}{}$ is discarded at the end of Process Compilation Units. The remaining preprocessing phases will use class data in this initial form to compute other cells within $\kall{class}{}$, finally used for execution.
 
 \bigskip
 
@@ -103,7 +103,7 @@ Next phase is Process Class Declarations. Here each class passes through two mor
 \item $\kall{unprocessedBases}{K}$ -- Initialized with the list of fully qualified class names for classes mentioned in extends/implements clauses of this class.
 \end{itemize}
 
-Once $\kall{unprocessedBases}{K}$ are saved the class enters into the phase Bases Resolved. It then waits in this phase until all extends/implements classes reach the phase Declarations Processed. To determine this state the cell $\kall{unprocessedBases}{K}$ is used. Once a class reaches the phase Declarations Processed, it deletes itself from all the cells $\kall{unprocessedBases}{K}$ of other classes. Thus, when all extends/implements dependencies of a class reach the phase Declarations Processed, the content of the cell $\kall{unprocessedBases}{K}$ of this class will be empty. Once in this state, the class enters into the phase Declarations Processed itself and computes three more cells:
+Once $\kall{unprocessedBases}{K}$ are saved the class enters into the phase Bases Resolved. It then waits in this phase until all extends/implements classes reach the phase Declarations Processed. The restrictions inJLS related to class dependencies guarantee that classes cannot have cyclic dependencies, thus a class cannot get locked in the waiting state. The cell $\kall{unprocessedBases}{K}$ is used to determine the moment when the class may exit the waiting state. Once a class reaches the phase Declarations Processed, is is deleted from cells $\kall{unprocessedBases}{K}$ of other classes. Thus, when all extends/implements dependencies of a class reach the phase Declarations Processed, the content of the its $\kall{unprocessedBases}{K}$ cell becomes empty. Once in this state, the class enters into the phase Declarations Processed itself and computes three more cells:
 
 \begin{itemize}
 \item $\kall{extends}{ClassType}$ -- The base class, fully qualified.
@@ -111,40 +111,40 @@ Once $\kall{unprocessedBases}{K}$ are saved the class enters into the phase Base
 \item $\kall{imports}{Map[Id\mapsto{}ClassType]}$ -- The map of classes accessible by simple name within the body of this class. The rules for computing this map are complex and include the following sources:
 
 \begin{itemize}
-\item Imports declarations of the current compilation unit, for top-level classes.
-\item Classes within the same package as this class, for top level classes.
-\item Classes accessible within the body of the directly enclosing class, for inner classes.
+\item Imports declarations of the current compilation unit.
+\item Classes declared within the package of the current compilation unit.
+\item Classes accessible within the body of the directly enclosing class, if the current class is inner class.
 \item Inner classes inherited from base classes, e.g. from extends/implements clauses.
 \item Inner classes of this class itself.
 \end{itemize}
 
-The need to cover all these cases leads to the intricate order in which class dependencies are resolved.
+The need to cover all these cases leads to the intricate order in which class dependencies have to be be resolved.
 \end{itemize}
 
-When a class enters the phase Declarations Processed, the cells $\kall{rawExtends}{}$, $\kall{rawImplements}{}$ and $\kall{unprocessedBases}{K}$ are no longer needed and are discarded. Once all classes reach the phase Declarations Processed the computation proceeds to the next global phase.
+When a class enters the phase Declarations Processed, the cells $\kall{rawExtends}{}$, $\kall{rawImplements}{}$ and $\kall{unprocessedBases}{K}$ are no longer needed and are discarded. Once all classes reach this phase the computation proceeds to the next global phase.
 
 \bigskip
 
-During the global phase Process Class Members each class processes its members and reaches the state Members Processes. Until then the class body is stored inside $\kall{rawDeclarations}{}$. The class members could be:
+During the global phase Process Class Members each class processes its members and reaches the state Members Processes. Until then the class body is stored in $\kall{rawDeclarations}{}$. A class member could be one of:
 
 \begin{itemize}
-\item fields
-\item methods
-\item constructors
-\item static and instance initializers
+\item field
+\item method
+\item constructor
+\item static or instance initializer
 \end{itemize}
 
-Based on this data, the following cells are computed:
+During this global phase class members are distributed into the following cells:
 
 \begin{itemize}
 \item $\kall{implTrans}{Set[ClassType]}$ -- The transitive closure of implemented interfaces. In the remaining phases this set is used by the subtyping relationship.
-\item $\kall{methods}{Map[Signature\mapsto{}ClassType]}$ -- The map from method signatures to classes where they are defined. This cell includes all methods accessible within this class, or through a qualified expression of type this class. This includes both methods declared within this class as well as inherited from base classes/ base interfaces.
-\item $\kall{methodDecs}{Map[Signature\mapsto{}MethodClosure]}$ -- The map from method signatures to actual method implementations. This cell includes only methods defined within the body of the present class.
-\item $\kall{fieldDecs}{K}$ -- The list of instance field declarations, converted into local variable declaration statements, without initializers. Used as part of object instantiation.
+\item $\kall{methods}{Map[Signature\mapsto{}ClassType]}$ -- The map of accessible methods. Keys are method signatures, values are classes where methods are defined. Includes both methods declared within this class as well amd methods inherited from base classes/ base interfaces.
+\item $\kall{methodDecs}{Map[Signature\mapsto{}MethodClosure]}$ -- The map of defined methods. Map values are method implementations. This cell includes only methods defined within the body of the present class.
+\item $\kall{fieldDecs}{K}$ -- The list of instance field declarations, stored as a list of local variable declaration statements, without initializers. Used during object instantiation.
 \item $\kall{instanceEnv}{Map[Id\mapsto Field Entry]}$ -- the same fields as in $\kall{fieldDecs}{}$ but in a different form. Used in the elaboration phase.
 \item $\kall{instanceInit}{K}$ -- The list of instance initializers of the class combined into one big instance initializer. Instance field initializers are also concatenated into this cell in their textual order. The content of this cell is executed as part of object instantiation.
-\item $\kall{staticEnv}{Map[Id \mapsto Location]}$ -- The map from static fields declared in this class to their locations in the store. Since static fields have only one instance per class declaration, once such a field declaration is reached a location in the store is immediately allocated for it.
-\item $\kall{staticInit}{K}$ -- The list of static initializers and static field initializers concatenated into a big one. Invoked during class static initialization.
+\item $\kall{staticEnv}{Map[Id \mapsto Location]}$ -- The map from static fields declared in this class to their locations in the store. Since static fields have only one instance per class declaration, it is possible to allocate a value in the store for them at this phase, when static fields are first reaced.
+\item $\kall{staticInit}{K}$ -- The list of static initializers and static field initializers concatenated into one block. Invoked during class static initialization.
 \item $\kall{constantEnv}{Map[Id \mapsto Value]}$ -- The map from constants to their actual values. Constants in Java have a slightly different semantics compared to final static fields. In particular, accessing them don't trigger static initialization of the declaring class.
 \end{itemize}
 
@@ -152,31 +152,31 @@ Once all the cells above are computed the class proceeds into the phase Members 
 
 \bigskip
 
-The last preprocessing phase is Elaboration. Here all the code blocks are processed - method and constructor bodies, static and instance initializers. Most of the information traditionally inferred by the compiler is computed at this phase. More precisely elaboration performs the following:
+The last preprocessing phase is Elaboration. Here all the code blocks are processed - method and constructor bodies, static and instance initializers. Most of the information traditionally inferred by the compiler is computed at this phase. More precisely the elaboration performs the following transformations:
 
 \begin{itemize}
-\item Each name is resolved into local variable, field, method, class or package. While method may be distinguished from others purely syntactically, other categories are inferred based on the names existing in the current context.
-\item Class names are resolved into fully qualified class names. Hereafter all the class names in the code are fully qualified.
-\item For all expressions the type is inferred. Thus, when the code reaches execution phase, expressions are no longer in their initial form, but are annotated with types.
-\item for each method call the precise signature in inferred.
-\item Local and anonymous classes are processed. Elaboration is the first phase where local classes could be reached. Still, local classes have all the features of other classes and need to be passed through all the preprocessing steps. All this is performed during the global phase elaboration.
+\item Each name is resolved into local variable, field, method, class or package. While a method may be distinguished from other cathegories purely syntactically, resolving to other categories requires knowledge of the names existing in the current context.
+\item Simple class names are resolved into fully qualified class names. Hereafter all the class names in the code are fully qualified.
+\item The compile-time type of each expression is inferred. Thus, when the code reaches execution phase, expressions are no longer in their initial form. The expressions are annotated with their types.
+\item For each method call the precise signature in inferred.
+\item Local and anonymous classes are processed. The earliest phase where local classes could be discovered is elaboration. Still, local classes have all the features of other classes. Thus they need to be passed through all the preprocessing steps. The whole preprocessing for local classes is performed during the global phase elaboration.
 \end{itemize}
 
-Despite this phase being the most complex preprocessing phase of all, it introduces relatively few new cells. Most of them are related to local classes. Inside $\kall{class}{}$ there is just one new cell:
+Despite this phase being the most complex preprocessing phase of all, it introduces few new cells. Most of them are related to local classes. Inside $\kall{class}{}$ just one new cell is introduced:
 
 \begin{itemize}
-\item $\kall{enclosingLocalEnv}{Map[Id \mapsto Type]}$ -- The map from local variables defined in enclosing blocks to their types. for local classes only.
+\item $\kall{enclosingLocalEnv}{Map[Id \mapsto Type]}$ -- The map from local variables of the current block to their types. Used during local classes processing.
 \end{itemize}
 
-Among top-level cells there are the following:
+Among global cells the following new cells are added:
 
 \begin{itemize}
-\item $\kall{elabEnv}{List[stEnv(Map[Id \mapsto Type])]}$ -- A stack where each layer is a map of local variables. Each layer of the stack represents a code block, in their nesting order. Inside each layer, the map is from local variables accessible in that layer to variable types.
-\item $\kall{localTypes}{List[stEnv(Map[Id \mapsto ClassType])]}$ -- A cell similar in structure to the previous one. This time, map keys are local class names.
+\item $\kall{elabEnv}{List[stEnv(Map[Id \mapsto Type])]}$ -- A stack where each layer is a map of local variables. Each layer of the stack represents a code block, in the blocks nesting order. Inside each layer, the map is from local variables accessible in that layer to variable types.
+\item $\kall{localTypes}{List[stEnv(Map[Id \mapsto ClassType])]}$ -- A cell similar in structure to the previous one. This time map keys are local classes instead of variables.
 \item $\kall{nextLocalId}{Int}$ -- a number used to generate unique fully-qualified class names for local classes.
 \end{itemize}
 
-During the elaboration phase no cells are consumed. Instead, the code blocks stored inside $\kall{methodDecs}{}$, $\kall{instanceInit}{}$, $\kall{staticInit}{}$ are processed and stored back into the same cell. After elaboration classes remain in the same phase as before -- Members Processes. This is in fact the last phase in the lifecycle of the cell $\kall{class}{}$.
+During the elaboration phase no cells are consumed. Instead, the code blocks stored inside $\kall{methodDecs}{}$, $\kall{instanceInit}{}$, $\kall{staticInit}{}$ are processed and stored back into the same cell. After elaboration the classes remain in the same state -- Members Processes. The state Members Processed is in fact the final state of the cell $\kall{class}{}$.
 
 \bigskip
 
@@ -186,25 +186,25 @@ When evaluation reaches the last phase, execution, classes have one more cell to
 \item $\kall{staticInitStatus}{}$ -- a flag indicating whether the class was statically initialized or not.
 \end{itemize}
 
-There are more global cells related to execution:
+Among global cells the following are related to execution phase:
 
 \begin{itemize}
-\item $\kall{store}{Location:Int \mapsto Value:TypedVal}$ -- the program memory. Map from memory locations to actual values. the single most important cell of the execution phase.
+\item $\kall{store}{Map[Location:Int \mapsto Value:TypedVal]}$ -- the program memory. Map from memory locations to actual values. The single most important cell of the execution phase.
 \item $\kall{nextLoc}{Int}$ -- the number of allocated memory locations. Used to generate unique memory addresses for each allocation.
-\item $\kall{in}{List}$ -- standard input, represented as pre-parsed list of elements of type Int or String.
-\item $\kall{out}{List}$ -- standard output, visible to the semantics also as a list.
-\item $\kall{classLiteralsMap}{Map[Type \mapsto TypedVal]}$ -- a map from types T to objects that represent T.class for that T. Used, as mentioned, bu ".class" operator.
+\item $\kall{in}{List}$ -- the standard input, represented as pre-parsed list of elements of type Int or String.
+\item $\kall{out}{List}$ -- the standard output.
+\item $\kall{classLiteralsMap}{Map[Type \mapsto TypedVal]}$ -- a map from types T to objects that represent the value of the expression T.class .
 
 \item the remaining cells are related to threads:
 \begin{itemize}
-\item $\kall{busy}{Set[ObjLocation:Int]}$ -- the set of busy objects. E.g. objects for which there is a thread holding the monitor for the object.
-\item $\kall{waitingThreads}{Map[ThreadId:Int \mapsto OL:Int]}$ -- The map from threads to objects they are waiting on. Used by the methods Object.wait(), Object.notify(), Object.notifyAll().
+\item $\kall{busy}{Set[ObjLocation:Int]}$ -- the set of busy objects. E.g. monitor objects for which there is a thread holding the monitor.
+\item $\kall{waitingThreads}{Map[ThreadId:Int \mapsto OL:Int]}$ -- The map from threads to monitor objects on which the threads are blocked in a call to wait(). Used by the methods Object.wait(), Object.notify(), Object.notifyAll().
 \item $\kall{terminated}{Set[ThreadId:Int]}$ -- the set of terminated threads.
 \end{itemize}
 
 \end{itemize}
 
-The cells that remain are related to debugging.
+The rest of the global cells are related to debugging.
 
 \pagebreak
 */
