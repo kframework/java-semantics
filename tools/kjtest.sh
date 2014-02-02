@@ -6,7 +6,7 @@
 
 if (( "$#" >= 1 )) && [ "$1" == "--help" ]; then
     echo "Usage: `basename $0` [target files/dirs]"
-    echo "Or:    `basename $0` <--run|--search|--t1|--t2> [target files/dirs]"
+    echo "Or:    `basename $0` <--run|--search|--t1|--t2|--t4> [target files/dirs]"
     echo "For more options use aux-kjtest.sh"
     exit 0
 fi
@@ -34,6 +34,9 @@ case "$OPTION" in
     ;;
 "--t2")
     aux-kjtest.sh -mode run    -threads  2 -timeout 120 -encodeXML false -clean false ${@}
+    ;;
+"--t4")
+    aux-kjtest.sh -mode run    -threads  4 -timeout 120 -encodeXML false -clean false ${@}
     ;;
 *)
     echo "Invalid OPTION: ${OPTION}"
