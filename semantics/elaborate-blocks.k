@@ -55,9 +55,6 @@ syntax K ::= "elabInstanceInit"
 //@Elaborates the given statement/expression. The first step of elaboration.
 syntax K ::= "elab" "(" K ")"
 
-//@ Intermediate state between elab and elabRes - all subterms were already elaborated. Responsible for deleting the elabRes() wrappers of subterms.
-syntax K ::= "elabDispose" "(" K ")"
-
 //@ Wraps the elaboration result. Since elaboration may happen at both ElaborationPhase and ExecutionPhase, it cannot be KResult. Actually it is not KResult for HOLE, but is for CHOLE.
 syntax K ::= "elabRes" "(" K ")"
 
@@ -290,7 +287,13 @@ when
     andBool isElab(HeadKs)    //Forces elaboration left-to-right. Required when KL == 'ListWrap of statements.
     [transition-strictness]
 
-//@ True if children of this label should not be automatically heated for elaboration.
+/*@ Terms that should use custom elaboration rules. For those terms:
+    - They will not be automatically heated from their parents into the elab() state.
+    - They will not be automatically passed to elabDispose() state. Instead, those terms should have custom rules
+      for elaboration start (heating) and elaboration end (cooling).
+  Since all the automatic elaboration-related rules are an incredible mess, we have to put all the AST terms into this
+    cathegory one by one, and eliminate automatic elaboration heating/cooling rules altogether.
+*/
 syntax K ::= "customElabChildren" "(" KLabel ")"                [function]
 rule customElabChildren(KL:KLabel) =>
            (KL ==KLabel 'Block)
@@ -305,12 +308,9 @@ rule customElabChildren(KL:KLabel) =>
     orBool (KL ==KLabel 'NewInstance)
     orBool (KL ==KLabel 'QNewInstance)
 
-//@ Will not match .K - is not isElabNaked. (.K) is matched by [elabDotK].
-rule [unwrapElabNaked]:
-    elab(K:K) => K
-when
-    isElabNaked(K)
-
+/*@ Represents terms that shoud never be wrapped by elab() or related wrappers. They are processed to their final state
+  in elaboration phase. Those are types names, package names, id's ad literals.
+*/
 syntax K ::= "isElabNaked" "(" K ")"                            [function]
 rule isElabNaked(K:K) =>
            (isRawVal(K) ==K true)
@@ -323,6 +323,12 @@ rule isElabNaked(K:K) =>
     orBool (getKLabel(K) ==KLabel 'PackageOrTypeName)
     orBool (getKLabel(K) ==KLabel 'Id)
     orBool (getKLabel(K) ==KLabel 'Lit)
+
+//@ Will not match .K - is not isElabNaked. (.K) is matched by [elabDotK].
+rule [unwrapElabNaked]:
+    elab(K:K) => K
+when
+    isElabNaked(K)
 
 rule [elabCoolStatement]:
     (elabRes(K:K) => .) ~> elab(_:KLabel(_,, (CHOLE => elabRes(K)),, _))
@@ -339,11 +345,14 @@ rule [elabCoolIndependent]:
 when
     isElabIndependent(ElabIndep)
 
-//@ Required by the rule [elabQNewInstance-resolve-class]
-rule [elabDisposeCoolIndependent]:
-    (ElabIndep:K => .) ~> elabDispose(_:KLabel(_,, (CHOLE => ElabIndep),, _))
-when
-    isElabIndependent(ElabIndep)
+/*@ The default algorithm of transforming the term from elab to elabRes, when the children were completely elaborated.
+  Deletes elabRes wrappers from children. This algorithm is activated when the following conditions apply:
+    - term is not customElabChildren
+    - term children are completely elaborated - isElab(children)
+    - term is not naked. This case should never be true, but there is some weird case that requires it.
+  When the default algorithm is not appropriate, the respective term should be in the cathegory customElabChildren
+*/
+syntax K ::= "elabDispose" "(" K ")"
 
 rule [elabDisposeStartDefault]:
     elab(KL:KLabel(ElabResL:KList)) => elabDispose(KL(ElabResL))
@@ -359,6 +368,12 @@ rule [elabDisposeEnd]:
     elabDispose(KL:KLabel(Ks:KList)) => elabRes(KL(Ks))
 when
     notBool isExpressionLabel(KL) andBool haveNoElabRes(Ks)
+
+//@ Required by the rule [elabQNewInstance-resolve-class]
+rule [elabDisposeCoolIndependent]:
+    (ElabIndep:K => .) ~> elabDispose(_:KLabel(_,, (CHOLE => ElabIndep),, _))
+when
+    isElabIndependent(ElabIndep)
 
 syntax K ::= "isElabIndependent" "(" K ")"            [function]
 rule isElabIndependent(K:K) =>
