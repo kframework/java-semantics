@@ -66,9 +66,11 @@ syntax K ::= "setEncloser" "(" TypedExp   //Evaluates to source object
                            "," K          //The enclosing object
                            ")"            [strict(1,3)]
 
-//@Computes into an expression of the form elabRes('QThis(QualClass)::QualClass),
-//@where QualClass is searched in the enclosing context of the first argument,
-//@being a subclass of the second one.
+/*@ Computes into an expression of the form elabRes('QThis(QualClass)::QualClass),
+where QualClass is searched in the enclosing context of the first argument,
+being a subclass of the second one.
+Or elabRes(noValue) if no suitable result is found
+*/
 syntax K ::= "getElabResQThisSubclassOf" "(" ClassType //The context class in which qualifier is searched for.
                                          "," ClassType //Qualifier should be subclass of this class
                                          ")"            [strict(2)]
@@ -248,22 +250,20 @@ rule [elabStaticEnd]:
 
 //@Adds a new empty layer to <elabEnv>
 syntax K ::= "addElabEnv"
-
-//@Removes the last layer from <elabEnv>
-syntax K ::= "removeLastElabEnv"
-
-//@Adds params to the <elabEnv>.
-syntax K ::= "elabParams" "(" KList ")"
-
 rule [addElabEnv]:
     <k> addElabEnv => . ...</k>
     <elabEnv> . => ListItem(stEnv(.Map)) ...</elabEnv>
     <localTypes> . => ListItem(stEnv(.Map)) ...</localTypes>
 
+//@Removes the last layer from <elabEnv>
+syntax K ::= "removeLastElabEnv"
 rule [removeLastElabEnv]:
     <k> removeLastElabEnv => . ...</k>
     <elabEnv> ListItem(_) => . ...</elabEnv>
     <localTypes> ListItem(_) => . ...</localTypes>
+
+//@Adds params to the <elabEnv>.
+syntax K ::= "elabParams" "(" KList ")"
 
 rule [elabParams]:
     <k> elabParams((paramImpl(T:Type, X:Id) => .KList) ,,_) ...</k>
@@ -330,6 +330,8 @@ rule isElabNaked(K:K) =>
 All KLabels that can be part of a code block during elaboration phase,
 except those members of customElabChildren or isElabNaked groups.
 */
+//todo: maybe statements should be processed by default rules as they are now, but expressions should not.
+//Let's start from expressions.
 syntax K ::= "defaultElabChildren" "(" KLabel ")"                [function]
 rule defaultElabChildren(KL:KLabel) =>
            (KL ==KLabel 'ListWrap)
@@ -554,10 +556,9 @@ rule [elabCoolExpressionOrKResult]:
 when
     isElabIndependent(ElabIndep)
 
-rule [elabCoolIndependent]:
-    (ElabIndep:K => .) ~> elab(_:KLabel(_,, (CHOLE => ElabIndep),, _))
-when
-    isElabIndependent(ElabIndep)
+/*Was KR:ElabIndependent before, but in fact only KResult may stay free in this position.*/
+rule [elabCoolKResult]:
+    (KR:KResult => .) ~> elab(_:KLabel(_,, (CHOLE => KR),, _))
 
 /*@ The default algorithm of transforming the term from elab to elabRes, when the children were completely elaborated.
   Deletes elabRes wrappers from children. This algorithm is activated when the following conditions apply:
@@ -584,26 +585,30 @@ rule [elabDisposeEnd]:
 when
     notBool isExpressionLabel(KL) andBool haveNoElabRes(Ks)
 
-//@ Required by the rule [elabQNewInstance-resolve-class]
-rule [elabDisposeCoolIndependent]:
-    (ElabIndep:K => .) ~> elabDispose(_:KLabel(_,, (CHOLE => ElabIndep),, _))
-when
-    isElabIndependent(ElabIndep)
-
-syntax K ::= "isElabIndependent" "(" K ")"            [function]
-rule isElabIndependent(K:K) =>
-               (isKResult(K) ==K true)
-    orBool (isTypedExp(K) ==K true)
-
-//@ Computes to true if the given argument is a list of elaboration results, false otherwise.
+/*@ Computes to true if the given argument is a list of elaboration results, false otherwise.
+  An elaborated result is either:
+    - KResult
+    - TypedExp
+    - elabRes(...)
+*/
 syntax K ::= "isElab" "(" KList ")"                 [function]
 rule isElab(K:K,, Ks:KList)
-     =>      ((getKLabel(K) ==KLabel 'elabRes`(_`)) orBool (isElabIndependent(K) ==K true))
+     =>      ((getKLabel(K) ==KLabel 'elabRes`(_`)) orBool (isTypedExp(K) ==K true) orBool (isKResult(K) ==K true))
      andBool isElab(Ks)
 
 rule isElab(.KList) => true
 
-//@ Computes to true if the given argument is a list of terms with none being elab-result only, false otherwise.
+/*@ Either of:
+  - KResult
+  - TypedExp
+Used in defaut cooling rules of elaboration phase, to distinguish between elborated statements and elaborated
+  expressions. When expressions are cooled they are unwrapped fron thei elabRes() wrapper.
+*/
+syntax K ::= "isElabIndependent" "(" K ")"            [function]
+rule isElabIndependent(K:K)
+     => (isKResult(K) ==K true) orBool (isTypedExp(K) ==K true)
+
+//@ True if given KList have no terms of the form elabRes(...), false otherwise.
 syntax K ::= "haveNoElabRes" "(" KList ")"          [function]
 rule haveNoElabRes(K:K,, Ks:KList)
      => (getKLabel(K) =/=KLabel 'elabRes`(_`)) andBool haveNoElabRes(Ks)
@@ -637,6 +642,8 @@ rule [elabCatch]:
     <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
     <localTypes> (. => ListItem(LocTypesK)) ListItem(LocTypesK:K) ...</localTypes>
 
+//here we need elabDispose because the block content is a list.
+//We could move the elabdospose logic to ListWrap instead of having it here.
 rule [elabDisposeBlockForOrCatch]:
     <k> elab(KL:KLabel(ElabResL:KList)) => removeLastElabEnv ~> elabDispose(KL(ElabResL)) ...</k>
 when
@@ -1219,11 +1226,16 @@ rule [existsClass]:
     </k>
     <namesToClasses>... Pack:PackageId |-> mapWrap(NamesToClasses:Map) ...</namesToClasses>
 
+/*@ All new instance creation expressions are converted into qualified ones - 'QNewInstance, duringelaboration phase.
+  For instance inner classes, the qualifier will be a valid expression for the qualifier. For other classes qualifier
+  will be noValue.
+*/
 rule [elab-QNewInstance]:
     elab('QNewInstance(Qual:K,, Arg2:K,, T:RefType,, Arg4:K,, elabRes(ActualArgsList:K),, 'None(.KList)))
     => elabRes('QNewInstance(Qual,, Arg2,, T,, Arg4,, ActualArgsList,, 'None(.KList)) :: T)
 when
-    isElabIndependent(Qual)
+    //warning: cannot use ==Bool in the first expression - looks like isTypedExp(Qual) will not be computed
+    (isTypedExp(Qual) ==K true) orBool (Qual ==K noValue)
 
 rule [elabInstanceOf]:
     elabDispose('InstanceOf(TE:TypedExp,, RT2:RefType)) => elabRes('InstanceOf(TE,, RT2) :: bool)
