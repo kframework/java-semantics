@@ -13,17 +13,17 @@ module STATEMENTS
 
 //For now main class may only be placed in the default package.
 rule [StartExecutionPhase]:
-    <k> . =>
+    <k>
       //K-AST for new <MainClass>().main(new String[0]);
-      'ExprStm(
-        'Invoke(
-          'MethodName('TypeName(packageId(String2Id("")),,String2Id(MainClassS)),, String2Id("main")),,
-          'ListWrap('NewArray(
-              rtString,,
-              'ListWrap('Dim(0 :: int)),,
-              'ListWrap(.KList)))
-        )
-      )
+      . =>  elab('ExprStm(
+              'Invoke(
+                'MethodName('TypeName(packageId(String2Id("")),,String2Id(MainClassS)),, String2Id("main")),,
+                'ListWrap('NewArray(
+                    rtString,,
+                    'ListWrap('Dim(0 :: int)),,
+                    'ListWrap(.KList)))
+              )
+            ))
     </k>
     <env> . </env>
     <mainClass> ListItem(MainClassS:String) </mainClass>
@@ -132,22 +132,24 @@ rule [AssertStmTrueDiscard]:
     'AssertStm(true::bool,, _:KList) => .
 
 rule [AssertStmOneArg]:
-    'AssertStm(false::bool) => 'Throw('NewInstance(
-      'None(.KList),,
-      (class String2Id("java.lang.AssertionError")),,
-      'ListWrap(null),,
-      'None(.KList)
-    ))
+    'AssertStm(false::bool)
+    =>  elab('Throw('NewInstance(
+          'None(.KList),,
+          (class String2Id("java.lang.AssertionError")),,
+          'ListWrap(null),,
+          'None(.KList)
+        )))
 
 context 'AssertStm(false::bool,, HOLE)
 
 rule [AssertStmTwoArgs]:
-    'AssertStm(false::bool,, TV:TypedVal) => 'Throw('NewInstance(
-      'None(.KList),,
-      (class String2Id("java.lang.AssertionError")),,
-      'ListWrap( toString(TV) ),,
-      'None(.KList)
-    ))
+    'AssertStm(false::bool,, TV:TypedVal)
+    =>  elab('Throw('NewInstance(
+          'None(.KList),,
+          (class String2Id("java.lang.AssertionError")),,
+          'ListWrap( toString(TV) ),,
+          'None(.KList)
+        )))
 
 //@ \subsection{Switch statement}
 
@@ -438,7 +440,7 @@ rule [ThrowMethodEnd]:
 rule [ThrowCausesThreadTermination]:
     <k>
       'Throw(TV:TypedVal)
-      =>  'ExprStm(
+      =>  elab('ExprStm(
             'Invoke(
               'Method(
                 'MethodName(
@@ -448,7 +450,7 @@ rule [ThrowCausesThreadTermination]:
               ),,
               'ListWrap( 'Plus( "Thread terminated with exception: ",, TV ) )
             )
-          )
+          ))
     </k>
     <stack> .List </stack>
 

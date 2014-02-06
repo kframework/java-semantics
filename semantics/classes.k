@@ -28,10 +28,10 @@ module CLASSES
 //@ \texttt{toString for objectClosure}
 
 rule toString(objectClosure(I:Int, Obj:List, ObjLocalClassesEnv:Map) :: T:Type)
-    =>  'Invoke(
+    =>  elab('Invoke(
           'MethodName(objectClosure(I, Obj, ObjLocalClassesEnv) :: T,, String2Id("toString")),,
           'ListWrap(.KList)
-        )
+        ))
         [anywhere]
 
 //@ \texttt{typeOf for reference types}
@@ -142,10 +142,10 @@ syntax K ::= "invokeConstr" "(" Int       //OL - object location
 rule [invokeConstr]:
     invokeConstr(OL:Int, Class:ClassType, Vals:KList, EnclosingObj:KResult)
     => setEncloser(lookup(OL)::Class, Class, EnclosingObj)
-    ~> 'ExprStm('Invoke(
+    ~> elab('ExprStm('Invoke(
           'Method('MethodName( lookup(OL)::Class,, getConsName(Class) )),,
           'ListWrap( Vals )
-        ))
+        )))
 
 rule [setEncloser-value]:
     <k>
@@ -249,13 +249,13 @@ rule [CastRef]:
       =>  'If(
             subtype(typeOf(V), RT1),,
             (V::RT1),,
-            'Throw('NewInstance(
+            elab('Throw('NewInstance(
                     'None(.KList),,
                     (class String2Id("java.lang.ClassCastException")),,
                     'ListWrap( 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to ")::rtString,,
                         toString(RT1))::rtString ),,
                     'None(.KList)
-                  ))
+            )))
           )
       ...
     </k>

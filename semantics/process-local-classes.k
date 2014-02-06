@@ -225,7 +225,7 @@ rule buildConstructorFirstLineArgs(.KList, Ks:KList, _) => resultListWrap(Ks)
 
 rule [elabAnonymous-QNewInstance-extends-class]:
     <k>
-      elab('QNewInstance(Qual:TypedExp,, Arg2:K,, Class:ClassType,, Arg4:K,,
+      elab('QNewInstance(elabRes(Qual:TypedExp),, Arg2:K,, Class:ClassType,, Arg4:K,,
           elabRes('ListWrap(ActualArgs:KList)),,
           'Some('ClassBody('ListWrap(AnonClassDecs:KList)))
       ))

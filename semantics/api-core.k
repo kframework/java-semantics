@@ -187,7 +187,7 @@ when
 
 rule [methodInvokeRuntime-String-equals]:
     methodInvokeRuntime(rtString, sig(MethodName:Id, _), ThisStr:String::_, ParamStr:String::_ ,_ )::_
-    => 'Eq(ThisStr,, ParamStr)
+    => elab('Eq(ThisStr,, ParamStr))
 when Id2String(MethodName) ==String "equals"
 
 //@String.toString()
@@ -213,7 +213,7 @@ when
 
 rule [methodInvokeRuntime-String-compareTo]:
     methodInvokeRuntime(rtString, sig(MethodName:Id, _), ThisStr:String::_, ParamStr:String::_ ,_ )::_
-    => 'If(ThisStr <String ParamStr,, -1,, 'If(ThisStr ==String ParamStr,, 0,, 1))
+    => elab('If(ThisStr <String ParamStr,, -1,, 'If(ThisStr ==String ParamStr,, 0,, 1)))
 when Id2String(MethodName) ==String "compareTo"
 
 //@\subsection{Array clone}

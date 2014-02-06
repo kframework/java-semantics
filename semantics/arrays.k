@@ -34,7 +34,7 @@ rule [ArrayVarDecIdDiscard]:
 rule [VarDecWithArrayInitDesugar]:
     'LocalVarDec(_:K,, T:Type,, 'ListWrap('VarDec(
       X:Id,,
-      ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.KList),, 'ArrayInit(InitK)) )
+      ( 'ArrayInit(InitK:K) => elab('NewArray(T,, 'ListWrap(.KList),, 'ArrayInit(InitK))) )
     )))                                                 [structural, anywhere]
 
 //same three rules for fields
@@ -58,7 +58,7 @@ rule [ArrayFieldDecIdDiscard]:
 rule [FieldDecWithArrayInitDesugar]:
     'FieldDec(_:K,, T:Type,, 'ListWrap('VarDec(
       X:Id,,
-      ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.KList),, 'ArrayInit(InitK)) )
+      ( 'ArrayInit(InitK:K) => elab('NewArray(T,, 'ListWrap(.KList),, 'ArrayInit(InitK))) )
     )))                                                 [structural]
 
 //first two rules - desugaring C-like array declarations, for params
@@ -104,28 +104,28 @@ rule [lookupArrayLocation]:
 
 rule [ArrayIndexOutOfBoundsException]:
     'ArrayAccess(arrayRef(_,_,M:Int) :: _,, N:Int::_)::_
-    => 'Throw('NewInstance(
+    => elab('Throw('NewInstance(
       'None(.KList),,
       (class String2Id("java.lang.ArrayIndexOutOfBoundsException")),,
       'ListWrap( Int2String(N) ),,
       'None(.KList)
-    ))
+    )))
 when notBool ((N >=Int 0) andBool (N <Int M))
         [structural, anywhere]
 
-//Required to desugar effects of the previous rule, when exception happens
-//inside lvalue.
+/*@ Required when a JVM-related exception (e.g. produced by the semantics at runtime) is thrown inside a lvalue.
+*/
 rule [LvalueIndexOutOfBoundsDesugar]:
-    lvalue('Throw(K:K)) => 'Throw(K)
+    lvalue(elab('Throw(K:K))) => elab('Throw(K))
 
 rule [arrayAccessNull]:
     'ArrayAccess(null::_ ,, _)::_
-    => 'Throw('NewInstance(
+    => elab('Throw('NewInstance(
       'None(.KList),,
       class String2Id("java.lang.NullPointerException"),,
       'ListWrap( null ),,
       'None(.KList)
-    ))
+    )))
         [structural, anywhere]
 
 //Array length, as defined in JDK
@@ -174,12 +174,12 @@ when NI >=Int 0
 
 rule [NegativeArraySizeException]:
     checkNonNegative((NI:Int::_),, _)
-    => 'Throw('NewInstance(
+    => elab('Throw('NewInstance(
       'None(.KList),,
       class String2Id("java.lang.NegativeArraySizeException"),,
       'ListWrap( null ),,
       'None(.KList)
-    ))
+    )))
 when
     NI <Int 0
 
@@ -279,7 +279,7 @@ rule [assignImpl]:
 
 rule [ArrayStoreException]:
     assignImpl( false::bool, _, TV:TypedVal)
-    =>  'Throw('NewInstance(
+    =>  elab('Throw('NewInstance(
           'None(.KList),,
           (class String2Id("java.lang.ArrayStoreException")),,
           'ListWrap(
@@ -295,7 +295,7 @@ rule [ArrayStoreException]:
             )
           ),,
           'None(.KList)
-        ))
+        )))
 
 //@ \subsection{Array initializer}
 

@@ -547,17 +547,9 @@ rule [unwrapElabNaked]:
 when
     isElabNaked(K)
 
-rule [elabCoolStatement]:
+rule [elabCool-elabRes]:
     (elabRes(K:K) => .) ~> elab(_:KLabel(_,, (CHOLE => elabRes(K)),, _))
-/*when
-    notBool isElabIndependent(K)*/
 
-/*rule [elabCoolExpressionOrKResult]:
-    (elabRes(ElabIndep:K) => .) ~> elab(_:KLabel(_,, (CHOLE => ElabIndep),, _))
-when
-    isElabIndependent(ElabIndep)*/
-
-/*Was KR:ElabIndependent before, but in fact only KResult may stay free in this position.*/
 rule [elabCoolKResult]:
     (KR:KResult => .) ~> elab(_:KLabel(_,, (CHOLE => KR),, _))
 
@@ -598,18 +590,6 @@ rule isElab(K:K,, Ks:KList)
      andBool isElab(Ks)
 
 rule isElab(.KList) => true
-
-/*@ Either of:
-  - KResult
-  - TypedExp
-Used in defaut cooling rules of elaboration phase, to distinguish between elborated statements and elaborated
-  expressions. When expressions are cooled they are unwrapped fron thei elabRes() wrapper.
-*/
-/*
-syntax K ::= "isElabIndependent" "(" K ")"            [function]
-rule isElabIndependent(K:K)
-     => (isKResult(K) ==K true) orBool (isTypedExp(K) ==K true)
-*/
 
 //@ True if given KList have no terms of the form elabRes(...), false otherwise.
 syntax K ::= "haveNoElabRes" "(" KList ")"          [function]
@@ -1287,23 +1267,16 @@ rule count(Ks:KList) => count(0, Ks)
 rule count(I:Int, K:K,, Ks:KList) => count(I +Int 1, Ks)
 rule count(I:Int, .KList) => I::int
 
-//todo latex workaround: manual character escape: \%
-
-//@ Elaborate all expressions once they reach the top of computation,
-//@ both in elaboration and in execution phase.
-//@ Performance: Using this rule instead of the rule above leads to execution performance decrease by 5\%
-//@ in helloWorld, with medium execution time rising from 9.6s to 10.1s
-rule [runtime-elabExpressions]:
-    KL:KLabel(Ks:KList) => elab(KL(Ks))
-when
-    isExpressionLabel(KL)
-
 //@ Unwrap elaborated terms in execution phase, so that they could be executed.
-rule [elabResInExecutionPhase]:
+rule [elabRes-ExecutionPhase-discard1]:
     <k> (elabRes(K:K) => K) ~> KL:KLabel(_) ...</k>
-     <globalPhase> ExecutionPhase  </globalPhase>
+    <globalPhase> ExecutionPhase </globalPhase>
 when
     KL =/=KLabel 'elab`(_`)
+
+rule [elabRes-ExecutionPhase-discard2]:
+    <k> elabRes(K:K) => K </k>
+    <globalPhase> ExecutionPhase </globalPhase>
 
 //@\subsection{Elaboration of SuperConstrInv, AltConstrInv}
 

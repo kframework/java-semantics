@@ -33,8 +33,9 @@ syntax K ::= "staticInit" "(" ClassType // Class - the ClassType to be initializ
 rule [staticInit]:
     <k>
       staticInit(Class:ClassType)
-      => staticInit(BaseClass)
-      ~>  'Try(
+      => elab('ListWrap(
+        staticInit(BaseClass),,
+        'Try(
             StaticInit,,
 
             //catch clause of 'Try
@@ -56,9 +57,12 @@ rule [staticInit]:
             ),,
 
             //finally clause of 'Try
-            restoreMethContext(MethContext)
-            ~> staticInitDone(Class)
-          )
+            'ListWrap(
+              restoreMethContext(MethContext),,
+              staticInitDone(Class)
+            )
+        )
+      ))
       ...
     </k>
 
@@ -80,6 +84,13 @@ rule [staticInit]:
     <extends> BaseClass:ClassType </extends>
     <staticInit> StaticInit:K </staticInit>
     <staticInitStatus> StaticUninitialized => StaticInitializing(TId) </staticInitStatus>
+
+//todo elaboration-related hacks
+rule ('elab`(_`) => 'elabRes`(_`))(AuxMethKL:KLabel(_))
+when
+         AuxMethKL ==KLabel 'staticInit`(_`)
+  orBool AuxMethKL ==KLabel 'restoreMethContext`(_`)
+  orBool AuxMethKL ==KLabel 'staticInitDone`(_`)
 
 rule [staticInit-already-initialized-discard]:
     <k>

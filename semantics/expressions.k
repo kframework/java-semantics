@@ -118,12 +118,12 @@ rule                  'Div(F1:Float :: _,, F2:Float :: _) :: ResT:FloatType => (
 
 //todo test that the first argument is fully evaluated, right now it may be not evaluated
 rule                  'Div(_::_     ,, 0::_)::_
-   => 'Throw('NewInstance(
+   => elab('Throw('NewInstance(
         'None(.KList),,
         (class String2Id("java.lang.ArithmeticException")),,
         'ListWrap( "/ by zero" ),,
         'None(.KList)
-      ))
+      )))
 
 rule /* I1 % I2    */ 'Remain(I1:Int :: _,, I2:Int :: _) :: ResT:IntType => normalize( (I1 %Int I2) :: ResT )
     when I2 =/=Int 0
@@ -131,12 +131,12 @@ rule                  'Remain(F1:Float :: _,, F2:Float :: _) :: ResT:FloatType =
 
 //todo test that the first argument is fully evaluated, right now it may be not evaluated
 rule                  'Remain(_::_     ,, 0::_)::_
-   => 'Throw('NewInstance(
+   => elab('Throw('NewInstance(
         'None(.KList),,
         (class String2Id("java.lang.ArithmeticException")),,
         'ListWrap( "/ by zero" ),,
         'None(.KList)
-      ))
+      )))
 
 rule [NormalizeLeftOperandToFloat]:
     KL:KLabel((I:Int::_:IntType => Int2Float(I)::float),, _:Float :: _:FloatType)::_

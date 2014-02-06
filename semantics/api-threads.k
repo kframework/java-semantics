@@ -27,7 +27,7 @@ rule [thread-start]:
       <thread>
         <k>
           //typedLookup(OL).runnable.run()
-          'ExprStm(
+          elab('ExprStm(
             'Invoke(
               'Method(
                 'MethodName(
@@ -40,7 +40,7 @@ rule [thread-start]:
               ),,
               'ListWrap(.KList)
             )
-          )
+          ))
         </k>
         <tid> TId </tid>
         ...
@@ -78,12 +78,12 @@ rule [Synchronized-nested]:
 
 rule [Synchronized-on-null]:
     'Synchronized(null::_,,_)
-    =>  'Throw('NewInstance(
+    =>  elab('Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
           'ListWrap( null ),,
           'None(.KList)
-        ))
+        )))
 
 /*@Release one level of lock for the given object.*/
 syntax K ::= "releaseLock" "(" Int ")"
@@ -137,12 +137,12 @@ rule [thread-join-interrupted]:
         methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
         'ListWrap(TId:Int :: _)
       )
-      =>  'Throw('NewInstance(
+      =>  elab('Throw('NewInstance(
             'None(.KList),,
             class String2Id("java.lang.InterruptedException"),,
             'ListWrap( null ),,
             'None(.KList)
-          ))
+          )))
       ...
     </k>
     <interrupted> true => false </interrupted>
@@ -178,12 +178,12 @@ rule [object-wait-notify-notifyAll-without-sync]:
         methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
         OL:Int, 'ListWrap(.KList)
       )
-      =>  'Throw('NewInstance(
+      =>  elab('Throw('NewInstance(
             'None(.KList),,
             class String2Id("java.lang.IllegalMonitorStateException"),,
             'ListWrap( null ),,
             'None(.KList)
-          ))
+          )))
       ...
     </k>
     <holds> Holds:Map </holds>
@@ -218,12 +218,12 @@ when
 rule [waitImpl-interrupted]:
     <k>
       waitImpl(OL:Int)
-      =>  'Throw('NewInstance(
+      =>  elab('Throw('NewInstance(
             'None(.KList),,
             class String2Id("java.lang.InterruptedException"),,
             'ListWrap( null ),,
             'None(.KList)
-          ))
+          )))
       ...
     </k>
     <tid> TId:Int </tid>

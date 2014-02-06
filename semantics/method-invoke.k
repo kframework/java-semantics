@@ -418,12 +418,12 @@ when
 
 rule [methodInvokeRuntimeOnNull]:
     methodInvokeRuntime(_,_, null::_, ParamVals:KList, instanceCT)::_
-    =>  'Throw('NewInstance(
+    =>  elab('Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
           'ListWrap( null ),,
           'None(.KList)
-        ))
+        )))
 when
     isKResult(ParamVals)
 
@@ -649,7 +649,7 @@ syntax K ::= "bindto" KList
 rule [bindto]:
     <k>
       bindto paramImpl(T:Type, X:Id),, RestP:KList, TV:TypedVal,, RestV:KList
-      => 'ExprStm('Assign(localVar(X)::T,,TV:TypedVal)) ~> bindto RestP, RestV
+      => elab('ExprStm('Assign(localVar(X)::T,,TV:TypedVal))) ~> bindto RestP, RestV
       ...
     </k>
     <env> Env:Map => Env[L/X] </env>
