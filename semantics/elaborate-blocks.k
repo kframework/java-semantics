@@ -315,6 +315,7 @@ rule customElabChildren(KL:KLabel) =>
 */
 syntax K ::= "isElabNaked" "(" K ")"                            [function]
 rule isElabNaked(K:K) =>
+           //warning: cannot use ==Bool in the first expression - looks like isTypedExp(Qual) will not be computed
            (isRawVal(K) ==K true)
     orBool (getKLabel(K) ==KLabel 'TypeName)
     orBool (getKLabel(K) ==KLabel 'ClassOrInterfaceType)
@@ -548,13 +549,13 @@ when
 
 rule [elabCoolStatement]:
     (elabRes(K:K) => .) ~> elab(_:KLabel(_,, (CHOLE => elabRes(K)),, _))
-when
-    notBool isElabIndependent(K)
+/*when
+    notBool isElabIndependent(K)*/
 
-rule [elabCoolExpressionOrKResult]:
+/*rule [elabCoolExpressionOrKResult]:
     (elabRes(ElabIndep:K) => .) ~> elab(_:KLabel(_,, (CHOLE => ElabIndep),, _))
 when
-    isElabIndependent(ElabIndep)
+    isElabIndependent(ElabIndep)*/
 
 /*Was KR:ElabIndependent before, but in fact only KResult may stay free in this position.*/
 rule [elabCoolKResult]:
@@ -604,9 +605,11 @@ rule isElab(.KList) => true
 Used in defaut cooling rules of elaboration phase, to distinguish between elborated statements and elaborated
   expressions. When expressions are cooled they are unwrapped fron thei elabRes() wrapper.
 */
+/*
 syntax K ::= "isElabIndependent" "(" K ")"            [function]
 rule isElabIndependent(K:K)
      => (isKResult(K) ==K true) orBool (isTypedExp(K) ==K true)
+*/
 
 //@ True if given KList have no terms of the form elabRes(...), false otherwise.
 syntax K ::= "haveNoElabRes" "(" KList ")"          [function]
@@ -749,7 +752,7 @@ when notBool (X in keys(StEnv))
 
 rule [elabFieldWithQThis]:
     elabDispose('Field( 'QThis(Class:ClassType),, X:Id ))
-    => elab('Field( 'QThis(Class:ClassType) :: Class,, X )) ?? elab('Field( Class,, X))
+    => elab('Field( elabRes('QThis(Class:ClassType) :: Class),, X )) ?? elab('Field( Class,, X))
 when
     Class =/=K noClass
 
@@ -1193,7 +1196,7 @@ when
 
 rule [elabQNewInstance-resolve-class]:
     (. => resolveInnerClass(QualClass, Name))
-    ~> elab('QNewInstance(_::QualClass:ClassType,, _:K,,
+    ~> elab('QNewInstance(elabRes(_::QualClass:ClassType),, _:K,,
       (Name:Id => CHOLE),,
     _))
 
@@ -1231,11 +1234,8 @@ rule [existsClass]:
   will be noValue.
 */
 rule [elab-QNewInstance]:
-    elab('QNewInstance(Qual:K,, Arg2:K,, T:RefType,, Arg4:K,, elabRes(ActualArgsList:K),, 'None(.KList)))
+    elab('QNewInstance(elabRes(Qual:K),, Arg2:K,, T:RefType,, Arg4:K,, elabRes(ActualArgsList:K),, 'None(.KList)))
     => elabRes('QNewInstance(Qual,, Arg2,, T,, Arg4,, ActualArgsList,, 'None(.KList)) :: T)
-when
-    //warning: cannot use ==Bool in the first expression - looks like isTypedExp(Qual) will not be computed
-    (isTypedExp(Qual) ==K true) orBool (Qual ==K noValue)
 
 rule [elabInstanceOf]:
     elabDispose('InstanceOf(TE:TypedExp,, RT2:RefType)) => elabRes('InstanceOf(TE,, RT2) :: bool)
@@ -1293,7 +1293,7 @@ rule count(I:Int, .KList) => I::int
 //@ both in elaboration and in execution phase.
 //@ Performance: Using this rule instead of the rule above leads to execution performance decrease by 5\%
 //@ in helloWorld, with medium execution time rising from 9.6s to 10.1s
-rule [elabExpressions]:
+rule [runtime-elabExpressions]:
     KL:KLabel(Ks:KList) => elab(KL(Ks))
 when
     isExpressionLabel(KL)
