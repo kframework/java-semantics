@@ -36,7 +36,7 @@ rule [staticInit]:
       => elab('ListWrap(
         staticInit(BaseClass),,
         'Try(
-            StaticInit,,
+            elabRes(StaticInit),,
 
             //catch clause of 'Try
             'ListWrap(

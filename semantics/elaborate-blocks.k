@@ -1267,17 +1267,6 @@ rule count(Ks:KList) => count(0, Ks)
 rule count(I:Int, K:K,, Ks:KList) => count(I +Int 1, Ks)
 rule count(I:Int, .KList) => I::int
 
-//@ Unwrap elaborated terms in execution phase, so that they could be executed.
-rule [elabRes-ExecutionPhase-discard1]:
-    <k> (elabRes(K:K) => K) ~> KL:KLabel(_) ...</k>
-    <globalPhase> ExecutionPhase </globalPhase>
-when
-    KL =/=KLabel 'elab`(_`)
-
-rule [elabRes-ExecutionPhase-discard2]:
-    <k> elabRes(K:K) => K </k>
-    <globalPhase> ExecutionPhase </globalPhase>
-
 //@\subsection{Elaboration of SuperConstrInv, AltConstrInv}
 
 //@ Desugaring unqualified superclass constructor invocation into a qualified one
@@ -1355,5 +1344,21 @@ rule [getEnclosingClass]:
     <k> getEnclosingClass(Class:ClassType) => EnclosingClass ...</k>
     <classType> Class </classType>
     <enclosingClass> EnclosingClass:ClassType </enclosingClass>
+
+//@ \subsection{Hacks related to elaboration during execution phase}
+
+//@ Unwrap elaborated terms in execution phase, so that they could be executed.
+rule [elabRes-ExecutionPhase-discard1]:
+    <k> (elabRes(K:K) => K) ~> KL:KLabel(_) ...</k>
+    <globalPhase> ExecutionPhase </globalPhase>
+when
+    KL =/=KLabel 'elab`(_`)
+
+rule [elabRes-ExecutionPhase-discard2]:
+    <k> elabRes(K:K) => K </k>
+    <globalPhase> ExecutionPhase </globalPhase>
+
+//Required for [VarDecWithArrayInitDesugar], [FieldDecWithArrayInitDesugar]
+rule elab(elab(K:K)) => elab(K)
 
 endmodule
