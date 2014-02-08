@@ -56,7 +56,7 @@ syntax K ::= "elabInstanceInit"
 syntax K ::= "elab" "(" K ")"
 
 //@ Wraps the elaboration result. Since elaboration may happen at both ElaborationPhase and ExecutionPhase, it cannot be KResult. Actually it is not KResult for HOLE, but is for CHOLE.
-syntax ElabRes ::= "elabRes" "(" K ")"
+syntax ElabKResult ::= "elabRes" "(" K ")"
 
 //@Sets the enclosing object for a given object.
 //@Invoked by invokeConstr and QSuperConstrInv.
@@ -281,10 +281,9 @@ This is a rule that may lead to unexpected nondeterminism if it is wrongly imple
 In order to expose incorrect nondeterminism we need to model-check a program that exposes the nondeterminism.
 */
 rule [elabHeat-default]:
-    (. => elab(K)) ~> elab(KL:KLabel(HeadKs:KList,, (K:K => CHOLE),, TailKs:KList))
+    (. => elab(K)) ~> elab(KL:KLabel(HeadKs:KList,, (K:K => CHOLE),, _:KList))
 when
             defaultElabChildren(KL)
-            //notBool customElabChildren(KL)
     andBool notBool isElab(K)
     andBool notBool isElabNaked(K)
     andBool isElab(HeadKs)    //Forces elaboration left-to-right. Required when KL == 'ListWrap of statements.
@@ -301,14 +300,17 @@ when
   heated terms oare of 2 cathegories: defaultElabChildren and naked. for naked terms we should not heat
   their children anymore, but should unwrap their elab() wrapper. This is accomplished well enough for the moment.
 */
-/*context elab(KL:KLabel(HeadKs:KList,, HOLE:K,, _:KList))
+/*context elab(KL:KLabel(HeadKs:KList,, (HOLE:K => elab(HOLE)),, _:KList))
 when
             defaultElabChildren(KL)
-            //notBool customElabChildren(KL)
+    andBool notBool isElabNaked(HOLE)
     andBool isElab(HeadKs)    //Forces elaboration left-to-right. Required when KL == 'ListWrap of statements.
-        [result('isElab`(_`)), context(elab), transition-strictness]
+        [result(ElabKResult), transition-strictness]
 
-syntax ElabRes ::= TypedExp | KResult  */
+syntax ElabKResult ::= TypedExp
+
+//hack suggested by Traian, an alternative to subsorting KResult to ElabKResult
+rule isElabKResult(K:KResult) => true*/
 
 /*@ Terms that should use custom elaboration rules. For those terms:
     - They will not be automatically heated from their parents into the elab() state.
@@ -334,9 +336,12 @@ rule customElabChildren(KL:KLabel) =>
 /*@ Java KLabels that are processed by default heating/cooling rules of elaboration.
 All KLabels that can be part of a code block during elaboration phase,
 except those members of customElabChildren or isElabNaked groups.
+
+This predicate should be disjoint with customElabChildren (no longer used) and isElabNaked
+
+todo: maybe statements should be processed by default rules as they are now, but expressions should not.
+Let's start from expressions.
 */
-//todo: maybe statements should be processed by default rules as they are now, but expressions should not.
-//Let's start from expressions.
 syntax K ::= "defaultElabChildren" "(" KLabel ")"                [function]
 rule defaultElabChildren(KL:KLabel) =>
            (KL ==KLabel 'ListWrap)
