@@ -56,7 +56,7 @@ syntax K ::= "elabInstanceInit"
 syntax K ::= "elab" "(" K ")"
 
 //@ Wraps the elaboration result. Since elaboration may happen at both ElaborationPhase and ExecutionPhase, it cannot be KResult. Actually it is not KResult for HOLE, but is for CHOLE.
-syntax K ::= "elabRes" "(" K ")"
+syntax ElabRes ::= "elabRes" "(" K ")"
 
 //@Sets the enclosing object for a given object.
 //@Invoked by invokeConstr and QSuperConstrInv.
@@ -274,20 +274,40 @@ rule [elabParamsEnd]:
 
 /*@ \subsection{Elaboration of code blocks} */
 
-//@ Heating arguments for both expression and statement terms.
-//@ The attribute [transition-strictness] is used as transition attribute for testing strictness.
-//@ This is a rule that may lead to unexpected nondeterminism if it is wrongly implemented.
-//@ In order to expose incorrect nondeterminism we need to model-check a program that exposes the nondeterminism.
+//todo custom elab heating rule
+/*@ Heating arguments for both expression and statement terms.
+The attribute [transition-strictness] is used as transition attribute for testing strictness.
+This is a rule that may lead to unexpected nondeterminism if it is wrongly implemented.
+In order to expose incorrect nondeterminism we need to model-check a program that exposes the nondeterminism.
+*/
 rule [elabHeatDefault]:
     (. => elab(K)) ~> elab(KL:KLabel(HeadKs:KList,, (K:K => CHOLE),, TailKs:KList))
 when
             defaultElabChildren(KL)
             //notBool customElabChildren(KL)
     andBool notBool isElab(K)
-    //andBool notBool isElabNaked(KL(HeadKs,,K,,TailKs))
     andBool isElab(HeadKs)    //Forces elaboration left-to-right. Required when KL == 'ListWrap of statements.
     [transition-strictness]
 
+rule [elabCool-default]:
+    (ElabK:K => .) ~> elab(_:KLabel(_,, (CHOLE => ElabK),, _))
+when
+    isElab(ElabK)
+
+/* todo generalized context rule. Don't work yet as we cannot have KResult in the RHS of a syntax declaration.
+*/
+/* Disadvantage of generic elab heating:
+  heated terms oare of 2 cathegories: defaultElabChildren and naked. for naked terms we should not heat
+  their children anymore, but should unwrap their elab() wrapper. This is accomplished well enough for the moment.
+*/
+/*context elab(KL:KLabel(HeadKs:KList,, HOLE:K,, _:KList))
+when
+            defaultElabChildren(KL)
+            //notBool customElabChildren(KL)
+    andBool isElab(HeadKs)    //Forces elaboration left-to-right. Required when KL == 'ListWrap of statements.
+        [result('isElab`(_`)), context(elab), transition-strictness]
+
+syntax ElabRes ::= TypedExp | KResult  */
 
 /*@ Terms that should use custom elaboration rules. For those terms:
     - They will not be automatically heated from their parents into the elab() state.
@@ -309,23 +329,6 @@ rule customElabChildren(KL:KLabel) =>
     orBool (KL ==KLabel 'ClassDecStm)
     orBool (KL ==KLabel 'NewInstance)
     orBool (KL ==KLabel 'QNewInstance)
-
-/*@ Represents terms that shoud never be wrapped by elab() or related wrappers. They are processed to their final state
-  in elaboration phase. Those are types names, package names, id's ad literals.
-*/
-syntax K ::= "isElabNaked" "(" K ")"                            [function]
-rule isElabNaked(K:K) =>
-           //warning: cannot use ==Bool in the first expression - looks like isTypedExp(Qual) will not be computed
-           (isRawVal(K) ==K true)
-    orBool (getKLabel(K) ==KLabel 'TypeName)
-    orBool (getKLabel(K) ==KLabel 'ClassOrInterfaceType)
-    orBool (getKLabel(K) ==KLabel 'InterfaceType)
-    orBool (getKLabel(K) ==KLabel 'ClassType)
-    orBool (getKLabel(K) ==KLabel 'ArrayType)
-    orBool (getKLabel(K) ==KLabel 'PackageName)
-    orBool (getKLabel(K) ==KLabel 'PackageOrTypeName)
-    orBool (getKLabel(K) ==KLabel 'Id)
-    orBool (getKLabel(K) ==KLabel 'Lit)
 
 /*@ Java KLabels that are processed by default heating/cooling rules of elaboration.
 All KLabels that can be part of a code block during elaboration phase,
@@ -400,11 +403,12 @@ rule defaultElabChildren(KL:KLabel) =>
     orBool (KL ==KLabel 'NewArray)
 //    orBool (KL ==KLabel 'UnboundWld)
     orBool (KL ==KLabel 'Dim)
-//    orBool (KL ==KLabel 'NewInstance)
-//    orBool (KL ==KLabel 'QNewInstance)
-//    orBool (KL ==KLabel 'Lit)
-//    orBool (KL ==KLabel 'Class)
-   /* orBool (KL ==KLabel 'VoidClass)*/
+
+    /*orBool (KL ==KLabel 'NewInstance)
+    orBool (KL ==KLabel 'QNewInstance)
+    orBool (KL ==KLabel 'Lit)
+    orBool (KL ==KLabel 'Class)
+    orBool (KL ==KLabel 'VoidClass)*/
     orBool (KL ==KLabel 'This)
     orBool (KL ==KLabel 'QThis)
     /*orBool (KL ==KLabel 'PackageDec)
@@ -427,14 +431,14 @@ rule defaultElabChildren(KL:KLabel) =>
     orBool (KL ==KLabel 'EnumDecHead)
     orBool (KL ==KLabel 'EnumBody)
     orBool (KL ==KLabel 'EnumConst)
-    orBool (KL ==KLabel 'EnumBodyDecs)*/
-    /*orBool (KL ==KLabel 'ConstrDec)
+    orBool (KL ==KLabel 'EnumBodyDecs)
+    orBool (KL ==KLabel 'ConstrDec)
     orBool (KL ==KLabel 'ConstrDecHead)
-    orBool (KL ==KLabel 'ConstrBody)*/
-//    orBool (KL ==KLabel 'AltConstrInv)
-//    orBool (KL ==KLabel 'SuperConstrInv)
-//    orBool (KL ==KLabel 'QSuperConstrInv)
-    /*orBool (KL ==KLabel 'StaticInit)
+    orBool (KL ==KLabel 'ConstrBody)
+    orBool (KL ==KLabel 'AltConstrInv)
+    orBool (KL ==KLabel 'SuperConstrInv)
+    orBool (KL ==KLabel 'QSuperConstrInv)
+    orBool (KL ==KLabel 'StaticInit)
     orBool (KL ==KLabel 'InstanceInit)*/
     orBool (KL ==KLabel 'Empty)
     orBool (KL ==KLabel 'Labeled)
@@ -533,6 +537,7 @@ rule defaultElabChildren(KL:KLabel) =>
     orBool (KL ==KLabel 'StrictFP)
     orBool (KL ==KLabel 'Id)*/
 
+//todo elaboration-related hack - we should not have special elaboration rules for auxiliary constructs
 syntax K ::= auxLabelInElab( KLabel ) [function]
 rule auxLabelInElab(KL:KLabel) =>
            KL ==KLabel 'setEncloser`(_`,_`,_`)
@@ -541,17 +546,30 @@ rule auxLabelInElab(KL:KLabel) =>
     orBool KL ==KLabel 'stmtAndExp`(_`,_`)
     orBool KL ==KLabel 'toString`(_`)
 
-//@ Will not match .K - is not isElabNaked. (.K) is matched by [elabDotK].
+/*@ Represents terms that shoud never be wrapped by elab() or related wrappers. They are processed to their final state
+  in elaboration phase. Those are types names, package names, id's ad literals.
+*/
+syntax K ::= "isElabNaked" "(" K ")"                            [function]
+rule isElabNaked(K:K) =>
+           //warning: cannot use ==Bool in the first expression - looks like isTypedExp(Qual) will not be computed
+           (isRawVal(K) ==K true)
+    orBool (getKLabel(K) ==KLabel 'TypeName)
+    orBool (getKLabel(K) ==KLabel 'ClassOrInterfaceType)
+    orBool (getKLabel(K) ==KLabel 'InterfaceType)
+    orBool (getKLabel(K) ==KLabel 'ClassType)
+    orBool (getKLabel(K) ==KLabel 'ArrayType)
+    orBool (getKLabel(K) ==KLabel 'PackageName)
+    orBool (getKLabel(K) ==KLabel 'PackageOrTypeName)
+    orBool (getKLabel(K) ==KLabel 'Id)
+    orBool (getKLabel(K) ==KLabel 'Lit)
+
+/*@ The sole place where isElabNaked is used - naked terms should be automatically unwrapped from elab() wrapper.
+  Will not match .K - is not isElabNaked. (.K) is matched by [elabDotK].
+*/
 rule [unwrapElabNaked]:
     elab(K:K) => K
 when
     isElabNaked(K)
-
-rule [elabCool-elabRes]:
-    (elabRes(K:K) => .) ~> elab(_:KLabel(_,, (CHOLE => elabRes(K)),, _))
-
-rule [elabCoolKResult]:
-    (KR:KResult => .) ~> elab(_:KLabel(_,, (CHOLE => KR),, _))
 
 /*@ The default algorithm of transforming the term from elab to elabRes, when the children were completely elaborated.
   Deletes elabRes wrappers from children. This algorithm is activated when the following conditions apply:
