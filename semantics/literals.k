@@ -8,7 +8,6 @@ module LITERALS
     imports CORE
     imports AUX-STRINGS
     imports PRIMITIVE-TYPES
-    imports ELABORATE-BLOCKS //for elab(), should disappear after semantics separation
 
 //@ \subsection{Auxiliary constructs}
 
@@ -153,9 +152,9 @@ rule 'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
 //@ \subsection{String literals}
 
 rule  'Lit('String('ListWrap(K1:K,, K2:K,, Ks:KList)))
-      => elab('Plus('Lit('String('ListWrap(K1))),,
+      => 'Plus('Lit('String('ListWrap(K1))),,
                'Lit('String('ListWrap(K2,, Ks)))
-          ))
+          ) :: rtString
 
 rule 'Lit('String('ListWrap('Chars(Str:String)))) => Str
 

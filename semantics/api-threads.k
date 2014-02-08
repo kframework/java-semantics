@@ -108,7 +108,7 @@ rule [synchronized-method-inst-desugar]:
 rule [synchronized-method-static-desugar]:
     <k>
       storeMethod(_, staticCT, _, (true => false)::bool, _,_,
-          Body:K => 'Synchronized('Lit('Class(Class)),, Body),
+          Body:K => 'Synchronized(elab('Lit('Class(Class))),, Body),
           _)
       ...
     </k>

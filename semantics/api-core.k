@@ -84,7 +84,7 @@ rule [object-getClass-on-object]:
       invokeImpl(
         methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), OL:Int,
         'ListWrap(.KList)
-      ) => 'Lit('Class(T))
+      ) => elab('Lit('Class(T)))
       ...
     </k>
     <store>
@@ -99,7 +99,7 @@ rule [object-getClass-on-String]:
     invokeImpl(
       methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), Str:String::rtString,
       'ListWrap(.KList)
-    ) => 'Lit('Class(rtString))
+    ) => elab('Lit('Class(rtString)))
 when
     Id2String(MethodName) ==String "getClass"
 
@@ -107,7 +107,7 @@ rule [object-getClass-on-array]:
     invokeImpl(
       methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), arrayRef(_,_,_)::ArrT:Type,
       'ListWrap(.KList)
-    ) => 'Lit('Class(ArrT))
+    ) => elab('Lit('Class(ArrT)))
 when
     Id2String(MethodName) ==String "getClass"
 

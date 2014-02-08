@@ -280,14 +280,15 @@ The attribute [transition-strictness] is used as transition attribute for testin
 This is a rule that may lead to unexpected nondeterminism if it is wrongly implemented.
 In order to expose incorrect nondeterminism we need to model-check a program that exposes the nondeterminism.
 */
-rule [elabHeatDefault]:
+rule [elabHeat-default]:
     (. => elab(K)) ~> elab(KL:KLabel(HeadKs:KList,, (K:K => CHOLE),, TailKs:KList))
 when
             defaultElabChildren(KL)
             //notBool customElabChildren(KL)
     andBool notBool isElab(K)
+    andBool notBool isElabNaked(K)
     andBool isElab(HeadKs)    //Forces elaboration left-to-right. Required when KL == 'ListWrap of statements.
-    [transition-strictness]
+        [transition-strictness]
 
 rule [elabCool-default]:
     (ElabK:K => .) ~> elab(_:KLabel(_,, (CHOLE => ElabK),, _))
@@ -460,11 +461,11 @@ rule defaultElabChildren(KL:KLabel) =>
     orBool (KL ==KLabel 'Throw)
     orBool (KL ==KLabel 'Synchronized)
     orBool (KL ==KLabel 'Try)
-//    orBool (KL ==KLabel 'Catch)
-//    orBool (KL ==KLabel 'LocalVarDecStm)
-//    orBool (KL ==KLabel 'LocalVarDec)
-//    orBool (KL ==KLabel 'Block)
-//    orBool (KL ==KLabel 'ClassDecStm)
+    /*orBool (KL ==KLabel 'Catch)
+    orBool (KL ==KLabel 'LocalVarDecStm)
+    orBool (KL ==KLabel 'LocalVarDec)
+    orBool (KL ==KLabel 'Block)
+    orBool (KL ==KLabel 'ClassDecStm)*/
     /*orBool (KL ==KLabel 'MethodDec)
     orBool (KL ==KLabel 'MethodDecHead)
     orBool (KL ==KLabel 'DeprMethodDecHead)
@@ -494,8 +495,8 @@ rule defaultElabChildren(KL:KLabel) =>
 //    orBool (KL ==KLabel 'TypeName)
     orBool (KL ==KLabel 'ExprName)
 
-    orBool auxLabelInElab(KL)
     orBool (KL ==KLabel 'MethodName)
+    orBool auxLabelInElab(KL)
     /*orBool (KL ==KLabel 'PackageOrTypeName)
     orBool (KL ==KLabel 'TypeArgs)
     orBool (KL ==KLabel 'TypeArgs)
@@ -546,8 +547,18 @@ rule auxLabelInElab(KL:KLabel) =>
     orBool KL ==KLabel 'stmtAndExp`(_`,_`)
     orBool KL ==KLabel 'toString`(_`)
 
-/*@ Represents terms that shoud never be wrapped by elab() or related wrappers. They are processed to their final state
-  in elaboration phase. Those are types names, package names, id's ad literals.
+/*@  elabHeat-naked-children
+  Since a naked term is always computed int oa KResult during elaboration,
+  we can use a simple context rule to heat such terms.
+*/
+context elab(KL:KLabel(_:KList,, HOLE,, _:KList))
+when
+            defaultElabChildren(KL)
+    andBool isElabNaked(HOLE)
+
+/*@ Naked terms are those that should be computed directly into KResult during elaboration.
+  Those are literals, types and packages. They are heated "as is", without being wrapped into elab().
+  An exception is the class literal that is not executed during elaboration.
 */
 syntax K ::= "isElabNaked" "(" K ")"                            [function]
 rule isElabNaked(K:K) =>
@@ -561,15 +572,10 @@ rule isElabNaked(K:K) =>
     orBool (getKLabel(K) ==KLabel 'PackageName)
     orBool (getKLabel(K) ==KLabel 'PackageOrTypeName)
     orBool (getKLabel(K) ==KLabel 'Id)
-    orBool (getKLabel(K) ==KLabel 'Lit)
+    orBool (getKLabel(K) ==KLabel 'Lit andBool getInnerKLabel(K) =/=KLabel 'Class)
 
-/*@ The sole place where isElabNaked is used - naked terms should be automatically unwrapped from elab() wrapper.
-  Will not match .K - is not isElabNaked. (.K) is matched by [elabDotK].
-*/
-rule [unwrapElabNaked]:
-    elab(K:K) => K
-when
-    isElabNaked(K)
+syntax KLabel ::= "getInnerKLabel" "(" K ")"                    [function]
+rule getInnerKLabel(_:KLabel(KL:KLabel(_))) => KL
 
 /*@ The default algorithm of transforming the term from elab to elabRes, when the children were completely elaborated.
   Deletes elabRes wrappers from children. This algorithm is activated when the following conditions apply:
@@ -1238,13 +1244,15 @@ rule [elab-QNewInstance]:
 rule [elabInstanceOf]:
     elabDispose('InstanceOf(TE:TypedExp,, RT2:RefType)) => elabRes('InstanceOf(TE,, RT2) :: bool)
 
-context 'Lit('Class(HOLE))
+//@ Class literal types are heated by this rule.
+context elab('Lit('Class(HOLE)))
 
 rule [elabLitClass]:
-    'Lit('Class(T:Type)) => elabRes('Lit('Class(T:Type)) :: class String2Id("java.lang.Class"))
+    elab('Lit('Class(T:Type))) => elabRes('Lit('Class(T:Type)) :: class String2Id("java.lang.Class"))
 
 rule [elabArrayAccess]:
-    elabDispose('ArrayAccess(TargetExp:K::arrayOf T:Type,, IndexTE:TypedExp)) => elabRes('ArrayAccess(TargetExp::arrayOf T,, IndexTE) :: T)
+    elabDispose('ArrayAccess(TargetExp:K::arrayOf T:Type,, IndexTE:TypedExp))
+    => elabRes('ArrayAccess(TargetExp::arrayOf T,, IndexTE) :: T)
 
 rule [elabArrayLength]:
     elabDispose('Field(Qual:K :: arrayOf T:Type,, X:Id))
