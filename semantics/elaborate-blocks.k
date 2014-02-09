@@ -30,6 +30,29 @@ static initializers of a class and perform the following transformations:
 
     /smallskip
     During elaboration, elaborated members will be wrapped into elab().
+
+    During elaboration an expression transition through 6 phases:
+  1. Elaboration heating:
+      elab('CastRef(_,, 'Minus('ExprName(x))))
+      => elab('Minus('ExprName(x)) ~> elab('CastRef(_,, HOLE)
+    Some AST terms, especially some statements require custom elaboration heating rules. If the heated expression
+      should be always computed into a KResult, such as a type, package or certain literal expresssions, then
+      it is heated in the "naked" form, e.g. not wrapped into elab().
+  2. Elaboration of children. All the children of the expression are elaborated. After this phase elaborated children
+    will be wrapped into ElabRes() (If They are expressions). The expression above would reach the state:
+      elab('Minus(elabRes(localVar(X)::int))) ~> elab('CastRef(_,, HOLE)
+  3. Initiation of the step elabDispose. When all children have been elaborated and are either KResult of elabRes(),
+    the wrapper is changed from elab() to elabDispose().
+      elabDispose('Minus(elabRes(localVar(X)::int))) ~> elab('CastRef(_,, HOLE)
+  4. Unwrapping of children. During elabDispose step elaborated children are unwrapped from their elabRes() wrapper.
+      elabDispose('Minus(localVar(X)::int)) ~> elab('CastRef(_,, HOLE)
+  5. Computation of elaboration result. Now that all children have been elaborated and unwrapped, it is possible to
+    compute the type of the current expression itself. When the expression is fully elaborated, it is wrapped into
+    elabRes(). This is the step that requires custom rules for most AST terms.
+      elabRes('Minus(localVar(X)::int)::int) ~> elab('CastRef(_,, HOLE)
+  6. Elaboration cooling. Once the top K Item was wrapped into elabRes, it is ready to be cooled back into its original
+    context:
+      elab('CastRef(_,, elabRes('Minus(localVar(X)::int)::int))
 */
 
 module ELABORATE-BLOCKS
