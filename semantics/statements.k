@@ -117,9 +117,11 @@ context 'If(HOLE,,_,,_)
 
 rule [IfTrue]:
     'If(true::bool,, S:K,, _) => S
+        [symbolic-rule]
 
 rule [IfFalse]:
     'If(false::bool,, _,, S:K) => S
+        [symbolic-rule]
 
 rule [IfThenDesugar]:
     'If(E:K,,S1:K) => 'If(E:K,, S1:K,, .K)
