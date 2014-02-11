@@ -11,7 +11,7 @@ if (( "$#" != 11 )); then
     echo "Your command:"
     echo `basename $0` $@
     echo "Usage: `basename $0` --time <true|false> --timeout <timeout in s> \
-      --mode <run|search|search-count|debug> --output <none|raw|pretty> \
+      --mode <run|search|search-count|symbolic|symbolic-count|debug> --output <none|raw|pretty> \
       --kast-cache <true|false> \
       <javaFile>"
     exit 1
@@ -64,6 +64,11 @@ case "$MODE" in
 "search"|"search-count")
     KRUN_CMD="$KRUN_CMD --search-final -cModelCheck=\"true\""
     ;;
+"symbolic"|"symbolic-count")
+    IN_FILE=${JAVA_FILE%.java}.cIN.in
+    IN_VALUE=$(<${IN_FILE})
+    KRUN_CMD="$KRUN_CMD --search -cModelCheck=\"true\" -cPC=true -cIN=\"$IN_VALUE\""
+    ;;
 "debug")
     KRUN_CMD="$KRUN_CMD --debug -cModelCheck=\"false\""
     ;;
@@ -93,7 +98,7 @@ if [ ${KAST_CACHE} == false ];
     eval ${PARSER_CMD}
 fi
 
-if [ ${MODE} == "search-count" ];
+if [ ${MODE} == "search-count" ] || [ ${MODE} == "symbolic-count" ];
   then KRUN_CMD="$KRUN_CMD  | grep \"Solution\" | wc -l"
 fi
 

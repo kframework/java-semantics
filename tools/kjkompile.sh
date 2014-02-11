@@ -33,6 +33,9 @@ case "$OPTION" in
 "threading")
     $KOMPILE_CMD -v -transition "transition-threading" java
     ;;
+"symbolic")
+    $KOMPILE_CMD -v --backend symbolic --symbolic-rules "symbolic-rule" java
+    ;;
 "latex")
     $KOMPILE_CMD -v --backend latex --doc-style "style=math" java
     ;;
@@ -41,7 +44,7 @@ case "$OPTION" in
     ;;
 *)
     echo "Invalid option: $OPTION"
-    echo "Usage: `basename $0` or `basename $0` <exec|strictness|threading|latex|pdf>"
+    echo "Usage: `basename $0` or `basename $0` <exec|strictness|threading|symbolic|latex|pdf>"
     exit 1
     ;;
 esac
