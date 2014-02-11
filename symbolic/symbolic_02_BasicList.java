@@ -85,7 +85,10 @@ public class symbolic_02_BasicList {
     l1.insert(x);
     l1.delete(x);
     if (l2.eqTo(l1) == false) {
-        System.out.println("error");
+      System.out.println("error");
+    } else {
+      System.out.println("ok");
     }
+    System.out.println("Done!");
   }
 }

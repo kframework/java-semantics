@@ -88,7 +88,9 @@ class OrderedList extends BasicList {
         }
     }
 
-    OrderedList copy() {
+    // Contravariant return type, not supported by Java 1.4
+    // OrderedList copy() {
+    BasicList copy() {
         OrderedList t = new OrderedList();
         int i = 0;
         t.size = size;
@@ -113,6 +115,9 @@ public class symbolic_03_OrderedList {
     l1.delete(x);
     if (l2.eqTo(l1) == false) {
         System.out.println("error");
+    } else {
+      System.out.println("ok");
     }
+    System.out.println("Done!");
   }
 }
