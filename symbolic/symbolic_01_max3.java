@@ -1,13 +1,16 @@
 /*
-$KOMPILE_CMD -v java --symbolic-rules "symbolic-rule" --backend symbolic
+kompile -v java --symbolic-rules "symbolic-rule" --backend symbolic
 
-time timeout 300 krun --debug-info --color extended --directory="/home/andrei.arusoaie/work/java-semantics/tools/../semantics" --main-module=JAVA -cMainClass="ListItem(\"max3\")" -cModelCheck="false" --output=pretty --parser="kj-parse-aggreg.sh" ../symbolic/max3.java -cIN="ListItem(3) ListItem(#symInt(x)) ListItem(8)" -cPC=true --search
+time timeout 300 krun --debug-info --color extended --directory="." --main-module=JAVA \
+  -cMainClass="ListItem(\"symbolic_01_max3\")" -cModelCheck="false" --output=pretty --parser="kj-parse-aggreg.sh" \
+  ../symbolic/symbolic_01_max3.java \
+  -cIN="ListItem(3) ListItem(#symInt(x)) ListItem(8)" -cPC=true --search
 
 Expected output: 3 solutions
 */
 import java.util.*;
 
-public class max3 {
+public class symbolic_01_max3 {
 
 	public static void main(String[] args) {
     System.out.print("Insert 3 numbers: ");

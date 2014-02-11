@@ -1,17 +1,21 @@
 /*
-$KOMPILE_CMD -v java --symbolic-rules "symbolic-rule" --backend symbolic
+kompile -v java --symbolic-rules "symbolic-rule" --backend symbolic
 
-time timeout 300 krun --debug-info --color extended --directory="/home/andrei.arusoaie/work/java-semantics/tools/../semantics" --main-module=JAVA -cMainClass="ListItem(\"test\")" -cModelCheck="false" --output=pretty --parser="kj-parse-aggreg.sh" ../symbolic/main.java -cIN="ListItem(#symInt(e1)) ListItem(#symInt(e2)) ListItem(#symInt(x))" -cPC="true" --search
+time timeout 300 krun --debug-info --color extended --directory="." --main-module=JAVA \
+  -cMainClass="ListItem(\"symbolic_03_OrderedList\")" \
+  -cModelCheck="false" --output=pretty --parser="kj-parse-aggreg.sh" \
+  ../symbolic/symbolic_03_OrderedList.java \
+  -cIN="ListItem(#symInt(e1)) ListItem(#symInt(e2)) ListItem(#symInt(x))" -cPC="true" --search
 
 Expected output (unreached at the moment): 11 solutions, none of them containing error message.
 */
 import java.util.*;
 
-class LList {
+class BasicList {
   int a[] = new int[10];
   int size, capacity;
 
-  LList () { size = 0; capacity = 10; }
+  BasicList() { size = 0; capacity = 10; }
 
   void insert (int x) {
     if (size < capacity) {
@@ -41,7 +45,7 @@ class LList {
     return -1;
   }
 
-  boolean eqTo(LList l) {
+  boolean eqTo(BasicList l) {
     if (size != l.size) {
         return false;
     }
@@ -55,8 +59,8 @@ class LList {
     return false;
   }
 
-  LList copy() {
-    LList t = new LList();
+  BasicList copy() {
+    BasicList t = new BasicList();
     int i = 0;
     t.size = size;
     while(i < size) {
@@ -67,7 +71,7 @@ class LList {
   }
 }
 
-class OrderedList extends LList {
+class OrderedList extends BasicList {
 
     OrderedList() {
         super();
@@ -93,10 +97,10 @@ class OrderedList extends LList {
     }
 }
 
-public class main {
+public class symbolic_03_OrderedList {
   public static void main(String[] args) {
     int i = 0;
-    LList l1 = new OrderedList();
+    BasicList l1 = new OrderedList();
     Scanner scanner = new Scanner(System.in);
     while (i < 2) {
       l1.insert(scanner.nextInt());
@@ -104,7 +108,7 @@ public class main {
     }
     int x = scanner.nextInt();
 
-    LList l2 = l1.copy();
+    BasicList l2 = l1.copy();
     l1.insert(x);
     l1.delete(x);
     if (l2.eqTo(l1) == false) {
