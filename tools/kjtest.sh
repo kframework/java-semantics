@@ -21,13 +21,16 @@ fi
 
 case "$OPTION" in
 "--run")
-    aux-kjtest.sh -mode run    -threads 12 -timeout 120 -encodeXML false -clean false ${@}
+    aux-kjtest.sh -mode run      -threads 12 -timeout 120 -encodeXML false -clean false ${@}
     ;;
 "--search")
-    aux-kjtest.sh -mode search -threads  6 -timeout 600 -encodeXML false -clean false ${@}
+    aux-kjtest.sh -mode search   -threads  6 -timeout 600 -encodeXML false -clean false ${@}
+    ;;
+"--symbolic")
+    aux-kjtest.sh -mode symbolic -threads  6 -timeout 600 -encodeXML false -clean false ${@}
     ;;
 "--jdk")
-    aux-kjtest.sh -mode jdk    -threads 12 -timeout  10 -encodeXML false -clean true  ${@}
+    aux-kjtest.sh -mode jdk      -threads 12 -timeout  10 -encodeXML false -clean true  ${@}
     ;;
 "--t1")
     aux-kjtest.sh -mode run    -threads  1 -timeout 120 -encodeXML false -clean false ${@}

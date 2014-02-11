@@ -7,7 +7,7 @@
 # If only four arguments are provided, test directory is assumed to be ../programs
 
 if (( "$#" < 10 )); then
-    echo "Usage: `basename $0` -mode <run/search> -threads <num_threads> -timeout <timeout in s> /
+    echo "Usage: `basename $0` -mode <run|search|symbolic|jdk> -threads <num_threads> -timeout <timeout in s> /
           -encodeXML <true/false> -clean <true/false> [target files/dirs]"
     exit
 fi
@@ -38,12 +38,19 @@ GEN_CMD="$(cross-sh.sh ${TOOLS_DIR}/jdk-run.sh) --keep-temp"
 case "$MODE" in
 "run")
     RUN_CMD="$(cross-sh.sh ${TOOLS_DIR}/kjrun.sh) --cached"
+    EXPECTED_OUT_EXT=out
     ;;
 "search")
     RUN_CMD="$(cross-sh.sh ${TOOLS_DIR}/kjrun.sh) --search-cached"
+    EXPECTED_OUT_EXT=out
+    ;;
+"symbolic")
+    RUN_CMD="$(cross-sh.sh ${TOOLS_DIR}/kjrun.sh) --symbolic-cached"
+    EXPECTED_OUT_EXT=search.out
     ;;
 "jdk")
     RUN_CMD=$(cross-sh.sh ${TOOLS_DIR}/aux-echo.sh)
+    EXPECTED_OUT_EXT=out
     ;;
 *)
     echo "Invalid MODE: ${MODE}"
@@ -63,6 +70,7 @@ java -jar ${TEST_RUNNER_JAR} \
   -gen \"${GEN_CMD}\" \
   -run \"${RUN_CMD}\" \
   -taskExt java \
+  -expectedOutExt \"${EXPECTED_OUT_EXT}\" \
   -testsuiteName java-semantics \
   -classnameStyle simple \
   -threads ${THREADS} \

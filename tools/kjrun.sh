@@ -6,7 +6,7 @@ if (( "$#" < 1 )) || (( "$#" > 2 )); then
     echo "Your command:"
     echo `basename $0` $@
     echo "Usage: `basename $0` <javaFile>"
-    echo "Or:    `basename $0` <--pretty|--raw|--none|--search|--cached|--search-cached|--debug|--symbolic> <javaFile>"
+    echo "Or:    `basename $0` <--pretty|--raw|--none|--search|--cached|--search-cached|--debug|--symbolic|--symbolic-cached> <javaFile>"
     echo "For more options use aux-kjrun.sh"
     exit 1
 fi
@@ -64,10 +64,13 @@ case "$OPTION" in
     aux-kjrun.sh --time true --timeout ${SYMBOLIC_TIMEOUT} --mode symbolic \
       --output pretty --kast-cache false ${JAVA_FILE}
     ;;
+"--symbolic-cached")
+    aux-kjrun.sh --time false --timeout 0 --mode symbolic-count --output raw --kast-cache true ${JAVA_FILE}
+    ;;
 *)
     echo "Invalid option: $OPTION"
     echo "Usage: `basename $0` <javaFile>"
-    echo "Or:    `basename $0` <--pretty|--raw|--none|--search|--cached|--search-cached|--debug|--symbolic> <javaFile>"
+    echo "Or:    `basename $0` <--pretty|--raw|--none|--search|--cached|--search-cached|--debug|--symbolic|--symbolic-cached> <javaFile>"
     echo "For more options use aux-kjrun.sh"
     exit 1
     ;;
