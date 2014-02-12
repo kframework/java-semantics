@@ -8,7 +8,10 @@ require "process-comp-units.k"
 require "process-imports.k"
 require "process-class-decs.k"
 require "process-class-members.k"
-require "elaborate-blocks.k"
+require "elaboration-top-blocks.k"
+require "elaboration-statements.k"
+require "elaboration-expressions.k"
+require "elaboration-types.k"
 require "process-local-classes.k"
 require "primitive-types.k"
 require "literals.k"
@@ -33,7 +36,10 @@ module JAVA
     imports PROCESS-IMPORTS
     imports PROCESS-CLASS-DECS
     imports PROCESS-CLASS-MEMBERS
-    imports ELABORATE-BLOCKS
+    imports ELABORATION-TOP-BLOCKS
+    imports ELABORATION-STATEMENTS
+    imports ELABORATION-EXPRESSIONS
+    imports ELABORATION-TYPES
     imports PROCESS-LOCAL-CLASSES
     imports PRIMITIVE-TYPES
     imports LITERALS

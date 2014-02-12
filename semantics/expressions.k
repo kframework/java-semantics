@@ -1,7 +1,7 @@
 require "core.k"
 require "subtyping.k"
 require "primitive-types.k"
-require "elaborate-blocks.k"
+require "elaboration-expressions.k"
 
 //@ \section{Module EXPRESSIONS}
 
@@ -9,7 +9,7 @@ module EXPRESSIONS
     imports CORE
     imports SUBTYPING
     imports PRIMITIVE-TYPES
-    imports ELABORATE-BLOCKS //for "isCompoundAssignLabel
+    imports ELABORATION-EXPRESSIONS //for "isCompoundAssignLabel
 
 //Infix operators
 context /* ||  */'LazyOr(HOLE,,_)::_

@@ -1,5 +1,5 @@
 require "core.k"
-require "elaborate-blocks.k"
+require "elaboration-expressions.k"
 require "subtyping.k"
 require "process-class-members.k"
 require "classes.k"
@@ -10,7 +10,7 @@ require "static-init.k"
 
 module METHOD-INVOKE
     imports CORE
-    imports ELABORATE-BLOCKS
+    imports ELABORATION-EXPRESSIONS
     imports SUBTYPING
     imports PROCESS-CLASS-MEMBERS
     imports CLASSES

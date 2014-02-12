@@ -1,7 +1,7 @@
 require "core.k"
 require "process-comp-units.k"
 require "process-class-decs.k"
-require "elaborate-blocks.k"
+require "elaboration-expressions.k"
 
 //@ \section{Module PROCESS-LOCAL-CLASSES}
 
@@ -9,7 +9,7 @@ module PROCESS-LOCAL-CLASSES
     imports CORE
     imports PROCESS-COMP-UNITS
     imports PROCESS-CLASS-DECS
-    imports ELABORATE-BLOCKS
+    imports ELABORATION-EXPRESSIONS
 
 rule [elab-ClassDecStm]:
     <k>
