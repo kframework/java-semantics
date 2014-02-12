@@ -70,7 +70,7 @@ java -jar ${TEST_RUNNER_JAR} \
   -gen \"${GEN_CMD}\" \
   -run \"${RUN_CMD}\" \
   -taskExt java \
-  -expectedOutExt \"${EXPECTED_OUT_EXT}\" \
+  -expectedOutExt ${EXPECTED_OUT_EXT} \
   -testsuiteName java-semantics \
   -classnameStyle simple \
   -threads ${THREADS} \
