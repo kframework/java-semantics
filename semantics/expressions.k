@@ -276,8 +276,12 @@ context castImpl(_,HOLE)
 rule [CastNumber]: castImpl(NT:NumericType, RV:RawVal::_) => normalize(RV::NT)
 rule [CastBool]: castImpl(bool, B:Bool::bool) => B::bool
 
-//artificial cases of cast, arised during semantics separation
+/*@ \subsubsection{artificial cases of cast, arised during semantics separation} */
+
 rule [Cast-void]: castImpl(void, RV:RawVal::void) => RV::void
+
+//Happens for the qualifier of a static method call
+rule [Cast-noValue]: castImpl(_, noValue) => noValue
 
 /*@ \subsection{lvalue and loc syntax} */
 
