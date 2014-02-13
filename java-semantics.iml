@@ -3,6 +3,7 @@
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/java-stmt" />
       <excludeFolder url="file://$MODULE_DIR$/semantics/.k" />
       <excludeFolder url="file://$MODULE_DIR$/semantics/.test" />
       <excludeFolder url="file://$MODULE_DIR$/semantics/java-kompiled" />
