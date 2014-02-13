@@ -49,7 +49,7 @@ rule [SuperMethod-desugar]:
 rule [QSuperMethod]:
     <k>
       'QSuperMethod(Class:ClassType,, _:K,, Name:Id)
-      => lookupMethodData(qSuperQual('QThis(Class))::BaseClass, Name, false)
+      => lookupMethodData(superMethod('QThis(Class)::BaseClass)::BaseClass, Name, false)
       ...
     </k>
     <classType> Class </classType>
@@ -425,20 +425,21 @@ rule [methodInvokeRuntimeOnNull]:
 when
     isKResult(ParamVals)
 
-/*Elaboration result forsuper keyword in A.super.m() call.
+/*Elaboration result for super keyword in A.super.m() call.
   Have to be a typed expression.
 */
-syntax K ::= qSuperQual ( K ) // is always equal to A.this - used to lookup the right qualifier closure.
+syntax K ::= superMethod ( K ) // is always equal to A.this - used to lookup the right qualifier closure.
         [strict]
 
 rule [qSuperQualEval]:
-    qSuperQual(
+    superMethod(
       objectClosure(
         OL:Int,
-        ListItem(_) // The layer corresponding to the actual class. Next is the base class
-        ListItem(el(BaseClass:ClassType, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map)) Rest:List,
+        _:List //The layers above the layer where method should be searched.
+               //Should be discarded in order to implement syper.m() functionality.
+        ListItem(el(BaseClass, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map)) Rest:List,
         ObjLocalClassesEnv:Map
-      )::_
+      )::BaseClass:ClassType  //due to the way term superMethod() is first constructed, this is the upper search layer
     )
     => objectClosure(
       OL,

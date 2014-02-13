@@ -373,7 +373,7 @@ rule [elabStringPlusAny]:
     elabDispose('Plus(Exp:K::rtString,, TE:TypedExp)) => elabRes('Plus(Exp::rtString,, TE) :: rtString)
 
 rule [elabAnyPlusString]:
-    elabDispose('Plus(TE:K,, Exp:K::rtString)) => elabRes('Plus(TE,, Exp::rtString) :: rtString)
+    elabDispose('Plus(TE:TypedExp,, Exp:K::rtString)) => elabRes('Plus(TE,, Exp::rtString) :: rtString)
 
 rule [elabCond]:
     elabDispose('Cond(CondTE:TypedExp,, Exp1:K::T1:Type,, Exp2:K::T2:Type))

@@ -142,8 +142,8 @@ when
 //@int String.length()
 rule [elab-String-length]:
     lookupMethod( rtString, MethodName:Id,
-      _, noValue, false, QualTE:K, .KList
-    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualTE, .KList, instanceCT))
+      _, noValue, false, QualTE:TypedExp, .KList
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualTE, .KList, instanceCT) :: int)
 when
     Id2String(MethodName) ==String "length"
 
@@ -154,8 +154,8 @@ when Id2String(MethodName) ==String "length"
 
 rule [elab-String-charAt]:
     lookupMethod( rtString, MethodName:Id,
-      _, noValue, false, QualTE:K, ParamExp:K
-    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualTE, ParamExp, instanceCT))
+      _, noValue, false, QualTE:TypedExp, ParamExp:TypedExp
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualTE, ParamExp, instanceCT) :: char)
 when
     Id2String(MethodName) ==String "charAt"
 
@@ -167,8 +167,8 @@ when Id2String(MethodName) ==String "charAt"
 //@static native String String.valueOf(int i);
 rule [elab-String-valueOf]:
     lookupMethod( rtString, MethodName:Id,
-      _, noValue, false, QualK:K, ParamExp:K
-    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, ParamExp, instanceCT))
+      _, noValue, false, QualK:K, ParamExp:TypedExp
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, ParamExp, instanceCT) :: rtString)
 when
     Id2String(MethodName) ==String "valueOf"
 
@@ -180,8 +180,8 @@ when Id2String(MethodName) ==String "valueOf"
 //@boolean String.equals(Object)
 rule [elab-String-equals]:
     lookupMethod( rtString, MethodName:Id,
-      _, noValue, false, QualK:K, ParamExp:K
-    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, ParamExp, instanceCT))
+      _, noValue, false, QualK:K, ParamExp:TypedExp
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, ParamExp, instanceCT) :: bool)
 when
     Id2String(MethodName) ==String "equals"
 
@@ -194,7 +194,7 @@ when Id2String(MethodName) ==String "equals"
 rule [elab-String-toString]:
     lookupMethod( rtString, MethodName:Id,
       _, noValue, false, QualK:K, .KList
-    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, .KList, instanceCT))
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, .KList, instanceCT) :: bool)
 when
     Id2String(MethodName) ==String "toString"
 
@@ -206,8 +206,8 @@ when Id2String(MethodName) ==String "toString"
 //@String.compareTo(Object)
 rule [elab-String-compareTo]:
     lookupMethod( rtString, MethodName:Id,
-      _, noValue, false, QualK:K, ParamExp:K
-    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, ParamExp, instanceCT))
+      _, noValue, false, QualK:K, ParamExp:TypedExp
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, ParamExp, instanceCT) :: bool)
 when
     Id2String(MethodName) ==String "compareTo"
 
@@ -220,8 +220,8 @@ when Id2String(MethodName) ==String "compareTo"
 
 rule [elab-array-clone]:
     lookupMethod( arrayOf T:Type, MethodName:Id,
-      _, noValue, false, QualTE:K, .KList
-    ) => elabRes(methodInvokeRuntime(arrayOf T:Type, sig(MethodName, types(.KList)), QualTE, .KList, instanceCT))
+      _, noValue, false, QualTE:TypedExp, .KList
+    ) => elabRes(methodInvokeRuntime(arrayOf T:Type, sig(MethodName, types(.KList)), QualTE, .KList, instanceCT) :: objectClass)
 when
     Id2String(MethodName) ==String "clone"
 
