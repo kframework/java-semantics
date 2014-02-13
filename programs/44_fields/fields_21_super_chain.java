@@ -3,21 +3,21 @@ B < A. Call to B: super.x.y simple.
 */
 
 class A {
-  Aux x = new Aux("A");
+  Auxx x = new Auxx("A");
 }
 class B extends A {
-  Aux x = new Aux("B");
+  Auxx x = new Auxx("B");
 
   String callSuper() {
     return super.x.y;
   }
 }
 
-class Aux {
+class Auxx {
   String y;
 
-  Aux(String id) {
-    y = "Aux.y from " + id;
+  Auxx(String id) {
+    y = "Auxx.y from " + id;
   }
 }
 

@@ -4,25 +4,25 @@ Fields with initializer throwing an exception. Test that all the remaining initi
 */
 
 interface I1 {
-  int a = Aux.ok();
-  int b = Aux.exc();
-  int c = Aux.afterExc();
+  int a = Auxx.ok();
+  int b = Auxx.exc();
+  int c = Auxx.afterExc();
 }
 
-class Aux {
+class Auxx {
 
   static int ok() {
-    System.out.println("Aux.ok()");
+    System.out.println("Auxx.ok()");
     return 3;
   }
 
   static int exc() {
-    System.out.println("Aux.exc()");
+    System.out.println("Auxx.exc()");
     throw new RuntimeException("re");
   }
 
   static int afterExc() {
-    System.out.println("Aux.afterExc()");
+    System.out.println("Auxx.afterExc()");
     return 4;
   }
 }

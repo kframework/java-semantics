@@ -5,7 +5,7 @@ Fields with initializer, forward reference, default values for all types tested.
 interface I1 {
 
   Vals vals = new Vals();
-  String defaultVals = Aux.getValues();
+  String defaultVals = Auxx.getValues();
 
   byte b = vals.b;
   short s = vals.s;
@@ -16,7 +16,7 @@ interface I1 {
   String str = vals.str;
   Object o = vals.o;
 
-  String initializedVals = Aux.getValues();
+  String initializedVals = Auxx.getValues();
 }
 
 class Vals {
@@ -30,7 +30,7 @@ class Vals {
   Object o = new RuntimeException("re");
 }
 
-class Aux {
+class Auxx {
   static String getValues() {
     return "" + I1.b + " " + I1.s + " " + I1.i + " " + I1.l + " " + I1.ch + " " + I1.bool
       + " " + I1.str + " " + I1.o;

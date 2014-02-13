@@ -15,10 +15,10 @@ class const_02_in_interface {
 
 interface I1 {
   int x = 3;
-  int y = Aux.traceAndGet(10);
+  int y = Auxx.traceAndGet(10);
 }
 
-class Aux {
+class Auxx {
   static int traceAndGet(int a) {
     System.out.println("Trace: " + a);
     return a;

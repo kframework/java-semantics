@@ -12,20 +12,20 @@ public class interface_f_82_hier_multi_inheritance {
 }
 
 interface I1 {
-  int a = Aux.trace(1);
-  int b = Aux.trace(2);
+  int a = Auxx.trace(1);
+  int b = Auxx.trace(2);
 }
 
 interface I2 {
-  int c = Aux.trace(30);
-  int d = Aux.trace(40);
+  int c = Auxx.trace(30);
+  int d = Auxx.trace(40);
 }
 
 interface I3 extends I1, I2 {
-  int e = Aux.trace(500 + c + b);
+  int e = Auxx.trace(500 + c + b);
 }
 
-class Aux {
+class Auxx {
   static int trace(int a) {
     System.out.println("trace(" + a + ")");
     return a;

@@ -11,24 +11,24 @@ public class interface_f_83_hier_class_impl_interf {
 }
 
 interface I1 {
-  int a = Aux.trace(1);
-  int b = Aux.trace(2);
+  int a = Auxx.trace(1);
+  int b = Auxx.trace(2);
 }
 
 class A implements I1 {
 
   static {
-    Aux.trace(10);
+    Auxx.trace(10);
   }
 
-  static int c = Aux.trace(a + 20);
+  static int c = Auxx.trace(a + 20);
 
   static {
-    Aux.trace(30);
+    Auxx.trace(30);
   }
 }
 
-class Aux {
+class Auxx {
   static int trace(int a) {
     System.out.println("trace(" + a + ")");
     return a;

@@ -7,27 +7,27 @@ Multifield with init, also methods. Two groups of fields:
 */
 
 interface I1 {
-  int a = Aux.aInit();
+  int a = Auxx.aInit();
 
   void f();
 
-  int b = Aux.bInit(), c = Aux.cInit();
+  int b = Auxx.bInit(), c = Auxx.cInit();
 }
 
-class Aux {
+class Auxx {
 
   static int aInit() {
-    System.out.println("Aux.aInit()");
+    System.out.println("Auxx.aInit()");
     return 3;
   }
 
   static int bInit() {
-    System.out.println("Aux.bInit()");
+    System.out.println("Auxx.bInit()");
     return 4;
   }
 
   static int cInit() {
-    System.out.println("Aux.cInit()");
+    System.out.println("Auxx.cInit()");
     return 5;
   }
 }

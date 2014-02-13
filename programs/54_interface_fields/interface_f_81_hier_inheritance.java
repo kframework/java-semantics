@@ -11,16 +11,16 @@ public class interface_f_81_hier_inheritance {
 }
 
 interface I1 {
-  int a = Aux.trace(1);
-  int b = Aux.trace(2);
+  int a = Auxx.trace(1);
+  int b = Auxx.trace(2);
 }
 
 interface I2 extends I1 {
-  int c = Aux.trace(10);
-  int d = Aux.trace(a + 10);
+  int c = Auxx.trace(10);
+  int d = Auxx.trace(a + 10);
 }
 
-class Aux {
+class Auxx {
   static int trace(int a) {
     System.out.println("trace(" + a + ")");
     return a;
