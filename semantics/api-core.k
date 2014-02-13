@@ -142,51 +142,51 @@ when
 //@int String.length()
 rule [elab-String-length]:
     lookupMethod( rtString, MethodName:Id,
-      _, noValue, false, QualTE:TypedExp, .KList
-    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualTE, .KList, instanceCT) :: int)
+      _, noValue, false, QualTE:K, .KList
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualTE, .KList, instanceCT))
 when
     Id2String(MethodName) ==String "length"
 
 rule [methodInvokeRuntime-String-length]:
-    methodInvokeRuntime(rtString, sig(MethodName:Id, _), Str:String::rtString, _,_ )::_
-    => lengthString(Str) :: int
+    methodInvokeRuntime(rtString, sig(MethodName:Id, _), Str:String::rtString, _,_ )
+    => lengthString(Str)
 when Id2String(MethodName) ==String "length"
 
 rule [elab-String-charAt]:
     lookupMethod( rtString, MethodName:Id,
-      _, noValue, false, QualTE:TypedExp, ParamExp:TypedExp
-    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualTE, ParamExp, instanceCT) :: char)
+      _, noValue, false, QualTE:K, ParamExp:K
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualTE, ParamExp, instanceCT))
 when
     Id2String(MethodName) ==String "charAt"
 
 rule [methodInvokeRuntime-String-charAt]:
-    methodInvokeRuntime(rtString, sig(MethodName:Id, _), Str:String::rtString, I:Int :: int, _ )::_
+    methodInvokeRuntime(rtString, sig(MethodName:Id, _), Str:String::rtString, I:Int :: int, _ )
     => ordChar(substrString(Str, I, I +Int 1)) :: char
 when Id2String(MethodName) ==String "charAt"
 
 //@static native String String.valueOf(int i);
 rule [elab-String-valueOf]:
     lookupMethod( rtString, MethodName:Id,
-      _, noValue, false, QualK:K, ParamExp:TypedExp
-    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, ParamExp, instanceCT) :: rtString)
+      _, noValue, false, QualK:K, ParamExp:K
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, ParamExp, instanceCT))
 when
     Id2String(MethodName) ==String "valueOf"
 
 rule [methodInvokeRuntime-String-valueOf]:
-    methodInvokeRuntime(rtString, sig(MethodName:Id, _), _, I:Int :: int,_ )::_
-    => Int2String(I) :: rtString
+    methodInvokeRuntime(rtString, sig(MethodName:Id, _), _, I:Int :: int,_ )
+    => Int2String(I)
 when Id2String(MethodName) ==String "valueOf"
 
 //@boolean String.equals(Object)
 rule [elab-String-equals]:
     lookupMethod( rtString, MethodName:Id,
-      _, noValue, false, QualK:K, ParamExp:TypedExp
-    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, ParamExp, instanceCT) :: bool)
+      _, noValue, false, QualK:K, ParamExp:K
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, ParamExp, instanceCT))
 when
     Id2String(MethodName) ==String "equals"
 
 rule [methodInvokeRuntime-String-equals]:
-    methodInvokeRuntime(rtString, sig(MethodName:Id, _), ThisStr:String::_, ParamStr:String::_ ,_ )::_
+    methodInvokeRuntime(rtString, sig(MethodName:Id, _), ThisStr:String::_, ParamStr:String::_ ,_ )
     => elab('Eq(ThisStr,, ParamStr))
 when Id2String(MethodName) ==String "equals"
 
@@ -194,25 +194,25 @@ when Id2String(MethodName) ==String "equals"
 rule [elab-String-toString]:
     lookupMethod( rtString, MethodName:Id,
       _, noValue, false, QualK:K, .KList
-    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, .KList, instanceCT) :: bool)
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, .KList, instanceCT))
 when
     Id2String(MethodName) ==String "toString"
 
 rule [methodInvokeRuntime-String-toString]:
-    methodInvokeRuntime(rtString, sig(MethodName:Id, _), ThisStr:String::_, _,_ )::_
+    methodInvokeRuntime(rtString, sig(MethodName:Id, _), ThisStr:String::_, _,_ )
     => ThisStr
 when Id2String(MethodName) ==String "toString"
 
 //@String.compareTo(Object)
 rule [elab-String-compareTo]:
     lookupMethod( rtString, MethodName:Id,
-      _, noValue, false, QualK:K, ParamExp:TypedExp
-    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, ParamExp, instanceCT) :: bool)
+      _, noValue, false, QualK:K, ParamExp:K
+    ) => elabRes(methodInvokeRuntime(rtString, sig(MethodName, types(.KList)), QualK, ParamExp, instanceCT))
 when
     Id2String(MethodName) ==String "compareTo"
 
 rule [methodInvokeRuntime-String-compareTo]:
-    methodInvokeRuntime(rtString, sig(MethodName:Id, _), ThisStr:String::_, ParamStr:String::_ ,_ )::_
+    methodInvokeRuntime(rtString, sig(MethodName:Id, _), ThisStr:String::_, ParamStr:String::_ ,_ )
     => elab('If(ThisStr <String ParamStr,, -1,, 'If(ThisStr ==String ParamStr,, 0,, 1)))
 when Id2String(MethodName) ==String "compareTo"
 
@@ -220,15 +220,15 @@ when Id2String(MethodName) ==String "compareTo"
 
 rule [elab-array-clone]:
     lookupMethod( arrayOf T:Type, MethodName:Id,
-      _, noValue, false, QualTE:TypedExp, .KList
-    ) => elabRes(methodInvokeRuntime(arrayOf T:Type, sig(MethodName, types(.KList)), QualTE, .KList, instanceCT) :: objectClass)
+      _, noValue, false, QualTE:K, .KList
+    ) => elabRes(methodInvokeRuntime(arrayOf T:Type, sig(MethodName, types(.KList)), QualTE, .KList, instanceCT))
 when
     Id2String(MethodName) ==String "clone"
 
 rule [methodInvokeRuntime-array-clone]:
     methodInvokeRuntime(_, sig(MethodName:Id, _),
         arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT:Type, _,_
-    )::_
+    )
     => arrayCopy(
         arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT,
         newArrayAlloc(ElemT, 'ListWrap(Len::int), undefined :: ElemT)
@@ -243,7 +243,7 @@ syntax K ::=  "arrayCopy" "("
         [strict(2)]
 
 rule arrayCopy(arrayRef(T:Type, L1:Int, Len:Int)::_, arrayRef(T, L2:Int, Len)::_)
-    => storeCopy(L1, L2, Len) ~> arrayRef(T,L2:Int,Len)::T
+    => storeCopy(L1, L2, Len) ~> arrayRef(T,L2:Int,Len)
 
 //@Copy a sequence of store values from one place to another.
 syntax K ::=  "storeCopy" "("
@@ -283,7 +283,7 @@ rule [ClassLiteralInstantiate]:
                 'None(.KList)
           )))
         )
-        ~> 'Lit('Class(T:Type))::_
+        ~> 'Lit('Class(T:Type))
       ...
     </k>
     <classLiteralsMap> CLMap:Map (. => T |-> temp) </classLiteralsMap>
@@ -300,7 +300,7 @@ rule [saveClassLiteral]:
     <classLiteralsMap>... T |-> (temp => TV) ...</classLiteralsMap>
 
 rule [ClassLiteral]:
-    <k> 'Lit('Class(T:Type))::_ => TV ...</k>
+    <k> 'Lit('Class(T:Type)) => TV ...</k>
     <classLiteralsMap>... T |-> TV:TypedVal ...</classLiteralsMap>
 
 //@Used inside <classLiteralsMap> only for synchronization purposes
@@ -332,7 +332,7 @@ rule [ClassNameInner]:
       => 'Plus(
             toString(class OuterClassId),,
             ("$" +String Id2String(SimpleName))::rtString
-         ) :: rtString
+         )
       ...
     </k>
     <classType> class ClassId </classType>

@@ -19,11 +19,11 @@ module VAR-LOOKUP
 syntax K ::= "localVar" "(" Id ")" //the var name
 
 rule [localVar]:
-    <k> localVar(X:Id)::_ => typedLookup(L) ...</k>
+    <k> localVar(X:Id) => typedLookup(L) ...</k>
     <env>... X |-> L:Int ...</env>
 
 rule [lvalueLocalVar]:
-    <k> lvalue(localVar(X:Id)::_) => typedLoc(L) ...</k>
+    <k> lvalue(localVar(X:Id)) => typedLoc(L) ...</k>
     <env>... X |-> L:Int ...</env>
 
 /*@ \subsection{Self reference}
@@ -31,7 +31,7 @@ Like in untyped KOOL. */
 
 rule [QThis]:
     <k>
-      'QThis(Class:ClassType)::Class => lookupQThis(Class, RV::CrntClass)
+      'QThis(Class:ClassType) => lookupQThis(Class, RV::CrntClass)
       ...
     </k>
     <crntClass> CrntClass:ClassType </crntClass>
@@ -47,7 +47,7 @@ rule [QThis]:
 //Although there should be no qualifier, elaboration phase will introduce the qualifier 'QThis.
 rule [QThis-static]:
     <k>
-      'QThis(_)::_ => noValue
+      'QThis(_) => noValue
       ...
     </k>
     <contextType> staticCT </contextType>
@@ -84,8 +84,8 @@ rule [lookupQThis-on-noValue]:
 
 //outside lvalue we have strictness rules
 
-context lookupField(HOLE,_,_)::_
-context lvalue(lookupField(HOLE,_,_)::_)
+context lookupField(HOLE,_,_)
+context lvalue(lookupField(HOLE,_,_))
 
 rule [lookupField]:
     lookupField(
@@ -94,11 +94,11 @@ rule [lookupField]:
         ) ::_,
       TargetClass:ClassType,
       X:Id
-    )::_ => typedLookup(L)
+    ) => typedLookup(L)
         [anywhere]
 
 rule [lookupFieldOfNull]:
-    lookupField(null::_, _, _)::_
+    lookupField(null::_, _, _)
     =>  elab('Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
@@ -112,7 +112,7 @@ rule [lookupStaticField]:
       lookupStaticField(
         TargetClass:ClassType,
         X:Id
-      )::_
+      )
       => staticInit(TargetClass) ~> typedLookup(L)
       ...
     </k>
@@ -124,7 +124,7 @@ rule [lvalue-lookupStaticField]:
       lvalue(lookupStaticField(
           TargetClass:ClassType,
           X:Id
-      )::_ )
+      ))
       => staticInit(TargetClass) ~> lvalue(typedLookup(L))
       ...
     </k>
@@ -157,6 +157,11 @@ rule [lvalueTypedLoc]:
     <store>... L |-> _::T:Type ...</store>
 
 /*@ \subsection{lookup} */
+
+/*@Lookup result is of sort RawType.
+  todo TypeExp to cast: this expression is typed. Integrate type in the expression, if really needed.
+*/
+syntax K ::= "lookup" "(" Int ")"
 
 rule [lookupLocation]:
     <k>

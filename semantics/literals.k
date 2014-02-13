@@ -154,7 +154,7 @@ rule 'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
 rule  'Lit('String('ListWrap(K1:K,, K2:K,, Ks:KList)))
       => 'Plus('Lit('String('ListWrap(K1))),,
                'Lit('String('ListWrap(K2,, Ks)))
-          ) :: rtString
+          )
 
 rule 'Lit('String('ListWrap('Chars(Str:String)))) => Str
 

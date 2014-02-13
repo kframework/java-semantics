@@ -33,10 +33,10 @@ syntax K ::= "staticInit" "(" ClassType // Class - the ClassType to be initializ
 rule [staticInit]:
     <k>
       staticInit(Class:ClassType)
-      => elab('ListWrap(
+      => 'ListWrap(
         staticInit(BaseClass),,
         'Try(
-            elabRes(StaticInit),,
+            StaticInit,,
 
             //catch clause of 'Try
             'ListWrap(
@@ -46,12 +46,12 @@ rule [staticInit]:
                   String2Id("e")
                 ),,
                 'Throw(
-                  'NewInstance(
+                  elab('NewInstance(
                     'None(.KList),,
                     class String2Id("java.lang.ExceptionInInitializerError"),,
-                    'ListWrap(localVar(String2Id("e")) :: objectClass),,
+                    'ListWrap(localVar(String2Id("e"))),,
                     'None(.KList)
-                  )
+                  ))
                 )
               )
             ),,
@@ -62,7 +62,7 @@ rule [staticInit]:
               staticInitDone(Class)
             )
         )
-      ))
+      )
       ...
     </k>
 

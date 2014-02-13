@@ -50,7 +50,7 @@ rule normalize(F:Float :: IntT:IntType) => normalize(Float2Int(F) :: IntT:IntTyp
 
 rule normalize(F:Float :: FloatT:FloatType) => F::FloatT
 
-syntax K ::= "isInRange" "(" TypedExp ")"                                          [function]
+syntax K ::= "isInRange" "(" TypedVal ")"                                          [function]
 rule isInRange(I:Int::byte) => ((I >=Int -128) andBool (I <=Int 127))
 rule isInRange(I:Int::short) => ((I >=Int -32768) andBool (I <=Int 32767))
 rule isInRange(I:Int::int) => ((I >=Int -2147483648) andBool (I <=Int 2147483647))
@@ -58,8 +58,8 @@ rule isInRange(I:Int::long) => ((I >=Int -9223372036854775808)
                           andBool (I <=Int  9223372036854775807))
 rule isInRange(I:Int::char) => ((I >=Int 0) andBool (I <=Int 65535))
 
-rule isInRange(K:K::_) => true
-when notBool (isInt(K) ==K true)
+rule isInRange(RV:RawVal::_) => true
+when notBool (isInt(RV) ==K true)
 
 syntax K ::= "normalizeImpl" "(" TypedVal ")" [function]
 
@@ -85,7 +85,7 @@ rule toUnsigned(I:Int :: T:Type)
 
 //Important: normalizeType(), both unary and binary is not a function
 
-syntax K ::= "normalizeType" "(" Type ")"
+syntax K ::= "normalizeType" "(" Type ")"           [function]
 rule normalizeType(ILT:IntOrLongType) => ILT
 
 rule normalizeType(FT:FloatType) => FT

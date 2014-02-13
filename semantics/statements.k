@@ -241,6 +241,7 @@ rule [stmDiscard]:
     stm('ListWrap(.KList)) => .
         [structural]
 
+//todo TypedExp to cast - find a way to get rid of isTypedExp here
 rule [stmList]:
     stm('ListWrap(E:K,, Es:KList)) => 'ExprStm(E) ~> stm('ListWrap(Es))
 when

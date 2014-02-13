@@ -49,20 +49,17 @@ rule [SuperMethod-desugar]:
 rule [QSuperMethod]:
     <k>
       'QSuperMethod(Class:ClassType,, _:K,, Name:Id)
-      => lookupMethodData(qSuperQual('QThis(Class) :: Class)::BaseClass, Name, false)
+      => lookupMethodData(qSuperQual('QThis(Class))::BaseClass, Name, false)
       ...
     </k>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>  [structural]
 
-syntax KResult ::= "lookupMethodData" "(" K         //TypedVal - typed obj closure for instance qualifier
+syntax KResult ::= "lookupMethodData" "(" K         //TypedExp - typed obj closure for instance qualifier
                                                     //or ClassType - for class qualifier
                                       "," Id        //method name
                                       "," Bool      //IsQ - isQualified
                     ")"
-                  //Elaboration result super keyword in A.super.m() call.
-                  | "qSuperQual" "(" K // is always equal to A.this - used to lookup the right qualifier closure.
-                                 ")"
 
 /*@ Closure application needs to also set a new return type in the
 \textsf{return} cell, in order for the values returned by its body to
@@ -73,6 +70,7 @@ and then pop it when the method returns. */
 //First argument is reduced up to lookupMethodData.
 context elabDispose('Invoke(HOLE,, _))
 
+//todo TypedExp to cast: we need to compute typeOf(Qual)
 rule [Invoke-to-lookupMethod-qualified]:
     elabDispose('Invoke(lookupMethodData(
         Qual:K,
@@ -235,11 +233,11 @@ rule [lookupSignatureMain]:
                 #if OldMethodDecRecord ==K noValue
                   #then true
                   #else subtypeList(SigTs, getMethodDecArgTypes(OldMethodDecRecord))
-                #fi
-              ) :: bool,,
+                #fi :: bool
+              ),,
               isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
                   DecClass, IsQ, Class)
-            ) :: bool,,
+            ),,
             mapWrap(sig(MethodName, SigTs) |-> TV),,
             OldMethodDecRecord
           ),
@@ -250,8 +248,8 @@ rule [lookupSignatureMain]:
     <classType> DecClass </classType>
     <methodDecs>... sig(MethodName, SigTs) |-> TV:TypedVal ...</methodDecs>
 
-syntax K ::= "getMethodDecArgTypes" "(" K ")"
-rule getMethodDecArgTypes(mapWrap(sig(_, Ts:Types) |-> _)) => Ts  [structural, anywhere]
+syntax K ::= "getMethodDecArgTypes" "(" K ")"   [function]
+rule getMethodDecArgTypes(mapWrap(sig(_, Ts:Types) |-> _)) => Ts
 
 rule [lookupSignatureSigDiscard]:
     lookupSignature(
@@ -286,14 +284,14 @@ rule [isAccessibleProtected]:
       )
       => 'LazyOr(
             'LazyAnd(
-              'LazyOr((CT ==K staticCT),, 'Not(IsQ)::bool) :: bool,,
+              'LazyOr((CT ==K staticCT)::bool,, 'Not(IsQ::bool)),,
               subtype(
                 'If(IsQ,, CurrentClass,, TargetClass),
                 DeclaringClass
               )
-            ) :: bool,,
+            ),,
             isAccessible(package, CT, DeclaringClass, IsQ, TargetClass)
-      ) :: bool
+      )
       ...
     </k>
     <crntClass> CurrentClass:ClassType </crntClass>
@@ -320,18 +318,18 @@ rule [isAccessiblePrivate]:
 syntax K ::= "methodInvokeRuntime" "(" RefType    //Compile-time target class, or more general reference
                                    "," Signature  //Method signature
                                    "," K          //Qualifier expression, if any, or noValue if it is static invocation
-                                   "," KList    //Arguments, each of type TypedExp
+                                   "," KList      //Arguments, each of type TypedExp
                                    "," ContextType  //instanceCT or staticCT
                                    ")"
 
 //Evaluate the qualifier
 //JLS \$15.12.4.1 - Compute Target Reference
-context methodInvokeRuntime(_,_, HOLE, _,_)::_
+context methodInvokeRuntime(_,_, HOLE, _,_)
 
 //todo a test for expression order exists, but is unable expose the error in this rule.
 //Waiting for an alternative from K guys.
 //JLS \$15.12.4.2 - Evaluate Arguments
-context methodInvokeRuntime(_,_,_:KResult, (_,,HOLE,,_), _)::_
+context methodInvokeRuntime(_,_,_:KResult, (_,,HOLE,,_), _)
 
 rule [methodInvokeRuntimeInstanceOnClass]:
     <k>
@@ -341,7 +339,7 @@ rule [methodInvokeRuntimeInstanceOnClass]:
           ListItem(el(Class:ClassType, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map)) _,
         _)::_,
         ParamVals:KList, instanceCT
-      )::_
+      )
       => invokeImpl(
         lookupOverloadedMethod(
           Sig, getClassList(Rest ListItem(el(Class, BI, EnclosingObj, LocalEnv))), mapWrap(.Map), noValue
@@ -356,7 +354,7 @@ when
     isKResult(ParamVals)
 
 rule [methodInvokeRuntimeStaticOnClass]:
-    methodInvokeRuntime(Class:ClassType, Sig:Signature, _:KResult, ParamVals:KList, staticCT)::_
+    methodInvokeRuntime(Class:ClassType, Sig:Signature, _:KResult, ParamVals:KList, staticCT)
     => invokeImpl(
       lookupOverloadedMethod(Sig, Class, mapWrap(.Map), noValue),
       noValue, 'ListWrap(ParamVals)
@@ -371,7 +369,7 @@ rule [methodInvokeRuntimeInstanceOnInterface]:
           ListItem(el(ActualClass:ClassType, _,_,_)) _,
         _)::_,
         ParamVals:KList, instanceCT
-      )::_
+      )
       => invokeImpl(
         lookupOverloadedMethod(Sig, ActualClass, mapWrap(.Map), noValue),
         OL, 'ListWrap(ParamVals)
@@ -389,7 +387,7 @@ rule [methodInvokeRuntimeOnString]:
     methodInvokeRuntime(_, sig(MethodName:Id, Ts:Types),
         Str:String::_,
         ParamVals:KList, _
-    )::_
+    )
     => invokeImpl(
       lookupOverloadedMethod(sig(MethodName, Ts), objectClass, mapWrap(.Map), noValue),
       Str::rtString, 'ListWrap(ParamVals)
@@ -407,7 +405,7 @@ rule [methodInvokeRuntimeOnArray]:
     methodInvokeRuntime(_, sig(MethodName:Id, Ts:Types),
         arrayRef(ArrT:RefType, L:Int, M:Int)::_,
         ParamVals:KList, _
-    )::_
+    )
     => invokeImpl(
       lookupOverloadedMethod(sig(MethodName, Ts), objectClass, mapWrap(.Map), noValue),
       arrayRef(ArrT, L, M)::ArrT, 'ListWrap(ParamVals)
@@ -417,7 +415,7 @@ when
     andBool isKResult(ParamVals)
 
 rule [methodInvokeRuntimeOnNull]:
-    methodInvokeRuntime(_,_, null::_, ParamVals:KList, instanceCT)::_
+    methodInvokeRuntime(_,_, null::_, ParamVals:KList, instanceCT)
     =>  elab('Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
@@ -427,14 +425,21 @@ rule [methodInvokeRuntimeOnNull]:
 when
     isKResult(ParamVals)
 
-context qSuperQual(HOLE)::_
+/*Elaboration result forsuper keyword in A.super.m() call.
+  Have to be a typed expression.
+*/
+syntax K ::= qSuperQual ( K ) // is always equal to A.this - used to lookup the right qualifier closure.
+        [strict]
 
 rule [qSuperQualEval]:
-    qSuperQual(objectClosure(
-      OL:Int,
-      _:List ListItem(el(BaseClass, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map)) Rest:List,
-      ObjLocalClassesEnv:Map
-    )::_) :: BaseClass:ClassType
+    qSuperQual(
+      objectClosure(
+        OL:Int,
+        ListItem(_) // The layer corresponding to the actual class. Next is the base class
+        ListItem(el(BaseClass:ClassType, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map)) Rest:List,
+        ObjLocalClassesEnv:Map
+      )::_
+    )
     => objectClosure(
       OL,
       ListItem(el(BaseClass, BI, EnclosingObj, LocalEnv)) Rest,
@@ -497,7 +502,7 @@ rule [lookupMethodSigKnownOtherCandidates]:
                   getMethodAccessMode(OldMethTV),
                   getMethConsClosureClass(NewMethTV)
                 )
-              )::bool,,
+              ),,
               NewMethTV,,
               OldMethTV
             )
@@ -643,13 +648,15 @@ rule <k> setRuntimeEnclosingLocalEnv(OL:Int) => . ...</k>
 
 //@ \texttt{bindto} also checks the well-formedness of the method parameters
 
-syntax K ::= "bindto" KList
-                  "," KList  //List{KResult}
+syntax K ::= "bindto" KList  // var names
+                  "," KList  // List{KResult} - values
 
 rule [bindto]:
     <k>
       bindto paramImpl(T:Type, X:Id),, RestP:KList, TV:TypedVal,, RestV:KList
-      => elab('ExprStm('Assign(localVar(X)::T,,TV:TypedVal))) ~> bindto RestP, RestV
+      => 'LocalVarDec(.K,, T:Type,,'ListWrap('VarDec(X)))
+        ~> 'ExprStm('Assign(localVar(X),, castImpl(T, TV:TypedVal)))
+        ~> bindto RestP, RestV
       ...
     </k>
     <env> Env:Map => Env[L/X] </env>

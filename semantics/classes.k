@@ -45,11 +45,11 @@ rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T
 /*@ \subsection{New instance creation}*/
 
 //@Resolve new instance qualifier
-context 'QNewInstance(HOLE,, _:KList)::_
+context 'QNewInstance(HOLE,, _:KList)
 
 //@ Resolve new instance expression parameter values
 //todo test the expression order using state space search.
-context 'QNewInstance(_:KResult,,_:K,,_:K,,_:K,, 'ListWrap(_,,HOLE,,_),, _)::_
+context 'QNewInstance(_:KResult,,_:K,,_:K,,_:K,, 'ListWrap(_,,HOLE,,_),, _)
 
 /*@ Qualified new instance creation expression. Unqualified new expressions are rewritten into qualified ones by other rules and also reach this point.*/
 rule [QNewInstance]:
@@ -61,7 +61,7 @@ rule [QNewInstance]:
         _:K,,
         'ListWrap( Vals:KList ),,
         _:K
-      )::Class
+      )
       => staticInit(Class)
         ~> create(Class)
         ~> restoreMethContext(<envGroup> OldEnvGroup </envGroup> <crntObj> OldCrntObj </crntObj> RestMethContext)
@@ -166,7 +166,7 @@ rule [setEncloser-noValue]:
 
 //@ Restore the content of the cell <methodContext>
 syntax K ::= "restoreMethContext" "(" Bag         //The content of <methodContext>
-                              ")"
+                                  ")"
 
 rule [restoreMethContext]:
     <k> restoreMethContext(MethContext:Bag) => . ...</k>
@@ -235,29 +235,26 @@ rule [setObjLocalClassesEnv]:
 
 /*@ \subsection{Instance Of} */
 
-context 'InstanceOf(HOLE,,_)::_
+context 'InstanceOf(HOLE,,_)
 
 rule [InstanceOf]:
-    'InstanceOf(V:RawVal::_,, RT2:RefType) :: bool
-    =>  'LazyAnd((V =/=K null),, subtype(typeOf(V), RT2))::bool
+    'InstanceOf(V:RawVal::_,, RT2:RefType)
+    =>  'LazyAnd((V =/=K null)::bool,, subtype(typeOf(V), RT2))
 
 /*@ \subsection{Cast} */
 
 rule [CastRef]:
-    <k>
-      castImpl(RT1:RefType, V:RawVal :: RT2:RefType)::RT1
-      =>  'If(
-            subtype(typeOf(V), RT1),,
-            (V::RT1),,
-            elab('Throw('NewInstance(
-                    'None(.KList),,
-                    (class String2Id("java.lang.ClassCastException")),,
-                    'ListWrap( 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to ")::rtString,,
-                        toString(RT1))::rtString ),,
-                    'None(.KList)
-            )))
-          )
-      ...
-    </k>
+    castImpl(RT1:RefType, V:RawVal :: RT2:RefType)
+    =>  'If(
+          subtype(typeOf(V), RT1),,
+          (V::RT1),,
+          elab('Throw('NewInstance(
+                  'None(.KList),,
+                  class String2Id("java.lang.ClassCastException"),,
+                  'ListWrap( 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to "::rtString),,
+                      toString(RT1)) ),,
+                  'None(.KList)
+          )))
+        )
 
 endmodule

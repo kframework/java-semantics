@@ -82,13 +82,13 @@ rule [ArrayParamIdDiscard]:
 /*@ \subsection{Array access}
 Check array bounds, as part of the dynamic typing policy. */
 
-context 'ArrayAccess(HOLE,,_)::_
-context 'ArrayAccess(_:KResult,,HOLE)::_
-context lvalue('ArrayAccess(HOLE,,_)::_)
-context lvalue('ArrayAccess(_:KResult,,HOLE)::_)
+context 'ArrayAccess(HOLE,,_)
+context 'ArrayAccess(_:KResult,,HOLE)
+context lvalue('ArrayAccess(HOLE,,_))
+context lvalue('ArrayAccess(_:KResult,,HOLE))
 
 rule [arrayLookup]:
-    'ArrayAccess(arrayRef(_, L:Int, M:Int) :: arrayOf T:Type,, N:Int::_) :: T
+    'ArrayAccess(arrayRef(_, L:Int, M:Int) :: arrayOf T:Type,, N:Int::_)
     => lookup(L +Int N) :: T
 when (N >=Int 0) andBool (N <Int M)
         [structural, anywhere]
@@ -103,7 +103,7 @@ rule [lookupArrayLocation]:
         [transition-threading]
 
 rule [ArrayIndexOutOfBoundsException]:
-    'ArrayAccess(arrayRef(_,_,M:Int) :: _,, N:Int::_)::_
+    'ArrayAccess(arrayRef(_,_,M:Int) :: _,, N:Int::_)
     => elab('Throw('NewInstance(
       'None(.KList),,
       (class String2Id("java.lang.ArrayIndexOutOfBoundsException")),,
@@ -119,7 +119,7 @@ rule [LvalueIndexOutOfBoundsDesugar]:
     lvalue(elab('Throw(K:K))) => elab('Throw(K))
 
 rule [arrayAccessNull]:
-    'ArrayAccess(null::_ ,, _)::_
+    'ArrayAccess(null::_ ,, _)
     => elab('Throw('NewInstance(
       'None(.KList),,
       class String2Id("java.lang.NullPointerException"),,
@@ -130,7 +130,7 @@ rule [arrayAccessNull]:
 
 //Array length, as defined in JDK
 rule
-    lookupField(arrayRef(_,_:Int, N:Int)::_, _, X:Id) :: int => N::int
+    lookupField(arrayRef(_,_:Int, N:Int)::_, _, X:Id) => N::int
 when
     Id2String(X) ==String "length"
 
@@ -140,7 +140,7 @@ similar to that in untyped SIMPLE, but we have to enforce that the
 type of an array declaration be of the form \texttt{arrayOf $T$}
 and assign the right type ($T$) to the allocated array locations. */
 
-context newArrayImpl(_:Type, 'ListWrap(Dims:KList,,HOLE,, _), _,_)::_
+context newArrayImpl(_:Type, 'ListWrap(Dims:KList,,HOLE,, _), _,_)
 when isKResult(Dims)
 
 //applies right after the previous rule, because HOLE is of the form 'Dim(K)
@@ -148,13 +148,13 @@ rule 'Dim(K:K) => K [structural]
 
 //when all dims were computed, check that dims are positive, and only
 //after that begin array allocation
-rule newArrayImpl(T:Type, 'ListWrap(Dims:KList), InitExp:K, .KList)::_
+rule newArrayImpl(T:Type, 'ListWrap(Dims:KList), InitExp:K, .KList)
     => checkNonNegative(Dims) ~> newArrayAlloc(T, 'ListWrap(Dims), InitExp)
 when isKResult(Dims) andBool InitExp =/=K .K
 
 rule [newArrayWithInit]:
-    newArrayImpl(T:Type, 'ListWrap(Dim:TypedVal), .K, InitContent:KList)::_
-    => arrayInitAlloc(newArrayImpl(T, 'ListWrap(Dim), undefined :: T, .KList) :: arrayOf T, InitContent)
+    newArrayImpl(T:Type, 'ListWrap(Dim:TypedVal), .K, InitContent:KList)
+    => arrayInitAlloc(newArrayImpl(T, 'ListWrap(Dim), undefined :: T, .KList), InitContent)
 
 //same as newArrayImpl, but after dims were computed and checked
 syntax K ::= "newArrayAlloc" "("
@@ -209,10 +209,9 @@ rule [newArrayAlloc]:
 
 syntax K ::= "max" "(" Int "," Int ")" [function]
 rule max(I1:Int, I2:Int) => #if I1 >=Int I2
-                        #then I1
-                        #else I2
-                      #fi
-        [anywhere]
+                              #then I1
+                              #else I2
+                            #fi
 
 syntax K ::= "evalAndStore" "(" KList  "," K ")"
 
@@ -244,13 +243,13 @@ rule N1:Int..N2:Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2
 //@ \subsection{Array element assignment}
 
 rule [AssignInArrayExact]:
-    <k> 'Assign(loc(L:Int)::_,, V:RawVal::_)::T:Type => V::T ...</k>
+    <k> 'Assign(loc(L:Int)::T,, V:RawVal::_) => V::T ...</k>
     <store>... L |-> (_ => V)::elem T ...</store>
         [transition-threading]
 
 rule [AssignInArrayWithCheck]:
     <k>
-      'Assign(loc(L:Int)::_,, V:RawVal::_)::T:Type
+      'Assign(loc(L:Int)::T,, V:RawVal::_)
       => assignImpl(
           subtype(typeOf(V), StoreType),
           L,
@@ -262,15 +261,16 @@ rule [AssignInArrayWithCheck]:
 when
     T =/=K StoreType
 
-//Bug. [strict(1,3)] gives a weird error in K2. Have to use context for argument (3).
+
+/*@ Assignment with runtime type compatibility check. If first argument evaluates to true, do the assignment.
+  Otherwise throw ArrayStoreException.
+*/
 syntax K ::= "assignImpl" "("
                             K ","     //subtype check on array element assignment
                             Int ","   //destination store location
                             TypedVal  //assigned value
                           ")"
-
-context assignImpl(HOLE,_,_)
-context assignImpl(_:KResult, _, HOLE)
+        [strict(1,3)]
 
 rule [assignImpl]:
     <k> assignImpl( true::bool, L:Int, V:RawVal :: T:Type) => V::T ...</k>
@@ -330,7 +330,7 @@ rule [arrayInitImplInnerArrayInit]:
     ( . => 'ExprStm(assignImpl(
               true,
               L,
-              newArrayImpl(T, 'ListWrap(count(InitContent)), .K, InitContent) :: arrayOf T
+              newArrayImpl(T, 'ListWrap(count(InitContent)), .K, InitContent)
            )) )
     ~> arrayInitImpl(
           arrayOf arrayOf T:Type,
@@ -348,19 +348,19 @@ rule toString(arrayOf T:Type) => arrayToString(arrayOf T)
 //string representation of a type within an array type
 //see JDK: Class.getName()
 syntax K ::= "arrayToString" "(" Type ")"
-rule arrayToString(byte)  => "B"
-rule arrayToString(short) => "S"
-rule arrayToString(int)   => "I"
-rule arrayToString(long)  => "J"
-rule arrayToString(char)  => "C"
-rule arrayToString(bool)  => "Z"
+rule arrayToString(byte)  => "B"::rtString
+rule arrayToString(short) => "S"::rtString
+rule arrayToString(int)   => "I"::rtString
+rule arrayToString(long)  => "J"::rtString
+rule arrayToString(char)  => "C"::rtString
+rule arrayToString(bool)  => "Z"::rtString
 
 rule arrayToString(class Class:Id)
-    => 'Plus("L",, 'Plus(toString(class Class) ,,";")::rtString)::rtString
+    => 'Plus("L"::rtString,, 'Plus(toString(class Class) ,,";"::rtString))
 
 rule arrayToString(rtString)
-    => 'Plus("L",, 'Plus(toString(rtString),, ";")::rtString)::rtString
+    => 'Plus("L"::rtString,, 'Plus(toString(rtString),, ";"::rtString))
 
-rule arrayToString(arrayOf T:Type) => 'Plus("[",, arrayToString(T))::rtString
+rule arrayToString(arrayOf T:Type) => 'Plus("["::rtString,, arrayToString(T))
 
 endmodule
