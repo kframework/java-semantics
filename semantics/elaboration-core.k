@@ -438,14 +438,10 @@ rule defaultElabChildren(KL:KLabel) =>
     orBool (KL ==KLabel 'StrictFP)
     orBool (KL ==KLabel 'Id)*/
 
-//todo elaboration-related hack - we should not have special elaboration rules for auxiliary constructs
 syntax K ::= auxLabelInElab( KLabel ) [function]
 rule auxLabelInElab(KL:KLabel) =>
            KL ==KLabel 'setEncloser`(_`,_`,_`)
-    orBool KL ==KLabel 'noValue
-    orBool KL ==KLabel 'noClass
     orBool KL ==KLabel 'stmtAndExp`(_`,_`)
-    orBool KL ==KLabel 'toString`(_`)
 
 /*@  elabHeat-naked-children
   Since a naked term is always computed int oa KResult during elaboration,
@@ -476,6 +472,18 @@ rule isElabNaked(K:K) =>
 
 syntax KLabel ::= "getInnerKLabel" "(" K ")"                    [function]
 rule getInnerKLabel(_:KLabel(KL:KLabel(_))) => KL
+
+//todo elaboration-related hack - we should not have special elaboration rules for auxiliary constructs
+syntax K ::= elabPassThrough( KLabel ) [function]
+rule elabPassThrough(KL:KLabel) =>
+           KL ==KLabel 'noValue
+    orBool KL ==KLabel 'noClass
+    orBool KL ==KLabel 'toString`(_`)
+
+rule [elabPassThrough]:
+    elab(KL:KLabel(Ks:KList)) => elabRes(KL(Ks))
+when
+    elabPassThrough(KL)
 
 /*@ The default algorithm of transforming the term from elab to elabRes, when the children were completely elaborated.
   Deletes elabRes wrappers from children. This algorithm is activated when the following conditions apply:

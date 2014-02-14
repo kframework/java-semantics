@@ -141,10 +141,7 @@ rule [typedLookup]:
     <store>... L |-> _::T:Type ...</store>
 
 rule [lvalueTypedLookup]:
-    <k> lvalue( typedLookup(L:Int) => lookup(L)::T ) ...</k>
-    <store>... L |-> _::T:Type ...</store>
-
-rule <k> lvalue(lookup(L:Int)::T:Type) => loc(L)::T ...</k>  [structural]
+    lvalue( typedLookup(L:Int) ) => typedLoc(L)
 
 syntax K ::= "typedLoc" "(" Int ")"
 
@@ -153,8 +150,7 @@ rule [typedLoc]:
     <store>... L |-> _::T:Type ...</store>
 
 rule [lvalueTypedLoc]:
-    <k> lvalue( typedLoc(L:Int) => loc(L)::T ) ...</k>
-    <store>... L |-> _::T:Type ...</store>
+    lvalue(typedLoc(L:Int)) => typedLoc(L)
 
 /*@ \subsection{lookup} */
 
@@ -165,11 +161,13 @@ syntax K ::= "lookup" "(" Int ")"
 
 rule [lookupLocation]:
     <k>
-      lookup(L:Int) :: T1:Type
-      => subtype(T2, T1) ~> true? ~> (V::T1)
+      lookup(L:Int) :: T1:Type => subtype(T2, T1) ~> true? ~> (V::T1)
       ...
     </k>
     <store>... L |-> V:RawVal :: T2:Type ...</store>
         [transition-threading]
+
+rule lvalue(lookup(L:Int)::T:Type) => loc(L)::T
+        [structural]
 
 endmodule

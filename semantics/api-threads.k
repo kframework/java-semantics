@@ -31,7 +31,7 @@ rule [thread-start]:
             'Invoke(
               'Method(
                 'MethodName(
-                  'AmbName(
+                  'ExprName(
                     lookup(OL) :: class String2Id("java.lang.Thread"),,
                     String2Id("runnable")
                   ),,

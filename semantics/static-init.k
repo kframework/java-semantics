@@ -85,13 +85,6 @@ rule [staticInit]:
     <staticInit> StaticInit:K </staticInit>
     <staticInitStatus> StaticUninitialized => StaticInitializing(TId) </staticInitStatus>
 
-//todo elaboration-related hacks
-rule ('elab`(_`) => 'elabRes`(_`))(AuxMethKL:KLabel(_))
-when
-         AuxMethKL ==KLabel 'staticInit`(_`)
-  orBool AuxMethKL ==KLabel 'restoreMethContext`(_`)
-  orBool AuxMethKL ==KLabel 'staticInitDone`(_`)
-
 rule [staticInit-already-initialized-discard]:
     <k>
       staticInit(Class:ClassType) => .
