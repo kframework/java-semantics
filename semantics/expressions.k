@@ -273,7 +273,9 @@ rule getOpLabel('AssignURightShift) => 'URightShift
 syntax K ::= "castImpl" "(" Type "," K ")"
 context castImpl(_,HOLE)
 
+//@ The type of RV could either be NumericType or tempType. This rule matches both.
 rule [CastNumber]: castImpl(NT:NumericType, RV:RawVal::_) => normalize(RV::NT)
+
 rule [CastBool]: castImpl(bool, B:Bool::bool) => B::bool
 
 /*@ \subsubsection{artificial cases of cast, arised during semantics separation} */
