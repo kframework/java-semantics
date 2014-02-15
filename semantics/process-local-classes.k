@@ -314,10 +314,10 @@ rule [processQAnonymousClass]:
 syntax K ::= "stmtAndExp" "(" K "," K ")"
 
 //elaboration time
-rule elabDispose(stmtAndExp(Stmt:K, Exp:K ::T:Type))
-     =>  elabRes(stmtAndExp(Stmt,   Exp   ::T     ) :: T)
+rule elabEnd(   stmtAndExp(Stmt:K, TExp:K))
+     => elabRes(stmtAndExp(Stmt,   TExp  ))
 
 //runtime
-rule stmtAndExp(Stmt:K, TExp:TypedExp)::_ => Stmt ~> TExp
+rule stmtAndExp(Stmt:K, TExp:K)::_ => Stmt ~> TExp
 
 endmodule

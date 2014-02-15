@@ -35,13 +35,11 @@ syntax K ::= "newArrayImpl" "("
 
 //@ Both unqualified and qualified AmbName.
 rule [elabAmbName]:
-    elabDispose('AmbName(Ks:KList)) => elabDispose('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName('ListWrap(Ks))
-when
-    haveNoElabRes(Ks)
+    elabEnd('AmbName(Ks:KList)) => elabEnd('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName('ListWrap(Ks))
 
 //@ "localVar" is defined in the module VAR-LOOKUP.
 rule [elabExprNameSimple]:
-    <k> elabDispose('ExprName(X:Id)) => elabDispose(localVar(X)) ?? externalVar(X, Class) ...</k>
+    <k> elabEnd('ExprName(X:Id)) => elabEnd(localVar(X)) ?? externalVar(X, Class) ...</k>
     <crntClass> Class:ClassType </crntClass>
 
 //@ This could be either a field, or a local var of some enclosing block.
@@ -52,7 +50,7 @@ syntax K ::= "externalVar" "(" Id         //X - var name
 rule [externalVar]:
     <k>
       externalVar(X:Id, Class:ClassType)
-      => elabDispose('Field( 'QThis(Class),, X )) ?? elabOuterLocalVar(X, Class) ?? externalVar(X, EnclosingClass)
+      => elabEnd('Field( 'QThis(Class),, X )) ?? elabOuterLocalVar(X, Class) ?? externalVar(X, EnclosingClass)
       ...
     </k>
     <classType> Class </classType>
@@ -86,31 +84,31 @@ when
     notBool X in keys(EnclosingLocalEnv)
 
 rule [elabExprNameQualified]:
-    elabDispose('ExprName(QualK:K,,X:Id)) => elabDispose('Field(QualK,,X))
+    elabEnd('ExprName(QualK:K,,X:Id)) => elabEnd('Field(QualK,,X))
 
 rule [elabLocalVarOk]:
-  <k> elabDispose(localVar(X:Id)) => elabRes(localVar(X) :: T) ...</k>
+  <k> elabEnd(localVar(X:Id)) => elabRes(localVar(X) :: T) ...</k>
   <elabEnv> ListItem(stEnv(X |-> T:Type _)) ...</elabEnv>
 
 rule [elabLocalVarNoValue]:
-  <k> elabDispose(localVar(X:Id)) => noValue ...</k>
+  <k> elabEnd(localVar(X:Id)) => noValue ...</k>
   <elabEnv> ListItem(stEnv(StEnv:Map)) ...</elabEnv>
 when notBool (X in keys(StEnv))
 
 rule [elabFieldWithQThis]:
-    elabDispose('Field( 'QThis(Class:ClassType),, X:Id ))
+    elabEnd('Field( 'QThis(Class:ClassType),, X:Id ))
     => elab('Field( elabRes('QThis(Class:ClassType) :: Class),, X )) ?? elab('Field( Class,, X))
 when
     Class =/=K noClass
 
 rule [FieldOfPackage]:
-    elabDispose('Field( _:PackageId,, _:Id )) => noValue  [structural]
+    elabEnd('Field( _:PackageId,, _:Id )) => noValue  [structural]
 
 rule [FieldOfNoValue]:
-    elabDispose('Field( noValue,, _:Id )) => noValue      [structural]
+    elabEnd('Field( noValue,, _:Id )) => noValue      [structural]
 
 rule [FieldOfQThis-noClass]:
-    elabDispose('Field( 'QThis(noClass),, _:Id )) => noValue      [structural]
+    elabEnd('Field( 'QThis(noClass),, _:Id )) => noValue      [structural]
 
 //@Computation of instance and static environment of a class, e.g. set of fields
 
@@ -169,35 +167,35 @@ rule [elabLookup-Set-NotFound]:
     elabLookup(_, .Set) => noValue
 
 rule [elabThis]:
-    <k> elabDispose('This(.KList) => 'QThis(Class)) ...</k>
+    <k> elabEnd('This(.KList) => 'QThis(Class)) ...</k>
     <crntClass> Class:ClassType </crntClass>
 
 rule [elabQThisInstanceCT]:
-    <k> elabDispose('QThis(Class:ClassType)) => elabRes('QThis(Class) :: Class) ...</k>
+    <k> elabEnd('QThis(Class:ClassType)) => elabRes('QThis(Class) :: Class) ...</k>
     <contextType> instanceCT </contextType>
 
 rule [elabQThisStaticCT]:
-    <k> elabDispose('QThis(_)) => noValue ...</k>
+    <k> elabEnd('QThis(_)) => noValue ...</k>
     <contextType> staticCT </contextType>
 
 rule [elabFieldQualRef]:
-    elabDispose('Field(Qual:K :: Class:ClassType,, X:Id))
+    elabEnd('Field(Qual:K :: Class:ClassType,, X:Id))
     => elabFieldImpl(Qual::Class, X, elabLookup(X, Class))
 
 rule [elabFieldQualClass]:
-    elabDispose('Field(Class:ClassType,, X:Id))
+    elabEnd('Field(Class:ClassType,, X:Id))
     => elabFieldImpl(noValue, X, elabLookup(X, Class))
 
 rule [elabSuperField]:
     <k>
-      elabDispose('SuperField(X:Id) => 'QSuperField(Class,, X:Id))
+      elabEnd('SuperField(X:Id) => 'QSuperField(Class,, X:Id))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
 
 rule [elabQSuperField]:
     <k>
-      elabDispose('QSuperField(Class:ClassType,, X:Id))
+      elabEnd('QSuperField(Class:ClassType,, X:Id))
       => elabFieldImpl('QThis(Class) :: Class, X, elabLookup(X, BaseClass))
       ...
     </k>
@@ -307,7 +305,7 @@ rule isNonNumericExp(KL:KLabel) =>
 
 //@ It looks like isTypedExp(KList) doesn't work.
 rule [elabBoolOnlyResultExpBinary]:
-    elabDispose(KL:KLabel(TE1:TypedExp,, TE2:TypedExp)) => elabRes(KL(TE1,,TE2) :: bool)
+    elabEnd(KL:KLabel(TE1:K,, TE2:K)) => elabRes(KL(TE1,,TE2) :: bool)
 when
            (KL ==KLabel 'LazyOr)
     orBool (KL ==KLabel 'LazyAnd)
@@ -319,17 +317,17 @@ when
     orBool (KL ==KLabel 'GtEq)
 
 rule [elabBoolOnlyResultExpUnary]:
-    elabDispose('Not(TE:TypedExp)) => elabRes('Not(TE) :: bool)
+    elabEnd('Not(TE:K)) => elabRes('Not(TE) :: bool)
 
 rule [elabBoolOperandBoolResultExp]:
-    elabDispose(KL:KLabel(Exp1:K::bool,, Exp2:K::bool)) => elabRes(KL(Exp1::bool,, Exp2::bool) :: bool)
+    elabEnd(KL:KLabel(TExp1:K,, TExp2:K)) => elabRes(KL(TExp1,, TExp2) :: bool)
 when
            (KL ==KLabel 'Or)
     orBool (KL ==KLabel 'ExcOr)
     orBool (KL ==KLabel 'And)
 
 rule [elabBinaryNumOperandNumResultExp]:
-    elabDispose(KL:KLabel(Exp1:K::NT1:NumericType,, Exp2:K::NT2:NumericType))
+    elabEnd(KL:KLabel(Exp1:K::NT1:NumericType,, Exp2:K::NT2:NumericType))
     => elabExpAndType(KL(Exp1::NT1,, Exp2::NT2), normalizeType(NT1,NT2))
 when
            (KL ==KLabel 'Or)
@@ -342,15 +340,15 @@ when
     orBool (KL ==KLabel 'Remain)
 
 rule [elabBitShift]:
-    elabDispose(KL:KLabel(Exp1:K::NT1:NumericType,, Exp2:K::NT2:NumericType))
-    => elabExpAndType(KL(Exp1::NT1,, Exp2::NT2), normalizeType(NT1))
+    elabEnd(KL:KLabel(Exp1:K::NT1:NumericType,, TExp2:K))
+    => elabExpAndType(KL(Exp1::NT1,, TExp2), normalizeType(NT1))
 when
            (KL ==KLabel 'LeftShift)
     orBool (KL ==KLabel 'RightShift)
     orBool (KL ==KLabel 'URightShift)
 
 rule [elabUnaryNumeric]:
-    elabDispose(KL:KLabel(Exp:K::NT:NumericType)) => elabExpAndType(KL(Exp::NT), normalizeType(NT))
+    elabEnd(KL:KLabel(Exp:K::NT:NumericType)) => elabExpAndType(KL(Exp::NT), normalizeType(NT))
 when
            (KL ==KLabel 'Plus)
     orBool (KL ==KLabel 'Minus)
@@ -362,7 +360,7 @@ syntax K ::= "elabExpAndType" "(" K "," K ")"  [strict(2)]
 rule elabExpAndType(K:K, T:Type) => elabRes(K::T)
 
 rule [elabPrefixPostfix]:
-    elabDispose(KL:KLabel(Exp:K::NT:NumericType)) => elabRes(KL(Exp::NT) :: NT)
+    elabEnd(KL:KLabel(Exp:K::NT:NumericType)) => elabRes(KL(Exp::NT) :: NT)
 when
            (KL ==KLabel 'PreIncr)
     orBool (KL ==KLabel 'PreDecr)
@@ -370,21 +368,18 @@ when
     orBool (KL ==KLabel 'PostDecr)
 
 rule [elabStringPlusAny]:
-    elabDispose('Plus(Exp:K::rtString,, TE:TypedExp)) => elabRes('Plus(Exp::rtString,, TE) :: rtString)
+    elabEnd('Plus(Exp:K::rtString,, TE:K)) => elabRes('Plus(Exp::rtString,, TE) :: rtString)
 
 rule [elabAnyPlusString]:
-    elabDispose('Plus(TE:TypedExp,, Exp:K::rtString)) => elabRes('Plus(TE,, Exp::rtString) :: rtString)
+    elabEnd('Plus(TE:K,, Exp:K::rtString)) => elabRes('Plus(TE,, Exp::rtString) :: rtString)
 
 rule [elabCond]:
-    elabDispose('Cond(CondTE:TypedExp,, Exp1:K::T1:Type,, Exp2:K::T2:Type))
-    => condType(T1, T2) ~> elabRes('Cond(CondTE,, Exp1::T1,, Exp2::T2) :: CHOLE)
+    elabEnd('Cond(CondTE:K,, Exp1:K::T1:Type,, Exp2:K::T2:Type))
+    => elabExpAndType('Cond(CondTE,, Exp1::T1,, Exp2::T2), condType(T1, T2))
 
-//@ Used for the type of 'Cond and newArrayImpl
-rule [elabResCoolExpType]:
-    (T:Type => .K) ~> elabRes(_ :: (CHOLE => T))
-
-//@ computes the type of a conditional expression
-//@ Operands evaluate into types
+/*@ Computes the type of a conditional expression.
+    Operands evaluate into types.
+*/
 syntax K ::= "condType" "(" Type "," Type ")" [strict]
 
 rule [condTypeNoChar]:
@@ -401,10 +396,10 @@ rule [condTypeFirstChar]:
     condType(char, T2:Type) => 'If(subtype(char, T2),, T2,, int)
 
 rule [elabAssignSameType]:
-    elabDispose('Assign(Exp1:K::T1:Type,, Exp2:K::T1)) => elabRes('Assign(Exp1::T1,, Exp2::T1) :: T1)
+    elabEnd('Assign(Exp1:K::T1:Type,, Exp2:K::T1)) => elabRes('Assign(Exp1::T1,, Exp2::T1) :: T1)
 
 rule [elabAssignDiffType]:
-    elabDispose('Assign(
+    elabEnd('Assign(
        Exp1:K::T1:Type,,
       (Exp2:K::T2:Type => castImpl(T1, Exp2::T2)::T1)
     ))
@@ -412,25 +407,23 @@ when
     T1 =/=K T2
 
 rule [elabCompoundAssign]:
-    elabDispose(KL:KLabel(Exp1:K::T1:Type,, TE:TypedExp)) => elabRes(KL(Exp1::T1,, TE) :: T1)
+    elabEnd(KL:KLabel(Exp1:K::T1:Type,, TE:K)) => elabRes(KL(Exp1::T1,, TE) :: T1)
 when
     isCompoundAssignLabel(KL)
 
 /*@ \subsection{Elaboration of non-numeric expressions} */
 
 //@ elab cast
-rule elabDispose('CastRef(T:Type,, TExp:TypedExp)  => castImpl(T, TExp))      [structural]
-rule elabDispose('CastPrim(T:Type,, TExp:TypedExp) => castImpl(T, TExp))      [structural]
+rule elabEnd('CastRef(T:Type,, TExp:K)  => castImpl(T, TExp))      [structural]
+rule elabEnd('CastPrim(T:Type,, TExp:K) => castImpl(T, TExp))      [structural]
 
-//@ Case when Exp was initially a literal, and now is Val::Type
-rule [elabCastImplElabIndep]:
-    elabDispose(castImpl(T1:Type, Exp:K :: T2:Type)) => elabRes(castImpl(T1, Exp::T2) :: T1)
+rule [elabCast]:
+    elabEnd(castImpl(T1:Type, TExp:K)) => elabRes(castImpl(T1, TExp) :: T1)
 
 //@ Heat the class name
 context elab('NewInstance(_:K,, HOLE,, _))
 
-//@ Heat the unqualified constructor arguments.
-//@ Required if this class is anonymous
+//@ Heat the unqualified constructor arguments. Required if this class is anonymous.
 rule (. => elab(K)) ~> elab('NewInstance(_:K,,_:K,, (K:K => CHOLE),, _:K))
 when
     notBool isElab(K)
@@ -503,7 +496,7 @@ rule [elab-QNewInstance]:
     => elabRes('QNewInstance(Qual,, Arg2,, T,, Arg4,, ActualArgsList,, 'None(.KList)) :: T)
 
 rule [elabInstanceOf]:
-    elabDispose('InstanceOf(TE:TypedExp,, RT2:RefType)) => elabRes('InstanceOf(TE,, RT2) :: bool)
+    elabEnd('InstanceOf(TExp:K,, RT2:RefType)) => elabRes('InstanceOf(TExp,, RT2) :: bool)
 
 //@ Class literal types are heated by this rule.
 context elab('Lit('Class(HOLE)))
@@ -512,11 +505,11 @@ rule [elabLitClass]:
     elab('Lit('Class(T:Type))) => elabRes('Lit('Class(T:Type)) :: class String2Id("java.lang.Class"))
 
 rule [elabArrayAccess]:
-    elabDispose('ArrayAccess(TargetExp:K::arrayOf T:Type,, IndexTE:TypedExp))
+    elabEnd('ArrayAccess(TargetExp:K::arrayOf T:Type,, IndexTE:K))
     => elabRes('ArrayAccess(TargetExp::arrayOf T,, IndexTE) :: T)
 
 rule [elabArrayLength]:
-    elabDispose('Field(Qual:K :: arrayOf T:Type,, X:Id))
+    elabEnd('Field(Qual:K :: arrayOf T:Type,, X:Id))
     => elabRes(lookupField(Qual:: arrayOf T, arrayOf T, X) :: int)
 when
     Id2String(X) ==String "length"
@@ -525,25 +518,25 @@ context 'ArrayType(HOLE)
 rule 'ArrayType(T:Type) => arrayOf T     [structural]
 
 rule [NewArrayEmptyDims]:
-    elabDispose('NewArray( (T:Type => arrayOf T),, _:K,,
+    elabEnd('NewArray( (T:Type => arrayOf T),, _:K,,
         'ListWrap( ( 'Dim(.KList) => .KList ) ,,_:KList) ))
         [structural]
 
 rule [NewArray]:
-    elabDispose('NewArray(T:Type,, 'ListWrap(Dims:KList),, 'ListWrap(.KList)))
-    => getArrayType(T, Dims) ~> elabRes(newArrayImpl(T, 'ListWrap(Dims), default(T), .KList) :: CHOLE)
+    elabEnd('NewArray(T:Type,, 'ListWrap(Dims:KList),, 'ListWrap(.KList)))
+    => elabExpAndType(newArrayImpl(T, 'ListWrap(Dims), default(T), .KList), getArrayType(T, Dims))
         [structural]
 
 //@ Computes the array type based on allocated elem type and number of allocated dimensions.
-syntax K ::= "getArrayType" "(" Type "," KList ")"
-rule getArrayType(T:Type, K:K,,Dims:KList) => getArrayType(arrayOf T, Dims) [structural]
-rule getArrayType(T:Type, .KList) => T                                      [structural]
+syntax K ::= "getArrayType" "(" Type "," KList ")"                          [function]
+rule getArrayType(T:Type, K:K,,Dims:KList) => getArrayType(arrayOf T, Dims)
+rule getArrayType(T:Type, .KList) => T
 
 rule [ArrayInitPreprocess]:
-    elabDispose('NewArray((T:Type => arrayOf T),, 'ListWrap(('Dim(.KList) => .KList),, _),, 'ArrayInit(_)))
+    elabEnd('NewArray((T:Type => arrayOf T),, 'ListWrap(('Dim(.KList) => .KList),, _),, 'ArrayInit(_)))
 
 rule [ArrayInit]:
-    elabDispose('NewArray(arrayOf T:Type,, 'ListWrap(.KList),, 'ArrayInit('ListWrap(InitContent:KList))))
+    elabEnd('NewArray(arrayOf T:Type,, 'ListWrap(.KList),, 'ArrayInit('ListWrap(InitContent:KList))))
     => elabRes(newArrayImpl(T, 'ListWrap(count(InitContent)), .K, InitContent) :: arrayOf T)
 
 //@ Counts the number of elements in the KList list. Evaluates to an Int::int .

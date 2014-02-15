@@ -228,10 +228,6 @@ A Typed expression is an expression followed by its compile-time type. This, amo
 syntax TypedExp ::= K "::" Type
                   | TypedVal
 
-/*@ Not referred directly in the semantics, but used in cases when the type of an expression should be computed. Usually the second argument is of the form normalizeType(...)*/
-syntax ProtoTypedExp ::= K "::" K       [strict(2)]
-                       | TypedExp
-
 /*@ Member access modes*/
 syntax AccessMode ::= "public" | "protected" | "package" | "private"
 syntax KResult ::= AccessMode

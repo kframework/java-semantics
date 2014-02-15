@@ -68,11 +68,11 @@ we also need to stack the current status of the \textsf{return} cell
 and then pop it when the method returns. */
 
 //First argument is reduced up to lookupMethodData.
-context elabDispose('Invoke(HOLE,, _))
+context elabEnd('Invoke(HOLE,, _))
 
 //todo TypedExp to cast: we need to compute typeOf(Qual)
 rule [Invoke-to-lookupMethod-qualified]:
-    elabDispose('Invoke(lookupMethodData(
+    elabEnd('Invoke(lookupMethodData(
         Qual:K,
         MethodName:Id,
         IsQ:Bool
@@ -91,7 +91,7 @@ when notBool isTypedQThis(Qual)
 
 rule [Invoke-to-lookupMethod-unqualified]:
     <k>
-      elabDispose('Invoke(lookupMethodData(
+      elabEnd('Invoke(lookupMethodData(
           'QThis(Class:ClassType)::Class,
           MethodName:Id,
           IsQ:Bool
@@ -106,7 +106,7 @@ rule [Invoke-to-lookupMethod-unqualified]:
         'QThis(Class)::Class,
         ParamExps
       )
-      ?? elabDispose('Invoke(lookupMethodData(
+      ?? elabEnd('Invoke(lookupMethodData(
           'QThis(EnclosingClass)::EnclosingClass,
           MethodName,
           IsQ

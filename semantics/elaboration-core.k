@@ -45,11 +45,15 @@ static initializers of a class and perform the following transformations:
       elabDispose('Minus(elabRes(localVar(X)::int))) ~> elab('CastRef(_,, HOLE)
   4. Unwrapping of children. During elabDispose step elaborated children are unwrapped from their elabRes() wrapper.
       elabDispose('Minus(localVar(X)::int)) ~> elab('CastRef(_,, HOLE)
-  5. Computation of elaboration result. Now that all children have been elaborated and unwrapped, it is possible to
+  5. End of the step elabDispose. When all children of the term wrapped into elabDispose have been unwrapped
+    from their elabRes() wrapper, the root wrapper is replaced from elabDispose to elabEnd. This helps
+    to simplify the rules that follow.
+    elabRes('Minus(localVar(X)::int)) ~> elab('CastRef(_,, HOLE)
+  6. Computation of elaboration result. Now that all children have been elaborated and unwrapped, it is possible to
     compute the type of the current expression itself. When the expression is fully elaborated, it is wrapped into
     elabRes(). This is the step that requires custom rules for most AST terms.
       elabRes('Minus(localVar(X)::int)::int) ~> elab('CastRef(_,, HOLE)
-  6. Elaboration cooling. Once the top K Item was wrapped into elabRes, it is ready to be cooled back into its original
+  7. Elaboration cooling. Once the top K Item was wrapped into elabRes, it is ready to be cooled back into its original
     context:
       elab('CastRef(_,, elabRes('Minus(localVar(X)::int)::int))
 */
@@ -500,15 +504,14 @@ when
             defaultElabChildren(KL)
 //            notBool customElabChildren(KL)
     andBool isElab(ElabResL)
-//    andBool notBool isElabNaked(KL(ElabResL))
 
 rule [elabDisposeProcess]:
     elabDispose(KL:KLabel(_,, (elabRes(K:K) => K),, _))
 
-rule [elabDisposeEnd]:
-    elabDispose(KL:KLabel(Ks:KList)) => elabRes(KL(Ks))
+rule [elabDisposToElabEnd]:
+    elabDispose(KL:KLabel(Ks:KList)) => elabEnd(KL(Ks))
 when
-    notBool isExpressionLabel(KL) andBool haveNoElabRes(Ks)
+    haveNoElabRes(Ks)
 
 //@ True if given KList have no terms of the form elabRes(...), false otherwise.
 syntax K ::= "haveNoElabRes" "(" KList ")"          [function]
@@ -516,6 +519,12 @@ rule haveNoElabRes(K:K,, Ks:KList)
      => (getKLabel(K) =/=KLabel 'elabRes`(_`)) andBool haveNoElabRes(Ks)
 
 rule haveNoElabRes(.KList) => true
+
+/*@ The 3rd elaboration-phase wrapper for expressions. Represents the case when children are completely elaborated and
+unwrapped from elabRes(), but root node might not be elaborated yet. The implementation is scattered across all modules
+that deal with the elaboration phase.
+*/
+syntax K ::= elabEnd ( K )
 
 //@ \subsection{Hacks related to elaboration during execution phase}
 
