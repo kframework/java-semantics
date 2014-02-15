@@ -20,15 +20,19 @@ rule [elabForHeatOtherSubterms]:
 when
     notBool isElab(K) andBool isElab(HeadKs)
 
-//@ HOLE is transformed into paramImpl
-context elab('Catch(HOLE,, _))
-when
-    notBool isElab(HOLE)
-
 //@ Catch creates a new env layer and saves its argument.
-rule [elabCatch]:
+rule [elabCatchFirstArg]:
+    elab('Catch(Param:K,, Body:K))
+    => copyElabEnv ~> elab(Param) ~> elab('Catch(CHOLE,, Body))
+when
+    notBool isKResult(Param) ==K true
+
+//@ The second arg is heated by the same algorithm as the defaut one.
+rule [elabCatchSecndArg]:
     elab('Catch(Param:KResult,, Body:K))
-    => copyElabEnv ~> elabParams(Param) ~> elab(Body) ~> elab('Catch(elabRes(Param),, CHOLE))
+    => elab(Body) ~> elab('Catch(Param,, CHOLE))
+when
+    notBool isElab(Body)
 
 //@Adds a new layer to <elabEnv> that is a copy of the previous <elabEnv> layer.
 syntax K ::= "copyElabEnv"

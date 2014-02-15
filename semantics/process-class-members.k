@@ -260,8 +260,8 @@ the only difference is the addition of the types.  */
 //resolving the return type
 context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _),, _)
 
-//resolving parameters, order is not important
-context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, 'ListWrap(_,, HOLE,, _),, _:K),, _:K)
+//Resolve parameter types
+context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, 'ListWrap(_,, 'Param(_:K,, HOLE ,,_:K),, _),, _:K),, _:K)
 
 rule [MethodDec]:
     <k>
@@ -278,7 +278,11 @@ rule [MethodDec]:
     </k>
     <crntClass> Class:ClassType </crntClass>
 when
-    isKResult(Params)                       [structural]
+    paramTypesResolved(Params)                        [structural]
+
+syntax K ::= paramTypesResolved( KList )              [function]
+rule paramTypesResolved(('Param(_:K,, TypeK:K,, _:K) => .KList),, _)
+rule paramTypesResolved(.KList) => true
 
 rule [AbstractMethodDec]:
     'AbstractMethodDec(_:K,, Ks:KList)
@@ -301,19 +305,12 @@ syntax K ::= "storeMethod" "("
 syntax K     ::= "getTypesFromParams" "(" KList // list of paramImpl terms,
                                                // to be processed into Type terms
                                       ")"
-               | "getTypesFromParams" "(" KList "," //resulting types
-                                          KList     //source paramImpl terms
-                                      ")"
+        [function]
 
-rule getTypesFromParams(Ks:KList) => getTypesFromParams(.KList, Ks:KList)
-        [structural, anywhere]
+rule getTypesFromParams(_,, ('Param(_:K,, T:Type,, _:K) => T),, _)
 
-rule getTypesFromParams(Ts:KList, paramImpl(T:Type, _),, Ks:KList)
-     => getTypesFromParams(Ts,, T, Ks)
-        [structural, anywhere]
-
-rule getTypesFromParams(Ts:KList, .KList) => types(Ts)
-        [structural, anywhere]
+rule getTypesFromParams(Ts:KList) => types(Ts)
+when isKResult(Ts)
 
 rule [storeMethod]:
     <k>
@@ -365,8 +362,8 @@ rule [ConstrDecObjectDesugar]:
 when
     Class ==K objectClass
 
-//resolving constructor parameters, order is not important
-context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, 'ListWrap(_,, HOLE,, _),, _),, _:K)
+//Resolve parameter types
+context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, 'ListWrap(_,, 'Param(_:K,, HOLE ,,_:K),, _),, _),, _:K)
 
 rule [ConstrDec]:
     <k>
@@ -379,7 +376,7 @@ rule [ConstrDec]:
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-when isKResult(Params)
+when paramTypesResolved(Params)
 
 //@get the internal constructor name for a given class
 syntax K ::= "getConsName" "(" ClassType ")"                               [function]
@@ -490,12 +487,5 @@ when
 //respective <class> tag is encountered as part of processClasses
 rule [ClassDecDiscard]: 'ClassDec(_) => .
 rule [InterfaceDecDiscard]: 'InterfaceDec(_) => .
-
-/*@Section process 'Param labels*/
-
-context 'Param(_:K,, HOLE,, _:K)
-rule 'Param(_:K,, T:Type,, X:Id) => paramImpl(T,X)
-
-syntax KResult ::= "paramImpl" "(" Type "," Id ")"  //processed representation of a 'Param label
 
 endmodule

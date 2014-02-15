@@ -60,7 +60,6 @@ static initializers of a class and perform the following transformations:
 module ELABORATION-CORE
     imports CORE
     imports SUBTYPING
-    imports PROCESS-CLASS-MEMBERS        //for paramImpl
     imports ELABORATION-EXPRESSIONS      //for isExpressionLabel. todo remove dependence
 
 /*@Custom hole used for custom heating/cooling rules in the elaboration phase.*/
@@ -153,16 +152,16 @@ rule isElab(K:K,, Ks:KList)
 
 rule isElab(.KList) => true
 
+//@ Elaborate parameter type, if not elaborated yet.
+context  elab('Param(_:K,, HOLE,, _:Id))
+
 /*@Adds params to the <elabEnv>. Used in both ELABORATION-TOP-BLOCKS and ELABORATION-BLOCKS
 */
-syntax K ::= "elabParams" "(" KList ")"
-
 rule [elabParams]:
-    <k> elabParams((paramImpl(T:Type, X:Id) => .KList) ,,_) ...</k>
+    <k> elab('Param(K1:K,, T:Type,, X:Id)) => paramImpl(T, X) ...</k>
     <elabEnv> ListItem(stEnv((. => X |-> T) _)) ...</elabEnv>
 
-rule [elabParamsEnd]:
-    elabParams(.KList) => .K
+syntax KResult ::= paramImpl ( Type , Id )  //processed representation of a 'Param label
 
 //@Removes the last layer from <elabEnv>
 syntax K ::= "removeLastElabEnv"

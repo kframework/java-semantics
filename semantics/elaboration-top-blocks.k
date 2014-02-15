@@ -31,16 +31,30 @@ rule [elaborateBlocks]:
 rule [elaborateBlocksDiscard]:
     elaborateBlocks(setWrap(.)) => .
 
-rule [elabMethodsHeatMethodFirstLine]:
+rule [elabMethodsHeatMethodParams]:
     <k>
-      (. => addElabEnv ~> elabParams(Params) ~> elab(FirstLine))
+      (. => addElabEnv ~> elab(ParamsList))
       ~> elabMethods( (Sig |-> _ => .Map) _)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <methodDecs>
-      Sig:K |-> methodClosure(MClass:ClassType, 'ListWrap(Params:KList), CT:ContextType,_,_, (FirstLine:K => CHOLE), Body:K) :: MethodType:Type
+      Sig:K |-> methodClosure(MClass:ClassType, (ParamsList:K => CHOLE), CT:ContextType,_,_,_,_) :: MethodType:Type
+      ...
+    </methodDecs>
+    <contextType> _ => CT </contextType>
+
+rule [elabMethodsHeatMethodFirstLine]:
+    <k>
+      (elabRes(ParamsList:K) => elab(FirstLine)) ~> elabMethods(_:Map)
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    <methodDecs>
+      Sig:K |-> methodClosure(MClass:ClassType, (CHOLE => ParamsList), CT:ContextType,_,_,
+                              (FirstLine:K => CHOLE), Body:K) :: MethodType:Type
       ...
     </methodDecs>
     <contextType> _ => CT </contextType>
