@@ -498,17 +498,17 @@ when
 */
 syntax K ::= "elabDispose" "(" K ")"
 
-rule [elabDisposeStartDefault]:
+/*@ This rule is universal for all forms of terms, both instructions and statements.
+*/
+rule [elabDisposeStart]:
     elab(KL:KLabel(ElabResL:KList)) => elabDispose(KL(ElabResL))
 when
-            defaultElabChildren(KL)
-//            notBool customElabChildren(KL)
-    andBool isElab(ElabResL)
+    isElab(ElabResL)
 
 rule [elabDisposeProcess]:
     elabDispose(KL:KLabel(_,, (elabRes(K:K) => K),, _))
 
-rule [elabDisposToElabEnd]:
+rule [elabDisposeEnd]:
     elabDispose(KL:KLabel(Ks:KList)) => elabEnd(KL(Ks))
 when
     haveNoElabRes(Ks)

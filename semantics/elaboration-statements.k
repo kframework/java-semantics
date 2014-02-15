@@ -8,37 +8,41 @@ module ELABORATION-STATEMENTS
 //@ Elaboration of blocks
 
 rule [elabBlockHeat]:
-    <k> elab('Block('ListWrap(Ks:KList))) => elab('ListWrap(Ks)) ~> elab('Block(CHOLE)) ...</k>
-    <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
-    <localTypes> (. => ListItem(LocTypesK)) ListItem(LocTypesK:K) ...</localTypes>
+    elab('Block('ListWrap(Ks:KList))) => copyElabEnv ~> elab('ListWrap(Ks)) ~> elab('Block(CHOLE))
 
 rule [elabForHeatFirstSubterm]:
-    <k> (.=> elab(K)) ~> elab('For((K:K => CHOLE),, Ks:KList)) ...</k>
-    <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
-    <localTypes> (. => ListItem(LocTypesK)) ListItem(LocTypesK:K) ...</localTypes>
-when getKLabel(K) =/=KLabel 'elabRes`(_`)
+    elab('For(K:K,, Ks:KList)) => copyElabEnv ~> elab(K) ~> elab('For(CHOLE,, Ks:KList))
+when
+    notBool isElab(K)
 
 rule [elabForHeatOtherSubterms]:
-    (.=> elab(K)) ~> elab('For(_,, elabRes(_),, (K:K => CHOLE),, _))
-when getKLabel(K) =/=KLabel 'elabRes`(_`)
+    (.=> elab(K)) ~> elab('For(HeadKs:KList,, (K:K => CHOLE),, _))
+when
+    notBool isElab(K) andBool isElab(HeadKs)
 
 //@ HOLE is transformed into paramImpl
 context elab('Catch(HOLE,, _))
-when getKLabel(HOLE) =/=KLabel 'elabRes`(_`)
+when
+    notBool isElab(HOLE)
 
 //@ Catch creates a new env layer and saves its argument.
 rule [elabCatch]:
-    <k> elab('Catch(Param:KResult,, Body:K)) => elabParams(Param) ~> elab(Body) ~> elab('Catch(elabRes(Param),, CHOLE)) ...</k>
+    elab('Catch(Param:KResult,, Body:K))
+    => copyElabEnv ~> elabParams(Param) ~> elab(Body) ~> elab('Catch(elabRes(Param),, CHOLE))
+
+//@Adds a new layer to <elabEnv> that is a copy of the previous <elabEnv> layer.
+syntax K ::= "copyElabEnv"
+rule [copyElabEnv]:
+    <k> copyElabEnv => . ...</k>
     <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
     <localTypes> (. => ListItem(LocTypesK)) ListItem(LocTypesK:K) ...</localTypes>
 
 //here we need elabDispose because the block content is a list.
 //We could move the elabdospose logic to ListWrap instead of having it here.
 rule [elabDisposeBlockForOrCatch]:
-    <k> elab(KL:KLabel(ElabResL:KList)) => removeLastElabEnv ~> elabDispose(KL(ElabResL)) ...</k>
+    elabEnd(KL:KLabel(ElabResL:KList)) => removeLastElabEnv ~> elabRes(KL(ElabResL))
 when
-    isElab(ElabResL)
-    andBool ((KL ==KLabel 'Block) orBool (KL ==KLabel 'For) orBool (KL ==KLabel 'Catch))
+    (KL ==KLabel 'Block) orBool (KL ==KLabel 'For) orBool (KL ==KLabel 'Catch)
 
 //@ Local var declarations desugaring
 
