@@ -320,7 +320,7 @@ rule [elabBoolOnlyResultExpUnary]:
     elabEnd('Not(TE:K)) => elabRes('Not(TE) :: bool)
 
 rule [elabBoolOperandBoolResultExp]:
-    elabEnd(KL:KLabel(TExp1:K,, TExp2:K)) => elabRes(KL(TExp1,, TExp2) :: bool)
+    elabEnd(KL:KLabel(Exp1:K::bool,, Exp2:K::bool)) => elabRes(KL(Exp1::bool,, Exp2::bool) :: bool)
 when
            (KL ==KLabel 'Or)
     orBool (KL ==KLabel 'ExcOr)

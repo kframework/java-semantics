@@ -314,8 +314,8 @@ rule [processQAnonymousClass]:
 syntax K ::= "stmtAndExp" "(" K "," K ")"
 
 //elaboration time
-rule elabEnd(   stmtAndExp(Stmt:K, TExp:K))
-     => elabRes(stmtAndExp(Stmt,   TExp  ))
+rule elabEnd(   stmtAndExp(Stmt:K, Exp:K ::T:Type))
+     => elabRes(stmtAndExp(Stmt,   Exp   ::T     ) :: T)
 
 //runtime
 rule stmtAndExp(Stmt:K, TExp:K)::_ => Stmt ~> TExp
