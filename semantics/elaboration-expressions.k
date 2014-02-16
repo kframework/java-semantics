@@ -280,7 +280,7 @@ rule isNonNumericExp(KL:KLabel) =>
     orBool (KL ==KLabel 'NewInstance)   // also in customElabChildren
     orBool (KL ==KLabel 'QNewInstance)  // also in customElabChildren
     orBool (KL ==KLabel 'InstanceOf)
-    orBool (KL ==KLabel 'castImpl`(_`,_`))
+    orBool (KL ==KLabel 'cast`(_`,_`))
     orBool (KL ==KLabel 'Invoke)
     orBool (KL ==KLabel 'This)
     orBool (KL ==KLabel 'QThis)
@@ -392,7 +392,7 @@ rule [elabAssignSameType]:
 rule [elabAssignDiffType]:
     elabEnd('Assign(
        Exp1:K::T1:Type,,
-      (Exp2:K::T2:Type => castImpl(T1, Exp2::T2)::T1)
+      (Exp2:K::T2:Type => cast(T1, Exp2::T2)::T1)
     ))
 when
     T1 =/=K T2
@@ -405,11 +405,11 @@ when
 /*@ \subsection{Elaboration of non-numeric expressions} */
 
 //@ elab cast
-rule elabEnd('CastRef(T:Type,, TExp:K)  => castImpl(T, TExp))      [structural]
-rule elabEnd('CastPrim(T:Type,, TExp:K) => castImpl(T, TExp))      [structural]
+rule elabEnd('CastRef(T:Type,, TExp:K)  => cast(T, TExp))      [structural]
+rule elabEnd('CastPrim(T:Type,, TExp:K) => cast(T, TExp))      [structural]
 
 rule [elabCast]:
-    elabEnd(castImpl(T1:Type, TExp:K)) => elabRes(castImpl(T1, TExp) :: T1)
+    elabEnd(cast(T1:Type, TExp:K)) => elabRes(cast(T1, TExp) :: T1)
 
 /*@ \subsubsection{Elaboration of 'NewInstance and 'QNewInstance} */
 

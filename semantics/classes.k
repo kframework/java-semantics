@@ -252,7 +252,7 @@ rule [InstanceOf]:
 /*@ \subsection{Cast} */
 
 rule [CastRef]:
-    castImpl(RT1:RefType, V:RawVal :: RT2:RefType)
+    cast(RT1:RefType, V:RawVal :: RT2:RefType)
     =>  'If(
           subtype(typeOf(V), RT1),,
           (V::RT1),,

@@ -656,7 +656,7 @@ rule [bindto]:
     <k>
       bindto paramImpl(T:Type, X:Id),, RestP:KList, TV:TypedVal,, RestV:KList
       => 'LocalVarDec(.K,, T:Type,,'ListWrap('VarDec(X)))
-        ~> 'ExprStm('Assign(localVar(X),, castImpl(T, TV:TypedVal)))
+        ~> 'ExprStm('Assign(localVar(X),, cast(T, TV:TypedVal)))
         ~> bindto RestP, RestV
       ...
     </k>

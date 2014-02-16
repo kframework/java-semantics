@@ -14,7 +14,7 @@ module EXPRESSIONS
 //Concerting typed expressions into expressions with casts
 //todo Temp: this rule is an intermadiate step untill we'll finish conversion of TypedExp into cast.
 rule [typedExp-generic]:
-    Exp:K :: T:Type => castImpl(T, Exp)
+    Exp:K :: T:Type => cast(T, Exp)
 when
     notBool (isExtendedRawVal(Exp) ==K true)
         [structural]
@@ -251,7 +251,7 @@ rule [expLValueCool]:
 //question: Why can't we move this desugaring into elaboration phase?
 rule [CompoundAssign]:
     KL:KLabel(loc(L:Int) :: T1:Type,, Exp2:K)
-    => 'Assign(loc(L)::T1,, castImpl(T1, getOpLabel(KL)(lookup(L)::T1,, Exp2)))
+    => 'Assign(loc(L)::T1,, cast(T1, getOpLabel(KL)(lookup(L)::T1,, Exp2)))
 when isCompoundAssignLabel(KL)
 
 //only for Compound Assign KLabel's
@@ -270,20 +270,20 @@ rule getOpLabel('AssignURightShift) => 'URightShift
 
 /*@ \subsection{primitive types cast} */
 
-syntax K ::= "castImpl" "(" Type "," K ")"
-context castImpl(_,HOLE)
+syntax K ::= "cast" "(" Type "," K ")"
+context cast(_,HOLE)
 
 //@ The type of RV could either be NumericType or tempType. This rule matches both.
-rule [CastNumber]: castImpl(NT:NumericType, RV:RawVal::_) => normalize(RV::NT)
+rule [CastNumber]: cast(NT:NumericType, RV:RawVal::_) => normalize(RV::NT)
 
-rule [CastBool]: castImpl(bool, B:Bool::bool) => B::bool
+rule [CastBool]: cast(bool, B:Bool::bool) => B::bool
 
 /*@ \subsubsection{artificial cases of cast, arised during semantics separation} */
 
-rule [Cast-void]: castImpl(void, RV:RawVal::void) => RV::void
+rule [Cast-void]: cast(void, RV:RawVal::void) => RV::void
 
 //Happens for the qualifier of a static method call
-rule [Cast-noValue]: castImpl(_, noValue) => noValue
+rule [Cast-noValue]: cast(_, noValue) => noValue
 
 /*@ \subsection{lvalue and loc syntax} */
 
