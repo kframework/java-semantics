@@ -95,23 +95,11 @@ rule [elabLocalVarNoValue]:
   <elabEnv> ListItem(stEnv(StEnv:Map)) ...</elabEnv>
 when notBool (X in keys(StEnv))
 
-//todo check if needed
-/*rule [elabFieldWithQThis]:
-    elabEnd('Field( 'QThis(Class:ClassType),, X:Id ))
-    => elab('Field( elabRes('QThis(Class:ClassType) :: Class),, X )) ?? elab('Field( Class,, X))*/
-
 rule [FieldOfPackage]:
     elabEnd('Field( _:PackageId,, _:Id )) => noValue  [structural]
 
 rule [FieldOfNoValue]:
     elabEnd('Field( noValue,, _:Id )) => noValue      [structural]
-
-//todo check if needed
-/*rule [FieldOfNoClass]:
-    elabEnd('Field( noClass,, _:Id )) => noValue      [structural]
-
-rule [FieldOfQThis-noClass]:
-    elabEnd('Field( 'QThis(noClass)::noClass,, _:Id )) => noValue      [structural]*/
 
 //@Computation of instance and static environment of a class, e.g. set of fields
 
