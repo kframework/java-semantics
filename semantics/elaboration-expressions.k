@@ -50,7 +50,7 @@ syntax K ::= "externalVar" "(" Id         //X - var name
 rule [externalVar]:
     <k>
       externalVar(X:Id, Class:ClassType)
-      => elabEnd('Field( 'QThis(Class),, X )) ?? elabOuterLocalVar(X, Class) ?? externalVar(X, EnclosingClass)
+      => elabEnd('Field( 'QThis(Class)::Class,, X )) ?? elabOuterLocalVar(X, Class) ?? externalVar(X, EnclosingClass)
       ...
     </k>
     <classType> Class </classType>
@@ -95,11 +95,10 @@ rule [elabLocalVarNoValue]:
   <elabEnv> ListItem(stEnv(StEnv:Map)) ...</elabEnv>
 when notBool (X in keys(StEnv))
 
-rule [elabFieldWithQThis]:
+//todo check if needed
+/*rule [elabFieldWithQThis]:
     elabEnd('Field( 'QThis(Class:ClassType),, X:Id ))
-    => elab('Field( elabRes('QThis(Class:ClassType) :: Class),, X )) ?? elab('Field( Class,, X))
-when
-    Class =/=K noClass
+    => elab('Field( elabRes('QThis(Class:ClassType) :: Class),, X )) ?? elab('Field( Class,, X))*/
 
 rule [FieldOfPackage]:
     elabEnd('Field( _:PackageId,, _:Id )) => noValue  [structural]
@@ -107,8 +106,12 @@ rule [FieldOfPackage]:
 rule [FieldOfNoValue]:
     elabEnd('Field( noValue,, _:Id )) => noValue      [structural]
 
+//todo check if needed
+/*rule [FieldOfNoClass]:
+    elabEnd('Field( noClass,, _:Id )) => noValue      [structural]
+
 rule [FieldOfQThis-noClass]:
-    elabEnd('Field( 'QThis(noClass),, _:Id )) => noValue      [structural]
+    elabEnd('Field( 'QThis(noClass)::noClass,, _:Id )) => noValue      [structural]*/
 
 //@Computation of instance and static environment of a class, e.g. set of fields
 
