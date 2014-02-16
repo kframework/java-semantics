@@ -63,6 +63,8 @@ rule [FieldDecWithArrayInitDesugar]:
 
 //first two rules - desugaring C-like array declarations, for params
 
+/*@ Thi rule and the next one may happen both in elaboration, execution or process members phases.
+They are required to be [anywhere]. */
 rule [ArrayParamIdDesugar]:
     'Param(
       _:K,,
@@ -71,13 +73,13 @@ rule [ArrayParamIdDesugar]:
           X:Id,,
           'ListWrap(('Dim(.KList) => .KList) ,,_)
       )
-    )                                                   [structural]
+    )                                                   [structural, anywhere]
 
 rule [ArrayParamIdDiscard]:
     'Param(
       _:K,, T:Type,,
       ( 'ArrayVarDecId( X:Id,, 'ListWrap(.KList) ) => X )
-    )                                                   [structural]
+    )                                                   [structural, anywhere]
 
 /*@ \subsection{Array access}
 Check array bounds, as part of the dynamic typing policy. */

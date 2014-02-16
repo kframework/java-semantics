@@ -152,7 +152,7 @@ rule isElab(K:K,, Ks:KList)
 
 rule isElab(.KList) => true
 
-//@ Elaborate parameter type, if not elaborated yet.
+//@ Elaborate parameter type, if not elaborated yet. For catch clause.
 context  elab('Param(_:K,, HOLE,, _:Id))
 
 /*@Adds params to the <elabEnv>. Used in both ELABORATION-TOP-BLOCKS and ELABORATION-BLOCKS

@@ -281,7 +281,7 @@ when
     paramTypesResolved(Params)                        [structural]
 
 syntax K ::= paramTypesResolved( KList )              [function]
-rule paramTypesResolved(('Param(_:K,, TypeK:K,, _:K) => .KList),, _)
+rule paramTypesResolved(('Param(_:K,, TypeK:K,, _:Id) => .KList),, _)
 rule paramTypesResolved(.KList) => true
 
 rule [AbstractMethodDec]:
@@ -307,7 +307,7 @@ syntax K     ::= "getTypesFromParams" "(" KList // list of paramImpl terms,
                                       ")"
         [function]
 
-rule getTypesFromParams(_,, ('Param(_:K,, T:Type,, _:K) => T),, _)
+rule getTypesFromParams(_,, ('Param(_:K,, T:Type,, _:Id) => T),, _)
 
 rule getTypesFromParams(Ts:KList) => types(Ts)
 when isKResult(Ts)
