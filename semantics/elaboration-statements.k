@@ -1,52 +1,46 @@
 require "core.k"
+require "classes.k"
 require "elaboration-core.k"
 
 module ELABORATION-STATEMENTS
     imports CORE
+    imports CLASSES             //for setEncloser
     imports ELABORATION-CORE
 
-//@ Elaboration of blocks
+//@ Elaboration of 'ListWrap, 'Block, 'For or 'Catch - nodes that may contain variable declarations.
 
-rule [elabBlockHeat]:
-    elab('Block('ListWrap(Ks:KList))) => copyElabEnv ~> elab('ListWrap(Ks)) ~> elab('Block(CHOLE))
+/*@ 'ListWrap nodes need to be elaborated left-to-right. Required when direct child elements might contain variable
+declarations.
+*/
+rule customElabHeating('ListWrap, HeadKs:KList,, K:K) => isElab(HeadKs)
 
-rule [elabForHeatFirstSubterm]:
-    elab('For(K:K,, Ks:KList)) => copyElabEnv ~> elab(K) ~> elab('For(CHOLE,, Ks:KList))
-when
-    notBool isElab(K)
-
-rule [elabForHeatOtherSubterms]:
-    (.=> elab(K)) ~> elab('For(HeadKs:KList,, (K:K => CHOLE),, _))
-when
-    notBool isElab(K) andBool isElab(HeadKs)
-
-//@ Catch creates a new env layer and saves its argument.
-rule [elabCatchFirstArg]:
-    elab('Catch(Param:K,, Body:K))
-    => copyElabEnv ~> elab(Param) ~> elab('Catch(CHOLE,, Body))
-when
-    notBool isKResult(Param) ==K true
-
-//@ The second arg is heated by the same algorithm as the defaut one.
-rule [elabCatchSecndArg]:
-    elab('Catch(Param:KResult,, Body:K))
-    => elab(Body) ~> elab('Catch(Param,, CHOLE))
-when
-    notBool isElab(Body)
-
-//@Adds a new layer to <elabEnv> that is a copy of the previous <elabEnv> layer.
-syntax K ::= "copyElabEnv"
-rule [copyElabEnv]:
-    <k> copyElabEnv => . ...</k>
+/*@ In addition to what defaul elab heating does, when we heat the first argument of 'Block, 'For of 'Catch
+we need to save a copy of elaboration environment - e.g. the last entry of <elabEnv> <localTypes>.
+This is because these statements are blocks that might declare local variables.
+*/
+rule [elabHeat-BlockForOrCatch-FirstSubterm]:
+    <k> elab(KL:KLabel(K:K,, Ks:KList)) => elab(K) ~> elab(KL(CHOLE,, Ks:KList)) ...</k>
     <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
     <localTypes> (. => ListItem(LocTypesK)) ListItem(LocTypesK:K) ...</localTypes>
+when
+    (KL ==KLabel 'Block orBool KL ==KLabel 'For orBool KL ==KLabel 'Catch)
+    andBool notBool isElab(K)
 
-//here we need elabDispose because the block content is a list.
-//We could move the elabdospose logic to ListWrap instead of having it here.
-rule [elabDisposeBlockForOrCatch]:
+rule [customElabHeating-For-False]:
+    customElabHeating('For, KHole:K) => false
+//Children should be heated left-to-right
+rule [customElabHeating-For-True]:
+    customElabHeating('For, HeadKs:KList,, KPrec:K,, KHole:K) => isElab(HeadKs,,KPrec)
+
+rule [customElabHeating-Catch-False]:
+    customElabHeating('Catch, KHole:K) => false
+rule [customElabHeating-For-True]:
+    customElabHeating('Catch, K1:K,, KHole:K) => isElab(K1)
+
+rule [elabEnd-BlockForOrCatch]:
     elabEnd(KL:KLabel(ElabResL:KList)) => removeLastElabEnv ~> elabRes(KL(ElabResL))
 when
-    (KL ==KLabel 'Block) orBool (KL ==KLabel 'For) orBool (KL ==KLabel 'Catch)
+    KL ==KLabel 'Block orBool KL ==KLabel 'For orBool KL ==KLabel 'Catch
 
 //@ Local var declarations desugaring
 
@@ -79,16 +73,15 @@ rule [elabLocalVarDec]:
     </k>
     <elabEnv> ListItem(stEnv((. => X |-> T) _)) ...</elabEnv>
 
-//@\subsection{Elaboration of SuperConstrInv, AltConstrInv}
+//@\subsection{Elaboration of SuperConstrInv, QSuperConstrInv, AltConstrInv}
 
 //@ Desugaring unqualified superclass constructor invocation into a qualified one
 rule [SuperConstrInv-desugar]:
     <k>
-      (. => getElabResQThisSubclassOf(EnclosingClass, SubEnclosingClass))
-      ~> elab(
+      elab(
         'SuperConstrInv(K:K,, 'ListWrap( Args:KList ))
         =>  'QSuperConstrInv(
-              CHOLE,,
+              getQThisSubclassOf(EnclosingClass, SubEnclosingClass),,
               K,,
               'ListWrap(Args)
             )
@@ -146,6 +139,6 @@ rule [AltConstrInv]:
 rule [elabEndStatements]:
     elabEnd(KL:KLabel(Ks:KList)) => elabRes(KL(Ks))
 when
-    notBool isExpressionLabel(KL)
+    notBool (isExpressionLabel(KL) orBool KL ==KLabel 'getQThisSubclassOf)  //todo temp workaround. Improve this case
 
 endmodule

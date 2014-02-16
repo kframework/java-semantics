@@ -60,7 +60,6 @@ static initializers of a class and perform the following transformations:
 module ELABORATION-CORE
     imports CORE
     imports SUBTYPING
-    imports ELABORATION-EXPRESSIONS      //for isExpressionLabel. todo remove dependence
 
 /*@Custom hole used for custom heating/cooling rules in the elaboration phase.*/
 syntax K ::= "CHOLE"
@@ -81,44 +80,7 @@ syntax K ::= "elab" "(" K ")"
 //@ Wraps the elaboration result. Since elaboration may happen at both ElaborationPhase and ExecutionPhase, it cannot be KResult. Actually it is not KResult for HOLE, but is for CHOLE.
 syntax ElabKResult ::= "elabRes" "(" K ")"
 
-//@Sets the enclosing object for a given object.
-//@Invoked by invokeConstr and QSuperConstrInv.
-//@Defined in CLASSES
-syntax K ::= "setEncloser" "(" TypedExp   //Evaluates to source object
-                           "," ClassType  //Class layer in the source object for which to set the enclosing object.
-                           "," K          //The enclosing object
-                           ")"            [strict(1,3)]
-
-/*@ Computes into an expression of the form elabRes('QThis(QualClass)::QualClass),
-where QualClass is searched in the enclosing context of the first argument,
-being a subclass of the second one.
-Or elabRes(noValue) if no suitable result is found
-*/
-syntax K ::= "getElabResQThisSubclassOf" "(" ClassType //The context class in which qualifier is searched for.
-                                         "," ClassType //Qualifier should be subclass of this class
-                                         ")"            [strict(2)]
-
-rule [getElabResQThisSubclassOf]:
-    <k>
-      getElabResQThisSubclassOf(QualClass:ClassType, ReqClass:ClassType)
-      => 'If(
-            subtype(QualClass, ReqClass),,
-            elabRes('QThis(QualClass)::QualClass),,
-            getElabResQThisSubclassOf(QualEncloserClass, ReqClass)
-          )
-      ...
-    </k>
-    <classType> QualClass </classType>
-    <enclosingClass> QualEncloserClass:ClassType </enclosingClass>
-when
-    ReqClass =/=K noClass
-
-rule [getElabResQThisSubclassOf-top-level]:
-    getElabResQThisSubclassOf(_, noClass) => elabRes(noValue)
-
-//@Happens for 'NewInstance expressions for static inner classes.
-rule [getElabResQThisSubclassOf-static]:
-    getElabResQThisSubclassOf(noClass, _) => elabRes(noValue)
+/*@ \subsection{Operator ??}*/
 
 /*@ Chain of responsibility pattern.
 Evaluate the first argument. if it is KResult (except noValue) or elabRes(), the result of the ?? expression is
@@ -172,7 +134,6 @@ rule [removeLastElabEnv]:
 
 /*@ \subsection{Elaboration of code blocks} */
 
-//todo custom elab heating rule
 /*@ Heating arguments for both expression and statement terms.
 The attribute [transition-strictness] is used as transition attribute for testing strictness.
 This is a rule that may lead to unexpected nondeterminism if it is wrongly implemented.
@@ -181,10 +142,9 @@ In order to expose incorrect nondeterminism we need to model-check a program tha
 rule [elabHeat-default]:
     (. => elab(K)) ~> elab(KL:KLabel(HeadKs:KList,, (K:K => CHOLE),, _:KList))
 when
-            defaultElabChildren(KL)
+    (defaultElabHeating(KL) orBool customElabHeating(KL, (HeadKs,,K)) ==K true)
     andBool notBool isElab(K)
     andBool notBool isElabNaked(K)
-    andBool isElab(HeadKs)    //Forces elaboration left-to-right. Required when KL == 'ListWrap of statements.
         [transition-strictness]
 
 rule [elabCool-default]:
@@ -192,58 +152,16 @@ rule [elabCool-default]:
 when
     isElab(ElabK)
 
-/* todo generalized context rule. Don't work yet as we cannot have KResult in the RHS of a syntax declaration.
-*/
-/* Disadvantage of generic elab heating:
-  heated terms oare of 2 cathegories: defaultElabChildren and naked. for naked terms we should not heat
-  their children anymore, but should unwrap their elab() wrapper. This is accomplished well enough for the moment.
-*/
-/*context elab(KL:KLabel(HeadKs:KList,, (HOLE:K => elab(HOLE)),, _:KList))
-when
-            defaultElabChildren(KL)
-    andBool notBool isElabNaked(HOLE)
-    andBool isElab(HeadKs)    //Forces elaboration left-to-right. Required when KL == 'ListWrap of statements.
-        [result(ElabKResult), transition-strictness]
-
-syntax ElabKResult ::= TypedExp
-
-//hack suggested by Traian, an alternative to subsorting KResult to ElabKResult
-rule isElabKResult(K:KResult) => true*/
-
-/*@ Terms that should use custom elaboration rules. For those terms:
-    - They will not be automatically heated from their parents into the elab() state.
-    - They will not be automatically passed to elabDispose() state. Instead, those terms should have custom rules
-      for elaboration start (heating) and elaboration end (cooling).
-  Since all the automatic elaboration-related rules are an incredible mess, we have to put all the AST terms into this
-    cathegory one by one, and eliminate automatic elaboration heating/cooling rules altogether.
-*/
-syntax K ::= "customElabChildren" "(" KLabel ")"                [function]
-rule customElabChildren(KL:KLabel) =>
-           (KL ==KLabel 'Block)
-    orBool (KL ==KLabel 'For)
-    orBool (KL ==KLabel 'Catch)
-    orBool (KL ==KLabel 'LocalVarDecStm)
-    orBool (KL ==KLabel 'LocalVarDec)
-    orBool (KL ==KLabel 'SuperConstrInv)
-    orBool (KL ==KLabel 'QSuperConstrInv)
-    orBool (KL ==KLabel 'AltConstrInv)
-    orBool (KL ==KLabel 'ClassDecStm)
-    orBool (KL ==KLabel 'NewInstance)
-    orBool (KL ==KLabel 'QNewInstance)
-
 /*@ Java KLabels that are processed by default heating/cooling rules of elaboration.
 All KLabels that can be part of a code block during elaboration phase,
 except those members of customElabChildren or isElabNaked groups.
 
 This predicate should be disjoint with customElabChildren (no longer used) and isElabNaked
-
-todo: maybe statements should be processed by default rules as they are now, but expressions should not.
-Let's start from expressions.
 */
-syntax K ::= "defaultElabChildren" "(" KLabel ")"                [function]
-rule defaultElabChildren(KL:KLabel) =>
-           (KL ==KLabel 'ListWrap)
-    orBool (KL ==KLabel 'Some)
+syntax K ::= "defaultElabHeating" "(" KLabel ")"                [function]
+rule defaultElabHeating(KL:KLabel) =>
+           /*(KL ==KLabel 'ListWrap)*/
+           (KL ==KLabel 'Some)
     orBool (KL ==KLabel 'None)
     /*orBool (KL ==KLabel 'Single)
     orBool (KL ==KLabel 'NamedEscape)
@@ -450,9 +368,9 @@ rule auxLabelInElab(KL:KLabel) =>
   Since a naked term is always computed int oa KResult during elaboration,
   we can use a simple context rule to heat such terms.
 */
-context elab(KL:KLabel(_:KList,, HOLE,, _:KList))
+context elab(KL:KLabel(HeadKs:KList,, HOLE,, _:KList))
 when
-            defaultElabChildren(KL)
+            (defaultElabHeating(KL) orBool customElabHeating(KL, (HeadKs,,HOLE)) ==K true)
     andBool isElabNaked(HOLE)
 
 /*@ Naked terms are those that should be computed directly into KResult during elaboration.
@@ -472,9 +390,47 @@ rule isElabNaked(K:K) =>
     orBool (getKLabel(K) ==KLabel 'PackageOrTypeName)
     orBool (getKLabel(K) ==KLabel 'Id)
     orBool (getKLabel(K) ==KLabel 'Lit andBool getInnerKLabel(K) =/=KLabel 'Class)
+    orBool auxLabelElabNaked(getKLabel(K))
 
 syntax KLabel ::= "getInnerKLabel" "(" K ")"                    [function]
 rule getInnerKLabel(_:KLabel(KL:KLabel(_))) => KL
+
+syntax K ::= auxLabelElabNaked( KLabel )                        [function]
+rule auxLabelElabNaked(KL:KLabel) => false
+
+/*@ Terms that should use custom elaboration rules. For those terms:
+    - They will not be automatically heated from their parents into the elab() state.
+    - They will not be automatically passed to elabDispose() state. Instead, those terms should have custom rules
+      for elaboration start (heating) and elaboration end (cooling).
+  Since all the automatic elaboration-related rules are an incredible mess, we have to put all the AST terms into this
+    cathegory one by one, and eliminate automatic elaboration heating/cooling rules altogether.
+*/
+syntax K ::= "customElabChildren" "(" KLabel ")"                [function]
+rule customElabChildren(KL:KLabel) =>
+           (KL ==KLabel 'ListWrap)
+    orBool (KL ==KLabel 'Block)
+    orBool (KL ==KLabel 'For)
+    orBool (KL ==KLabel 'Catch)
+    orBool (KL ==KLabel 'LocalVarDecStm)
+    orBool (KL ==KLabel 'LocalVarDec)
+    orBool (KL ==KLabel 'SuperConstrInv)
+    orBool (KL ==KLabel 'QSuperConstrInv)
+    orBool (KL ==KLabel 'AltConstrInv)
+    orBool (KL ==KLabel 'ClassDecStm)
+    orBool (KL ==KLabel 'NewInstance)
+    orBool (KL ==KLabel 'QNewInstance)
+
+/*@ Must be true for AST nodes that require elaboration heating of their children. For the arguments KL, Ks,
+the original node is of he form KL(KS,,_) and the heated child is always the last element of Ks.
+Thus it is possible to decide whether the child is allowed to be heated based both on the position of the child
+in the list of arguments as well as based on the state of previous brothers.
+
+  This predicate is intended to be used for KLabels that require specific child heating rules based on the state
+of their children. The KLabels that heat all their children using default rules are enumerated in the predicate
+defaultElabHeating.
+
+The predicate definition is scattered across modules related to elaboration.*/
+syntax K ::= customElabHeating ( KLabel , KList )         [function]
 
 //todo elaboration-related hack - we should not have special elaboration rules for auxiliary constructs
 syntax K ::= elabPassThrough( KLabel ) [function]
@@ -524,6 +480,41 @@ unwrapped from elabRes(), but root node might not be elaborated yet. The impleme
 that deal with the elaboration phase.
 */
 syntax K ::= elabEnd ( K )
+
+//@ \subsection{Auxiliary functions for execution phase}
+
+/*@ Computes into an expression of the form elabRes('QThis(QualClass)::QualClass),
+where QualClass is searched in the enclosing context of the first argument,
+being a subclass of the second one.
+Or elabRes(noValue) if no suitable result is found
+*/
+syntax K ::= getQThisSubclassOf ( ClassType //The context class in which qualifier is searched for.
+                                , ClassType //Qualifier should be subclass of this class
+                                )
+
+context elab(getQThisSubclassOf(_, HOLE))
+
+rule [getQThisSubclassOf]:
+    <k>
+      elabEnd(getQThisSubclassOf(QualClass:ClassType, ReqClass:ClassType))
+      => 'If(
+            subtype(QualClass, ReqClass),,
+            elabRes('QThis(QualClass)::QualClass),,
+            elabEnd(getQThisSubclassOf(QualEncloserClass, ReqClass))
+          )
+      ...
+    </k>
+    <classType> QualClass </classType>
+    <enclosingClass> QualEncloserClass:ClassType </enclosingClass>
+when
+    ReqClass =/=K noClass
+
+rule [getQThisSubclassOf-top-level]:
+    elabEnd(getQThisSubclassOf(K:K, noClass)) => elabRes(noValue)
+
+//@Happens for 'NewInstance expressions for static inner classes.
+rule [getQThisSubclassOf-static]:
+    elabEnd(getQThisSubclassOf(noClass, K:K)) => elabRes(noValue)
 
 //@ \subsection{Hacks related to elaboration during execution phase}
 

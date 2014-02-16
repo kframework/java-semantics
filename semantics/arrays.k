@@ -332,7 +332,7 @@ rule [arrayInitImplInnerArrayInit]:
     ( . => 'ExprStm(assignImpl(
               true,
               L,
-              newArrayImpl(T, 'ListWrap(count(InitContent)), .K, InitContent)
+              newArrayImpl(T, 'ListWrap(length(InitContent)::int), .K, InitContent)
            )) )
     ~> arrayInitImpl(
           arrayOf arrayOf T:Type,

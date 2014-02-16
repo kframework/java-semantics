@@ -420,46 +420,42 @@ rule elabEnd('CastPrim(T:Type,, TExp:K) => castImpl(T, TExp))      [structural]
 rule [elabCast]:
     elabEnd(castImpl(T1:Type, TExp:K)) => elabRes(castImpl(T1, TExp) :: T1)
 
-//@ Heat the class name
-context elab('NewInstance(_:K,, HOLE,, _))
+/*@ \subsubsection{Elaboration of 'NewInstance and 'QNewInstance} */
 
-//@ Heat the unqualified constructor arguments. Required if this class is anonymous.
-rule (. => elab(K)) ~> elab('NewInstance(_:K,,_:K,, (K:K => CHOLE),, _:K))
-when
-    notBool isElab(K)
+/*elab('NewInstance()) is strict in arguments 2 and 3 - class name and constrctor arguments.
+Constrctor arguments have to be heated if this class is anonymous.
+*/
+rule customElabHeating('NewInstance, Ks:KList) => length(Ks) in (SetItem(2) SetItem(3))
 
 rule [elabNewInstance]:
     <k>
-      elab('NewInstance(Arg1:K,, Class:ClassType,, ActualArgsList:K,, 'None(.KList)))
-      => getElabResQThisSubclassOf(CrntClass, getEnclosingClass(Class))
-      ~> elab('QNewInstance(CHOLE,, Arg1,, Class,, 'None(.KList),, ActualArgsList,, 'None(.KList)))
+      elab(
+        'NewInstance(Arg1:K,, Class:ClassType,, ActualArgsList:K,, 'None(.KList))
+        => 'QNewInstance(
+          getQThisSubclassOf(CrntClass, getEnclosingClass(Class)),,
+          Arg1,, Class,, 'None(.KList),, ActualArgsList,, 'None(.KList)
+        )
+      )
       ...
     </k>
     <crntClass> CrntClass:ClassType </crntClass>
 
-//@ Heat the qualifier in 'QNewInstance
-rule (. => elab(K)) ~> elab('QNewInstance((K:K => CHOLE),, _))
-when
-    notBool isElab(K)
+/*@ elab('QNewInstance()) is strict in ins qualifier, constructor arguments. */
+rule customElabHeating('QNewInstance, Ks:KList) => length(Ks) in (SetItem(1) SetItem(5))
 
-//@ Heat the qualified constructor arguments
-rule (. => elab(K)) ~> elab('QNewInstance(_:K,,_:K,,_:K,,_:K,, (K:K => CHOLE),, _:K))
-when
-    notBool isElab(K)
-
-//@ Heat the class name, if it could be resolved to a type
+//@ Heat the class name if it is not a simple name.
 context elab('QNewInstance(_:K,,_:K,, HOLE,, _))
 when
-    notBool isId(HOLE)
+    notBool isId(HOLE) ==K true
 
 rule [elabQNewInstance-resolve-class]:
-    (. => resolveInnerClass(QualClass, Name))
-    ~> elab('QNewInstance(elabRes(_::QualClass:ClassType),, _:K,,
-      (Name:Id => CHOLE),,
+    elab('QNewInstance(elabRes(_::QualClass:ClassType),, _:K,,
+      (Name:Id => resolveInnerClass(QualClass, Name)),,
     _))
 
-//@ Resolve the simple name of an inner class to a fully qualified class name in
-//@ a qualified new like: o.new A(...);
+/*@ Resolve the simple name of an inner class to a fully qualified class name in
+a qualified new like: o.new A(...);
+*/
 syntax K ::= "resolveInnerClass" "(" ClassType //QualClass - the type of the qualifier
                                  "," Id        //Name - instantiated class simple name
                                  ")"
@@ -498,11 +494,15 @@ rule [elab-QNewInstance]:
 rule [elabInstanceOf]:
     elabEnd('InstanceOf(TExp:K,, RT2:RefType)) => elabRes('InstanceOf(TExp,, RT2) :: bool)
 
+/*@ \subsubsection{Elaboration of class literals} */
+
 //@ Class literal types are heated by this rule.
 context elab('Lit('Class(HOLE)))
 
 rule [elabLitClass]:
     elab('Lit('Class(T:Type))) => elabRes('Lit('Class(T:Type)) :: class String2Id("java.lang.Class"))
+
+/*@ \subsubsection{Elaboration of array-related expressions} */
 
 rule [elabArrayAccess]:
     elabEnd('ArrayAccess(TargetExp:K::arrayOf T:Type,, IndexTE:K))
@@ -537,15 +537,15 @@ rule [ArrayInitPreprocess]:
 
 rule [ArrayInit]:
     elabEnd('NewArray(arrayOf T:Type,, 'ListWrap(.KList),, 'ArrayInit('ListWrap(InitContent:KList))))
-    => elabRes(newArrayImpl(T, 'ListWrap(count(InitContent)), .K, InitContent) :: arrayOf T)
+    => elabRes(newArrayImpl(T, 'ListWrap(length(InitContent)::int), .K, InitContent) :: arrayOf T)
 
 //@ Counts the number of elements in the KList list. Evaluates to an Int::int .
-syntax K ::= "count" "(" KList ")"
-           | "count" "(" Int "," KList ")"
+syntax K ::= "length" "(" KList ")"                                      [function]
+           | "length" "(" Int "," KList ")"                              [function]
 
-rule count(Ks:KList) => count(0, Ks)
-rule count(I:Int, K:K,, Ks:KList) => count(I +Int 1, Ks)
-rule count(I:Int, .KList) => I::int
+rule length(Ks:KList) => length(0, Ks)
+rule length(I:Int, K:K,, Ks:KList) => length(I +Int 1, Ks)
+rule length(I:Int, .KList) => I
 
 //K bug: latex workaround - manual character escape.
 //@ True for 'QThis(\_)::T, false otherwise

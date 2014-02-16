@@ -147,6 +147,14 @@ rule [invokeConstr]:
           'ListWrap( Vals )
         )))
 
+/*@Sets the enclosing object for a given object.
+Invoked by invokeConstr and QSuperConstrInv. Defined in CLASSES.
+*/
+syntax K ::= "setEncloser" "(" K          //Evaluates to source object
+                           "," ClassType  //Class layer in the source object for which to set the enclosing object.
+                           "," K          //The enclosing object
+                           ")"            [strict(1,3)]
+
 rule [setEncloser-value]:
     <k>
       setEncloser(objectClosure(OL:Int, _,_)::_, Class:ClassType, EncloserRV:RawVal::_) => .

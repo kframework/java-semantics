@@ -1,4 +1,5 @@
 require "core.k"
+require "process-type-names.k"
 require "elaboration-core.k"
 
 /*@ Elaboration of types and packages.
@@ -6,6 +7,7 @@ require "elaboration-core.k"
 module ELABORATION-TYPES
     imports CORE
     imports ELABORATION-CORE
+    imports PROCESS-TYPE-NAMES        // for getNamesMap()
 
 /*@ \subsection{Elaboration of types} */
 
