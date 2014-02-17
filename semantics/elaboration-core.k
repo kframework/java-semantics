@@ -23,7 +23,7 @@ static initializers of a class and perform the following transformations:
   \end{itemize}
   \item each method signature is resolved into its appropriate overloaded version. To
     denote the version, each actual parameter will be casted to the type of the actual parameter.
-  \item each expression Exp will be replaced with a corresponding typed expression Exp :: T,
+  \item each expression Exp will be replaced with a corresponding typed expression cast(T, Exp),
     T being the compile-time type of the expression.
 \end{itemize}
 
@@ -60,6 +60,7 @@ static initializers of a class and perform the following transformations:
 module ELABORATION-CORE
     imports CORE
     imports SUBTYPING
+    imports EXPRESSIONS   //for cast()
 
 /*@Custom hole used for custom heating/cooling rules in the elaboration phase.*/
 syntax K ::= "CHOLE"
@@ -499,7 +500,7 @@ rule [getQThisSubclassOf]:
       elabEnd(getQThisSubclassOf(QualClass:ClassType, ReqClass:ClassType))
       => 'If(
             subtype(QualClass, ReqClass),,
-            elabRes('QThis(QualClass)::QualClass),,
+            elabRes(cast(QualClass,'QThis(QualClass))),,
             elabEnd(getQThisSubclassOf(QualEncloserClass, ReqClass))
           )
       ...

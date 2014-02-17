@@ -55,7 +55,7 @@ rule [QSuperMethod]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>  [structural]
 
-syntax KResult ::= "lookupMethodData" "(" K         //TypedExp - typed obj closure for instance qualifier
+syntax KResult ::= "lookupMethodData" "(" K         //cast(T, Exp) - typed obj closure for instance qualifier
                                                     //or ClassType - for class qualifier
                                       "," Id        //method name
                                       "," Bool      //IsQ - isQualified
@@ -70,7 +70,6 @@ and then pop it when the method returns. */
 //First argument is reduced up to lookupMethodData.
 context elabEnd('Invoke(HOLE,, _))
 
-//todo TypedExp to cast: we need to compute typeOf(Qual)
 rule [Invoke-to-lookupMethod-qualified]:
     elabEnd('Invoke(lookupMethodData(
         Qual:K,
@@ -270,7 +269,7 @@ rule [isAccessibleProtected]:
       )
       => 'LazyOr(
             'LazyAnd(
-              'LazyOr((CT ==K staticCT)::bool,, 'Not(IsQ::bool)),,
+              'LazyOr((CT ==K staticCT),, 'Not(IsQ)),,
               subtype(
                 'If(IsQ,, CurrentClass,, TargetClass),
                 DeclaringClass
@@ -483,7 +482,7 @@ rule [lookupMethodSigKnownOtherCandidates]:
         OldMethTV:TypedVal
         => 'If(
               'LazyAnd(
-                (getMethodContextType(OldMethTV) ==K instanceCT)::bool,,
+                (getMethodContextType(OldMethTV) ==K instanceCT),,
                 isAccessibleForOverwriting(
                   getMethConsClosureClass(OldMethTV),
                   getMethodAccessMode(OldMethTV),

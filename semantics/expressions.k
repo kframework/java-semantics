@@ -11,30 +11,10 @@ module EXPRESSIONS
     imports PRIMITIVE-TYPES
     imports ELABORATION-EXPRESSIONS //for "isCompoundAssignLabel
 
-//todo hack - TypedExp to cast.
-//Converting typed expressions into expressions with casts
-rule [typedExp-generic]:
-    Exp:K :: T:Type => cast(T, Exp)
-when
-    notBool (isExtendedRawVal(Exp) ==K true)
-        [structural]
-
-rule [lvalue-typedExp-generic]:
-    lvalue(Exp:K :: T:Type => Exp)
-when
-    notBool (isExtendedRawVal(Exp) ==K true)
-        [structural]
-
 //todo hack - TypedExp to cast. Remove when transition will be complete.
 rule [lvalue-cast-generic]:
     lvalue(cast(_, Exp:K) => Exp)
         [structural]
-
-/* Predicate representing RawVal + lookup()
-*/
-syntax K ::= isExtendedRawVal ( K )               [function]
-rule isExtendedRawVal(_:RawVal) => true
-rule isExtendedRawVal(lookup(_)) => true
 
 /*@ Used to denote a temporary type of an expression. Such an expression should always be wrapped inside a cast
   expression. The cast will then replace tempType with the proper compile-time type.
@@ -147,7 +127,7 @@ rule /* I1 / I2    */ 'Div(I1:Int :: _,, I2:Int :: _) => (I1 /Int I2) :: tempTyp
 rule                  'Div(F1:Float :: _,, F2:Float :: _) => (F1 /Float F2) :: tempType
 
 //todo test that the first argument is fully evaluated, right now it may be not evaluated
-rule                  'Div(_::_         ,, 0::_)
+rule                  'Div(_:TypedVal         ,, 0::_)
    => elab('Throw('NewInstance(
         'None(.KList),,
         (class String2Id("java.lang.ArithmeticException")),,
@@ -160,7 +140,7 @@ rule /* I1 % I2    */ 'Remain(I1:Int :: _,, I2:Int :: _) => (I1 %Int I2) :: temp
 rule                  'Remain(F1:Float :: _,, F2:Float :: _) => (F1 %Float F2) :: tempType
 
 //todo test that the first argument is fully evaluated, right now it may be not evaluated
-rule                  'Remain(_::_     ,, 0::_)
+rule                  'Remain(_:TypedVal     ,, 0::_)
    => elab('Throw('NewInstance(
         'None(.KList),,
         (class String2Id("java.lang.ArithmeticException")),,

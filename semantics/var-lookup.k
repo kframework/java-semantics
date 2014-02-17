@@ -155,9 +155,9 @@ rule [lvalueTypedLoc]:
 /*@ \subsection{lookup} */
 
 /*@Lookup result is of sort RawType.
-  todo TypeExp to cast: this expression is typed. Integrate type in the expression, if really needed.
+  todo hack TypeExp to cast: this expression is typed. Integrate type in the expression, if really needed.
 */
-syntax K ::= "lookup" "(" Int ")"
+syntax Lookup ::= "lookup" "(" Int ")" | RawVal
 
 rule [lookupLocation]:
     <k>
@@ -169,5 +169,12 @@ rule [lookupLocation]:
 
 rule lvalue(lookup(L:Int)::T:Type) => loc(L)::T
         [structural]
+
+/*@ A Typed expression is a lookup expression followed by its compile-time type.
+This, among with Type is the most common form of computation result during elaboration. However, TypedExp is not
+a result during execution. This is why we cannot subsort it to KResult.
+*/
+syntax TypedExp ::= Lookup "::" Type
+                  | TypedVal
 
 endmodule

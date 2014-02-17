@@ -196,11 +196,12 @@ rule [processAnonymousClass]:
       )
     )
 
-//Build the part of the constructor of an anonymous class definition corresponding
-//to formal params, and arguments of the superclass constructor invocation, respectively
-//First KList - list of actual arguments
-//Second KList - the result
-//Third arg - a counter used to generate var names
+/*@ Build the part of the constructor of an anonymous class definition corresponding
+to formal params, and arguments of the superclass constructor invocation, respectively
+First KList - list of actual arguments
+Second KList - the result
+Third arg - a counter used to generate var names
+*/
 syntax K ::= "buildConstructorFormalParams" "(" KList "," KList "," Int ")"
            | "buildConstructorFirstLineArgs" "(" KList "," KList "," Int ")"
 
@@ -208,8 +209,8 @@ syntax K ::= "buildConstructorFormalParams" "(" KList "," KList "," Int ")"
 syntax KResult ::= "resultListWrap" "(" KList ")"
 
 rule buildConstructorFormalParams(
-      (_::T:Type => .KList),, _,
-      _,, (.KList => 'Param('ListWrap(.KList),,T,,String2Id("$" +String Int2String(Num) ))),
+      (ActualParam:K => .KList),, _,
+      _,, (.KList => 'Param('ListWrap(.KList),, typeOf(ActualParam),, String2Id("$" +String Int2String(Num) ))),
       Num:Int => Num +Int 1
     )
 
@@ -225,19 +226,19 @@ rule buildConstructorFirstLineArgs(.KList, Ks:KList, _) => resultListWrap(Ks)
 
 rule [elabAnonymous-QNewInstance-extends-class]:
     <k>
-      elab('QNewInstance(elabRes(Qual:TypedExp),, Arg2:K,, Class:ClassType,, Arg4:K,,
+      elab('QNewInstance(elabRes(TypedQual:K),, Arg2:K,, Class:ClassType,, Arg4:K,,
           elabRes('ListWrap(ActualArgs:KList)),,
           'Some('ClassBody('ListWrap(AnonClassDecs:KList)))
       ))
       => processQAnonymousClass(
         String2Id("Anonymous_$" +String Int2String(LocalId)),
         Class,
-        Qual,
+        TypedQual,
         Arg2,
         ActualArgs,
         AnonClassDecs,
-        buildConstructorFormalParams(Qual,,ActualArgs, .KList, 0),
-        buildConstructorFirstLineArgs(Qual,,ActualArgs, .KList, 0)
+        buildConstructorFormalParams(TypedQual,,ActualArgs, .KList, 0),
+        buildConstructorFirstLineArgs(TypedQual,,ActualArgs, .KList, 0)
       )
       ...
     </k>
@@ -249,7 +250,7 @@ rule [elabAnonymous-QNewInstance-extends-class]:
 syntax K ::= "processQAnonymousClass" "("
       Id ","        //Class name
       ClassType "," //Base class
-      TypedExp ","  //Qual - qualifier
+      K ","         //TypedQual - qualifier
       K ","         //'NewInstance Arg2
       KList ","     //ActualArgs
       KList ","     //Anonymous class block decs
@@ -265,7 +266,7 @@ rule [processQAnonymousClass]:
     processQAnonymousClass(
       Name:Id,
       BaseClass:ClassType,
-      Qual:TypedExp,
+      TypedQual:K,
       Arg2:K,
       ActualArgs:KList,
       AnonClassDecs:KList,
@@ -303,7 +304,7 @@ rule [processQAnonymousClass]:
             ))
           )
         ),
-        'NewInstance(Arg2,, 'TypeName(Name),, elabRes('ListWrap(Qual,, ActualArgs)),, 'None(.KList))
+        'NewInstance(Arg2,, 'TypeName(Name),, elabRes('ListWrap(TypedQual,, ActualArgs)),, 'None(.KList))
       )
     )
 
@@ -314,10 +315,10 @@ rule [processQAnonymousClass]:
 syntax K ::= "stmtAndExp" "(" K "," K ")"
 
 //elaboration time
-rule elabEnd(   stmtAndExp(Stmt:K, Exp:K ::T:Type))
-     => elabRes(stmtAndExp(Stmt,   Exp   ::T     ) :: T)
+rule elabEnd(           stmtAndExp(Stmt:K, cast(T:Type, Exp:K)) )
+     => elabRes(cast(T, stmtAndExp(Stmt,   cast(T:Type, Exp:K))))
 
 //runtime
-rule stmtAndExp(Stmt:K, TExp:K)::_ => Stmt ~> TExp
+rule stmtAndExp(Stmt:K, Exp:K) => Stmt ~> Exp
 
 endmodule

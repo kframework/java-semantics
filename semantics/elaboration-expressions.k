@@ -539,12 +539,6 @@ rule isTypedQThis(cast(_, K:K)) => getKLabel(K) ==KLabel 'QThis
 rule isTypedQThis(K:K) => false
 when getKLabel(K) =/=KLabel 'cast`(_`,_`)
 
-//todo hack - TypedExp to cast.
-rule isTypedQThis(K:K::_) => getKLabel(K) ==KLabel 'QThis
-
-rule isTypedQThis(K:K) => false
-when getKLabel(K) =/=KLabel '_::_
-
 syntax K ::= "getEnclosingClass" "(" ClassType ")"
 
 rule [getEnclosingClass]:

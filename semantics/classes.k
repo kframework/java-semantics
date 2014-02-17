@@ -247,7 +247,7 @@ context 'InstanceOf(HOLE,,_)
 
 rule [InstanceOf]:
     'InstanceOf(V:RawVal::_,, RT2:RefType)
-    =>  'LazyAnd((V =/=K null)::bool,, subtype(typeOf(V), RT2))
+    =>  'LazyAnd((V =/=K null),, subtype(typeOf(V), RT2))
 
 /*@ \subsection{Cast} */
 

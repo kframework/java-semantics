@@ -241,16 +241,15 @@ rule [stmDiscard]:
     stm('ListWrap(.KList)) => .
         [structural]
 
-//todo TypedExp to cast - find a way to get rid of isTypedExp here
 rule [stmList]:
     stm('ListWrap(E:K,, Es:KList)) => 'ExprStm(E) ~> stm('ListWrap(Es))
 when
-    isTypedExp(E) ==K true                [structural]
+    getKLabel(E) ==KLabel 'cast`(_`,_`)                                           [structural]
 
 rule [stmLocalVarDec]:
     stm('ListWrap(K:K,,Ks:KList)) => 'ListWrap(K,,Ks)
 when
-    notBool (isTypedExp(K) ==K true)      [structural]
+    notBool ( getKLabel(K) ==KLabel 'cast`(_`,_`) )                               [structural]
 
 rule [ForFirstArgV1Red]:
     'For((
@@ -415,7 +414,7 @@ rule [ThrowCheckedTrue]:
     ~> catchBlocks(catchImpl(paramImpl(T:Type, X:Id), CatchS:K),, _)
     => 'Block('ListWrap(
           'LocalVarDec(.K,, T,, 'ListWrap('VarDec(X))),,
-          elab('ExprStm('Assign(localVar(X)::T,, TV))),,
+          'ExprStm('Assign(localVar(X),, cast(T, TV))),,
           CatchS
         ))
 

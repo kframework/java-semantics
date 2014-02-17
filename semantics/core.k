@@ -222,12 +222,6 @@ The three most common forms of computation result are Typed value, Type or Id. T
 */
 syntax KResult ::= TypedVal | Type | Id
 
-/*@
-A Typed expression is an expression followed by its compile-time type. This, among with Type is the most common form of computation result during elaboration. However, TypedExp is not a result during execution. This is why we cannot subsort it to KResult.
-*/
-syntax TypedExp ::= K "::" Type
-                  | TypedVal
-
 /*@ Member access modes*/
 syntax AccessMode ::= "public" | "protected" | "package" | "private"
 syntax KResult ::= AccessMode

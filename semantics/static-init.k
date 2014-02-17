@@ -49,7 +49,7 @@ rule [staticInit]:
                   'NewInstance(
                     'None(.KList),,
                     class String2Id("java.lang.ExceptionInInitializerError"),,
-                    'ListWrap(elabRes(localVar(String2Id("e"))::objectClass)),,
+                    'ListWrap(elabRes(cast(objectClass, localVar(String2Id("e"))))),,
                     'None(.KList)
                   )
                 )
