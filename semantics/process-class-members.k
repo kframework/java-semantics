@@ -273,7 +273,7 @@ rule [MethodDec]:
       )
       => storeMethod('ListWrap(Params),
             getContextType(Modifiers), getAccessMode(Modifiers), isSynchronized(Modifiers), methodRT, noValue, S,
-            methodType(sig(Name, getTypesFromParams(Params)), ReturnType))
+            methodType(sig(Name, getTypes(Params)), ReturnType))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -302,15 +302,8 @@ syntax K ::= "storeMethod" "("
                               MethodType      //method closure type: methodType(Signature, ReturnType)
                            ")"
 
-syntax K     ::= "getTypesFromParams" "(" KList // list of paramImpl terms,
-                                               // to be processed into Type terms
-                                      ")"
-        [function]
-
-rule getTypesFromParams(_,, ('Param(_:K,, T:Type,, _:Id) => T),, _)
-
-rule getTypesFromParams(Ts:KList) => types(Ts)
-when isKResult(Ts)
+// Required for getTypes()
+rule typeOf('Param(_:K,, T:Type,, _:Id)) => T
 
 rule [storeMethod]:
     <k>
@@ -372,7 +365,7 @@ rule [ConstrDec]:
         'Some(FirstLine:K) ,,S:K))
       => storeMethod('ListWrap(Params),
           instanceCT, getAccessMode(Modifiers), isSynchronized(Modifiers), constructorRT, FirstLine, S,
-          methodType(sig(getConsName(Class), getTypesFromParams(Params)), void))
+          methodType(sig(getConsName(Class), getTypes(Params)), void))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>

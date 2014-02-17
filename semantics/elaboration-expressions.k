@@ -50,7 +50,8 @@ syntax K ::= "externalVar" "(" Id         //X - var name
 rule [externalVar]:
     <k>
       externalVar(X:Id, Class:ClassType)
-      => elabEnd('Field( 'QThis(Class)::Class,, X )) ?? elabOuterLocalVar(X, Class) ?? externalVar(X, EnclosingClass)
+      => elabEnd('Field( cast(Class, 'QThis(Class)),, X ))
+          ?? elabOuterLocalVar(X, Class) ?? externalVar(X, EnclosingClass)
       ...
     </k>
     <classType> Class </classType>
@@ -67,7 +68,7 @@ syntax K ::= "elabOuterLocalVar" "(" Id         //X - var name
 
 rule [elabOuterLocalVar-ok]:
     <k>
-      elabOuterLocalVar(X:Id, Class:ClassType) => elabRes(localVar(X) :: T)
+      elabOuterLocalVar(X:Id, Class:ClassType) => elabRes(cast(T, localVar(X)))
       ...
     </k>
     <classType> Class </classType>
@@ -87,7 +88,7 @@ rule [elabExprNameQualified]:
     elabEnd('ExprName(QualK:K,,X:Id)) => elabEnd('Field(QualK,,X))
 
 rule [elabLocalVarOk]:
-  <k> elabEnd(localVar(X:Id)) => elabRes(localVar(X) :: T) ...</k>
+  <k> elabEnd(localVar(X:Id)) => elabRes(cast(T, localVar(X))) ...</k>
   <elabEnv> ListItem(stEnv(X |-> T:Type _)) ...</elabEnv>
 
 rule [elabLocalVarNoValue]:
@@ -162,7 +163,7 @@ rule [elabThis]:
     <crntClass> Class:ClassType </crntClass>
 
 rule [elabQThisInstanceCT]:
-    <k> elabEnd('QThis(Class:ClassType)) => elabRes('QThis(Class) :: Class) ...</k>
+    <k> elabEnd('QThis(Class:ClassType)) => elabRes(cast(Class, 'QThis(Class))) ...</k>
     <contextType> instanceCT </contextType>
 
 rule [elabQThisStaticCT]:
@@ -170,8 +171,8 @@ rule [elabQThisStaticCT]:
     <contextType> staticCT </contextType>
 
 rule [elabFieldQualRef]:
-    elabEnd('Field(Qual:K :: Class:ClassType,, X:Id))
-    => elabFieldImpl(Qual::Class, X, elabLookup(X, Class))
+    elabEnd('Field(cast(Class:ClassType, Qual:K),, X:Id))
+    => elabFieldImpl(cast(Class, Qual), X, elabLookup(X, Class))
 
 rule [elabFieldQualClass]:
     elabEnd('Field(Class:ClassType,, X:Id))
@@ -187,7 +188,7 @@ rule [elabSuperField]:
 rule [elabQSuperField]:
     <k>
       elabEnd('QSuperField(Class:ClassType,, X:Id))
-      => elabFieldImpl('QThis(Class) :: Class, X, elabLookup(X, BaseClass))
+      => elabFieldImpl(cast(Class, 'QThis(Class)), X, elabLookup(X, BaseClass))
       ...
     </k>
     <classType> Class </classType>
@@ -200,10 +201,10 @@ syntax K ::= "elabFieldImpl" "(" K  // Field qualifier exp (noValue for fields q
                              ")"  [strict(3)]
 
 rule elabFieldImpl(SourceExp:K, X:Id, fieldEntry(Class:ClassType,_,T:Type, instanceCT))
-    => elabRes(lookupField(SourceExp,Class,X) :: T)
+    => elabRes(cast(T, lookupField(SourceExp,Class,X)))
 
 rule elabFieldImpl(_, X:Id, fieldEntry(Class:ClassType,_,T:Type, staticCT))
-    => elabRes(lookupStaticField(Class,X) :: T)
+    => elabRes(cast(T, lookupStaticField(Class,X)))
 
 //@for constant fields
 rule elabFieldImpl(_,_, TV:TypedVal) => TV
@@ -280,7 +281,6 @@ rule isNonNumericExp(KL:KLabel) =>
     orBool (KL ==KLabel 'NewInstance)   // also in customElabChildren
     orBool (KL ==KLabel 'QNewInstance)  // also in customElabChildren
     orBool (KL ==KLabel 'InstanceOf)
-    orBool (KL ==KLabel 'cast`(_`,_`))
     orBool (KL ==KLabel 'Invoke)
     orBool (KL ==KLabel 'This)
     orBool (KL ==KLabel 'QThis)
@@ -292,11 +292,12 @@ rule isNonNumericExp(KL:KLabel) =>
     orBool (KL ==KLabel 'NewArray)
     orBool (KL ==KLabel 'CastPrim)
     orBool (KL ==KLabel 'CastRef)
+    orBool (KL ==KLabel 'cast`(_`,_`))
     orBool (KL ==KLabel 'stmtAndExp`(_`,_`))
 
 //@ It looks like isTypedExp(KList) doesn't work.
 rule [elabBoolOnlyResultExpBinary]:
-    elabEnd(KL:KLabel(TE1:K,, TE2:K)) => elabRes(KL(TE1,,TE2) :: bool)
+    elabEnd(KL:KLabel(TE1:K,, TE2:K)) => elabRes(cast(bool, KL(TE1,,TE2)))
 when
            (KL ==KLabel 'LazyOr)
     orBool (KL ==KLabel 'LazyAnd)
@@ -308,18 +309,11 @@ when
     orBool (KL ==KLabel 'GtEq)
 
 rule [elabBoolOnlyResultExpUnary]:
-    elabEnd('Not(TE:K)) => elabRes('Not(TE) :: bool)
-
-rule [elabBoolOperandBoolResultExp]:
-    elabEnd(KL:KLabel(Exp1:K::bool,, Exp2:K::bool)) => elabRes(KL(Exp1::bool,, Exp2::bool) :: bool)
-when
-           (KL ==KLabel 'Or)
-    orBool (KL ==KLabel 'ExcOr)
-    orBool (KL ==KLabel 'And)
+    elabEnd('Not(TE:K)) => elabRes(cast(bool,'Not(TE)))
 
 rule [elabBinaryNumOperandNumResultExp]:
-    elabEnd(KL:KLabel(Exp1:K::NT1:NumericType,, Exp2:K::NT2:NumericType))
-    => elabExpAndType(KL(Exp1::NT1,, Exp2::NT2), normalizeType(NT1,NT2))
+    elabEnd(KL:KLabel(TE1:K,, TE2:K))
+    => elabExpAndType(KL(TE1,, TE2), normalizeType(typeOf(TE1), typeOf(TE2)))
 when
            (KL ==KLabel 'Or)
     orBool (KL ==KLabel 'ExcOr)
@@ -331,27 +325,27 @@ when
     orBool (KL ==KLabel 'Remain)
 
 rule [elabBitShift]:
-    elabEnd(KL:KLabel(Exp1:K::NT1:NumericType,, TExp2:K))
-    => elabExpAndType(KL(Exp1::NT1,, TExp2), normalizeType(NT1))
+    elabEnd(KL:KLabel(TE1:K,, TE2:K))
+    => elabExpAndType(KL(TE1,, TE2), normalizeType(typeOf(TE1)))
 when
            (KL ==KLabel 'LeftShift)
     orBool (KL ==KLabel 'RightShift)
     orBool (KL ==KLabel 'URightShift)
 
 rule [elabUnaryNumeric]:
-    elabEnd(KL:KLabel(Exp:K::NT:NumericType)) => elabExpAndType(KL(Exp::NT), normalizeType(NT))
+    elabEnd(KL:KLabel(TE1:K)) => elabExpAndType(KL(TE1), normalizeType(typeOf(TE1)))
 when
            (KL ==KLabel 'Plus)
     orBool (KL ==KLabel 'Minus)
     orBool (KL ==KLabel 'Complement)
 
 //@ Heats the second argument, that is reduced into a type.
-//@ The whole expression is then rewritten into elabRes(FirstArg::SecondArgAsType)
+//@ The whole expression is then rewritten into elabRes(cast(SecondArgAsType, FirstArg))
 syntax K ::= "elabExpAndType" "(" K "," K ")"  [strict(2)]
-rule elabExpAndType(K:K, T:Type) => elabRes(K::T)
+rule elabExpAndType(K:K, T:Type) => elabRes(cast(T, K))
 
 rule [elabPrefixPostfix]:
-    elabEnd(KL:KLabel(Exp:K::NT:NumericType)) => elabRes(KL(Exp::NT) :: NT)
+    elabEnd(KL:KLabel(TE1:K)) => elabRes(cast(typeOf(TE1), KL(TE1:K)))
 when
            (KL ==KLabel 'PreIncr)
     orBool (KL ==KLabel 'PreDecr)
@@ -359,14 +353,13 @@ when
     orBool (KL ==KLabel 'PostDecr)
 
 rule [elabStringPlusAny]:
-    elabEnd('Plus(Exp:K::rtString,, TE:K)) => elabRes('Plus(Exp::rtString,, TE) :: rtString)
-
-rule [elabAnyPlusString]:
-    elabEnd('Plus(TE:K,, Exp:K::rtString)) => elabRes('Plus(TE,, Exp::rtString) :: rtString)
+    elabEnd('Plus(TE1:K,, TE2:K)) => elabRes(cast(rtString,'Plus(TE1,, TE2)))
+when
+    typeOf(TE1) ==K rtString orBool typeOf(TE2) ==K rtString
 
 rule [elabCond]:
-    elabEnd('Cond(CondTE:K,, Exp1:K::T1:Type,, Exp2:K::T2:Type))
-    => elabExpAndType('Cond(CondTE,, Exp1::T1,, Exp2::T2), condType(T1, T2))
+    elabEnd('Cond(CondTE:K,, TE1:K,, TE2:K))
+    => elabExpAndType('Cond(CondTE,, TE1,, TE2), condType(typeOf(TE1), typeOf(TE2)))
 
 /*@ Computes the type of a conditional expression.
     Operands evaluate into types.
@@ -387,18 +380,17 @@ rule [condTypeFirstChar]:
     condType(char, T2:Type) => 'If(subtype(char, T2),, T2,, int)
 
 rule [elabAssignSameType]:
-    elabEnd('Assign(Exp1:K::T1:Type,, Exp2:K::T1)) => elabRes('Assign(Exp1::T1,, Exp2::T1) :: T1)
+    elabEnd('Assign(TE1:K,, TE2:K)) => elabRes(cast(typeOf(TE1), 'Assign(TE1,, TE2)))
+when
+    typeOf(TE1) ==K typeOf(TE2)
 
 rule [elabAssignDiffType]:
-    elabEnd('Assign(
-       Exp1:K::T1:Type,,
-      (Exp2:K::T2:Type => cast(T1, Exp2::T2)::T1)
-    ))
+    elabEnd('Assign( TE1:K,, (TE2:K => cast(typeOf(TE1), TE2)) ))
 when
-    T1 =/=K T2
+    typeOf(TE1) =/=K typeOf(TE2)
 
 rule [elabCompoundAssign]:
-    elabEnd(KL:KLabel(Exp1:K::T1:Type,, TE:K)) => elabRes(KL(Exp1::T1,, TE) :: T1)
+    elabEnd(KL:KLabel(TE1:K,, TE2:K)) => elabRes(cast(typeOf(TE1), KL(TE1,, TE2)))
 when
     isCompoundAssignLabel(KL)
 
@@ -409,7 +401,7 @@ rule elabEnd('CastRef(T:Type,, TExp:K)  => cast(T, TExp))      [structural]
 rule elabEnd('CastPrim(T:Type,, TExp:K) => cast(T, TExp))      [structural]
 
 rule [elabCast]:
-    elabEnd(cast(T1:Type, TExp:K)) => elabRes(cast(T1, TExp) :: T1)
+    elabEnd(cast(T1:Type, TExp:K)) => elabRes(cast(T1, TExp))
 
 /*@ \subsubsection{Elaboration of 'NewInstance and 'QNewInstance} */
 
@@ -440,7 +432,7 @@ when
     notBool isId(HOLE) ==K true
 
 rule [elabQNewInstance-resolve-class]:
-    elab('QNewInstance(elabRes(_::QualClass:ClassType),, _:K,,
+    elab('QNewInstance(elabRes(cast(QualClass:ClassType, _)),, _:K,,
       (Name:Id => resolveInnerClass(QualClass, Name)),,
     _))
 
@@ -480,10 +472,10 @@ rule [existsClass]:
 */
 rule [elab-QNewInstance]:
     elab('QNewInstance(elabRes(Qual:K),, Arg2:K,, T:RefType,, Arg4:K,, elabRes(ActualArgsList:K),, 'None(.KList)))
-    => elabRes('QNewInstance(Qual,, Arg2,, T,, Arg4,, ActualArgsList,, 'None(.KList)) :: T)
+    => elabRes(cast(T, 'QNewInstance(Qual,, Arg2,, T,, Arg4,, ActualArgsList,, 'None(.KList))))
 
 rule [elabInstanceOf]:
-    elabEnd('InstanceOf(TExp:K,, RT2:RefType)) => elabRes('InstanceOf(TExp,, RT2) :: bool)
+    elabEnd('InstanceOf(TExp:K,, RT2:RefType)) => elabRes(cast(bool, 'InstanceOf(TExp,, RT2)))
 
 /*@ \subsubsection{Elaboration of class literals} */
 
@@ -491,17 +483,17 @@ rule [elabInstanceOf]:
 context elab('Lit('Class(HOLE)))
 
 rule [elabLitClass]:
-    elab('Lit('Class(T:Type))) => elabRes('Lit('Class(T:Type)) :: class String2Id("java.lang.Class"))
+    elab('Lit('Class(T:Type))) => elabRes(cast(class String2Id("java.lang.Class"), 'Lit('Class(T:Type))))
 
 /*@ \subsubsection{Elaboration of array-related expressions} */
 
 rule [elabArrayAccess]:
-    elabEnd('ArrayAccess(TargetExp:K::arrayOf T:Type,, IndexTE:K))
-    => elabRes('ArrayAccess(TargetExp::arrayOf T,, IndexTE) :: T)
+    elabEnd('ArrayAccess(cast(arrayOf T:Type, TargetExp:K),, IndexTE:K))
+    => elabRes(cast(T, 'ArrayAccess(cast(arrayOf T, TargetExp),, IndexTE)))
 
 rule [elabArrayLength]:
-    elabEnd('Field(Qual:K :: arrayOf T:Type,, X:Id))
-    => elabRes(lookupField(Qual:: arrayOf T, arrayOf T, X) :: int)
+    elabEnd('Field(cast(arrayOf T:Type, Qual:K),, X:Id))
+    => elabRes(cast(int, lookupField(cast(arrayOf T, Qual), arrayOf T, X)))
 when
     Id2String(X) ==String "length"
 
@@ -528,9 +520,9 @@ rule [ArrayInitPreprocess]:
 
 rule [ArrayInit]:
     elabEnd('NewArray(arrayOf T:Type,, 'ListWrap(.KList),, 'ArrayInit('ListWrap(InitContent:KList))))
-    => elabRes(newArrayImpl(T, 'ListWrap(length(InitContent)::int), .K, InitContent) :: arrayOf T)
+    => elabRes(cast(arrayOf T, newArrayImpl(T, 'ListWrap(length(InitContent)::int), .K, InitContent)))
 
-//@ Counts the number of elements in the KList list. Evaluates to an Int::int .
+//@ Counts the number of elements in the KList list. Evaluates to an cast(int, Int) .
 syntax K ::= "length" "(" KList ")"                                      [function]
            | "length" "(" Int "," KList ")"                              [function]
 
@@ -539,9 +531,15 @@ rule length(I:Int, K:K,, Ks:KList) => length(I +Int 1, Ks)
 rule length(I:Int, .KList) => I
 
 //K bug: latex workaround - manual character escape.
-//@ True for 'QThis(\_)::T, false otherwise
+//@ True for cast(T,'QThis(\_)), false otherwise
 syntax K ::= "isTypedQThis" "(" K ")"                                    [function]
 
+rule isTypedQThis(cast(_, K:K)) => getKLabel(K) ==KLabel 'QThis
+
+rule isTypedQThis(K:K) => false
+when getKLabel(K) =/=KLabel 'cast`(_`,_`)
+
+//todo hack - TypedExp to cast.
 rule isTypedQThis(K:K::_) => getKLabel(K) ==KLabel 'QThis
 
 rule isTypedQThis(K:K) => false

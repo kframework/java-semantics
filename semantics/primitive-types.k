@@ -112,4 +112,6 @@ rule normalizeType(_, rtString) => rtString
 rule normalizeType(T1:Type,T2:Type) => T1
 when notBool (isNumericType(T1) ==K true) andBool (T1 =/=K rtString)  andBool (T2 =/=K rtString)
 
+rule normalizeType(bool, bool) => bool
+
 endmodule

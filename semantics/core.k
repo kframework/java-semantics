@@ -347,6 +347,19 @@ rule defaultTyped( objectClosure(
                                                                                       [structural]
 rule defaultTyped(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T           [structural]
 
+//@ Converts a KList of terms to Types. Uses typeOf underneath.
+syntax K ::= "getTypes" "(" KList     //List{KResult} a list of source expressions
+                        ")"
+        [function]
+
+rule getTypes(_,, (K:K => typeOf(K)),, _)
+when
+    notBool isType(K) ==K true
+
+rule getTypes(Ts:KList) => types(Ts)
+when
+    isKResult(Ts)
+
 //@ \subsubsection{Other auxiliary constructs}
 
 /*@

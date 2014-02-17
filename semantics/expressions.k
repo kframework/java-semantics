@@ -11,8 +11,8 @@ module EXPRESSIONS
     imports PRIMITIVE-TYPES
     imports ELABORATION-EXPRESSIONS //for "isCompoundAssignLabel
 
-//Concerting typed expressions into expressions with casts
-//todo Temp: this rule is an intermadiate step untill we'll finish conversion of TypedExp into cast.
+//todo hack - TypedExp to cast.
+//Converting typed expressions into expressions with casts
 rule [typedExp-generic]:
     Exp:K :: T:Type => cast(T, Exp)
 when
@@ -23,6 +23,11 @@ rule [lvalue-typedExp-generic]:
     lvalue(Exp:K :: T:Type => Exp)
 when
     notBool (isExtendedRawVal(Exp) ==K true)
+        [structural]
+
+//todo hack - TypedExp to cast. Remove when transition will be complete.
+rule [lvalue-cast-generic]:
+    lvalue(cast(_, Exp:K) => Exp)
         [structural]
 
 /* Predicate representing RawVal + lookup()
@@ -284,6 +289,10 @@ rule [Cast-void]: cast(void, RV:RawVal::void) => RV::void
 
 //Happens for the qualifier of a static method call
 rule [Cast-noValue]: cast(_, noValue) => noValue
+
+/* Required by getTypes in elaboration phase, invoked by lookupMethod.
+*/
+rule typeOf(cast(T:Type, _)) => T
 
 /*@ \subsection{lvalue and loc syntax} */
 

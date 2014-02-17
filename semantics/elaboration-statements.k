@@ -111,7 +111,7 @@ rule [QSuperConstrInv]:
                 'SuperMethod('None(.KList),, getConsName(BaseClass) ),,
                 'ListWrap(Args)
               )),,
-              IInit
+              elabRes(IInit)  //This block was already elaborated. Rule [elabInstanceEnd]
             )
       )
       ...

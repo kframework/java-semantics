@@ -29,7 +29,7 @@ rule 'Method(K:K,, _:K,, Name:Id) => 'MethodName(K,, Name)  [structural, anywher
 
 rule [MethodNameUnqInstanceCT]:
     <k>
-      'MethodName(Name:Id) => 'MethodName('QThis(Class)::Class,, Name)
+      'MethodName(Name:Id) => 'MethodName(cast(Class, 'QThis(Class)),, Name)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>                 [structural]
@@ -49,7 +49,7 @@ rule [SuperMethod-desugar]:
 rule [QSuperMethod]:
     <k>
       'QSuperMethod(Class:ClassType,, _:K,, Name:Id)
-      => lookupMethodData(superMethod('QThis(Class)::BaseClass)::BaseClass, Name, false)
+      => lookupMethodData(cast(BaseClass, superMethod(cast(BaseClass, 'QThis(Class)))), Name, false)
       ...
     </k>
     <classType> Class </classType>
@@ -92,7 +92,7 @@ when notBool isTypedQThis(Qual)
 rule [Invoke-to-lookupMethod-unqualified]:
     <k>
       elabEnd('Invoke(lookupMethodData(
-          'QThis(Class:ClassType)::Class,
+          cast(Class, 'QThis(Class:ClassType)),
           MethodName:Id,
           IsQ:Bool
         ),,
@@ -103,11 +103,11 @@ rule [Invoke-to-lookupMethod-unqualified]:
         IsQ,
         noValue,
         false,
-        'QThis(Class)::Class,
+        cast(Class, 'QThis(Class)),
         ParamExps
       )
       ?? elabEnd('Invoke(lookupMethodData(
-          'QThis(EnclosingClass)::EnclosingClass,
+          cast(EnclosingClass, 'QThis(EnclosingClass)),
           MethodName,
           IsQ
         ),,
@@ -146,7 +146,7 @@ rule [lookupMethodLookupSig]:
         Class:ClassType,
         MethodName:Id,
         IsQ:Bool,
-        noValue => lookupSignature(MethodName, getTypesFromValues(ParamExps), Env, IsQ, noValue, Class),
+        noValue => lookupSignature(MethodName, getTypes(ParamExps), Env, IsQ, noValue, Class),
         false => true,
         _,
         ParamExps:KList
@@ -164,7 +164,7 @@ rule [lookupMethodLookupSigGeneralRef]:
         QualT:RefType,
         MethodName:Id,
         IsQ:Bool,
-        noValue => lookupSignature(MethodName, getTypesFromValues(ParamExps), Env, IsQ, noValue, objectClass),
+        noValue => lookupSignature(MethodName, getTypes(ParamExps), Env, IsQ, noValue, objectClass),
         false => true,
         _,
         ParamExps:KList
@@ -187,24 +187,10 @@ rule [lookupMethodSigFound]:
       _,
       mapWrap(Sig:Signature |-> methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(_, RetT:Type)),
       true, QualK:K, ParamExps:KList
-    ) => elabRes(methodInvokeRuntime(QualT, Sig, QualK, ParamExps, CT) :: RetT)
+    ) => elabRes(cast(RetT, methodInvokeRuntime(QualT, Sig, QualK, ParamExps, CT)))
 
 rule [lookupMethodSigNotFound]:
     lookupMethod(_,_,_, noValue, true, _,_) => noValue
-
-//converts a List{TypedVal} to Types.
-syntax K ::= "getTypesFromValues" "("
-                            KList     //List{KResult} a list of source expressions
-                        ")"
-           | "getTypesFromValues" "("
-                            KList "," //List{KResult} a list of result types
-                            KList     //List{KResult} a list of source typed expressions
-                        ")"
-
-rule getTypesFromValues(VKs:KList) => getTypesFromValues(.KList, VKs)
-rule getTypesFromValues(TKs:KList, _::T:Type,, VKs:KList)
-     => getTypesFromValues(TKs,,T, VKs)
-rule getTypesFromValues(TKs:KList, .KList) => types(TKs)
 
 //Search for the correct method signature to use
 //when calling a given MethodName with the given argument types.
@@ -233,7 +219,7 @@ rule [lookupSignatureMain]:
                 #if OldMethodDecRecord ==K noValue
                   #then true
                   #else subtypeList(SigTs, getMethodDecArgTypes(OldMethodDecRecord))
-                #fi :: bool
+                #fi
               ),,
               isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
                   DecClass, IsQ, Class)
