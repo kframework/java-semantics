@@ -259,8 +259,8 @@ rule [CastRef]:
           elab('Throw('NewInstance(
                   'None(.KList),,
                   class String2Id("java.lang.ClassCastException"),,
-                  'ListWrap( 'Plus('Plus(toString(typeOf(V))::rtString,, " cannot be cast to "::rtString),,
-                      toString(RT1)::rtString) ),,
+                  'ListWrap( 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to "),,
+                      toString(RT1)) ),,
                   'None(.KList)
           )))
         )
