@@ -1,6 +1,7 @@
 /*
 Compatibility of Object and int[].
     Object[] vo = new int[][]; Elem read,write.
+    Also tests array access expressions where target array is a cast expression.
 */
 
 public class array_sep_26_polymorph_obj_array {

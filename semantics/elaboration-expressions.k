@@ -494,7 +494,7 @@ rule [elabLitClass]:
 
 rule [elabArrayAccess]:
     elabEnd('ArrayAccess(cast(arrayOf T:Type, TargetExp:K),, IndexTE:K))
-    => elabRes(cast(T, 'ArrayAccess(TargetExp,, IndexTE)))
+    => elabRes(cast(T, 'ArrayAccess(cast(arrayOf T, TargetExp),, IndexTE)))
 
 rule [elabArrayLength]:
     elabEnd('Field(cast(arrayOf T:Type, Qual:K),, X:Id))
