@@ -91,13 +91,13 @@ context lvalue('ArrayAccess(_:KResult,,HOLE))
 
 rule [arrayLookup]:
     'ArrayAccess(arrayRef(_, L:Int, M:Int) :: arrayOf T:Type,, N:Int::_)
-    => lookup(L +Int N) :: T
+    => lookup(L +Int N, T)
 when (N >=Int 0) andBool (N <Int M)
         [structural, anywhere]
 
 rule [lookupArrayLocation]:
     <k>
-      lookup(L:Int) :: T1:Type
+      lookup(L:Int, T1:Type)
       => subtype(T2, T1) ~> true? ~> (V::T1)
       ...
     </k>

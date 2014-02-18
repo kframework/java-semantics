@@ -130,8 +130,8 @@ syntax K ::= "lookupMethod" "(" RefType   //target ref type (not necessarily cla
                                           //Sig format: mapWrap(Sig |-> MethodTV)
                             "," Bool      //SigSearched: true if Sig was already searched for the current class, false otherwise.
                                           // Starts with false.
-                            "," K         //TypedExp - qualifier expression, or Class for class qualifiers.
-                            "," KList     //ParamExps - parameter expressions of type TypedExp
+                            "," K         //either Cast - typed qualifier expression, or Class for class qualifiers.
+                            "," KList     //ParamExps - parameter expressions of type Cast
                             ")"
         [strict(4)]
 
@@ -303,7 +303,7 @@ rule [isAccessiblePrivate]:
 syntax K ::= "methodInvokeRuntime" "(" RefType    //Compile-time target class, or more general reference
                                    "," Signature  //Method signature
                                    "," K          //Qualifier expression, if any, or noValue if it is static invocation
-                                   "," KList      //Arguments, each of type TypedExp
+                                   "," KList      //Arguments, each of type Cast
                                    "," ContextType  //instanceCT or staticCT
                                    ")"
 

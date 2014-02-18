@@ -38,24 +38,25 @@ static initializers of a class and perform the following transformations:
       should be always computed into a KResult, such as a type, package or certain literal expresssions, then
       it is heated in the "naked" form, e.g. not wrapped into elab().
   2. Elaboration of children. All the children of the expression are elaborated. After this phase elaborated children
-    will be wrapped into ElabRes() (If They are expressions). The expression above would reach the state:
-      elab('Minus(elabRes(localVar(X)::int))) ~> elab('CastRef(_,, HOLE)
+    will be typed (if they are expressions) and wrapped into elabRes(). Typed expressions are cast expressions -
+    like cast(T, Exp). The whole initial term will be converted into:
+      elab('Minus(elabRes(cast(int, localVar(X))))) ~> elab('CastRef(_,, HOLE)
   3. Initiation of the step elabDispose. When all children have been elaborated and are either KResult of elabRes(),
     the wrapper is changed from elab() to elabDispose().
-      elabDispose('Minus(elabRes(localVar(X)::int))) ~> elab('CastRef(_,, HOLE)
+      elabDispose('Minus(elabRes(cast(int, localVar(X))))) ~> elab('CastRef(_,, HOLE)
   4. Unwrapping of children. During elabDispose step elaborated children are unwrapped from their elabRes() wrapper.
-      elabDispose('Minus(localVar(X)::int)) ~> elab('CastRef(_,, HOLE)
+      elabDispose('Minus(cast(int, localVar(X)))) ~> elab('CastRef(_,, HOLE)
   5. End of the step elabDispose. When all children of the term wrapped into elabDispose have been unwrapped
-    from their elabRes() wrapper, the root wrapper is replaced from elabDispose to elabEnd. This helps
-    to simplify the rules that follow.
-    elabRes('Minus(localVar(X)::int)) ~> elab('CastRef(_,, HOLE)
+    from their elabRes() wrapper, the root wrapper is replaced from elabDispose to elabEnd. This contributes
+    to more simple rules for the following steps.
+    elabRes('Minus(cast(int, localVar(X)))) ~> elab('CastRef(_,, HOLE)
   6. Computation of elaboration result. Now that all children have been elaborated and unwrapped, it is possible to
     compute the type of the current expression itself. When the expression is fully elaborated, it is wrapped into
     elabRes(). This is the step that requires custom rules for most AST terms.
-      elabRes('Minus(localVar(X)::int)::int) ~> elab('CastRef(_,, HOLE)
+      elabRes('Minus(cast(int,cast(int, localVar(X))))) ~> elab('CastRef(_,, HOLE)
   7. Elaboration cooling. Once the top K Item was wrapped into elabRes, it is ready to be cooled back into its original
     context:
-      elab('CastRef(_,, elabRes('Minus(localVar(X)::int)::int))
+      elab('CastRef(_,, elabRes('Minus(cast(int,cast(int, localVar(X)))))))
 */
 module ELABORATION-CORE
     imports CORE
@@ -105,12 +106,14 @@ rule [chainOfResponsibilityResult2]:
 /*@ Computes to true if the given argument is a list of elaboration results, false otherwise.
   An elaborated result is either:
     - KResult
-    - TypedExp
     - elabRes(...)
+
+  It is notably NOT a cast() expression. This, together with the fact that cast() have no elaboration heatig rules,
+  makes the whole elaboration phase non-reentrant.
 */
 syntax K ::= "isElab" "(" KList ")"                 [function]
 rule isElab(K:K,, Ks:KList)
-     =>      ((getKLabel(K) ==KLabel 'elabRes`(_`)) orBool (isTypedExp(K) ==K true) orBool (isKResult(K) ==K true))
+     =>      ((getKLabel(K) ==KLabel 'elabRes`(_`)) orBool (isKResult(K) ==K true))
      andBool isElab(Ks)
 
 rule isElab(.KList) => true
@@ -380,7 +383,7 @@ when
 */
 syntax K ::= "isElabNaked" "(" K ")"                            [function]
 rule isElabNaked(K:K) =>
-           //warning: cannot use ==Bool in the first expression - looks like isTypedExp(Qual) will not be computed
+           //warning: cannot use ==Bool in the first expression - looks like isRawVal(K) will not be computed
            (isRawVal(K) ==K true)
     orBool (getKLabel(K) ==KLabel 'TypeName)
     orBool (getKLabel(K) ==KLabel 'ClassOrInterfaceType)
@@ -484,7 +487,7 @@ syntax K ::= elabEnd ( K )
 
 //@ \subsection{Auxiliary functions for execution phase}
 
-/*@ Computes into an expression of the form elabRes('QThis(QualClass)::QualClass),
+/*@ Computes into an expression of the form elabRes(cast(QualClass, 'QThis(QualClass))),
 where QualClass is searched in the enclosing context of the first argument,
 being a subclass of the second one.
 Or elabRes(noValue) if no suitable result is found

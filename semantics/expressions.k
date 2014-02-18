@@ -236,7 +236,7 @@ rule [expLValueCool]:
 //question: Why can't we move this desugaring into elaboration phase?
 rule [CompoundAssign]:
     KL:KLabel(loc(L:Int) :: T1:Type,, Exp2:K)
-    => 'Assign(loc(L)::T1,, cast(T1, getOpLabel(KL)(lookup(L)::T1,, Exp2)))
+    => 'Assign(loc(L)::T1,, cast(T1, getOpLabel(KL)(lookup(L, T1),, Exp2)))
 when isCompoundAssignLabel(KL)
 
 //only for Compound Assign KLabel's
@@ -255,8 +255,8 @@ rule getOpLabel('AssignURightShift) => 'URightShift
 
 /*@ \subsection{primitive types cast} */
 
-syntax K ::= "cast" "(" Type "," K ")"
-context cast(_,HOLE)
+syntax Cast ::= "cast" "(" Type "," K ")"
+context cast(_, HOLE)
 
 //@ The type of RV could either be NumericType or tempType. This rule matches both.
 rule [CastNumber]: cast(NT:NumericType, RV:RawVal::_) => normalize(RV::NT)

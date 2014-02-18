@@ -133,7 +133,7 @@ rule [addEnvLayer]:
 syntax K ::= "invokeConstr" "(" Int       //OL - object location
                             "," ClassType //The target class
                             "," KList     //Arguments, evaluated
-                            "," K         //EnclosingObj - the typed enclosing object. if any, or noValue
+                            "," K         //EnclosingObj - the typed enclosing object, if any. Otherwise - noValue
                             ")"
 
 //@ This rule cannot be simplified - we have to alter the newly created object from the store.
@@ -141,9 +141,9 @@ syntax K ::= "invokeConstr" "(" Int       //OL - object location
 // Constructor calls are elaborated during execution phase.
 rule [invokeConstr]:
     invokeConstr(OL:Int, Class:ClassType, Vals:KList, EnclosingObj:KResult)
-    => setEncloser(lookup(OL)::Class, Class, EnclosingObj)
+    => setEncloser(lookup(OL, Class), Class, EnclosingObj)
     ~> elab('ExprStm('Invoke(
-          'Method('MethodName( lookup(OL)::Class,, getConsName(Class) )),,
+          'Method('MethodName( elabRes(cast(Class, typedLookup(OL))),, getConsName(Class) )),,
           'ListWrap( Vals )
         )))
 

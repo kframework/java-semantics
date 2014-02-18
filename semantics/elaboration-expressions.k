@@ -194,7 +194,7 @@ rule [elabQSuperField]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
-//@Computed the TypedExp expression for a given expression and its type
+//@Computed the Cast expression for a given expression and its type
 syntax K ::= "elabFieldImpl" "(" K  // Field qualifier exp (noValue for fields qualified by a class)
                              "," Id // X - the field name
                              "," K  //elabLookup(...), computes into fieldEntry(...) or noValue
@@ -295,7 +295,6 @@ rule isNonNumericExp(KL:KLabel) =>
     orBool (KL ==KLabel 'cast`(_`,_`))
     orBool (KL ==KLabel 'stmtAndExp`(_`,_`))
 
-//@ It looks like isTypedExp(KList) doesn't work.
 rule [elabBoolOnlyResultExpBinary]:
     elabEnd(KL:KLabel(TE1:K,, TE2:K)) => elabRes(cast(bool, KL(TE1,,TE2)))
 when

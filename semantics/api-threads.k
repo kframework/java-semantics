@@ -14,7 +14,7 @@ rule [thread-start]:
     <thread>
       <k>
         invokeImpl(
-          methodClosure(class ThreadId:Id,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
+          methodClosure(ThreadClass:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
           OL:Int,
           'ListWrap(TId:Int :: _)
         ) => nothing::void
@@ -32,7 +32,7 @@ rule [thread-start]:
               'Method(
                 'MethodName(
                   'ExprName(
-                    lookup(OL) :: class String2Id("java.lang.Thread"),,
+                    elabRes(cast(class String2Id("java.lang.Thread"), typedLookup(OL))),,
                     String2Id("runnable")
                   ),,
                   String2Id("run")
@@ -48,7 +48,7 @@ rule [thread-start]:
     )
 when
             Id2String(MethodName) ==String "startImpl"
-    andBool Id2String(ThreadId) ==String "java.lang.Thread"
+    andBool ThreadClass ==K class String2Id("java.lang.Thread")
 
 //@ \subsection{Synchronized statement}
 

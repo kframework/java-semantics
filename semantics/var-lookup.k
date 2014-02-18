@@ -137,7 +137,7 @@ rule [lvalue-lookupStaticField]:
 syntax K ::= "typedLookup" "(" Int ")"
 
 rule [typedLookup]:
-    <k> typedLookup(L:Int) => lookup(L)::T ...</k>
+    <k> typedLookup(L:Int) => lookup(L, T) ...</k>
     <store>... L |-> _::T:Type ...</store>
 
 rule [lvalueTypedLookup]:
@@ -154,27 +154,23 @@ rule [lvalueTypedLoc]:
 
 /*@ \subsection{lookup} */
 
-/*@Lookup result is of sort RawType.
-  todo hack TypeExp to cast: this expression is typed. Integrate type in the expression, if really needed.
+/*@ Retrieve a value from the store based on its location and the given compile-time type.
+  May be wrapped inside lvalue. If lookup is unwrapped, it evaluates to TypedVal - the store value,
+  of the type T - the second lookup argument. If lookup is wrapped into lvalue, it evaluates to loc(OL)::T.
 */
-syntax Lookup ::= "lookup" "(" Int ")" | RawVal
+syntax Lookup ::= lookup ( Int ,  //OL - the store location to lookup
+                           Type   // T - the compile-time type of the resulting value
+                         )
 
 rule [lookupLocation]:
     <k>
-      lookup(L:Int) :: T1:Type => subtype(T2, T1) ~> true? ~> (V::T1)
+      lookup(L:Int, T1:Type) => subtype(T2, T1) ~> true? ~> (V::T1)
       ...
     </k>
     <store>... L |-> V:RawVal :: T2:Type ...</store>
         [transition-threading]
 
-rule lvalue(lookup(L:Int)::T:Type) => loc(L)::T
+rule lvalue(lookup(L:Int, T:Type)) => loc(L)::T
         [structural]
-
-/*@ A Typed expression is a lookup expression followed by its compile-time type.
-This, among with Type is the most common form of computation result during elaboration. However, TypedExp is not
-a result during execution. This is why we cannot subsort it to KResult.
-*/
-syntax TypedExp ::= Lookup "::" Type
-                  | TypedVal
 
 endmodule
