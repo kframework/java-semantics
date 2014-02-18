@@ -394,13 +394,13 @@ rule isElabNaked(K:K) =>
     orBool (getKLabel(K) ==KLabel 'PackageOrTypeName)
     orBool (getKLabel(K) ==KLabel 'Id)
     orBool (getKLabel(K) ==KLabel 'Lit andBool getInnerKLabel(K) =/=KLabel 'Class)
-    orBool auxLabelElabNaked(getKLabel(K))
+    orBool isAuxFuncElabNaked(getKLabel(K))
 
 syntax KLabel ::= "getInnerKLabel" "(" K ")"                    [function]
 rule getInnerKLabel(_:KLabel(KL:KLabel(_))) => KL
 
-syntax K ::= auxLabelElabNaked( KLabel )                        [function]
-rule auxLabelElabNaked(KL:KLabel) => false
+syntax K ::= isAuxFuncElabNaked( KLabel )                        [function]
+rule isAuxFuncElabNaked(KL:KLabel) => false
 
 /*@ Terms that should use custom elaboration rules. For those terms:
     - They will not be automatically heated from their parents into the elab() state.

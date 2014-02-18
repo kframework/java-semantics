@@ -219,10 +219,8 @@ rule elabFieldImpl(_,_, noValue) => noValue
 //@ the type of the expression.
 syntax K ::= "isExpressionLabel" "(" KLabel ")" [function]
 rule isExpressionLabel(KL:KLabel) =>
-                     (KL ==KLabel 'localVar`(_`))
-
     //Infix operators
-    /* ||  */ orBool (KL ==KLabel 'LazyOr)
+    /* ||  */        (KL ==KLabel 'LazyOr)
     /* &&  */ orBool (KL ==KLabel 'LazyAnd)
     /* |   */ orBool (KL ==KLabel 'Or)
     /* ^   */ orBool (KL ==KLabel 'ExcOr)
@@ -260,6 +258,7 @@ rule isExpressionLabel(KL:KLabel) =>
 
                 orBool isCompoundAssignLabel(KL)
                 orBool isNonNumericExp(KL)
+                orBool isAuxFuncExpressionLabel(KL)
 
 syntax K ::= "isCompoundAssignLabel" "(" KLabel ")" [function]
 rule isCompoundAssignLabel(KL:KLabel) =>
@@ -292,8 +291,15 @@ rule isNonNumericExp(KL:KLabel) =>
     orBool (KL ==KLabel 'NewArray)
     orBool (KL ==KLabel 'CastPrim)
     orBool (KL ==KLabel 'CastRef)
-    orBool (KL ==KLabel 'cast`(_`,_`))
-    orBool (KL ==KLabel 'stmtAndExp`(_`,_`))
+
+/*@ Auxiliary functions that should be threated as expressions in the elaboration phase.
+*/
+syntax K ::= isAuxFuncExpressionLabel ( KLabel )    [function]
+rule isAuxFuncExpressionLabel(KL:KLabel)
+    =>     KL ==KLabel 'localVar`(_`)
+    orBool KL ==KLabel 'cast`(_`,_`)
+    orBool KL ==KLabel 'stmtAndExp`(_`,_`)
+    orBool KL ==KLabel 'getQThisSubclassOf
 
 rule [elabBoolOnlyResultExpBinary]:
     elabEnd(KL:KLabel(TE1:K,, TE2:K)) => elabRes(cast(bool, KL(TE1,,TE2)))
@@ -344,7 +350,7 @@ syntax K ::= "elabExpAndType" "(" K "," K ")"  [strict(2)]
 rule elabExpAndType(K:K, T:Type) => elabRes(cast(T, K))
 
 rule [elabPrefixPostfix]:
-    elabEnd(KL:KLabel(TE1:K)) => elabRes(cast(typeOf(TE1), KL(TE1:K)))
+    elabEnd(KL:KLabel(cast(T1:Type, Exp1:K))) => elabRes(cast(T1, KL(Exp1)))
 when
            (KL ==KLabel 'PreIncr)
     orBool (KL ==KLabel 'PreDecr)
@@ -379,17 +385,17 @@ rule [condTypeFirstChar]:
     condType(char, T2:Type) => 'If(subtype(char, T2),, T2,, int)
 
 rule [elabAssignSameType]:
-    elabEnd('Assign(TE1:K,, TE2:K)) => elabRes(cast(typeOf(TE1), 'Assign(TE1,, TE2)))
+    elabEnd('Assign(cast(T1:Type, Exp1:K),, TExp2:K)) => elabRes(cast(T1, 'Assign(Exp1,, TExp2)))
 when
-    typeOf(TE1) ==K typeOf(TE2)
+    T1 ==K typeOf(TExp2)
 
 rule [elabAssignDiffType]:
-    elabEnd('Assign( TE1:K,, (TE2:K => cast(typeOf(TE1), TE2)) ))
+    elabEnd('Assign( cast(T1:Type, Exp1:K),, (TE2:K => cast(T1, TE2)) ))
 when
-    typeOf(TE1) =/=K typeOf(TE2)
+    T1 =/=K typeOf(TE2)
 
 rule [elabCompoundAssign]:
-    elabEnd(KL:KLabel(TE1:K,, TE2:K)) => elabRes(cast(typeOf(TE1), KL(TE1,, TE2)))
+    elabEnd(KL:KLabel(cast(T1:Type, Exp1:K),, TE2:K)) => elabRes(cast(T1, KL(Exp1,, TE2)))
 when
     isCompoundAssignLabel(KL)
 
@@ -488,7 +494,7 @@ rule [elabLitClass]:
 
 rule [elabArrayAccess]:
     elabEnd('ArrayAccess(cast(arrayOf T:Type, TargetExp:K),, IndexTE:K))
-    => elabRes(cast(T, 'ArrayAccess(cast(arrayOf T, TargetExp),, IndexTE)))
+    => elabRes(cast(T, 'ArrayAccess(TargetExp,, IndexTE)))
 
 rule [elabArrayLength]:
     elabEnd('Field(cast(arrayOf T:Type, Qual:K),, X:Id))

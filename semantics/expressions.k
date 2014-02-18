@@ -11,11 +11,6 @@ module EXPRESSIONS
     imports PRIMITIVE-TYPES
     imports ELABORATION-EXPRESSIONS //for "isCompoundAssignLabel
 
-//todo hack - TypedExp to cast. Remove when transition will be complete.
-rule [lvalue-cast-generic]:
-    lvalue(cast(_, Exp:K) => Exp)
-        [structural]
-
 /*@ Used to denote a temporary type of an expression. Such an expression should always be wrapped inside a cast
   expression. The cast will then replace tempType with the proper compile-time type.
 */

@@ -139,6 +139,6 @@ rule [AltConstrInv]:
 rule [elabEndStatements]:
     elabEnd(KL:KLabel(Ks:KList)) => elabRes(KL(Ks))
 when
-    notBool (isExpressionLabel(KL) orBool KL ==KLabel 'getQThisSubclassOf)  //todo temp workaround. Improve this case
+    notBool isExpressionLabel(KL)
 
 endmodule
