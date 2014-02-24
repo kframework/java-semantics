@@ -117,12 +117,12 @@ rule [Invoke-to-lookupMethod-unqualified]:
     <classType> Class </classType>
     <enclosingClass> EnclosingClass:ClassType </enclosingClass>
 
-//Lookup the right methodClosure based on supplied parameters.
-//If the method is not found in the supplied class list, we should search for it in the
-//class list corresponding to the enclosing class of the caller class.
-//First we search for the signature - lookupSignature construct.
-//Afterwards we search for the right implementation in the hierarchy, once the signature is known
-// - lookupMethodSigKnown.
+/*@ Lookup the right methodClosure based on supplied parameters.
+If the method is not found in the supplied class list, we should search for it in the
+class list corresponding to the enclosing class of the caller class.
+First we search for the signature - lookupSignature construct.
+Afterwards we search for the right implementation in the hierarchy, once the signature is known
+- lookupMethodSigKnown.*/
 syntax K ::= "lookupMethod" "(" RefType   //target ref type (not necessarily class, could be String or array)
                             "," Id        //method name
                             "," Bool      //IsQ - isQualified
@@ -139,7 +139,7 @@ syntax K ::= "lookupMethod" "(" RefType   //target ref type (not necessarily cla
 context lookupMethod(_,_,_,HOLE,_,_,_)
 
 //Regular case - target type is a class
-rule [lookupMethodLookupSig]:
+rule [lookupMethod-LookupSig]:
     <k>
       lookupMethod(
         Class:ClassType,
@@ -155,9 +155,9 @@ rule [lookupMethodLookupSig]:
     <classType> Class </classType>
     <methods> Env:Map </methods>
 
-//Target type is not class but another ref type, lookup the method in the class Object,
-//with some exceptions
-rule [lookupMethodLookupSigGeneralRef]:
+/*Target type is not class but another ref type, lookup the method in the class Object,
+with some exceptions*/
+rule [lookupMethod-LookupSigGeneralRef]:
     <k>
       lookupMethod(
         QualT:RefType,
@@ -177,9 +177,9 @@ when
     andBool (objectClass ==K ObjT)
     andBool (Id2String(MethodName) =/=String "clone")
 
-//If resolved method is static, we cannot insert in the construct the actual method body,
-//because this body might not be elaborated.
-rule [lookupMethodSigFound]:
+/*If resolved method is static, we cannot insert in the construct the actual method body,
+because this body might not be elaborated.*/
+rule [lookupMethod-SigFound]:
     lookupMethod(
       QualT:RefType,
       _,
@@ -188,7 +188,7 @@ rule [lookupMethodSigFound]:
       true, QualK:K, ParamExps:KList
     ) => elabRes(cast(RetT, methodInvokeRuntime(QualT, Sig, QualK, ParamExps, CT)))
 
-rule [lookupMethodSigNotFound]:
+rule [lookupMethod-SigNotFound]:
     lookupMethod(_,_,_, noValue, true, _,_) => noValue
 
 //Search for the correct method signature to use
@@ -203,7 +203,7 @@ syntax K ::= "lookupSignature" "("  Id     // MethodName
                                ","  ClassType //target class
                                ")"  [strict(2,5)]
 
-rule [lookupSignatureMain]:
+rule [lookupSignature-Main]:
     <k>
       lookupSignature(
         MethodName:Id,
@@ -236,7 +236,7 @@ rule [lookupSignatureMain]:
 syntax K ::= "getMethodDecArgTypes" "(" K ")"   [function]
 rule getMethodDecArgTypes(mapWrap(sig(_, Ts:Types) |-> _)) => Ts
 
-rule [lookupSignatureSigDiscard]:
+rule [lookupSignature-SigDiscard]:
     lookupSignature(
       MethodName:Id,
       _,
@@ -262,7 +262,7 @@ syntax K ::= "isAccessible" "(" AccessMode ","  //the method access mode
 rule [isAccessiblePublic]:
     isAccessible(public, _,_,_,_) => true
 
-rule [isAccessibleProtected]:
+rule [isAccessible-Protected]:
     <k>
       isAccessible(protected, CT:ContextType, DeclaringClass:ClassType, IsQ:Bool,
           TargetClass:ClassType
@@ -347,7 +347,7 @@ rule [methodInvokeRuntimeStaticOnClass]:
 when
     isKResult(ParamVals)
 
-rule [methodInvokeRuntimeInstanceOnInterface]:
+rule [methodInvokeRuntime-InstanceOnInterface]:
     <k>
       methodInvokeRuntime(Class:ClassType, Sig:Signature,
         objectClosure(OL:Int,

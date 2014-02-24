@@ -95,7 +95,7 @@ process inner declarations. Compute the following class cells:
   <staticEnv>
   <staticInit>
 */
-rule [ProcessType]:
+rule [processType]:
     <k>
       processType(Class:ClassType) => computeImplTrans(SetItem(BaseClass) ISet)
           ~> tryInheritSet(ISet)
@@ -478,7 +478,7 @@ when
 
 //Discard inner class declarations at this phase. They are processed when their
 //respective <class> tag is encountered as part of processClasses
-rule [ClassDecDiscard]: 'ClassDec(_) => .
+rule [ClassDec-discard]: 'ClassDec(_) => .
 rule [InterfaceDecDiscard]: 'InterfaceDec(_) => .
 
 endmodule

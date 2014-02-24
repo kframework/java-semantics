@@ -235,22 +235,22 @@ rule [methodInvokeRuntime-array-clone]:
       )
 when Id2String(MethodName) ==String "clone"
 
-//@Construct to copy content of an array to another after copy, the term is rewritten into the destination array.
-syntax K ::=  "arrayCopy" "("
-                              TypedVal "," // source array
-                              K            // destination array, computes to TypedVal
-              ")"
+//@ Construct to copy content of an array to another after copy, the term is rewritten into the destination array.
+syntax K ::= arrayCopy (
+                TypedVal , // source array
+                K          // destination array, computes to TypedVal
+             )
         [strict(2)]
 
 rule arrayCopy(arrayRef(T:Type, L1:Int, Len:Int)::_, arrayRef(T, L2:Int, Len)::_)
     => storeCopy(L1, L2, Len) ~> arrayRef(T,L2:Int,Len)
 
 //@Copy a sequence of store values from one place to another.
-syntax K ::=  "storeCopy" "("
-                              Int "," //source address in store
-                              Int "," //destination address in store
-                              Int     //amount of elements to copy
-              ")"
+syntax K ::= storeCopy (
+                Int , //source address in store
+                Int , //destination address in store
+                Int   //amount of elements to copy
+             )
 
 rule [storeCopy]:
     <k>
@@ -267,13 +267,13 @@ rule [storeCopy]:
 when
     Len >Int 0
 
-rule [storeCopyDiscard]:
+rule [storeCopy-discard]:
     storeCopy(_, _, 0) => .
 
 //@\subsection{Class literal - <Class>.class}
 
 //@We need to synchronize access to class literals to avoid instantiation of the came .class by multiple threads. This is done by the term temp in <classLiteralsMap>. We cannot use 'Synchronized because it required an objectClousre as argument, and we might not have any objects instantiated at the moment.
-rule [ClassLiteralInstantiate]:
+rule [Lit-Class-Instantiate]:
     <k>
         (. => saveClassLiteral(T,
           elab('NewInstance(
@@ -291,22 +291,22 @@ when notBool T in keys(CLMap)
         [transition-threading]
 
 //@ Wraps a newly created java.lang.Class object
-syntax K ::= "saveClassLiteral" "(" Type  // The type for this class literal is being instantiated
-                                "," K     // The class literal instantiation expression
-                                ")"         [strict(2)]
+syntax K ::= saveClassLiteral ( Type , // The type for this class literal is being instantiated
+                                K      // The class literal instantiation expression
+                              )         [strict(2)]
 
 rule [saveClassLiteral]:
     <k> saveClassLiteral(T:Type, TV:TypedVal) => . ...</k>
     <classLiteralsMap>... T |-> (temp => TV) ...</classLiteralsMap>
 
-rule [ClassLiteral]:
+rule [Lit-Class]:
     <k> 'Lit('Class(T:Type)) => TV ...</k>
     <classLiteralsMap>... T |-> TV:TypedVal ...</classLiteralsMap>
 
 //@Used inside <classLiteralsMap> only for synchronization purposes
 syntax K ::= "temp"
 
-rule [ClassNameTopLevelWithPackage]:
+rule [toString-ClassType-TopLevelWithPackage]:
     <k>
       toString(class ClassId:Id) => Id2String(ClassId)
       ...
@@ -316,7 +316,7 @@ rule [ClassNameTopLevelWithPackage]:
 when
     retainHead(Id2String(ClassId), 1) =/=String "."
 
-rule [ClassNameTopLevelWithDefaultPackage]:
+rule [toString-ClassType-TopLevelWithDefaultPackage]:
     <k>
       toString(class ClassId:Id) => trimHead(Id2String(ClassId), 1)
       ...
@@ -326,7 +326,7 @@ rule [ClassNameTopLevelWithDefaultPackage]:
 when
     retainHead(Id2String(ClassId), 1) ==String "."
 
-rule [ClassNameInner]:
+rule [toString-ClassType-Inner]:
     <k>
       toString(class ClassId:Id)
       => 'Plus(

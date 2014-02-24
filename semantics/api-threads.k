@@ -86,7 +86,7 @@ rule [Synchronized-on-null]:
         )))
 
 /*@Release one level of lock for the given object.*/
-syntax K ::= "releaseLock" "(" Int ")"
+syntax K ::= releaseLock ( Int )
 
 rule [releaseLock]:
     <k>
@@ -96,6 +96,7 @@ rule [releaseLock]:
     <holds>... OL |-> (Level:Int => Level -Int 1) ...</holds>
         [transition-threading]
 
+//todo investigate performance impact if we eliminate this rule
 rule [monitor-completely-released]:
     <holds>... (OL:Int |-> 0 => .) ...</holds>
     <busy>... (SetItem(OL) => .) ...</busy>
@@ -199,7 +200,7 @@ when
 /*@Second part of a wait. Waiting was already registered to <waitingThreads>.
 When the record in <waitingThreads> will be deleted, waiting itself shall end.
 */
-syntax K ::= "waitImpl" "(" Int ")" //Monitor object location
+syntax K ::= waitImpl ( Int ) //Monitor object location
 
 rule [waitImpl-end]:
     <k>
@@ -233,14 +234,14 @@ when
       notBool OL in Busy
         [transition-threading]
 
-//@ \subsection{Object.notify(),Object.notifyAll()}
+//@ \subsection{Object.notify(), Object.notifyAll()}
 
 rule [object-notify]:
     <k>
       invokeImpl(
         methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
         OL:Int, 'ListWrap(.KList)
-      ) => deleteAnyFromWaitingThreads(OL)
+      ) => objectNotifyImpl(OL)
       ...
     </k>
     <holds>... OL |-> HoldLevel:Int ...</holds>
@@ -249,12 +250,34 @@ when
     andBool Id2String(MethodName) ==String "notify"
     andBool HoldLevel >=Int 1
 
+/*@Implementation of Object.notify(), extracted here to avoid rule superfluousness*/
+syntax K ::= objectNotifyImpl ( Int //store key of the monitor object
+                              )
+
+rule [objectNotifyImpl-someone-waiting]:
+    <k>
+      objectNotifyImpl(OL:Int) => nothing::void
+      ...
+    </k>
+    <waitingThreads>... (_ |-> OL => .Map) ...</waitingThreads>
+        [transition-threading]
+
+rule [objectNotifyImpl-no-one-waiting]:
+    <k>
+      objectNotifyImpl(OL:Int) => nothing::void
+      ...
+    </k>
+    <waitingThreads> WT:Map </waitingThreads>
+when
+    notBool OL in values(WT)
+        [transition-threading]
+
 rule [object-notifyAll]:
     <k>
       invokeImpl(
         methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
         OL:Int, 'ListWrap(.KList)
-      ) => deleteAllFromWaitingThreads(OL)
+      ) => objectNotifyAllImpl(OL)
       ...
     </k>
     <holds>... OL |-> HoldLevel:Int ...</holds>
@@ -263,43 +286,21 @@ when
     andBool Id2String(MethodName) ==String "notifyAll"
     andBool HoldLevel >=Int 1
 
-/*@Implementation of Object.notify(), extracted here to avoid rule superfluousness*/
-syntax K ::= "deleteAnyFromWaitingThreads" "(" Int //store key of the monitor object
-                                           ")"
-
-rule [object-notify-impl-someone-waiting]:
-    <k>
-      deleteAnyFromWaitingThreads(OL:Int) => nothing::void
-      ...
-    </k>
-    <waitingThreads>... (_ |-> OL => .Map) ...</waitingThreads>
-        [transition-threading]
-
-rule [object-notify-impl-no-one-waiting]:
-    <k>
-      deleteAnyFromWaitingThreads(OL:Int) => nothing::void
-      ...
-    </k>
-    <waitingThreads> WT:Map </waitingThreads>
-when
-    notBool OL in values(WT)
-        [transition-threading]
-
 /*@Implementation of Object.notifyAll(), extracted here to avoid rule superfluousness*/
-syntax K ::= "deleteAllFromWaitingThreads" "(" Int //store key of the monitor object
-                                           ")"
+syntax K ::= objectNotifyAllImpl ( Int //store key of the monitor object
+                                 )
 
-rule [object-notifyAll-impl-someone-waiting]:
+rule [objectNotifyAllImpl-someone-waiting]:
     <k>
-      deleteAllFromWaitingThreads(OL:Int)
+      objectNotifyAllImpl(OL:Int)
       ...
     </k>
     <waitingThreads>... (_ |-> OL => .Map) ...</waitingThreads>
         [transition-threading]
 
-rule [object-notifyAll-impl-no-one-waiting]:
+rule [objectNotifyAllImpl-no-one-waiting]:
     <k>
-      deleteAllFromWaitingThreads(OL:Int) => nothing::void
+      objectNotifyAllImpl(OL:Int) => nothing::void
       ...
     </k>
     <waitingThreads> WT:Map </waitingThreads>

@@ -70,7 +70,7 @@ syntax KLabel ::= "'ListWrap"
                 | "'NewInstance"
                 | "'QNewInstance"
                 | "'Lit"
-                | "'Class"
+                | "'Class"        // X.class : the class literal
                 | "'VoidClass"
                 | "'This"
                 | "'QThis"
