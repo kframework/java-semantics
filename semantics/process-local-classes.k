@@ -19,10 +19,11 @@ rule [elab-ClassDecStm]:
     </k>
     <nextLocalId> LocalId:Int => LocalId +Int 1 </nextLocalId>
 
-//Register a local class in the given generated package and fully process it.
-syntax K ::= "processLocalClassDecStep1" "(" K         //the 'ClassDec term
-                                         "," PackageId //the generated package
-                                         ")"
+//@ Register a local class in the given generated package and fully process it.
+syntax K ::=  processLocalClassDecStep1 (
+                K,        //the 'ClassDec term
+                PackageId //the generated package
+              )
 
 rule [processLocalClassDecStep1]:
     <k>
@@ -34,9 +35,10 @@ rule [processLocalClassDecStep1]:
     </k>
     <crntClass> Class:ClassType </crntClass>
 
-//Fully process the class that was registered inside the given package
-syntax K ::= "processLocalClassDecStep2" "(" PackageId //the generated package
-                                         ")"
+//@ Fully process the class that was registered inside the given package
+syntax K ::=  processLocalClassDecStep2 (
+                PackageId //the generated package
+              )
 
 rule [processLocalClassDecStep2]:
     <k>
@@ -55,21 +57,22 @@ rule [processLocalClassDecStep2]:
       ...
     </k>
     <crntClass> OldCrntClass:ClassType </crntClass>
-    <localTypes> ListItem(stEnv(LocalTypes:Map => LocalTypes[Class/Name])) ...</localTypes>
+    <localTypes> ListItem(mapWrap(LocalTypes:Map => LocalTypes[Class/Name])) ...</localTypes>
     <contextType> CT:ContextType </contextType>
     <namesToClasses>... GeneratedPack |-> mapWrap(Name:Id |-> Class:ClassType) ...</namesToClasses>
 
-//Sets the enclosing local environment for this class, from the cell <elabEnv>
-syntax K ::= "setEnclosingLocalEnv" "(" ClassType ")"
+//@ Sets the enclosing local environment for this class, from the cell <elabEnv>
+syntax K ::= setEnclosingLocalEnv ( ClassType )
 rule <k> setEnclosingLocalEnv(Class:ClassType) => . ...</k>
-     <elabEnv> ListItem(stEnv(EnclosingLocalEnv:Map)) ...</elabEnv>
+     <elabEnv> ListItem(mapWrap(EnclosingLocalEnv:Map)) ...</elabEnv>
      <classType> Class </classType>
      <enclosingLocalEnv> _ => EnclosingLocalEnv </enclosingLocalEnv>
 
 //restore the content of <crntClass> and <contextType> with the given class
-syntax K ::= "restoreAfterProcessLocalClass" "(" ClassType //old content of <crntClass>
-                                             "," ContextType //old content of <contextType>
-                                             ")"
+syntax K ::=  restoreAfterProcessLocalClass (
+                ClassType, //old content of <crntClass>
+                ContextType //old content of <contextType>
+              )
 
 rule [restoreAfterProcessLocalClass]:
     <k> restoreAfterProcessLocalClass(Class:ClassType, CT:ContextType) => . ...</k>
@@ -78,9 +81,9 @@ rule [restoreAfterProcessLocalClass]:
 
 //\section{Local classes - runtime}
 
-//Initialize the registration of local environment, when a local class declaration is encountered.
-//This environment is precisely <env>. It don't contain local vars of the outer env for enclosing classes,
-//in case of multi-level local classes.
+/*@ Initialize the registration of local environment, when a local class declaration is encountered.
+This environment is precisely <env>. It don't contain local vars of the outer env for enclosing classes,
+in case of multi-level local classes.*/
 rule [ClassDecStm-runtime]:
     <k> 'ClassDecStm(Class:ClassType) => . ...</k>
     <env> LocalEnv:Map </env>
@@ -91,7 +94,7 @@ rule [ClassDecStm-runtime]:
 /*Case one - anonymous class implementing an interface. The class body have nothing else
 but the members provided in the anonymous class definition block.
 */
-rule [elabAnonymous-NewInstance-implements-interface]:
+rule [elab-NewInstance-anonymous-implements-interface]:
     <k>
       elab('NewInstance(Arg1:K,, Class:ClassType,,
           elabRes('ListWrap(ActualArgs:KList)),,
@@ -113,7 +116,7 @@ rule [elabAnonymous-NewInstance-implements-interface]:
     <classType> Class </classType>
     <metaType> interfaceMetaT </metaType>
 
-rule [elabAnonymous-NewInstance-extends-class]:
+rule [elab-NewInstance-anonymous-extends-class]:
     <k>
       elab('NewInstance(Arg1:K,, Class:ClassType,,
           elabRes('ListWrap(ActualArgs:KList)),,
@@ -135,16 +138,16 @@ rule [elabAnonymous-NewInstance-extends-class]:
     <classType> Class </classType>
     <metaType> classMetaT </metaType>
 
-syntax K ::= "processAnonymousClass" "("
-      Id ","        //Class name
-      ClassType "," //Base class
-      KList ","     //Base interfaces, if any
-      K ","         //'NewInstance Arg1
-      KList ","     //ActualArgs
-      KList ","     //Anonymous class block decs
-      K ","         //To be processed into resultListWrap(constructor formal params)
-      K             //To be processed into resultListWrap(constructor first line arguments)
-    ")"
+syntax K ::=  processAnonymousClass (
+                Id,        //Class name
+                ClassType, //Base class
+                KList,     //Base interfaces, if any
+                K,         //'NewInstance Arg1
+                KList,     //ActualArgs
+                KList,     //Anonymous class block decs
+                K,         //To be processed into resultListWrap(constructor formal params)
+                K          //To be processed into resultListWrap(constructor first line arguments)
+              )
 
 //heat constructor formal params and first line arguments
 context processAnonymousClass(_,_,_,_,_,_,HOLE,_)
@@ -202,11 +205,11 @@ First KList - list of actual arguments
 Second KList - the result
 Third arg - a counter used to generate var names
 */
-syntax K ::= "buildConstructorFormalParams" "(" KList "," KList "," Int ")"
-           | "buildConstructorFirstLineArgs" "(" KList "," KList "," Int ")"
+syntax K ::= buildConstructorFormalParams ( KList, KList, Int )
+           | buildConstructorFirstLineArgs ( KList, KList, Int )
 
 //A wrapper over an arbitrary KList, wrapper being of type KResult.
-syntax KResult ::= "resultListWrap" "(" KList ")"
+syntax KResult ::= resultListWrap ( KList )
 
 rule buildConstructorFormalParams(
       (ActualParam:K => .KList),, _,
@@ -224,7 +227,7 @@ rule buildConstructorFirstLineArgs(
 
 rule buildConstructorFirstLineArgs(.KList, Ks:KList, _) => resultListWrap(Ks)
 
-rule [elabAnonymous-QNewInstance-extends-class]:
+rule [elab-QNewInstance-anonymous-extends-class]:
     <k>
       elab('QNewInstance(elabRes(TypedQual:K),, Arg2:K,, Class:ClassType,, Arg4:K,,
           elabRes('ListWrap(ActualArgs:KList)),,
@@ -247,16 +250,16 @@ rule [elabAnonymous-QNewInstance-extends-class]:
     <metaType> classMetaT </metaType>
 
 //Qualified anonymous class
-syntax K ::= "processQAnonymousClass" "("
-      Id ","        //Class name
-      ClassType "," //Base class
-      K ","         //TypedQual - qualifier
-      K ","         //'NewInstance Arg2
-      KList ","     //ActualArgs
-      KList ","     //Anonymous class block decs
-      K ","         //To be processed into resultListWrap(constructor formal params)
-      K             //To be processed into resultListWrap(constructor first line arguments)
-    ")"
+syntax K ::=  processQAnonymousClass (
+                Id,        //Class name
+                ClassType, //Base class
+                K,         //TypedQual - qualifier
+                K,         //'NewInstance Arg2
+                KList,     //ActualArgs
+                KList,     //Anonymous class block decs
+                K,         //To be processed into resultListWrap(constructor formal params)
+                K          //To be processed into resultListWrap(constructor first line arguments)
+              )
 
 //heat constructor formal params and first line arguments
 context processQAnonymousClass(_,_,_,_,_,_,HOLE,_)
@@ -308,11 +311,11 @@ rule [processQAnonymousClass]:
       )
     )
 
-//Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
-//such as an anonymous class declaration. Is typed with the type of the expression.
-//At runtime is rewritten into the statement, that should evaluate into .K, followed by the expression,
-//that should evaluate to value.
-syntax K ::= "stmtAndExp" "(" K "," K ")"
+/*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
+such as an anonymous class declaration. Is typed with the type of the expression.
+At runtime is rewritten into the statement, that should evaluate into .K, followed by the expression,
+that should evaluate to value.*/
+syntax K ::= stmtAndExp ( K, K )
 
 //elaboration time
 rule elabEnd(           stmtAndExp(Stmt:K, cast(T:Type, Exp:K)) )

@@ -10,7 +10,7 @@ module STATIC-INIT
     imports CLASSES               //for restoreMethContext
     imports VAR-LOOKUP            //for localVar
 
-/*Triggers static initialization of a class.
+/*@ Triggers static initialization of a class.
 
 Detailed initialization procedure is described in JLS \$12.4.2. Here we implement an approximation of that algorithm,
 that does not use the traditional Java synchronization mechanism, but instead relies on term rewriting
@@ -26,9 +26,10 @@ Initialization status of a class may have 3 states: StaticUninitialized, StaticI
   by another thread. Do not match this case.
 4. status = StaticInitialized => the class have been already initialized. Discard the term.
 */
-syntax K ::= "staticInit" "(" ClassType // Class - the ClassType to be initialized,
-                                        // or noClass if this term should be discarded.
-                          ")"
+syntax K ::=  staticInit (
+                ClassType // Class - the ClassType to be initialized,
+                          // or noClass if this term should be discarded.
+              )
 
 rule [staticInit]:
     <k>
@@ -102,14 +103,15 @@ rule [staticInit-recursive-initializing-discard]:
     <classType> Class </classType>
     <staticInitStatus> StaticInitializing(TId) </staticInitStatus>
 
-rule [staticInitEmpty]:
+rule [staticInit-empty]:
     staticInit(noClass) => .K
 
-/*Triggers the last step of static initialization:
+/*@ Triggers the last step of static initialization:
 static init status transitions from StaticInitializing to StaticInitialized.
 */
-syntax K ::= "staticInitDone" "(" ClassType // The class whose initialization just finished
-                              ")"
+syntax K ::=  staticInitDone (
+                ClassType // The class whose initialization just finished
+              )
 
 rule [staticInitDone]:
     <k>

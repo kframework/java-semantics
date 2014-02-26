@@ -86,7 +86,7 @@ rule [Synchronized-on-null]:
         )))
 
 /*@Release one level of lock for the given object.*/
-syntax K ::= releaseLock ( Int )
+syntax K ::=  releaseLock ( Int )
 
 rule [releaseLock]:
     <k>
@@ -200,7 +200,9 @@ when
 /*@Second part of a wait. Waiting was already registered to <waitingThreads>.
 When the record in <waitingThreads> will be deleted, waiting itself shall end.
 */
-syntax K ::= waitImpl ( Int ) //Monitor object location
+syntax K ::=  waitImpl (
+                Int //Monitor object location
+              )
 
 rule [waitImpl-end]:
     <k>
@@ -251,8 +253,9 @@ when
     andBool HoldLevel >=Int 1
 
 /*@Implementation of Object.notify(), extracted here to avoid rule superfluousness*/
-syntax K ::= objectNotifyImpl ( Int //store key of the monitor object
-                              )
+syntax K ::=  objectNotifyImpl (
+                Int //store key of the monitor object
+              )
 
 rule [objectNotifyImpl-someone-waiting]:
     <k>
@@ -287,8 +290,9 @@ when
     andBool HoldLevel >=Int 1
 
 /*@Implementation of Object.notifyAll(), extracted here to avoid rule superfluousness*/
-syntax K ::= objectNotifyAllImpl ( Int //store key of the monitor object
-                                 )
+syntax K ::=  objectNotifyAllImpl (
+                Int //store key of the monitor object
+              )
 
 rule [objectNotifyAllImpl-someone-waiting]:
     <k>

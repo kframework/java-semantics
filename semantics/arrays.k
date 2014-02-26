@@ -9,7 +9,7 @@ module ARRAYS
     imports SUBTYPING
     imports EXPRESSIONS
 
-syntax K ::= RawVal "::" "elem" Type
+syntax K ::=  RawVal "::" "elem" Type
 
 //@ \subsection{Array declarators with c-style dimensions and initializers}
 
@@ -125,7 +125,7 @@ rule [lvalue-elab-Throw-desugar]:
     lvalue(elab('Throw(K:K))) => elab('Throw(K))
 
 rule [ArrayAccess-null-to-NullPointerException]:
-    'ArrayAccess(null::_ ,, _)
+    'ArrayAccess(null::_,, _)
     => elab('Throw('NewInstance(
       'None(.KList),,
       class String2Id("java.lang.NullPointerException"),,
@@ -147,14 +147,14 @@ type of an array declaration be of the form \texttt{arrayOf $T$}
 and assign the right type ($T$) to the allocated array locations. */
 
 //@Elaboration result of expressions new T[]...
-syntax K ::= newArrayImpl (
-                Type ,  // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
-                K ,     // 'ListWrap(Dims) - array dimensions
-                K ,     // InitExp - expression used to initialize each array element, or .K if argument 4 is specified.
-                KList   // InitContent - array initializer, if any, or .K if argument 3 is specified.
-                        // From arguments 3 and 4 just one may be specified. This initializer is for the whole array,
-                        //  not for each element as the previous one.
-             )
+syntax K ::=  newArrayImpl (
+                Type, // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
+                K,    // 'ListWrap(Dims) - array dimensions
+                K,    // InitExp - expression used to initialize each array element, or .K if argument 4 is specified.
+                KList // InitContent - array initializer, if any, or .K if argument 3 is specified.
+                      // From arguments 3 and 4 just one may be specified. This initializer is for the whole array,
+                      //  not for each element as the previous one.
+              )
 
 /* HOLE is of the form 'Dim(K)
 */
@@ -176,11 +176,12 @@ rule [newArrayImpl-with-init]:
     newArrayImpl(T:Type, 'ListWrap(Dim:TypedVal), .K, InitContent:KList)
     => arrayInitAlloc(newArrayImpl(T, 'ListWrap(Dim), undefined :: T, .KList), InitContent)
 
-/*Computation designed to check that array creation expression dimensions are non-negative. If they are non-negative, checkNonNegative is dissolved. Otherwise NegativeArraySizeException is thrown.
+/*Computation designed to check that array creation expression dimensions are non-negative. If they are non-negative,
+checkNonNegative is dissolved. Otherwise NegativeArraySizeException is thrown.
 */
-syntax K ::= checkNonNegative (
+syntax K ::=  checkNonNegative (
                 KList           // List{KResult} - computed array dimensions
-             )
+              )
 
 rule checkNonNegative((NI:Int::_ => .KList),, _)
 when NI >=Int 0
@@ -198,12 +199,12 @@ when
 
 rule checkNonNegative(.KList) => .
 
-//Same as newArrayImpl, but after dims were computed and checked
-syntax K ::= newArrayAlloc (
-                Type ,  // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
-                K ,     // 'ListWrap(Dims:List{KResult}) - array dimensions
-                K       // InitExp - expression used to initialize each array element
-             )
+//@ Same as newArrayImpl, but after dims were computed and checked
+syntax K ::=  newArrayAlloc (
+                Type, // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
+                K,    // 'ListWrap(Dims:List{KResult}) - array dimensions
+                K     // InitExp - expression used to initialize each array element
+              )
 
 rule [newArrayAlloc-MultiDim-desugar]:
     newArrayAlloc(T:Type, 'ListWrap(Dims:KList,,Dim1K:TypedVal,,Dim2K:TypedVal), InitExp:K)
@@ -229,7 +230,7 @@ rule [newArrayAlloc]:
     <nextLoc> LI:Int => LI +Int max(NI,1) </nextLoc>
 
 //@ Maximum of two numbers
-syntax K ::= max ( Int , Int )          [function]
+syntax K ::=  max ( Int, Int )          [function]
 rule max(I1:Int, I2:Int) => #if I1 >=Int I2
                               #then I1
                               #else I2
@@ -238,11 +239,12 @@ rule max(I1:Int, I2:Int) => #if I1 >=Int I2
 /*@ allocates in the store a range of locations denoted by the first argument and initializes them with the value
   produced by the second argument.
 */
-syntax K ::= evalAndStore ( KList , // The range of locations, of the form L1,,_,,Ln
-                            K       // Expression used to initialize each location. Is evaluated for each location
-                                    //  separately, could be an array creation expression if this is just a
-                                    //  dimension of the parent multidim array.
-                          )
+syntax K ::=  evalAndStore (
+                KList,  // The range of locations, of the form L1,,_,,Ln
+                K       /* Expression used to initialize each location. Is evaluated for each location
+                           separately, could be an array creation expression if this is just a
+                           dimension of the parent multidim array. */
+              )
 
 rule [evalAndStore-desugar]:
     evalAndStore((I1:Int,, I2:Int,, Ks:KList), InitExp:K)
@@ -267,7 +269,7 @@ rule [evalAndStore-empty]:
 //@ todo replace. Sequences of locations. A hack inherited from KOOL. Should be replaced with something better.
 syntax KList ::= Int ".." Int                                   [function]
 rule N1:Int..N2:Int => .KList                when N1  >Int N2
-rule N1:Int..N2:Int => N1 ,, (N1 +Int 1)..N2 when N1 <=Int N2
+rule N1:Int..N2:Int => N1,, (N1 +Int 1)..N2 when N1 <=Int N2
 
 //@ \subsection{Array element assignment}
 
@@ -294,12 +296,12 @@ when
 /*@ Assignment with runtime type compatibility check. If first argument evaluates to true, do the assignment.
   Otherwise throw ArrayStoreException.
 */
-syntax K ::= assignArrayLocImpl (
-                K ,       //subtype check on array element assignment
-                Int ,     //destination store location
+syntax K ::=  assignArrayLocImpl (
+                K,        //subtype check on array element assignment
+                Int,      //destination store location
                 TypedVal  //assigned value
-             )
-        [strict(1,3)]
+              )
+              [strict(1,3)]
 
 rule [assignArrayLocImpl]:
     <k> assignArrayLocImpl( true::bool, L:Int, V:RawVal :: T:Type) => V::T ...</k>
@@ -329,10 +331,11 @@ rule [assignArrayLocImpl-to-ArrayStoreException]:
 //@ \subsection{Array initializer}
 
 //allocates the array based on previously computed size, the proceeds to array initialization
-syntax K ::= arrayInitAlloc ( K ,   //newArrayAlloc(), reduces to arrayRef()
-                              KList //InitContent - list of initialization expressions
-                            )
-        [strict(1)]
+syntax K ::=  arrayInitAlloc (
+                K,    //newArrayAlloc(), reduces to arrayRef()
+                KList //InitContent - list of initialization expressions
+              )
+              [strict(1)]
 
 //todo K bug. Looks like [strict] above don't work. Tested with K version of 23/02/2014.
 context arrayInitAlloc(HOLE,_)
@@ -341,12 +344,11 @@ rule [arrayInitAlloc]:
     arrayInitAlloc(arrayRef(T:Type, L:Int, Len:Int)::T, InitContent:KList)
     => arrayInitImpl(T, L, InitContent) ~> arrayRef(T, L, Len)::T
 
-syntax K ::= arrayInitImpl (
-                Type , //T - array type
-                       //    used by inner ArrayInit's
-                Int ,  //L - location of first element in store
-                KList  //InitContent - list of initialization expressions
-             )
+syntax K ::=  arrayInitImpl (
+                Type, //T - array type, used by inner ArrayInit's
+                Int,  //L - location of first element in store
+                KList //InitContent - list of initialization expressions
+              )
 
 rule [arrayInitImpl]:
     ( . => 'ExprStm(assignArrayLocImpl(true, L, K)) )

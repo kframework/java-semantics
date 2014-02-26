@@ -9,19 +9,21 @@ module PROCESS-CLASS-DECS
 
 /*@ \subsection{Third pass - processing class dependencies and imports} */
 
-//Processes all classes from CreatedCPhase to DecsProcessedCPhase.
-syntax K ::= "processClassDecs" "(" K //setWrap(Set) - the set of all classes
-                                ")"  [strict]
+//@ Processes all classes from CreatedCPhase to DecsProcessedCPhase.
+syntax K ::=  processClassDecs (
+                K //setWrap(Set) - the set of all classes
+              )
+              [strict]
 
-rule [StartProcClassDecsPhase]:
+rule [ProcClassDecsPhase-start]:
     <k> . => processClassDecs(getTopLevelClasses) </k>
-     <globalPhase> ProcCompUnitsPhase => ProcClassDecsPhase  </globalPhase>
+    <globalPhase> ProcCompUnitsPhase => ProcClassDecsPhase  </globalPhase>
 
-/* Question: how do we know if bases were already resolved for this class or not?
+/*@ Question: how do we know if bases were already resolved for this class or not?
   Answer: When resolveBases(Class) is consumed by the rule [resolveBasesEnd], the class
   changes its state: CreatedCPhase => BasesResolvedCPhase
 */
-rule [resolveBasesTopLevelStart]:
+rule [processClassDecs-resolveBases-TopLevel-Start]:
     <k> (. => resolveBases(Class, RawExtends, RawImplements)) ~> processClassDecs(_) ...</k>
     <classType> Class:ClassType </classType>
     <rawExtends> RawExtends:K </rawExtends>
@@ -32,7 +34,7 @@ rule [resolveBasesTopLevelStart]:
     <crntClass> _ => noClass </crntClass>
     <compUnitImports> _ => CuImports </compUnitImports>
 
-rule [resolveBasesInnerStart]:
+rule [processClassDecs-resolveBases-Inner-Start]:
     <k> (. => resolveBases(Class, RawExtends, RawImplements)) ~> processClassDecs(_) ...</k>
     <class>
       <classType> Class:ClassType </classType>
@@ -52,11 +54,12 @@ rule [resolveBasesInnerStart]:
 when
     OuterClassPhase ==K DecsProcessedCPhase orBool OuterClassPhase ==K MembersProcessedCPhase
 
-//Process the given class from CreatedCPhase to BasesResolvedCPhase.
-syntax K ::= "resolveBases" "(" ClassType //The class for which we resolve bases
-                            "," K         //Base class
-                            "," KList     //Implements clauses
-                            ")"
+//@ Process the given class from CreatedCPhase to BasesResolvedCPhase.
+syntax K ::=  resolveBases (
+                ClassType,  //The class for which we resolve bases
+                K,          //Base class
+                KList       //Implements clauses
+              )
 
 context resolveBases(_, HOLE, _)      //Heat extends declaration
 context resolveBases(_,_, _,,HOLE,,_) //Heat implements declarations
@@ -70,7 +73,7 @@ rule [resolveBases]:
     <classPhase> CreatedCPhase => BasesResolvedCPhase </classPhase>
 when isKResult(ImplTypes)
 
-rule [markBaseProcessed]:
+rule [processClassDecs-mark-Base-Processed]:
     <k> processClassDecs(_) ...</k>
     <class>
       <unprocessedBases> 'ListWrap((BaseClass:ClassType => .KList) ,,_) </unprocessedBases>
@@ -84,12 +87,12 @@ rule [markBaseProcessed]:
 when
     BaseClassPhase ==K DecsProcessedCPhase orBool BaseClassPhase ==K MembersProcessedCPhase
 
-//this one is for class Object
-rule [markNoClassProcessed]:
+//@ This one is for class Object
+rule [processClassDecs-mark-noClass-Processed]:
     <k> processClassDecs(_) ...</k>
     <unprocessedBases> 'ListWrap((noClass => .KList) ,,_) </unprocessedBases>
 
-rule [processClassDecEnd]:
+rule [processClassDecs-end]:
     <k>
       processClassDecs(setWrap( SetItem(Class:ClassType) RestClasses:Set ))
       =>   saveImplements(Class, kListToSet(ImplTypes, .Set))
@@ -107,44 +110,46 @@ rule [processClassDecEnd]:
       <rawImplements> 'ListWrap(ImplTypes:KList) </rawImplements> => .Bag)
     ( <unprocessedBases> 'ListWrap(.KList) </unprocessedBases> => .Bag)
 
-rule [processClassDecsDiscard]:
+rule [processClassDecs-discard]:
     processClassDecs(setWrap(.)) => .K
 
-//Converts a term of type KList into a Set
-syntax K ::= "kListToSet" "(" KList //a list of some K Terms
-                          "," Set     //the result set
-                          ")"
+//@ Converts a term of type KList into a Set
+syntax K ::= kListToSet ( KList, //a list of some K Terms
+                          Set     //the result set
+                          )
 
-rule kListToSet((K:K => .KList),,_ , (_ (.Set => SetItem(K) )))
+rule kListToSet((K:K => .KList),,_, (_ (.Set => SetItem(K) )))
 rule kListToSet(.KList, TypeSet:Set) => setWrap(TypeSet)
 
-//receives a kListToSet term ans saves the resulting set into <imports>
-syntax K ::= "saveImplements" "(" ClassType "," K ")" [strict(2)]
+//@ Receives a kListToSet term ans saves the resulting set into <imports>
+syntax K ::= saveImplements ( ClassType, K ) [strict(2)]
 
 rule [saveImplements]:
     <k> saveImplements(Class:ClassType, setWrap(ImplSet:Set)) => . ...</k>
     <classType> Class </classType>
     <implements> .Set => ImplSet </implements>
 
-//Computes the full names map used to resolve
-//classes by simple name inside the class specified by the arg 4,
-//and stores them inside <imports>.
-syntax K ::= "saveImports"  "(" ClassType //Class - the actual class
-                            "," ClassType //The outer class of this class, if any,
-                                          //or noClass if this is a top-level class
-                            "," KList     //The list of base classes
-                            "," K         //mapWrap(outer classes), to be computed
-                            "," K         //mapWrap(inherited classes), to be computed. Starts with mapWrap(.Map)
-                            "," K         //the result map, to be computed
-                            ")"   [strict(4,5,6)]
+/*@ Computes the full names map used to resolve
+    classes by simple name inside the class specified by the arg 4,
+    and stores them inside <imports>.*/
+syntax K ::=  saveImports  (
+                ClassType, //Class - the actual class
+                ClassType, //The outer class of this class, if any,
+                           //or noClass if this is a top-level class
+                KList,     //The list of base classes
+                K,         //mapWrap(outer classes), to be computed
+                K,         //mapWrap(inherited classes), to be computed. Starts with mapWrap(.Map)
+                K          //the result map, to be computed
+              )
+              [strict(4,5,6)]
 
 //todo K 10341 it looks like [strict] above don't work
 context saveImports(_,_,_,HOLE,_,_)
 context saveImports(_,_,_,_,HOLE,_)
 context saveImports(_,_,_,_,_,HOLE)
 
-//Compute outer classes if this class is a top-level class
-rule [saveImportsComputeExternalTop]:
+//@ Compute outer classes if this class is a top-level class
+rule [saveImports-ComputeExternalTop]:
     <k>
       saveImports(Class:ClassType, noClass, _,
         noValue => mapWrap(ExternalMap),
@@ -154,8 +159,8 @@ rule [saveImportsComputeExternalTop]:
     <classType> Class </classType>
     <cuImports> ExternalMap:Map </cuImports>
 
-//Compute outer classes if this class is an inner class.
-rule [saveImportsComputeExternalInner]:
+//@ Compute outer classes if this class is an inner class.
+rule [saveImports-ComputeExternalInner]:
     <k>
       saveImports(_, OuterClass:ClassType, _,
         noValue => mapWrap(ExternalMap),
@@ -166,7 +171,7 @@ rule [saveImportsComputeExternalInner]:
     <imports> ExternalMap:Map </imports>
 
 //Second add names inherited from each base type, but don't override inner classes
-rule [saveImportsInheritTypes]:
+rule [saveImports-InheritTypes]:
     <k>
       saveImports(_,_, ((BaseClass:ClassType => .KList),, _), _,
         mapWrap(InheritedMap:Map) => mapUnion(mapWrap(InheritedMap), mapWrap(BaseClassMap)),
@@ -177,16 +182,16 @@ rule [saveImportsInheritTypes]:
     <classType> BaseClass </classType>
     <imports> BaseClassMap:Map </imports>
 
-rule [saveImportsDiscardNoClass]:
+rule [saveImports-Discard-noClass]:
     saveImports(_,_, ((noClass => .KList),, _), _,_,_)
 
-/*Compute the final result - the combined accessible classes map, with this components in order:
+/*@ Compute the final result - the combined accessible classes map, with this components in order:
   - external names
   - local block names (for local classes only)
   - inherited names
   - inner names
 */
-rule [saveImportsComputeResult]:
+rule [saveImports-ComputeResult]:
     <k>
       saveImports(Class:ClassType,_, .KList, mapWrap(ExternalMap:Map), mapWrap(InheritedMap:Map),
         noValue => mapUnion(
@@ -200,12 +205,12 @@ rule [saveImportsComputeResult]:
       )
       ...
     </k>
-    <localTypes> ListItem(stEnv(LocalTypes:Map)) ...</localTypes>
+    <localTypes> ListItem(mapWrap(LocalTypes:Map)) ...</localTypes>
     <classType> BaseClass:ClassType </classType>
     <imports> BaseClassMap:Map </imports>
 
-//Save the computed Imports map into the <imports> cell of the given class
-rule [saveImports]:
+//@ Save the computed Imports map into the <imports> cell of the given class
+rule [saveImports-end]:
     <k>
       saveImports(Class:ClassType, _,_,_,_, mapWrap(Imports:Map)) => .
       ...

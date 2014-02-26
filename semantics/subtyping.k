@@ -5,21 +5,21 @@ require "core.k"
 module SUBTYPING
     imports CORE
 
-//Checks whether first type is a subtype of the second
-syntax K ::= "subtype" "("
-                          Type ","
-                          Type
-                       ")"                      [strict]
+//@ Checks whether first type is a subtype of the second
+syntax K ::=  subtype (
+                Type,
+                Type
+              )
+              [strict]
 
-//Checks whether the each type in the first list of types is a subtype
-//of the type at the same position in the second list.
-//If lists have different size, the function will evaluate to false.
-//Used in method call overloading resolution.
-            | "subtypeList" "(" Types ","
-                                Types
-                            ")"
+/*@ Checks whether the each type in the first list of types is a subtype
+of the type at the same position in the second list.
+If lists have different size, the function will evaluate to false.
+Used in method call overloading resolution.
+*/
+syntax K ::=  subtypeList ( Types, Types )
 
-rule [subtypeRefTrue]:
+rule [subtype-same-type-True]:
     subtype( T:Type, T ) => true
         [structural]
 
@@ -53,7 +53,7 @@ when T =/=K bool [structural]
 /*@ \subsection{Subtyping among reference types}
 The subclass relation introduces a subtyping relation. */
 
-rule [subtypeClassOfClassRed]:
+rule [subtype-ClassOfClassRed]:
     <k> subtype( Class1:ClassType, Class:ClassType )
       => subtype( Class2:ClassType, Class ) ...</k>
     <class>
@@ -71,15 +71,15 @@ when
     Class1 =/=K Class
         [structural]
 
-rule [subtypeNoClassOfAnyFalse]:
+rule [subtype-NoClassOfAnyFalse]:
     subtype( noClass, _ ) => false
 
 //The case subtype (noClass, noClass) should never be encountered
 //used by the rule [getQThisSubclassOf]
-rule [subtypeAnyOfNoClassFalse]:
+rule [subtype-AnyOfNoClassFalse]:
     subtype( _, noClass ) => true
 
-rule [subtypeInterfaceOfClass]:
+rule [subtype-IInterfaceOfClass]:
     <k> subtype( Class1:ClassType, Class:ClassType ) => Class ==K objectClass ...</k>
     <class>
       <classType> Class1 </classType>
@@ -99,7 +99,7 @@ K Limitation: This way don't seem to work:
     <metaType> classMetaT </metaType>
 */
 
-rule [subtypeOfInterface]:
+rule [subtype-OfInterface]:
     <k> subtype( Class1:ClassType, Class2:ClassType ) => Class2 in ISet ...</k>
     <class>
       <classType> Class1 </classType>
@@ -112,44 +112,44 @@ rule [subtypeOfInterface]:
       ...
     </class>
 
-rule [subTypeClassOfOtherFalse]:
+rule [subType-ClassOfOtherFalse]:
     subtype( _:ClassType, T:Type ) => false
 when
     notBool (isClassType(T) ==K true)
 
-rule [subtypeStringOfClass]:
+rule [subtype-StringOfClass]:
     subtype( rtString, Class:ClassType ) => Class ==K objectClass
 
-rule [subtypeStringOfOtherFalse]:
+rule [subtype-StringOfOtherFalse]:
     subtype( rtString, T:Type ) => false
 when
             (T =/=K rtString)
     andBool notBool (isClassType(T) ==K true)
 
-rule [subtypeArrayOfClass]:
+rule [subtype-ArrayOfClass]:
     subtype( arrayOf _, Class:ClassType ) => Class ==K objectClass
 
-rule [subtypeArrayOfOtherFalse]:
+rule [subtype-ArrayOfOtherFalse]:
     subtype( arrayOf _, T:Type ) => false
 when
             (getKLabel(T) =/=KLabel 'arrayOf_)
     andBool notBool (isClassType(T) ==K true)
 
-rule [subtypeNull]:
+rule [subtype-Null]:
     subtype( nullType, T:Type ) => (isRefType(T) ==K true)
         [structural]
 
 //@ Subtype
-rule [subtypeArrayOfArrayPrimitive]:
+rule [subtype-ArrayOfArrayPrimitive]:
     subtype( arrayOf T1:Type, arrayOf T2:Type ) => (T1 ==K T2)
 when
     notBool (isRefType(T1) ==K true) orBool notBool (isRefType(T2) ==K true)
 
-rule [subtypeArrayOfArrayRef]:
+rule [subtype-ArrayOfArrayRef]:
     subtype( arrayOf RefT1:RefType, arrayOf RefT2:RefType ) => subtype( RefT1, RefT2 )
 
 //used by lookupQThis, when QThis is an inferred qualifier for unqualified new instance creation.
-rule [subtypeOfNoClass]:
+rule [subtype-OfNoClass]:
     subtype( _, noClass ) => false
 
 /*@ \subsection{Subtyping lists of types}*/
@@ -159,15 +159,15 @@ rule [subtypeList]:
     => 'LazyAnd( subtype(T1,Tp1),, subtypeList(types(Ts), types(Tps)) )
         [structural]
 
-rule [subtypeListEmptyLeft]:
+rule [subtypeList-EmptyLeft]:
     subtypeList(types(.KList), types(_:Type,,_)) => false
         [structural]
 
-rule [subtypeListEmptyRight]:
+rule [subtypeList-EmptyRight]:
     subtypeList(types(_:Type,,_) , types(.KList)) => false
         [structural]
 
-rule [subtypeEmptyBoth]:
+rule [subtypeList-EmptyBoth]:
     subtypeList(types(.KList), types(.KList)) => true
         [structural]
 

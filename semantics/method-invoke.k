@@ -27,7 +27,7 @@ rules below are identical to those in untyped KOOL. */
 rule 'Method('MethodName(Ks:KList)) => 'MethodName(Ks)    [structural, anywhere]
 rule 'Method(K:K,, _:K,, Name:Id) => 'MethodName(K,, Name)  [structural, anywhere]
 
-rule [MethodNameUnqInstanceCT]:
+rule [MethodName-Unq-InstanceCT]:
     <k>
       'MethodName(Name:Id) => 'MethodName(cast(Class, 'QThis(Class)),, Name)
       ...
@@ -55,11 +55,12 @@ rule [QSuperMethod]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>  [structural]
 
-syntax KResult ::= "lookupMethodData" "(" K         //cast(T, Exp) - typed obj closure for instance qualifier
-                                                    //or ClassType - for class qualifier
-                                      "," Id        //method name
-                                      "," Bool      //IsQ - isQualified
-                    ")"
+syntax KResult ::=  lookupMethodData (
+                      K,    //cast(T, Exp) - typed obj closure for instance qualifier
+                            //or ClassType - for class qualifier
+                      Id,   //method name
+                      Bool  //IsQ - isQualified
+                    )
 
 /*@ Closure application needs to also set a new return type in the
 \textsf{return} cell, in order for the values returned by its body to
@@ -70,7 +71,7 @@ and then pop it when the method returns. */
 //First argument is reduced up to lookupMethodData.
 context elabEnd('Invoke(HOLE,, _))
 
-rule [Invoke-to-lookupMethod-qualified]:
+rule [elabEnd-Invoke-to-lookupMethod-qualified]:
     elabEnd('Invoke(lookupMethodData(
         Qual:K,
         MethodName:Id,
@@ -88,7 +89,7 @@ rule [Invoke-to-lookupMethod-qualified]:
     )
 when notBool isTypedQThis(Qual)
 
-rule [Invoke-to-lookupMethod-unqualified]:
+rule [elabEnd-Invoke-to-lookupMethod-unqualified]:
     <k>
       elabEnd('Invoke(lookupMethodData(
           cast(Class, 'QThis(Class:ClassType)),
@@ -123,23 +124,24 @@ class list corresponding to the enclosing class of the caller class.
 First we search for the signature - lookupSignature construct.
 Afterwards we search for the right implementation in the hierarchy, once the signature is known
 - lookupMethodSigKnown.*/
-syntax K ::= "lookupMethod" "(" RefType   //target ref type (not necessarily class, could be String or array)
-                            "," Id        //method name
-                            "," Bool      //IsQ - isQualified
-                            "," K         //Evaluates to the signature to be called, or noValue if no signature was found yet
-                                          //Sig format: mapWrap(Sig |-> MethodTV)
-                            "," Bool      //SigSearched: true if Sig was already searched for the current class, false otherwise.
-                                          // Starts with false.
-                            "," K         //either Cast - typed qualifier expression, or Class for class qualifiers.
-                            "," KList     //ParamExps - parameter expressions of type Cast
-                            ")"
-        [strict(4)]
+syntax K ::=  lookupMethod (
+                RefType,  //target ref type (not necessarily class, could be String or array)
+                Id,       //method name
+                Bool,     //IsQ - isQualified
+                K,        //Evaluates to the signature to be called, or noValue if no signature was found yet
+                          // Sig format: mapWrap(Sig |-> MethodTV)
+                Bool,     //SigSearched: true if Sig was already searched for the current class, false otherwise.
+                          // Starts with false.
+                K,        //either Cast - typed qualifier expression, or Class for class qualifiers.
+                KList     //ParamExps - parameter expressions of type Cast
+              )
+              [strict(4)]
 
 //todo K 10341 it looks like [strict] above don't work
 context lookupMethod(_,_,_,HOLE,_,_,_)
 
 //Regular case - target type is a class
-rule [lookupMethod-LookupSig]:
+rule [lookupMethod-to-lookupSignature]:
     <k>
       lookupMethod(
         Class:ClassType,
@@ -157,7 +159,7 @@ rule [lookupMethod-LookupSig]:
 
 /*Target type is not class but another ref type, lookup the method in the class Object,
 with some exceptions*/
-rule [lookupMethod-LookupSigGeneralRef]:
+rule [lookupMethod-to-lookupSignature-GeneralRef]:
     <k>
       lookupMethod(
         QualT:RefType,
@@ -188,20 +190,22 @@ rule [lookupMethod-SigFound]:
       true, QualK:K, ParamExps:KList
     ) => elabRes(cast(RetT, methodInvokeRuntime(QualT, Sig, QualK, ParamExps, CT)))
 
-rule [lookupMethod-SigNotFound]:
+rule [lookupMethod-Sig-NotFound]:
     lookupMethod(_,_,_, noValue, true, _,_) => noValue
 
-//Search for the correct method signature to use
-//when calling a given MethodName with the given argument types.
-//computes mapWrap(Sig -> MethodTV)
-syntax K ::= "lookupSignature" "("  Id     // MethodName
-                               ","  K      // Computes into Types - argument types
-                               ","  Map    // Env - methods environment Map[sig -> Class]
-                               ","  Bool   // IsQ - whether the original method call was qualified
-                               ","  K      // The best signature found so far, in the form mapWrap(Sig -> Type)
-                                           // or noValue if none found
-                               ","  ClassType //target class
-                               ")"  [strict(2,5)]
+/*Search for the correct method signature to use
+when calling a given MethodName with the given argument types.
+computes mapWrap(Sig -> MethodTV)*/
+syntax K ::=  lookupSignature (
+                Id,       // MethodName
+                K,        // Computes into Types - argument types
+                Map,      // Env - methods environment Map[sig -> Class]
+                Bool,     // IsQ - whether the original method call was qualified
+                K,        // The best signature found so far, in the form mapWrap(Sig -> Type)
+                          // or noValue if none found
+                ClassType //target class
+              )
+              [strict(2,5)]
 
 rule [lookupSignature-Main]:
     <k>
@@ -233,7 +237,7 @@ rule [lookupSignature-Main]:
     <classType> DecClass </classType>
     <methodDecs>... sig(MethodName, SigTs) |-> TV:TypedVal ...</methodDecs>
 
-syntax K ::= "getMethodDecArgTypes" "(" K ")"   [function]
+syntax K ::= getMethodDecArgTypes ( K )   [function]
 rule getMethodDecArgTypes(mapWrap(sig(_, Ts:Types) |-> _)) => Ts
 
 rule [lookupSignature-SigDiscard]:
@@ -246,23 +250,24 @@ rule [lookupSignature-SigDiscard]:
 when
     Name =/=K MethodName
 
-rule [lookupSignatureEnd]:
+rule [lookupSignature-End]:
     lookupSignature(_,_,.Map,_, SigWrap:KResult, _) => SigWrap
 
-//Tests whether a method from a given class with a given AccessMode and ContextType
-//may be called from the current object environment
-syntax K ::= "isAccessible" "(" AccessMode ","  //the method access mode
-                                K ","           //evaluates to ContextType - staticCT or instanceCT
-                                K ","           //evaluates to ClassType - the method declaring class
-                                Bool ","        //IsQ - whether the initial method call expression was qualified
-                                ClassType       //target class, used by protected mode in inner classes
-                            ")"
+/*@ Tests whether a method from a given class with a given AccessMode and ContextType
+may be called from the current object environment*/
+syntax K ::=  isAccessible (
+                AccessMode, //the method access mode
+                K,          //evaluates to ContextType - staticCT or instanceCT
+                K,          //evaluates to ClassType - the method declaring class
+                Bool,       //IsQ - whether the initial method call expression was qualified
+                ClassType   //target class, used by protected mode in inner classes
+              )
         [strict(2)]
 
-rule [isAccessiblePublic]:
+rule [isAccessible-public]:
     isAccessible(public, _,_,_,_) => true
 
-rule [isAccessible-Protected]:
+rule [isAccessible-protected]:
     <k>
       isAccessible(protected, CT:ContextType, DeclaringClass:ClassType, IsQ:Bool,
           TargetClass:ClassType
@@ -281,7 +286,7 @@ rule [isAccessible-Protected]:
     </k>
     <crntClass> CurrentClass:ClassType </crntClass>
 
-rule [isAccessiblePackage]:
+rule [isAccessible-package]:
     <k>
       isAccessible(package, _, DeclaringClass:ClassType, _,_)
       => eqAux(getPackage(getTopLevel(DeclaringClass)), getPackage(getTopLevel(CurrentClass)))
@@ -289,9 +294,9 @@ rule [isAccessiblePackage]:
     </k>
     <crntClass> CurrentClass:ClassType </crntClass>
 
-//A private method is accessible if the class where it is declared lies
-//in the same top-level class as the class that accesses the method
-rule [isAccessiblePrivate]:
+/*A private method is accessible if the class where it is declared lies
+in the same top-level class as the class that accesses the method*/
+rule [isAccessible-private]:
     <k>
       isAccessible(private, _, DeclaringClass:ClassType, _,_)
       => eqAux(getTopLevel(DeclaringClass), getTopLevel(CurrentClass))
@@ -300,23 +305,25 @@ rule [isAccessiblePrivate]:
     <crntClass> CurrentClass:ClassType </crntClass>
 
 //The elaboration result of a method invocation.
-syntax K ::= "methodInvokeRuntime" "(" RefType    //Compile-time target class, or more general reference
-                                   "," Signature  //Method signature
-                                   "," K          //Qualifier expression, if any, or noValue if it is static invocation
-                                   "," KList      //Arguments, each of type Cast
-                                   "," ContextType  //instanceCT or staticCT
-                                   ")"
+syntax K ::=  methodInvokeRuntime (
+                RefType,    //Compile-time target class, or more general reference
+                Signature,  //Method signature
+                K,          //Qualifier expression, if any, or noValue if it is static invocation
+                KList,      //Arguments, each of type Cast
+                ContextType  //instanceCT or staticCT
+              )
 
-//Evaluate the qualifier
-//JLS \$15.12.4.1 - Compute Target Reference
+/*Evaluates the qualifier.
+JLS \$15.12.4.1 - Compute Target Reference.*/
 context methodInvokeRuntime(_,_, HOLE, _,_)
 
 //todo a test for expression order exists, but is unable expose the error in this rule.
-//Waiting for an alternative from K guys.
-//JLS \$15.12.4.2 - Evaluate Arguments
+// Waiting for an alternative from K guys.
+/* JLS \$15.12.4.2 - Evaluate Arguments
+*/
 context methodInvokeRuntime(_,_,_:KResult, (_,,HOLE,,_), _)
 
-rule [methodInvokeRuntimeInstanceOnClass]:
+rule [methodInvokeRuntime-Instance-On-Class]:
     <k>
       methodInvokeRuntime(Class:ClassType, Sig:Signature,
         objectClosure(OL:Int,
@@ -338,7 +345,7 @@ rule [methodInvokeRuntimeInstanceOnClass]:
 when
     isKResult(ParamVals)
 
-rule [methodInvokeRuntimeStaticOnClass]:
+rule [methodInvokeRuntime-Static-On-Class]:
     methodInvokeRuntime(Class:ClassType, Sig:Signature, _:KResult, ParamVals:KList, staticCT)
     => invokeImpl(
       lookupOverloadedMethod(Sig, Class, mapWrap(.Map), noValue),
@@ -347,7 +354,7 @@ rule [methodInvokeRuntimeStaticOnClass]:
 when
     isKResult(ParamVals)
 
-rule [methodInvokeRuntime-InstanceOnInterface]:
+rule [methodInvokeRuntime-Instance-On-Interface]:
     <k>
       methodInvokeRuntime(Class:ClassType, Sig:Signature,
         objectClosure(OL:Int,
@@ -368,7 +375,7 @@ when
 /*
 If the method is not one of the supported methods of class String, look it up in the class Object.
 */
-rule [methodInvokeRuntimeOnString]:
+rule [methodInvokeRuntime-On-String]:
     methodInvokeRuntime(_, sig(MethodName:Id, Ts:Types),
         Str:String::_,
         ParamVals:KList, _
@@ -386,7 +393,7 @@ when
     andBool (Id2String(MethodName) =/=String "compareTo")
     andBool isKResult(ParamVals)
 
-rule [methodInvokeRuntimeOnArray]:
+rule [methodInvokeRuntime-On-Array]:
     methodInvokeRuntime(_, sig(MethodName:Id, Ts:Types),
         arrayRef(ArrT:RefType, L:Int, M:Int)::_,
         ParamVals:KList, _
@@ -399,7 +406,7 @@ when
             (Id2String(MethodName) =/=String "clone")
     andBool isKResult(ParamVals)
 
-rule [methodInvokeRuntimeOnNull]:
+rule [methodInvokeRuntime-On-Null]:
     methodInvokeRuntime(_,_, null::_, ParamVals:KList, instanceCT)
     =>  elab('Throw('NewInstance(
           'None(.KList),,
@@ -416,7 +423,7 @@ when
 syntax K ::= superMethod ( K ) // is always equal to A.this - used to lookup the right qualifier closure.
         [strict]
 
-rule [qSuperQualEval]:
+rule [superMethod]:
     superMethod(
       objectClosure(
         OL:Int,
@@ -432,35 +439,36 @@ rule [qSuperQualEval]:
       ObjLocalClassesEnv
     )::BaseClass
 
-//Converts a list of ListItem(el(Class, BI, EnclosingObj, _)) into KList with elements of sort ClassType
-syntax K ::= "getClassList" "(" List ")"
+//@ Converts a list of ListItem(el(Class, BI, EnclosingObj, _)) into KList with elements of sort ClassType
+syntax K ::= getClassList ( List )
 rule (.KList => Class),, getClassList((ListItem(el(Class:ClassType, _,_,_)) => .List) _)
         [structural, anywhere]
 rule getClassList(.) => .KList
         [structural, anywhere]
 
-//The right signature is already found.
-//Search for the right implementation is performed from the compile-time type of the target
-//to more derived types, up to the object type of the target.
-//This is required in order to respect the rules of inheritance in the presence of access modes.
-//Evaluates into typed method closure.
-syntax K ::= "lookupOverloadedMethod" "("
-                              K ","       //sig(Name, SigTL) - Method signature
-                              KList ","   //Class list, elements of type ClassType,
-                                          // from derived to base.
-                                          // To be processed from base to derived when methods map will be exhausted.
-                              K ","       //mapWrap(Map) - methods map of current LayerClass
-                              TypedVal    //method closure of the most specific method found so far
-                                          // or noValue if no applicable method
-                                          // was found yet
-                            ")"           [strict(1,3,4)]
+/*@ The right signature is already found.
+Search for the right implementation is performed from the compile-time type of the target
+to more derived types, up to the object type of the target.
+This is required in order to respect the rules of inheritance in the presence of access modes.
+Evaluates into typed method closure.*/
+syntax K ::=  lookupOverloadedMethod (
+                K,       //sig(Name, SigTL) - Method signature
+                KList,   //Class list, elements of type ClassType,
+                         // from derived to base.
+                         // To be processed from base to derived when methods map will be exhausted.
+                K,       //mapWrap(Map) - methods map of current LayerClass
+                TypedVal //method closure of the most specific method found so far
+                         // or noValue if no applicable method
+                         // was found yet
+              )
+              [strict(1,3,4)]
 
 //todo K 10341 it looks like [strict] above don't work
 context lookupOverloadedMethod(HOLE,_,_,_)
 context lookupOverloadedMethod(_,_,HOLE,_)
 context lookupOverloadedMethod(_,_,_,HOLE)
 
-rule [lookupMethodSigKnownFirstCandidate]:
+rule [lookupOverloadedMethod-SigKnownFirstCandidate]:
     <k>
       lookupOverloadedMethod(
         Sig:Signature,
@@ -473,7 +481,7 @@ rule [lookupMethodSigKnownFirstCandidate]:
     <classType> DeclClass </classType>
     <methodDecs>... Sig |-> NewMethTV:TypedVal ...</methodDecs>
 
-rule [lookupMethodSigKnownOtherCandidates]:
+rule [lookupOverloadedMethod-SigKnownOtherCandidates]:
     <k>
       lookupOverloadedMethod(
         Sig:Signature,
@@ -498,7 +506,7 @@ rule [lookupMethodSigKnownOtherCandidates]:
     <classType> NewDeclClass </classType>
     <methodDecs>... Sig |-> NewMethTV:TypedVal ...</methodDecs>
 
-rule [lookupMethodSigKnownEntryDiscard]:
+rule [lookupOverloadedMethod-SigKnownEntryDiscard]:
     lookupOverloadedMethod(
       Sig:Signature,
       _,
@@ -508,7 +516,7 @@ rule [lookupMethodSigKnownEntryDiscard]:
 when
     Sig =/=K OtherSig
 
-rule [lookupMethodSigKnownLayerDiscard]:
+rule [lookupOverloadedMethod-SigKnownLayerDiscard]:
     <k>
       lookupOverloadedMethod(
         _,
@@ -521,7 +529,7 @@ rule [lookupMethodSigKnownLayerDiscard]:
     <classType> NewLayerClass </classType>
     <methods> NewEnv:Map </methods>
 
-rule [lookupMethodSigKnownEnd]:
+rule [lookupOverloadedMethod-SigKnownEnd]:
     lookupOverloadedMethod(
       _,
       .KList,
@@ -529,19 +537,20 @@ rule [lookupMethodSigKnownEnd]:
      MethTV:TypedVal
     ) => MethTV
 
-//Returns the defining class of the given method TypedVal.
-syntax K ::= "getMethConsClosureClass" "(" TypedVal ")"
+//@ Returns the defining class of the given method TypedVal.
+syntax K ::= getMethConsClosureClass ( TypedVal )
 rule getMethConsClosureClass( methodClosure(Class:ClassType, _,_,_,_,_,_) ::_ ) => Class
         [structural]
 
-syntax K ::= "invokeImpl" "(" K   //lookupOverloadedMethod statement, evaluates to typed methodClosure
-                          "," K   //OL - object location, target type for methods on non-object refs,
-                                  //or noValue for static methods
-                          "," K   //evaluates to 'ListWrap(ParamValues:List{KResult})
-                          ")"
-        [strict(1)]
+syntax K ::=  invokeImpl (
+                K,  //lookupOverloadedMethod statement, evaluates to typed methodClosure
+                K,  //OL - object location, target type for methods on non-object refs,
+                    //or noValue for static methods
+                K   //evaluates to 'ListWrap(ParamValues:List{KResult})
+              )
+              [strict(1)]
 
-rule [invokeImplInstance]:
+rule [invokeImpl-Instance]:
     <k>
       invokeImpl(
         methodClosure(Class:ClassType, 'ListWrap(Params:KList), instanceCT, _,methodRT, noValue, Body:K)
@@ -549,7 +558,7 @@ rule [invokeImplInstance]:
         OL:Int,
         'ListWrap(ParamValues:KList)
       ) ~> K:K
-       => setRuntimeEnclosingLocalEnv(OL) ~> bindto Params, ParamValues ~> Body ~> 'Return('None(.KList))
+       => setRuntimeEnclosingLocalEnv(OL) ~> bindTo(Params, ParamValues) ~> Body ~> 'Return('None(.KList))
     </k>
     <stack>
       . =>  ListItem(sl(K,
@@ -585,7 +594,7 @@ rule [invokeImplInstance]:
     </store>
 when getKLabel(Body) =/=KLabel 'NoMethodBody
 
-rule [invokeImplStatic]:
+rule [invokeImpl-Static]:
     <k>
       invokeImpl(
         methodClosure(Class:ClassType, 'ListWrap(Params:KList), staticCT, _,methodRT, _, Body:K)
@@ -593,7 +602,7 @@ rule [invokeImplStatic]:
         _,
         'ListWrap(ParamValues:KList)
       ) ~> K:K
-       => staticInit(Class) ~> bindto Params, ParamValues ~> Body ~> 'Return('None(.KList))
+       => staticInit(Class) ~> bindTo(Params, ParamValues) ~> Body ~> 'Return('None(.KList))
     </k>
     <stack>
       . =>  ListItem(sl(K,
@@ -622,7 +631,7 @@ rule [invokeImplStatic]:
       RestMethContext:Bag
     </methodContext>
 
-syntax K ::= "setRuntimeEnclosingLocalEnv" "(" Int ")"
+syntax K ::= setRuntimeEnclosingLocalEnv ( Int )
 rule <k> setRuntimeEnclosingLocalEnv(OL:Int) => . ...</k>
      <crntClass> Class:ClassType </crntClass>
      <env> _ => OuterLocalEnv </env>
@@ -633,24 +642,24 @@ rule <k> setRuntimeEnclosingLocalEnv(OL:Int) => . ...</k>
      </store>
 
 //@ \texttt{bindto} also checks the well-formedness of the method parameters
+syntax K ::= bindTo ( KList, // var names
+                      KList  // List{KResult} - values
+                    )
 
-syntax K ::= "bindto" KList  // var names
-                  "," KList  // List{KResult} - values
-
-rule [bindto]:
+rule [bindTo]:
     <k>
-      bindto paramImpl(T:Type, X:Id),, RestP:KList, TV:TypedVal,, RestV:KList
+      bindTo(paramImpl(T:Type, X:Id),, RestP:KList, TV:TypedVal,, RestV:KList)
       => 'LocalVarDec(.K,, T:Type,,'ListWrap('VarDec(X)))
         ~> 'ExprStm('Assign(localVar(X),, cast(T, TV:TypedVal)))
-        ~> bindto RestP, RestV
+        ~> bindTo(RestP, RestV)
       ...
     </k>
     <env> Env:Map => Env[L/X] </env>
     <store>... . => L |-> undefined :: T ...</store>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 
-rule [bindtoEmpty]:
-    <k> bindto .KList,.KList => . ...</k>
+rule [bindTo-empty]:
+    bindTo(.KList,.KList) => .K
         [structural]
 
 endmodule

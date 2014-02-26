@@ -69,18 +69,18 @@ syntax K ::= "CHOLE"
 /*@ Elaborate the blocks inside all classes.
 Argument K = setWrap(Set) - the set of all classes.
 */
-syntax K ::= "elaborateBlocks" "(" K ")" [strict]
+syntax K ::= elaborateBlocks ( K ) [strict]
 
 //@ Elaborates the methods of the current class. The map contains already elaborated methods. Initially the map is empty.
-syntax K ::= "elabMethods" "(" Map ")"
+syntax K ::= elabMethods ( Map )
 syntax K ::= "elabInstanceInit"
            | "elabStaticInit"
 
 //@Elaborates the given statement/expression. The first step of elaboration.
-syntax K ::= "elab" "(" K ")"
+syntax K ::= elab ( K )
 
 //@ Wraps the elaboration result. Since elaboration may happen at both ElaborationPhase and ExecutionPhase, it cannot be KResult. Actually it is not KResult for HOLE, but is for CHOLE.
-syntax ElabKResult ::= "elabRes" "(" K ")"
+syntax ElabKResult ::= elabRes ( K )
 
 /*@ \subsection{Operator ??}*/
 
@@ -91,16 +91,16 @@ the result of the first argument. Otherwise, if the first argument evaluates to 
 */
 syntax K ::= K "??" K [right]
 
-rule [chainOfResponsibilityHeat]:
+rule [chainOfResponsibility-Heat]:
     (. => Arg1) ~> (Arg1:K => CHOLE) ?? _
 when
     notBool isElab(Arg1)
 
-rule [chainOfResponsibilityResult1]:
+rule [chainOfResponsibility-Result1]:
     ElabRes:K ~> (CHOLE ?? _) => ElabRes
 when isElab(ElabRes) andBool (ElabRes =/=K noValue)
 
-rule [chainOfResponsibilityResult2]:
+rule [chainOfResponsibility-Result2]:
     noValue ~> (CHOLE ?? K:K) => K
 
 /*@ Computes to true if the given argument is a list of elaboration results, false otherwise.
@@ -111,9 +111,9 @@ rule [chainOfResponsibilityResult2]:
   It is notably NOT a cast() expression. This, together with the fact that cast() have no elaboration heatig rules,
   makes the whole elaboration phase non-reentrant.
 */
-syntax K ::= "isElab" "(" KList ")"                 [function]
+syntax K ::= isElab ( KList )                 [function]
 rule isElab(K:K,, Ks:KList)
-     =>      ((getKLabel(K) ==KLabel 'elabRes`(_`)) orBool (isKResult(K) ==K true))
+     =>      ((getKLabel(K) ==KLabel 'elabRes) orBool (isKResult(K) ==K true))
      andBool isElab(Ks)
 
 rule isElab(.KList) => true
@@ -123,11 +123,11 @@ context  elab('Param(_:K,, HOLE,, _:Id))
 
 /*@Adds params to the <elabEnv>. Used in both ELABORATION-TOP-BLOCKS and ELABORATION-BLOCKS
 */
-rule [elabParams]:
+rule [elab-Param]:
     <k> elab('Param(K1:K,, T:Type,, X:Id)) => paramImpl(T, X) ...</k>
-    <elabEnv> ListItem(stEnv((. => X |-> T) _)) ...</elabEnv>
+    <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv>
 
-syntax KResult ::= paramImpl ( Type , Id )  //processed representation of a 'Param label
+syntax KResult ::= paramImpl ( Type, Id )  //processed representation of a 'Param label
 
 //@Removes the last layer from <elabEnv>
 syntax K ::= "removeLastElabEnv"
@@ -143,7 +143,7 @@ The attribute [transition-strictness] is used as transition attribute for testin
 This is a rule that may lead to unexpected nondeterminism if it is wrongly implemented.
 In order to expose incorrect nondeterminism we need to model-check a program that exposes the nondeterminism.
 */
-rule [elabHeat-default]:
+rule [elab-heat-default]:
     (. => elab(K)) ~> elab(KL:KLabel(HeadKs:KList,, (K:K => CHOLE),, _:KList))
 when
     (defaultElabHeating(KL) orBool customElabHeating(KL, (HeadKs,,K)) ==K true)
@@ -151,7 +151,7 @@ when
     andBool notBool isElabNaked(K)
         [transition-strictness]
 
-rule [elabCool-default]:
+rule [elab-cool-default]:
     (ElabK:K => .) ~> elab(_:KLabel(_,, (CHOLE => ElabK),, _))
 when
     isElab(ElabK)
@@ -162,7 +162,7 @@ except those members of customElabChildren or isElabNaked groups.
 
 This predicate should be disjoint with customElabChildren (no longer used) and isElabNaked
 */
-syntax K ::= "defaultElabHeating" "(" KLabel ")"                [function]
+syntax K ::= defaultElabHeating ( KLabel )                [function]
 rule defaultElabHeating(KL:KLabel) =>
            /*(KL ==KLabel 'ListWrap)*/
            (KL ==KLabel 'Some)
@@ -365,8 +365,8 @@ rule defaultElabHeating(KL:KLabel) =>
 
 syntax K ::= auxLabelInElab( KLabel ) [function]
 rule auxLabelInElab(KL:KLabel) =>
-           KL ==KLabel 'setEncloser`(_`,_`,_`)
-    orBool KL ==KLabel 'stmtAndExp`(_`,_`)
+           KL ==KLabel 'setEncloser
+    orBool KL ==KLabel 'stmtAndExp
 
 /*@  elabHeat-naked-children
   Since a naked term is always computed int oa KResult during elaboration,
@@ -381,7 +381,7 @@ when
   Those are literals, types and packages. They are heated "as is", without being wrapped into elab().
   An exception is the class literal that is not executed during elaboration.
 */
-syntax K ::= "isElabNaked" "(" K ")"                            [function]
+syntax K ::= isElabNaked ( K )                            [function]
 rule isElabNaked(K:K) =>
            //warning: cannot use ==Bool in the first expression - looks like isRawVal(K) will not be computed
            (isRawVal(K) ==K true)
@@ -396,10 +396,10 @@ rule isElabNaked(K:K) =>
     orBool (getKLabel(K) ==KLabel 'Lit andBool getInnerKLabel(K) =/=KLabel 'Class)
     orBool isAuxFuncElabNaked(getKLabel(K))
 
-syntax KLabel ::= "getInnerKLabel" "(" K ")"                    [function]
+syntax KLabel ::= getInnerKLabel ( K )                            [function]
 rule getInnerKLabel(_:KLabel(KL:KLabel(_))) => KL
 
-syntax K ::= isAuxFuncElabNaked( KLabel )                        [function]
+syntax K ::= isAuxFuncElabNaked( KLabel )                         [function]
 rule isAuxFuncElabNaked(KL:KLabel) => false
 
 /*@ Terms that should use custom elaboration rules. For those terms:
@@ -409,7 +409,7 @@ rule isAuxFuncElabNaked(KL:KLabel) => false
   Since all the automatic elaboration-related rules are an incredible mess, we have to put all the AST terms into this
     cathegory one by one, and eliminate automatic elaboration heating/cooling rules altogether.
 */
-syntax K ::= "customElabChildren" "(" KLabel ")"                [function]
+syntax K ::= customElabChildren ( KLabel )                [function]
 rule customElabChildren(KL:KLabel) =>
            (KL ==KLabel 'ListWrap)
     orBool (KL ==KLabel 'Block)
@@ -434,14 +434,14 @@ of their children. The KLabels that heat all their children using default rules 
 defaultElabHeating.
 
 The predicate definition is scattered across modules related to elaboration.*/
-syntax K ::= customElabHeating ( KLabel , KList )         [function]
+syntax K ::= customElabHeating ( KLabel, KList )          [function]
 
 //todo elaboration-related hack - we should not have special elaboration rules for auxiliary constructs
-syntax K ::= elabPassThrough( KLabel ) [function]
+syntax K ::= elabPassThrough( KLabel )                    [function]
 rule elabPassThrough(KL:KLabel) =>
            KL ==KLabel 'noValue
     orBool KL ==KLabel 'noClass
-    orBool KL ==KLabel 'toString`(_`)
+    orBool KL ==KLabel 'toString
 
 rule [elabPassThrough]:
     elab(KL:KLabel(Ks:KList)) => elabRes(KL(Ks))
@@ -455,27 +455,27 @@ when
     - term is not naked. This case should never be true, but there is some weird case that requires it.
   When the default algorithm is not appropriate, the respective term should be in the cathegory customElabChildren
 */
-syntax K ::= "elabDispose" "(" K ")"
+syntax K ::= elabDispose ( K )
 
 /*@ This rule is universal for all forms of terms, both instructions and statements.
 */
-rule [elabDisposeStart]:
+rule [elab-to-elabDispose]:
     elab(KL:KLabel(ElabResL:KList)) => elabDispose(KL(ElabResL))
 when
     isElab(ElabResL)
 
-rule [elabDisposeProcess]:
+rule [elabDispose-process]:
     elabDispose(KL:KLabel(_,, (elabRes(K:K) => K),, _))
 
-rule [elabDisposeEnd]:
+rule [elabDispose-to-elabEnd]:
     elabDispose(KL:KLabel(Ks:KList)) => elabEnd(KL(Ks))
 when
     haveNoElabRes(Ks)
 
 //@ True if given KList have no terms of the form elabRes(...), false otherwise.
-syntax K ::= "haveNoElabRes" "(" KList ")"          [function]
+syntax K ::= haveNoElabRes ( KList )          [function]
 rule haveNoElabRes(K:K,, Ks:KList)
-     => (getKLabel(K) =/=KLabel 'elabRes`(_`)) andBool haveNoElabRes(Ks)
+     => (getKLabel(K) =/=KLabel 'elabRes) andBool haveNoElabRes(Ks)
 
 rule haveNoElabRes(.KList) => true
 
@@ -492,13 +492,14 @@ where QualClass is searched in the enclosing context of the first argument,
 being a subclass of the second one.
 Or elabRes(noValue) if no suitable result is found
 */
-syntax K ::= getQThisSubclassOf ( ClassType //The context class in which qualifier is searched for.
-                                , ClassType //Qualifier should be subclass of this class
-                                )
+syntax K ::=  getQThisSubclassOf (
+                ClassType,  //The context class in which qualifier is searched for.
+                ClassType   //Qualifier should be subclass of this class
+              )
 
 context elab(getQThisSubclassOf(_, HOLE))
 
-rule [getQThisSubclassOf]:
+rule [elabEnd-getQThisSubclassOf]:
     <k>
       elabEnd(getQThisSubclassOf(QualClass:ClassType, ReqClass:ClassType))
       => 'If(
@@ -513,11 +514,11 @@ rule [getQThisSubclassOf]:
 when
     ReqClass =/=K noClass
 
-rule [getQThisSubclassOf-top-level]:
+rule [elabEnd-getQThisSubclassOf-top-level]:
     elabEnd(getQThisSubclassOf(K:K, noClass)) => elabRes(noValue)
 
 //@Happens for 'NewInstance expressions for static inner classes.
-rule [getQThisSubclassOf-static]:
+rule [elabEnd-getQThisSubclassOf-static]:
     elabEnd(getQThisSubclassOf(noClass, K:K)) => elabRes(noValue)
 
 //@ \subsection{Hacks related to elaboration during execution phase}
@@ -527,7 +528,7 @@ rule [elabRes-ExecutionPhase-discard1]:
     <k> (elabRes(K:K) => K) ~> KL:KLabel(_) ...</k>
     <globalPhase> ExecutionPhase </globalPhase>
 when
-    KL =/=KLabel 'elab`(_`)
+    KL =/=KLabel 'elab
 
 rule [elabRes-ExecutionPhase-discard2]:
     <k> elabRes(K:K) => K </k>

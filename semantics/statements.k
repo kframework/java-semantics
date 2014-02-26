@@ -12,7 +12,7 @@ module STATEMENTS
 //@ \subsection{Call of main method}
 
 //For now main class may only be placed in the default package.
-rule [StartExecutionPhase]:
+rule [ExecutionPhase-Start]:
     <k>
       //K-AST for new <MainClass>().main(new String[0]);
       . =>  elab('ExprStm(
@@ -32,22 +32,21 @@ rule [StartExecutionPhase]:
 //@ \subsection{Program stack}
 
 //ListItem content as a stack layer
-syntax K ::=
-    "sl" "("
-      K ","   //K - rest of computation
-      Bag     //MethContext - the content of <methodContext>
-    ")"
+syntax K ::=  sl (
+                K,  //K - rest of computation
+                Bag //MethContext - the content of <methodContext>
+              )
 
-//bug in K? we cannot use the constructions below, they will give some errors related to k-prelude.
-//syntax StackConsumerLabel ::= 'Return | 'Throw | 'Break | 'Continue
-//syntax KLabel ::= StackConsumerLabel
+/*todo bug in K? we cannot use the constructions below, they will give some errors related to k-prelude.
+syntax StackConsumerLabel ::= 'Return | 'Throw | 'Break | 'Continue
+syntax KLabel ::= StackConsumerLabel*/
 
-syntax K ::= "isStackConsumer" "(" KLabel ")" [function]
+syntax K ::= isStackConsumer ( KLabel ) [function]
 rule isStackConsumer (KL:KLabel) =>
            (KL ==KLabel 'Return)
     orBool (KL ==KLabel 'Throw)
     orBool (KL ==KLabel 'Break)
-    orBool (KL ==KLabel 'Continue) [anywhere]
+    orBool (KL ==KLabel 'Continue)
 
 //@ \subsection{Blocks} JLS \$14.2
 
@@ -56,31 +55,26 @@ rule [Block]:
     <env> Env </env>
         [structural]
 
-rule [ListOfStatements]:
+rule [ListWrap-statements]:
     'ListWrap(S1:K,, Stmts:KList) => S1 ~> 'ListWrap(Stmts)
         [structural]
 
-rule [DiscardEmptyList]:
+rule [ListWrap-empty]:
     <k> 'ListWrap(.KList) => . ...</k>
         [structural]
 
 //@ \texttt{env} Restore the env cell content from env(...) statement argument
-syntax K ::= "env" "(" Map ")"
-
-rule [env]:
-    <k> env(Env:Map) => . ...</k>
-    <env> _ => Env </env>
+syntax K ::= env ( Map )
+rule <k> env(Env:Map) => . ...</k>
+     <env> _ => Env </env>
         [structural]
 
-rule [envDiscard]:
+rule [env-double-Discard]:
     (env(_) => .) ~> env(_)
         [structural]
 
-//@ \subsection{Local Variable Declaration Statements} JLS \$14.4
-//@ Not only local but fields also
-
-/*In Java current version of semantics only int and boolean primitive
-types are supported*/
+/*@ \subsection{Local Variable Declaration Statements} JLS \$14.4
+    Not only local but fields also*/
 
 rule [LocalVarDec]:
     <k> 'LocalVarDec(_:K,, T:Type,,'ListWrap('VarDec(X:Id))) => . ...</k>
@@ -98,42 +92,41 @@ rule [Empty]:
 rule [Labeled]:
     'Labeled(X:Id,, S:K) => S ~> labeledImpl(X)
 
-rule [labeledImplDiscard]:
-    labeledImpl(_) => .K
+//@ Processed version of the labeled statement
+syntax K ::= labeledImpl ( Id )
 
-//processed version of the labeled statement
-syntax K ::= "labeledImpl" "(" Id ")"
+rule [labeledImpl-Discard]:
+    labeledImpl(_) => .K
 
 //@ \subsection{Expression statements} JLS \$14.8
 
 context 'ExprStm(HOLE)
 
-rule [ExprStm]:
-    'ExprStm(_:TypedVal) => .
+rule 'ExprStm(_:TypedVal) => .K
 
 //@ \subsection{If statement}
 
 context 'If(HOLE,,_,,_)
 
-rule [IfTrue]:
+rule [If-True]:
     'If(true::bool,, S:K,, _) => S
         [symbolic-rule]
 
-rule [IfFalse]:
+rule [If-False]:
     'If(false::bool,, _,, S:K) => S
         [symbolic-rule]
 
-rule [IfThenDesugar]:
+rule [If-Then-Desugar]:
     'If(E:K,,S1:K) => 'If(E:K,, S1:K,, .K)
 
 //@ \subsection{Assert statement}
 
 context 'AssertStm(HOLE,,_:KList)
 
-rule [AssertStmTrueDiscard]:
+rule [AssertStm-True-Discard]:
     'AssertStm(true::bool,, _:KList) => .
 
-rule [AssertStmOneArg]:
+rule [AssertStm-OneArg]:
     'AssertStm(false::bool)
     =>  elab('Throw('NewInstance(
           'None(.KList),,
@@ -144,7 +137,7 @@ rule [AssertStmOneArg]:
 
 context 'AssertStm(false::bool,, HOLE)
 
-rule [AssertStmTwoArgs]:
+rule [AssertStm-TwoArgs]:
     'AssertStm(false::bool,, TV:TypedVal)
     =>  elab('Throw('NewInstance(
           'None(.KList),,
@@ -155,16 +148,15 @@ rule [AssertStmTwoArgs]:
 
 //@ \subsection{Switch statement}
 
-syntax K ::= "switchImpl" "("
-                TypedVal "," // TV - switch argument
-                KList ","  // switch body - list of 'SwitchGroup labels
-                K            // DefaultStm - default block, if any
-              ")"
-            | "switchEnd"
+syntax K ::=  switchImpl (
+                TypedVal, // TV - switch argument
+                KList,    // switch body - list of 'SwitchGroup labels
+                K         // DefaultStm - default block, if any
+              )
 
 context 'Switch(HOLE,,_)
 
-//The switchEnd in the right-hand side of => is required to properly interact with break.
+//@ The switchEnd in the right-hand side of => is required to properly interact with break.
 rule [Switch]:
     'Switch(TV:TypedVal,, 'SwitchBlock('ListWrap(Ks:KList),, TrailingLabels:K))
     => switchImpl(TV, (Ks,, 'SwitchGroup(TrailingLabels,, .K)), .K)
@@ -173,11 +165,11 @@ rule [Switch]:
 context switchImpl( _,
           ( 'SwitchGroup('ListWrap('Case(HOLE),,_:KList),,_),, _:KList ), _)
 
-//the type associated to V and V2 is not important for match, only the value.
-//JLS3 \$14.11, page 377: Every case constant expression associated with
-//a switch statement must be assignable (�5.2) to the type of the switch Expression.
+/*@ The type associated to V and V2 is not important for match, only the value.
+JLS3 \$14.11, page 377: Every case constant expression associated with
+a switch statement must be assignable (�5.2) to the type of the switch Expression.*/
 
-rule [SwitchCaseNotMatch]:
+rule [switchImpl-CaseNotMatch]:
     switchImpl( V:RawVal :: _, ( 'SwitchGroup('ListWrap(
         ( 'Case(V2:RawVal :: _) => .KList ),,
         _:KList ),,_),, _), _)
@@ -187,12 +179,11 @@ when
 /*@Once case of first switch group matches, the whole switch is replaced
 by it's block. The execution rules for switch will discard switch-related
 constructs and will execute the statements. */
-
-rule [SwitchCaseMatch]:
+rule [switchImpl-CaseMatch]:
     switchImpl( V:RawVal :: _, ('SwitchGroup('ListWrap('Case(V :: _),,_:KList),,S:K),,Ks:KList), _)
     => 'ListWrap(S,,Ks)
 
-rule [SwitchDefaultSave]:
+rule [switchImpl-DefaultSave]:
     switchImpl( TV:TypedVal, (
       'SwitchGroup('ListWrap(
           ( 'Default(_) => .KList ),,
@@ -201,76 +192,76 @@ rule [SwitchDefaultSave]:
       ( _:K => 'ListWrap(S,, Ks) )
     )
 
-rule [SwitchGroupDiscard]:
+rule [switchImpl-SwitchGroup-Discard]:
     switchImpl( TV:TypedVal,
       (( 'SwitchGroup('ListWrap( .KList ),,_) => .KList ),,_),
     _)
 
-rule [SwitchDefaultExec]:
+rule [switchImpl-Default-Exec]:
     switchImpl( _, .KList, DefaultStm:K) => DefaultStm
 
-rule [SwitchGroupExec]:
+rule [SwitchGroup-Exec]:
     'SwitchGroup(_:K,, S:K) => S
 
-rule [SwitchEndDiscard]:
+syntax K ::=  "switchEnd"
+
+rule [switchEnd-Discard]:
     switchEnd => .K
 
 //@ \subsection{While statement} and loop infrastructure.
 
-rule [While]:
-    'While(E:K,,S:K) => whileImpl(E, S)         [structural]
+rule 'While(E:K,,S:K) => whileImpl(E, S)         [structural]
 
-syntax K ::= "whileImpl" "("
-                K ","  // E - test expression. In For loop, it is UpdClause ~> testExp
-                K      // S - while body
-             ")"
+syntax K ::=  whileImpl (
+                K,  // E - test expression. In For loop, it is UpdClause ~> testExp
+                K   // S - while body
+              )
 
 rule [whileImpl]:
     whileImpl(E:K, S:K) => 'If(E,, 'Block(S ~> whileImpl(E, S)),, .K)     [structural]
 
 //@ \subsection{Do statement}
-rule
-    'DoWhile(S:K,,E:K) => S ~> whileImpl(E, S)  [structural]
+rule 'DoWhile(S:K,,E:K) => S ~> whileImpl(E, S)  [structural]
 
 //@ \subsection{For statement}
 
 //wrapper of certain clauses of for statement
-syntax K ::= "stm" "(" K ")"
+syntax K ::= stm ( K )
 
-rule [stmDiscard]:
+rule [stm-ListWrap-empty]:
     stm('ListWrap(.KList)) => .
         [structural]
 
-rule [stmList]:
+rule [stm-ListWrap-exp]:
     stm('ListWrap(E:K,, Es:KList)) => 'ExprStm(E) ~> stm('ListWrap(Es))
 when
-    getKLabel(E) ==KLabel 'cast`(_`,_`)                                           [structural]
+    getKLabel(E) ==KLabel 'cast                                           [structural]
 
-rule [stmLocalVarDec]:
+rule [stm-ListWrap-LocalVarDec]:
     stm('ListWrap(K:K,,Ks:KList)) => 'ListWrap(K,,Ks)
 when
-    notBool ( getKLabel(K) ==KLabel 'cast`(_`,_`) )                               [structural]
+    notBool ( getKLabel(K) ==KLabel 'cast )                               [structural]
 
-rule [ForFirstArgV1Red]:
+rule [For-FirstArgV1Red]:
     'For((
       'ListWrap(InitExps:KList) => stm('ListWrap(InitExps))
     ),,_:KList)
         [structural]
 
 //Works also in elaboration phase
-rule [ForFirstArgV2Red]:
+rule [For-FirstArgV2Red]:
     'For((
       'LocalVarDec(Ks:KList) => stm('ListWrap('LocalVarDec(Ks)))
     ),,_:KList)
         [structural]
 
-rule [ForSecondArgRed]:
+rule [For-SecondArgRed]:
     'For(_:K,,(
       'None(.KList) => 'Some(true)
     ),,_:KList)
         [structural]
 
-rule [ForThirdArgRed]:
+rule [For-ThirdArgRed]:
     'For(_:K,,_:K,,(
       'ListWrap(UpdExps:KList) => stm('ListWrap(UpdExps))
     ),,_:K)
@@ -282,15 +273,15 @@ rule [For]:
      => 'Block(stm(InitClause)
         ~> 'If(TestExp,, 'Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S),, .K))  [structural]
 
-//stack consumer stm - Return, Throw, Break or Continue reaches tryFinallySL layer
 //todo test whether KL argument might be not KResult at the moment of this rule
-rule [StackConsumerStmInTryFinally]:
+/*@ Stack consumer stm - Return, Throw, Break or Continue reaches tryFinallySL layer*/
+rule [StackConsumerStm-InTryFinally]:
     KL:KLabel(Ks:KList) ~> finallyBlock(FinallyS:K)
     => FinallyS ~> KL(Ks)
 when
   isStackConsumer(KL)
 
-rule [StackConsumerStmRestoreEnv]:
+rule [StackConsumerStm-RestoreEnv]:
     KL:KLabel(Ks:KList) ~> env(Env:Map)
     => env(Env:Map) ~> KL(Ks)
 when
@@ -298,64 +289,64 @@ when
 
 //@ \subsection{Break statement}
 
-rule [BreakUnlabeledPropagate]:
+rule [Break-UnlabeledPropagate]:
     'Break('None(_)) ~> (KL:KLabel(_) => .)
 when
-            KL =/=KLabel 'env`(_`)
-    andBool KL =/=KLabel 'finallyBlock`(_`)
-    andBool KL =/=KLabel 'whileImpl`(_`,_`)
+            KL =/=KLabel 'env
+    andBool KL =/=KLabel 'finallyBlock
+    andBool KL =/=KLabel 'whileImpl
     andBool KL =/=KLabel 'switchEnd
 
-rule [BreakUnlabeled]:
+rule [Break-Unlabeled]:
     'Break('None(_)) ~> KL:KLabel(_) => .
 when
-           KL ==KLabel 'whileImpl`(_`,_`)
+           KL ==KLabel 'whileImpl
     orBool KL ==KLabel 'switchEnd
 
-rule [BreakLabeledPropagate]:
+rule [Break-LabeledPropagate]:
     'Break('Some(X:Id)) ~> (KL:KLabel(_) => .)
 when
-            KL =/=KLabel 'env`(_`)
-    andBool KL =/=KLabel 'finallyBlock`(_`)
-    andBool KL =/=KLabel 'labeledImpl`(_`)
+            KL =/=KLabel 'env
+    andBool KL =/=KLabel 'finallyBlock
+    andBool KL =/=KLabel 'labeledImpl
 
 rule [BreakLabeledNotMatch]:
     'Break('Some(X1:Id)) ~> (labeledImpl(X2:Id) => .)
 when
     X1 =/=K X2
 
-rule [BreakLabeledMatch]:
+rule [Break-LabeledMatch]:
     'Break('Some(X:Id)) ~> labeledImpl(X:Id) => .
 
 //@ \subsection{Continue statement}
 
-rule [ContinuePropagate]:
+rule [Continue-Propagate]:
     'Continue(_) ~> (KL:KLabel(_) => .)
 when
-            KL =/=KLabel 'env`(_`)
-    andBool KL =/=KLabel 'finallyBlock`(_`)
-    andBool KL =/=KLabel 'whileImpl`(_`,_`)
+            KL =/=KLabel 'env
+    andBool KL =/=KLabel 'finallyBlock
+    andBool KL =/=KLabel 'whileImpl
 
-rule [ContinueUnlabeled]:
+rule [Continue-Unlabeled]:
     ('Continue('None(_)) => .) ~> whileImpl(_,_)
 
-rule [ContinueLabeledMeetsWhile]:
+rule [Continue-LabeledMeetsWhile]:
     <k>
       (. => getWhileLabel(Rest)) ~> 'Continue('Some(X:Id)) ~> whileImpl(_,_) ~> Rest:K
     </k>
 
-rule [ContinueLabeledNotMatch]:
+rule [Continue-LabeledNotMatch]:
     (whileLabel(LabelK:K) => .) ~> 'Continue('Some(X:Id)) ~> (whileImpl(_,_) => .)
 when
     LabelK =/=K X
 
-rule [ContinueLabeledMatch]:
+rule [Continue-LabeledMatch]:
     whileLabel(X) ~> 'Continue('Some(X:Id)) => .
 
-//Auxiliary constructs used in the semantics of continue.
-//Search for the label associated with the last encountered while statement
-syntax K ::= "getWhileLabel" "(" K ")"
-           | "whileLabel" "(" K ")"
+/*@ Auxiliary constructs used in the semantics of continue.
+Search for the label associated with the last encountered while statement*/
+syntax K ::= getWhileLabel ( K )
+           | whileLabel ( K )
 
 rule getWhileLabel((env(_) => .) ~> _)
 rule getWhileLabel(.K) => whileLabel(.K)
@@ -363,8 +354,8 @@ rule getWhileLabel(labeledImpl(X:Id) ~> _) => whileLabel(X)
 
 rule getWhileLabel(KL:KLabel(_) ~> _) => whileLabel(.K)
 when
-            KL =/=KLabel 'env`(_`)
-    andBool KL =/=KLabel 'labeledImpl`(_`)
+            KL =/=KLabel 'env
+    andBool KL =/=KLabel 'labeledImpl
 
 /*@\subsection{Return} At method return, we have to check that the type
 of the returned
@@ -374,19 +365,19 @@ expected type. */
 
 context 'Return('Some(HOLE))
 
-rule [ReturnNothingDesugar]:
+rule [Return-None-Desugar]:
     'Return('None(.KList) => 'Some(nothing :: void))
         [structural]
 
-rule [ReturnPropagate]:
+rule [Return-Propagate]:
     'Return('Some(TV:TypedVal)) ~> (KL:KLabel(Ks:KList) => .K)
 when
-            KL =/=KLabel 'env`(_`)
-    andBool KL =/=KLabel 'finallyBlock`(_`)
+            KL =/=KLabel 'env
+    andBool KL =/=KLabel 'finallyBlock
 
-//bug workaround: (V::T1) needs to be taken between parentheses, because K
-//wrongly considers ~> to have higher priority than ::
-rule [ReturnMethodEnd]:
+/* todo K bug workaround: (V::T1) needs to be taken between parentheses, because K
+wrongly considers ~> to have higher priority than ::*/
+rule [Return-MethodEnd]:
     <k>
       'Return('Some(V:RawVal :: T2:Type))
       => subtype(T2, T1) ~> true? ~> (V::T1) ~> K    </k>
@@ -406,10 +397,10 @@ rule [Throw]:
     ~> 'Throw(TV:TypedVal)
     ~> catchBlocks(catchImpl(paramImpl(T:Type, X:Id),_),, _)
 
-syntax K ::= "checkCatch" "(" K ")"
+syntax K ::= checkCatch ( K )
 context checkCatch(HOLE)
 
-rule [ThrowCheckedTrue]:
+rule [Throw-checkCatch-True]:
     checkCatch(true::bool) ~> 'Throw(TV:TypedVal)
     ~> catchBlocks(catchImpl(paramImpl(T:Type, X:Id), CatchS:K),, _)
     => 'Block('ListWrap(
@@ -418,28 +409,28 @@ rule [ThrowCheckedTrue]:
           CatchS
         ))
 
-rule [ThrowCheckedFalse]:
+rule [Throw-checkCatch-False]:
     (checkCatch(false::bool) => .)
     ~> 'Throw(TV:TypedVal) ~> catchBlocks((catchImpl(_,_) => .KList),, _)
 
-rule [ThrowCatchEmptyDiscard]:
+rule [Throw-catchBlocks-EmptyDiscard]:
     'Throw(TV:TypedVal) ~> (catchBlocks(.KList) => .)
 
-rule [ThrowPropagate]:
+rule [Throw-Propagate]:
     'Throw(TV:TypedVal) ~> (KL:KLabel(_) => .)
 when
-            KL =/=KLabel 'env`(_`)
-    andBool KL =/=KLabel 'finallyBlock`(_`)
-    andBool KL =/=KLabel 'catchBlocks`(_`)
+            KL =/=KLabel 'env
+    andBool KL =/=KLabel 'finallyBlock
+    andBool KL =/=KLabel 'catchBlocks
 
-rule [ThrowMethodEnd]:
+rule [Throw-MethodEnd]:
     <k>
       'Throw(TV:TypedVal) ~> (. => K)
     </k>
     <stack> ListItem( sl(K:K, MethContext:Bag) ) => . ...</stack>
     <methodContext> _ => MethContext </methodContext>
 
-rule [ThrowCausesThreadTermination]:
+rule [Throw-CausesThreadTermination]:
     <k>
       'Throw(TV:TypedVal)
       =>  elab('ExprStm(
@@ -458,7 +449,7 @@ rule [ThrowCausesThreadTermination]:
 
 //@ \subsection{Try statement}
 
-rule [TryCatchFinallyDesugar]:
+rule [Try-Catch-Finally-Desugar]:
     'Try(TryS:K,, 'ListWrap(K:K,, Ks:KList),,FinallyS:K)
     => 'Try('Try(TryS,,'ListWrap(K,,Ks)),,'ListWrap(.KList),,FinallyS)
         [structural]
@@ -474,30 +465,32 @@ context 'Catch(HOLE,, _)
 
 rule 'Catch(KR:KResult,, S:K) => catchImpl(KR,S)
 
-//internal representation of a preprocessed catch clause
-syntax KResult ::= "catchImpl" "(" K //paramImpl term
-                               "," K //the code block
-                               ")"
+//@ Internal representation of a preprocessed catch clause
+syntax KResult ::=  catchImpl (
+                      K, //paramImpl term,
+                      K //the code block
+                    )
 
-//The auxiliary constructs that hold catch clauses / finally clause
-//after try clause has been moved to the top of computation
-syntax K ::= "catchBlocks" "(" KList ")" //arg - list of catchImpl
-           | "finallyBlock" "(" K ")"      //arg - finally block
-
-rule [TryCatch]:
+rule [Try-Catch]:
     'Try(TryS:K,, 'ListWrap(KRs:KList)) => TryS ~> catchBlocks(KRs)
 when isKResult(KRs)
 
-rule [TryBlocksDiscard]:
+/*@ The auxiliary constructs that hold catch clauses / finally clause
+after try clause has been moved to the top of computation*/
+syntax K ::= catchBlocks ( KList ) //arg - list of catchImpl
+
+rule [catchBlocks-Discard]:
     catchBlocks(_) => .K
 
 /*@ \subsubsection{Execution of try-finally} JLS \$14.20.2
 */
 
-rule [TryFinally]:
-    'Try(TryS:K ,,'ListWrap(.KList),,FinallyS:K) => TryS ~> finallyBlock(FinallyS)
+rule [Try-Finally]:
+    'Try(TryS:K,,'ListWrap(.KList),,FinallyS:K) => TryS ~> finallyBlock(FinallyS)
 
-rule [TryFinallyNormalEnd]:
+syntax K ::= finallyBlock ( K )      //arg - finally block
+
+rule [finallyBlock-NormalEnd]:
     finallyBlock(FinallyS:K) => FinallyS
 
 endmodule

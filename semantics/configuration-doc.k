@@ -171,8 +171,8 @@ Despite this phase being the most complex preprocessing phase of all, it introdu
 Among global cells the following new cells are added:
 
 \begin{itemize}
-\item $\kall{elabEnv}{List[stEnv(Map[Id \mapsto Type])]}$ -- A stack where each layer is a map of local variables. Each layer of the stack represents a code block, in the blocks nesting order. Inside each layer, the map is from local variables accessible in that layer to variable types.
-\item $\kall{localTypes}{List[stEnv(Map[Id \mapsto ClassType])]}$ -- A cell similar in structure to the previous one. This time map keys are local classes instead of variables.
+\item $\kall{elabEnv}{List[mapWrap(Map[Id \mapsto Type])]}$ -- A stack where each layer is a map of local variables. Each layer of the stack represents a code block, in the blocks nesting order. Inside each layer, the map is from local variables accessible in that layer to variable types.
+\item $\kall{localTypes}{List[mapWrap(Map[Id \mapsto ClassType])]}$ -- A cell similar in structure to the previous one. This time map keys are local classes instead of variables.
 \item $\kall{nextLocalId}{Int}$ -- a number used to generate unique fully-qualified class names for local classes.
 \end{itemize}
 

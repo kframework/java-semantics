@@ -255,14 +255,14 @@ configuration
 
         //The local variable environment, created and used during elaboration phase.
         //Represents a stack. Each ListItem contains a Map[Id -> Type]
-        <elabEnv color="Orange"> ListItem(stEnv(.Map)) </elabEnv>
+        <elabEnv color="Orange"> ListItem(mapWrap(.Map)) </elabEnv>
 
         //The global registry of all local classes
         //When a local class is first encountered in the elaboration phase, a global class name is generated for it
         //and the class is registered in this map.
         //Type: Map[Id->ClassType] - map from simple local names to global names.
         //Used in elaboration phase.
-        <localTypes color="Orange"> ListItem(stEnv(.Map)) </localTypes>
+        <localTypes color="Orange"> ListItem(mapWrap(.Map)) </localTypes>
 
         //Counter used to generate unique package names for local classes. Elaboration phase only.
         <nextLocalId color="Orange"> 1 </nextLocalId>

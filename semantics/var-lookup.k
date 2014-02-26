@@ -15,14 +15,14 @@ module VAR-LOOKUP
 
 //@ \subsection{Names}
 
-//lookup the given local var by name.
-syntax K ::= "localVar" "(" Id ")" //the var name
+//@ Lookup the given local var by name.
+syntax K ::= localVar ( Id ) //the var name
 
 rule [localVar]:
     <k> localVar(X:Id) => typedLookup(L) ...</k>
     <env>... X |-> L:Int ...</env>
 
-rule [lvalueLocalVar]:
+rule [lvalue-localVar]:
     <k> lvalue(localVar(X:Id)) => typedLoc(L) ...</k>
     <env>... X |-> L:Int ...</env>
 
@@ -43,8 +43,8 @@ rule [QThis]:
       ...
     </store>
 
-//This case may happen when a field/method is called by simple name in a static context.
-//Although there should be no qualifier, elaboration phase will introduce the qualifier 'QThis.
+/*@ This case may happen when a field/method is called by simple name in a static context.
+Although there should be no qualifier, elaboration phase will introduce the qualifier 'QThis.*/
 rule [QThis-static]:
     <k>
       'QThis(_) => noValue
@@ -52,15 +52,16 @@ rule [QThis-static]:
     </k>
     <contextType> staticCT </contextType>
 
-//Search for the right value representing QThis(Class) - an expression of type Class.this
-syntax K ::= "lookupQThis" "(" ClassType  //the type of this to look for
-                           "," TypedVal   //the objectClosure where the type should be found
-                           ")"
+//@ Search for the right value representing QThis(Class) - an expression of type Class.this
+syntax K ::=  lookupQThis (
+                ClassType,  //the type of this to look for,
+                TypedVal    //the objectClosure where the type should be found
+              )
 
 rule [lookupQThis-found]:
     lookupQThis(Class:ClassType, RV:RawVal::Class) => RV::Class
 
-/*When we have QThis target class Class, and we look for it in a target object with a different
+/*@ When we have QThis target class Class, and we look for it in a target object with a different
 compile-time type ObjClass, we continue our search in the enclosing object of the layer corresponding to ObjClass.
 This way we may have O.B < O.A, with layers O.B and O.A having different enclosing instance of O,
 and we will be able to pick the correct enclosing object inside both O.A and O.B.
@@ -84,6 +85,13 @@ rule [lookupQThis-on-noValue]:
 
 //outside lvalue we have strictness rules
 
+//@ Elaboration result of a field access exp.
+syntax K ::=  lookupField (
+                K,    //Qualifier exp
+                Type, //Precise type where the field is defined
+                Id    //X - field name
+              )
+
 context lookupField(HOLE,_,_)
 context lvalue(lookupField(HOLE,_,_))
 
@@ -97,7 +105,7 @@ rule [lookupField]:
     ) => typedLookup(L)
         [anywhere]
 
-rule [lookupFieldOfNull]:
+rule [lookupField-OfNull]:
     lookupField(null::_, _, _)
     =>  elab('Throw('NewInstance(
           'None(.KList),,
@@ -106,6 +114,12 @@ rule [lookupFieldOfNull]:
           'None(.KList)
         )))
         [anywhere]
+
+//@ Elaboration result of a static field access expression
+syntax K ::=  lookupStaticField (
+                Type, //Precise type where the field is defined
+                Id    //X - field name
+              )
 
 rule [lookupStaticField]:
     <k>
@@ -133,23 +147,23 @@ rule [lvalue-lookupStaticField]:
 
 /*@ \subsection{lvalue and loc} */
 
-//@Typed version of lookup
-syntax K ::= "typedLookup" "(" Int ")"
+//@ Typed version of lookup
+syntax K ::= typedLookup ( Int )
 
 rule [typedLookup]:
     <k> typedLookup(L:Int) => lookup(L, T) ...</k>
     <store>... L |-> _::T:Type ...</store>
 
-rule [lvalueTypedLookup]:
+rule [lvalue-typedLookup]:
     lvalue( typedLookup(L:Int) ) => typedLoc(L)
 
-syntax K ::= "typedLoc" "(" Int ")"
+syntax K ::= typedLoc ( Int )
 
 rule [typedLoc]:
     <k> typedLoc(L:Int) => loc(L)::T ...</k>
     <store>... L |-> _::T:Type ...</store>
 
-rule [lvalueTypedLoc]:
+rule [lvalue-typedLoc]:
     lvalue(typedLoc(L:Int)) => typedLoc(L)
 
 /*@ \subsection{lookup} */
@@ -158,11 +172,12 @@ rule [lvalueTypedLoc]:
   May be wrapped inside lvalue. If lookup is unwrapped, it evaluates to TypedVal - the store value,
   of the type T - the second lookup argument. If lookup is wrapped into lvalue, it evaluates to loc(OL)::T.
 */
-syntax Lookup ::= lookup ( Int ,  //OL - the store location to lookup
-                           Type   // T - the compile-time type of the resulting value
-                         )
+syntax Lookup ::= lookup (
+                    Int,  //OL - the store location to lookup
+                    Type  // T - the compile-time type of the resulting value
+                  )
 
-rule [lookupLocation]:
+rule [lookup-Location]:
     <k>
       lookup(L:Int, T1:Type) => subtype(T2, T1) ~> true? ~> (V::T1)
       ...

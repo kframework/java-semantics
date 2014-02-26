@@ -7,8 +7,10 @@ module PROCESS-CLASS-MEMBERS
 
 //@ \subsection{Auxiliary functions}
 
-syntax K ::= "getContextType" "(" K //'ListWrap(...) - the list of method attributes
-                              ")"                           [function]
+syntax K ::=  getContextType (
+                K               //'ListWrap(...) - the list of method attributes
+              )
+              [function]
 
 rule getContextType('ListWrap('Static(_),,_)) => staticCT
 
@@ -17,9 +19,11 @@ when        KL =/=KLabel 'Static
 
 rule getContextType('ListWrap(.KList))      => instanceCT
 
-//evaluates to true::bool if synchronized is among modifiers, false otherwise
-syntax K ::= "isSynchronized" "(" K //'ListWrap(...) - the list of method attributes
-                              ")"                           [function]
+//@ Evaluates to true::bool if synchronized is among modifiers, false otherwise
+syntax K ::=  isSynchronized (
+                K //'ListWrap(...) - the list of method attributes
+              )
+              [function]
 
 rule isSynchronized('ListWrap('Synchronized(_),,_)) => true::bool
 
@@ -28,9 +32,11 @@ when        KL =/=KLabel 'Synchronized
 
 rule isSynchronized('ListWrap(.KList)) => false::bool
 
-//used to provide an approximate implementation of the distinction between static constant and non-constant fields.
-syntax K ::= "isFinal" "(" K //'ListWrap(...) - the list of method attributes
-                              ")"                           [function]
+//@ Used to provide an approximate implementation of the distinction between static constant and non-constant fields.
+syntax K ::=  isFinal (
+                K //'ListWrap(...) - the list of method attributes
+              )
+              [function]
 
 rule isFinal('ListWrap('Final(_),,_)) => true
 
@@ -41,20 +47,20 @@ rule isFinal('ListWrap(.KList))      => false
 
 /*@ \subsection{Third pass - processing class members} */
 
-syntax K ::= "processClasses" "("
-                                  K //setWrap(Set) - the set of all classes
-                              ")"         [strict]
-           | "processTypeWithDepends" "("
-                                ClassType  //the class to be processed,
-                                           //or noClass if no processing is required
-                            ")"
-           | "processType" "("
-                                ClassType  //the class to be processed
-                            ")"
+syntax K ::=  processClasses (
+                K //setWrap(Set) - the set of all classes
+              )         [strict]
+            | processTypeWithDepends (
+                ClassType  //the class to be processed,
+                           //or noClass if no processing is required
+              )
+            | processType (
+                ClassType  //the class to be processed
+              )
 
-//We need to process Object first. Thus when we will process any interfaces,
-//Object class will already be processed.
-rule [StartProcClassMembersPhase]:
+/*@ We need to process Object first. Thus when we will process any interfaces,
+    Object class will already be processed.*/
+rule [Start-ProcClassMembersPhase]:
     <k> . => processTypeWithDepends(objectClass) ~> processClasses(getTopLevelClasses) </k>
      <globalPhase> ProcClassDecsPhase => ProcClassMembersPhase  </globalPhase>
 
@@ -62,7 +68,7 @@ rule [processClasses]:
     (. => processTypeWithDepends(Class))
     ~>  processClasses(setWrap( (SetItem(Class:ClassType) => .) _:Set))
 
-rule [ProcessTypeListDiscard]:
+rule [processClasses-Discard]:
     processClasses(setWrap(.)) => .
 
 rule [processTypeWithDepends]:
@@ -77,15 +83,15 @@ rule [processTypeWithDepends]:
     <implements> ISet:Set </implements>
     <classPhase> DecsProcessedCPhase </classPhase>
 
-rule [processTypeWithDependsDiscard]:
+rule [processTypeWithDepends-Discard]:
     <k> processTypeWithDepends(Class:ClassType) => . ...</k>
     <classType> Class </classType>
     <classPhase> MembersProcessedCPhase </classPhase>
 
-rule [processTypeWithDependsDiscard2]:
+rule [processTypeWithDepends-Discard2]:
     processTypeWithDepends(noClass) => .K
 
-/*For each class compute the set of inherited interfaces, inherit all the members,
+/*@ For each class compute the set of inherited interfaces, inherit all the members,
 process inner declarations. Compute the following class cells:
   <implTrans>
   <fieldDecs>
@@ -125,8 +131,8 @@ rule [processType-discard]:
     <classType> Class </classType>
     <classPhase> MembersProcessedCPhase </classPhase>
 
-//compute <implTrans> cell - interfaces transitively implemented
-syntax K ::= "computeImplTrans" "(" Set ")"
+//@ Compute <implTrans> cell - interfaces transitively implemented
+syntax K ::= computeImplTrans ( Set )
 
 rule [computeImplTrans]:
     <k>
@@ -140,28 +146,30 @@ rule [computeImplTrans]:
     <classType> BaseItf </classType>
     <implTrans> BaseItfITrans:Set </implTrans>
 
-rule [computeImplTransElemDiscard]: computeImplTrans( (SetItem(noClass) => .) _)
+rule [computeImplTrans-Elem-Discard]: computeImplTrans( (SetItem(noClass) => .) _)
 
-rule [computeImplTransDiscard]: computeImplTrans(.) => .
+rule [computeImplTrans-Discard]: computeImplTrans(.) => .
 
-syntax K ::= "saveImplTrans" "(" K //setWrap(ISet) - transitive set of inherited interfaces
-                             ")"  [strict]
+syntax K ::=  saveImplTrans (
+                K //setWrap(ISet) - transitive set of inherited interfaces
+              )
+              [strict]
 
 rule <k> saveImplTrans(setWrap(S1:Set)) => . ...</k>
      <crntClass> Class:ClassType </crntClass>
      <classType> Class </classType>
      <implTrans> _ => S1 </implTrans>
 
-//inherits the methods of the base class, based on rules in JLS \$8.4.8 paragraph 1
-syntax K ::= "tryInheritSet" "(" Set ")"
-           | "tryInherit" "(" ClassType ")"
-           | "tryInheritImpl" "(" Map ")"
-           | "inherit" "(" Map ")"  //when checks are made, we are inheriting the method
+//@ Inherits the methods of the base class, based on rules in JLS \$8.4.8 paragraph 1
+syntax K ::= tryInheritSet ( Set )
+           | tryInherit ( ClassType )
+           | tryInheritImpl ( Map )
+           | inherit ( Map )  //when checks are made, we are inheriting the method
 
 rule [tryInheritSet]:
     (. => tryInherit(Class:ClassType)) ~> tryInheritSet( (SetItem(Class) => .) _)
 
-rule [tryInheritSetDiscard]: tryInheritSet(.) => .
+rule [tryInheritSet-Discard]: tryInheritSet(.) => .
 
 rule [tryInherit]:
     <k>
@@ -171,10 +179,10 @@ rule [tryInherit]:
     <classType> Class </classType>
     <methods> Env:Map </methods>
 
-rule [tryInheritDiscard]:
+rule [tryInherit-Discard]:
     tryInherit(noClass) => .K
 
-rule [tryInheritImplUnfold]:
+rule [tryInheritImpl-Unfold]:
     <k> (. => tryInheritImpl(MI)) ~> tryInheritImpl( (MI:MapItem => .) _:MapItem _) ...</k>
 
 rule [tryInheritImpl]:
@@ -190,11 +198,11 @@ rule [tryInheritImpl]:
     <classType> DecClass </classType>
     <methodDecs>... Sig |-> TV:TypedVal ...</methodDecs>
 
-rule [tryInheritImplDiscard]: tryInheritImpl(.) => .
+rule [tryInheritImpl-empty-Discard]: tryInheritImpl(.Map) => .
 
-syntax K ::= "isInheritable" "(" K ")"                        [strict]
+syntax K ::= isInheritable ( K )                        [strict]
 
-rule [isInheritablePackage]:
+rule [isInheritable]:
     <k>
       isInheritable(BaseAccessMode:AccessMode)
       => isAccessibleForOverwriting(BaseClass, BaseAccessMode, Class)
@@ -204,28 +212,27 @@ rule [isInheritablePackage]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
-//Tests if a method within BaseClass with BaseAccessMode is overwritten by a method with the same signature
-//in SubClass with SubAccessMode.
-//It is also possible that BaseClass and SubClass are the same, since the same method is inherited by many classes,
-//and gets in their <methods> cell.
-syntax K ::= "isAccessibleForOverwriting" "("
-                                              ClassType ","   //BaseClass
-                                              AccessMode ","  //BaseAccessMode
-                                              ClassType       //SubClass
-                                          ")"
-        [strict]
+/*@ Tests if a method within BaseClass with BaseAccessMode is overwritten by a method with the same signature
+in SubClass with SubAccessMode.
+It is also possible that BaseClass and SubClass are the same, since the same method is inherited by many classes,
+and gets in their <methods> cell.*/
+syntax K ::=  isAccessibleForOverwriting (
+                ClassType,  //BaseClass
+                AccessMode, //BaseAccessMode
+                ClassType   //SubClass
+              )
+              [strict]
 
 rule isAccessibleForOverwriting(_, public,    _) => true
 rule isAccessibleForOverwriting(_, protected, _) => true
 
-//Object class cannot match this rule since it has public access mode
+//@ Object class cannot match this rule since it has public access mode
 rule isAccessibleForOverwriting(BaseClass:ClassType, package, SubClass:ClassType)
     => eqAux(getPackage(getTopLevel(BaseClass)), getPackage(getTopLevel(SubClass)))
 
 rule isAccessibleForOverwriting(_, private, _) => false
 
-//todo if the same method is inherited say from the base class and interface,
-//we're in trouble
+//todo if the same method is inherited say from the base class and interface, we're in trouble
 rule [inherit]:
     <k> inherit(Sig:K |-> DeclClass:ClassType) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
@@ -235,20 +242,20 @@ rule [inherit]:
       ...
     </class>
 
-//returns the access mode of a method closure given as argument
-syntax K ::= "getMethodAccessMode" "(" TypedVal ")"   [function]
+//@ Returns the access mode of a method closure given as argument
+syntax K ::= getMethodAccessMode ( TypedVal )   [function]
 rule getMethodAccessMode( methodClosure(_,_,_, Acc:AccessMode, _,_,_)::_ ) => Acc
 
-//returns the context type of a method closure given as argument
-syntax K ::= "getMethodContextType" "(" TypedVal ")"  [function]
+//@ Returns the context type of a method closure given as argument
+syntax K ::= getMethodContextType ( TypedVal )  [function]
 rule getMethodContextType( methodClosure(_,_, CT:ContextType, _,_,_,_) :: _ ) => CT
 
-//returns the class in which this method was defined
-syntax K ::= "getMethodDeclaringClass" "(" TypedVal ")"   [function]
+//@ Returns the class in which this method was defined
+syntax K ::= getMethodDeclaringClass ( TypedVal )   [function]
 rule getMethodDeclaringClass( methodClosure(Class:ClassType, _,_,_,_,_,_)::_ ) => Class
 
-//returns the return type of a method closure given as argument
-syntax K ::= "getMethodReturnType" "(" TypedVal ")"       [function]
+//@ Returns the return type of a method closure given as argument
+syntax K ::= getMethodReturnType ( TypedVal )       [function]
 rule getMethodReturnType( _::methodType(_, T:Type ) ) => T
 
 /*@ \subsection{Method declaration}
@@ -261,7 +268,7 @@ the only difference is the addition of the types.  */
 context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _),, _)
 
 //Resolve parameter types
-context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, 'ListWrap(_,, 'Param(_:K,, HOLE ,,_:K),, _),, _:K),, _:K)
+context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, 'ListWrap(_,, 'Param(_:K,, HOLE,,_:K),, _),, _:K),, _:K)
 
 rule [MethodDec]:
     <k>
@@ -291,16 +298,16 @@ rule [AbstractMethodDec]:
           'NoMethodBody(.KList)
         )
 
-syntax K ::= "storeMethod" "("
-                              K ","           //'ListWrap(Params)
-                              K ","           //will evaluate to ContextType - staticCT or instanceCT
-                              K ","           //will evaluate to AccessMode
-                              K ","           //IsSync:bool - whether method is synchronized or not
-                              RoutineType "," //either methodRT or constructorRT
-                              K ","           //FirstLine for constructor, noValue for method.
-                              K ","           //S - method body
-                              MethodType      //method closure type: methodType(Signature, ReturnType)
-                           ")"
+syntax K ::=  storeMethod (
+                K,           //'ListWrap(Params)
+                K,           //will evaluate to ContextType - staticCT or instanceCT
+                K,           //will evaluate to AccessMode
+                K,           //IsSync:bool - whether method is synchronized or not
+                RoutineType, //either methodRT or constructorRT
+                K,           //FirstLine for constructor, noValue for method.
+                K,           //S - method body
+                MethodType   //method closure type: methodType(Signature, ReturnType)
+              )
 
 // Required for getTypes()
 rule typeOf('Param(_:K,, T:Type,, _:Id)) => T
@@ -320,7 +327,7 @@ rule [storeMethod]:
       ]
     </methodDecs>
 
-rule [ConstrDecSuperCallDesugar]:
+rule [ConstrDec-SuperCall-Desugar]:
     <k>
       'ConstrDec(
         'ConstrDecHead(_:K,, _:K,, Name:Id,, _:KList),,
@@ -338,7 +345,7 @@ rule [ConstrDecSuperCallDesugar]:
 when
     Class =/=K objectClass
 
-rule [ConstrDecObjectDesugar]:
+rule [ConstrDec-Object-Desugar]:
     <k>
       'ConstrDec(
         'ConstrDecHead(_:K,, _:K,, Name:Id,, _:KList),,
@@ -356,7 +363,7 @@ when
     Class ==K objectClass
 
 //Resolve parameter types
-context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, 'ListWrap(_,, 'Param(_:K,, HOLE ,,_:K),, _),, _),, _:K)
+context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, 'ListWrap(_,, 'Param(_:K,, HOLE,,_:K),, _),, _),, _:K)
 
 rule [ConstrDec]:
     <k>
@@ -371,8 +378,8 @@ rule [ConstrDec]:
     <crntClass> Class:ClassType </crntClass>
 when paramTypesResolved(Params)
 
-//@get the internal constructor name for a given class
-syntax K ::= "getConsName" "(" ClassType ")"                               [function]
+//@ Get the internal constructor name for a given class
+syntax K ::= getConsName ( ClassType )                               [function]
 
 rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(ClassId))
         [structural, anywhere]
@@ -380,11 +387,11 @@ rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(Class
 //resolve field declaration type
 context 'FieldDec(_:K,, HOLE,, _)
 
-rule [FieldDecMultiDesugar]:
+rule [FieldDec-Multi-Desugar]:
     (. => 'FieldDec(SomeK,, T,, 'ListWrap(K1))) ~>
     'FieldDec(SomeK:K,, T:Type,, 'ListWrap((K1:K => .KList),, K2:K,, Ks:KList))
 
-rule [FieldDecInstanceInitDesugar]:
+rule [FieldDec-with-init-desugar]:
     'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .KList)) ))
     ~> (. => 'InstanceInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
@@ -392,7 +399,7 @@ when
     andBool (getContextType(Modifiers) ==K instanceCT)
         [structural]
 
-rule [FieldDecToLocalVarDec]:
+rule [FieldDec-to-LocalVarDec]:
     <k> 'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id))) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
@@ -404,16 +411,27 @@ when
     getContextType(Modifiers) ==K instanceCT
         [structural]
 
-rule [InstanceInitSave]:
+
+/*@ A representation of instance fields used in elaboration phase.
+  todo fields are also epresented another way. Check whether we can eliminate this representation ot avoid duplicates.
+*/
+syntax KResult ::=  fieldEntry (
+                      ClassType,  // target class
+                      Id,         // X - field name
+                      Type,       // Field type
+                      ContextType // staticCT | instanceCT
+                    )
+
+rule [InstanceInit]:
     <k> 'InstanceInit(K:K) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <instanceInit> 'ListWrap(_,,(.KList => K)) </instanceInit>
         [structural]
 
-//Desugaring a static field declaration with initializer into a declaration without initializer
-//Followed by a static initializer block, if this field is not a compile-time constant.
-rule [FieldDecStaticInitDesugar]:
+/*@ Desugaring a static field declaration with initializer into a declaration without initializer.
+Followed by a static initializer block, if this field is not a compile-time constant.*/
+rule [FieldDec-StaticInitDesugar]:
     'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .KList)) ))
     ~> (. => 'StaticInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
@@ -426,7 +444,7 @@ when
                    )
         [structural]
 
-rule [StaticFieldDecToLocalVarDec]:
+rule [FieldDec-Static]:
     <k> 'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id))) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
@@ -437,7 +455,7 @@ when
     getContextType(Modifiers) ==K staticCT
         [structural]
 
-rule [StaticInitSave]:
+rule [StaticInit-Save]:
     <k> 'StaticInit(K:K) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
@@ -448,7 +466,7 @@ rule [StaticInitSave]:
   This rule desugars them into 'FieldDec labels and adds the modifiers "public static final".
   Interface fields are not necessarily compile-time constants.
 */
-rule [ConstantDecDesugar]:
+rule [ConstantDec-Desugar]:
     'ConstantDec('ListWrap(ModifiersKs:KList),, TypeK:K,, VarDecs:K)
     => 'FieldDec(
           'ListWrap(ModifiersKs,, 'Public(.KList),, 'Static(.KList),, 'Final(.KList)),,
@@ -464,7 +482,7 @@ when
     //condition for not being compile-time constant
     andBool isFinal(Modifiers) andBool getKLabel(HOLE) ==KLabel 'Lit
 
-rule [compile-time-constant]:
+rule [FieldDec-compile-time-constant]:
     <k>
       'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,, TV:TypedVal) )) => .
       ...
@@ -476,9 +494,10 @@ when
             getContextType(Modifiers) ==K staticCT
     andBool isFinal(Modifiers)
 
-//Discard inner class declarations at this phase. They are processed when their
-//respective <class> tag is encountered as part of processClasses
+/*@ Discard inner class declarations at this phase. They are processed when their
+    respective <class> tag is encountered as part of processClasses.
+*/
 rule [ClassDec-discard]: 'ClassDec(_) => .
-rule [InterfaceDecDiscard]: 'InterfaceDec(_) => .
+rule [InterfaceDec-discard]: 'InterfaceDec(_) => .
 
 endmodule

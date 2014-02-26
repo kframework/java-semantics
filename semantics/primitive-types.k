@@ -22,14 +22,14 @@ rule 'Void(.KList) => void      [structural, anywhere]
 
 //@ \subsection{Integer types normalization}
 
-syntax K ::= "bitCount" "(" Type ")" [function]
+syntax K ::= bitCount ( Type ) [function]
 rule bitCount(byte) => 8
 rule bitCount(short) => 16
 rule bitCount(int) => 32
 rule bitCount(long) => 64
 rule bitCount(char) => 16
 
-syntax K ::= "normalize" "(" TypedVal ")" [function]
+syntax K ::= normalize ( TypedVal ) [function]
 
 rule normalize(I:Int :: IntT:IntType)
     =>  #if isInRange(I::IntT)
@@ -50,7 +50,7 @@ rule normalize(F:Float :: IntT:IntType) => normalize(Float2Int(F) :: IntT:IntTyp
 
 rule normalize(F:Float :: FloatT:FloatType) => F::FloatT
 
-syntax K ::= "isInRange" "(" TypedVal ")"                                          [function]
+syntax K ::= isInRange ( TypedVal )                                          [function]
 rule isInRange(I:Int::byte) => ((I >=Int -128) andBool (I <=Int 127))
 rule isInRange(I:Int::short) => ((I >=Int -32768) andBool (I <=Int 32767))
 rule isInRange(I:Int::int) => ((I >=Int -2147483648) andBool (I <=Int 2147483647))
@@ -61,14 +61,14 @@ rule isInRange(I:Int::char) => ((I >=Int 0) andBool (I <=Int 65535))
 rule isInRange(RV:RawVal::_) => true
 when notBool (isInt(RV) ==K true)
 
-syntax K ::= "normalizeImpl" "(" TypedVal ")" [function]
+syntax K ::= normalizeImpl ( TypedVal ) [function]
 
 rule normalizeImpl(I:Int :: T:Type)
     => normalizeSign((((I &Int ((1 <<Int bitCount(T)) -Int 1))
         +Int (1 <<Int bitCount(T)))
         &Int ((1 <<Int bitCount(T)) -Int 1)) :: T)
 
-syntax K ::= "normalizeSign" "(" TypedVal ")" [function]
+syntax K ::= normalizeSign ( TypedVal ) [function]
 
 rule normalizeSign(I:Int :: T:Type)
     =>  #if I <=Int ((1 <<Int (bitCount(T) -Int 1)) -Int 1)
@@ -76,7 +76,7 @@ rule normalizeSign(I:Int :: T:Type)
           #else I -Int (1 <<Int bitCount(T)) :: T
         #fi
 
-syntax K ::= "toUnsigned" "(" TypedVal ")"          [function]
+syntax K ::= toUnsigned ( TypedVal )          [function]
 rule toUnsigned(I:Int :: T:Type)
     =>  #if I >=Int 0
           #then I :: T
@@ -85,7 +85,7 @@ rule toUnsigned(I:Int :: T:Type)
 
 //Important: normalizeType(), both unary and binary is not a function
 
-syntax K ::= "normalizeType" "(" Type ")"           [function]
+syntax K ::= normalizeType ( Type )           [function]
 rule normalizeType(ILT:IntOrLongType) => ILT
 
 rule normalizeType(FT:FloatType) => FT
@@ -93,7 +93,7 @@ rule normalizeType(FT:FloatType) => FT
 rule normalizeType(IT:IntType) => int
 when (IT =/=K int) andBool (IT =/=K long)
 
-syntax K ::= "normalizeType" "(" Type "," Type ")"
+syntax K ::= normalizeType ( Type, Type )
 
 rule normalizeType(NT1:IntType, NT2:IntType) => int
 when (NT1 =/=K long) andBool (NT2 =/=K long)

@@ -122,7 +122,7 @@ rule /* I1 / I2    */ 'Div(I1:Int :: _,, I2:Int :: _) => (I1 /Int I2) :: tempTyp
 rule                  'Div(F1:Float :: _,, F2:Float :: _) => (F1 /Float F2) :: tempType
 
 //todo test that the first argument is fully evaluated, right now it may be not evaluated
-rule                  'Div(_:TypedVal         ,, 0::_)
+rule                  'Div(_:TypedVal,, 0::_)
    => elab('Throw('NewInstance(
         'None(.KList),,
         (class String2Id("java.lang.ArithmeticException")),,
@@ -135,7 +135,7 @@ rule /* I1 % I2    */ 'Remain(I1:Int :: _,, I2:Int :: _) => (I1 %Int I2) :: temp
 rule                  'Remain(F1:Float :: _,, F2:Float :: _) => (F1 %Float F2) :: tempType
 
 //todo test that the first argument is fully evaluated, right now it may be not evaluated
-rule                  'Remain(_:TypedVal     ,, 0::_)
+rule                  'Remain(_:TypedVal,, 0::_)
    => elab('Throw('NewInstance(
         'None(.KList),,
         (class String2Id("java.lang.ArithmeticException")),,
@@ -153,7 +153,7 @@ rule [NormalizeRightOperandToFloat]:
 when
     isFloatBinaryOp(KL)
 
-syntax K ::= "isFloatBinaryOp" "(" KLabel ")"       [function]
+syntax K ::= isFloatBinaryOp ( KLabel )       [function]
 rule isFloatBinaryOp(KL:KLabel)
     =>     KL ==KLabel 'Plus
     orBool KL ==KLabel 'Minus
@@ -190,16 +190,16 @@ rule /* loc(L)++ => (loc(L) = lookup(L) + 1) - 1 */
 rule /* loc(L)-- => (loc(L) = lookup(L) - 1) + 1 */
   'PostDecr(loc(L:Int) :: NT:NumericType) => 'Plus(  'PreDecr(loc(L)::NT),, rightTypedNumber(1,NT))
 
-//Computes a TypedVal where value representation is of correct numeric type:
-//Int when NT is IntType, Float when NT is FloatType
-syntax K ::= "rightTypedNumber" "(" Int "," NumericType ")"             [function]
+/*@ Computes a TypedVal where value representation is of correct numeric type:
+Int when NT is IntType, Float when NT is FloatType*/
+syntax K ::= rightTypedNumber ( Int, NumericType )             [function]
 rule rightTypedNumber(I:Int, IntT:IntType) => I::IntT
 rule rightTypedNumber(I:Int, FloatT:FloatType) => Int2Float(I)::FloatT
 
-//Conditional expression : ?: . Desugared into an if with cast.
-//The biggest difficulty is computing the expression type, according to JLS1 \$15.24
-//The whole expression should always come wrapped into a cast, from elaboration.
-//Thus we don't have to worry about proper type conversion here.
+/*@ Conditional expression : ?: . Desugared into an if with cast.
+The biggest difficulty is computing the expression type, according to JLS1 \$15.24
+The whole expression should always come wrapped into a cast, from elaboration.
+Thus we don't have to worry about proper type conversion here.*/
 rule 'Cond(CondExp:K,, TrueExp:K,, FalseExp:K) => 'If(CondExp,, TrueExp,, FalseExp)
 
 /*@ \subsubsection{Assignment operators}
@@ -213,7 +213,57 @@ rule [Assign]:
     <store>... L |-> (_:RawVal => V)::ResT ...</store>
         [transition-threading]
 
-rule [expLValueHeat]:
+//question: Why can't we move this desugaring into elaboration phase?
+rule [CompoundAssign]:
+    KL:KLabel(loc(L:Int) :: T1:Type,, Exp2:K)
+    => 'Assign(loc(L)::T1,, cast(T1, getOperatorLabel(KL)(lookup(L, T1),, Exp2)))
+when isCompoundAssignLabel(KL)
+
+/*@ Returns the KLabel corresponding to the underlying operator of the given compound assignment KLabel.
+*/
+syntax KLabel ::= getOperatorLabel ( KLabel )         [function]
+rule getOperatorLabel('AssignPlus)        => 'Plus
+rule getOperatorLabel('AssignMinus)       => 'Minus
+rule getOperatorLabel('AssignMul)         => 'Mul
+rule getOperatorLabel('AssignDiv)         => 'Div
+rule getOperatorLabel('AssignAnd)         => 'And
+rule getOperatorLabel('AssignOr)          => 'Or
+rule getOperatorLabel('AssignExcOr)       => 'ExcOr
+rule getOperatorLabel('AssignRemain)      => 'Remain
+rule getOperatorLabel('AssignLeftShift)   => 'LeftShift
+rule getOperatorLabel('AssignRightShift)  => 'RightShift
+rule getOperatorLabel('AssignURightShift) => 'URightShift
+
+/*@ \subsection{primitive types cast} */
+
+syntax Cast ::= cast ( Type, K )
+context cast(_, HOLE)
+
+//@ The type of RV could either be NumericType or tempType. This rule matches both.
+rule [cast-Number]: cast(NT:NumericType, RV:RawVal::_) => normalize(RV::NT)
+
+rule [cast-Bool]: cast(bool, B:Bool::bool) => B::bool
+
+/*@ \subsubsection{artificial cases of cast, arised during semantics separation} */
+
+rule [cast-void]: cast(void, RV:RawVal::void) => RV::void
+
+//Happens for the qualifier of a static method call
+rule [cast-noValue]: cast(_, noValue) => noValue
+
+/* Required by getTypes in elaboration phase, invoked by lookupMethod.
+*/
+rule typeOf(cast(T:Type, _)) => T
+
+/*@ \subsection{lvalue and loc syntax} */
+
+syntax K ::= lvalue ( K )
+
+/* We cannot use context rules here because of wrapper-related limitations. If a term is wrapped into lvalue
+  during heating by a context rule, it will be cooled also from lvalue by the cooling rule. This is unacceptable
+  in Java semantics.
+*/
+rule [exp-lvalue-Heat]:
     (. => lvalue(K)) ~> KL:KLabel((K:K => HOLE),, _)
 when
     (      KL ==KLabel 'PreIncr
@@ -225,54 +275,9 @@ when
     )
     andBool notBool (isKResult(K) ==K true)
 
-rule [expLValueCool]:
+rule [exp-lvalue-Cool]:
     (KR:KResult => .) ~> KL:KLabel((HOLE => KR),, _)
 
-//question: Why can't we move this desugaring into elaboration phase?
-rule [CompoundAssign]:
-    KL:KLabel(loc(L:Int) :: T1:Type,, Exp2:K)
-    => 'Assign(loc(L)::T1,, cast(T1, getOpLabel(KL)(lookup(L, T1),, Exp2)))
-when isCompoundAssignLabel(KL)
-
-//only for Compound Assign KLabel's
-syntax KLabel ::= "getOpLabel" "(" KLabel ")" [function]
-rule getOpLabel('AssignPlus)        => 'Plus
-rule getOpLabel('AssignMinus)       => 'Minus
-rule getOpLabel('AssignMul)         => 'Mul
-rule getOpLabel('AssignDiv)         => 'Div
-rule getOpLabel('AssignAnd)         => 'And
-rule getOpLabel('AssignOr)          => 'Or
-rule getOpLabel('AssignExcOr)       => 'ExcOr
-rule getOpLabel('AssignRemain)      => 'Remain
-rule getOpLabel('AssignLeftShift)   => 'LeftShift
-rule getOpLabel('AssignRightShift)  => 'RightShift
-rule getOpLabel('AssignURightShift) => 'URightShift
-
-/*@ \subsection{primitive types cast} */
-
-syntax Cast ::= "cast" "(" Type "," K ")"
-context cast(_, HOLE)
-
-//@ The type of RV could either be NumericType or tempType. This rule matches both.
-rule [CastNumber]: cast(NT:NumericType, RV:RawVal::_) => normalize(RV::NT)
-
-rule [CastBool]: cast(bool, B:Bool::bool) => B::bool
-
-/*@ \subsubsection{artificial cases of cast, arised during semantics separation} */
-
-rule [Cast-void]: cast(void, RV:RawVal::void) => RV::void
-
-//Happens for the qualifier of a static method call
-rule [Cast-noValue]: cast(_, noValue) => noValue
-
-/* Required by getTypes in elaboration phase, invoked by lookupMethod.
-*/
-rule typeOf(cast(T:Type, _)) => T
-
-/*@ \subsection{lvalue and loc syntax} */
-
-syntax K ::= "lvalue" "(" K ")"
-
-syntax RawVal ::= "loc" "(" Int ")"
+syntax RawVal ::= loc ( Int )
 
 endmodule

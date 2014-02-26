@@ -11,10 +11,10 @@ module LITERALS
 
 //@ \subsection{Auxiliary constructs}
 
-syntax K ::= "hexToInt" "(" String ")"                                  [function]
+syntax K ::= hexToInt ( String )                                  [function]
 rule hexToInt(Str:String) => hexToInt(0, Str)
 
-syntax K ::= "hexToInt" "(" Int "," String ")"                          [function]
+syntax K ::= hexToInt ( Int, String )                             [function]
 
 rule hexToInt(I:Int, Str:String) => hexToInt( I, retainHead(Str, 1), trimHead(Str, 1) )
 when
@@ -22,16 +22,17 @@ when
 
 rule hexToInt(I:Int, "") => I
 
-/*
-  first argument - upper digits already converted
-  second argument - one char - current digit
-  third argument - next digits
-*/
-syntax K ::= "hexToInt" "(" Int "," String "," String ")"               [function]
+syntax K ::=  hexToInt (
+                Int,    //upper digits already converted
+                String, //one char - current digit
+                String  //next digits
+              )
+              [function]
+
 rule hexToInt(I:Int, Digit:String, Str:String)
      => hexToInt( (I *Int 16) +Int hexDigitToInt(Digit), Str )
 
-syntax K ::= "hexDigitToInt" "(" String ")"                             [function]
+syntax K ::= hexDigitToInt ( String )                             [function]
 
 rule hexDigitToInt(Digit:String) => ordChar(Digit) -Int ordChar("0")
 when        (ordChar(Digit) >=Int ordChar("0"))
@@ -45,10 +46,10 @@ rule hexDigitToInt(Digit:String) => ordChar(Digit) -Int ordChar("a") +Int 10
 when        (ordChar(Digit) >=Int ordChar("a"))
     andBool (ordChar(Digit) <=Int ordChar("f"))
 
-syntax K ::= "octaToInt" "(" String ")"                                 [function]
+syntax K ::= octaToInt ( String )                                 [function]
 rule octaToInt(Str:String) => octaToInt(0, Str)
 
-syntax K ::= "octaToInt" "(" Int "," String ")"                         [function]
+syntax K ::= octaToInt ( Int, String )                         [function]
 
 rule octaToInt(I:Int, Str:String) => octaToInt( I, retainHead(Str, 1), trimHead(Str, 1) )
 when
@@ -56,42 +57,43 @@ when
 
 rule octaToInt(I:Int, "") => I
 
-/*
-  first argument - upper digits already converted
-  second argument - one char - current digit
-  third argument - next digits
-*/
-syntax K ::= "octaToInt" "(" Int "," String "," String ")"              [function]
+syntax K ::=  octaToInt (
+                Int,    //upper digits already converted
+                String, //one char - current digit
+                String  //next digits
+              )
+              [function]
+
 rule octaToInt(I:Int, Digit:String, Str:String) =>
     octaToInt( (I *Int 8) +Int octaDigitToInt(Digit), Str )
 
-syntax K ::= "octaDigitToInt" "(" String ")"                            [function]
+syntax K ::= octaDigitToInt ( String )                            [function]
 
 rule octaDigitToInt(Digit:String) => hexDigitToInt(Digit)
 
-syntax K ::= "octaAsciiToInt" "(" Int ")"                               [function]
+syntax K ::= octaAsciiToInt ( Int )                               [function]
 rule octaAsciiToInt(I:Int) => octaDigitToInt(chrChar(I))
 
-syntax K ::= "hexAsciiToInt" "(" Int ")"                                [function]
+syntax K ::= hexAsciiToInt ( Int )                                [function]
 rule hexAsciiToInt(I:Int) => hexDigitToInt(chrChar(I))
 
 //@ \subsection{Integer literals}
 
-rule [LitDeci]:
+rule [Lit-Deci]:
     'Lit('Deci(Str:String))
     =>  #if (lastChar(Str) ==String "l") orBool (lastChar(Str) ==String "L")
           #then String2Int(trimTail(Str, 1)) :: long
           #else String2Int(Str             ) :: int
         #fi
 
-rule [LitHexa]:
+rule [Lit-Hexa]:
     'Lit('Hexa(Str:String))
     =>  #if (lastChar(Str) ==String "l") orBool (lastChar(Str) ==String "L")
           #then normalize(hexToInt(trimHead(trimTail(Str, 1), 2)) :: long)
           #else normalize(hexToInt(trimHead(Str,              2)) :: int )
         #fi
 
-rule [LitOcta]:
+rule [Lit-Octa]:
     'Lit('Octa(Str:String))
     =>  #if (lastChar(Str) ==String "l") orBool (lastChar(Str) ==String "L")
           #then normalize(octaToInt(trimHead(trimTail(Str, 1), 1)) :: long)
@@ -100,7 +102,7 @@ rule [LitOcta]:
 
 //@ \subsection{float literals}
 
-rule [LitFloat]:
+rule [Lit-FFloat]:
     'Lit('Float(Str:String))
     =>  #if (lastChar(Str) ==String "f") orBool (lastChar(Str) ==String "F")
           #then String2Float(trimTail(Str, 1)) :: float

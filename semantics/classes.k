@@ -38,8 +38,7 @@ rule toString(objectClosure(I:Int, Obj:List, ObjLocalClassesEnv:Map) :: T:Type)
 
 rule typeOf(Str:String) => rtString
 rule typeOf(null) => nullType
-rule typeOf(objectClosure(_, ListItem(el(Class:ClassType, _,_,_)) _:List, _))
-     => Class
+rule typeOf(objectClosure(_, ListItem(el(Class:ClassType, _,_,_)) _:List, _)) => Class
 rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T
 
 /*@ \subsection{New instance creation}*/
@@ -47,11 +46,13 @@ rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T
 //@Resolve new instance qualifier
 context 'QNewInstance(HOLE,, _:KList)
 
-//@ Resolve new instance expression parameter values
-//todo test the expression order using state space search.
+/*@ Resolve new instance expression parameter values
+  todo test the expression order using state space search.
+*/
 context 'QNewInstance(_:KResult,,_:K,,_:K,,_:K,, 'ListWrap(_,,HOLE,,_),, _)
 
-/*@ Qualified new instance creation expression. Unqualified new expressions are rewritten into qualified ones by other rules and also reach this point.*/
+/*@ Qualified new instance creation expression. Unqualified new expressions are rewritten into qualified ones by other
+rules and also reach this point.*/
 rule [QNewInstance]:
     <k>
       'QNewInstance(
@@ -91,7 +92,7 @@ rule [QNewInstance]:
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 when isKResult(Vals)
 
-syntax K ::= "create" "(" ClassType ")"
+syntax K ::=  create ( ClassType )
 
 rule [create]:
     <k>
@@ -105,17 +106,18 @@ rule [create]:
     <staticEnv> StaticEnv:Map </staticEnv>
         [structural]
 
-rule [createEmptyDiscard]:
-    <k> create( noClass ) => . ...</k> [structural]
+rule [create-empty-discard]:
+    create( noClass ) => .K
+        [structural]
 
-syntax K ::= "setCrntClass" "(" ClassType ")"
+syntax K ::=  setCrntClass ( ClassType )
 
 rule [setCrntClass]:
     <k> setCrntClass(Class:ClassType) => . ...</k>
     <crntClass> _ => Class </crntClass>
         [structural]
 
-syntax K ::= "addEnvLayer"
+syntax K ::=  "addEnvLayer"
 
 rule [addEnvLayer]:
     <k> addEnvLayer => . ...</k>
@@ -130,15 +132,17 @@ rule [addEnvLayer]:
     </store>
         [structural]
 
-syntax K ::= "invokeConstr" "(" Int       //OL - object location
-                            "," ClassType //The target class
-                            "," KList     //Arguments, evaluated
-                            "," K         //EnclosingObj - the typed enclosing object, if any. Otherwise - noValue
-                            ")"
+syntax K ::=  invokeConstr (
+                Int,        //OL - object location
+                ClassType,  //The target class
+                KList,      //Arguments, evaluated
+                K           //EnclosingObj - the typed enclosing object, if any. Otherwise - noValue
+              )
 
-//@ This rule cannot be simplified - we have to alter the newly created object from the store.
-//@ The context inside <methodContext> is the context that called "new Obj()" expression.
-// Constructor calls are elaborated during execution phase.
+/*@ This rule cannot be simplified - we have to alter the newly created object from the store.
+    The context inside <methodContext> is the context that called "new Obj()" expression.
+    Constructor calls are elaborated during execution phase.
+*/
 rule [invokeConstr]:
     invokeConstr(OL:Int, Class:ClassType, Vals:KList, EnclosingObj:KResult)
     => setEncloser(lookup(OL, Class), Class, EnclosingObj)
@@ -147,13 +151,15 @@ rule [invokeConstr]:
           'ListWrap( Vals )
         )))
 
-/*@Sets the enclosing object for a given object.
-Invoked by invokeConstr and QSuperConstrInv. Defined in CLASSES.
+/*@ Sets the enclosing object for a given object.
+    Invoked by invokeConstr and QSuperConstrInv. Defined in CLASSES.
 */
-syntax K ::= "setEncloser" "(" K          //Evaluates to source object
-                           "," ClassType  //Class layer in the source object for which to set the enclosing object.
-                           "," K          //The enclosing object
-                           ")"            [strict(1,3)]
+syntax K ::=  setEncloser (
+                K,          //Evaluates to source object
+                ClassType,  //Class layer in the source object for which to set the enclosing object.
+                K           //The enclosing object
+              )
+              [strict(1,3)]
 
 rule [setEncloser-value]:
     <k>
@@ -173,24 +179,55 @@ rule [setEncloser-noValue]:
     setEncloser(_,_, noValue) => .
 
 //@ Restore the content of the cell <methodContext>
-syntax K ::= "restoreMethContext" "(" Bag         //The content of <methodContext>
-                                  ")"
+syntax K ::=  restoreMethContext (
+                Bag                 //The content of <methodContext>
+              )
 
 rule [restoreMethContext]:
     <k> restoreMethContext(MethContext:Bag) => . ...</k>
     <methodContext> _ => MethContext </methodContext>
 
-//@ Set the outerLocalEnv for all layers of the <crntObj>, from the cell <localClassesEnv>,
-//@ for the given class and its bases
-syntax K ::= "setOuterLocalEnvForHierarchy" "(" Int "," ClassType ")"
+/*@ Set outerLocalEnv for precisely the class layer Class. If sourceCalss is registered in
+    <localClassesEnv>, take from there.
+*/
+syntax K ::=  setOuterLocalEnvForClass (
+                Int,        //OL - object location,
+                ClassType,  //Class - the layer for which we aim to set outerLocalEnv
+                ClassType   //SourceClass - the candidate source class. Registered in <localClassesEnv>
+              )
 
-//@ Set outerLocalEnv for precisely the class layer Class. If sourceCalss is registered in
-//@ <localClassesEnv>, take from there.
-           | "setOuterLocalEnvForClass" "(" Int       //OL - object location
-                                        "," ClassType //Class - the layer for which we aim to set outerLocalEnv
-                                        "," ClassType //SourceClass - the candidate source class
-                                                      //registered in <localClassesEnv>
-                                        ")"
+/*@ If SourceClass is registered in <localClassesEnv> we will take its corresponding Env, and set is
+    as outerLocalEnv for the layer Class.
+*/
+rule [setOuterLocalEnvForClass-found]:
+    <k> setOuterLocalEnvForClass(OL:Int, Class:ClassType, SourceClass:ClassType) => . ...</k>
+    <store>
+      ...
+      OL |->
+        objectClosure(_, _:List ListItem(el(Class,_,_, _ => CurrentEnv)) _:List, _)::_
+      ...
+    </store>
+    <localClassesEnv>... SourceClass |-> mapWrap(CurrentEnv:Map) ...</localClassesEnv>
+
+/*@ If SourceClass is not registered in <localClassesEnv>, it is not a direct local class.
+    We attempt to replace it with its enclosing class,
+    until eventually we will reach a local class.
+*/
+rule [setOuterLocalEnvForClass-not-found]:
+    <k> setOuterLocalEnvForClass(OL:Int, Class:ClassType, SourceClass:ClassType => SourceEnclosingClass) ...</k>
+    <localClassesEnv> LocalClassesEnv:Map </localClassesEnv>
+    <classType> SourceClass </classType>
+    <enclosingClass> SourceEnclosingClass:ClassType </enclosingClass>
+when
+    notBool SourceClass in keys(LocalClassesEnv)
+
+//@ Otherwise we will reach noClass, and the whole term will be discarded.
+rule setOuterLocalEnvForClass(_,_, noClass) => .
+
+/*@ Set the outerLocalEnv for all layers of the <crntObj>, from the cell <localClassesEnv>,
+    for the given class and its bases
+*/
+syntax K ::=  setOuterLocalEnvForHierarchy ( Int, ClassType )
 
 rule [setOuterLocalEnvForHierarchy]:
     <k>
@@ -203,34 +240,8 @@ rule [setOuterLocalEnvForHierarchy]:
 
 rule setOuterLocalEnvForHierarchy(_, noClass) => .
 
-//@ If SourceClass is registered in <localClassesEnv> we will take its corresponding Env, and set is
-//@ as outerLocalEnv for the layer Class.
-rule [setOuterLocalEnvForClass-found]:
-    <k> setOuterLocalEnvForClass(OL:Int, Class:ClassType, SourceClass:ClassType) => . ...</k>
-    <store>
-      ...
-      OL |->
-        objectClosure(_, _:List ListItem(el(Class,_,_, _ => CurrentEnv)) _:List, _)::_
-      ...
-    </store>
-    <localClassesEnv>... SourceClass |-> mapWrap(CurrentEnv:Map) ...</localClassesEnv>
-
-//@ If SourceClass is not registered in <localClassesEnv>, it is not a direct local class.
-//@ We attempt to replace it with its enclosing class,
-//@ until eventually we will reach a local class.
-rule [setOuterLocalEnvForClass-not-found]:
-    <k> setOuterLocalEnvForClass(OL:Int, Class:ClassType, SourceClass:ClassType => SourceEnclosingClass) ...</k>
-    <localClassesEnv> LocalClassesEnv:Map </localClassesEnv>
-    <classType> SourceClass </classType>
-    <enclosingClass> SourceEnclosingClass:ClassType </enclosingClass>
-when
-    notBool SourceClass in keys(LocalClassesEnv)
-
-//@ Otherwise we will reach noClass, and the whole term will be discarded.
-rule setOuterLocalEnvForClass(_,_, noClass) => .
-
 //@ Set the content of <localClassesEnv> - in the 3rd argument of objectClosure().
-syntax K ::= "setObjLocalClassesEnv" "(" Int ")"
+syntax K ::=  setObjLocalClassesEnv ( Int )
 
 rule [setObjLocalClassesEnv]:
     <k> setObjLocalClassesEnv(OL:Int) => . ...</k>
@@ -251,7 +262,7 @@ rule [InstanceOf]:
 
 /*@ \subsection{Cast} */
 
-rule [CastRef]:
+rule [cast-RefType]:
     cast(RT1:RefType, V:RawVal :: RT2:RefType)
     =>  'If(
           subtype(typeOf(V), RT1),,

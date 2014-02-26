@@ -67,8 +67,8 @@ when
     Id2String(MethodName) ==String "nextLine"
 
 //@An intermediate construct for reading from console, meant mostly to simplify debugging.
-syntax K ::= "readInt"
-           | "readString"
+syntax K ::=  "readInt"
+            | "readString"
 
 rule [readInt]:
     <k> readInt => I :: int ...</k>
@@ -186,7 +186,7 @@ when
     Id2String(MethodName) ==String "equals"
 
 rule [methodInvokeRuntime-String-equals]:
-    methodInvokeRuntime(rtString, sig(MethodName:Id, _), ThisStr:String::_, ParamStr:String::_ ,_ )
+    methodInvokeRuntime(rtString, sig(MethodName:Id, _), ThisStr:String::_, ParamStr:String::_,_ )
     => elab('Eq(ThisStr,, ParamStr))
 when Id2String(MethodName) ==String "equals"
 
@@ -212,7 +212,7 @@ when
     Id2String(MethodName) ==String "compareTo"
 
 rule [methodInvokeRuntime-String-compareTo]:
-    methodInvokeRuntime(rtString, sig(MethodName:Id, _), ThisStr:String::_, ParamStr:String::_ ,_ )
+    methodInvokeRuntime(rtString, sig(MethodName:Id, _), ThisStr:String::_, ParamStr:String::_,_ )
     => elab('If(ThisStr <String ParamStr,, -1,, 'If(ThisStr ==String ParamStr,, 0,, 1)))
 when Id2String(MethodName) ==String "compareTo"
 
@@ -236,21 +236,21 @@ rule [methodInvokeRuntime-array-clone]:
 when Id2String(MethodName) ==String "clone"
 
 //@ Construct to copy content of an array to another after copy, the term is rewritten into the destination array.
-syntax K ::= arrayCopy (
-                TypedVal , // source array
-                K          // destination array, computes to TypedVal
-             )
-        [strict(2)]
+syntax K ::=  arrayCopy (
+                TypedVal, // source array
+                K         // destination array, computes to TypedVal
+              )
+              [strict(2)]
 
 rule arrayCopy(arrayRef(T:Type, L1:Int, Len:Int)::_, arrayRef(T, L2:Int, Len)::_)
     => storeCopy(L1, L2, Len) ~> arrayRef(T,L2:Int,Len)
 
 //@Copy a sequence of store values from one place to another.
-syntax K ::= storeCopy (
-                Int , //source address in store
-                Int , //destination address in store
-                Int   //amount of elements to copy
-             )
+syntax K ::=  storeCopy (
+                Int, //source address in store
+                Int, //destination address in store
+                Int  //amount of elements to copy
+              )
 
 rule [storeCopy]:
     <k>
@@ -291,9 +291,11 @@ when notBool T in keys(CLMap)
         [transition-threading]
 
 //@ Wraps a newly created java.lang.Class object
-syntax K ::= saveClassLiteral ( Type , // The type for this class literal is being instantiated
-                                K      // The class literal instantiation expression
-                              )         [strict(2)]
+syntax K ::=  saveClassLiteral (
+                Type, // The type for this class literal is being instantiated
+                K     // The class literal instantiation expression
+              )
+              [strict(2)]
 
 rule [saveClassLiteral]:
     <k> saveClassLiteral(T:Type, TV:TypedVal) => . ...</k>
@@ -304,7 +306,7 @@ rule [Lit-Class]:
     <classLiteralsMap>... T |-> TV:TypedVal ...</classLiteralsMap>
 
 //@Used inside <classLiteralsMap> only for synchronization purposes
-syntax K ::= "temp"
+syntax K ::=  "temp"
 
 rule [toString-ClassType-TopLevelWithPackage]:
     <k>

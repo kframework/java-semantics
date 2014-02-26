@@ -7,8 +7,9 @@ Rules related to processing import declarations. Part of ProcCompUnitsPhase.
 module PROCESS-IMPORTS
     imports CORE
 
-syntax K ::= "compUnitImportsStart" "(" PackageId // The package of the current compilation unit
-                                    ")"
+syntax K ::=  compUnitImportsStart (
+                PackageId // The package of the current compilation unit
+              )
 
 rule [compUnitImportsStart]:
     <k>
@@ -38,24 +39,24 @@ rule [TypeImportOnDemandDec]:
     <compUnitImports> Imp:Map </compUnitImports>
 
 //import to <compUnitImports> cell public packages in the given map.
-syntax K ::= "importOnDemandImpl" "(" Map ")"
+syntax K ::= importOnDemandImpl ( Map )
 
-rule [importOnDemandImplPublic]:
+rule [importOnDemandImpl-public]:
     <k> importOnDemandImpl((X:Id |-> Class:ClassType => .) _) ...</k>
     <compUnitImports> Imp:Map => Imp[Class / X] </compUnitImports>
     <classesToAccessModes>... Class |-> public ...</classesToAccessModes>
 
-rule [importOnDemandImplPackage]:
+rule [importOnDemandImpl-package]:
     <k> importOnDemandImpl((X:Id |-> Class:ClassType => .) _) ...</k>
     <classesToAccessModes>... Class |-> package ...</classesToAccessModes>
 
-rule [importOnDemandImplDiscard]:
+rule [importOnDemandImpl-discard]:
     importOnDemandImpl(.) => .K
 
-//importing a nonexistent package have no effect.
-//This is required because some tests import some packages from JDK that are not included in
-//class-lib.
-rule [TypeImportOnDemandUnexisting]:
+/*@ Importing a nonexistent package have no effect.
+This is required because some tests import some packages from JDK that are not included in
+class-lib.*/
+rule [TypeImportOnDemandDec-Unexisting]:
     <k>
       'TypeImportOnDemandDec(Pack:PackageId) => .
       ...

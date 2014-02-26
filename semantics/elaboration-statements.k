@@ -18,33 +18,35 @@ rule customElabHeating('ListWrap, HeadKs:KList,, K:K) => isElab(HeadKs)
 we need to save a copy of elaboration environment - e.g. the last entry of <elabEnv> <localTypes>.
 This is because these statements are blocks that might declare local variables.
 */
-rule [elabHeat-BlockForOrCatch-FirstSubterm]:
+rule [elab-Block-For-Catch-heat-FirstSubterm]:
     <k> elab(KL:KLabel(K:K,, Ks:KList)) => elab(K) ~> elab(KL(CHOLE,, Ks:KList)) ...</k>
-    <elabEnv> (. => ListItem(StEnvK)) ListItem(StEnvK:K) ...</elabEnv>
-    <localTypes> (. => ListItem(LocTypesK)) ListItem(LocTypesK:K) ...</localTypes>
+    <elabEnv> (. => ElabEnvLI) ElabEnvLI:ListItem ...</elabEnv>
+    <localTypes> (. => LocalTypesLI) LocalTypesLI:ListItem ...</localTypes>
 when
     (KL ==KLabel 'Block orBool KL ==KLabel 'For orBool KL ==KLabel 'Catch)
     andBool notBool isElab(K)
 
-rule [customElabHeating-For-False]:
+rule [customElabHeating-For-first-child]:
     customElabHeating('For, KHole:K) => false
-//Children should be heated left-to-right
-rule [customElabHeating-For-True]:
+
+//Seqstrict logic: children should be heated left-to-right
+rule [customElabHeating-For-next-children]:
     customElabHeating('For, HeadKs:KList,, KPrec:K,, KHole:K) => isElab(HeadKs,,KPrec)
 
-rule [customElabHeating-Catch-False]:
+rule [customElabHeating-Catch-first-child]:
     customElabHeating('Catch, KHole:K) => false
-rule [customElabHeating-For-True]:
+
+rule [customElabHeating-For-next-children]:
     customElabHeating('Catch, K1:K,, KHole:K) => isElab(K1)
 
-rule [elabEnd-BlockForOrCatch]:
+rule [elabEnd-Block-For-Catch]:
     elabEnd(KL:KLabel(ElabResL:KList)) => removeLastElabEnv ~> elabRes(KL(ElabResL))
 when
     KL ==KLabel 'Block orBool KL ==KLabel 'For orBool KL ==KLabel 'Catch
 
 //@ Local var declarations desugaring
 
-rule [LocalVarDecStmRed]:
+rule [elab-LocalVarDecStm-desugar]:
     elab('LocalVarDecStm('LocalVarDec(Ks:KList))
       => 'LocalVarDec(Ks)
     )                                                   [structural]
@@ -52,31 +54,31 @@ rule [LocalVarDecStmRed]:
 //@ Resolve the local var type, required to register the var in <elabEnv>
 context elab('LocalVarDec(_:K,, HOLE,, _:K))
 
-rule [VarDecMultiDesugar]:
+rule [elab-LocalVarDec-multi-desugar]:
     elab('LocalVarDec(K:K,, T:Type,, 'ListWrap(Var1:K,, Var2:K,, VarDecs:KList))
       => 'ListWrap('LocalVarDec(K,, T,, 'ListWrap(Var1)),,
             'LocalVarDec(K,, T,, 'ListWrap(Var2,, VarDecs)))
     )                                                   [structural]
 
-rule [VarDecWithInitDesugar]:
+rule [elab-LocalVarDec-with-init-desugar]:
     elab('LocalVarDec(K:K,, T:Type,, 'ListWrap('VarDec(X:Id,,InitExp:K)))
     => 'ListWrap('LocalVarDec(K,, T,, 'ListWrap('VarDec(X:Id))),,
         'ExprStm('Assign('ExprName(X),, InitExp))))
 when
     getKLabel(InitExp) =/=KLabel 'ArrayInit             [structural]
 
-rule [elabLocalVarDec]:
+rule [elab-LocalVarDec]:
     <k>
       elab('LocalVarDec(K:K,, T:Type,, 'ListWrap('VarDec(X:Id))))
       => elabRes('LocalVarDec(K,, T,, 'ListWrap('VarDec(X))))
       ...
     </k>
-    <elabEnv> ListItem(stEnv((. => X |-> T) _)) ...</elabEnv>
+    <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv>
 
 //@\subsection{Elaboration of SuperConstrInv, QSuperConstrInv, AltConstrInv}
 
 //@ Desugaring unqualified superclass constructor invocation into a qualified one
-rule [SuperConstrInv-desugar]:
+rule [elab-SuperConstrInv-desugar]:
     <k>
       elab(
         'SuperConstrInv(K:K,, 'ListWrap( Args:KList ))
@@ -101,7 +103,7 @@ rule [SuperConstrInv-desugar]:
       ...
     </class>
 
-rule [QSuperConstrInv]:
+rule [elab-QSuperConstrInv]:
     <k>
       elab(
         'QSuperConstrInv(Qual:K,, _,, 'ListWrap( Args:KList ))
@@ -121,7 +123,7 @@ rule [QSuperConstrInv]:
     <extends> BaseClass:ClassType </extends>
     <instanceInit> IInit:K </instanceInit>
 
-rule [AltConstrInv]:
+rule [elab-AltConstrInv]:
     <k>
       elab(
         'AltConstrInv(_,, 'ListWrap( Args:KList ))
@@ -136,7 +138,7 @@ rule [AltConstrInv]:
 
 /*@ \subsection{Elaboration of statements - step elabEnd} */
 
-rule [elabEndStatements]:
+rule [elabEnd-statements]:
     elabEnd(KL:KLabel(Ks:KList)) => elabRes(KL(Ks))
 when
     notBool isExpressionLabel(KL)
