@@ -186,12 +186,38 @@ rule [lookupMethod-SigFound]:
       QualT:RefType,
       _,
       _,
-      mapWrap(Sig:Signature |-> methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(_, RetT:Type)),
+      mapWrap(sig( Name:Id, ArgTypes:Types ) |-> methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(_, RetT:Type)),
       true, QualK:K, ParamExps:KList
-    ) => elabRes(cast(RetT, methodInvokeRuntime(QualT, Sig, QualK, ParamExps, CT)))
+    ) => methodProcessArguments(RetT, QualT, QualK, Name, ArgTypes, ParamExps, .KList, CT)
 
 rule [lookupMethod-Sig-NotFound]:
     lookupMethod(_,_,_, noValue, true, _,_) => noValue
+
+syntax K ::=  methodProcessArguments (
+                Type,       //RetT - method return type
+                RefType,    //QualT - target ref type (not necessarily class, could be String or array)
+                K,          //QualK - method qualifier
+                Id,         //Name - method name
+                Types,      //ArgTypes - argument types
+                KList,      //ParamExps - actual parameters
+                KList,      //will be used later as parameters casted to expected parameter types
+                ContextType // CT - method context type, instance or static
+              )
+
+rule [methodProcessArguments-process]:
+    methodProcessArguments(
+      RetT:Type, QualT:RefType, QualK:K, Name:Id,
+      types(((ArgType:Type) => .KList),, _),
+      ((ParamExp:K => .KList),, _),
+      (_,, (.KList => cast(ArgType, ParamExp))),
+      CT:ContextType
+    )
+
+//for now just a workaround implementation
+rule [methodProcessArguments-end]:
+    methodProcessArguments(RetT:Type, QualT:RefType, QualK:K, Name:Id, types(.KList), .KList, ExpectedParamExps:KList,
+        CT:ContextType)
+    => elabRes(cast(RetT, methodInvokeRuntime(QualT, Name, QualK, ExpectedParamExps, CT)))
 
 /*Search for the correct method signature to use
 when calling a given MethodName with the given argument types.
@@ -304,13 +330,13 @@ rule [isAccessible-private]:
     </k>
     <crntClass> CurrentClass:ClassType </crntClass>
 
-//The elaboration result of a method invocation.
+//@ The elaboration result of a method invocation.
 syntax K ::=  methodInvokeRuntime (
                 RefType,    //Compile-time target class, or more general reference
-                Signature,  //Method signature
+                Id,         //Method name
                 K,          //Qualifier expression, if any, or noValue if it is static invocation
-                KList,      //Arguments, each of type Cast
-                ContextType  //instanceCT or staticCT
+                KList,      //ExpectedParamExps, arguments casted to the type expected by the actual signature
+                ContextType //instanceCT or staticCT
               )
 
 /*Evaluates the qualifier.
@@ -325,7 +351,7 @@ context methodInvokeRuntime(_,_,_:KResult, (_,,HOLE,,_), _)
 
 rule [methodInvokeRuntime-Instance-On-Class]:
     <k>
-      methodInvokeRuntime(Class:ClassType, Sig:Signature,
+      methodInvokeRuntime(Class:ClassType, Name:Id,
         objectClosure(OL:Int,
           Rest:List
           ListItem(el(Class:ClassType, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map)) _,
@@ -334,7 +360,7 @@ rule [methodInvokeRuntime-Instance-On-Class]:
       )
       => invokeImpl(
         lookupOverloadedMethod(
-          Sig, getClassList(Rest ListItem(el(Class, BI, EnclosingObj, LocalEnv))), mapWrap(.Map), noValue
+          sig(Name, getTypes(ParamVals)), getClassList(Rest ListItem(el(Class, BI, EnclosingObj, LocalEnv))), mapWrap(.Map), noValue
         ),
         OL, 'ListWrap(ParamVals)
       )
@@ -346,9 +372,9 @@ when
     isKResult(ParamVals)
 
 rule [methodInvokeRuntime-Static-On-Class]:
-    methodInvokeRuntime(Class:ClassType, Sig:Signature, _:KResult, ParamVals:KList, staticCT)
+    methodInvokeRuntime(Class:ClassType, Name:Id, _:KResult, ParamVals:KList, staticCT)
     => invokeImpl(
-      lookupOverloadedMethod(Sig, Class, mapWrap(.Map), noValue),
+      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), Class, mapWrap(.Map), noValue),
       noValue, 'ListWrap(ParamVals)
     )
 when
@@ -356,14 +382,14 @@ when
 
 rule [methodInvokeRuntime-Instance-On-Interface]:
     <k>
-      methodInvokeRuntime(Class:ClassType, Sig:Signature,
+      methodInvokeRuntime(Class:ClassType, Name:Id,
         objectClosure(OL:Int,
           ListItem(el(ActualClass:ClassType, _,_,_)) _,
         _)::_,
         ParamVals:KList, instanceCT
       )
       => invokeImpl(
-        lookupOverloadedMethod(Sig, ActualClass, mapWrap(.Map), noValue),
+        lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), ActualClass, mapWrap(.Map), noValue),
         OL, 'ListWrap(ParamVals)
       )      ...
     </k>
@@ -376,34 +402,34 @@ when
 If the method is not one of the supported methods of class String, look it up in the class Object.
 */
 rule [methodInvokeRuntime-On-String]:
-    methodInvokeRuntime(_, sig(MethodName:Id, Ts:Types),
+    methodInvokeRuntime(_, Name:Id,
         Str:String::_,
         ParamVals:KList, _
     )
     => invokeImpl(
-      lookupOverloadedMethod(sig(MethodName, Ts), objectClass, mapWrap(.Map), noValue),
+      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), objectClass, mapWrap(.Map), noValue),
       Str::rtString, 'ListWrap(ParamVals)
     )
 when
-            (Id2String(MethodName) =/=String "length")
-    andBool (Id2String(MethodName) =/=String "charAt")
-    andBool (Id2String(MethodName) =/=String "valueOf")
-    andBool (Id2String(MethodName) =/=String "equals")
-    andBool (Id2String(MethodName) =/=String "toString")
-    andBool (Id2String(MethodName) =/=String "compareTo")
+            (Id2String(Name) =/=String "length")
+    andBool (Id2String(Name) =/=String "charAt")
+    andBool (Id2String(Name) =/=String "valueOf")
+    andBool (Id2String(Name) =/=String "equals")
+    andBool (Id2String(Name) =/=String "toString")
+    andBool (Id2String(Name) =/=String "compareTo")
     andBool isKResult(ParamVals)
 
 rule [methodInvokeRuntime-On-Array]:
-    methodInvokeRuntime(_, sig(MethodName:Id, Ts:Types),
+    methodInvokeRuntime(_,Name:Id,
         arrayRef(ArrT:RefType, L:Int, M:Int)::_,
         ParamVals:KList, _
     )
     => invokeImpl(
-      lookupOverloadedMethod(sig(MethodName, Ts), objectClass, mapWrap(.Map), noValue),
+      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), objectClass, mapWrap(.Map), noValue),
       arrayRef(ArrT, L, M)::ArrT, 'ListWrap(ParamVals)
     )
 when
-            (Id2String(MethodName) =/=String "clone")
+            (Id2String(Name) =/=String "clone")
     andBool isKResult(ParamVals)
 
 rule [methodInvokeRuntime-On-Null]:
