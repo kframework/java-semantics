@@ -140,98 +140,92 @@ when
 
 //@\subsection{String methods}
 
-//@int String.length()
-rule [elab-String-length]:
-    lookupMethod( Class:ClassType, MethodName:Id,
-      _, noValue, false, QualTE:K, .KList
-    ) => elabRes(cast(int,methodInvokeRuntime(Class, MethodName, QualTE, .KList, instanceCT)))
-when
-    Id2String(MethodName) ==String "length"
-    andBool Class ==K stringClass
-
-rule [methodInvokeRuntime-String-length]:
-    methodInvokeRuntime(Class:ClassType, MethodName:Id, Str:String::Class, _,_ )
+//@ int String.length()
+rule [invokeImpl-String-length]:
+    invokeImpl(
+      methodClosure(Class:ClassType, 'ListWrap(.KList), instanceCT, _,methodRT, noValue, _)
+          :: methodType(sig(MethodName:Id, _), _),
+      Str:String::Class,
+      'ListWrap(.KList)
+    )
     => lengthString(Str)
 when Id2String(MethodName) ==String "length"
      andBool Class ==K stringClass
 
-rule [elab-String-charAt]:
-    lookupMethod( Class:ClassType, MethodName:Id,
-      _, noValue, false, QualTE:K, ParamExp:K
-    ) => elabRes(cast(char, methodInvokeRuntime(Class, MethodName, QualTE, cast(int, ParamExp), instanceCT)))
-when
-    Id2String(MethodName) ==String "charAt"
-    andBool Class ==K stringClass
-
-rule [methodInvokeRuntime-String-charAt]:
-    methodInvokeRuntime(Class:ClassType, MethodName:Id, Str:String::Class, I:Int :: int, _ )
+rule [invokeImpl-String-charAt]:
+    invokeImpl(
+      methodClosure(Class:ClassType, _, instanceCT, _,methodRT, noValue, _)
+          :: methodType(sig(MethodName:Id, _), _),
+      Str:String::Class,
+      'ListWrap(I:Int :: int)
+    )
     => ordChar(substrString(Str, I, I +Int 1)) :: char
 when Id2String(MethodName) ==String "charAt"
      andBool Class ==K stringClass
 
 //@static native String String.valueOf(int i);
-rule [elab-String-valueOf]:
-    lookupMethod( Class:ClassType, MethodName:Id,
-      _, noValue, false, QualK:K, ParamExp:K
-    ) => elabRes(cast(stringClass, methodInvokeRuntime(Class, MethodName, QualK, cast(int, ParamExp), instanceCT)))
-when
-    Id2String(MethodName) ==String "valueOf"
-    andBool Class ==K stringClass
-
-rule [methodInvokeRuntime-String-valueOf]:
-    methodInvokeRuntime(Class:ClassType, MethodName:Id, _, I:Int :: int,_ )
+rule [invokeImpl-String-valueOf]:
+    invokeImpl(
+      methodClosure(Class:ClassType, _, instanceCT, _,methodRT, noValue, _)
+          :: methodType(sig(MethodName:Id, _), _),
+      Str:String::Class,
+      'ListWrap(I:Int :: int)
+    )
     => Int2String(I)
 when Id2String(MethodName) ==String "valueOf"
      andBool Class ==K stringClass
 
 //@boolean String.equals(Object)
-rule [elab-String-equals]:
-    lookupMethod( Class:ClassType, MethodName:Id,
-      _, noValue, false, QualTE:K, ParamExp:K
-    ) => elabRes(cast(bool,methodInvokeRuntime(Class, MethodName, QualTE, cast(objectClass, ParamExp), instanceCT)))
-when
-    Id2String(MethodName) ==String "equals"
-    andBool Class ==K stringClass
-
-rule [methodInvokeRuntime-String-equals]:
-    methodInvokeRuntime(Class:ClassType, MethodName:Id, ThisStr:String::_, ParamStr:String::_,_ )
-    => elab('Eq(ThisStr,, ParamStr))
+rule [invokeImpl-String-equals]:
+    invokeImpl(
+      methodClosure(Class:ClassType, _, instanceCT, _,methodRT, noValue, _)
+          :: methodType(sig(MethodName:Id, _), _),
+      Str:String::Class,
+      'ListWrap(ParamStr:String::_)
+    )
+    => elab('Eq(Str,, ParamStr))
 when Id2String(MethodName) ==String "equals"
      andBool Class ==K stringClass
 
 //@String.toString()
-rule [elab-String-toString]:
-    lookupMethod( Class:ClassType, MethodName:Id,
-      _, noValue, false, QualK:K, .KList
-    ) => elabRes(cast(bool,methodInvokeRuntime(Class, MethodName, QualK, .KList, instanceCT)))
-when
-    Id2String(MethodName) ==String "toString"
-    andBool Class ==K stringClass
-
-rule [methodInvokeRuntime-String-toString]:
-    methodInvokeRuntime(Class:ClassType, MethodName:Id, ThisStr:String::_, _,_ )
-    => ThisStr
+rule [invokeImpl-String-toString]:
+    invokeImpl(
+      methodClosure(Class:ClassType, _, instanceCT, _,methodRT, noValue, _)
+          :: methodType(sig(MethodName:Id, _), _),
+      Str:String::Class,
+      'ListWrap(.KList)
+    )
+    => Str
 when Id2String(MethodName) ==String "toString"
      andBool Class ==K stringClass
 
-//@String.compareTo(Object)
-rule [elab-String-compareTo]:
-    lookupMethod( Class:ClassType, MethodName:Id,
-      _, noValue, false, QualTE:K, ParamExp:K
-    ) => elabRes(cast(bool,methodInvokeRuntime(Class, MethodName, QualTE, cast(objectClass, ParamExp), instanceCT)))
-when
-    Id2String(MethodName) ==String "compareTo"
-    andBool Class ==K stringClass
-
-//@ public int String.compareTo(Object another)
-rule [methodInvokeRuntime-String-compareTo]:
-    methodInvokeRuntime(Class:ClassType, MethodName:Id, ThisStr:String::_, ParamStr:String::_,_ )
-    => elab('If(ThisStr <String ParamStr,, -1,, 'If(ThisStr ==String ParamStr,, 0,, 1)))
+//@ int String.compareTo(Object another)
+rule [invokeImpl-String-compareTo]:
+    invokeImpl(
+      methodClosure(Class:ClassType, _, instanceCT, _,methodRT, noValue, _)
+          :: methodType(sig(MethodName:Id, _), _),
+      Str:String::Class,
+      'ListWrap(ParamStr:String::_)
+    )
+    => elab('If(Str <String ParamStr,, -1,, 'If(Str ==String ParamStr,, 0,, 1)))
 when Id2String(MethodName) ==String "compareTo"
      andBool Class ==K stringClass
 
 //@\subsection{Array clone}
 
+//@ argument is array type
+rule [getMethods-ArrayType]:
+    getMethods(arrayOf T:Type)
+    => mapWrap( sig(String2Id("clone"), types(.KList)) |-> arrayOf T )
+
+rule [getMethodDec-ArrayType]:
+    getMethodDec(sig(MethodName:Id, types(.KList)), arrayOf T:Type)
+    => methodClosure(arrayOf T, 'ListWrap(.KList), instanceCT, public, methodRT, noValue, noValue)
+       :: methodType(sig(MethodName, types(.KList)), arrayOf T)
+when
+    Id2String(MethodName) ==String "clone"
+
+//todo have to be eliminated for standardization resons
 rule [elab-array-clone]:
     lookupMethod( arrayOf T:Type, MethodName:Id,
       _, noValue, false, QualTE:K, .KList
@@ -239,9 +233,12 @@ rule [elab-array-clone]:
 when
     Id2String(MethodName) ==String "clone"
 
-rule [methodInvokeRuntime-array-clone]:
-    methodInvokeRuntime(_, MethodName:Id,
-        arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT:Type, _,_
+rule [invokeImpl-array-clone]:
+    invokeImpl(
+      methodClosure(arrayOf ElemT:Type, _, instanceCT, _,methodRT, noValue, _)
+          :: methodType(sig(MethodName:Id, _), _),
+      arrayRef(arrayOf ElemT, Loc:Int, Len:Int)::CompileT,
+      'ListWrap(.KList)
     )
     => arrayCopy(
         arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT,
@@ -286,7 +283,10 @@ rule [storeCopy-discard]:
 
 //@\subsection{Class literal - <Class>.class}
 
-//@We need to synchronize access to class literals to avoid instantiation of the came .class by multiple threads. This is done by the term temp in <classLiteralsMap>. We cannot use 'Synchronized because it required an objectClousre as argument, and we might not have any objects instantiated at the moment.
+/*@ We need to synchronize access to class literals to avoid instantiation of the came .class by multiple threads.
+  This is done by the term temp in <classLiteralsMap>. We cannot use 'Synchronized because it required an
+  objectClousre as argument, and we might not have any objects instantiated at the moment.
+*/
 rule [Lit-Class-Instantiate]:
     <k>
         (. => saveClassLiteral(T,

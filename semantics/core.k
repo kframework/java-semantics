@@ -199,7 +199,8 @@ syntax RawRefVal ::= String | "null"
 \end{itemize}
 */
 syntax RawVal ::= methodClosure (
-                    ClassType,    // Class - class defining the method
+                    RefType,      // Usually Class - class defining the method
+                                  // Could also be array type, because we may invoke methods over arrays.
                     K,            // 'ListWrap(Params) - params
                     ContextType,  // Either staticCT, instanceCT
                     AccessMode,   // The access mode

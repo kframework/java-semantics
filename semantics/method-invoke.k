@@ -5,6 +5,7 @@ require "process-class-members.k"
 require "classes.k"
 require "statements.k"
 require "static-init.k"
+require "api-core.k"
 
 //@ \section{Module METHOD-INVOKE}
 
@@ -16,6 +17,7 @@ module METHOD-INVOKE
     imports CLASSES
     imports STATEMENTS
     imports STATIC-INIT
+    imports API-CORE    // for getArrayMethods()
 
 /*@\subsection{Method invocation}
 The method lookup is the same as in untyped KOOL.
@@ -125,7 +127,7 @@ First we search for the signature - lookupSignature construct.
 Afterwards we search for the right implementation in the hierarchy, once the signature is known
 - lookupMethodSigKnown.*/
 syntax K ::=  lookupMethod (
-                RefType,  //target ref type (not necessarily class, could be String or array)
+                RefType,  //target ref type (not necessarily class, could be array)
                 Id,       //method name
                 Bool,     //IsQ - isQualified
                 K,        //Evaluates to the signature to be called, or noValue if no signature was found yet
@@ -416,12 +418,11 @@ rule [methodInvokeRuntime-On-Array]:
         ParamVals:KList, _
     )
     => invokeImpl(
-      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), objectClass, mapWrap(.Map), noValue),
+      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), ArrT,, objectClass, mapWrap(.Map), noValue),
       arrayRef(ArrT, L, M)::ArrT, 'ListWrap(ParamVals)
     )
 when
-            (Id2String(Name) =/=String "clone")
-    andBool isKResult(ParamVals)
+    isKResult(ParamVals)
 
 rule [methodInvokeRuntime-On-Null]:
     methodInvokeRuntime(_,_, null::_, ParamVals:KList, instanceCT)
@@ -469,14 +470,13 @@ to more derived types, up to the object type of the target.
 This is required in order to respect the rules of inheritance in the presence of access modes.
 Evaluates into typed method closure.*/
 syntax K ::=  lookupOverloadedMethod (
-                K,       //sig(Name, SigTL) - Method signature
+                Signature,  //sig(Name, SigTL) - Method signature
                 KList,   //Class list, elements of type ClassType,
                          // from derived to base.
                          // To be processed from base to derived when methods map will be exhausted.
                 K,       //mapWrap(Map) - methods map of current LayerClass
                 TypedVal //method closure of the most specific method found so far
-                         // or noValue if no applicable method
-                         // was found yet
+                         // or noValue if no applicable method was found yet
               )
               [strict(1,3,4)]
 
@@ -486,42 +486,32 @@ context lookupOverloadedMethod(_,_,HOLE,_)
 context lookupOverloadedMethod(_,_,_,HOLE)
 
 rule [lookupOverloadedMethod-SigKnownFirstCandidate]:
-    <k>
-      lookupOverloadedMethod(
-        Sig:Signature,
-        _,
-        mapWrap( (Sig |-> DeclClass:ClassType _:Map) => .Map ),
-        noValue => NewMethTV
-      )
-      ...
-    </k>
-    <classType> DeclClass </classType>
-    <methodDecs>... Sig |-> NewMethTV:TypedVal ...</methodDecs>
+    lookupOverloadedMethod(
+      Sig:Signature,
+      _,
+      mapWrap( (Sig |-> DeclType:RefType _:Map) => .Map ),
+      noValue => getMethodDec(Sig, DeclType)
+    )
 
 rule [lookupOverloadedMethod-SigKnownOtherCandidates]:
-    <k>
-      lookupOverloadedMethod(
-        Sig:Signature,
-        _,
-        mapWrap( (Sig |-> NewDeclClass:ClassType => .) _:Map ),
-        OldMethTV:TypedVal
-        => 'If(
-              'LazyAnd(
-                (getMethodContextType(OldMethTV) ==K instanceCT),,
-                isAccessibleForOverwriting(
-                  getMethConsClosureClass(OldMethTV),
-                  getMethodAccessMode(OldMethTV),
-                  getMethConsClosureClass(NewMethTV)
-                )
-              ),,
-              NewMethTV,,
-              OldMethTV
-            )
-      )
-      ...
-    </k>
-    <classType> NewDeclClass </classType>
-    <methodDecs>... Sig |-> NewMethTV:TypedVal ...</methodDecs>
+    lookupOverloadedMethod(
+      Sig:Signature,
+      _,
+      mapWrap( (Sig |-> NewDeclType:RefType => .) _:Map ),
+      OldMethTV:TypedVal
+      => 'If(
+            'LazyAnd(
+              (getMethodContextType(OldMethTV) ==K instanceCT),,
+              isAccessibleForOverwriting(
+                getMethConsClosureClass(OldMethTV),
+                getMethodAccessMode(OldMethTV),
+                getMethConsClosureClass(getMethodDec(Sig, NewDeclType))
+              )
+            ),,
+            getMethodDec(Sig, NewDeclType),,
+            OldMethTV
+          )
+    )
 
 rule [lookupOverloadedMethod-SigKnownEntryDiscard]:
     lookupOverloadedMethod(
@@ -534,17 +524,12 @@ when
     Sig =/=K OtherSig
 
 rule [lookupOverloadedMethod-SigKnownLayerDiscard]:
-    <k>
-      lookupOverloadedMethod(
-        _,
-        (_,, (NewLayerClass:ClassType => .KList)),
-        mapWrap( .Map => NewEnv ),
-        _
-      )
-      ...
-    </k>
-    <classType> NewLayerClass </classType>
-    <methods> NewEnv:Map </methods>
+    lookupOverloadedMethod(
+      _,
+      (_,, (NewLayerType:RefType => .KList)),
+      mapWrap(.Map) => getMethods(NewLayerType),
+      _
+    )
 
 rule [lookupOverloadedMethod-SigKnownEnd]:
     lookupOverloadedMethod(
@@ -554,8 +539,28 @@ rule [lookupOverloadedMethod-SigKnownEnd]:
      MethTV:TypedVal
     ) => MethTV
 
+//@ Retrieve the content of <methods> for the given type
+syntax K ::=  getMethods (
+                RefType // usually a class, but also may be an array
+              )
+rule [getMethods-ClassType]:
+    <k> getMethods(Class:ClassType) => mapWrap(Methods) ...</k>
+    <classType> Class </classType>
+    <methods> Methods:Map </methods>
+
+/*@ Returns the method declaration (stored in <methodDecs>) based on provided signature and declaring type*/
+syntax K ::=  getMethodDec (
+                Signature,  // The signature of the method
+                RefType     // The declaring type. Usually a class, but may also be array type.
+              )
+
+rule [getMethodDec-ClassType]:
+    <k> getMethodDec(Sig:Signature, DeclClass:ClassType) => NewMethTV ...</k>
+    <classType> DeclClass </classType>
+    <methodDecs>... Sig |-> NewMethTV:TypedVal ...</methodDecs>
+
 //@ Returns the defining class of the given method TypedVal.
-syntax K ::= getMethConsClosureClass ( TypedVal )
+syntax K ::= getMethConsClosureClass ( TypedVal )                 [strict]
 rule getMethConsClosureClass( methodClosure(Class:ClassType, _,_,_,_,_,_) ::_ ) => Class
         [structural]
 
@@ -616,7 +621,7 @@ rule [invokeImpl-Static]:
       invokeImpl(
         methodClosure(Class:ClassType, 'ListWrap(Params:KList), staticCT, _,methodRT, _, Body:K)
             :: methodType(_, T:Type),
-        _,
+        noValue,
         'ListWrap(ParamValues:KList)
       ) ~> K:K
        => staticInit(Class) ~> bindTo(Params, ParamValues) ~> Body ~> 'Return('None(.KList))

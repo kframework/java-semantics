@@ -1,5 +1,6 @@
-/*Testing String.charAt(), just the normal case.
-  Also adding the resulting char with an int.*/
+/*Testing String.charAt(), just the normal case, and String.length().
+  Also adding the resulting char with an int.
+*/
 
 public class String_charAt {
 
