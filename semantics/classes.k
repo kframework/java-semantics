@@ -36,7 +36,7 @@ rule toString(objectClosure(I:Int, Obj:List, ObjLocalClassesEnv:Map) :: T:Type)
 
 //@ \texttt{typeOf for reference types}
 
-rule typeOf(Str:String) => rtString
+rule typeOf(Str:String) => stringClass
 rule typeOf(null) => nullType
 rule typeOf(objectClosure(_, ListItem(el(Class:ClassType, _,_,_)) _:List, _)) => Class
 rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T

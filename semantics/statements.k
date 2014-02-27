@@ -19,7 +19,7 @@ rule [ExecutionPhase-Start]:
               'Invoke(
                 'MethodName('TypeName(packageId(String2Id("")),,String2Id(MainClassS)),, String2Id("main")),,
                 'ListWrap('NewArray(
-                    rtString,,
+                    stringClass,,
                     'ListWrap('Dim(0 :: int)),,
                     'ListWrap(.KList)))
               )

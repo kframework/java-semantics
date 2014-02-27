@@ -104,14 +104,16 @@ rule /* I1 >>> I2 */ 'URightShift(I1:Int :: NT1:Type,, I2:Int :: NT2:NumericType
 
 rule /* I1 + I2     */ 'Plus(I1:Int :: _,, I2:Int :: _) => (I1 +Int I2) :: tempType
 rule                   'Plus(F1:Float :: _,, F2:Float :: _) => (F1 +Float F2) :: tempType
-rule /* Str1 + Str2 */ 'Plus(Str1:String :: rtString,, Str2:String :: rtString)
-    => (Str1 +String Str2) :: rtString
-rule /* Str + KR    */ 'Plus(Str:String :: rtString,, ( KR:KResult => toString(KR) ))
-when       (typeOf(KR) =/=K rtString)
-    orBool (KR ==K (null::rtString))
-rule /* KR + Str    */ 'Plus(( KR:KResult => toString(KR) ),, Str:String :: rtString)
-when       (typeOf(KR) =/=K rtString)
-    orBool (KR ==K (null::rtString))
+rule /* Str1 + Str2 */ 'Plus(Str1:String :: _,, Str2:String :: _)
+    => (Str1 +String Str2) :: stringClass
+rule /* Str + KR    */ 'Plus(Str:String :: Class:ClassType,, ( KR:KResult => toString(KR) ))
+when       ((typeOf(KR) =/=K stringClass)
+           andBool Class ==K stringClass)
+    orBool (KR ==K (null::stringClass))
+rule /* KR + Str    */ 'Plus(( KR:KResult => toString(KR) ),, Str:String :: Class:ClassType)
+when       ((typeOf(KR) =/=K stringClass)
+           andBool Class ==K stringClass)
+    orBool (KR ==K (null::stringClass))
 
 rule /* I1 - I2    */ 'Minus(I1:Int :: _,, I2:Int :: _) => (I1 -Int I2) :: tempType
 rule                  'Minus(F1:Float :: _,, F2:Float :: _) => (F1 -Float F2) :: tempType

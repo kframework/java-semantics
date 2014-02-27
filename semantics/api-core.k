@@ -75,7 +75,7 @@ rule [readInt]:
     <in> ListItem(I:Int) => . ...</in>
 
 rule [readString]:
-    <k> readString => Str :: rtString ...</k>
+    <k> readString => Str :: stringClass ...</k>
     <in> ListItem(Str:String) => . ...</in>
 
 /*@ object.getClass()*/
@@ -97,9 +97,9 @@ when
 
 rule [object-getClass-on-String]:
     invokeImpl(
-      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), Str:String::rtString,
+      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), Str:String::_,
       'ListWrap(.KList)
-    ) => elab('Lit('Class(rtString)))
+    ) => elab('Lit('Class(stringClass)))
 when
     Id2String(MethodName) ==String "getClass"
 
@@ -114,11 +114,12 @@ when
 /*@ String.toString(). For Object.toString() the implementation is in the library java code.*/
 rule [object-toString-on-String]:
     invokeImpl(
-      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), Str:String::rtString,
+      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), Str:String::Class:ClassType,
       'ListWrap(.KList)
-    ) => Str::rtString
+    ) => Str::stringClass
 when
     Id2String(MethodName) ==String "toString"
+    andBool Class ==K stringClass
 
 /*@Object.hashCode(). Returns the canonical memory location of the objectClosure. */
 rule [object-hashCode]:
@@ -141,81 +142,93 @@ when
 
 //@int String.length()
 rule [elab-String-length]:
-    lookupMethod( rtString, MethodName:Id,
+    lookupMethod( Class:ClassType, MethodName:Id,
       _, noValue, false, QualTE:K, .KList
-    ) => elabRes(cast(int,methodInvokeRuntime(rtString, MethodName, QualTE, .KList, instanceCT)))
+    ) => elabRes(cast(int,methodInvokeRuntime(Class, MethodName, QualTE, .KList, instanceCT)))
 when
     Id2String(MethodName) ==String "length"
+    andBool Class ==K stringClass
 
 rule [methodInvokeRuntime-String-length]:
-    methodInvokeRuntime(rtString, MethodName:Id, Str:String::rtString, _,_ )
+    methodInvokeRuntime(Class:ClassType, MethodName:Id, Str:String::Class, _,_ )
     => lengthString(Str)
 when Id2String(MethodName) ==String "length"
+     andBool Class ==K stringClass
 
 rule [elab-String-charAt]:
-    lookupMethod( rtString, MethodName:Id,
+    lookupMethod( Class:ClassType, MethodName:Id,
       _, noValue, false, QualTE:K, ParamExp:K
-    ) => elabRes(cast(char, methodInvokeRuntime(rtString, MethodName, QualTE, cast(int, ParamExp), instanceCT)))
+    ) => elabRes(cast(char, methodInvokeRuntime(Class, MethodName, QualTE, cast(int, ParamExp), instanceCT)))
 when
     Id2String(MethodName) ==String "charAt"
+    andBool Class ==K stringClass
 
 rule [methodInvokeRuntime-String-charAt]:
-    methodInvokeRuntime(rtString, MethodName:Id, Str:String::rtString, I:Int :: int, _ )
+    methodInvokeRuntime(Class:ClassType, MethodName:Id, Str:String::Class, I:Int :: int, _ )
     => ordChar(substrString(Str, I, I +Int 1)) :: char
 when Id2String(MethodName) ==String "charAt"
+     andBool Class ==K stringClass
 
 //@static native String String.valueOf(int i);
 rule [elab-String-valueOf]:
-    lookupMethod( rtString, MethodName:Id,
+    lookupMethod( Class:ClassType, MethodName:Id,
       _, noValue, false, QualK:K, ParamExp:K
-    ) => elabRes(cast(rtString, methodInvokeRuntime(rtString, MethodName, QualK, cast(int, ParamExp), instanceCT)))
+    ) => elabRes(cast(stringClass, methodInvokeRuntime(Class, MethodName, QualK, cast(int, ParamExp), instanceCT)))
 when
     Id2String(MethodName) ==String "valueOf"
+    andBool Class ==K stringClass
 
 rule [methodInvokeRuntime-String-valueOf]:
-    methodInvokeRuntime(rtString, MethodName:Id, _, I:Int :: int,_ )
+    methodInvokeRuntime(Class:ClassType, MethodName:Id, _, I:Int :: int,_ )
     => Int2String(I)
 when Id2String(MethodName) ==String "valueOf"
+     andBool Class ==K stringClass
 
 //@boolean String.equals(Object)
 rule [elab-String-equals]:
-    lookupMethod( rtString, MethodName:Id,
+    lookupMethod( Class:ClassType, MethodName:Id,
       _, noValue, false, QualTE:K, ParamExp:K
-    ) => elabRes(cast(bool,methodInvokeRuntime(rtString, MethodName, QualTE, cast(objectClass, ParamExp), instanceCT)))
+    ) => elabRes(cast(bool,methodInvokeRuntime(Class, MethodName, QualTE, cast(objectClass, ParamExp), instanceCT)))
 when
     Id2String(MethodName) ==String "equals"
+    andBool Class ==K stringClass
 
 rule [methodInvokeRuntime-String-equals]:
-    methodInvokeRuntime(rtString, MethodName:Id, ThisStr:String::_, ParamStr:String::_,_ )
+    methodInvokeRuntime(Class:ClassType, MethodName:Id, ThisStr:String::_, ParamStr:String::_,_ )
     => elab('Eq(ThisStr,, ParamStr))
 when Id2String(MethodName) ==String "equals"
+     andBool Class ==K stringClass
 
 //@String.toString()
 rule [elab-String-toString]:
-    lookupMethod( rtString, MethodName:Id,
+    lookupMethod( Class:ClassType, MethodName:Id,
       _, noValue, false, QualK:K, .KList
-    ) => elabRes(cast(bool,methodInvokeRuntime(rtString, MethodName, QualK, .KList, instanceCT)))
+    ) => elabRes(cast(bool,methodInvokeRuntime(Class, MethodName, QualK, .KList, instanceCT)))
 when
     Id2String(MethodName) ==String "toString"
+    andBool Class ==K stringClass
 
 rule [methodInvokeRuntime-String-toString]:
-    methodInvokeRuntime(rtString, MethodName:Id, ThisStr:String::_, _,_ )
+    methodInvokeRuntime(Class:ClassType, MethodName:Id, ThisStr:String::_, _,_ )
     => ThisStr
 when Id2String(MethodName) ==String "toString"
+     andBool Class ==K stringClass
 
 //@String.compareTo(Object)
 rule [elab-String-compareTo]:
-    lookupMethod( rtString, MethodName:Id,
+    lookupMethod( Class:ClassType, MethodName:Id,
       _, noValue, false, QualTE:K, ParamExp:K
-    ) => elabRes(cast(bool,methodInvokeRuntime(rtString, MethodName, QualTE, cast(objectClass, ParamExp), instanceCT)))
+    ) => elabRes(cast(bool,methodInvokeRuntime(Class, MethodName, QualTE, cast(objectClass, ParamExp), instanceCT)))
 when
     Id2String(MethodName) ==String "compareTo"
+    andBool Class ==K stringClass
 
 //@ public int String.compareTo(Object another)
 rule [methodInvokeRuntime-String-compareTo]:
-    methodInvokeRuntime(rtString, MethodName:Id, ThisStr:String::_, ParamStr:String::_,_ )
+    methodInvokeRuntime(Class:ClassType, MethodName:Id, ThisStr:String::_, ParamStr:String::_,_ )
     => elab('If(ThisStr <String ParamStr,, -1,, 'If(ThisStr ==String ParamStr,, 0,, 1)))
 when Id2String(MethodName) ==String "compareTo"
+     andBool Class ==K stringClass
 
 //@\subsection{Array clone}
 
@@ -334,7 +347,7 @@ rule [toString-ClassType-Inner]:
       toString(class ClassId:Id)
       => 'Plus(
             toString(class OuterClassId),,
-            ("$" +String Id2String(SimpleName))::rtString
+            ("$" +String Id2String(SimpleName))::stringClass
          )
       ...
     </k>

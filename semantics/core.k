@@ -83,7 +83,6 @@ syntax NumericType ::= IntType | FloatType
 syntax IntType ::= "byte" | "short" | IntOrLongType | "char"
 syntax FloatType ::= "float" | "double"
 syntax PrimitiveType ::= NumericType | "bool"
-syntax RefType ::= "rtString" | "nullType"
 
 syntax Type ::= PrimitiveType
               | RefType
@@ -112,7 +111,6 @@ syntax ClassType ::= "class" Id
 syntax RefType ::= ClassType
                  | "arrayOf" Type
                  | "nullType"
-                 | "rtString"
 
 /*@ The member accessibility context of the current method - either static or instance.*/
 syntax ContextType ::= "staticCT" | "instanceCT"
@@ -300,8 +298,6 @@ rule toString(true::_) => "true"
 rule toString(false::_) => "false"
 rule toString(null::_) => "null"
 
-rule toString(rtString) => "java.lang.String"
-
 //@ \texttt{Type of a value}
 
 /*todo move into separate file*/
@@ -327,7 +323,7 @@ rule Val:RawVal => defaultTyped(Val)                                            
 syntax K ::= defaultTyped ( RawVal )
 rule defaultTyped(I:Int) => I :: int                                                  [structural]
 rule defaultTyped(B:Bool) => B :: bool                                                [structural]
-rule defaultTyped(Str:String) => Str :: rtString                                      [structural]
+rule defaultTyped(Str:String) => Str :: stringClass                                   [structural]
 rule defaultTyped(null) => null :: nullType                                           [structural]
 rule defaultTyped( objectClosure(
       OL:Int,
@@ -383,6 +379,9 @@ syntax KResult ::= "noValue"
 
 syntax K ::= "objectClass"                              [function]
 rule objectClass => class String2Id("java.lang.Object")
+
+syntax K ::= "stringClass"                              [function]
+rule stringClass => class String2Id("java.lang.String")
 
 /*@ The union of two maps. Arguments are of the form mapWrap(Map). In this operation, elements of the second map
     overwrite elements of the first map if they collide.

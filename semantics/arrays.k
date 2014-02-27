@@ -381,7 +381,6 @@ rule toString(arrayOf char)  => "[C"
 rule toString(arrayOf bool)  => "[Z"
 
 rule toString(arrayOf class Class:Id) => 'Plus("[L",, 'Plus(toString(class Class) ,,";"))
-rule toString(arrayOf rtString)       => 'Plus("[L",, 'Plus(toString(rtString),, ";"))
 
 rule toString(arrayOf arrayOf T:Type) => 'Plus("[",, toString(arrayOf T))
 

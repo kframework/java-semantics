@@ -398,26 +398,17 @@ rule [methodInvokeRuntime-Instance-On-Interface]:
 when
     isKResult(ParamVals)
 
-/*
-If the method is not one of the supported methods of class String, look it up in the class Object.
-*/
 rule [methodInvokeRuntime-On-String]:
-    methodInvokeRuntime(_, Name:Id,
+    methodInvokeRuntime(Class:ClassType, Name:Id,
         Str:String::_,
         ParamVals:KList, _
     )
     => invokeImpl(
-      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), objectClass, mapWrap(.Map), noValue),
-      Str::rtString, 'ListWrap(ParamVals)
+      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), Class, mapWrap(.Map), noValue),
+      Str::stringClass, 'ListWrap(ParamVals)
     )
 when
-            (Id2String(Name) =/=String "length")
-    andBool (Id2String(Name) =/=String "charAt")
-    andBool (Id2String(Name) =/=String "valueOf")
-    andBool (Id2String(Name) =/=String "equals")
-    andBool (Id2String(Name) =/=String "toString")
-    andBool (Id2String(Name) =/=String "compareTo")
-    andBool isKResult(ParamVals)
+    isKResult(ParamVals)
 
 rule [methodInvokeRuntime-On-Array]:
     methodInvokeRuntime(_,Name:Id,

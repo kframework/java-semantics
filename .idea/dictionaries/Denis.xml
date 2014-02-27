@@ -2,6 +2,7 @@
   <dictionary name="Denis">
     <words>
       <w>basename</w>
+      <w>constr</w>
       <w>elab</w>
       <w>encloser</w>
       <w>initializers</w>
@@ -16,6 +17,7 @@
       <w>qual</w>
       <w>smallskip</w>
       <w>texttt</w>
+      <w>youtrack</w>
     </words>
   </dictionary>
 </component>

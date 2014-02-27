@@ -344,9 +344,9 @@ when
     orBool (KL ==KLabel 'PostDecr)
 
 rule [elabEnd-StringPlusAny]:
-    elabEnd('Plus(TE1:K,, TE2:K)) => elabRes(cast(rtString,'Plus(TE1,, TE2)))
+    elabEnd('Plus(TE1:K,, TE2:K)) => elabRes(cast(stringClass,'Plus(TE1,, TE2)))
 when
-    typeOf(TE1) ==K rtString orBool typeOf(TE2) ==K rtString
+    typeOf(TE1) ==K stringClass orBool typeOf(TE2) ==K stringClass
 
 rule [elabEnd-Cond]:
     elabEnd('Cond(CondTE:K,, TE1:K,, TE2:K))

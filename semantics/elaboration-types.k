@@ -45,16 +45,6 @@ rule [typeNameQualifiedImpl-NotFound]:
     typeNameQualifiedImpl(mapWrap(NamesMap:Map), X:Id) => noValue
 when notBool X in keys(NamesMap)
 
-/*@ Elaboration the type String. Limitations:
-    - All string types should be referred by simple name "String".
-       Fully qualified name java.lang.String is not allowed.
-    - No other classes with name "String" are possible.
-*/
-rule [TypeName-String]:
-    'TypeName(X:Id) => rtString
-when
-    Id2String(X) ==String "String"                      [structural]
-
 rule [TypeName-local-in-any-Phase]:
     <k> 'TypeName(X:Id) => Class ...</k>
     <localTypes> ListItem(mapWrap(X |-> Class:ClassType _)) ...</localTypes>

@@ -117,15 +117,6 @@ rule [subType-ClassOfOtherFalse]:
 when
     notBool (isClassType(T) ==K true)
 
-rule [subtype-StringOfClass]:
-    subtype( rtString, Class:ClassType ) => Class ==K objectClass
-
-rule [subtype-StringOfOtherFalse]:
-    subtype( rtString, T:Type ) => false
-when
-            (T =/=K rtString)
-    andBool notBool (isClassType(T) ==K true)
-
 rule [subtype-ArrayOfClass]:
     subtype( arrayOf _, Class:ClassType ) => Class ==K objectClass
 
