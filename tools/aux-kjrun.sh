@@ -59,7 +59,7 @@ KRUN_CMD="$KRUN_CMD \
 
 case "$MODE" in
 "run")
-    KRUN_CMD="$KRUN_CMD -cModelCheck=\"false\""
+    KRUN_CMD="$KRUN_CMD -cModelCheck=\"true\""
     ;;
 "search"|"search-count")
     KRUN_CMD="$KRUN_CMD --search-final -cModelCheck=\"true\""

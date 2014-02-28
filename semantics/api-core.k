@@ -7,7 +7,7 @@ require "method-invoke.k"
 module API-CORE
     imports CORE
     imports CLASSES
-    imports METHOD-INVOKE
+    imports METHOD-INVOKE //for arrayImplClass and others
     imports VAR-LOOKUP
     imports LITERALS  //for string-related functions
 
@@ -105,7 +105,7 @@ when
 
 rule [object-getClass-on-array]:
     invokeImpl(
-      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), arrayRef(_,_,_)::ArrT:Type,
+      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), arrayRef(ArrT:Type,_,_)::_,
       'ListWrap(.KList)
     ) => elab('Lit('Class(ArrT)))
 when
@@ -213,27 +213,9 @@ when Id2String(MethodName) ==String "compareTo"
 
 //@\subsection{Array clone}
 
-//@ argument is array type
-rule [getMethods-ArrayType]:
-    <k>
-      getMethods(arrayOf T:Type)
-      => mapWrap(ObjectMethods[(arrayOf T) / sig(String2Id("clone"), types(.KList))])
-      ...
-    </k>
-    <classType> ObjectClass:ClassType </classType>
-    <methods> ObjectMethods:Map </methods>
-when ObjectClass ==K objectClass
-
-rule [getMethodDec-ArrayType]:
-    getMethodDec(sig(MethodName:Id, types(.KList)), arrayOf T:Type)
-    => methodClosure(arrayOf T, 'ListWrap(.KList), instanceCT, public, methodRT, noValue, noValue)
-       :: methodType(sig(MethodName, types(.KList)), objectClass)
-when
-    Id2String(MethodName) ==String "clone"
-
 rule [invokeImpl-array-clone]:
     invokeImpl(
-      methodClosure(CompileT:RefType, _, instanceCT, _,methodRT, noValue, _)
+      methodClosure(TargetClass:ClassType, _, instanceCT, _,methodRT, noValue, _)
           :: methodType(sig(MethodName:Id, _), _),
       arrayRef(arrayOf ElemT, Loc:Int, Len:Int)::CompileT:RefType,
       'ListWrap(.KList)
@@ -242,7 +224,9 @@ rule [invokeImpl-array-clone]:
         arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT,
         newArrayAlloc(ElemT, 'ListWrap(Len::int), undefined :: ElemT)
       )
-when Id2String(MethodName) ==String "clone"
+when
+    Id2String(MethodName) ==String "clone"
+    andBool TargetClass ==K arrayImplClass
 
 //@ Construct to copy content of an array to another after copy, the term is rewritten into the destination array.
 syntax K ::=  arrayCopy (

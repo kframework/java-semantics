@@ -81,7 +81,7 @@ rule [elabEnd-Invoke-to-lookupMethod-qualified]:
       ),,
       'ListWrap(ParamExps:KList))
     ) => lookupMethod(
-      typeOf(Qual),
+      getLookupTargetType(typeOf(Qual)),
       MethodName,
       IsQ,
       noValue,
@@ -127,7 +127,7 @@ First we search for the signature - lookupSignature construct.
 Afterwards we search for the right implementation in the hierarchy, once the signature is known
 - lookupMethodSigKnown.*/
 syntax K ::=  lookupMethod (
-                RefType,  //target ref type (not necessarily class, could be array)
+                ClassType,//target class, even for arrays.
                 Id,       //method name
                 Bool,     //IsQ - isQualified
                 K,        //Evaluates to the signature to be called, or noValue if no signature was found yet
@@ -139,16 +139,23 @@ syntax K ::=  lookupMethod (
               )
               [strict(4)]
 
-//todo K 10341 it looks like [strict] above don't work
+//todo K bug - [strict] and KList arguments don't work together
 context lookupMethod(_,_,_,HOLE,_,_,_)
+
+syntax K ::= getLookupTargetType ( RefType )    [function]
+rule getLookupTargetType(Class:ClassType) => Class
+rule getLookupTargetType(arrayOf _) => arrayImplClass
+
+syntax K ::= "arrayImplClass"                   [function]
+rule arrayImplClass => class String2Id("java.lang.ArrayImpl")
 
 //All cases
 rule [lookupMethod-to-lookupSignature]:
     lookupMethod(
-      QualT:RefType,
+      QualClass:ClassType,
       MethodName:Id,
       IsQ:Bool,
-      noValue => lookupSignature(MethodName, getTypes(ParamExps), getMethods(QualT), IsQ, noValue, QualT),
+      noValue => lookupSignature(MethodName, getTypes(ParamExps), getMethods(QualClass), IsQ, noValue, QualClass),
       false => true,
       _,
       ParamExps:KList
@@ -158,7 +165,7 @@ rule [lookupMethod-to-lookupSignature]:
 because this body might not be elaborated.*/
 rule [lookupMethod-SigFound]:
     lookupMethod(
-      QualT:RefType,
+      QualT:ClassType,
       _,
       _,
       methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(sig( Name:Id, ArgTypes:Types ), RetT:Type),
@@ -170,7 +177,7 @@ rule [lookupMethod-Sig-NotFound]:
 
 syntax K ::=  methodProcessArguments (
                 Type,       //RetT - method return type
-                RefType,    //QualT - target ref type (not necessarily class, could be String or array)
+                ClassType,  //QualClass - target ref type (not necessarily class, could be String or array)
                 K,          //QualK - method qualifier
                 Id,         //Name - method name
                 Types,      //ArgTypes - argument types
@@ -181,7 +188,7 @@ syntax K ::=  methodProcessArguments (
 
 rule [methodProcessArguments-process]:
     methodProcessArguments(
-      RetT:Type, QualT:RefType, QualK:K, Name:Id,
+      RetT:Type, QualClass:ClassType, QualK:K, Name:Id,
       types(((ArgType:Type) => .KList),, _),
       ((ParamExp:K => .KList),, _),
       (_,, (.KList => cast(ArgType, ParamExp))),
@@ -190,9 +197,9 @@ rule [methodProcessArguments-process]:
 
 //for now just a workaround implementation
 rule [methodProcessArguments-end]:
-    methodProcessArguments(RetT:Type, QualT:RefType, QualK:K, Name:Id, types(.KList), .KList, ExpectedParamExps:KList,
+    methodProcessArguments(RetT:Type, QualClass:ClassType, QualK:K, Name:Id, types(.KList), .KList, ExpectedParamExps:KList,
         CT:ContextType)
-    => elabRes(cast(RetT, methodInvokeRuntime(QualT, Name, QualK, ExpectedParamExps, CT)))
+    => elabRes(cast(RetT, methodInvokeRuntime(QualClass, Name, QualK, ExpectedParamExps, CT)))
 
 /*Search for the correct method signature to use
 when calling a given MethodName with the given argument types.
@@ -204,38 +211,42 @@ syntax K ::=  lookupSignature (
                 Bool,     // IsQ - whether the original method call was qualified
                 K,        // The best signature found so far, in the form methodClosure :: methodType
                           // or noValue if none found
-                RefType   // target type.
+                ClassType // QualClass - target type.
               )
-              [strict(2,3, 5)]
+              [strict(2,3,5)]
 
-//todo performance problem: these 3 calls to getMethodDec lead to 10% decease in execution performace of helloWorld.
-//todo Now it is 22s.
 rule [lookupSignature-Main]:
-    lookupSignature(
-      MethodName:Id,
-      CallTs:Types,
-      mapWrap((sig(MethodName, SigTs:Types) |-> DecType:RefType => .) _:Map),
-      IsQ:Bool,
-      OldMethodDecRecord:KResult
-      => 'If(
-          'LazyAnd(
+    <k>
+      lookupSignature(
+        MethodName:Id,
+        CallTs:Types,
+        mapWrap((sig(MethodName, SigTs:Types) |-> DecClass:ClassType => .) _:Map),
+        IsQ:Bool,
+        OldMethodDecRecord:KResult
+        => 'If(
             'LazyAnd(
-              subtypeList(CallTs, SigTs),,
-              #if OldMethodDecRecord ==K noValue
-                #then true
-                #else subtypeList(SigTs, getMethodDecArgTypes(OldMethodDecRecord))
-              #fi
+              'LazyAnd(
+                subtypeList(CallTs, SigTs),,
+                #if OldMethodDecRecord ==K noValue
+                  #then true
+                  #else subtypeList(SigTs, getMethodDecArgTypes(OldMethodDecRecord))
+                #fi
+              ),,
+              isAccessible(
+                getMethodAccessMode(NewMethTV),
+                getMethodContextType(NewMethTV),
+                DecClass, IsQ, QualClass
+              )
             ),,
-            isAccessible(
-              getMethodAccessMode(getMethodDec(sig(MethodName, SigTs), DecType)),
-              getMethodContextType(getMethodDec(sig(MethodName, SigTs), DecType)),
-                DecType, IsQ, TargetType)
-          ),,
-          getMethodDec(sig(MethodName, SigTs), DecType),,
-          OldMethodDecRecord
-        ),
-      TargetType:RefType
-    )
+            NewMethTV,,
+            OldMethodDecRecord
+          ),
+        QualClass:ClassType
+      )
+      ...
+    </k>
+    <classType> DecClass </classType>
+    <methodDecs>... sig(MethodName, SigTs) |-> NewMethTV:TypedVal ...</methodDecs>
 
 syntax K ::= getMethodDecArgTypes ( K )   [function]
 rule getMethodDecArgTypes(_ :: methodType(sig(_, Ts:Types), _)) => Ts
@@ -258,11 +269,11 @@ may be called from the current object environment*/
 syntax K ::=  isAccessible (
                 AccessMode, //the method access mode
                 K,          //evaluates to ContextType - staticCT or instanceCT
-                RefType,    //the method declaring type. Usually class. Could also be array type.
+                ClassType,  //the method declaring class.
                 Bool,       //IsQ - whether the initial method call expression was qualified
-                RefType     //target class, used by protected mode in inner classes. Could also be array type.
+                ClassType   //QualClass - target class, used by protected mode in inner classes.
               )
-        [strict(1, 2)]
+              [strict(1, 2)]
 
 rule [isAccessible-public]:
     isAccessible(public, _,_,_,_) => true
@@ -306,7 +317,7 @@ rule [isAccessible-private]:
 
 //@ The elaboration result of a method invocation.
 syntax K ::=  methodInvokeRuntime (
-                RefType,    //Compile-time target class, or more general reference
+                ClassType,  //Compile-time target class, always class even for arrays
                 Id,         //Method name
                 K,          //Qualifier expression, if any, or noValue if it is static invocation
                 KList,      //ExpectedParamExps, arguments casted to the type expected by the actual signature
@@ -386,26 +397,17 @@ when
 
 rule [methodInvokeRuntime-On-Array]:
     methodInvokeRuntime(
-        TargetType:RefType,
+        QualClass:ClassType,
         Name:Id,
-        arrayRef(ArrT:RefType, L:Int, M:Int)::TargetType,
+        arrayRef(ArrT:RefType, L:Int, M:Int)::CompileT:RefType,
         ParamVals:KList, instanceCT
     )
     => invokeImpl(
-        lookupOverloadedMethod(sig(Name, getTypes(ParamVals)),
-                               getArrayTargetTypeList(TargetType, ArrT), mapWrap(.Map), noValue),
-        arrayRef(ArrT, L, M)::TargetType, 'ListWrap(ParamVals)
+        lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), QualClass, mapWrap(.Map), noValue),
+        arrayRef(ArrT, L, M)::CompileT, 'ListWrap(ParamVals)
       )
 when
     isKResult(ParamVals)
-
-syntax KList ::= getArrayTargetTypeList ( RefType , RefType )  [function]
-
-rule getArrayTargetTypeList ( ObjectClass:ClassType, ArrT:RefType ) => ArrT,,ObjectClass
-when
-    ObjectClass ==K ObjectClass
-
-rule getArrayTargetTypeList ( arrayOf T:Type, _ ) => arrayOf T
 
 rule [methodInvokeRuntime-On-Null]:
     methodInvokeRuntime(_,_, null::_, ParamVals:KList, instanceCT)
@@ -463,7 +465,7 @@ syntax K ::=  lookupOverloadedMethod (
               )
               [strict(1,3,4)]
 
-//todo K 10341 it looks like [strict] above don't work
+//todo K bug - [strict] and KList arguments don't work together
 context lookupOverloadedMethod(HOLE,_,_,_)
 context lookupOverloadedMethod(_,_,HOLE,_)
 context lookupOverloadedMethod(_,_,_,HOLE)
@@ -472,29 +474,34 @@ rule [lookupOverloadedMethod-SigKnownFirstCandidate]:
     lookupOverloadedMethod(
       Sig:Signature,
       _,
-      mapWrap( (Sig |-> DeclType:RefType _:Map) => .Map ),
-      noValue => getMethodDec(Sig, DeclType)
+      mapWrap( (Sig |-> DecClass:ClassType _:Map) => .Map ),
+      noValue => getMethodDec(Sig, DecClass)
     )
 
 rule [lookupOverloadedMethod-SigKnownOtherCandidates]:
-    lookupOverloadedMethod(
-      Sig:Signature,
-      _,
-      mapWrap( (Sig |-> NewDeclType:RefType => .) _:Map ),
-      OldMethTV:TypedVal
-      => 'If(
-            'LazyAnd(
-              (eqAux(getMethodContextType(OldMethTV), instanceCT)),,
-              isAccessibleForOverwriting(
-                getMethConsClosureClass(OldMethTV),
-                getMethodAccessMode(OldMethTV),
-                getMethConsClosureClass(getMethodDec(Sig, NewDeclType))
-              )
-            ),,
-            getMethodDec(Sig, NewDeclType),,
-            OldMethTV
-          )
-    )
+    <k>
+      lookupOverloadedMethod(
+        Sig:Signature,
+        _,
+        mapWrap( (Sig |-> NewDecClass:ClassType => .) _:Map ),
+        OldMethTV:TypedVal
+        => 'If(
+              'LazyAnd(
+                (eqAux(getMethodContextType(OldMethTV), instanceCT)),,
+                isAccessibleForOverwriting(
+                  getMethConsClosureClass(OldMethTV),
+                  getMethodAccessMode(OldMethTV),
+                  getMethConsClosureClass(NewMethTV)
+                )
+              ),,
+              NewMethTV,,
+              OldMethTV
+            )
+      )
+      ...
+    </k>
+    <classType> NewDecClass </classType>
+    <methodDecs>...Sig |-> NewMethTV:TypedVal ...</methodDecs>
 
 rule [lookupOverloadedMethod-SigKnownEntryDiscard]:
     lookupOverloadedMethod(
@@ -509,7 +516,7 @@ when
 rule [lookupOverloadedMethod-SigKnownLayerDiscard]:
     lookupOverloadedMethod(
       _,
-      (_,, (NewLayerType:RefType => .KList)),
+      (_,, (NewLayerType:ClassType => .KList)),
       mapWrap(.Map) => getMethods(NewLayerType),
       _
     )
@@ -522,10 +529,8 @@ rule [lookupOverloadedMethod-SigKnownEnd]:
      MethTV:TypedVal
     ) => MethTV
 
-//@ Retrieve the content of <methods> for the given type
-syntax K ::=  getMethods (
-                RefType // usually a class, but also may be an array
-              )
+//@ Retrieve the content of <methods> for the given class
+syntax K ::=  getMethods ( ClassType )
 rule [getMethods-ClassType]:
     <k> getMethods(Class:ClassType) => mapWrap(Methods) ...</k>
     <classType> Class </classType>
@@ -534,7 +539,7 @@ rule [getMethods-ClassType]:
 /*@ Returns the method declaration (stored in <methodDecs>) based on provided signature and declaring type*/
 syntax K ::=  getMethodDec (
                 Signature,  // The signature of the method
-                RefType     // The declaring type. Usually a class, but may also be array type.
+                ClassType   // The declaring type. Usually a class, but may also be array type.
               )
 
 rule [getMethodDec-ClassType]:
