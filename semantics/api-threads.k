@@ -15,7 +15,7 @@ rule [thread-start]:
       <k>
         invokeImpl(
           methodClosure(ThreadClass:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
-          OL:Int,
+          loc(OL:Int)::_,
           'ListWrap(TId:Int :: _)
         ) => nothing::void
         ...
@@ -159,7 +159,7 @@ rule [object-wait]:
     <k>
       invokeImpl(
         methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
-        OL:Int, 'ListWrap(.KList)
+        loc(OL:Int)::_, 'ListWrap(.KList)
       ) => waitImpl(OL)
       ...
     </k>
@@ -177,7 +177,7 @@ rule [object-wait-notify-notifyAll-without-sync]:
     <k>
       invokeImpl(
         methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
-        OL:Int, 'ListWrap(.KList)
+        loc(OL:Int)::_, 'ListWrap(.KList)
       )
       =>  elab('Throw('NewInstance(
             'None(.KList),,
@@ -242,7 +242,7 @@ rule [object-notify]:
     <k>
       invokeImpl(
         methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
-        OL:Int, 'ListWrap(.KList)
+        loc(OL:Int)::_, 'ListWrap(.KList)
       ) => objectNotifyImpl(OL)
       ...
     </k>
@@ -279,7 +279,7 @@ rule [object-notifyAll]:
     <k>
       invokeImpl(
         methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
-        OL:Int, 'ListWrap(.KList)
+        loc(OL:Int)::_, 'ListWrap(.KList)
       ) => objectNotifyAllImpl(OL)
       ...
     </k>
@@ -319,7 +319,7 @@ rule [thread-interrupt]:
       <k>
         invokeImpl(
           methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
-          OL:Int,
+          loc(OL:Int)::_,
           'ListWrap(TId:Int :: _)
         ) => nothing::void
         ...
@@ -341,7 +341,7 @@ rule [thread-interrupt-ended-thread]:
     <k>
       invokeImpl(
         methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
-        OL:Int,
+        loc(OL:Int)::_,
         'ListWrap(TId:Int :: _)
       ) => nothing::void
       ...

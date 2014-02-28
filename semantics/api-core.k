@@ -82,7 +82,7 @@ rule [readString]:
 rule [object-getClass-on-object]:
     <k>
       invokeImpl(
-        methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), OL:Int,
+        methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), loc(OL:Int)::_,
         'ListWrap(.KList)
       ) => elab('Lit('Class(T)))
       ...
@@ -125,7 +125,7 @@ when
 rule [object-hashCode]:
     <k>
       invokeImpl(
-        methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), OL:Int,
+        methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), loc(OL:Int)::_,
         'ListWrap(.KList)
       ) => NewOL :: int
       ...

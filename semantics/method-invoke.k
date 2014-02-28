@@ -5,7 +5,6 @@ require "process-class-members.k"
 require "classes.k"
 require "statements.k"
 require "static-init.k"
-require "api-core.k"
 
 //@ \section{Module METHOD-INVOKE}
 
@@ -17,7 +16,6 @@ module METHOD-INVOKE
     imports CLASSES
     imports STATEMENTS
     imports STATIC-INIT
-    imports API-CORE    // for getArrayMethods()
 
 /*@\subsection{Method invocation}
 The method lookup is the same as in untyped KOOL.
@@ -165,19 +163,19 @@ rule [lookupMethod-to-lookupSignature]:
 because this body might not be elaborated.*/
 rule [lookupMethod-SigFound]:
     lookupMethod(
-      QualT:ClassType,
+      QualClass:ClassType,
       _,
       _,
       methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(sig( Name:Id, ArgTypes:Types ), RetT:Type),
       true, QualK:K, ParamExps:KList
-    ) => methodProcessArguments(RetT, QualT, QualK, Name, ArgTypes, ParamExps, .KList, CT)
+    ) => methodProcessArguments(RetT, QualClass, QualK, Name, ArgTypes, ParamExps, .KList, CT)
 
 rule [lookupMethod-Sig-NotFound]:
     lookupMethod(_,_,_, noValue, true, _,_) => noValue
 
 syntax K ::=  methodProcessArguments (
                 Type,       //RetT - method return type
-                ClassType,  //QualClass - target ref type (not necessarily class, could be String or array)
+                ClassType,  //QualClass - target class
                 K,          //QualK - method qualifier
                 Id,         //Name - method name
                 Types,      //ArgTypes - argument types
@@ -330,7 +328,8 @@ context methodInvokeRuntime(_,_, HOLE, _,_)
 
 //todo a test for expression order exists, but is unable expose the error in this rule.
 // Waiting for an alternative from K guys.
-/* JLS \$15.12.4.2 - Evaluate Arguments
+/* JLS \$15.12.4.2 - Evaluate Arguments. Arguments are evaluated regardless of the evaluation result of the qualifier.
+  todo test that an eventual NullPoitnerException is thrown after the evaluation of arguments.
 */
 context methodInvokeRuntime(_,_,_:KResult, (_,,HOLE,,_), _)
 
@@ -340,14 +339,15 @@ rule [methodInvokeRuntime-Instance-On-Class]:
         objectClosure(OL:Int,
           Rest:List
           ListItem(el(Class:ClassType, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map)) _,
-        _)::_,
+        _)::Class,
         ParamVals:KList, instanceCT
       )
       => invokeImpl(
         lookupOverloadedMethod(
-          sig(Name, getTypes(ParamVals)), getClassList(Rest ListItem(el(Class, BI, EnclosingObj, LocalEnv))), mapWrap(.Map), noValue
+          sig(Name, getTypes(ParamVals)), getClassList(Rest ListItem(el(Class, BI, EnclosingObj, LocalEnv))),
+          mapWrap(.Map), noValue
         ),
-        OL, 'ListWrap(ParamVals)
+        loc(OL)::Class, 'ListWrap(ParamVals)
       )
       ...
     </k>
@@ -370,12 +370,12 @@ rule [methodInvokeRuntime-Instance-On-Interface]:
       methodInvokeRuntime(Class:ClassType, Name:Id,
         objectClosure(OL:Int,
           ListItem(el(ActualClass:ClassType, _,_,_)) _,
-        _)::_,
+        _)::Class,
         ParamVals:KList, instanceCT
       )
       => invokeImpl(
         lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), ActualClass, mapWrap(.Map), noValue),
-        OL, 'ListWrap(ParamVals)
+        loc(OL)::Class, 'ListWrap(ParamVals)
       )      ...
     </k>
     <classType> Class </classType>
@@ -383,31 +383,17 @@ rule [methodInvokeRuntime-Instance-On-Interface]:
 when
     isKResult(ParamVals)
 
-rule [methodInvokeRuntime-On-String]:
+rule [methodInvokeRuntime-On-other]:
     methodInvokeRuntime(Class:ClassType, Name:Id,
-        Str:String::_,
-        ParamVals:KList, _
-    )
-    => invokeImpl(
-      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), Class, mapWrap(.Map), noValue),
-      Str::stringClass, 'ListWrap(ParamVals)
-    )
-when
-    isKResult(ParamVals)
-
-rule [methodInvokeRuntime-On-Array]:
-    methodInvokeRuntime(
-        QualClass:ClassType,
-        Name:Id,
-        arrayRef(ArrT:RefType, L:Int, M:Int)::CompileT:RefType,
+        QualRV:RawVal::QualT:RefType,
         ParamVals:KList, instanceCT
     )
     => invokeImpl(
-        lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), QualClass, mapWrap(.Map), noValue),
-        arrayRef(ArrT, L, M)::CompileT, 'ListWrap(ParamVals)
-      )
+      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), Class, mapWrap(.Map), noValue),
+      QualRV::QualT, 'ListWrap(ParamVals)
+    )
 when
-    isKResult(ParamVals)
+    getKLabel(QualRV) =/=KLabel 'objectClosure andBool QualRV =/=K null andBool isKResult(ParamVals)
 
 rule [methodInvokeRuntime-On-Null]:
     methodInvokeRuntime(_,_, null::_, ParamVals:KList, instanceCT)
@@ -539,7 +525,7 @@ rule [getMethods-ClassType]:
 /*@ Returns the method declaration (stored in <methodDecs>) based on provided signature and declaring type*/
 syntax K ::=  getMethodDec (
                 Signature,  // The signature of the method
-                ClassType   // The declaring type. Usually a class, but may also be array type.
+                ClassType   // The declaring class.
               )
 
 rule [getMethodDec-ClassType]:
@@ -554,8 +540,9 @@ rule getMethConsClosureClass( methodClosure(Class:ClassType, _,_,_,_,_,_) ::_ ) 
 
 syntax K ::=  invokeImpl (
                 K,  //lookupOverloadedMethod statement, evaluates to typed methodClosure
-                K,  //OL - object location, target type for methods on non-object refs,
-                    //or noValue for static methods
+                K,  //KResult - method call target
+                    //  loc(OL)::_ - object location, target type for methods on non-object refs,
+                    //  typed string or array, or noValue for static methods
                 K   //evaluates to 'ListWrap(ParamValues:List{KResult})
               )
               [strict(1)]
@@ -565,7 +552,7 @@ rule [invokeImpl-Instance]:
       invokeImpl(
         methodClosure(Class:ClassType, 'ListWrap(Params:KList), instanceCT, _,methodRT, noValue, Body:K)
             :: methodType(_, T:Type),
-        OL:Int,
+        loc(OL:Int)::_,
         'ListWrap(ParamValues:KList)
       ) ~> K:K
        => setRuntimeEnclosingLocalEnv(OL) ~> bindTo(Params, ParamValues) ~> Body ~> 'Return('None(.KList))
