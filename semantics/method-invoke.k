@@ -142,44 +142,17 @@ syntax K ::=  lookupMethod (
 //todo K 10341 it looks like [strict] above don't work
 context lookupMethod(_,_,_,HOLE,_,_,_)
 
-//Regular case - target type is a class
+//All cases
 rule [lookupMethod-to-lookupSignature]:
-    <k>
-      lookupMethod(
-        Class:ClassType,
-        MethodName:Id,
-        IsQ:Bool,
-        noValue => lookupSignature(MethodName, getTypes(ParamExps), Env, IsQ, noValue, Class),
-        false => true,
-        _,
-        ParamExps:KList
-      )
-      ...
-    </k>
-    <classType> Class </classType>
-    <methods> Env:Map </methods>
-
-/*Target type is not class but another ref type, lookup the method in the class Object,
-with some exceptions*/
-rule [lookupMethod-to-lookupSignature-GeneralRef]:
-    <k>
-      lookupMethod(
-        QualT:RefType,
-        MethodName:Id,
-        IsQ:Bool,
-        noValue => lookupSignature(MethodName, getTypes(ParamExps), Env, IsQ, noValue, objectClass),
-        false => true,
-        _,
-        ParamExps:KList
-      )
-      ...
-    </k>
-    <classType> ObjT:ClassType </classType>
-    <methods> Env:Map </methods>
-when
-            (notBool (isClassType(QualT) ==K true))
-    andBool (objectClass ==K ObjT)
-    andBool (Id2String(MethodName) =/=String "clone")
+    lookupMethod(
+      QualT:RefType,
+      MethodName:Id,
+      IsQ:Bool,
+      noValue => lookupSignature(MethodName, getTypes(ParamExps), getMethods(QualT), IsQ, noValue, QualT),
+      false => true,
+      _,
+      ParamExps:KList
+    )
 
 /*If resolved method is static, we cannot insert in the construct the actual method body,
 because this body might not be elaborated.*/
@@ -188,7 +161,7 @@ rule [lookupMethod-SigFound]:
       QualT:RefType,
       _,
       _,
-      mapWrap(sig( Name:Id, ArgTypes:Types ) |-> methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(_, RetT:Type)),
+      methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(sig( Name:Id, ArgTypes:Types ), RetT:Type),
       true, QualK:K, ParamExps:KList
     ) => methodProcessArguments(RetT, QualT, QualK, Name, ArgTypes, ParamExps, .KList, CT)
 
@@ -227,70 +200,69 @@ computes mapWrap(Sig -> MethodTV)*/
 syntax K ::=  lookupSignature (
                 Id,       // MethodName
                 K,        // Computes into Types - argument types
-                Map,      // Env - methods environment Map[sig -> Class]
+                K,        // methods environment - mapWrap(Map[sig -> Class])
                 Bool,     // IsQ - whether the original method call was qualified
-                K,        // The best signature found so far, in the form mapWrap(Sig -> Type)
+                K,        // The best signature found so far, in the form methodClosure :: methodType
                           // or noValue if none found
-                ClassType //target class
+                RefType   // target type.
               )
-              [strict(2,5)]
+              [strict(2,3, 5)]
 
+//todo performance problem: these 3 calls to getMethodDec lead to 10% decease in execution performace of helloWorld.
+//todo Now it is 22s.
 rule [lookupSignature-Main]:
-    <k>
-      lookupSignature(
-        MethodName:Id,
-        CallTs:Types,
-        (sig(MethodName, SigTs:Types) |-> DecClass:ClassType => .) _:Map,
-        IsQ:Bool,
-        OldMethodDecRecord:KResult
-        => 'If(
+    lookupSignature(
+      MethodName:Id,
+      CallTs:Types,
+      mapWrap((sig(MethodName, SigTs:Types) |-> DecType:RefType => .) _:Map),
+      IsQ:Bool,
+      OldMethodDecRecord:KResult
+      => 'If(
+          'LazyAnd(
             'LazyAnd(
-              'LazyAnd(
-                subtypeList(CallTs, SigTs),,
-                #if OldMethodDecRecord ==K noValue
-                  #then true
-                  #else subtypeList(SigTs, getMethodDecArgTypes(OldMethodDecRecord))
-                #fi
-              ),,
-              isAccessible(getMethodAccessMode(TV), getMethodContextType(TV),
-                  DecClass, IsQ, Class)
+              subtypeList(CallTs, SigTs),,
+              #if OldMethodDecRecord ==K noValue
+                #then true
+                #else subtypeList(SigTs, getMethodDecArgTypes(OldMethodDecRecord))
+              #fi
             ),,
-            mapWrap(sig(MethodName, SigTs) |-> TV),,
-            OldMethodDecRecord
-          ),
-        Class:ClassType
-      )
-      ...
-    </k>
-    <classType> DecClass </classType>
-    <methodDecs>... sig(MethodName, SigTs) |-> TV:TypedVal ...</methodDecs>
+            isAccessible(
+              getMethodAccessMode(getMethodDec(sig(MethodName, SigTs), DecType)),
+              getMethodContextType(getMethodDec(sig(MethodName, SigTs), DecType)),
+                DecType, IsQ, TargetType)
+          ),,
+          getMethodDec(sig(MethodName, SigTs), DecType),,
+          OldMethodDecRecord
+        ),
+      TargetType:RefType
+    )
 
 syntax K ::= getMethodDecArgTypes ( K )   [function]
-rule getMethodDecArgTypes(mapWrap(sig(_, Ts:Types) |-> _)) => Ts
+rule getMethodDecArgTypes(_ :: methodType(sig(_, Ts:Types), _)) => Ts
 
 rule [lookupSignature-SigDiscard]:
     lookupSignature(
       MethodName:Id,
       _,
-      (sig(Name:Id, _) |-> _ => .) _:Map,
+      mapWrap((sig(Name:Id, _) |-> _ => .) _:Map),
       _,_,_
     )
 when
     Name =/=K MethodName
 
 rule [lookupSignature-End]:
-    lookupSignature(_,_,.Map,_, SigWrap:KResult, _) => SigWrap
+    lookupSignature(_,_,mapWrap(.Map),_, SigWrap:KResult, _) => SigWrap
 
 /*@ Tests whether a method from a given class with a given AccessMode and ContextType
 may be called from the current object environment*/
 syntax K ::=  isAccessible (
                 AccessMode, //the method access mode
                 K,          //evaluates to ContextType - staticCT or instanceCT
-                K,          //evaluates to ClassType - the method declaring class
+                RefType,    //the method declaring type. Usually class. Could also be array type.
                 Bool,       //IsQ - whether the initial method call expression was qualified
-                ClassType   //target class, used by protected mode in inner classes
+                RefType     //target class, used by protected mode in inner classes. Could also be array type.
               )
-        [strict(2)]
+        [strict(1, 2)]
 
 rule [isAccessible-public]:
     isAccessible(public, _,_,_,_) => true
@@ -413,16 +385,27 @@ when
     isKResult(ParamVals)
 
 rule [methodInvokeRuntime-On-Array]:
-    methodInvokeRuntime(_,Name:Id,
-        arrayRef(ArrT:RefType, L:Int, M:Int)::_,
-        ParamVals:KList, _
+    methodInvokeRuntime(
+        TargetType:RefType,
+        Name:Id,
+        arrayRef(ArrT:RefType, L:Int, M:Int)::TargetType,
+        ParamVals:KList, instanceCT
     )
     => invokeImpl(
-      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), ArrT,, objectClass, mapWrap(.Map), noValue),
-      arrayRef(ArrT, L, M)::ArrT, 'ListWrap(ParamVals)
-    )
+        lookupOverloadedMethod(sig(Name, getTypes(ParamVals)),
+                               getArrayTargetTypeList(TargetType, ArrT), mapWrap(.Map), noValue),
+        arrayRef(ArrT, L, M)::TargetType, 'ListWrap(ParamVals)
+      )
 when
     isKResult(ParamVals)
+
+syntax KList ::= getArrayTargetTypeList ( RefType , RefType )  [function]
+
+rule getArrayTargetTypeList ( ObjectClass:ClassType, ArrT:RefType ) => ArrT,,ObjectClass
+when
+    ObjectClass ==K ObjectClass
+
+rule getArrayTargetTypeList ( arrayOf T:Type, _ ) => arrayOf T
 
 rule [methodInvokeRuntime-On-Null]:
     methodInvokeRuntime(_,_, null::_, ParamVals:KList, instanceCT)
@@ -501,7 +484,7 @@ rule [lookupOverloadedMethod-SigKnownOtherCandidates]:
       OldMethTV:TypedVal
       => 'If(
             'LazyAnd(
-              (getMethodContextType(OldMethTV) ==K instanceCT),,
+              (eqAux(getMethodContextType(OldMethTV), instanceCT)),,
               isAccessibleForOverwriting(
                 getMethConsClosureClass(OldMethTV),
                 getMethodAccessMode(OldMethTV),

@@ -215,29 +215,27 @@ when Id2String(MethodName) ==String "compareTo"
 
 //@ argument is array type
 rule [getMethods-ArrayType]:
-    getMethods(arrayOf T:Type)
-    => mapWrap( sig(String2Id("clone"), types(.KList)) |-> arrayOf T )
+    <k>
+      getMethods(arrayOf T:Type)
+      => mapWrap(ObjectMethods[(arrayOf T) / sig(String2Id("clone"), types(.KList))])
+      ...
+    </k>
+    <classType> ObjectClass:ClassType </classType>
+    <methods> ObjectMethods:Map </methods>
+when ObjectClass ==K objectClass
 
 rule [getMethodDec-ArrayType]:
     getMethodDec(sig(MethodName:Id, types(.KList)), arrayOf T:Type)
     => methodClosure(arrayOf T, 'ListWrap(.KList), instanceCT, public, methodRT, noValue, noValue)
-       :: methodType(sig(MethodName, types(.KList)), arrayOf T)
-when
-    Id2String(MethodName) ==String "clone"
-
-//todo have to be eliminated for standardization resons
-rule [elab-array-clone]:
-    lookupMethod( arrayOf T:Type, MethodName:Id,
-      _, noValue, false, QualTE:K, .KList
-    ) => elabRes(cast(objectClass,methodInvokeRuntime(arrayOf T:Type, MethodName, QualTE, .KList, instanceCT)))
+       :: methodType(sig(MethodName, types(.KList)), objectClass)
 when
     Id2String(MethodName) ==String "clone"
 
 rule [invokeImpl-array-clone]:
     invokeImpl(
-      methodClosure(arrayOf ElemT:Type, _, instanceCT, _,methodRT, noValue, _)
+      methodClosure(CompileT:RefType, _, instanceCT, _,methodRT, noValue, _)
           :: methodType(sig(MethodName:Id, _), _),
-      arrayRef(arrayOf ElemT, Loc:Int, Len:Int)::CompileT,
+      arrayRef(arrayOf ElemT, Loc:Int, Len:Int)::CompileT:RefType,
       'ListWrap(.KList)
     )
     => arrayCopy(
