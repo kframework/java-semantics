@@ -84,7 +84,7 @@ rule [object-getClass-on-object]:
       invokeImpl(
         methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), loc(OL:Int)::_,
         'ListWrap(.KList)
-      ) => elab('Lit('Class(T)))
+      ) => 'Lit('Class(T))
       ...
     </k>
     <store>
@@ -99,7 +99,7 @@ rule [object-getClass-on-String]:
     invokeImpl(
       methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), Str:String::_,
       'ListWrap(.KList)
-    ) => elab('Lit('Class(stringClass)))
+    ) => 'Lit('Class(stringClass))
 when
     Id2String(MethodName) ==String "getClass"
 
@@ -107,7 +107,7 @@ rule [object-getClass-on-array]:
     invokeImpl(
       methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), arrayRef(ArrT:Type,_,_)::_,
       'ListWrap(.KList)
-    ) => elab('Lit('Class(ArrT)))
+    ) => 'Lit('Class(ArrT))
 when
     Id2String(MethodName) ==String "getClass"
 
@@ -141,7 +141,7 @@ when
 //@\subsection{String methods}
 
 //@ int String.length()
-rule [invokeImpl-String-length]:
+rule [String-length]:
     invokeImpl(
       methodClosure(Class:ClassType, 'ListWrap(.KList), instanceCT, _,methodRT, noValue, _)
           :: methodType(sig(MethodName:Id, _), _),
@@ -152,7 +152,7 @@ rule [invokeImpl-String-length]:
 when Id2String(MethodName) ==String "length"
      andBool Class ==K stringClass
 
-rule [invokeImpl-String-charAt]:
+rule [String-charAt]:
     invokeImpl(
       methodClosure(Class:ClassType, _, instanceCT, _,methodRT, noValue, _)
           :: methodType(sig(MethodName:Id, _), _),
@@ -164,7 +164,7 @@ when Id2String(MethodName) ==String "charAt"
      andBool Class ==K stringClass
 
 //@static native String String.valueOf(int i);
-rule [invokeImpl-String-valueOf]:
+rule [String-valueOf]:
     invokeImpl(
       methodClosure(Class:ClassType, _, instanceCT, _,methodRT, noValue, _)
           :: methodType(sig(MethodName:Id, _), _),
@@ -176,19 +176,19 @@ when Id2String(MethodName) ==String "valueOf"
      andBool Class ==K stringClass
 
 //@boolean String.equals(Object)
-rule [invokeImpl-String-equals]:
+rule [String-equals]:
     invokeImpl(
       methodClosure(Class:ClassType, _, instanceCT, _,methodRT, noValue, _)
           :: methodType(sig(MethodName:Id, _), _),
       Str:String::Class,
       'ListWrap(ParamStr:String::_)
     )
-    => elab('Eq(Str,, ParamStr))
+    => 'Eq(Str,, ParamStr)
 when Id2String(MethodName) ==String "equals"
      andBool Class ==K stringClass
 
 //@String.toString()
-rule [invokeImpl-String-toString]:
+rule [String-toString]:
     invokeImpl(
       methodClosure(Class:ClassType, _, instanceCT, _,methodRT, noValue, _)
           :: methodType(sig(MethodName:Id, _), _),
@@ -200,20 +200,20 @@ when Id2String(MethodName) ==String "toString"
      andBool Class ==K stringClass
 
 //@ int String.compareTo(Object another)
-rule [invokeImpl-String-compareTo]:
+rule [String-compareTo]:
     invokeImpl(
       methodClosure(Class:ClassType, _, instanceCT, _,methodRT, noValue, _)
           :: methodType(sig(MethodName:Id, _), _),
       Str:String::Class,
       'ListWrap(ParamStr:String::_)
     )
-    => elab('If(Str <String ParamStr,, -1,, 'If(Str ==String ParamStr,, 0,, 1)))
+    => 'If(Str <String ParamStr,, -1,, 'If(Str ==String ParamStr,, 0,, 1))
 when Id2String(MethodName) ==String "compareTo"
      andBool Class ==K stringClass
 
 //@\subsection{Array clone}
 
-rule [invokeImpl-array-clone]:
+rule [array-clone]:
     invokeImpl(
       methodClosure(TargetClass:ClassType, _, instanceCT, _,methodRT, noValue, _)
           :: methodType(sig(MethodName:Id, _), _),

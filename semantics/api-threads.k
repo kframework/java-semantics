@@ -57,7 +57,7 @@ context 'Synchronized(HOLE,, _)
 
 rule [Synchronized-first-time]:
     <k>
-      'Synchronized(objectClosure(OL:Int,_,_),, Block:K)
+      'Synchronized(objectClosure(OL:Int,_,_)::_,, Block:K)
       => 'Try(Block,, 'ListWrap(.KList),, releaseLock(OL))
       ...
     </k>
@@ -69,7 +69,7 @@ when
 
 rule [Synchronized-nested]:
     <k>
-      'Synchronized(objectClosure(OL:Int,_,_),, Block:K)
+      'Synchronized(objectClosure(OL:Int,_,_)::_,, Block:K)
       => 'Try(Block,, 'ListWrap(.KList),, releaseLock(OL))
       ...
     </k>
@@ -101,15 +101,15 @@ rule [monitor-completely-released]:
     <holds>... (OL:Int |-> 0 => .) ...</holds>
     <busy>... (SetItem(OL) => .) ...</busy>
 
-rule [synchronized-method-inst-desugar]:
+rule [storeMethod-Synchronized-method-inst-desugar]:
     storeMethod(_, instanceCT, _, (true => false)::bool, _,_,
         Body:K => 'Synchronized('This(.KList),, Body),
         _)
 
-rule [synchronized-method-static-desugar]:
+rule [storeMethod-Synchronized-method-static-desugar]:
     <k>
       storeMethod(_, staticCT, _, (true => false)::bool, _,_,
-          Body:K => 'Synchronized(elab('Lit('Class(Class))),, Body),
+          Body:K => 'Synchronized('Lit('Class(Class)),, Body),
           _)
       ...
     </k>

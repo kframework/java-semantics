@@ -15,27 +15,27 @@ syntax K ::=  RawVal "::" "elem" Type
 
 //C-style array declaration
 //Applied in both elaboration and execution phase
-rule [LocalVarDec-ArrayVarDecId-desugar]:
-    'LocalVarDec(
+rule [elab-LocalVarDec-ArrayVarDecId-desugar]:
+    elab('LocalVarDec(
       _:K,,
       (T:Type => arrayOf T),,
       'ListWrap('VarDec('ArrayVarDecId(
           X:Id,,
           'ListWrap(('Dim(.KList) => .KList) ,,_)
       ),, _:KList //possible initializer
-    )))                                                 [structural, anywhere]
+    ))))                                                [structural]
 
-rule [LocalVarDec-ArrayVarDecId-discard]:
-    'LocalVarDec(_:K,, T:Type,, 'ListWrap('VarDec(
+rule [elab-LocalVarDec-ArrayVarDecId-discard]:
+    elab('LocalVarDec(_:K,, T:Type,, 'ListWrap('VarDec(
         ( 'ArrayVarDecId( X:Id,, 'ListWrap(.KList) ) => X ),,
         _:KList //possible initializer
-    )))                                                 [structural, anywhere]
+    ))))                                                [structural]
 
-rule [LocalVarDec-ArrayInit-desugar]:
-    'LocalVarDec(_:K,, T:Type,, 'ListWrap('VarDec(
+rule [elab-LocalVarDec-ArrayInit-desugar]:
+    elab('LocalVarDec(_:K,, T:Type,, 'ListWrap('VarDec(
       X:Id,,
-      ( 'ArrayInit(InitK:K) => elab('NewArray(T,, 'ListWrap(.KList),, 'ArrayInit(InitK))) )
-    )))                                                 [structural, anywhere]
+      ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.KList),, 'ArrayInit(InitK)) )
+    ))))                                                [structural]
 
 //same three rules for fields
 
@@ -58,7 +58,7 @@ rule [FieldDec-ArrayVarDecId-discard]:
 rule [FieldDec-ArrayInit-desugar]:
     'FieldDec(_:K,, T:Type,, 'ListWrap('VarDec(
       X:Id,,
-      ( 'ArrayInit(InitK:K) => elab('NewArray(T,, 'ListWrap(.KList),, 'ArrayInit(InitK))) )
+      ( 'ArrayInit(InitK:K) => 'NewArray(T,, 'ListWrap(.KList),, 'ArrayInit(InitK)) )
     )))                                                 [structural]
 
 //first two rules - desugaring C-like array declarations, for params
