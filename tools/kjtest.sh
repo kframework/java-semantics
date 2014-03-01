@@ -39,7 +39,7 @@ case "$OPTION" in
     aux-kjtest.sh -mode run    -threads  2 -timeout 120 -encodeXML false -clean false ${@}
     ;;
 "--t4")
-    aux-kjtest.sh -mode run    -threads  4 -timeout 120 -encodeXML false -clean false ${@}
+    aux-kjtest.sh -mode run    -threads  4 -timeout 120 -encodeXML false -clean true ${@}
     ;;
 *)
     echo "Invalid OPTION: ${OPTION}"
