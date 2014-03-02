@@ -16,8 +16,8 @@ between two separate tests, th e test for an edge from node i  to node  j , and 
 for an edge from node j  to node  i .
 */
 class Graph {
-  //todo support for form int edges[][];
-  int[][] edges;
+
+  int edges[][];
 
   Graph(int[][] edges) {
     this.edges = edges;
@@ -47,7 +47,7 @@ class Graph {
         } //search
         //  Copy the list, omitting the edge at position z.
         int m = edges[k].length - 1;
-        int[] ne = new int[m];
+        int ne[] = new int[m];
         arraycopy(edges[k], 0, ne, 0, z);
         arraycopy(edges[k], z + 1, ne, z, m - z);
         newedges[k] = ne;

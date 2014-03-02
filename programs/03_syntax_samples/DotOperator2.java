@@ -18,9 +18,6 @@ class main extends C {
   C field;
   C a;
 
-  //todo this one get stucked
-  //main x = this;
-
   main(String[] args) {
     super.init();
 

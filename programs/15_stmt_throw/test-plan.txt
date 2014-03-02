@@ -32,7 +32,3 @@ Thread term:
 1. Ex thread termination.
 2. Ex inside try-catch-finally thread term.
 3. Ex inside method, thread term.
-
-todo: reorganize tests for statements into following directories:
-loop, assert, return, throw, break, continue, switch.
-Starting from third cathegory all statements involve interaction with stack.

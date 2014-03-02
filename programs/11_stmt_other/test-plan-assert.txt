@@ -1,0 +1,9 @@
+1. Assert with true exp with one arg.
+2. Assert with true exp with two args. Second arg have a side effect.
+  Testing execution of second arg only if first is false.
+3. Assert with false with one arg.
+4. Assert with false with two args. Second arg of type String.
+5. Assert with false with two args. Second arg of type int.
+  Testing conversion to String.
+
+All tests can be done in one single program.

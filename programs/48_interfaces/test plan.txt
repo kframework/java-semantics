@@ -7,11 +7,12 @@ Part 3. Interfaces with methods. Multiple interfaces. Multiple inheritance of in
 Part 4. Methods inherited from Object.
 Part 5. Access modes.
 Part 6. Subtyping. Complete testing.
+Part 7. Array of interfaces.
 
 Todo refactoring:
   - replace usage of crntClass in process-comp-unit module with cuClass
-  - investigate the possibility to add a new syntactic cathegory:
-    OptionalId, which will ecompass Id and .K, meaning the lack of an id,
+  - investigate the possibility to add a new syntactic category:
+    OptionalId, which will encompass Id and .K, meaning the lack of an id,
     in cells like <extends>. Should work the same way as K right now,
     same rules, but will be more elegant.
 
@@ -121,3 +122,10 @@ Tests
   - call target: A,B,C
   - call argument: null.
 
+Part 7.
+
+71. Array of interfaces. - The "Shape" example of polymorphism.
+  Interface: IShape
+  Classes: Rectangle < IShape, Circle < IShape
+  - function: maxArea(IShape[]) - returns the shape with the maximal area.
+  - test the function in main().

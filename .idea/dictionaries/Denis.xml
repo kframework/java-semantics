@@ -3,9 +3,13 @@
     <words>
       <w>basename</w>
       <w>constr</w>
+      <w>crnt</w>
+      <w>declarator</w>
       <w>elab</w>
       <w>encloser</w>
+      <w>eval</w>
       <w>initializers</w>
+      <w>instanceof</w>
       <w>jbook</w>
       <w>kjrun</w>
       <w>kjtest</w>
@@ -13,10 +17,12 @@
       <w>kompile</w>
       <w>kool</w>
       <w>meth</w>
+      <w>multidim</w>
       <w>multithreading</w>
       <w>preprocessing</w>
       <w>qual</w>
       <w>smallskip</w>
+      <w>subpart</w>
       <w>texttt</w>
       <w>youtrack</w>
     </words>

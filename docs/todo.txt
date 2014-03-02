@@ -93,7 +93,3 @@ uncolored one to a file. This may involve creating a temp dir somwhere in .test,
 and running krun twice in paralel: one for eah configuration.
 
 todo - report to oracle the bug related to array<object>[i]+= string.
-todo - problem in K. Strictness is not applied in the following case:
-syntax KLabel ::= | 'Mul [seqstrict]
-- check java definition to see if there is any syntax affected
-

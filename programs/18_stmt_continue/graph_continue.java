@@ -4,7 +4,7 @@ is used to finish execution of the entire body of the outermost for loop. This
 break can be replaced by a continue if the for loop itself is labeled.
 */
 class Graph {
-  int[][] edges;
+  int edges[][];
 
   Graph(int[][] edges) {
     this.edges = edges;
@@ -33,7 +33,7 @@ class Graph {
         } //search
         //  Copy the list, omitting the edge at position z.
         int m = edges[k].length - 1;
-        int[] ne = new int[m];
+        int ne[] = new int[m];
         arraycopy(edges[k], 0, ne, 0, z);
         arraycopy(edges[k], z + 1, ne, z, m - z);
         newedges[k] = ne;

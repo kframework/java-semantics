@@ -107,8 +107,8 @@ Part 5. Array members.
   - null.length
 
 18. array.clone
-  - one dim, array of ints, length = 0, full test
-  - two dims, array of ints, [zero][zero], full test
+  - one dim, array of int, length = 0, full test
+  - two dims, array of int, [zero][zero], full test
   - int[3], full test
   - int[2][0], full test
   - int[2][2], full test
@@ -160,10 +160,10 @@ Part 6. Arrays assignment compatibility and ArrayStoreException.
   NPE[] va; init a.
   RE[] vb = va; read vb.
 
-24. Polimorphic array assignment, element read and element write.
+24. Polymorphic array assignment, element read and element write.
   - RuntimeException[] vre = NullPointerException[]. assign. read.
   - O[] RE[0] = new NPE[] - assigning to array element a more derived type than
-    aray object type. Permitted.
+    array object type. Permitted.
 
 25. Matrix polymorphism.
     Object[][] mo = new RuntimeException[][];
@@ -181,7 +181,7 @@ Part 6. Arrays assignment compatibility and ArrayStoreException.
   - additional: P[] CP[0] = new P2(); - assign different type, incompatible with
     array object type.
 
-28. ArrayStoreException on matrixes.
+28. ArrayStoreException on matrices.
     Object[][] mo = new RuntimeException[][];
     - mo[0] = new Object[] - ASException
     mo[0] = new NullPointerException[] - ok
@@ -206,7 +206,7 @@ Subpart 7.1: Array initializer in array creation expression:
   like new int[]{1,2,3}
 
 32. One dim int[] = new int[]{1,3,7}
-33. Two dim ints = new int[][]{{1,2}, {3}, null}
+33. Two dim int[][] = new int[][]{{1,2}, {3}, null}
 34. One dim string = new String[]{"abc", "d"+"e"}
 35. Left-to-right eval: {i++,i++,i++}
 36. Array assign compatibility test:
@@ -223,7 +223,7 @@ If an exception is thrown in the initializer evaluation process,
 Subpart 7.2: Array initializer as part of array var declaration:
 
 38. One dim int[] = {1,3,7}
-39. Two dim ints = {{1,2}, new int[]{3}, null}
+39. Two dim int[][] = {{1,2}, new int[]{3}, null}
 40. Two dims, dim count cannot be deduced from initializer:
   - int[][][] m = {null,null}, assign a valid array, test
   - int[] m[][] = {null,null}, assign a valid array, test
@@ -244,14 +244,3 @@ Part 9. Other.
   ++v[2];
   --v[3];
   v[4]+=5;
-
-todo for later:
-1. JLS $10.1: Array types: interface, abstract class.
-2. JLS $10.8: Class objects for arrays.
-3. clone() should return an Object. Check that the method return type is neither the source compile-time or run-time type, but Object. Use overloaded methods. Same as 16.2, but now we
-should check compile-time type of clone result instead of runtime type.
-4. Check that the type of array element assignment is the compile-time type
-  of array reference, not run-time type. (Requires method overloading).
-5. Array polymorphic write. Check that compile-time type of the array
-  element is not changed during assignment, to the compile-time type of the assignment lvalue.
-  (A particular case of the fact that compile-time type of array elem is not used).
