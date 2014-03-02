@@ -2,6 +2,7 @@ require "java-doc.k"
 require "labels.k"
 require "configuration.k"
 require "core.k"
+require "extended-KResult.k"
 require "aux-strings.k"
 require "process-type-names.k"
 require "process-comp-units.k"
@@ -30,6 +31,7 @@ module JAVA
     imports LABELS
     imports CONFIGURATION
     imports CORE
+    imports EXTENDED-K-RESULT
     imports AUX-STRINGS
     imports PROCESS-TYPE-NAMES
     imports PROCESS-COMP-UNITS

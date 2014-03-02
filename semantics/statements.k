@@ -1,6 +1,7 @@
 require "core.k"
 require "subtyping.k"
 require "var-lookup.k"
+require "method-invoke.k"
 
 //@ \section{Module STATEMENTS}
 
@@ -8,6 +9,7 @@ module STATEMENTS
     imports CORE
     imports SUBTYPING
     imports VAR-LOOKUP
+    imports METHOD-INVOKE // for bindTo
 
 //@ \subsection{Call of main method}
 
@@ -395,17 +397,16 @@ context 'Throw(HOLE)
 rule [Throw]:
     (. => checkCatch(subtype(typeOf(TV), T)))
     ~> 'Throw(TV:TypedVal)
-    ~> catchBlocks(catchImpl(paramImpl(T:Type, X:Id),_),, _)
+    ~> catchBlocks(catchImpl('Param(_:K,, T:Type,, X:Id),_),, _)
 
 syntax K ::= checkCatch ( K )
 context checkCatch(HOLE)
 
 rule [Throw-checkCatch-True]:
     checkCatch(true::bool) ~> 'Throw(TV:TypedVal)
-    ~> catchBlocks(catchImpl(paramImpl(T:Type, X:Id), CatchS:K),, _)
+    ~> catchBlocks(catchImpl(Param:ExtKResult, CatchS:K),, _)
     => 'Block('ListWrap(
-          'LocalVarDec(.K,, T,, 'ListWrap('VarDec(X))),,
-          'ExprStm('Assign(localVar(X),, cast(T, TV))),,
+          bindTo(Param, TV),,
           CatchS
         ))
 
@@ -461,14 +462,14 @@ rule [Try-Catch-Finally-Desugar]:
 context 'Try(_:K,,'ListWrap(_,, HOLE,, _))
 
 //resolve 'Param term of the catch clause
-context 'Catch(HOLE,, _)
+context 'Catch(HOLE,, _)                                [result(ExtKResult)]
 
-rule 'Catch(KR:KResult,, S:K) => catchImpl(KR,S)
+rule 'Catch(KR:ExtKResult,, S:K) => catchImpl(KR,S)
 
 //@ Internal representation of a preprocessed catch clause
 syntax KResult ::=  catchImpl (
-                      K, //paramImpl term,
-                      K //the code block
+                      K,  //'Param(...),
+                      K   //the code block
                     )
 
 rule [Try-Catch]:

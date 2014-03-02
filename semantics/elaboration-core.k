@@ -124,10 +124,8 @@ context  elab('Param(_:K,, HOLE,, _:Id))
 /*@Adds params to the <elabEnv>. Used in both ELABORATION-TOP-BLOCKS and ELABORATION-BLOCKS
 */
 rule [elab-Param]:
-    <k> elab('Param(K1:K,, T:Type,, X:Id)) => paramImpl(T, X) ...</k>
+    <k> elab('Param(K1:K,, T:Type,, X:Id)) => elabRes('Param(K1:K,, T:Type,, X:Id)) ...</k>
     <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv>
-
-syntax KResult ::= paramImpl ( Type, Id )  //processed representation of a 'Param label
 
 //@Removes the last layer from <elabEnv>
 syntax K ::= "removeLastElabEnv"

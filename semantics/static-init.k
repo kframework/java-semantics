@@ -41,20 +41,17 @@ rule [staticInit]:
 
             //catch clause of 'Try
             'ListWrap(
-              elab('Catch(
-                'Param('ListWrap(.KList),,
-                  objectClass,,
-                  String2Id("e")
-                ),,
-                'Throw(
+              'Catch(
+                'Param( 'ListWrap(.KList),, objectClass,, String2Id("e") ),,
+                elab('Throw(
                   'NewInstance(
                     'None(.KList),,
                     class String2Id("java.lang.ExceptionInInitializerError"),,
                     'ListWrap(elabRes(cast(objectClass, localVar(String2Id("e"))))),,
                     'None(.KList)
                   )
-                )
-              ))
+                ))
+              )
             ),,
 
             //finally clause of 'Try

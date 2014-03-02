@@ -639,13 +639,14 @@ rule <k> setRuntimeEnclosingLocalEnv(OL:Int) => . ...</k>
      </store>
 
 //@ \texttt{bindto} also checks the well-formedness of the method parameters
-syntax K ::= bindTo ( KList, // var names
+syntax K ::= bindTo ( KList, // List{'Param(...)} - parameter declarations
                       KList  // List{KResult} - values
                     )
 
+//todo redundancy check whether the modification of  <env>, <store> etc is arealdy done by 'LocalVarDec
 rule [bindTo]:
     <k>
-      bindTo(paramImpl(T:Type, X:Id),, RestP:KList, TV:TypedVal,, RestV:KList)
+      bindTo('Param(_:K,, T:Type,, X:Id),, RestP:KList, TV:TypedVal,, RestV:KList)
       => 'LocalVarDec(.K,, T:Type,,'ListWrap('VarDec(X)))
         ~> 'ExprStm('Assign(localVar(X),, cast(T, TV:TypedVal)))
         ~> bindTo(RestP, RestV)
