@@ -118,13 +118,6 @@ rule [ArrayAccess-to-ArrayIndexOutOfBoundsException]:
 when notBool ((N >=Int 0) andBool (N <Int M))
         [anywhere]
 
-/*@ Required when a JVM-related exception (e.g. produced by the semantics at runtime) is thrown inside a lvalue.
-todo move to some better place. This rule is not necessarily array-related.
-*/
-rule [lvalue-elab-Throw-desugar]:
-    lvalue(elab('Throw(K:K))) => elab('Throw(K))
-        [structural]
-
 rule [ArrayAccess-null-to-NullPointerException]:
     'ArrayAccess(null::_,, _)
     => 'Throw('NewInstance(

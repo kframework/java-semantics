@@ -280,6 +280,12 @@ when
 rule [exp-lvalue-Cool]:
     (KR:KResult => .) ~> KL:KLabel((HOLE => KR),, _)
 
+/*@ Required when a JVM-related exception (e.g. produced by the semantics at runtime) is thrown inside a lvalue.
+*/
+rule [lvalue-Throw-desugar]:
+    lvalue('Throw(K:K)) => 'Throw(K)
+        [structural]
+
 syntax RawVal ::= loc ( Int )
 
 endmodule
