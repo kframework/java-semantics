@@ -1,5 +1,5 @@
 /*
-ArrayOutOfBoundsException.
+ArrayIndexOutOfBoundsException.
   - one dim, negative, read & write.
   - one dim, = length
   - one dim > length

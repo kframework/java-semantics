@@ -1,6 +1,6 @@
 Test plan for arrays, separated from other features.
-The main difference of this tests compared to standart tests for arrays is the maximal separation
-  from other features of the language, in order to better test arrays on jbook and java-fan.
+The main difference of this tests compared to standard tests for arrays is the maximal separation
+  from other features of the language, in order to better test arrays on Jbook and java-fan.
   More precisely we should:
   - Use just types int and custom-defined classes (and arrays from them) whenever possible.
   - Avoid using other literals than int and string.
@@ -65,7 +65,7 @@ canceled. Normal access:
 
 10. Various index types: int, short, byte, char (true literal).
 
-11. ArrayOutOfBoundsException.
+11. ArrayIndexOutOfBoundsException.
   - one dim, negative, read & write.
   - one dim, = length
   - one dim > length
