@@ -109,30 +109,31 @@ rule [lookup-array-location]:
 
 rule [ArrayAccess-to-ArrayIndexOutOfBoundsException]:
     'ArrayAccess(arrayRef(_,_,M:Int) :: _,, N:Int::_)
-    => elab('Throw('NewInstance(
+    => 'Throw('NewInstance(
       'None(.KList),,
       (class String2Id("java.lang.ArrayIndexOutOfBoundsException")),,
       'ListWrap( Int2String(N) ),,
       'None(.KList)
-    )))
+    ))
 when notBool ((N >=Int 0) andBool (N <Int M))
-        [structural, anywhere]
+        [anywhere]
 
 /*@ Required when a JVM-related exception (e.g. produced by the semantics at runtime) is thrown inside a lvalue.
 todo move to some better place. This rule is not necessarily array-related.
 */
 rule [lvalue-elab-Throw-desugar]:
     lvalue(elab('Throw(K:K))) => elab('Throw(K))
+        [structural]
 
 rule [ArrayAccess-null-to-NullPointerException]:
     'ArrayAccess(null::_,, _)
-    => elab('Throw('NewInstance(
+    => 'Throw('NewInstance(
       'None(.KList),,
       class String2Id("java.lang.NullPointerException"),,
       'ListWrap( null ),,
       'None(.KList)
-    )))
-        [structural, anywhere]
+    ))
+        [anywhere]
 
 //@ Array length, as defined in JDK
 rule
@@ -188,12 +189,12 @@ when NI >=Int 0
 
 rule [checkNonNegative-to-NegativeArraySizeException]:
     checkNonNegative((NI:Int::_),, _)
-    => elab('Throw('NewInstance(
+    => 'Throw('NewInstance(
       'None(.KList),,
       class String2Id("java.lang.NegativeArraySizeException"),,
       'ListWrap( null ),,
       'None(.KList)
-    )))
+    ))
 when
     NI <Int 0
 
@@ -310,12 +311,12 @@ rule [assignArrayLocImpl]:
 
 rule [assignArrayLocImpl-to-ArrayStoreException]:
     assignArrayLocImpl( false::bool, _, TV:TypedVal)
-    =>  elab('Throw('NewInstance(
+    =>  'Throw('NewInstance(
           'None(.KList),,
           (class String2Id("java.lang.ArrayStoreException")),,
           'ListWrap(
             //the ArrayStoreException argument is the assigned object type
-            'Invoke(
+            elab('Invoke(
               'MethodName(
                 'Invoke(
                   'MethodName(TV,, String2Id("getClass")),,
@@ -323,10 +324,10 @@ rule [assignArrayLocImpl-to-ArrayStoreException]:
                 ),,
                 String2Id("getName")),,
               'ListWrap(.KList)
-            )
+            ))
           ),,
           'None(.KList)
-        )))
+        ))
 
 //@ \subsection{Array initializer}
 

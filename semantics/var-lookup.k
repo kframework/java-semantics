@@ -107,12 +107,12 @@ rule [lookupField]:
 
 rule [lookupField-OfNull]:
     lookupField(null::_, _, _)
-    =>  elab('Throw('NewInstance(
+    =>  'Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
           'ListWrap( null ),,
           'None(.KList)
-        )))
+        ))
         [anywhere]
 
 //@ Elaboration result of a static field access expression

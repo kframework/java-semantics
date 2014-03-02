@@ -462,9 +462,19 @@ rule [existsClass]:
   For instance inner classes, the qualifier will be a valid expression for the qualifier. For other classes qualifier
   will be noValue.
 */
-rule [elab-QNewInstance]:
+rule [elab-QNewInstance-valid-qualifier]:
     elab('QNewInstance(elabRes(Qual:K),, Arg2:K,, T:RefType,, Arg4:K,, elabRes(ActualArgsList:K),, 'None(.KList)))
     => elabRes(cast(T, 'QNewInstance(Qual,, Arg2,, T,, Arg4,, ActualArgsList,, 'None(.KList))))
+when
+    Qual =/=K noValue
+
+//todo simplify T should be Class
+/*@ A 'QNewInstance with target noValue should be packed back into a NewInstance, for compatibility with Java.
+    It will be desugared again into 'NewInstance at execution phase.
+*/
+rule [elab-QNewInstance-to-NewInstance-pack]:
+    elab('QNewInstance(elabRes(noValue),, Arg2:K,, T:RefType,, Arg4:K,, elabRes(ActualArgsList:K),, 'None(.KList)))
+    => elabRes(cast(T, 'NewInstance(Arg2,, T,, ActualArgsList,, 'None(.KList))))
 
 rule [elabEnd-InstanceOf]:
     elabEnd('InstanceOf(TExp:K,, RT2:RefType)) => elabRes(cast(bool, 'InstanceOf(TExp,, RT2)))

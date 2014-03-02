@@ -78,12 +78,12 @@ rule [Synchronized-nested]:
 
 rule [Synchronized-on-null]:
     'Synchronized(null::_,,_)
-    =>  elab('Throw('NewInstance(
+    =>  'Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
           'ListWrap( null ),,
           'None(.KList)
-        )))
+        ))
 
 /*@Release one level of lock for the given object.*/
 syntax K ::=  releaseLock ( Int )
@@ -138,12 +138,12 @@ rule [thread-join-interrupted]:
         methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
         'ListWrap(TId:Int :: _)
       )
-      =>  elab('Throw('NewInstance(
+      =>  'Throw('NewInstance(
             'None(.KList),,
             class String2Id("java.lang.InterruptedException"),,
             'ListWrap( null ),,
             'None(.KList)
-          )))
+          ))
       ...
     </k>
     <interrupted> true => false </interrupted>
@@ -179,12 +179,12 @@ rule [object-wait-notify-notifyAll-without-sync]:
         methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
         loc(OL:Int)::_, 'ListWrap(.KList)
       )
-      =>  elab('Throw('NewInstance(
+      =>  'Throw('NewInstance(
             'None(.KList),,
             class String2Id("java.lang.IllegalMonitorStateException"),,
             'ListWrap( null ),,
             'None(.KList)
-          )))
+          ))
       ...
     </k>
     <holds> Holds:Map </holds>
@@ -221,12 +221,12 @@ when
 rule [waitImpl-interrupted]:
     <k>
       waitImpl(OL:Int)
-      =>  elab('Throw('NewInstance(
+      =>  'Throw('NewInstance(
             'None(.KList),,
             class String2Id("java.lang.InterruptedException"),,
             'ListWrap( null ),,
             'None(.KList)
-          )))
+          ))
       ...
     </k>
     <tid> TId:Int </tid>

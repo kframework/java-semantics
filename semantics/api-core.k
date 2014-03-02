@@ -272,12 +272,12 @@ rule [storeCopy-discard]:
 rule [Lit-Class-Instantiate]:
     <k>
         (. => saveClassLiteral(T,
-          elab('NewInstance(
+          'NewInstance(
                 'None(.KList),,
                 class String2Id("java.lang.Class"),,
                 'ListWrap(toString(T)),,
                 'None(.KList)
-          )))
+          ))
         )
         ~> 'Lit('Class(T:Type))
       ...

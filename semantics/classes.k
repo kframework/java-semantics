@@ -43,6 +43,14 @@ rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T
 
 /*@ \subsection{New instance creation}*/
 
+/*@Unpack 'NewInstance back into 'QNewInstance.
+  The difference between desugaring and unpacking is that unpacking is an artificial procedure required to separate
+  elaboration from execution. In the elaboration phase there is a opposite packing rule tht creates this construct.
+*/
+rule [NewInstance-to-QNewInstance-unpack]:
+    'NewInstance(Arg1:K,, Class:ClassType,, ActualArgsList:K,, 'None(.KList))
+    => 'QNewInstance(noValue,, Arg1,, Class,, 'None(.KList),, ActualArgsList,, 'None(.KList))
+
 //@Resolve new instance qualifier
 context 'QNewInstance(HOLE,, _:KList)
 
@@ -267,13 +275,13 @@ rule [cast-RefType]:
     =>  'If(
           subtype(typeOf(V), RT1),,
           (V::RT1),,
-          elab('Throw('NewInstance(
+          'Throw('NewInstance(
                   'None(.KList),,
                   class String2Id("java.lang.ClassCastException"),,
                   'ListWrap( 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to "),,
                       toString(RT1)) ),,
                   'None(.KList)
-          )))
+          ))
         )
 
 endmodule

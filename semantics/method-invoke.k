@@ -397,12 +397,12 @@ when
 
 rule [methodInvokeRuntime-On-Null]:
     methodInvokeRuntime(_,_, null::_, ParamVals:KList, instanceCT)
-    =>  elab('Throw('NewInstance(
+    =>  'Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
           'ListWrap( null ),,
           'None(.KList)
-        )))
+        ))
 when
     isKResult(ParamVals)
 

@@ -130,23 +130,23 @@ rule [AssertStm-True-Discard]:
 
 rule [AssertStm-OneArg]:
     'AssertStm(false::bool)
-    =>  elab('Throw('NewInstance(
+    =>  'Throw('NewInstance(
           'None(.KList),,
           (class String2Id("java.lang.AssertionError")),,
           'ListWrap(null),,
           'None(.KList)
-        )))
+        ))
 
 context 'AssertStm(false::bool,, HOLE)
 
 rule [AssertStm-TwoArgs]:
     'AssertStm(false::bool,, TV:TypedVal)
-    =>  elab('Throw('NewInstance(
+    =>  'Throw('NewInstance(
           'None(.KList),,
           (class String2Id("java.lang.AssertionError")),,
           'ListWrap( toString(TV) ),,
           'None(.KList)
-        )))
+        ))
 
 //@ \subsection{Switch statement}
 

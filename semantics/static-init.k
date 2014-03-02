@@ -43,14 +43,14 @@ rule [staticInit]:
             'ListWrap(
               'Catch(
                 'Param( 'ListWrap(.KList),, objectClass,, String2Id("e") ),,
-                elab('Throw(
+                'Throw(
                   'NewInstance(
                     'None(.KList),,
                     class String2Id("java.lang.ExceptionInInitializerError"),,
-                    'ListWrap(elabRes(cast(objectClass, localVar(String2Id("e"))))),,
+                    'ListWrap(cast(objectClass, localVar(String2Id("e")))),,
                     'None(.KList)
                   )
-                ))
+                )
               )
             ),,
 
