@@ -239,9 +239,33 @@ Part 9. Other.
   --v[3];
   v[4]+=5;
 
-todo for later:
-1. Check that the type of array element assignment is the compile-time type
-  of array reference, not run-time type. (Requires method overloading).
-2. Array polymorphic write. Check that compile-time type of the array
-  element is not changed during assignment, to the compile-time type of the assignment lvalue.
-  (A particular case of the fact that compile-time type of array elem is not used).
+Part 10. Compile-time type of array-related expressions. Requires method overloading.
+
+51. Compile-time type of array element assignment expression = compile-time type of LHS
+                                                            != compile-time type of RHS
+  Object[] v;
+  f(v[0] = new Exception());
+  f(v[0]);
+
+52. Compile-time type of array element assignment expression = compile-time type of LHS
+                                                            != runtime type of LHS
+  Object[] vAux = new Exception[];
+  Object[] v;
+  f(v[0] = vAux[0]);
+  f(v[0]);
+
+53. Compile-time type of array element access exp don't change after the runtime type of array changes.
+
+  Object[] v = new Object[];
+  f(v); f(v[0]);
+  v = new Exception[];
+  f(v); f(v[0]); - same result
+
+54. Compile-time type of array element access exp don't change after the runtime type of array changes,
+  even if assignment LHS have the same compile-time type as RHS.
+
+  Object[] vAux = new Exception[];
+  Object[] v = new Object[];
+  f(v); f(v[0]);
+  v = vAux;
+  f(v); f(v[0]); - same result
