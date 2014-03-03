@@ -1,11 +1,11 @@
-require "core.k"
+require "core-sorts.k"
 require "process-type-names.k"
 require "subtyping.k"
 require "var-lookup.k"
 require "elaboration-core.k"
 
 module ELABORATION-EXPRESSIONS
-    imports CORE
+    imports CORE-SORTS
     imports PROCESS-TYPE-NAMES     //for toPackage()
     imports SUBTYPING
     imports VAR-LOOKUP             //for localVar, lookupField, lookupStaticField

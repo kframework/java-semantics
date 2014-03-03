@@ -1,8 +1,8 @@
-require "core.k"
+require "core-sorts.k"
 require "configuration-doc.k"
 
 module CONFIGURATION
-    imports CORE
+    imports CORE-SORTS
 
 configuration
     <T>
@@ -113,7 +113,7 @@ configuration
 
           <cphDecs color="Yellow">
 
-            //The base class, or noClass for Object. For interfaces: Object.
+            //The base class, or noClass for interfaces and Object.
             <extends color="SpringGreen"> .K </extends>
 
             /*Directly implemented interfaces, the resolved content of implements clause.

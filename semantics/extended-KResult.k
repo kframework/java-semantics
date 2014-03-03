@@ -1,7 +1,7 @@
-require "core.k"
+require "core-sorts.k"
 
 module EXTENDED-K-RESULT
-    imports CORE
+    imports CORE-SORTS
 
 /*@ Extended K Result.
   Represents KLabels that should be treated as KResult during execution phase, but not during elaboration phase.

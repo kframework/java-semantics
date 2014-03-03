@@ -1,9 +1,9 @@
-require "core.k"
+require "core-sorts.k"
 
 //@ \section{Module PROCESS-CLASS-MEMBERS}
 
 module PROCESS-CLASS-MEMBERS
-    imports CORE
+    imports CORE-SORTS
 
 //@ \subsection{Auxiliary functions}
 
@@ -308,9 +308,6 @@ syntax K ::=  storeMethod (
                 K,           //S - method body
                 MethodType   //method closure type: methodType(Signature, ReturnType)
               )
-
-// Required for getTypes()
-rule typeOf('Param(_:K,, T:Type,, _:Id)) => T
 
 rule [storeMethod]:
     <k>

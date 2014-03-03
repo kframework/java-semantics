@@ -1,11 +1,11 @@
-require "core.k"
+require "core-sorts.k"
 require "elaboration-core.k"
 
 /*@ This module initialtes the elaboration phase. It is responsible for elaborating all top-level code blocks
   in the program: methods, constructors, static and instance initializers.
 */
 module ELABORATION-TOP-BLOCKS
-    imports CORE
+    imports CORE-SORTS
     imports ELABORATION-CORE
 
 rule [elaborateBlocksStart]:

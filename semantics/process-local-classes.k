@@ -1,4 +1,4 @@
-require "core.k"
+require "core-sorts.k"
 require "process-comp-units.k"
 require "process-class-decs.k"
 require "elaboration-expressions.k"
@@ -6,7 +6,7 @@ require "elaboration-expressions.k"
 //@ \section{Module PROCESS-LOCAL-CLASSES}
 
 module PROCESS-LOCAL-CLASSES
-    imports CORE
+    imports CORE-SORTS
     imports PROCESS-COMP-UNITS
     imports PROCESS-CLASS-DECS
     imports ELABORATION-EXPRESSIONS

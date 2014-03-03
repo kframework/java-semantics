@@ -1,4 +1,4 @@
-require "core.k"
+require "core-sorts.k"
 require "process-type-names.k"
 require "subtyping.k"
 require "process-class-members.k"
@@ -13,7 +13,7 @@ Object closures. The only change to untyped KOOL's values is that closures are n
 (their last argument holds their type).
 */
 module CLASSES
-    imports CORE
+    imports CORE-SORTS
     imports PROCESS-TYPE-NAMES
     imports SUBTYPING
     imports PROCESS-CLASS-MEMBERS
@@ -34,13 +34,6 @@ rule toString(objectClosure(I:Int, Obj:List, ObjLocalClassesEnv:Map) :: T:Type)
         ))
         [anywhere]
 
-//@ \texttt{typeOf for reference types}
-
-rule typeOf(Str:String) => stringClass
-rule typeOf(null) => nullType
-rule typeOf(objectClosure(_, ListItem(el(Class:ClassType, _,_,_)) _:List, _)) => Class
-rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T
-
 /*@ \subsection{New instance creation}*/
 
 /*@Unpack 'NewInstance back into 'QNewInstance.
@@ -54,8 +47,8 @@ rule [NewInstance-to-QNewInstance-unpack]:
 //@Resolve new instance qualifier
 context 'QNewInstance(HOLE,, _:KList)
 
+//todo test model check - test the arguments evaluation order
 /*@ Resolve new instance expression parameter values
-  todo test the expression order using state space search.
 */
 context 'QNewInstance(_:KResult,,_:K,,_:K,,_:K,, 'ListWrap(_,,HOLE,,_),, _)
 

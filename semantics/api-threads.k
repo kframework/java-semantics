@@ -1,10 +1,10 @@
-require "core.k"
+require "core-sorts.k"
 require "method-invoke.k"
 
 //@ \section{Module API-THREADS}
 
 module API-THREADS
-    imports CORE
+    imports CORE-SORTS
     imports METHOD-INVOKE
 
 /*@Java API related to threads and locks. Just the core part.*/
@@ -96,7 +96,15 @@ rule [releaseLock]:
     <holds>... OL |-> (Level:Int => Level -Int 1) ...</holds>
         [transition-threading]
 
-//todo investigate performance impact if we eliminate this rule
+/*
+K performance evaluation with the rule below active and commented:
+  helloWorld vanilla: 22.5s
+  helloWorld rule commented: 22.15s
+  22_array_separated 42 tests, vanilla: 336s
+  22_array_separated 42 tests, rule commented: 335s
+
+  Conclusion: the rule below have no impact on performance.
+*/
 rule [monitor-completely-released]:
     <holds>... (OL:Int |-> 0 => .) ...</holds>
     <busy>... (SetItem(OL) => .) ...</busy>

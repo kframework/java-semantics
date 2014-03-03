@@ -1,11 +1,11 @@
-require "core.k"
+require "core-sorts.k"
 
 /*@ \section{Module PROCESS-IMPORTS}
 Rules related to processing import declarations. Part of ProcCompUnitsPhase.
 */
 
 module PROCESS-IMPORTS
-    imports CORE
+    imports CORE-SORTS
 
 syntax K ::=  compUnitImportsStart (
                 PackageId // The package of the current compilation unit

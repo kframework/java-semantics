@@ -1,10 +1,10 @@
-require "core.k"
+require "core-sorts.k"
 require "process-type-names.k"
 
 //@ \section{Module PROCESS-CLASS-DECS}
 
 module PROCESS-CLASS-DECS
-    imports CORE
+    imports CORE-SORTS
     imports PROCESS-TYPE-NAMES
 
 /*@ \subsection{Third pass - processing class dependencies and imports} */
@@ -143,7 +143,7 @@ syntax K ::=  saveImports  (
               )
               [strict(4,5,6)]
 
-//todo K 10341 it looks like [strict] above don't work
+//todo K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
 context saveImports(_,_,_,HOLE,_,_)
 context saveImports(_,_,_,_,HOLE,_)
 context saveImports(_,_,_,_,_,HOLE)

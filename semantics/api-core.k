@@ -1,11 +1,11 @@
-require "core.k"
+require "core-sorts.k"
 require "classes.k"
 require "method-invoke.k"
 
 //@ \section{Module API-CORE}
 
 module API-CORE
-    imports CORE
+    imports CORE-SORTS
     imports CLASSES
     imports METHOD-INVOKE //for arrayImplClass and others
     imports VAR-LOOKUP
@@ -303,38 +303,5 @@ rule [Lit-Class]:
 
 //@Used inside <classLiteralsMap> only for synchronization purposes
 syntax K ::=  "temp"
-
-rule [toString-ClassType-TopLevelWithPackage]:
-    <k>
-      toString(class ClassId:Id) => Id2String(ClassId)
-      ...
-    </k>
-    <classType> class ClassId </classType>
-    <enclosingClass> noClass </enclosingClass>
-when
-    retainHead(Id2String(ClassId), 1) =/=String "."
-
-rule [toString-ClassType-TopLevelWithDefaultPackage]:
-    <k>
-      toString(class ClassId:Id) => trimHead(Id2String(ClassId), 1)
-      ...
-    </k>
-    <classType> class ClassId </classType>
-    <enclosingClass> noClass </enclosingClass>
-when
-    retainHead(Id2String(ClassId), 1) ==String "."
-
-rule [toString-ClassType-Inner]:
-    <k>
-      toString(class ClassId:Id)
-      => 'Plus(
-            toString(class OuterClassId),,
-            ("$" +String Id2String(SimpleName))::stringClass
-         )
-      ...
-    </k>
-    <classType> class ClassId </classType>
-    <enclosingClass> class OuterClassId:Id </enclosingClass>
-    <namesToClasses>... _ |-> mapWrap(SimpleName:Id |-> class ClassId _:Map) ...</namesToClasses>
 
 endmodule

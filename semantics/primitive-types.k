@@ -1,10 +1,10 @@
-require "core.k"
+require "core-sorts.k"
 require "subtyping.k"
 
 //@ \section{Module PRIMITIVE-TYPES}
 
 module PRIMITIVE-TYPES
-    imports CORE
+    imports CORE-SORTS
     imports SUBTYPING
 
 //@ \subsection{Type labels}

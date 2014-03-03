@@ -1,4 +1,4 @@
-require "core.k"
+require "core-sorts.k"
 require "process-class-members.k"
 require "subtyping.k"
 require "static-init.k"
@@ -7,7 +7,7 @@ require "expressions.k"
 //@ \section{Module VAR-LOOKUP}
 
 module VAR-LOOKUP
-    imports CORE
+    imports CORE-SORTS
     imports PROCESS-CLASS-MEMBERS
     imports SUBTYPING
     imports STATIC-INIT         //for staticInit()

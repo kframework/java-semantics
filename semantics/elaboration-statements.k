@@ -1,9 +1,9 @@
-require "core.k"
+require "core-sorts.k"
 require "classes.k"
 require "elaboration-core.k"
 
 module ELABORATION-STATEMENTS
-    imports CORE
+    imports CORE-SORTS
     imports CLASSES             //for setEncloser
     imports ELABORATION-CORE
 

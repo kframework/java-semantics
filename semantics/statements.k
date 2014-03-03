@@ -1,4 +1,4 @@
-require "core.k"
+require "core-sorts.k"
 require "subtyping.k"
 require "var-lookup.k"
 require "method-invoke.k"
@@ -6,7 +6,7 @@ require "method-invoke.k"
 //@ \section{Module STATEMENTS}
 
 module STATEMENTS
-    imports CORE
+    imports CORE-SORTS
     imports SUBTYPING
     imports VAR-LOOKUP
     imports METHOD-INVOKE // for bindTo
@@ -39,7 +39,7 @@ syntax K ::=  sl (
                 Bag //MethContext - the content of <methodContext>
               )
 
-/*todo bug in K? we cannot use the constructions below, they will give some errors related to k-prelude.
+/*todo K bug? we cannot use the constructions below, they will give some errors related to k-prelude.
 syntax StackConsumerLabel ::= 'Return | 'Throw | 'Break | 'Continue
 syntax KLabel ::= StackConsumerLabel*/
 

@@ -1,4 +1,4 @@
-require "core.k"
+require "core-sorts.k"
 require "elaboration-expressions.k"
 require "subtyping.k"
 require "process-class-members.k"
@@ -9,7 +9,7 @@ require "static-init.k"
 //@ \section{Module METHOD-INVOKE}
 
 module METHOD-INVOKE
-    imports CORE
+    imports CORE-SORTS
     imports ELABORATION-EXPRESSIONS
     imports SUBTYPING
     imports PROCESS-CLASS-MEMBERS
@@ -137,7 +137,7 @@ syntax K ::=  lookupMethod (
               )
               [strict(4)]
 
-//todo K bug - [strict] and KList arguments don't work together
+//todo K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
 context lookupMethod(_,_,_,HOLE,_,_,_)
 
 syntax K ::= getLookupTargetType ( RefType )    [function]
@@ -451,7 +451,7 @@ syntax K ::=  lookupOverloadedMethod (
               )
               [strict(1,3,4)]
 
-//todo K bug - [strict] and KList arguments don't work together
+//todo K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
 context lookupOverloadedMethod(HOLE,_,_,_)
 context lookupOverloadedMethod(_,_,HOLE,_)
 context lookupOverloadedMethod(_,_,_,HOLE)

@@ -1,11 +1,11 @@
-require "core.k"
+require "core-sorts.k"
 require "subtyping.k"
 require "expressions.k"
 
 //@ \section{Module ARRAYS}
 
 module ARRAYS
-    imports CORE
+    imports CORE-SORTS
     imports SUBTYPING
     imports EXPRESSIONS
 
@@ -376,18 +376,5 @@ rule [arrayInitImpl-inner-ArrayInit-desugar]:
 
 rule [arrayInitImpl-discard]:
     arrayInitImpl(_, _, .KList) => .
-
-//@ toString(arrayOf T)
-
-rule toString(arrayOf byte)  => "[B"
-rule toString(arrayOf short) => "[S"
-rule toString(arrayOf int)   => "[I"
-rule toString(arrayOf long)  => "[J"
-rule toString(arrayOf char)  => "[C"
-rule toString(arrayOf bool)  => "[Z"
-
-rule toString(arrayOf class Class:Id) => 'Plus("[L",, 'Plus(toString(class Class) ,,";"))
-
-rule toString(arrayOf arrayOf T:Type) => 'Plus("[",, toString(arrayOf T))
 
 endmodule

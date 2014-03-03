@@ -1,4 +1,4 @@
-require "core.k"
+require "core-sorts.k"
 require "subtyping.k"
 require "process-class-members.k"
 require "elaboration-expressions.k"
@@ -59,7 +59,7 @@ static initializers of a class and perform the following transformations:
       elab('CastRef(_,, elabRes('Minus(cast(int,cast(int, localVar(X)))))))
 */
 module ELABORATION-CORE
-    imports CORE
+    imports CORE-SORTS
     imports SUBTYPING
     imports EXPRESSIONS   //for cast()
 
@@ -435,13 +435,14 @@ The predicate definition is scattered across modules related to elaboration.*/
 syntax K ::= customElabHeating ( KLabel, KList )          [function]
 
 //todo elaboration-related hack - we should not have special elaboration rules for auxiliary constructs
+//todo this rule might not prevent the rule elab-to-elabDispose to be executed
 syntax K ::= elabPassThrough( KLabel )                    [function]
 rule elabPassThrough(KL:KLabel) =>
            KL ==KLabel 'noValue
     orBool KL ==KLabel 'noClass
     orBool KL ==KLabel 'toString
 
-rule [elabPassThrough]:
+rule [elab-passThrough]:
     elab(KL:KLabel(Ks:KList)) => elabRes(KL(Ks))
 when
     elabPassThrough(KL)

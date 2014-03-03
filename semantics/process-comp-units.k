@@ -1,4 +1,4 @@
-require "core.k"
+require "core-sorts.k"
 require "process-type-names.k"
 require "process-imports.k"
 
@@ -22,7 +22,7 @@ ProcCompUnitsPhase:
 process declarations in a less-restricted order.
 */
 module PROCESS-COMP-UNITS
-    imports CORE
+    imports CORE-SORTS
     imports PROCESS-TYPE-NAMES
     imports PROCESS-IMPORTS     //for compUnitImportsStart()
 

@@ -1,7 +1,7 @@
 require "java-doc.k"
 require "labels.k"
 require "configuration.k"
-require "core.k"
+require "core-sorts.k"
 require "extended-KResult.k"
 require "aux-strings.k"
 require "process-type-names.k"
@@ -24,13 +24,14 @@ require "static-init.k"
 require "classes.k"
 require "var-lookup.k"
 require "method-invoke.k"
+require "to-string.k"
 require "api-core.k"
 require "api-threads.k"
 
 module JAVA
     imports LABELS
     imports CONFIGURATION
-    imports CORE
+    imports CORE-SORTS
     imports EXTENDED-K-RESULT
     imports AUX-STRINGS
     imports PROCESS-TYPE-NAMES
@@ -53,6 +54,7 @@ module JAVA
     imports CLASSES
     imports VAR-LOOKUP
     imports METHOD-INVOKE
+    imports TO-STRING
     imports API-CORE
     imports API-THREADS
     imports JAVA-SYNTAX

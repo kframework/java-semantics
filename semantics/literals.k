@@ -1,11 +1,11 @@
-require "core.k"
+require "core-sorts.k"
 require "aux-strings.k"
 require "primitive-types.k"
 
 //@ \section{Module LITERALS}
 
 module LITERALS
-    imports CORE
+    imports CORE-SORTS
     imports AUX-STRINGS
     imports PRIMITIVE-TYPES
 

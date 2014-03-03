@@ -1,15 +1,17 @@
-require "core.k"
+require "core-sorts.k"
 require "subtyping.k"
 require "primitive-types.k"
 require "elaboration-expressions.k"
+require "to-string.k"
 
 //@ \section{Module EXPRESSIONS}
 
 module EXPRESSIONS
-    imports CORE
+    imports CORE-SORTS
     imports SUBTYPING
     imports PRIMITIVE-TYPES
     imports ELABORATION-EXPRESSIONS //for "isCompoundAssignLabel
+    imports TO-STRING
 
 /*@ Used to denote a temporary type of an expression. Such an expression should always be wrapped inside a cast
   expression. The cast will then replace tempType with the proper compile-time type.
@@ -253,10 +255,6 @@ rule [cast-void]: cast(void, RV:RawVal::void) => RV::void
 
 //Happens for the qualifier of a static method call
 rule [cast-noValue]: cast(_, noValue) => noValue
-
-/* Required by getTypes in elaboration phase, invoked by lookupMethod.
-*/
-rule typeOf(cast(T:Type, _)) => T
 
 /*@ \subsection{lvalue and loc syntax} */
 

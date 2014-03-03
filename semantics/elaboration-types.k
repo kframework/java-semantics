@@ -1,11 +1,11 @@
-require "core.k"
+require "core-sorts.k"
 require "process-type-names.k"
 require "elaboration-core.k"
 
 /*@ Elaboration of types and packages.
 */
 module ELABORATION-TYPES
-    imports CORE
+    imports CORE-SORTS
     imports ELABORATION-CORE
     imports PROCESS-TYPE-NAMES        // for getNamesMap()
 

@@ -1,4 +1,4 @@
-require "core.k"
+require "core-sorts.k"
 require "aux-strings.k"
 
 /*@ \section{Module PROCESS-TYPE-NAMES}
@@ -7,7 +7,7 @@ top-level classes and inner classes. In each compilation unit just class declara
 (both global and inner) are processed. Results are stored in the cell <namesToClasses>.*/
 
 module PROCESS-TYPE-NAMES
-    imports CORE
+    imports CORE-SORTS
     imports AUX-STRINGS // for retainTail
 
 /*@ \subsection{Compilation units and packages}*/
