@@ -9,6 +9,10 @@ module ARRAYS
     imports SUBTYPING
     imports EXPRESSIONS
 
+/*@ The value in store that corresponds to an array element. The consturction "elem" Type is meant to
+  distinguish between regular memory locations and array elements. Array elements need to be represented separately
+  in order to support array polymorphism.
+*/
 syntax K ::=  RawVal "::" "elem" Type
 
 //@ \subsection{Array declarators with c-style dimensions and initializers}
@@ -163,7 +167,7 @@ after that begin array allocation
 */
 rule [newArrayImpl]:
     newArrayImpl(T:Type, 'ListWrap(Dims:KList), InitExp:K, .KList)
-    => checkNonNegative(Dims) ~> newArrayAlloc(T, 'ListWrap(Dims), InitExp)
+    => checkNonNegative(Dims) ~> allocAndInitArray(T, 'ListWrap(Dims), InitExp)
 when isKResult(Dims) andBool InitExp =/=K .K
 
 rule [newArrayImpl-with-init]:
@@ -194,34 +198,35 @@ when
 rule checkNonNegative(.KList) => .
 
 //@ Same as newArrayImpl, but after dims were computed and checked
-syntax K ::=  newArrayAlloc (
+syntax K ::=  allocAndInitArray (
                 Type, // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
                 K,    // 'ListWrap(Dims:List{KResult}) - array dimensions
                 K     // InitExp - expression used to initialize each array element
               )
 
-rule [newArrayAlloc-MultiDim-desugar]:
-    newArrayAlloc(T:Type, 'ListWrap(Dims:KList,,Dim1K:TypedVal,,Dim2K:TypedVal), InitExp:K)
-    =>  newArrayAlloc(
+rule [allocAndInitArray-MultiDim-desugar]:
+    allocAndInitArray(T:Type, 'ListWrap(Dims:KList,,Dim1K:TypedVal,,Dim2K:TypedVal), InitExp:K)
+    =>  allocAndInitArray(
           arrayOf T,
           'ListWrap(Dims,,Dim1K),
-          newArrayAlloc(T, 'ListWrap(Dim2K), InitExp)
+          allocAndInitArray(T, 'ListWrap(Dim2K), InitExp)
         )
 when isKResult(Dims)
         [structural]
 
-/*In order to avoid problems with empty arrays, such as the test for equality,
-even if the created array is empty it will increment nextLoc by one
+/*@ The increment of <nextLoc> by one is required to avoid problems with empty arrays.
+  Two empty arrays allocated one after another should have different starting locations, even if those starting
+  locations are not used. This is required to identify them as two different objects. Their distinction
+  could be tested by the operator ==.
 */
-rule [newArrayAlloc]:
+rule [allocAndInitArray]:
     <k>
-      newArrayAlloc(T:Type, 'ListWrap(NI:Int::_), InitExp:K)
-      => evalAndStore((LI:Int .. LI +Int (NI -Int 1)), InitExp)
-         ~> arrayRef( arrayOf T, LI, NI) :: arrayOf T
+      allocAndInitArray(T:Type, 'ListWrap(NI:Int::_), InitExp:K)
+      => allocArray(NI, T) ~> initArray(LI +Int 1, NI, InitExp)
+         ~> arrayRef( arrayOf T, LI +Int 1, NI) :: arrayOf T
       ...
     </k>
-    <store>... .Map => Map((LI .. LI +Int (NI -Int 1)) |-> (undefined :: elem T)) ...</store>
-    <nextLoc> LI:Int => LI +Int max(NI,1) </nextLoc>
+    <nextLoc> LI:Int => LI +Int 1 </nextLoc>
 
 //@ Maximum of two numbers
 syntax K ::=  max ( Int, Int )          [function]
@@ -230,45 +235,52 @@ rule max(I1:Int, I2:Int) => #if I1 >=Int I2
                               #else I2
                             #fi
 
-/*@ allocates in the store a range of locations denoted by the first argument and initializes them with the value
-  produced by the second argument.
+/*@ Allocates the given number of elements in the store of the given Type. Used by array instantiation logic.
 */
-syntax K ::=  evalAndStore (
-                KList,  // The range of locations, of the form L1,,_,,Ln
+syntax K ::=  allocArray (
+                Int,  //The number of elements to allocate
+                Type  //The type of each element
+              )
+
+rule [allocArray]:
+    <k> allocArray(N:Int => N -Int 1, T:Type) ...</k>
+    <store>... . => LI |-> (undefined :: elem T) ...</store>
+    <nextLoc> LI:Int => LI +Int 1 </nextLoc>
+when
+    N >Int 0
+
+rule allocArray(0, _) => .K       [structural]
+
+/*@ Assign to each store location in the given range the value represented by the 3-rd argument. This value might be
+  freshly computed for each element, and might alter another locations in the store, as is the case for multidim arrays.
+  This procedure don't change the element type in the store.
+*/
+syntax K ::=  initArray (
+                Int,    // The location of the first element
+                Int,    // The number of elements
                 K       /* Expression used to initialize each location. Is evaluated for each location
                            separately, could be an array creation expression if this is just a
                            dimension of the parent multidim array. */
               )
 
-rule [evalAndStore-desugar]:
-    evalAndStore((I1:Int,, I2:Int,, Ks:KList), InitExp:K)
-    => evalAndStore(I1,InitExp) ~> evalAndStore((I2,,Ks),InitExp)
+rule [initArray]:
+    initArray(OL:Int, N:Int, InitExp:K)
+    => store(OL, InitExp) ~> initArray(OL +Int 1, N -Int 1, InitExp)
+when
+    N >Int 0
         [structural]
 
-context evalAndStore(_:Int, HOLE)
+rule initArray(_, 0, _) => .K       [structural]
 
-//todo replace. could be replaced by an Assign
-rule [evalAndStore]:
-    <k>
-      evalAndStore(L:Int, V:RawVal :: T2:Type) => subtype(T2, T1) ~> true?
-      ...
-    </k>
+rule [store-array-elem]:
+    <k> store(L:Int, V:RawVal :: _) => . ...</k>
     <store>... L |-> (_ => V) :: elem T1:Type ...</store>
         [transition-threading]
-
-rule [evalAndStore-empty]:
-    evalAndStore(.KList, _) => .
-        [structural]
-
-//@ todo replace. Sequences of locations. A hack inherited from KOOL. Should be replaced with something better.
-syntax KList ::= Int ".." Int                                   [function]
-rule N1:Int..N2:Int => .KList                when N1  >Int N2
-rule N1:Int..N2:Int => N1,, (N1 +Int 1)..N2 when N1 <=Int N2
 
 //@ \subsection{Array element assignment}
 
 rule [Assign-array-location-exact-type]:
-    <k> 'Assign(loc(L:Int)::T,, V:RawVal::_) => V::T ...</k>
+    <k> 'Assign(loc(L:Int)::T:Type,, V:RawVal::_) => V::T ...</k>
     <store>... L |-> (_ => V)::elem T ...</store>
         [transition-threading]
 
@@ -331,7 +343,7 @@ syntax K ::=  arrayInitAlloc (
               )
               [strict(1)]
 
-//todo K bug. Looks like [strict] above don't work. Tested with K version of 23/02/2014.
+//todo K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
 context arrayInitAlloc(HOLE,_)
 
 rule [arrayInitAlloc]:

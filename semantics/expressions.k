@@ -210,6 +210,7 @@ Assignment operators are seqstrict according to JLS. */
 
 context 'Assign(_:KResult,,HOLE)
 
+//todo replace. could be replaced by store()
 rule [Assign]:
     <k> 'Assign(loc(L:Int) :: ResT:Type,, V:RawVal :: ResT) => V::ResT ...</k>
     <store>... L |-> (_:RawVal => V)::ResT ...</store>
@@ -287,5 +288,15 @@ rule [lvalue-Throw-desugar]:
         [structural]
 
 syntax RawVal ::= loc ( Int )
+
+syntax K ::=  store (
+                Int,  //OL - the store location
+                K     //evaluates to TypedVal - the value to be stored
+              ) [strict(2)]
+
+rule [store]:
+    <k> store(L:Int, V:RawVal :: _) => . ...</k>
+    <store>... L |-> (_ => V) :: T1:Type ...</store>
+        [transition-threading]
 
 endmodule

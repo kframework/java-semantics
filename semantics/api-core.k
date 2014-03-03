@@ -222,7 +222,7 @@ rule [array-clone]:
     )
     => arrayCopy(
         arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT,
-        newArrayAlloc(ElemT, 'ListWrap(Len::int), undefined :: ElemT)
+        allocAndInitArray(ElemT, 'ListWrap(Len::int), undefined :: ElemT)
       )
 when
     Id2String(MethodName) ==String "clone"
