@@ -326,10 +326,10 @@ syntax K ::=  methodInvokeRuntime (
 JLS \$15.12.4.1 - Compute Target Reference.*/
 context methodInvokeRuntime(_,_, HOLE, _,_)
 
-//todo a test for expression order exists, but is unable expose the error in this rule.
-// Waiting for an alternative from K guys.
+//todo test model check - expressions should be evaluated from left to right. A test for this exists, but is unable to
+//expose the problem. This rule have to be made "transition" somehow.
+//todo test - if qualifier evaluates to null, NullPoitnerException should be thrown after the evaluation of the arguments
 /* JLS \$15.12.4.2 - Evaluate Arguments. Arguments are evaluated regardless of the evaluation result of the qualifier.
-  todo test that an eventual NullPoitnerException is thrown after the evaluation of arguments.
 */
 context methodInvokeRuntime(_,_,_:KResult, (_,,HOLE,,_), _)
 

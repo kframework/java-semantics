@@ -328,13 +328,6 @@ when
     orBool (KL ==KLabel 'Minus)
     orBool (KL ==KLabel 'Complement)
 
-//todo simplify. Second argument of elabExpAndType is usually normalizeType. In this case we can bypass this wrapper
-/*@ Heats the second argument, that is reduced into a type.
-    The whole expression is then rewritten into elabRes(cast(SecondArgAsType, FirstArg))
-*/
-syntax K ::= elabExpAndType ( K, K )  [strict(2)]
-rule elabExpAndType(K:K, T:Type) => elabRes(cast(T, K))
-
 rule [elabEnd-PrefixPostfix]:
     elabEnd(KL:KLabel(cast(T1:Type, Exp1:K))) => elabRes(cast(T1, KL(Exp1)))
 when
@@ -369,6 +362,13 @@ when
 
 rule [condType-FirstChar]:
     condType(char, T2:Type) => 'If(subtype(char, T2),, T2,, int)
+
+/*@ Heats the second argument, that is reduced into a type.
+    The whole expression is then rewritten into elabRes(cast(SecondArgAsType, FirstArg))
+    We cannot eliminate this wrapper because the second argument in all usage places is not a function.
+*/
+syntax K ::= elabExpAndType ( K, K )  [strict(2)]
+rule elabExpAndType(K:K, T:Type) => elabRes(cast(T, K))
 
 rule [elabEnd-Assign-SameType]:
     elabEnd('Assign(cast(T1:Type, Exp1:K),, TExp2:K)) => elabRes(cast(T1, 'Assign(Exp1,, TExp2)))
@@ -463,18 +463,17 @@ rule [existsClass]:
   will be noValue.
 */
 rule [elab-QNewInstance-valid-qualifier]:
-    elab('QNewInstance(elabRes(Qual:K),, Arg2:K,, T:RefType,, Arg4:K,, elabRes(ActualArgsList:K),, 'None(.KList)))
-    => elabRes(cast(T, 'QNewInstance(Qual,, Arg2,, T,, Arg4,, ActualArgsList,, 'None(.KList))))
+    elab('QNewInstance(elabRes(Qual:K),, Arg2:K,, Class:ClassType,, Arg4:K,, elabRes(ActualArgsList:K),, 'None(.KList)))
+    => elabRes(cast(Class, 'QNewInstance(Qual,, Arg2,, Class,, Arg4,, ActualArgsList,, 'None(.KList))))
 when
     Qual =/=K noValue
 
-//todo simplify T should be Class
 /*@ A 'QNewInstance with target noValue should be packed back into a NewInstance, for compatibility with Java.
     It will be desugared again into 'NewInstance at execution phase.
 */
 rule [elab-QNewInstance-to-NewInstance-pack]:
-    elab('QNewInstance(elabRes(noValue),, Arg2:K,, T:RefType,, Arg4:K,, elabRes(ActualArgsList:K),, 'None(.KList)))
-    => elabRes(cast(T, 'NewInstance(Arg2,, T,, ActualArgsList,, 'None(.KList))))
+    elab('QNewInstance(elabRes(noValue),, Arg2:K,, Class:ClassType,, Arg4:K,, elabRes(ActualArgsList:K),,'None(.KList)))
+    => elabRes(cast(Class, 'NewInstance(Arg2,, Class,, ActualArgsList,, 'None(.KList))))
 
 rule [elabEnd-InstanceOf]:
     elabEnd('InstanceOf(TExp:K,, RT2:RefType)) => elabRes(cast(bool, 'InstanceOf(TExp,, RT2)))

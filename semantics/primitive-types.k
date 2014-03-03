@@ -83,8 +83,6 @@ rule toUnsigned(I:Int :: T:Type)
           #else I +Int (1 <<Int bitCount(T)) :: T
         #fi
 
-//Important: normalizeType(), both unary and binary is not a function
-
 syntax K ::= normalizeType ( Type )           [function]
 rule normalizeType(ILT:IntOrLongType) => ILT
 
@@ -93,6 +91,8 @@ rule normalizeType(FT:FloatType) => FT
 rule normalizeType(IT:IntType) => int
 when (IT =/=K int) andBool (IT =/=K long)
 
+/*@ Important! Binary normalizeType cannot be function because it uses sybtype in implementation.
+*/
 syntax K ::= normalizeType ( Type, Type )
 
 rule normalizeType(NT1:IntType, NT2:IntType) => int

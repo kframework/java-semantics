@@ -410,7 +410,7 @@ when
 
 
 /*@ A representation of instance fields used in elaboration phase.
-  todo fields are also epresented another way. Check whether we can eliminate this representation ot avoid duplicates.
+  todo fields are also represented another way. Check whether we can eliminate this representation ot avoid duplicates.
 */
 syntax KResult ::=  fieldEntry (
                       ClassType,  // target class

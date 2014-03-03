@@ -39,17 +39,6 @@ syntax K ::=  sl (
                 Bag //MethContext - the content of <methodContext>
               )
 
-/*todo K bug? we cannot use the constructions below, they will give some errors related to k-prelude.
-syntax StackConsumerLabel ::= 'Return | 'Throw | 'Break | 'Continue
-syntax KLabel ::= StackConsumerLabel*/
-
-syntax K ::= isStackConsumer ( KLabel ) [function]
-rule isStackConsumer (KL:KLabel) =>
-           (KL ==KLabel 'Return)
-    orBool (KL ==KLabel 'Throw)
-    orBool (KL ==KLabel 'Break)
-    orBool (KL ==KLabel 'Continue)
-
 //@ \subsection{Blocks} JLS \$14.2
 
 rule [Block]:
@@ -275,19 +264,22 @@ rule [For]:
      => 'Block(stm(InitClause)
         ~> 'If(TestExp,, 'Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S),, .K))  [structural]
 
-//todo test whether KL argument might be not KResult at the moment of this rule
+//todo test model check - the argument of 'return and 'Throw must be evaluated. Otherwise some side effects during
+// evaluation might be evaluated too late
 /*@ Stack consumer stm - Return, Throw, Break or Continue reaches tryFinallySL layer*/
-rule [StackConsumerStm-InTryFinally]:
-    KL:KLabel(Ks:KList) ~> finallyBlock(FinallyS:K)
-    => FinallyS ~> KL(Ks)
-when
-  isStackConsumer(KL)
+rule [StackConsumer-in-TryFinally]:
+    StackCons:StackConsumer ~> finallyBlock(FinallyS:K)
+    => FinallyS ~> StackCons
 
-rule [StackConsumerStm-RestoreEnv]:
-    KL:KLabel(Ks:KList) ~> env(Env:Map)
-    => env(Env:Map) ~> KL(Ks)
-when
-  isStackConsumer(KL)
+rule [StackConsumer-RestoreEnv]:
+    StackCons:StackConsumer ~> env(Env:Map)
+    => env(Env:Map) ~> StackCons
+
+syntax StackConsumer ::= "dummyStackConsumer"
+rule isStackConsumer('Return(_)) => true
+rule isStackConsumer('Throw(_)) => true
+rule isStackConsumer('Break(_)) => true
+rule isStackConsumer('Continue(_)) => true
 
 //@ \subsection{Break statement}
 
@@ -377,12 +369,10 @@ when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
 
-/* todo K bug workaround: (V::T1) needs to be taken between parentheses, because K
-wrongly considers ~> to have higher priority than ::*/
 rule [Return-MethodEnd]:
     <k>
       'Return('Some(V:RawVal :: T2:Type))
-      => subtype(T2, T1) ~> true? ~> (V::T1) ~> K    </k>
+      => subtype(T2, T1) ~> true? ~> V::T1 ~> K    </k>
     <stack> ListItem( sl(K:K, MethContext:Bag) ) => . ...</stack>
     <methodContext>
       <return> T1:Type </return> _:Bag => MethContext

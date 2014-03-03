@@ -136,11 +136,4 @@ rule [elab-AltConstrInv]:
     </k>
     <crntClass> Class:ClassType </crntClass>
 
-/*@ \subsection{Elaboration of statements - step elabEnd} */
-
-rule [elabEnd-statements]:
-    elabEnd(KL:KLabel(Ks:KList)) => elabRes(KL(Ks))
-when
-    notBool isExpressionLabel(KL)
-
 endmodule

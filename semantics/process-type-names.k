@@ -109,9 +109,8 @@ syntax K ::=  getClassType (
               )
               [function]
 
-rule [getclassType]:
-    getClassType(packageId(PackKId:Id), SimpleClass:Id)
-    => class String2Id(Id2String(PackKId) +String "." +String Id2String(SimpleClass))
+rule getClassType(packageId(PackKId:Id), SimpleClass:Id)
+     => class String2Id(Id2String(PackKId) +String "." +String Id2String(SimpleClass))
 
 //@ Converts a fully qualified class type into a simple name (Id)
 syntax K ::= getSimpleName ( ClassType )                  [function]

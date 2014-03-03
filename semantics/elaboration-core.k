@@ -434,19 +434,6 @@ defaultElabHeating.
 The predicate definition is scattered across modules related to elaboration.*/
 syntax K ::= customElabHeating ( KLabel, KList )          [function]
 
-//todo elaboration-related hack - we should not have special elaboration rules for auxiliary constructs
-//todo this rule might not prevent the rule elab-to-elabDispose to be executed
-syntax K ::= elabPassThrough( KLabel )                    [function]
-rule elabPassThrough(KL:KLabel) =>
-           KL ==KLabel 'noValue
-    orBool KL ==KLabel 'noClass
-    orBool KL ==KLabel 'toString
-
-rule [elab-passThrough]:
-    elab(KL:KLabel(Ks:KList)) => elabRes(KL(Ks))
-when
-    elabPassThrough(KL)
-
 /*@ The default algorithm of transforming the term from elab to elabRes, when the children were completely elaborated.
   Deletes elabRes wrappers from children. This algorithm is activated when the following conditions apply:
     - term is not customElabChildren
@@ -519,6 +506,15 @@ rule [elabEnd-getQThisSubclassOf-top-level]:
 //@Happens for 'NewInstance expressions for static inner classes.
 rule [elabEnd-getQThisSubclassOf-static]:
     elabEnd(getQThisSubclassOf(noClass, K:K)) => elabRes(noValue)
+
+/*@ \subsection{Elaboration of statements - step elabEnd} */
+
+/*@ Applies to all nodes that are not expressins - statements and non-expression auxiliary functions
+*/
+rule [elabEnd-default-all-except-expressions]:
+    elabEnd(KL:KLabel(Ks:KList)) => elabRes(KL(Ks))
+when
+    notBool isExpressionLabel(KL)
 
 //@ \subsection{Hacks related to elaboration during execution phase}
 

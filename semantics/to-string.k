@@ -63,4 +63,13 @@ rule [toString-ClassType-Inner]:
     <enclosingClass> class OuterClassId:Id </enclosingClass>
     <namesToClasses>... _ |-> mapWrap(SimpleName:Id |-> class ClassId _:Map) ...</namesToClasses>
 
+//@ \texttt{toString for objectClosure}
+
+rule toString(objectClosure(I:Int, Obj:List, ObjLocalClassesEnv:Map) :: T:Type)
+    =>  elab('Invoke(
+          'MethodName(objectClosure(I, Obj, ObjLocalClassesEnv) :: T,, String2Id("toString")),,
+          'ListWrap(.KList)
+        ))
+        [anywhere]
+
 endmodule

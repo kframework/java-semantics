@@ -23,17 +23,6 @@ module CLASSES
     imports STATIC-INIT
     imports VAR-LOOKUP
 
-//@ \subsection{Auxiliary operations}
-
-//@ \texttt{toString for objectClosure}
-
-rule toString(objectClosure(I:Int, Obj:List, ObjLocalClassesEnv:Map) :: T:Type)
-    =>  elab('Invoke(
-          'MethodName(objectClosure(I, Obj, ObjLocalClassesEnv) :: T,, String2Id("toString")),,
-          'ListWrap(.KList)
-        ))
-        [anywhere]
-
 /*@ \subsection{New instance creation}*/
 
 /*@Unpack 'NewInstance back into 'QNewInstance.
