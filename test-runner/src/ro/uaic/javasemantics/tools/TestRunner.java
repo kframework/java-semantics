@@ -172,8 +172,7 @@ public class TestRunner {
    */
   private File getTestExpectedOut(File runDir, File testFile) {
     File defaultOut = getDefaultOut(testFile);
-    return defaultOut.exists() ? defaultOut :
-        getCachedExpectedOut(runDir, testFile);
+    return defaultOut.exists() ? defaultOut : getCachedExpectedOut(runDir, testFile);
   }
 
   private File getCachedExpectedOut(File runDir, File testFile) {
@@ -254,27 +253,20 @@ public class TestRunner {
       result.setName(target.toString());
 
       File testFile = target.getAbsoluteFile();
-      String generator = args.getGenerator() != null ?
-          (isInQuotes(args.getGenerator())
-              ? args.getGenerator()
-              : new File(args.getGenerator()).getAbsoluteFile().toString()
-          )
-          : null;
-      String runner = args.getRunner() != null ?
-          (isInQuotes(args.getGenerator())
-              ? args.getRunner()
-              : new File(args.getRunner()).getAbsoluteFile().toString()
-          )
-          : null;
-      boolean goodExpectedOutExists =
-          expectedOutExistsFromStart(runDir, testFile);
+      mkdirs(runDir);
+      File testExpectedOut = getTestExpectedOut(runDir, testFile);
+      File testActualOut = getTestActualOut(runDir, testFile);
 
       taskLogic:
       {
-        mkdirs(runDir);
-        File testExpectedOut = getTestExpectedOut(runDir, testFile);
-        if (generator != null &&
-            (!goodExpectedOutExists || !args.isConditionalGenerator())) {
+        String generator = args.getGenerator() != null ?
+            (isInQuotes(args.getGenerator())
+                ? args.getGenerator()
+                : new File(args.getGenerator()).getAbsoluteFile().toString()
+            )
+            : null;
+        boolean goodExpectedOutExists = goodExpectedOutExists(runDir, testFile);
+        if (generator != null && (!goodExpectedOutExists || !args.isConditionalGenerator())) {
           File genErr = getGenErr(runDir, testFile);
           Future<Integer> future = processExecutor.submit(
               new ProcessCallable(runDir, generator, testFile,
@@ -288,14 +280,16 @@ public class TestRunner {
           }
           if (genErr.length() != 0) {
             result.setGenerr(genErr);
-            if (testExpectedOut.equals(getCachedExpectedOut(runDir, testFile))) {
-              delete(testExpectedOut, false);
-            }
           }
         }
 
+        String runner = args.getRunner() != null ?
+            (isInQuotes(args.getGenerator())
+                ? args.getRunner()
+                : new File(args.getRunner()).getAbsoluteFile().toString()
+            )
+            : null;
         if (result.getGenerr() == null && runner != null) {
-          File testActualOut = getTestActualOut(runDir, testFile);
           File testErr = getTestErr(runDir, testFile);
           Future<Integer> future = processExecutor.submit(
               new ProcessCallable(runDir, runner, testFile, getTestIn(testFile),
@@ -310,6 +304,7 @@ public class TestRunner {
           if (testErr.length() != 0) {
             result.setStderr(testErr);
           }
+
           String expectedOutContent;
           String actualOutContent;
           try {
@@ -351,25 +346,32 @@ public class TestRunner {
       return args.getTimeout() > 0 ? args.getTimeout() : Long.MAX_VALUE;
     }
 
-    private boolean expectedOutExistsFromStart(File runDir, File testFile) {
+    private boolean goodExpectedOutExists(File runDir, File testFile) {
       if (getDefaultOut(testFile).exists()) {
         return true;
       }
       if (args.isSmartGen() && target.isFile()) {
-        File outFile = getCachedExpectedOut(runDir, testFile);
         File inFile = getTestIn(testFile);
-        boolean outExists = outFile.exists();
-        if (outExists) {
+        File cachedExpectedOutFile = getCachedExpectedOut(runDir, testFile);
+        File genErrFile = getGenErr(runDir, testFile);
+
+        /*For cached expected output to be valid the following conditions should be true:
+          - cached expected output should exist
+          - genrator error file should either not exist or be empty.
+              Otherwise the previously geenrated cached output is invalid.
+          - test file should be older than the cached expected out file
+          - input file should either not exist or be older than the cached expected out file
+        */
+        if (cachedExpectedOutFile.exists() && genErrFile.length() == 0) {
           try {
-            long testTime =
+            long testFileTime =
                 Files.getLastModifiedTime(testFile.toPath()).toMillis();
-            long outTime = outExists ?
-                Files.getLastModifiedTime(outFile.toPath()).toMillis() : -1;
+            long cachedExpectedOutTime = Files.getLastModifiedTime(cachedExpectedOutFile.toPath()).toMillis();
 
             boolean inExists = inFile.exists();
             long inTime = inExists ? Files
                 .getLastModifiedTime(inFile.toPath()).toMillis() : -1;
-            return testTime < outTime && (!inExists || inTime < outTime);
+            return testFileTime < cachedExpectedOutTime && (!inExists || inTime < cachedExpectedOutTime);
           } catch (IOException e) {
             throw new RuntimeException(e);
           }
