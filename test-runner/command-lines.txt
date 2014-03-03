@@ -1,0 +1,26 @@
+1. Running 2 java files through jdk and krun:
+
+java -jar ..\tools\test-runner.jar ^
+-gen ^
+\"sh /cygdrive/d/java-semantics/tools/jdk-run.sh --keep-temp\" ^
+-run ^
+\"sh /cygdrive/d/java-semantics/tools/aux-echo.sh\" ^
+-taskExt ^
+java ^
+-expectedOutExt ^
+out ^
+-testsuiteName ^
+java-semantics ^
+-classnameStyle ^
+simple ^
+-threads ^
+12 ^
+-timeout ^
+10 ^
+-encodeXML ^
+false ^
+-clean ^
+true ^
+D:\java-semantics\programs\21_arrays\array_51_assign_type_diff_CompT_RHS.java ^
+D:\java-semantics\programs\21_arrays\array_52_assign_type_diff_RunT_RHS.java
+

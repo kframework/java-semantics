@@ -9,6 +9,8 @@
 /class-lib/*.kast
 /test-runner/out
 /test-runner/workingDir
+/test-runner/test-results.xml
+/test-runner/.test
 
 /semantics/java.tex
 /semantics/k.sty

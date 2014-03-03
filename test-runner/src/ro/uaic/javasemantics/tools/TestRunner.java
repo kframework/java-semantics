@@ -81,23 +81,25 @@ public class TestRunner {
     if (args.getRemoveScript() != null) {
       deleteUsingScript(args.getRemoveScript(), dir);
     } else {
-      delete(dir);
+      delete(dir, true);
     }
   }
 
-  private static void delete(File f) {
+  private static void delete(File f, boolean propagateException) {
     if (!f.exists()) {
       return;
     }
     if (f.isDirectory()) {
       for (File c : f.listFiles()) {
-        delete(c);
+        delete(c, propagateException);
       }
     }
     try {
       Files.delete(f.toPath());
     } catch (IOException e) {
-      throw new RuntimeException("Failed to delete file: " + f, e);
+        if (propagateException) {
+            throw new RuntimeException("Failed to delete file: " + f, e);
+        } //else ignored - will be deleted anyway during the next run
     }
   }
 
@@ -287,7 +289,7 @@ public class TestRunner {
           if (genErr.length() != 0) {
             result.setGenerr(genErr);
             if (testExpectedOut.equals(getCachedExpectedOut(runDir, testFile))) {
-              delete(testExpectedOut);
+              delete(testExpectedOut, false);
             }
           }
         }
