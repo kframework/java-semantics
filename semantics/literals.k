@@ -122,9 +122,10 @@ rule 'Lit('Bool('False(.KList))) => false
 
 rule 'Lit('Char('Single( I:Int ))) => I :: char
 
-rule 'Lit('Char('NamedEscape(  98 ))) => ordChar("\b") :: char
-rule 'Lit('Char('NamedEscape( 102 ))) => ordChar("\f") :: char
-rule 'Lit('Char('NamedEscape(  39 ))) => ordChar("\'") :: char
+//K bug the three escape characters below are not parsed by K3 in their nice form. Confirmed on 04/03/2014.
+rule 'Lit('Char('NamedEscape(  98 ))) =>                 8 :: char  // \b
+rule 'Lit('Char('NamedEscape( 102 ))) =>                12 :: char  // \f
+rule 'Lit('Char('NamedEscape(  39 ))) =>                39 :: char  // \'
 
 rule 'Lit('Char('NamedEscape( 116 ))) => ordChar("\t") :: char
 rule 'Lit('Char('NamedEscape( 110 ))) => ordChar("\n") :: char
