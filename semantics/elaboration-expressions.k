@@ -501,6 +501,8 @@ when
 context 'ArrayType(HOLE)
 rule 'ArrayType(T:Type) => arrayOf T     [structural]
 
+syntax KLabel ::= "'NewArray"
+
 rule [elabEnd-NewArray-EmptyDims]:
     elabEnd('NewArray( (T:Type => arrayOf T),, _:K,,
         'ListWrap( ( 'Dim(.KList) => .KList ) ,,_:KList) ))

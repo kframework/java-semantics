@@ -293,7 +293,7 @@ rule [store-array-location-check-type]:
               (class String2Id("java.lang.ArrayStoreException")),,
               'ListWrap(
                 //the ArrayStoreException argument is the assigned object type
-                elab('Invoke(
+                'Invoke(
                   'MethodName(
                     'Invoke(
                       'MethodName(V::T,, String2Id("getClass")),,
@@ -301,7 +301,7 @@ rule [store-array-location-check-type]:
                     ),,
                     String2Id("getName")),,
                   'ListWrap(.KList)
-                ))
+                )
               ),,
               'None(.KList)
             ))

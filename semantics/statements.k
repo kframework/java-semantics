@@ -17,15 +17,17 @@ module STATEMENTS
 rule [ExecutionPhase-Start]:
     <k>
       //K-AST for new <MainClass>().main(new String[0]);
-      . =>  elab('ExprStm(
+      . =>  'ExprStm(
               'Invoke(
-                'MethodName('TypeName(packageId(String2Id("")),,String2Id(MainClassS)),, String2Id("main")),,
-                'ListWrap('NewArray(
-                    stringClass,,
-                    'ListWrap('Dim(0 :: int)),,
-                    'ListWrap(.KList)))
+                'Method('MethodName('TypeName(packageId(String2Id("")),,String2Id(MainClassS)),, String2Id("main"))),,
+                'ListWrap(
+                  cast(
+                    arrayOf stringClass,
+                    newArrayImpl(stringClass, 'ListWrap('Dim(0 :: int)), null :: stringClass, .KList)
+                  )
+                )
               )
-            ))
+            )
     </k>
     <env> . </env>
     <mainClass> ListItem(MainClassS:String) </mainClass>
@@ -425,17 +427,20 @@ rule [Throw-MethodEnd]:
 rule [Throw-CausesThreadTermination]:
     <k>
       'Throw(TV:TypedVal)
-      =>  elab('ExprStm(
+      =>  'ExprStm(
             'Invoke(
               'Method(
                 'MethodName(
-                  'AmbName( 'AmbName( String2Id("System")),, String2Id("out") ),,
+                  cast(
+                    'TypeName( String2Id("System")),
+                    'ExprName( 'TypeName( String2Id("System")),, String2Id("out") )
+                  ),,
                   String2Id("println")
                 )
               ),,
-              'ListWrap( 'Plus( "Thread terminated with exception: ",, TV ) )
+              'ListWrap( cast(stringClass, 'Plus( "Thread terminated with exception: ",, TV )) )
             )
-          ))
+          )
     </k>
     <stack> .List </stack>
 

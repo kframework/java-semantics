@@ -27,12 +27,12 @@ rule [thread-start]:
       <thread>
         <k>
           //typedLookup(OL).runnable.run()
-          elab('ExprStm(
+          'ExprStm(
             'Invoke(
               'Method(
                 'MethodName(
                   'ExprName(
-                    elabRes(cast(class String2Id("java.lang.Thread"), typedLookup(OL))),,
+                    cast(class String2Id("java.lang.Thread"), typedLookup(OL)),,
                     String2Id("runnable")
                   ),,
                   String2Id("run")
@@ -40,7 +40,7 @@ rule [thread-start]:
               ),,
               'ListWrap(.KList)
             )
-          ))
+          )
         </k>
         <tid> TId </tid>
         ...

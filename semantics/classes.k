@@ -136,10 +136,10 @@ syntax K ::=  invokeConstr (
 rule [invokeConstr]:
     invokeConstr(OL:Int, Class:ClassType, Vals:KList, EnclosingObj:KResult)
     => setEncloser(lookup(OL, Class), Class, EnclosingObj)
-    ~> elab('ExprStm('Invoke(
-          'Method('MethodName( elabRes(cast(Class, typedLookup(OL))),, getConsName(Class) )),,
+    ~> 'ExprStm('Invoke(
+          'Method('MethodName( cast(Class, typedLookup(OL)),, getConsName(Class) )),,
           'ListWrap( Vals )
-        )))
+        ))
 
 /*@ Sets the enclosing object for a given object.
     Invoked by invokeConstr and QSuperConstrInv. Defined in CLASSES.

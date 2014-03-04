@@ -24,19 +24,16 @@ since we need to check that the type of the returned value is an
 instance of the claimed return type of the method.  The first group of
 rules below are identical to those in untyped KOOL. */
 
-rule 'Method('MethodName(Ks:KList)) => 'MethodName(Ks)    [structural, anywhere]
-rule 'Method(K:K,, _:K,, Name:Id) => 'MethodName(K,, Name)  [structural, anywhere]
+rule 'Method(K:K,, _:K,, Name:Id => 'MethodName(K,, Name))  [structural, anywhere]
+
+rule isExtKResult('Method('MethodName(Qual:K,, Name:Id))) => true
 
 rule [MethodName-Unq-InstanceCT]:
     <k>
-      'MethodName(Name:Id) => 'MethodName(cast(Class, 'QThis(Class)),, Name)
+      'Method('MethodName(Name:Id) => 'MethodName(cast(Class, 'QThis(Class)),, Name))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>                 [structural]
-
-rule [MethodName]:
-    'MethodName(QualK:K,, Name:Id)
-    => lookupMethodData(QualK, Name, notBool isTypedQThis(QualK))        [structural]
 
 // super.X(_)
 rule [SuperMethod-desugar]:
@@ -49,39 +46,38 @@ rule [SuperMethod-desugar]:
 rule [QSuperMethod]:
     <k>
       'QSuperMethod(Class:ClassType,, _:K,, Name:Id)
-      => lookupMethodData(cast(BaseClass, superMethod(cast(BaseClass, 'QThis(Class)))), Name, false)
+      => 'Method('MethodName(cast(BaseClass, superMethod(cast(BaseClass, 'QThis(Class)))),, Name))
       ...
     </k>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>  [structural]
 
-syntax KResult ::=  lookupMethodData (
-                      K,    //cast(T, Exp) - typed obj closure for instance qualifier
-                            //or ClassType - for class qualifier
-                      Id,   //method name
-                      Bool  //IsQ - isQualified
-                    )
+/*
+General structure:
 
-/*@ Closure application needs to also set a new return type in the
-\textsf{return} cell, in order for the values returned by its body to
-be checked against the return type of the method.  To do this correctly,
-we also need to stack the current status of the \textsf{return} cell
-and then pop it when the method returns. */
+'Invoke(
+  'Method(
+    'MethodName(
+      QualifierExp:Expression,,
+      Name:Id
+    )
+  ),,
+  'ListWrap('Param(),, ...) - arguments
+)
+*/
+syntax KLabel ::= "'Invoke"
 
 //First argument is reduced up to lookupMethodData.
-context elabEnd('Invoke(HOLE,, _))
+context elabEnd('Invoke(HOLE,, _))                      [result(ExtKResult)]
 
 rule [elabEnd-Invoke-to-lookupMethod-qualified]:
-    elabEnd('Invoke(lookupMethodData(
-        Qual:K,
-        MethodName:Id,
-        IsQ:Bool
-      ),,
-      'ListWrap(ParamExps:KList))
-    ) => lookupMethod(
+    elabEnd('Invoke(
+      'Method('MethodName(Qual:K,, Name:Id)),,
+      'ListWrap(ParamExps:KList)
+    )) => lookupMethod(
       getLookupTargetType(typeOf(Qual)),
-      MethodName,
-      IsQ,
+      Name,
+      true,
       noValue,
       false,
       Qual,
@@ -91,28 +87,22 @@ when notBool isTypedQThis(Qual)
 
 rule [elabEnd-Invoke-to-lookupMethod-unqualified]:
     <k>
-      elabEnd('Invoke(lookupMethodData(
-          cast(Class, 'QThis(Class:ClassType)),
-          MethodName:Id,
-          IsQ:Bool
-        ),,
+      elabEnd('Invoke(
+        'Method('MethodName(cast(Class, 'QThis(Class:ClassType)),, Name:Id)),,
         'ListWrap(ParamExps:KList))
       ) => lookupMethod(
         Class,
-        MethodName,
-        IsQ,
+        Name,
+        false,
         noValue,
         false,
         cast(Class, 'QThis(Class)),
         ParamExps
       )
-      ?? elabEnd('Invoke(lookupMethodData(
-          cast(EnclosingClass, 'QThis(EnclosingClass)),
-          MethodName,
-          IsQ
-        ),,
-        'ListWrap(ParamExps))
-      )
+      ?? elabEnd('Invoke(
+        'MethodName(cast(EnclosingClass, 'QThis(EnclosingClass)),, Name:Id),,
+        'ListWrap(ParamExps)
+      ))
       ...
     </k>
     <classType> Class </classType>
@@ -197,7 +187,20 @@ rule [methodProcessArguments-process]:
 rule [methodProcessArguments-end]:
     methodProcessArguments(RetT:Type, QualClass:ClassType, QualK:K, Name:Id, types(.KList), .KList, ExpectedParamExps:KList,
         CT:ContextType)
-    => elabRes(cast(RetT, methodInvokeRuntime(QualClass, Name, QualK, ExpectedParamExps, CT)))
+    =>  elabRes(cast(RetT,
+          'Invoke(
+            'Method(
+              'MethodName(
+                #if CT ==K instanceCT
+                  #then QualK
+                  #else QualClass
+                #fi,,
+                Name:Id
+              )
+            ),,
+            'ListWrap(ExpectedParamExps)
+          )
+        ))
 
 /*Search for the correct method signature to use
 when calling a given MethodName with the given argument types.
@@ -324,24 +327,25 @@ syntax K ::=  methodInvokeRuntime (
 
 /*Evaluates the qualifier.
 JLS \$15.12.4.1 - Compute Target Reference.*/
-context methodInvokeRuntime(_,_, HOLE, _,_)
+context 'Invoke('Method( 'MethodName( HOLE,, Name:Id ) ),, _)
 
 //totest model check - expressions should be evaluated from left to right. A test for this exists, but is unable to
 //expose the problem. This rule have to be made "transition" somehow.
 //totest - if qualifier evaluates to null, NullPoitnerException should be thrown after the evaluation of the arguments
 /* JLS \$15.12.4.2 - Evaluate Arguments. Arguments are evaluated regardless of the evaluation result of the qualifier.
 */
-context methodInvokeRuntime(_,_,_:KResult, (_,,HOLE,,_), _)
+context 'Invoke('Method('MethodName(_:KResult,, Name:Id )),, 'ListWrap(_,,HOLE,,_) )
 
 rule [methodInvokeRuntime-Instance-On-Class]:
     <k>
-      methodInvokeRuntime(Class:ClassType, Name:Id,
+      'Invoke('Method('MethodName(
         objectClosure(
           OL:Int,
           (Rest:KList/*ObjLayers*/,, layer(Class:ClassType, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map),, _),
           _
-        )::Class,
-        ParamVals:KList, instanceCT
+        )::Class:ClassType,,
+        Name:Id
+        )),, 'ListWrap(ParamVals:KList)
       )
       => invokeImpl(
         lookupOverloadedMethod(
@@ -358,7 +362,7 @@ when
     isKResult(ParamVals)
 
 rule [methodInvokeRuntime-Static-On-Class]:
-    methodInvokeRuntime(Class:ClassType, Name:Id, _:KResult, ParamVals:KList, staticCT)
+    'Invoke('Method('MethodName(Class:ClassType,, Name:Id )),, 'ListWrap(ParamVals:KList) )
     => invokeImpl(
       lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), Class, mapWrap(.Map), noValue),
       noValue, 'ListWrap(ParamVals)
@@ -368,13 +372,15 @@ when
 
 rule [methodInvokeRuntime-Instance-On-Interface]:
     <k>
-      methodInvokeRuntime(Class:ClassType, Name:Id,
-        objectClosure(
-          OL:Int,
-          (layer(ActualClass:ClassType, _,_,_),, _),
-          _
-        )::Class,
-        ParamVals:KList, instanceCT
+      'Invoke('Method('MethodName(
+          objectClosure(
+            OL:Int,
+            (layer(ActualClass:ClassType, _,_,_),, _),
+            _
+          )::Class:ClassType,,
+          Name:Id
+        )),,
+        'ListWrap(ParamVals:KList)
       )
       => invokeImpl(
         lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), ActualClass, mapWrap(.Map), noValue),
@@ -387,23 +393,25 @@ when
     isKResult(ParamVals)
 
 rule [methodInvokeRuntime-On-other]:
-    methodInvokeRuntime(Class:ClassType, Name:Id,
-        QualRV:RawVal::QualT:RefType,
-        ParamVals:KList, instanceCT
+    'Invoke('Method('MethodName(
+        QualRV:RawVal::QualT:RefType,,
+        Name:Id
+      )),,
+      'ListWrap(ParamVals:KList)
     )
     => invokeImpl(
-      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), Class, mapWrap(.Map), noValue),
+      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), getLookupTargetType(QualT), mapWrap(.Map), noValue),
       QualRV::QualT, 'ListWrap(ParamVals)
     )
 when
     getKLabel(QualRV) =/=KLabel 'objectClosure andBool QualRV =/=K null andBool isKResult(ParamVals)
 
 rule [methodInvokeRuntime-On-Null]:
-    methodInvokeRuntime(_,_, null::_, ParamVals:KList, instanceCT)
+    'Invoke( 'Method('MethodName( null::_,, _:Id )),, 'ListWrap(ParamVals:KList) )
     =>  'Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
-          'ListWrap( null ),,
+          'ListWrap( cast(stringClass, null) ),,
           'None(.KList)
         ))
 when
@@ -550,6 +558,11 @@ syntax K ::=  invokeImpl (
               )
               [strict(1)]
 
+/*@ Closure application needs to also set a new return type in the
+\textsf{return} cell, in order for the values returned by its body to
+be checked against the return type of the method.  To do this correctly,
+we also need to stack the current status of the \textsf{return} cell
+and then pop it when the method returns. */
 rule [invokeImpl-Instance]:
     <k>
       invokeImpl(
