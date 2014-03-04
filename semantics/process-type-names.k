@@ -74,7 +74,7 @@ rule [processTypeNames]:
         (DecLabel:KLabel(_:KLabel(Modifiers:K,, SimpleClass:Id,, _),, CBody:K) => .KList),, _,
         PackId:PackageId
       )
-      ~> ( . => processTypeNames(bodyAsList(CBody), toPackage(getClassType(PackId,SimpleClass))) )
+      ~> ( . => processInnerTypes(CBody, toPackage(getClassType(PackId,SimpleClass))) )
       ...
     </k>
     <namesToClasses>
@@ -91,14 +91,19 @@ when DecLabel ==KLabel 'ClassDec orBool DecLabel ==KLabel 'InterfaceDec
 
 rule [processTypeNames-ElemDiscard]:
     processTypeNames((Label:KLabel(_) => .KList),,_,_)
-when notBool( (Label ==KLabel 'ClassDec) orBool (Label ==KLabel 'InterfaceDec)
-              orBool (Label ==KLabel 'bodyAsList) //todo semantics seems to work without this condition
-            )
+when notBool( (Label ==KLabel 'ClassDec) orBool (Label ==KLabel 'InterfaceDec) )
 
 //We match PackId in <namesToClasses> just to be sure that the package was added to the map.
 rule [processTypeNames-Discard]:
     <k> processTypeNames(.KList, PackId:PackageId) => .K ...</k>
     <namesToClasses>... PackId |-> _ ...</namesToClasses>
+
+/*@ Is converted into a processTypeNames. The first argument is a class/interface body. This function
+  have to extract the list of memers from the body and pass them to processTypeNames.
+*/
+syntax K ::= processInnerTypes ( K , PackageId )
+rule processInnerTypes('ClassBody('ListWrap(Ks:KList)), Pack:PackageId) => processTypeNames(Ks, Pack)
+rule processInnerTypes('ListWrap(Ks:KList), Pack:PackageId) => processTypeNames(Ks, Pack)
 
 /*@ \subsection{Auxiliary constructs}*/
 
@@ -119,19 +124,6 @@ rule getSimpleName(class ClassId:Id)
       Id2String(ClassId),
       rfindString(Id2String(ClassId), ".", lengthString(Id2String(ClassId))) +Int 1
     ))
-
-//@ Receives a class/interface body as K, and extracts the KList part of it
-syntax K ::=  bodyAsList (
-                K         //The class body to be processed
-              )
-              [function]
-
-//@ The difference between classes and interfaces structure is purely due to Java-Front syntax whim.
-rule [bodyAsList-ClassBody]:
-    bodyAsList('ClassBody('ListWrap(Ks:KList))) => Ks
-
-rule [bodyAsList-IInterface]:
-    bodyAsList('ListWrap(Ks:KList)) => Ks
 
 //@ Returns the types map for the given package, or mapWrap(.Map) if there's no such package.
 syntax K ::=  getNamesMap  (

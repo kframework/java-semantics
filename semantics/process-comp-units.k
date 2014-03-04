@@ -62,9 +62,7 @@ rule [processTypeDecsInPCUPhase-Discard]:
 
 rule [processTypeDecsInPCUPhase-ElemDiscard]:
     processTypeDecsInPCUPhase(Label:KLabel(_), _,_) => .
-when notBool( Label ==KLabel 'ClassDec orBool Label ==KLabel 'InterfaceDec
-              orBool Label ==KLabel 'bodyAsList  //todo semantics seems to work without this condition
-            )
+when notBool( Label ==KLabel 'ClassDec orBool Label ==KLabel 'InterfaceDec )
 
 /*@ \subsection{Class declaration processing}*/
 
