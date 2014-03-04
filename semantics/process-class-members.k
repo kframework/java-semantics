@@ -100,13 +100,16 @@ process inner declarations. Compute the following class cells:
   <instanceInit>
   <staticEnv>
   <staticInit>
+
+First we inherit methods from interfaces, then from the base class, and in the end we add methods declared in this
+  class. Each new method overwrites previous methods with the same signature.
 */
 rule [processType]:
     <k>
       processType(Class:ClassType) => computeImplTrans(SetItem(BaseClass) ISet)
           ~> tryInheritSet(ISet)
 
-          //interfaces should also contain Object members
+          //interfaces should also contain the members of Object
           ~> 'If((MetaT ==K interfaceMetaT),, tryInherit(objectClass))
 
           ~> tryInherit(BaseClass)
@@ -164,7 +167,6 @@ rule <k> saveImplTrans(setWrap(S1:Set)) => . ...</k>
 syntax K ::= tryInheritSet ( Set )
            | tryInherit ( ClassType )
            | tryInheritImpl ( Map )
-           | inherit ( Map )  //when checks are made, we are inheriting the method
 
 rule [tryInheritSet]:
     (. => tryInherit(Class:ClassType)) ~> tryInheritSet( (SetItem(Class) => .) _)
@@ -232,7 +234,13 @@ rule isAccessibleForOverwriting(BaseClass:ClassType, package, SubClass:ClassType
 
 rule isAccessibleForOverwriting(_, private, _) => false
 
-//todo if the same method is inherited say from the base class and interface, we're in trouble
+/*@ Inherit a list of methods by the current class. The inherited methods overwrite previous methods
+  with the same signature in <methods>
+*/
+syntax K ::=  inherit (
+                Map //Map[Signature |-> ClassType] - the map of signatures
+              )
+
 rule [inherit]:
     <k> inherit(Sig:K |-> DeclClass:ClassType) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
@@ -409,8 +417,8 @@ when
         [structural]
 
 
+//todo fields are also represented another way. Check whether we can eliminate this representation ot avoid duplicates.
 /*@ A representation of instance fields used in elaboration phase.
-  todo fields are also represented another way. Check whether we can eliminate this representation ot avoid duplicates.
 */
 syntax KResult ::=  fieldEntry (
                       ClassType,  // target class

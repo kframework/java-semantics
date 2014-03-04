@@ -264,7 +264,7 @@ rule [For]:
      => 'Block(stm(InitClause)
         ~> 'If(TestExp,, 'Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S),, .K))  [structural]
 
-//todo test model check - the argument of 'return and 'Throw must be evaluated. Otherwise some side effects during
+//totest model check - the argument of 'return and 'Throw must be evaluated. Otherwise some side effects during
 // evaluation might be evaluated too late
 /*@ Stack consumer stm - Return, Throw, Break or Continue reaches tryFinallySL layer*/
 rule [StackConsumer-in-TryFinally]:

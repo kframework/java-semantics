@@ -36,7 +36,7 @@ rule [NewInstance-to-QNewInstance-unpack]:
 //@Resolve new instance qualifier
 context 'QNewInstance(HOLE,, _:KList)
 
-//todo test model check - test the arguments evaluation order
+//totest model check - test the arguments evaluation order
 /*@ Resolve new instance expression parameter values
 */
 context 'QNewInstance(_:KResult,,_:K,,_:K,,_:K,, 'ListWrap(_,,HOLE,,_),, _)

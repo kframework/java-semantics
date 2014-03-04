@@ -125,7 +125,7 @@ rule /* I1 / I2    */ 'Div(I1:Int :: _,, I2:Int :: _) => (I1 /Int I2) :: tempTyp
     when I2 =/=Int 0
 rule                  'Div(F1:Float :: _,, F2:Float :: _) => (F1 /Float F2) :: tempType
 
-//todo test that the first argument is fully evaluated, right now it may be not evaluated
+//totest that the first argument is fully evaluated, right now it may be not evaluated
 rule                  'Div(_:TypedVal,, 0::_)
    => 'Throw('NewInstance(
         'None(.KList),,
@@ -138,7 +138,7 @@ rule /* I1 % I2    */ 'Remain(I1:Int :: _,, I2:Int :: _) => (I1 %Int I2) :: temp
     when I2 =/=Int 0
 rule                  'Remain(F1:Float :: _,, F2:Float :: _) => (F1 %Float F2) :: tempType
 
-//todo test that the first argument is fully evaluated, right now it may be not evaluated
+//totest that the first argument is fully evaluated, right now it may be not evaluated
 rule                  'Remain(_:TypedVal,, 0::_)
    => 'Throw('NewInstance(
         'None(.KList),,

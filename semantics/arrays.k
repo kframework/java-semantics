@@ -343,7 +343,7 @@ syntax K ::=  arrayInitAlloc (
               )
               [strict(1)]
 
-//todo K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
+//K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
 context arrayInitAlloc(HOLE,_)
 
 rule [arrayInitAlloc]:

@@ -143,7 +143,7 @@ syntax K ::=  saveImports  (
               )
               [strict(4,5,6)]
 
-//todo K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
+//K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
 context saveImports(_,_,_,HOLE,_,_)
 context saveImports(_,_,_,_,HOLE,_)
 context saveImports(_,_,_,_,_,HOLE)

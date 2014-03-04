@@ -137,7 +137,7 @@ syntax K ::=  lookupMethod (
               )
               [strict(4)]
 
-//todo K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
+//K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
 context lookupMethod(_,_,_,HOLE,_,_,_)
 
 syntax K ::= getLookupTargetType ( RefType )    [function]
@@ -326,9 +326,9 @@ syntax K ::=  methodInvokeRuntime (
 JLS \$15.12.4.1 - Compute Target Reference.*/
 context methodInvokeRuntime(_,_, HOLE, _,_)
 
-//todo test model check - expressions should be evaluated from left to right. A test for this exists, but is unable to
+//totest model check - expressions should be evaluated from left to right. A test for this exists, but is unable to
 //expose the problem. This rule have to be made "transition" somehow.
-//todo test - if qualifier evaluates to null, NullPoitnerException should be thrown after the evaluation of the arguments
+//totest - if qualifier evaluates to null, NullPoitnerException should be thrown after the evaluation of the arguments
 /* JLS \$15.12.4.2 - Evaluate Arguments. Arguments are evaluated regardless of the evaluation result of the qualifier.
 */
 context methodInvokeRuntime(_,_,_:KResult, (_,,HOLE,,_), _)
@@ -451,7 +451,7 @@ syntax K ::=  lookupOverloadedMethod (
               )
               [strict(1,3,4)]
 
-//todo K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
+//K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
 context lookupOverloadedMethod(HOLE,_,_,_)
 context lookupOverloadedMethod(_,_,HOLE,_)
 context lookupOverloadedMethod(_,_,_,HOLE)

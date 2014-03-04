@@ -42,7 +42,7 @@ syntax KLabel ::= "'ListWrap"
                 | "'Eq"
                 | "'NotEq"
                 | "'LazyAnd"
-                //todo K bug #260 makes strictness on KLabels impossible. Replace contexts with strictness when fixed.
+                //K bug #260 makes strictness on KLabels impossible. Replace contexts with strictness when fixed.
                 //Older bug: Strictness is not applied in the following case:
                 //syntax KLabel ::= | 'Mul [seqstrict]
                 | "'LazyOr"     //[strict(1)]
