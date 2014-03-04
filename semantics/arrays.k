@@ -273,12 +273,13 @@ when
 rule initArray(_, 0, _) => .K       [structural]
 
 rule [store-array-elem]:
-    <k> store(L:Int, V:RawVal :: _) => . ...</k>
-    <store>... L |-> (_ => V) :: elem T1:Type ...</store>
+    <k> store(L:Int, V:RawVal :: T:Type) => . ...</k>
+    <store>... L |-> (_ => V) :: elem T:Type ...</store>
         [transition-threading]
 
 //@ \subsection{Array element assignment}
 
+//todo replace. could be replaced by store()
 rule [Assign-array-location-exact-type]:
     <k> 'Assign(loc(L:Int)::T:Type,, V:RawVal::_) => V::T ...</k>
     <store>... L |-> (_ => V)::elem T ...</store>

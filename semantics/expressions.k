@@ -220,8 +220,8 @@ rule [Assign]:
 
 //question: Why can't we move this desugaring into elaboration phase?
 rule [CompoundAssign]:
-    KL:KLabel(loc(L:Int) :: T1:Type,, Exp2:K)
-    => 'Assign(loc(L)::T1,, cast(T1, getOperatorLabel(KL)(lookup(L, T1),, Exp2)))
+    KL:KLabel(loc(L:Int) :: T:Type,, Exp2:K)
+    => 'Assign(loc(L)::T,, cast(T, getOperatorLabel(KL)(lookup(L, T),, Exp2)))
 when isCompoundAssignLabel(KL)
 
 /*@ Returns the KLabel corresponding to the underlying operator of the given compound assignment KLabel.
@@ -293,8 +293,8 @@ syntax K ::=  store (
               ) [strict(2)]
 
 rule [store]:
-    <k> store(L:Int, V:RawVal :: _) => . ...</k>
-    <store>... L |-> (_ => V) :: T1:Type ...</store>
+    <k> store(L:Int, V:RawVal :: T:Type) => . ...</k>
+    <store>... L |-> (_ => V) :: T ...</store>
         [transition-threading]
 
 endmodule
