@@ -238,7 +238,7 @@ rule getOperatorLabel('AssignURightShift) => 'URightShift
 
 /*@ \subsection{primitive types cast} */
 
-syntax Cast ::= cast ( Type, K ) [strict]
+syntax Cast ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
 
 //@ The type of RV could either be NumericType or tempType. This rule matches both.
 rule [cast-Number]: cast(NT:NumericType, RV:RawVal::_) => normalize(RV::NT)

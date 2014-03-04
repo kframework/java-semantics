@@ -127,7 +127,7 @@ rule [ArrayAccess-null-to-NullPointerException]:
     => 'Throw('NewInstance(
       'None(.KList),,
       class String2Id("java.lang.NullPointerException"),,
-      'ListWrap( null ),,
+      'ListWrap( null::stringClass ),,
       'None(.KList)
     ))
         [anywhere]
@@ -189,7 +189,7 @@ rule [checkNonNegative-to-NegativeArraySizeException]:
     => 'Throw('NewInstance(
       'None(.KList),,
       class String2Id("java.lang.NegativeArraySizeException"),,
-      'ListWrap( null ),,
+      'ListWrap( null::stringClass ),,
       'None(.KList)
     ))
 when

@@ -21,10 +21,7 @@ rule [ExecutionPhase-Start]:
               'Invoke(
                 'Method('MethodName('TypeName(packageId(String2Id("")),,String2Id(MainClassS)),, String2Id("main"))),,
                 'ListWrap(
-                  cast(
-                    arrayOf stringClass,
-                    newArrayImpl(stringClass, 'ListWrap('Dim(0 :: int)), null :: stringClass, .KList)
-                  )
+                  newArrayImpl(stringClass, 'ListWrap('Dim(0 :: int)), null :: stringClass, .KList)
                 )
               )
             )
@@ -125,7 +122,7 @@ rule [AssertStm-OneArg]:
     =>  'Throw('NewInstance(
           'None(.KList),,
           (class String2Id("java.lang.AssertionError")),,
-          'ListWrap(null),,
+          'ListWrap(null::stringClass),,
           'None(.KList)
         ))
 
@@ -431,14 +428,11 @@ rule [Throw-CausesThreadTermination]:
             'Invoke(
               'Method(
                 'MethodName(
-                  cast(
-                    'TypeName( String2Id("System")),
-                    'ExprName( 'TypeName( String2Id("System")),, String2Id("out") )
-                  ),,
+                  lookupStaticField( 'TypeName( String2Id("System")), String2Id("out") ),,
                   String2Id("println")
                 )
               ),,
-              'ListWrap( cast(stringClass, 'Plus( "Thread terminated with exception: ",, TV )) )
+              'ListWrap( cast(objectClass, 'Plus( "Thread terminated with exception: ",, TV )) )
             )
           )
     </k>

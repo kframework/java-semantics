@@ -110,7 +110,7 @@ rule [lookupField-OfNull]:
     =>  'Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
-          'ListWrap( null ),,
+          'ListWrap( null::stringClass),,
           'None(.KList)
         ))
         [anywhere]
@@ -119,7 +119,7 @@ rule [lookupField-OfNull]:
 syntax K ::=  lookupStaticField (
                 Type, //Precise type where the field is defined
                 Id    //X - field name
-              )
+              ) [strict(1)]//strictnes is for runtime produced terms
 
 rule [lookupStaticField]:
     <k>

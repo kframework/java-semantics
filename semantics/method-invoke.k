@@ -316,15 +316,6 @@ rule [isAccessible-private]:
     </k>
     <crntClass> CurrentClass:ClassType </crntClass>
 
-//@ The elaboration result of a method invocation.
-syntax K ::=  methodInvokeRuntime (
-                ClassType,  //Compile-time target class, always class even for arrays
-                Id,         //Method name
-                K,          //Qualifier expression, if any, or noValue if it is static invocation
-                KList,      //ExpectedParamExps, arguments casted to the type expected by the actual signature
-                ContextType //instanceCT or staticCT
-              )
-
 /*Evaluates the qualifier.
 JLS \$15.12.4.1 - Compute Target Reference.*/
 context 'Invoke('Method( 'MethodName( HOLE,, Name:Id ) ),, _)
@@ -336,7 +327,7 @@ context 'Invoke('Method( 'MethodName( HOLE,, Name:Id ) ),, _)
 */
 context 'Invoke('Method('MethodName(_:KResult,, Name:Id )),, 'ListWrap(_,,HOLE,,_) )
 
-rule [methodInvokeRuntime-Instance-On-Class]:
+rule [Invoke-Method-Instance-On-Class]:
     <k>
       'Invoke('Method('MethodName(
         objectClosure(
@@ -361,7 +352,7 @@ rule [methodInvokeRuntime-Instance-On-Class]:
 when
     isKResult(ParamVals)
 
-rule [methodInvokeRuntime-Static-On-Class]:
+rule [Invoke-Method-Static-On-Class]:
     'Invoke('Method('MethodName(Class:ClassType,, Name:Id )),, 'ListWrap(ParamVals:KList) )
     => invokeImpl(
       lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), Class, mapWrap(.Map), noValue),
@@ -370,7 +361,7 @@ rule [methodInvokeRuntime-Static-On-Class]:
 when
     isKResult(ParamVals)
 
-rule [methodInvokeRuntime-Instance-On-Interface]:
+rule [Invoke-Method-Instance-On-Interface]:
     <k>
       'Invoke('Method('MethodName(
           objectClosure(
@@ -392,7 +383,7 @@ rule [methodInvokeRuntime-Instance-On-Interface]:
 when
     isKResult(ParamVals)
 
-rule [methodInvokeRuntime-On-other]:
+rule [Invoke-Method-On-other]:
     'Invoke('Method('MethodName(
         QualRV:RawVal::QualT:RefType,,
         Name:Id
@@ -406,12 +397,12 @@ rule [methodInvokeRuntime-On-other]:
 when
     getKLabel(QualRV) =/=KLabel 'objectClosure andBool QualRV =/=K null andBool isKResult(ParamVals)
 
-rule [methodInvokeRuntime-On-Null]:
+rule [Invoke-Method-On-Null]:
     'Invoke( 'Method('MethodName( null::_,, _:Id )),, 'ListWrap(ParamVals:KList) )
     =>  'Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
-          'ListWrap( cast(stringClass, null) ),,
+          'ListWrap( null::stringClass ),,
           'None(.KList)
         ))
 when

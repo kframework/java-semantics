@@ -31,8 +31,9 @@ rule [thread-start]:
             'Invoke(
               'Method(
                 'MethodName(
-                  'ExprName(
-                    cast(class String2Id("java.lang.Thread"), typedLookup(OL)),,
+                  lookupField(
+                    typedLookup(OL),
+                    class String2Id("java.lang.Thread"),
                     String2Id("runnable")
                   ),,
                   String2Id("run")
@@ -81,7 +82,7 @@ rule [Synchronized-on-null]:
     =>  'Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
-          'ListWrap( null ),,
+          'ListWrap( null::stringClass ),,
           'None(.KList)
         ))
 
@@ -149,7 +150,7 @@ rule [thread-join-interrupted]:
       =>  'Throw('NewInstance(
             'None(.KList),,
             class String2Id("java.lang.InterruptedException"),,
-            'ListWrap( null ),,
+            'ListWrap( null::stringClass ),,
             'None(.KList)
           ))
       ...
@@ -190,7 +191,7 @@ rule [object-wait-notify-notifyAll-without-sync]:
       =>  'Throw('NewInstance(
             'None(.KList),,
             class String2Id("java.lang.IllegalMonitorStateException"),,
-            'ListWrap( null ),,
+            'ListWrap( null::stringClass ),,
             'None(.KList)
           ))
       ...
@@ -232,7 +233,7 @@ rule [waitImpl-interrupted]:
       =>  'Throw('NewInstance(
             'None(.KList),,
             class String2Id("java.lang.InterruptedException"),,
-            'ListWrap( null ),,
+            'ListWrap( null::stringClass ),,
             'None(.KList)
           ))
       ...

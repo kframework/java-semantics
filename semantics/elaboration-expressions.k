@@ -17,6 +17,8 @@ module ELABORATION-EXPRESSIONS
 rule [elabEnd-AmbName]:
     elabEnd('AmbName(Ks:KList)) => elabEnd('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName('ListWrap(Ks))
 
+syntax KLabel ::= "'ExprName"
+
 //@ "localVar" is defined in the module VAR-LOOKUP.
 rule [elabEnd-ExprName-unqualified]:
     <k> elabEnd('ExprName(X:Id)) => elabEnd(localVar(X)) ?? externalVar(X, Class) ...</k>
@@ -457,6 +459,8 @@ rule [existsClass]:
       ...
     </k>
     <namesToClasses>... Pack:PackageId |-> mapWrap(NamesToClasses:Map) ...</namesToClasses>
+
+//todo elaborate constructor signature
 
 /*@ All new instance creation expressions are converted into qualified ones - 'QNewInstance, duringelaboration phase.
   For instance inner classes, the qualifier will be a valid expression for the qualifier. For other classes qualifier

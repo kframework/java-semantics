@@ -137,7 +137,7 @@ rule [invokeConstr]:
     invokeConstr(OL:Int, Class:ClassType, Vals:KList, EnclosingObj:KResult)
     => setEncloser(lookup(OL, Class), Class, EnclosingObj)
     ~> 'ExprStm('Invoke(
-          'Method('MethodName( cast(Class, typedLookup(OL)),, getConsName(Class) )),,
+          'Method('MethodName( typedLookup(OL),, getConsName(Class) )),,
           'ListWrap( Vals )
         ))
 
