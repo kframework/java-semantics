@@ -272,68 +272,45 @@ when
 
 rule initArray(_, 0, _) => .K       [structural]
 
+//@ \subsection{Array element assignment}
+
+rule [Assign-array-location-exact-type]:
+    'Assign(loc(L:Int)::T:Type,, V:RawVal::T) => store(L, V::T) ~> V::T
+
 rule [store-array-elem]:
     <k> store(L:Int, V:RawVal :: T:Type) => . ...</k>
     <store>... L |-> (_ => V) :: elem T:Type ...</store>
         [transition-threading]
 
-//@ \subsection{Array element assignment}
-
-//todo replace. could be replaced by store()
-rule [Assign-array-location-exact-type]:
-    <k> 'Assign(loc(L:Int)::T:Type,, V:RawVal::_) => V::T ...</k>
-    <store>... L |-> (_ => V)::elem T ...</store>
-        [transition-threading]
-
-rule [Assign-array-location-check-type]:
+rule [store-array-location-check-type]:
     <k>
-      'Assign(loc(L:Int)::T,, V:RawVal::_)
-      => assignArrayLocImpl(
-          subtype(typeOf(V), StoreType),
-          L,
-          V::T
-      )
+      store(L:Int, V:RawVal::T:Type)
+      =>  'If(
+            subtype(typeOf(V), StoreType),,
+            store(L, V::StoreType),,
+            'Throw('NewInstance(
+              'None(.KList),,
+              (class String2Id("java.lang.ArrayStoreException")),,
+              'ListWrap(
+                //the ArrayStoreException argument is the assigned object type
+                elab('Invoke(
+                  'MethodName(
+                    'Invoke(
+                      'MethodName(V::T,, String2Id("getClass")),,
+                      'ListWrap(.KList)
+                    ),,
+                    String2Id("getName")),,
+                  'ListWrap(.KList)
+                ))
+              ),,
+              'None(.KList)
+            ))
+          )
       ...
     </k>
     <store>... L |-> _ :: elem StoreType:Type ...</store>
 when
     T =/=K StoreType
-
-
-/*@ Assignment with runtime type compatibility check. If first argument evaluates to true, do the assignment.
-  Otherwise throw ArrayStoreException.
-*/
-syntax K ::=  assignArrayLocImpl (
-                K,        //subtype check on array element assignment
-                Int,      //destination store location
-                TypedVal  //assigned value
-              )
-              [strict(1,3)]
-
-rule [assignArrayLocImpl]:
-    <k> assignArrayLocImpl( true::bool, L:Int, V:RawVal :: T:Type) => V::T ...</k>
-    <store>... L |-> (_ => V) :: elem _ ...</store>
-        [transition-threading]
-
-rule [assignArrayLocImpl-to-ArrayStoreException]:
-    assignArrayLocImpl( false::bool, _, TV:TypedVal)
-    =>  'Throw('NewInstance(
-          'None(.KList),,
-          (class String2Id("java.lang.ArrayStoreException")),,
-          'ListWrap(
-            //the ArrayStoreException argument is the assigned object type
-            elab('Invoke(
-              'MethodName(
-                'Invoke(
-                  'MethodName(TV,, String2Id("getClass")),,
-                  'ListWrap(.KList)
-                ),,
-                String2Id("getName")),,
-              'ListWrap(.KList)
-            ))
-          ),,
-          'None(.KList)
-        ))
 
 //@ \subsection{Array initializer}
 
@@ -358,17 +335,13 @@ syntax K ::=  arrayInitImpl (
               )
 
 rule [arrayInitImpl]:
-    ( . => 'ExprStm(assignArrayLocImpl(true, L, K)) )
+    ( . => store(L, K) )
     ~> arrayInitImpl(_, (L:Int => L +Int 1), ((K:K => .KList),, _) )
 when
     getKLabel(K) =/=KLabel 'ArrayInit
 
 rule [arrayInitImpl-inner-ArrayInit-desugar]:
-    ( . => 'ExprStm(assignArrayLocImpl(
-              true,
-              L,
-              newArrayImpl(T, 'ListWrap(length(InitContent)::int), .K, InitContent)
-           )) )
+    ( . => store(L, newArrayImpl(T, 'ListWrap(length(InitContent)::int), .K, InitContent)) )
     ~> arrayInitImpl(
           arrayOf arrayOf T:Type,
           (L:Int => L +Int 1),

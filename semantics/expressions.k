@@ -212,11 +212,8 @@ Assignment operators are seqstrict according to JLS. */
 
 context 'Assign(_:KResult,,HOLE)
 
-//todo replace. could be replaced by store()
 rule [Assign]:
-    <k> 'Assign(loc(L:Int) :: ResT:Type,, V:RawVal :: ResT) => V::ResT ...</k>
-    <store>... L |-> (_:RawVal => V)::ResT ...</store>
-        [transition-threading]
+    'Assign(loc(L:Int) :: ResT:Type,, V:RawVal :: ResT) => store(L, V::ResT) ~> V::ResT
 
 //question: Why can't we move this desugaring into elaboration phase?
 rule [CompoundAssign]:
