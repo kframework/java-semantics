@@ -65,7 +65,7 @@ rule [toString-ClassType-Inner]:
 
 //@ \texttt{toString for objectClosure}
 
-rule toString(objectClosure(I:Int, Obj:List, ObjLocalClassesEnv:Map) :: T:Type)
+rule toString(objectClosure(I:Int, Obj:KList/*ObjLayers*/, ObjLocalClassesEnv:Map) :: T:Type)
     =>  elab('Invoke(
           'MethodName(objectClosure(I, Obj, ObjLocalClassesEnv) :: T,, String2Id("toString")),,
           'ListWrap(.KList)

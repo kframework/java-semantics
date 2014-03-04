@@ -14,7 +14,7 @@ rule typeOf(T:Type) => T
 rule typeOf(_ :: T:Type) => T
 rule typeOf(Str:String) => stringClass
 rule typeOf(null) => nullType
-rule typeOf(objectClosure(_, ListItem(el(Class:ClassType, _,_,_)) _:List, _)) => Class
+rule typeOf(objectClosure(_, (layer(Class:ClassType, _,_,_),, _:KList/*ObjLayers*/), _)) => Class
 rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T
 
 /* Required by getTypes in elaboration phase, invoked by lookupMethod. */
@@ -43,12 +43,12 @@ rule toTypedVal(Str:String) => Str :: stringClass                               
 rule toTypedVal(null) => null :: nullType                                           [structural]
 rule toTypedVal( objectClosure(
       OL:Int,
-      ListItem(el(Class:ClassType, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map)) Rest:List,
+      (layer(Class:ClassType, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map),, Rest:KList/*ObjLayers*/),
       ObjLocalClassesEnv:Map
     ))
     => objectClosure(
       OL,
-      ListItem(el(Class, BI, EnclosingObj, LocalEnv)) Rest,
+      (layer(Class, BI, EnclosingObj, LocalEnv),, Rest),
       ObjLocalClassesEnv
     ) :: Class
                                                                                       [structural]

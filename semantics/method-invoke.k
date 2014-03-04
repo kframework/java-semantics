@@ -336,15 +336,16 @@ context methodInvokeRuntime(_,_,_:KResult, (_,,HOLE,,_), _)
 rule [methodInvokeRuntime-Instance-On-Class]:
     <k>
       methodInvokeRuntime(Class:ClassType, Name:Id,
-        objectClosure(OL:Int,
-          Rest:List
-          ListItem(el(Class:ClassType, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map)) _,
-        _)::Class,
+        objectClosure(
+          OL:Int,
+          (Rest:KList/*ObjLayers*/,, layer(Class:ClassType, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map),, _),
+          _
+        )::Class,
         ParamVals:KList, instanceCT
       )
       => invokeImpl(
         lookupOverloadedMethod(
-          sig(Name, getTypes(ParamVals)), getClassList(Rest ListItem(el(Class, BI, EnclosingObj, LocalEnv))),
+          sig(Name, getTypes(ParamVals)), getClassList(Rest,, layer(Class, BI, EnclosingObj, LocalEnv)),
           mapWrap(.Map), noValue
         ),
         loc(OL)::Class, 'ListWrap(ParamVals)
@@ -368,9 +369,11 @@ when
 rule [methodInvokeRuntime-Instance-On-Interface]:
     <k>
       methodInvokeRuntime(Class:ClassType, Name:Id,
-        objectClosure(OL:Int,
-          ListItem(el(ActualClass:ClassType, _,_,_)) _,
-        _)::Class,
+        objectClosure(
+          OL:Int,
+          (layer(ActualClass:ClassType, _,_,_),, _),
+          _
+        )::Class,
         ParamVals:KList, instanceCT
       )
       => invokeImpl(
@@ -416,23 +419,23 @@ rule [superMethod]:
     superMethod(
       objectClosure(
         OL:Int,
-        _:List //The layers above the layer where method should be searched.
-               //Should be discarded in order to implement syper.m() functionality.
-        ListItem(el(BaseClass, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map)) Rest:List,
+        //The layers above the layer where method should be searched
+        // should be discarded in order to implement syper.m() functionality.
+        (_:KList/*ObjLayers*/,, layer(BaseClass, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map),, Rest:KList/*ObjLayers*/),
         ObjLocalClassesEnv:Map
       )::BaseClass:ClassType  //due to the way term superMethod() is first constructed, this is the upper search layer
     )
     => objectClosure(
       OL,
-      ListItem(el(BaseClass, BI, EnclosingObj, LocalEnv)) Rest,
+      (layer(BaseClass, BI, EnclosingObj, LocalEnv),, Rest),
       ObjLocalClassesEnv
     )::BaseClass
 
-//@ Converts a list of ListItem(el(Class, BI, EnclosingObj, _)) into KList with elements of sort ClassType
-syntax K ::= getClassList ( List )
-rule (.KList => Class),, getClassList((ListItem(el(Class:ClassType, _,_,_)) => .List) _)
+//@ Converts a list of ListItem(layer(Class, BI, EnclosingObj, _)) into KList with elements of sort ClassType
+syntax K ::= getClassList ( KList )
+rule (.KList => Class),, getClassList((layer(Class:ClassType, _,_,_) => .KList),, _)
         [structural, anywhere]
-rule getClassList(.) => .KList
+rule getClassList(.KList) => .KList
         [structural, anywhere]
 
 /*@ The right signature is already found.
@@ -586,7 +589,7 @@ rule [invokeImpl-Instance]:
     </methodContext>
     <store>
       ...
-      OL |-> objectClosure(NewOL:Int, Obj:List, ObjLocalClassesEnv:Map) :: _
+      OL |-> objectClosure(NewOL:Int, Obj:KList/*ObjLayers*/, ObjLocalClassesEnv:Map) :: _
       ...
     </store>
 when getKLabel(Body) =/=KLabel 'NoMethodBody
@@ -634,7 +637,7 @@ rule <k> setRuntimeEnclosingLocalEnv(OL:Int) => . ...</k>
      <env> _ => OuterLocalEnv </env>
      <store>
       ...
-      OL |-> objectClosure(_, _:List ListItem(el(Class,_,_,OuterLocalEnv:Map)) _:List, _) :: _
+      OL |-> objectClosure(_, (_:KList/*ObjLayers*/,, layer(Class,_,_,OuterLocalEnv:Map),, _:KList/*ObjLayers*/), _) :: _
       ...
      </store>
 

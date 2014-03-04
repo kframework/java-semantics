@@ -89,7 +89,7 @@ rule [object-getClass-on-object]:
     </k>
     <store>
       ...
-      OL |-> objectClosure(_, ListItem(el(T:ClassType, _,_,_)) _:List, _) :: _
+      OL |-> objectClosure(_, (layer(T:ClassType, _,_,_),, _:KList/*ObjLayers*/), _) :: _
       ...
     </store>
 when

@@ -76,7 +76,7 @@ rule [QNewInstance]:
     </methodContext>
     <store>
       ...
-      . => L |-> objectClosure(L, .List, .Map) :: Class
+      . => L |-> objectClosure(L, .KList, .Map) :: Class
       ...
     </store>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
@@ -117,7 +117,7 @@ rule [addEnvLayer]:
     <store>
       ...
       L |-> objectClosure(L,
-          ( . => ListItem(el(Class, <env>Env</env>, noValue, .Map)) ) _:List, _)::_
+          ( ( .KList => layer(Class, <env>Env</env>, noValue, .Map) ),, _:KList/*ObjLayers*/ ), _)::_
       ...
     </store>
         [structural]
@@ -159,7 +159,7 @@ rule [setEncloser-value]:
     <store>
       ...
       OL |->
-        objectClosure(_, _:List ListItem(el(Class,_, _ => EncloserRV::EncloserClass, _)) _:List, _)::_
+        objectClosure(_, (_:KList/*ObjLayers*/,, layer(Class,_, _ => EncloserRV::EncloserClass, _),, _:KList/*ObjLayers*/), _)::_
       ...
     </store>
     <classType> Class </classType>
@@ -194,7 +194,7 @@ rule [setOuterLocalEnvForClass-found]:
     <store>
       ...
       OL |->
-        objectClosure(_, _:List ListItem(el(Class,_,_, _ => CurrentEnv)) _:List, _)::_
+        objectClosure(_, ( _:KList/*ObjLayers*/,, layer(Class,_,_, _ => CurrentEnv),, _:KList/*ObjLayers*/), _)::_
       ...
     </store>
     <localClassesEnv>... SourceClass |-> mapWrap(CurrentEnv:Map) ...</localClassesEnv>

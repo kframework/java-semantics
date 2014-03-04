@@ -139,7 +139,7 @@ The object closure have the following structure:
 \item OL:Int -- the object location
 \item List -- the object content, of the form
 \begin{verbatim}
-  ListItem(el(
+  ListItem(layer(
     Class,
     <env>Env</env>,
     enclosingObjClosure::T,
@@ -152,28 +152,25 @@ The object closure have the following structure:
 */
 syntax RawRefVal ::=  objectClosure (
                         Int, //OL - object location
-                        List, /*The object content, of the form:
-                                ListItem(el(
-                                  Class,
-                                  <env>Env</env>,
-                                  enclosingObjClosure::T,
-                                  enclosingLocalEnv:Map
-                                ))
-                                ...
-                              */
+                        //K bug #266 - when solved replace with ObjLayers
+                        KList, /*ObjLayers - The object content, a list of ObjLayer elements, each of the form:
+                                      layer(
+                                        Class,
+                                        <env>Env</env>,
+                                        enclosingObjClosure::T,
+                                        enclosingLocalEnv:Map
+                                      ) */
                         Map //The init content of <localClassesEnv> when methods are invoked. For local classes only.
                       )
 
-//todo replace generic List with a more specific and better type-checked type.
-/*@ Represents one layer of the second argument of an objectClosure. Each layer represents a class with
-  all the fields defined in precisely that class.
-*/
-syntax K ::=  el (
-                ClassType,  //The class corresponding to the current layer
-                BagItem,    //<env> instance fields </env>
-                K,          //objectClosure(...)::_ - the enclosing object, or noValue for top-level classes
-                Map         //Map[Id ->Loc], enclosingLocalEnv, local classes only.
-              )
+syntax ObjLayer ::= layer (
+                      ClassType,  //The class corresponding to the current layer
+                      BagItem,    //<env> instance fields </env>
+                      K,          //objectClosure(...)::_ - the enclosing object, or noValue for top-level classes
+                      Map         //Map[Id ->Loc], enclosingLocalEnv, local classes only.
+                    )
+
+syntax ObjLayers ::= List{ObjLayer, ","}
 
 /*@ The arrayRef have the following structure:
 \begin{itemize}
