@@ -67,11 +67,12 @@ rule [env-double-Discard]:
 /*@ \subsection{Local Variable Declaration Statements} JLS \$14.4
     Not only local but fields also*/
 
+syntax KLabel ::= "'LocalVarDec"
 rule [LocalVarDec]:
     <k> 'LocalVarDec(_:K,, T:Type,,'ListWrap('VarDec(X:Id))) => . ...</k>
-    <env> Env:Map => Env[L:Int/X] </env>
+    <env> Env:Map => Env[L/X] </env>
     <store>... . => L |-> default(T) ...</store>
-    <nextLoc> L => L +Int 1 </nextLoc>
+    <nextLoc> L:Int => L +Int 1 </nextLoc>
 
 //@ \subsection{Empty statement} JLS \$14.6
 

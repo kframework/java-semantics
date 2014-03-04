@@ -638,23 +638,17 @@ rule <k> setRuntimeEnclosingLocalEnv(OL:Int) => . ...</k>
       ...
      </store>
 
-//@ \texttt{bindto} also checks the well-formedness of the method parameters
+/*@ Binds a list of formal parameters to their values. Used by method calls and try-catch.
+*/
 syntax K ::= bindTo ( KList, // List{'Param(...)} - parameter declarations
                       KList  // List{KResult} - values
                     )
 
-//todo redundancy check whether the modification of  <env>, <store> etc is arealdy done by 'LocalVarDec
 rule [bindTo]:
-    <k>
-      bindTo('Param(_:K,, T:Type,, X:Id),, RestP:KList, TV:TypedVal,, RestV:KList)
-      => 'LocalVarDec(.K,, T:Type,,'ListWrap('VarDec(X)))
-        ~> 'ExprStm('Assign(localVar(X),, cast(T, TV:TypedVal)))
-        ~> bindTo(RestP, RestV)
-      ...
-    </k>
-    <env> Env:Map => Env[L/X] </env>
-    <store>... . => L |-> undefined :: T ...</store>
-    <nextLoc> L:Int => L +Int 1 </nextLoc>
+    bindTo('Param(_:K,, T:Type,, X:Id),, RestP:KList, TV:TypedVal,, RestV:KList)
+    => 'LocalVarDec(.K,, T:Type,,'ListWrap('VarDec(X)))
+      ~> 'ExprStm('Assign(localVar(X),, cast(T, TV:TypedVal)))
+      ~> bindTo(RestP, RestV)
 
 rule [bindTo-empty]:
     bindTo(.KList,.KList) => .K
