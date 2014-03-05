@@ -25,6 +25,9 @@ module CLASSES
 
 /*@ \subsection{New instance creation}*/
 
+//@ _:K,, Class:ClassType,, 'ListWrap(Args),, 'None(.KList)
+syntax KLabel ::= "'NewInstance"
+
 /*@Unpack 'NewInstance back into 'QNewInstance.
   The difference between desugaring and unpacking is that unpacking is an artificial procedure required to separate
   elaboration from execution. In the elaboration phase there is a opposite packing rule tht creates this construct.
@@ -32,6 +35,9 @@ module CLASSES
 rule [NewInstance-to-QNewInstance-unpack]:
     'NewInstance(Arg1:K,, Class:ClassType,, ActualArgsList:K,, 'None(.KList))
     => 'QNewInstance(noValue,, Arg1,, Class,, 'None(.KList),, ActualArgsList,, 'None(.KList))
+
+//@ Qual,, _:K,, Class,, _:K,, 'ListWrap(Args),, 'None(.KList)
+syntax KLabel ::= "'QNewInstance"
 
 //@Resolve new instance qualifier
 context 'QNewInstance(HOLE,, _:KList)

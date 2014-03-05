@@ -416,14 +416,18 @@ rule [elab-NewInstance]:
     </k>
     <crntClass> CrntClass:ClassType </crntClass>
 
-/*@ elab('QNewInstance()) is strict in ins qualifier, constructor arguments. */
-rule customElabHeating('QNewInstance, Ks:KList) => length(Ks) in (SetItem(1) SetItem(5))
+/*@ elab('QNewInstance()) is strict in all its arguments except the class name. */
+rule customElabHeating('QNewInstance, Ks:KList)
+     => length(Ks) in (SetItem(1) SetItem(2) SetItem(4) SetItem(5) SetItem(6))
 
 //@ Heat the class name if it is not a simple name.
 context elab('QNewInstance(_:K,,_:K,, HOLE,, _))
 when
     notBool isId(HOLE) ==K true
 
+//totest the qualifier type must be in sync with the resolved class, current implementation don't guarantee this.
+
+//Resolve the class name with the help of qualifier type
 rule [elab-QNewInstance-resolve-class]:
     elab('QNewInstance(elabRes(cast(QualClass:ClassType, _)),, _:K,,
       (Name:Id => resolveInnerClass(QualClass, Name)),,
@@ -464,10 +468,10 @@ rule [existsClass]:
 
 /*@ All new instance creation expressions are converted into qualified ones - 'QNewInstance, duringelaboration phase.
   For instance inner classes, the qualifier will be a valid expression for the qualifier. For other classes qualifier
-  will be noValue.
+  will be noValue. At this stage 'QNewInstance is wrapped in elabEnd.
 */
-rule [elab-QNewInstance-valid-qualifier]:
-    elab('QNewInstance(elabRes(Qual:K),, Arg2:K,, Class:ClassType,, Arg4:K,, elabRes(ActualArgsList:K),, 'None(.KList)))
+rule [elabEnd-QNewInstance-valid-qualifier]:
+    elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, ActualArgsList:K,, 'None(.KList)))
     => elabRes(cast(Class, 'QNewInstance(Qual,, Arg2,, Class,, Arg4,, ActualArgsList,, 'None(.KList))))
 when
     Qual =/=K noValue
@@ -475,8 +479,8 @@ when
 /*@ A 'QNewInstance with target noValue should be packed back into a NewInstance, for compatibility with Java.
     It will be desugared again into 'NewInstance at execution phase.
 */
-rule [elab-QNewInstance-to-NewInstance-pack]:
-    elab('QNewInstance(elabRes(noValue),, Arg2:K,, Class:ClassType,, Arg4:K,, elabRes(ActualArgsList:K),,'None(.KList)))
+rule [elabEnd-QNewInstance-to-NewInstance-pack]:
+    elabEnd('QNewInstance(noValue,, Arg2:K,, Class:ClassType,, Arg4:K,, ActualArgsList:K,,'None(.KList)))
     => elabRes(cast(Class, 'NewInstance(Arg2,, Class,, ActualArgsList,, 'None(.KList))))
 
 rule [elabEnd-InstanceOf]:

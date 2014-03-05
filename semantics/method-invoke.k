@@ -77,13 +77,12 @@ rule [elabEnd-Invoke-to-lookupMethod-qualified]:
     )) => lookupMethod(
       getLookupTargetType(typeOf(Qual)),
       Name,
-      notBool isThisOrSuper(Qual) ==K true,
       noValue,
       false,
       Qual,
       ParamExps
     )
-when notBool isThisQualifier(Qual) ==K true
+when notBool isCastOfQThis(Qual) ==K true
 
 rule [elabEnd-Invoke-to-lookupMethod-unqualified]:
     <k>
@@ -93,7 +92,6 @@ rule [elabEnd-Invoke-to-lookupMethod-unqualified]:
       ) => lookupMethod(
         Class,
         Name,
-        false,
         noValue,
         false,
         cast(Class, 'QThis(Class)),
@@ -110,8 +108,8 @@ rule [elabEnd-Invoke-to-lookupMethod-unqualified]:
 
 //K bug: latex workaround - manual character escape.
 //@ True for cast(T,'QThis(\_)), false otherwise
-syntax K ::= isThisQualifier ( K )                                    [function]
-rule isThisQualifier(cast(_, 'QThis(_))) => true
+syntax K ::= isCastOfQThis ( K )                                    [function]
+rule isCastOfQThis(cast(_, 'QThis(_))) => true
 
 syntax K ::= isThisOrSuper( K )                                       [function]
 rule isThisOrSuper(cast(_, 'QThis(_))) => true
@@ -126,18 +124,17 @@ Afterwards we search for the right implementation in the hierarchy, once the sig
 syntax K ::=  lookupMethod (
                 ClassType,//target class, even for arrays.
                 Id,       //method name
-                Bool,     //IsQ - isQualified
                 K,        //Evaluates to the signature to be called, or noValue if no signature was found yet
                           // Sig format: mapWrap(Sig |-> MethodTV)
                 Bool,     //SigSearched: true if Sig was already searched for the current class, false otherwise.
                           // Starts with false.
-                K,        //either Cast - typed qualifier expression, or Class for class qualifiers.
+                K,        //Qual - either Cast - typed qualifier expression, or Class for class qualifiers.
                 KList     //ParamExps - parameter expressions of type Cast
               )
               [strict(4)]
 
 //K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
-context lookupMethod(_,_,_,HOLE,_,_,_)
+context lookupMethod(_,_,HOLE,_,_,_)
 
 syntax K ::= getLookupTargetType ( RefType )    [function]
 rule getLookupTargetType(Class:ClassType) => Class
@@ -151,10 +148,10 @@ rule [lookupMethod-to-lookupSignature]:
     lookupMethod(
       QualClass:ClassType,
       MethodName:Id,
-      IsQ:Bool,
-      noValue => lookupSignature(MethodName, getTypes(ParamExps), getMethods(QualClass), IsQ, noValue, QualClass),
+      noValue => lookupSignature(MethodName, getTypes(ParamExps), getMethods(QualClass),
+                                 notBool isThisOrSuper(Qual) ==K true, noValue, QualClass),
       false => true,
-      _,
+      Qual:K,
       ParamExps:KList
     )
 
@@ -164,13 +161,12 @@ rule [lookupMethod-SigFound]:
     lookupMethod(
       QualClass:ClassType,
       _,
-      _,
       methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(sig( Name:Id, ArgTypes:Types ), RetT:Type),
       true, QualK:K, ParamExps:KList
     ) => methodProcessArguments(RetT, QualClass, QualK, Name, ArgTypes, ParamExps, .KList, CT)
 
 rule [lookupMethod-Sig-NotFound]:
-    lookupMethod(_,_,_, noValue, true, _,_) => noValue
+    lookupMethod(_,_, noValue, true, _,_) => noValue
 
 syntax K ::=  methodProcessArguments (
                 Type,       //RetT - method return type
@@ -199,7 +195,7 @@ rule [methodProcessArguments-end]:
     =>  elabEnd(stmtAndExp(
 
           //if the context is static but qualifier isa valid expression, we have to evaluate it.
-          #if CT ==K staticCT andBool isCast(QualK) ==K true andBool notBool isThisQualifier(QualK) ==K true
+          #if CT ==K staticCT andBool isCast(QualK) ==K true andBool notBool isCastOfQThis(QualK) ==K true
             #then 'ExprStm(QualK)
             #else 'Empty(.KList)
           #fi,
@@ -289,7 +285,7 @@ syntax K ::=  isAccessible (
                 AccessMode, //the method access mode
                 K,          //evaluates to ContextType - staticCT or instanceCT
                 ClassType,  //the method declaring class.
-                Bool,       //IsQ - whether the initial method call expression was qualified
+                Bool,       //IsQ - whether the initial method call expression was qualified, used by protected mode.
                 ClassType   //QualClass - target class, used by protected mode in inner classes.
               )
               [strict(1, 2)]
