@@ -385,9 +385,7 @@ when paramTypesResolved(Params)
 
 //@ Get the internal constructor name for a given class
 syntax K ::= getConsName ( ClassType )                               [function]
-
 rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(ClassId))
-        [structural, anywhere]
 
 //resolve field declaration type
 context 'FieldDec(_:K,, HOLE,, _)

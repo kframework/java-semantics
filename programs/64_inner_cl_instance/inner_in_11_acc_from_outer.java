@@ -19,6 +19,6 @@ class O {
 
   class A {
     int v = 1;
-    String f() {return "f()";}
+    String f() {return "A.f()";}
   }
 }

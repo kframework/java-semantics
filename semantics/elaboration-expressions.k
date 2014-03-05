@@ -416,16 +416,17 @@ rule [elab-NewInstance]:
     </k>
     <crntClass> CrntClass:ClassType </crntClass>
 
-/*@ elab('QNewInstance()) is strict in all its arguments except the class name. */
-rule customElabHeating('QNewInstance, Ks:KList)
-     => length(Ks) in (SetItem(1) SetItem(2) SetItem(4) SetItem(5) SetItem(6))
+/*@ elab('QNewInstance()) is strict in all its arguments except the class name (3) and anonymous body(6).
+  If this is not an anynymous class then 6-th argument is also default heated.
+*/
+rule customElabHeating('QNewInstance, Ks:KList,,KHole:K)
+     => length(Ks,,KHole) in (SetItem(1) SetItem(2) SetItem(4) SetItem(5))
+        orBool (length(Ks,,KHole) ==K 6 andBool KHole ==K 'None(.KList))
 
 //@ Heat the class name if it is not a simple name.
 context elab('QNewInstance(_:K,,_:K,, HOLE,, _))
 when
     notBool isId(HOLE) ==K true
-
-//totest the qualifier type must be in sync with the resolved class, current implementation don't guarantee this.
 
 //Resolve the class name with the help of qualifier type
 rule [elab-QNewInstance-resolve-class]:
@@ -444,22 +445,22 @@ syntax K ::=  resolveInnerClass (
 rule [resolveInnerClass]:
     <k>
       resolveInnerClass(QualClass:ClassType, Name:Id)
-      => 'If(
-            existsClass(toPackage(QualClass), Name),,
-            getClassType(toPackage(QualClass), Name),,
-            resolveInnerClass(BaseQualClass, Name)
-          )
+      => getClassIfExists(toPackage(QualClass), Name) ?? resolveInnerClass(BaseQualClass, Name)
       ...
     </k>
     <classType> QualClass </classType>
     <extends> BaseQualClass:ClassType </extends>
 
-//@ Returns true if in the given package exists a class with given simple name, false otherwise.
-syntax K ::= existsClass ( PackageId, Id )
+//@ If with the fiven package and name exists, return this class. Otherwise return noValue
+syntax K ::= getClassIfExists ( PackageId, Id )
 
-rule [existsClass]:
+rule [getClassIfExists]:
     <k>
-      existsClass(Pack:PackageId, Name:Id) => Name in keys(NamesToClasses)
+      getClassIfExists(Pack:PackageId, Name:Id)
+      =>  #if Name in keys(NamesToClasses)
+            #then getClassType(Pack:PackageId, Name:Id)
+            #else noValue
+          #fi
       ...
     </k>
     <namesToClasses>... Pack:PackageId |-> mapWrap(NamesToClasses:Map) ...</namesToClasses>
@@ -474,10 +475,9 @@ rule [elabEnd-QNewInstance-to-lookupMethod]:
 */
 rule [elabEnd-QNewInstance-methodProcessArguments-qualified-end]:
     methodProcessArguments(_,_,_, Name:Id, types(.KList), .KList, ExpectedParamExps:KList, instanceCT)
-    ~> elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, ActualArgsList:K,, 'None(.KList)))
-    => elabRes(cast(Class, 'QNewInstance(Qual,, Arg2,, Class,, Arg4,, 'ListWrap(ExpectedParamExps),, 'None(.KList))))
-when
-    Qual =/=K noValue
+    ~> elabEnd('QNewInstance(cast(_, QualExp:K),, Arg2:K,, Class:ClassType,, Arg4:K,, ActualArgsList:K,, 'None(.KList)))
+    => elabRes(cast(Class, 'QNewInstance( cast(getEnclosingClassFunction(Class), QualExp:K),, Arg2,,
+                                          getSimpleName(Class),, Arg4,, 'ListWrap(ExpectedParamExps),, 'None(.KList))))
 
 /*@ A 'QNewInstance with target noValue should be packed back into a NewInstance, for compatibility with Java.
     It will be desugared again into 'NewInstance at execution phase.
@@ -551,5 +551,12 @@ rule [getEnclosingClass]:
     <k> getEnclosingClass(Class:ClassType) => EnclosingClass ...</k>
     <classType> Class </classType>
     <enclosingClass> EnclosingClass:ClassType </enclosingClass>
+
+syntax K ::= getEnclosingClassFunction ( ClassType )  [function]
+rule getEnclosingClassFunction(class ClassId:Id)
+      => class String2Id(retainHead(
+        Id2String(ClassId),
+        rfindString(Id2String(ClassId), ".", lengthString(Id2String(ClassId)))
+      ))
 
 endmodule

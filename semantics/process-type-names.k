@@ -120,7 +120,7 @@ rule getClassType(packageId(PackKId:Id), SimpleClass:Id)
 //@ Converts a fully qualified class type into a simple name (Id)
 syntax K ::= getSimpleName ( ClassType )                  [function]
 rule getSimpleName(class ClassId:Id)
-    => String2Id(retainTail(
+    => String2Id(trimHead(
       Id2String(ClassId),
       rfindString(Id2String(ClassId), ".", lengthString(Id2String(ClassId))) +Int 1
     ))

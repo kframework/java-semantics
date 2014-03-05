@@ -47,6 +47,9 @@ context 'QNewInstance(HOLE,, _:KList)
 */
 context 'QNewInstance(_:KResult,,_:K,,_:K,,_:K,, 'ListWrap(_,,HOLE,,_),, _)
 
+rule [QNewInstance-resolve-class]:
+    'QNewInstance(_::QualT:ClassType,,_:K,, (Name:Id => getClassType(toPackage(QualT), Name)),,_:K,, _:K,, _)
+
 /*@ Qualified new instance creation expression. Unqualified new expressions are rewritten into qualified ones by other
 rules and also reach this point.*/
 rule [QNewInstance]:
