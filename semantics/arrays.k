@@ -288,18 +288,19 @@ rule [store-array-location-check-type]:
       =>  'If(
             subtype(typeOf(V), StoreType),,
             store(L, V::StoreType),,
+
             'Throw('NewInstance(
               'None(.KList),,
               (class String2Id("java.lang.ArrayStoreException")),,
               'ListWrap(
                 //the ArrayStoreException argument is the assigned object type
                 'Invoke(
-                  'MethodName(
+                  'Method('MethodName(
                     'Invoke(
-                      'MethodName(V::T,, String2Id("getClass")),,
+                      'Method('MethodName(V::T,, String2Id("getClass"))),,
                       'ListWrap(.KList)
                     ),,
-                    String2Id("getName")),,
+                    String2Id("getName"))),,
                   'ListWrap(.KList)
                 )
               ),,

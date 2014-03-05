@@ -516,6 +516,19 @@ rule [elabEnd-default-all-except-expressions]:
 when
     notBool isExpressionLabel(KL)
 
+/*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
+such as an anonymous class declaration. Is typed with the type of the expression.
+At runtime is rewritten into the statement, that should evaluate into .K, followed by the expression,
+that should evaluate to value.*/
+syntax K ::= stmtAndExp ( K, K )
+
+//elaboration time
+rule elabEnd(           stmtAndExp(Stmt:K, cast(T:Type, Exp:K)) )
+     => elabRes(cast(T, stmtAndExp(Stmt,   cast(T:Type, Exp:K))))
+
+//runtime
+rule stmtAndExp(Stmt:K, Exp:K) => Stmt ~> Exp
+
 //@ \subsection{Hacks related to elaboration during execution phase}
 
 //@ Unwrap elaborated terms in execution phase, so that they could be executed.

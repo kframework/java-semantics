@@ -530,21 +530,12 @@ rule [elabEnd-NewArray-ArrayInit]:
     => elabRes(cast(arrayOf T, newArrayImpl(T, 'ListWrap(length(InitContent)::int), .K, InitContent)))
 
 //@ Counts the number of elements in the KList list. Evaluates to an cast(int, Int) .
-syntax K ::= length ( KList )                                      [function]
-           | length ( Int, KList )                              [function]
+syntax K ::= length ( KList )                                       [function]
+           | length ( Int, KList )                                  [function]
 
 rule length(Ks:KList) => length(0, Ks)
 rule length(I:Int, K:K,, Ks:KList) => length(I +Int 1, Ks)
 rule length(I:Int, .KList) => I
-
-//K bug: latex workaround - manual character escape.
-//@ True for cast(T,'QThis(\_)), false otherwise
-syntax K ::= isTypedQThis ( K )                                    [function]
-
-rule isTypedQThis(cast(_, K:K)) => getKLabel(K) ==KLabel 'QThis
-
-rule isTypedQThis(K:K) => false
-when getKLabel(K) =/=KLabel 'cast
 
 syntax K ::= getEnclosingClass ( ClassType )
 

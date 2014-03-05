@@ -77,13 +77,13 @@ rule [elabEnd-Invoke-to-lookupMethod-qualified]:
     )) => lookupMethod(
       getLookupTargetType(typeOf(Qual)),
       Name,
-      true,
+      notBool isThisOrSuper(Qual) ==K true,
       noValue,
       false,
       Qual,
       ParamExps
     )
-when notBool isTypedQThis(Qual)
+when notBool isThisQualifier(Qual) ==K true
 
 rule [elabEnd-Invoke-to-lookupMethod-unqualified]:
     <k>
@@ -100,13 +100,22 @@ rule [elabEnd-Invoke-to-lookupMethod-unqualified]:
         ParamExps
       )
       ?? elabEnd('Invoke(
-        'MethodName(cast(EnclosingClass, 'QThis(EnclosingClass)),, Name:Id),,
+        'Method('MethodName(cast(EnclosingClass, 'QThis(EnclosingClass)),, Name:Id)),,
         'ListWrap(ParamExps)
       ))
       ...
     </k>
     <classType> Class </classType>
     <enclosingClass> EnclosingClass:ClassType </enclosingClass>
+
+//K bug: latex workaround - manual character escape.
+//@ True for cast(T,'QThis(\_)), false otherwise
+syntax K ::= isThisQualifier ( K )                                    [function]
+rule isThisQualifier(cast(_, 'QThis(_))) => true
+
+syntax K ::= isThisOrSuper( K )                                       [function]
+rule isThisOrSuper(cast(_, 'QThis(_))) => true
+rule isThisOrSuper(cast(_, 'superMethod(_))) => true
 
 /*@ Lookup the right methodClosure based on supplied parameters.
 If the method is not found in the supplied class list, we should search for it in the
@@ -187,18 +196,27 @@ rule [methodProcessArguments-process]:
 rule [methodProcessArguments-end]:
     methodProcessArguments(RetT:Type, QualClass:ClassType, QualK:K, Name:Id, types(.KList), .KList, ExpectedParamExps:KList,
         CT:ContextType)
-    =>  elabRes(cast(RetT,
-          'Invoke(
-            'Method(
-              'MethodName(
-                #if CT ==K instanceCT
-                  #then QualK
-                  #else QualClass
-                #fi,,
-                Name:Id
-              )
-            ),,
-            'ListWrap(ExpectedParamExps)
+    =>  elabEnd(stmtAndExp(
+
+          //if the context is static but qualifier isa valid expression, we have to evaluate it.
+          #if CT ==K staticCT andBool isCast(QualK) ==K true andBool notBool isThisQualifier(QualK) ==K true
+            #then 'ExprStm(QualK)
+            #else 'Empty(.KList)
+          #fi,
+
+          cast(RetT,
+            'Invoke(
+              'Method(
+                'MethodName(
+                  #if CT ==K instanceCT
+                    #then QualK
+                    #else QualClass
+                  #fi,,
+                  Name:Id
+                )
+              ),,
+              'ListWrap(ExpectedParamExps)
+            )
           )
         ))
 
