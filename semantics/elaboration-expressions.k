@@ -464,24 +464,28 @@ rule [existsClass]:
     </k>
     <namesToClasses>... Pack:PackageId |-> mapWrap(NamesToClasses:Map) ...</namesToClasses>
 
-//todo elaborate constructor signature
+rule [elabEnd-QNewInstance-to-lookupMethod]:
+    (. => lookupMethod(Class, getConsName(Class), noValue, false, Class, Args)) ~>
+    elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, 'ListWrap(Args:KList),, 'None(.KList)))
 
-/*@ All new instance creation expressions are converted into qualified ones - 'QNewInstance, duringelaboration phase.
+/*@ All new instance creation expressions are converted into qualified ones - 'QNewInstance, during elaboration phase.
   For instance inner classes, the qualifier will be a valid expression for the qualifier. For other classes qualifier
   will be noValue. At this stage 'QNewInstance is wrapped in elabEnd.
 */
-rule [elabEnd-QNewInstance-valid-qualifier]:
-    elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, ActualArgsList:K,, 'None(.KList)))
-    => elabRes(cast(Class, 'QNewInstance(Qual,, Arg2,, Class,, Arg4,, ActualArgsList,, 'None(.KList))))
+rule [elabEnd-QNewInstance-methodProcessArguments-qualified-end]:
+    methodProcessArguments(_,_,_, Name:Id, types(.KList), .KList, ExpectedParamExps:KList, instanceCT)
+    ~> elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, ActualArgsList:K,, 'None(.KList)))
+    => elabRes(cast(Class, 'QNewInstance(Qual,, Arg2,, Class,, Arg4,, 'ListWrap(ExpectedParamExps),, 'None(.KList))))
 when
     Qual =/=K noValue
 
 /*@ A 'QNewInstance with target noValue should be packed back into a NewInstance, for compatibility with Java.
     It will be desugared again into 'NewInstance at execution phase.
 */
-rule [elabEnd-QNewInstance-to-NewInstance-pack]:
-    elabEnd('QNewInstance(noValue,, Arg2:K,, Class:ClassType,, Arg4:K,, ActualArgsList:K,,'None(.KList)))
-    => elabRes(cast(Class, 'NewInstance(Arg2,, Class,, ActualArgsList,, 'None(.KList))))
+rule [elabEnd-QNewInstance-methodProcessArguments-to-NewInstance]:
+    methodProcessArguments(_,_,_, Name:Id, types(.KList), .KList, ExpectedParamExps:KList, instanceCT)
+    ~> elabEnd('QNewInstance(noValue,, Arg2:K,, Class:ClassType,, Arg4:K,, ActualArgsList:K,,'None(.KList)))
+    => elabRes(cast(Class, 'NewInstance(Arg2,, Class,, 'ListWrap(ExpectedParamExps),, 'None(.KList))))
 
 rule [elabEnd-InstanceOf]:
     elabEnd('InstanceOf(TExp:K,, RT2:RefType)) => elabRes(cast(bool, 'InstanceOf(TExp,, RT2)))

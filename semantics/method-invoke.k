@@ -190,31 +190,38 @@ rule [methodProcessArguments-process]:
 
 //for now just a workaround implementation
 rule [methodProcessArguments-end]:
-    methodProcessArguments(RetT:Type, QualClass:ClassType, QualK:K, Name:Id, types(.KList), .KList, ExpectedParamExps:KList,
-        CT:ContextType)
-    =>  elabEnd(stmtAndExp(
+    <k>
+      (methodProcessArguments(RetT:Type, QualClass:ClassType, QualK:K, Name:Id, types(.KList), .KList,
+                              ExpectedParamExps:KList, CT:ContextType)
+      =>  elabEnd(stmtAndExp(
 
-          //if the context is static but qualifier isa valid expression, we have to evaluate it.
-          #if CT ==K staticCT andBool isCast(QualK) ==K true andBool notBool isCastOfQThis(QualK) ==K true
-            #then 'ExprStm(QualK)
-            #else 'Empty(.KList)
-          #fi,
+            //if the context is static but qualifier isa valid expression, we have to evaluate it.
+            #if CT ==K staticCT andBool isCast(QualK) ==K true andBool notBool isCastOfQThis(QualK) ==K true
+              #then 'ExprStm(QualK)
+              #else 'Empty(.KList)
+            #fi,
 
-          cast(RetT,
-            'Invoke(
-              'Method(
-                'MethodName(
-                  #if CT ==K instanceCT
-                    #then QualK
-                    #else QualClass
-                  #fi,,
-                  Name:Id
-                )
-              ),,
-              'ListWrap(ExpectedParamExps)
+            cast(RetT,
+              'Invoke(
+                'Method(
+                  'MethodName(
+                    #if CT ==K instanceCT
+                      #then QualK
+                      #else QualClass
+                    #fi,,
+                    Name:Id
+                  )
+                ),,
+                'ListWrap(ExpectedParamExps)
+              )
             )
-          )
-        ))
+          ))
+      )
+      ~> KI:KItem
+      ...
+    </k>
+when getKLabel(KI) =/=KLabel 'elabEnd //if it is elabEnd, then it is elabEnd('QNewInstance(...)),
+                                      //and we have a different rule for that.
 
 /*Search for the correct method signature to use
 when calling a given MethodName with the given argument types.
