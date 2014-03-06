@@ -44,7 +44,8 @@ rule [processLocalClassDecStep1-register-name]:
       processLocalClassDecStep1(
         'ClassDec(
           'ClassDecHead(
-            _:K,,
+            'ListWrap( (.KList => #if CT ==K staticCT #then 'Static(.KList) #else 'StrictFP(.KList)/*vacuous*/ #fi),,
+                        _ ),,
             (InitName:Id => getSimpleName(GeneratedClass)),,
             _:K,, _:K,, _:K
           ),, _:K
@@ -54,6 +55,7 @@ rule [processLocalClassDecStep1-register-name]:
       ...
     </k>
     <localTypes> ListItem(mapWrap(LocalTypes:Map => LocalTypes[GeneratedClass / InitName])) ...</localTypes>
+    <contextType> CT:ContextType </contextType>
 
 rule [processLocalClassDecStep1-process]:
     <k>
