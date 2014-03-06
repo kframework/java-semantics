@@ -176,7 +176,7 @@ syntax K ::=  methodProcessArguments (
                 Types,      //ArgTypes - argument types
                 KList,      //ParamExps - actual parameters
                 KList,      //will be used later as parameters casted to expected parameter types
-                ContextType // CT - method context type, instance or static
+                ContextType // CT - context type of the found method (not of the caller context!), instance or static
               )
 
 rule [methodProcessArguments-process]:
