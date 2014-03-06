@@ -410,7 +410,7 @@ rule [elab-NewInstance]:
         =>  'QNewInstance(
               #if CT ==K staticCT
                 #then noValue
-                #else getQThisSubclassOf(CrntClass, getEnclosingClass(Class))
+                #else getQThisSubclassOf(CrntClass, EnclosingClass)
               #fi,,
               Arg1,, Class,, 'None(.KList),, ActualArgsList,, 'None(.KList)
             )
@@ -419,6 +419,7 @@ rule [elab-NewInstance]:
     </k>
     <crntClass> CrntClass:ClassType </crntClass>
     <classType> Class </classType>
+    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
     <classContextType> CT:ContextType </classContextType>
 
 /*@ elab('QNewInstance()) is strict in all its arguments except the class name (3) and anonymous body(6).
@@ -474,23 +475,36 @@ rule [elabEnd-QNewInstance-to-lookupMethod]:
     (. => lookupMethod(Class, getConsName(Class), noValue, false, Class, Args)) ~>
     elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, 'ListWrap(Args:KList),, 'None(.KList)))
 
+rule [elabEnd-QNewInstance-methodProcessArguments-to-argsElaborated]:
+    (methodProcessArguments(_,_,_,_, types(.KList), .KList, ExpectedParamExps:KList, instanceCT) => argsElaborated)
+    ~> elabEnd('QNewInstance(_:K,, _:K,, _:K,, _:K,, (_:K => 'ListWrap(ExpectedParamExps)),, _:K))
+
+//@ Marker indicating that arguments of the following 'QNewInstance have been elaborated
+syntax K ::= "argsElaborated"
+
 /*@ All new instance creation expressions are converted into qualified ones - 'QNewInstance, during elaboration phase.
   For instance inner classes, the qualifier will be a valid expression for the qualifier. For other classes qualifier
   will be noValue. At this stage 'QNewInstance is wrapped in elabEnd.
 */
-rule [elabEnd-QNewInstance-methodProcessArguments-qualified-end]:
-    methodProcessArguments(_,_,_, Name:Id, types(.KList), .KList, ExpectedParamExps:KList, instanceCT)
-    ~> elabEnd('QNewInstance(cast(_, QualExp:K),, Arg2:K,, Class:ClassType,, Arg4:K,, ActualArgsList:K,, 'None(.KList)))
-    => elabRes(cast(Class, 'QNewInstance( cast(getEnclosingClassFunction(Class), QualExp:K),, Arg2,,
-                                          getSimpleName(Class),, Arg4,, 'ListWrap(ExpectedParamExps),, 'None(.KList))))
+rule [elabEnd-QNewInstance-argsElaborated-qualified-end]:
+    <k>
+      argsElaborated
+      ~> elabEnd('QNewInstance( cast(_, QualExp:K),, Arg2:K,, Class:ClassType,, Arg4:K,,
+                                ExpectedArgsList:K,, 'None(.KList) ))
+      => elabRes(cast(Class, 'QNewInstance( cast(EnclosingClass, QualExp:K),, Arg2,,
+                                            getSimpleName(Class),, Arg4,, ExpectedArgsList,, 'None(.KList))))
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
 
 /*@ A 'QNewInstance with target noValue should be packed back into a NewInstance, for compatibility with Java.
     It will be desugared again into 'NewInstance at execution phase.
 */
-rule [elabEnd-QNewInstance-methodProcessArguments-to-NewInstance]:
-    methodProcessArguments(_,_,_, Name:Id, types(.KList), .KList, ExpectedParamExps:KList, instanceCT)
-    ~> elabEnd('QNewInstance(noValue,, Arg2:K,, Class:ClassType,, Arg4:K,, ActualArgsList:K,,'None(.KList)))
-    => elabRes(cast(Class, 'NewInstance(Arg2,, Class,, 'ListWrap(ExpectedParamExps),, 'None(.KList))))
+rule [elabEnd-QNewInstance-argsElaborated-to-NewInstance]:
+    argsElaborated
+    ~> elabEnd('QNewInstance(noValue,, Arg2:K,, Class:ClassType,, Arg4:K,, ExpectedArgsList:K,,'None(.KList)))
+    => elabRes(cast(Class, 'NewInstance(Arg2,, Class,, ExpectedArgsList,, 'None(.KList))))
 
 rule [elabEnd-InstanceOf]:
     elabEnd('InstanceOf(TExp:K,, RT2:RefType)) => elabRes(cast(bool, 'InstanceOf(TExp,, RT2)))
@@ -549,20 +563,5 @@ syntax K ::= length ( KList )                                       [function]
 rule length(Ks:KList) => length(0, Ks)
 rule length(I:Int, K:K,, Ks:KList) => length(I +Int 1, Ks)
 rule length(I:Int, .KList) => I
-
-syntax K ::= getEnclosingClass ( ClassType )
-
-rule [getEnclosingClass]:
-    <k> getEnclosingClass(Class:ClassType) => EnclosingClass ...</k>
-    <classType> Class </classType>
-    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
-
-//todo don't produce correct result for local classes. Test that it is so.
-syntax K ::= getEnclosingClassFunction ( ClassType )  [function]
-rule getEnclosingClassFunction(class ClassId:Id)
-      => class String2Id(retainHead(
-        Id2String(ClassId),
-        rfindString(Id2String(ClassId), ".", lengthString(Id2String(ClassId)))
-      ))
 
 endmodule

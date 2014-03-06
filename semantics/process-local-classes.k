@@ -11,42 +11,73 @@ module PROCESS-LOCAL-CLASSES
     imports PROCESS-CLASS-DECS
     imports ELABORATION-EXPRESSIONS
 
+//@ ClassDecStm('ClassDec(...))
+syntax KLabel ::= "'ClassDecStm"
+
 rule [elab-ClassDecStm]:
     <k>
       elab('ClassDecStm(ClassDec:K))
-      =>   processLocalClassDecStep1(ClassDec, packageId(String2Id("local_$" +String Int2String(LocalId))))
+      =>   processLocalClassDecStep1( ClassDec, toPackage(CrntClass),
+              getClassType(toPackage(CrntClass),
+                           String2Id(Id2String(getNameFromClassDec(ClassDec)) +String "$" +String Int2String(LocalId))),
+              false
+           )
       ...
     </k>
+    <crntClass> CrntClass:ClassType </crntClass>
     <nextLocalId> LocalId:Int => LocalId +Int 1 </nextLocalId>
+
+syntax K ::=  getNameFromClassDec ( K //the 'ClassDec(...)
+                                  )  [function]
+rule getNameFromClassDec('ClassDec('ClassDecHead( _:K,, Name:Id,, _:K,, _:K,, _:K ),, _:K)) => Name
 
 //@ Register a local class in the given generated package and fully process it.
 syntax K ::=  processLocalClassDecStep1 (
-                K,        //the 'ClassDec term
-                PackageId //the generated package
+                K,          //the 'ClassDec term
+                PackageId,  //the package = the enclosing class
+                ClassType,  //GeneratedClass:ClassType at substep 1, .K when generated name have been registered.
+                Bool        //ClassRegistered - false for substep 1, true for substep 2.
               )
 
-rule [processLocalClassDecStep1]:
+rule [processLocalClassDecStep1-register-name]:
     <k>
-      processLocalClassDecStep1(ClassDec:K, GeneratedPack:PackageId)
-      =>   processTypeNames(ClassDec, GeneratedPack)
-        ~> processTypeDecsInPCUPhase(ClassDec, GeneratedPack, Class)
-        ~> processLocalClassDecStep2(GeneratedPack:PackageId)
+      processLocalClassDecStep1(
+        'ClassDec(
+          'ClassDecHead(
+            _:K,,
+            (InitName:Id => getSimpleName(GeneratedClass)),,
+            _:K,, _:K,, _:K
+          ),, _:K
+        ),
+        Pack:PackageId, GeneratedClass:ClassType, false => true
+      )
       ...
     </k>
-    <crntClass> Class:ClassType </crntClass>
+    <localTypes> ListItem(mapWrap(LocalTypes:Map => LocalTypes[GeneratedClass / InitName])) ...</localTypes>
 
-//@ Fully process the class that was registered inside the given package
+rule [processLocalClassDecStep1-process]:
+    <k>
+      processLocalClassDecStep1(ClassDec:K, Pack:PackageId, Class:ClassType, true)
+      =>   processTypeNames(ClassDec, Pack)
+        ~> processTypeDecsInPCUPhase(ClassDec, Pack, CrntClass)
+        ~> processLocalClassDecStep2(Class)
+      ...
+    </k>
+    <crntClass> CrntClass:ClassType </crntClass>
+
+//@ Fully process the local class
 syntax K ::=  processLocalClassDecStep2 (
-                PackageId //the generated package
+                ClassType //the generated class
               )
 
 rule [processLocalClassDecStep2]:
     <k>
-      processLocalClassDecStep2(GeneratedPack:PackageId)
+      processLocalClassDecStep2(Class:ClassType)
       =>   setEnclosingLocalEnv(Class)
         ~> processClassDecs(setWrap(SetItem(Class)))
         ~> processTypeWithDepends(Class)
-        ~> elaborateBlocks(setWrap(SetItem(Class)))
+        //~> elaborateBlocks(setWrap(SetItem(Class))) Now that this class's package = Encloser, it
+                                                   // will be elaborated by getInnerClasses(Encloser) that follows.
 
         // processClassDecs will alter <crntClass>, that's why we have to restore it at the end
         ~> restoreAfterProcessLocalClass(OldCrntClass, CT)
@@ -57,9 +88,7 @@ rule [processLocalClassDecStep2]:
       ...
     </k>
     <crntClass> OldCrntClass:ClassType </crntClass>
-    <localTypes> ListItem(mapWrap(LocalTypes:Map => LocalTypes[Class/Name])) ...</localTypes>
     <contextType> CT:ContextType </contextType>
-    <namesToClasses>... GeneratedPack |-> mapWrap(Name:Id |-> Class:ClassType) ...</namesToClasses>
 
 //@ Sets the enclosing local environment for this class, from the cell <elabEnv>
 syntax K ::= setEnclosingLocalEnv ( ClassType )
