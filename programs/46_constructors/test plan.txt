@@ -89,8 +89,9 @@ Instance initializers with tracing.
     - method publicNew: calls new A(byte)
   - main: calls all test methods.
 
-Note:
-  An attempt of a constructor to invoke itself recursively results in a compile-time error.
+Notes:
+  1. An attempt of a constructor to invoke itself recursively results in a compile-time error.
+  2. Cannot test access modes by invoking this() - all modes are always accessible.
 
 91. Name collisions between constructor/method/field.
   Class A have:

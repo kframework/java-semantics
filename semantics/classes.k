@@ -275,4 +275,37 @@ rule [cast-RefType]:
           ))
         )
 
+//@ Qual:K,, _:K,, 'ListWrap( Args:KList )
+syntax KLabel ::=  "'QSuperConstrInv"
+
+rule [QSuperConstrInv]:
+    <k>
+      'QSuperConstrInv(Qual:K,, _,, 'ListWrap( Args:KList ))
+      => setEncloser('QThis(Class), BaseClass, Qual)
+         ~> 'ExprStm('Invoke(
+              'Method('MethodName(superMethod(cast(BaseClass, 'QThis(Class))),, getConsName(BaseClass))),,
+              'ListWrap(Args)
+            ))
+         ~>IInit
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    <extends> BaseClass:ClassType </extends>
+    <instanceInit> IInit:K </instanceInit>
+
+//@ _:K,, 'ListWrap( Args:KList )
+syntax KLabel ::= "'AltConstrInv"
+
+rule [AltConstrInv]:
+    <k>
+      'AltConstrInv(_,, 'ListWrap( Args:KList ))
+      => 'ExprStm('Invoke(
+                'Method('MethodName( 'QThis(Class),, getConsName(Class) )),,
+                'ListWrap(Args)
+          ))
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+
 endmodule

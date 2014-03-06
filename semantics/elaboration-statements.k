@@ -77,6 +77,9 @@ rule [elab-LocalVarDec]:
 
 //@\subsection{Elaboration of SuperConstrInv, QSuperConstrInv, AltConstrInv}
 
+//@ _:K,, 'ListWrap( Args:KList )
+syntax KLabel ::=  "'SuperConstrInv"
+
 //@ Desugaring unqualified superclass constructor invocation into a qualified one
 rule [elab-SuperConstrInv-desugar]:
     <k>
@@ -103,37 +106,45 @@ rule [elab-SuperConstrInv-desugar]:
       ...
     </class>
 
-rule [elab-QSuperConstrInv]:
-    <k>
-      elab(
-        'QSuperConstrInv(Qual:K,, _,, 'ListWrap( Args:KList ))
-        => 'ListWrap(
-              setEncloser('This(.KList), BaseClass, Qual),,
-              'ExprStm('Invoke(
-                'SuperMethod('None(.KList),, getConsName(BaseClass) ),,
-                'ListWrap(Args)
-              )),,
-              elabRes(IInit)  //This block was already elaborated. Rule [elabInstanceEnd]
-            )
-      )
+rule customElabEnd('QSuperConstrInv) => true
+
+rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
+    <k>                                                                     //The signature lookup is unqualified
+      (. => lookupMethod(BaseClass, getConsName(BaseClass), noValue, false, cast(BaseClass, 'QThis(BaseClass)), Args))
+      ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, 'ListWrap( Args:KList )))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
-    <instanceInit> IInit:K </instanceInit>
 
-rule [elab-AltConstrInv]:
-    <k>
-      elab(
-        'AltConstrInv(_,, 'ListWrap( Args:KList ))
-        => 'ExprStm('Invoke(
-                  'Method('MethodName( getConsName(Class) )),,
-                  'ListWrap(Args)
-            ))
-      )
+rule [elabEnd-QSuperConstrInv-methodProcessArguments-to-argsElaborated]:
+    (methodProcessArguments(_,_,_,_, types(.KList), .KList, ExpectedParamExps:KList, instanceCT) => argsElaborated)
+    ~> elabEnd('QSuperConstrInv(_:K,, _:K,, 'ListWrap( _ => ExpectedParamExps )))
+
+//todo pack QSuperConstrInv back into into SuperConstrInv when class is top-level.
+rule [elab-QSuperConstrInv]:
+    argsElaborated
+    ~> elabEnd( 'QSuperConstrInv(Qual:K,, Arg2:K,, 'ListWrap( Args:KList )))
+    => elabRes('QSuperConstrInv(Qual,, Arg2,, 'ListWrap( Args )))
+
+rule customElabEnd('AltConstrInv) => true
+
+rule [elabEnd-AltConstrInv-to-lookupMethod]:
+    <k>                                                           //lookup could be either qualified or unqualified
+      (. => lookupMethod(Class, getConsName(Class), noValue, false, Class, Args))
+      ~> elabEnd('AltConstrInv(Arg1:K,, 'ListWrap( Args:KList )))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
+
+rule [elabEnd-AltConstrInv-methodProcessArguments-to-argsElaborated]:
+    (methodProcessArguments(_,_,_,_, types(.KList), .KList, ExpectedParamExps:KList, instanceCT) => argsElaborated)
+    ~> elabEnd('AltConstrInv(Arg1:K,, 'ListWrap( _ => ExpectedParamExps )))
+
+rule [elab-AltConstrInv]:
+    argsElaborated
+    ~> elabEnd('AltConstrInv(Arg1:K,, 'ListWrap( Args:KList )))
+    => elabRes('AltConstrInv(Arg1:K,, 'ListWrap( Args:KList )))
 
 endmodule

@@ -258,11 +258,11 @@ rule defaultElabHeating(KL:KLabel) =>
     orBool (KL ==KLabel 'EnumBodyDecs)
     orBool (KL ==KLabel 'ConstrDec)
     orBool (KL ==KLabel 'ConstrDecHead)
-    orBool (KL ==KLabel 'ConstrBody)
+    orBool (KL ==KLabel 'ConstrBody)*/
     orBool (KL ==KLabel 'AltConstrInv)
-    orBool (KL ==KLabel 'SuperConstrInv)
+    /*orBool (KL ==KLabel 'SuperConstrInv)*/
     orBool (KL ==KLabel 'QSuperConstrInv)
-    orBool (KL ==KLabel 'StaticInit)
+    /*orBool (KL ==KLabel 'StaticInit)
     orBool (KL ==KLabel 'InstanceInit)*/
     orBool (KL ==KLabel 'Empty)
     orBool (KL ==KLabel 'Labeled)
@@ -416,8 +416,8 @@ rule customElabChildren(KL:KLabel) =>
     orBool (KL ==KLabel 'LocalVarDecStm)
     orBool (KL ==KLabel 'LocalVarDec)
     orBool (KL ==KLabel 'SuperConstrInv)
-    orBool (KL ==KLabel 'QSuperConstrInv)
-    orBool (KL ==KLabel 'AltConstrInv)
+    /*orBool (KL ==KLabel 'QSuperConstrInv)*/
+    /*orBool (KL ==KLabel 'AltConstrInv)*/
     orBool (KL ==KLabel 'ClassDecStm)
     orBool (KL ==KLabel 'NewInstance)
     orBool (KL ==KLabel 'QNewInstance)
@@ -514,7 +514,12 @@ rule [elabEnd-getQThisSubclassOf-static]:
 rule [elabEnd-default-all-except-expressions]:
     elabEnd(KL:KLabel(Ks:KList)) => elabRes(KL(Ks))
 when
-    notBool isExpressionLabel(KL)
+    notBool (customElabEnd(KL) ==K true)
+
+syntax K ::= customElabEnd ( KLabel )                       [function]
+rule customElabEnd(KL) => true
+when
+    isExpressionLabel(KL)
 
 /*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
 such as an anonymous class declaration. Is typed with the type of the expression.
