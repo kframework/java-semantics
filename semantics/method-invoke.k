@@ -24,16 +24,25 @@ since we need to check that the type of the returned value is an
 instance of the claimed return type of the method.  The first group of
 rules below are identical to those in untyped KOOL. */
 
-rule 'Method(K:K,, _:K,, Name:Id => 'MethodName(K,, Name))  [structural, anywhere]
+/*@ 'Method(Qual:K,, _:K,, Name:Id)
+    'Method('MethodName(Qual:K,, Name:Id))
+*/
+syntax KLabel ::= "'Method"
+                | "'MethodName"
+
+rule 'Method(Qual:K,, _:K,, Name:Id => 'MethodName(Qual,, Name))  [structural, anywhere]
 
 rule isExtKResult('Method('MethodName(Qual:K,, Name:Id))) => true
 
-rule [MethodName-Unq-InstanceCT]:
+rule [Method-MethodName-Unq-InstanceCT]:
     <k>
       'Method('MethodName(Name:Id) => 'MethodName(cast(Class, 'QThis(Class)),, Name))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>                 [structural]
+
+//@ 'SuperMethod(_:K,, Name:Id)
+syntax KLabel ::= "'SuperMethod"
 
 // super.X(_)
 rule [SuperMethod-desugar]:
@@ -42,6 +51,9 @@ rule [SuperMethod-desugar]:
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>  [structural]
+
+//@ 'QSuperMethod(Class:ClassType,, _:K,, Name:Id)
+syntax KLabel ::= "'QSuperMethod"
 
 rule [QSuperMethod]:
     <k>

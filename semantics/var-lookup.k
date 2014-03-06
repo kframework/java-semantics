@@ -29,6 +29,9 @@ rule [lvalue-localVar]:
 /*@ \subsection{Self reference}
 Like in untyped KOOL. */
 
+//@ 'QThis(Class:ClassType)
+syntax KLabel ::= "'QThis"
+
 rule [QThis]:
     <k>
       'QThis(Class:ClassType) => lookupQThis(Class, RV::CrntClass)

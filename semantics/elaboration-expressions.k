@@ -477,7 +477,7 @@ rule [elabEnd-QNewInstance-to-lookupMethod]:
 
 rule [elabEnd-QNewInstance-methodProcessArguments-to-argsElaborated]:
     (methodProcessArguments(_,_,_,_, types(.KList), .KList, ExpectedParamExps:KList, instanceCT) => argsElaborated)
-    ~> elabEnd('QNewInstance(_:K,, _:K,, _:K,, _:K,, (_:K => 'ListWrap(ExpectedParamExps)),, _:K))
+    ~> elabEnd('QNewInstance(_:K,, _:K,, _:K,, _:K,, 'ListWrap(_ => ExpectedParamExps),, _:K))
 
 //@ Marker indicating that arguments of the following 'QNewInstance have been elaborated
 syntax K ::= "argsElaborated"
