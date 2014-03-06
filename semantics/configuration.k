@@ -100,6 +100,9 @@ configuration
             //Created in ProcCompUnitsPhase, used in ProcClassDecsPhase
             <cuImports color="DarkGoldenrod"> .Map </cuImports> //imports of the enclosing CU, for top-level classes only.
 
+            //Either staticCT or instanceCT
+            <classContextType color="DarkGoldenrod"> .K </classContextType>
+
           </cphCreated>
 
           <br/>

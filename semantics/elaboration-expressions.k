@@ -407,14 +407,19 @@ rule [elab-NewInstance]:
     <k>
       elab(
         'NewInstance(Arg1:K,, Class:ClassType,, ActualArgsList:K,, 'None(.KList))
-        => 'QNewInstance(
-          getQThisSubclassOf(CrntClass, getEnclosingClass(Class)),,
-          Arg1,, Class,, 'None(.KList),, ActualArgsList,, 'None(.KList)
-        )
+        =>  'QNewInstance(
+              #if CT ==K staticCT
+                #then noValue
+                #else getQThisSubclassOf(CrntClass, getEnclosingClass(Class))
+              #fi,,
+              Arg1,, Class,, 'None(.KList),, ActualArgsList,, 'None(.KList)
+            )
       )
       ...
     </k>
     <crntClass> CrntClass:ClassType </crntClass>
+    <classType> Class </classType>
+    <classContextType> CT:ContextType </classContextType>
 
 /*@ elab('QNewInstance()) is strict in all its arguments except the class name (3) and anonymous body(6).
   If this is not an anynymous class then 6-th argument is also default heated.
@@ -552,6 +557,7 @@ rule [getEnclosingClass]:
     <classType> Class </classType>
     <enclosingClass> EnclosingClass:ClassType </enclosingClass>
 
+//todo don't produce correct result for local classes. Test that it is so.
 syntax K ::= getEnclosingClassFunction ( ClassType )  [function]
 rule getEnclosingClassFunction(class ClassId:Id)
       => class String2Id(retainHead(

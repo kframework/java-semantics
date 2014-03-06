@@ -72,6 +72,24 @@ rule [processTypeDecsInPCUPhase-typeDec-ComputeFullName]:
       Pack:PackageId, _
     )                [structural]
 
+/*@
+'ClassDec(
+  'ClassDecHead(
+    'ListWrap(Modifiers),,
+    Class:ClassType,,
+    'None(.KList),,
+    'Some('SuperDec( BaseClassRaw - extends declaration )),,
+    'Some('ImplementsDec('ListWrap( ImplTypesRaw - implements declarations )))
+  ),,
+  'ClassBody( 'ListWrap( Decls - member declarations ) )
+)
+*/
+syntax KLabel ::= "'ClassDec"
+                | "'ClassBody"
+                | "'ClassDecHead"
+                | "'SuperDec"
+                | "'ImplementsDec"
+
 rule [ClassDec-NoExtendsDesugar]:
     processTypeDecsInPCUPhase('ClassDec('ClassDecHead(_:K,, Class:ClassType,, _:K,,
         ( 'None(_)
@@ -101,7 +119,7 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
     <k>
       processTypeDecsInPCUPhase(
         'ClassDec(
-          'ClassDecHead( _:K,, Class:ClassType,, _:K,,
+          'ClassDecHead( Modifiers:K,, Class:ClassType,, _:K,,
             'Some('SuperDec(BaseClassRaw:K)),,
             'Some('ImplementsDec(ImplTypesRaw:K))
           ),,
@@ -137,6 +155,12 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
               </rawDeclarations>
               <metaType> classMetaT </metaType>
               <classPhase> CreatedCPhase </classPhase>
+              <classContextType>
+                #if OuterClass ==K noClass
+                  #then staticCT
+                  #else getContextType(Modifiers)
+                #fi
+              </classContextType>
               ...
             </class> )
 
@@ -163,6 +187,7 @@ rule [processTypeDecsInPCUPhase-IInterfaceDec]:
               <rawDeclarations> 'ListWrap(Decls) </rawDeclarations>
               <metaType> interfaceMetaT </metaType>
               <classPhase> CreatedCPhase </classPhase>
+              <classContextType> staticCT </classContextType>
               ...
             </class> )
 
