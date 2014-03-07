@@ -125,7 +125,7 @@ rule [elabEnd-QSuperConstrInv-methodProcessArguments-to-argsElaborated]:
 //todo pack QSuperConstrInv back into into SuperConstrInv when class is top-level.
 rule [elab-QSuperConstrInv]:
     argsElaborated
-    ~> elabEnd( 'QSuperConstrInv(Qual:K,, Arg2:K,, 'ListWrap( Args:KList )))
+    ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, 'ListWrap( Args:KList )))
     => elabRes('QSuperConstrInv(Qual,, Arg2,, 'ListWrap( Args )))
 
 rule customElabEnd('AltConstrInv) => true

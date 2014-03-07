@@ -409,18 +409,16 @@ rule isAuxFuncElabNaked(KL:KLabel) => false
 */
 syntax K ::= customElabChildren ( KLabel )                [function]
 rule customElabChildren(KL:KLabel) =>
-           (KL ==KLabel 'ListWrap)
-    orBool (KL ==KLabel 'Block)
-    orBool (KL ==KLabel 'For)
-    orBool (KL ==KLabel 'Catch)
-    orBool (KL ==KLabel 'LocalVarDecStm)
-    orBool (KL ==KLabel 'LocalVarDec)
-    orBool (KL ==KLabel 'SuperConstrInv)
-    /*orBool (KL ==KLabel 'QSuperConstrInv)*/
-    /*orBool (KL ==KLabel 'AltConstrInv)*/
-    orBool (KL ==KLabel 'ClassDecStm)
-    orBool (KL ==KLabel 'NewInstance)
-    orBool (KL ==KLabel 'QNewInstance)
+           (KL ==KLabel 'ListWrap)        //Elaboration left-to-right if children contain variable declarations
+    orBool (KL ==KLabel 'Block)           //Allocation of new <elabEnv>
+    orBool (KL ==KLabel 'For)             //Allocation of new <elabEnv>
+    orBool (KL ==KLabel 'Catch)           //Allocation of new <elabEnv>
+    orBool (KL ==KLabel 'LocalVarDecStm)  //Desugaring into 'Assign and simple 'LocalVarDec
+    orBool (KL ==KLabel 'LocalVarDec)     //Desugaring into 'Assign and simple 'LocalVarDec
+    orBool (KL ==KLabel 'SuperConstrInv)  //Elaboration of qualifier, only at elab() step
+    orBool (KL ==KLabel 'ClassDecStm)     //Elaboration of inner 'ClassDec
+    orBool (KL ==KLabel 'NewInstance)     //Elaboration of qualifier, only at elab() step, anonymous body.
+    orBool (KL ==KLabel 'QNewInstance)    //Elaboration of name into class, anonymous body.
 
 /*@ Must be true for AST nodes that require elaboration heating of their children. For the arguments KL, Ks,
 the original node is of he form KL(KS,,_) and the heated child is always the last element of Ks.

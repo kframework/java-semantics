@@ -423,16 +423,13 @@ rule [elab-NewInstance]:
     <classContextType> CT:ContextType </classContextType>
 
 /*@ elab('QNewInstance()) is strict in all its arguments except the class name (3) and anonymous body(6).
-  If this is not an anynymous class then 6-th argument is also default heated.
+  - Argument (3) is heated if it is not a simple name but a precusros to a type
+  - argument (6) is heated if it is 'None() - an empty body.
 */
 rule customElabHeating('QNewInstance, Ks:KList,,KHole:K)
      => length(Ks,,KHole) in (SetItem(1) SetItem(2) SetItem(4) SetItem(5))
+        orBool (length(Ks,,KHole) ==K 3 andBool notBool isId(KHole) ==K true)
         orBool (length(Ks,,KHole) ==K 6 andBool KHole ==K 'None(.KList))
-
-//@ Heat the class name if it is not a simple name.
-context elab('QNewInstance(_:K,,_:K,, HOLE,, _))
-when
-    notBool isId(HOLE) ==K true
 
 //Resolve the class name with the help of qualifier type
 rule [elab-QNewInstance-resolve-class]:
