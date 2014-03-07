@@ -120,7 +120,7 @@ rule [elabEnd-Invoke-to-lookupMethod-unqualified]:
 
 //K bug: latex workaround - manual character escape.
 //@ True for cast(T,'QThis(\_)), false otherwise
-syntax K ::= isCastOfQThis ( K )                                    [function]
+syntax K ::= isCastOfQThis ( K )                                      [function]
 rule isCastOfQThis(cast(_, 'QThis(_))) => true
 
 syntax K ::= isThisOrSuper( K )                                       [function]

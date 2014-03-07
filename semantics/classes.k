@@ -275,6 +275,11 @@ rule [cast-RefType]:
           ))
         )
 
+//@\subsection{Execution of SuperConstrInv, QSuperConstrInv, AltConstrInv}
+
+rule [SuperConstrInv-to-QSuperConstrInv-unpack]:
+    'SuperConstrInv(Arg1:K,, ArgsList:K) => 'QSuperConstrInv(noValue,, Arg1,, ArgsList)
+
 //@ Qual:K,, _:K,, 'ListWrap( Args:KList )
 syntax KLabel ::=  "'QSuperConstrInv"
 

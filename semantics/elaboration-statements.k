@@ -86,7 +86,10 @@ rule [elab-SuperConstrInv-desugar]:
       elab(
         'SuperConstrInv(K:K,, 'ListWrap( Args:KList ))
         =>  'QSuperConstrInv(
-              getQThisSubclassOf(EnclosingClass, SubEnclosingClass),,
+              #if CT ==K instanceCT
+                #then getQThisSubclassOf(EnclosingClass, BaseEnclosingClass)
+                #else noValue
+              #fi,,
               K,,
               'ListWrap(Args)
             )
@@ -96,13 +99,14 @@ rule [elab-SuperConstrInv-desugar]:
     <crntClass> Class:ClassType </crntClass>
     <class>
       <classType> Class </classType>
-      <extends> SubClass:ClassType </extends>
+      <extends> BaseClass:ClassType </extends>
       <enclosingClass> EnclosingClass:ClassType </enclosingClass>
       ...
     </class>
     <class>
-      <classType> SubClass </classType>
-      <enclosingClass> SubEnclosingClass:ClassType </enclosingClass>
+      <classType> BaseClass </classType>
+      <enclosingClass> BaseEnclosingClass:ClassType </enclosingClass>
+      <classContextType> CT:ContextType </classContextType>
       ...
     </class>
 
@@ -122,11 +126,17 @@ rule [elabEnd-QSuperConstrInv-methodProcessArguments-to-argsElaborated]:
     (methodProcessArguments(_,_,_,_, types(.KList), .KList, ExpectedParamExps:KList, instanceCT) => argsElaborated)
     ~> elabEnd('QSuperConstrInv(_:K,, _:K,, 'ListWrap( _ => ExpectedParamExps )))
 
-//todo pack QSuperConstrInv back into into SuperConstrInv when class is top-level.
-rule [elab-QSuperConstrInv]:
+rule [elabEnd-QSuperConstrInv-qualified]:
     argsElaborated
     ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, 'ListWrap( Args:KList )))
     => elabRes('QSuperConstrInv(Qual,, Arg2,, 'ListWrap( Args )))
+when
+    Qual =/=K noValue
+
+rule [elabEnd-QSuperConstrInv-to-SuperConstrInv]:
+    argsElaborated
+    ~> elabEnd('QSuperConstrInv(noValue,, Arg2:K,, 'ListWrap( Args:KList )))
+    => elabRes('SuperConstrInv(Arg2,, 'ListWrap( Args )))
 
 rule customElabEnd('AltConstrInv) => true
 
