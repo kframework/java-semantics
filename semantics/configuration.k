@@ -1,8 +1,10 @@
 require "core-sorts.k"
+require "core-functions.k"
 require "configuration-doc.k"
 
 module CONFIGURATION
     imports CORE-SORTS
+    imports CORE-FUNCTIONS
 
 configuration
     <T>

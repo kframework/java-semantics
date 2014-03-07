@@ -12,6 +12,8 @@ require "process-class-members.k"
 require "elaboration-top-blocks.k"
 require "elaboration-statements.k"
 require "elaboration-expressions.k"
+require "elaboration-method-invoke.k"
+require "elaboration-arrays.k"
 require "elaboration-types.k"
 require "process-local-classes.k"
 require "primitive-types.k"
@@ -42,6 +44,8 @@ module JAVA
     imports ELABORATION-TOP-BLOCKS
     imports ELABORATION-STATEMENTS
     imports ELABORATION-EXPRESSIONS
+    imports ELABORATION-METHOD-INVOKE
+    imports ELABORATION-ARRAYS
     imports ELABORATION-TYPES
     imports PROCESS-LOCAL-CLASSES
     imports PRIMITIVE-TYPES

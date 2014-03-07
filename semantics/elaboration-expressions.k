@@ -1,15 +1,20 @@
 require "core-sorts.k"
+require "core-classes.k"
 require "process-type-names.k"
 require "subtyping.k"
 require "var-lookup.k"
 require "elaboration-core.k"
+require "elaboration-method-invoke.k"
 
 module ELABORATION-EXPRESSIONS
     imports CORE-SORTS
+    imports CORE-CLASSES
     imports PROCESS-TYPE-NAMES     //for toPackage()
     imports SUBTYPING
     imports VAR-LOOKUP             //for localVar, lookupField, lookupStaticField
     imports ELABORATION-CORE
+                                        //todo we should move all that depents on this to ELABORATION-METHOD-INVOKE
+    imports ELABORATION-METHOD-INVOKE   // for lookupMethod
 
 //@ Elaboration of rules in java-var-lookup
 
@@ -513,52 +518,5 @@ context elab('Lit('Class(HOLE)))
 
 rule [elab-Lit-Class]:
     elab('Lit('Class(T:Type))) => elabRes(cast(class String2Id("java.lang.Class"), 'Lit('Class(T:Type))))
-
-/*@ \subsubsection{Elaboration of array-related expressions} */
-
-rule [elabEnd-ArrayAccess]:
-    elabEnd('ArrayAccess(cast(arrayOf T:Type, TargetExp:K),, IndexTE:K))
-    => elabRes(cast(T, 'ArrayAccess(cast(arrayOf T, TargetExp),, IndexTE)))
-
-rule [elabEnd-Field-ArrayLength]:
-    elabEnd('Field(cast(arrayOf T:Type, Qual:K),, X:Id))
-    => elabRes(cast(int, lookupField(cast(arrayOf T, Qual), arrayOf T, X)))
-when
-    Id2String(X) ==String "length"
-
-context 'ArrayType(HOLE)
-rule 'ArrayType(T:Type) => arrayOf T     [structural]
-
-syntax KLabel ::= "'NewArray"
-
-rule [elabEnd-NewArray-EmptyDims]:
-    elabEnd('NewArray( (T:Type => arrayOf T),, _:K,,
-        'ListWrap( ( 'Dim(.KList) => .KList ) ,,_:KList) ))
-        [structural]
-
-rule [elabEnd-NewArray]:
-    elabEnd('NewArray(T:Type,, 'ListWrap(Dims:KList),, 'ListWrap(.KList)))
-    => elabExpAndType(newArrayImpl(T, 'ListWrap(Dims), default(T), .KList), getArrayType(T, Dims))
-        [structural]
-
-//@ Computes the array type based on allocated elem type and number of allocated dimensions.
-syntax K ::= getArrayType ( Type, KList )                          [function]
-rule getArrayType(T:Type, K:K,,Dims:KList) => getArrayType(arrayOf T, Dims)
-rule getArrayType(T:Type, .KList) => T
-
-rule [elabEnd-NewArray-ArrayInit-Preprocess]:
-    elabEnd('NewArray((T:Type => arrayOf T),, 'ListWrap(('Dim(.KList) => .KList),, _),, 'ArrayInit(_)))
-
-rule [elabEnd-NewArray-ArrayInit]:
-    elabEnd('NewArray(arrayOf T:Type,, 'ListWrap(.KList),, 'ArrayInit('ListWrap(InitContent:KList))))
-    => elabRes(cast(arrayOf T, newArrayImpl(T, 'ListWrap(length(InitContent)::int), .K, InitContent)))
-
-//@ Counts the number of elements in the KList list. Evaluates to an cast(int, Int) .
-syntax K ::= length ( KList )                                       [function]
-           | length ( Int, KList )                                  [function]
-
-rule length(Ks:KList) => length(0, Ks)
-rule length(I:Int, K:K,, Ks:KList) => length(I +Int 1, Ks)
-rule length(I:Int, .KList) => I
 
 endmodule

@@ -1,4 +1,5 @@
 require "core-sorts.k"
+require "core-functions.k"
 require "process-type-names.k"
 require "subtyping.k"
 require "process-class-members.k"
@@ -14,6 +15,7 @@ Object closures. The only change to untyped KOOL's values is that closures are n
 */
 module CLASSES
     imports CORE-SORTS
+    imports CORE-FUNCTIONS
     imports PROCESS-TYPE-NAMES
     imports SUBTYPING
     imports PROCESS-CLASS-MEMBERS

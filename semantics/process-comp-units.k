@@ -1,4 +1,5 @@
 require "core-sorts.k"
+require "core-classes.k"
 require "process-type-names.k"
 require "process-imports.k"
 
@@ -23,6 +24,7 @@ process declarations in a less-restricted order.
 */
 module PROCESS-COMP-UNITS
     imports CORE-SORTS
+    imports CORE-CLASSES
     imports PROCESS-TYPE-NAMES
     imports PROCESS-IMPORTS     //for compUnitImportsStart()
 

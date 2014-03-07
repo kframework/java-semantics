@@ -1,9 +1,11 @@
 require "core-sorts.k"
+require "core-classes.k"
 
 //@ \section{Module SUBTYPING}
 
 module SUBTYPING
     imports CORE-SORTS
+    imports CORE-CLASSES
 
 //@ Checks whether first type is a subtype of the second
 syntax K ::=  subtype (

@@ -1,4 +1,5 @@
 require "core-sorts.k"
+require "core-classes.k"
 require "aux-strings.k"
 
 /*@ \section{Module PROCESS-TYPE-NAMES}
@@ -8,6 +9,7 @@ top-level classes and inner classes. In each compilation unit just class declara
 
 module PROCESS-TYPE-NAMES
     imports CORE-SORTS
+    imports CORE-CLASSES
     imports AUX-STRINGS // for retainTail
 
 /*@ \subsection{Compilation units and packages}*/

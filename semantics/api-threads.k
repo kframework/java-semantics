@@ -5,7 +5,7 @@ require "method-invoke.k"
 
 module API-THREADS
     imports CORE-SORTS
-    imports METHOD-INVOKE
+    imports METHOD-INVOKE //for invokeImpl
 
 /*@Java API related to threads and locks. Just the core part.*/
 

@@ -54,12 +54,6 @@ rule toTypedVal( objectClosure(
                                                                                       [structural]
 rule toTypedVal(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T             [structural]
 
-/*@ A list of types. Elements are of sort Type. Used especially to denote argument types of a method.*/
-syntax Types ::=  types (
-                    KList // List of Type elements, when processed
-                  )
-syntax KResult ::= Types
-
 //@ Converts a KList of terms to Types. Uses typeOf underneath.
 syntax K ::=  getTypes (
                 KList     //List{KResult} a list of source expressions
@@ -113,6 +107,14 @@ when
     notBool(K in S1)
 rule setUnion(setWrap( S1:Set SetItem(K) ), setWrap( S2:Set (SetItem(K:K) => .) ))
 rule setUnion(setWrap(S1:Set), setWrap(.Set)) => setWrap(S1)
+
+//@ Counts the number of elements in the KList list. Evaluates to an Int.
+syntax K ::= length ( KList )                                       [function]
+           | length ( Int, KList )                                  [function]
+
+rule length(Ks:KList) => length(0, Ks)
+rule length(I:Int, K:K,, Ks:KList) => length(I +Int 1, Ks)
+rule length(I:Int, .KList) => I
 
 /*@ \subsection{Identifiers}*/
 

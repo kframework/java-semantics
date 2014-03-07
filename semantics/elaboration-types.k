@@ -1,4 +1,5 @@
 require "core-sorts.k"
+require "core-classes.k"
 require "process-type-names.k"
 require "elaboration-core.k"
 
@@ -6,6 +7,7 @@ require "elaboration-core.k"
 */
 module ELABORATION-TYPES
     imports CORE-SORTS
+    imports CORE-CLASSES
     imports ELABORATION-CORE
     imports PROCESS-TYPE-NAMES        // for getNamesMap()
 

@@ -7,9 +7,9 @@ require "method-invoke.k"
 module API-CORE
     imports CORE-SORTS
     imports CLASSES
-    imports METHOD-INVOKE //for arrayImplClass and others
+    imports METHOD-INVOKE //for invokeImpl, arrayImplClass
     imports VAR-LOOKUP
-    imports LITERALS  //for string-related functions
+    imports LITERALS      //for string-related functions
 
 /*@ This module contains the minimal part of java API required to perform console read/write operations, as well as a few other API functions mentioned in JLS.*/
 

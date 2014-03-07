@@ -1,4 +1,5 @@
 require "core-sorts.k"
+require "core-functions.k"
 
 //@ \section{Module CORE-CLASSES}
 /*@ Auxiliary functions related to classes and packages.
@@ -6,6 +7,7 @@ require "core-sorts.k"
 
 module CORE-CLASSES
     imports CORE-SORTS
+    imports CORE-FUNCTIONS
 
 //@ \subsection{Shortcuts for the most frequently used classes within the semantics}
 

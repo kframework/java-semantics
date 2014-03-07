@@ -1,9 +1,11 @@
 require "core-sorts.k"
+require "core-classes.k"
 
 //@ \section{Module PROCESS-CLASS-MEMBERS}
 
 module PROCESS-CLASS-MEMBERS
     imports CORE-SORTS
+    imports CORE-CLASSES
 
 //@ \subsection{Auxiliary functions}
 

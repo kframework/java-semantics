@@ -1,7 +1,11 @@
 require "core-sorts.k"
+require "core-functions.k"
+require "aux-strings.k"
 
 module TO-STRING
     imports CORE-SORTS
+    imports CORE-FUNCTIONS
+    imports AUX-STRINGS
 
 /*@ Converts all possible Java values into String. Used mostly for printing and String + operator.
     Conversion for other value forms is defined in other modules.

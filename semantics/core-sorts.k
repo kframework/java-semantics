@@ -4,8 +4,8 @@ require "core-classes.k"
 //@ \section{Module CORE-SORTS}
 
 module CORE-SORTS
-    imports CORE-FUNCTIONS
-    imports CORE-CLASSES
+    /*imports CORE-FUNCTIONS
+    imports CORE-CLASSES*/
 
 //@ \subsection{Computation phases}
 
@@ -240,5 +240,11 @@ syntax RoutineType ::= "methodRT" | "constructorRT"
 syntax MetaType ::= "classMetaT" | "interfaceMetaT"
 
 syntax KResult ::= "noValue"
+
+/*@ A list of types. Elements are of sort Type. Used especially to denote argument types of a method.*/
+syntax Types ::=  types (
+                    KList // List of Type elements, when processed
+                  )
+syntax KResult ::= Types
 
 endmodule
