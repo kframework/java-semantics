@@ -55,6 +55,17 @@ rule [getTopLevel]:
     <classType> Class </classType>
     <enclosingClass> noClass </enclosingClass>
 
+syntax KLabel ::=   "'Public"
+                  | "'Private"
+                  | "'Protected"
+                  | "'Abstract"
+                  | "'Final"
+                  | "'Static"
+                  | "'Native"
+                  | "'Transient"
+                  | "'Volatile"
+                  | "'StrictFP"
+
 /*@Extracts the access mode from the list of modifiers of some Java entity.*/
 syntax K ::=  getAccessMode (
                 K //'ListWrap(...) - the list of class/method attributes

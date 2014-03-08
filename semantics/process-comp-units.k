@@ -166,6 +166,10 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
               ...
             </class> )
 
+syntax KLabel ::= "'InterfaceDec"
+                | "'InterfaceDecHead"
+                | "'ExtendsInterfaces"
+
 rule [processTypeDecsInPCUPhase-IInterfaceDec]:
     <k>
       processTypeDecsInPCUPhase(

@@ -79,6 +79,11 @@ rule hexAsciiToInt(I:Int) => hexDigitToInt(chrChar(I))
 
 //@ \subsection{Integer literals}
 
+syntax KLabel ::= "'Lit"
+                | "'Deci"
+                | "'Hexa"
+                | "'Octa"
+
 rule [Lit-Deci]:
     'Lit('Deci(Str:String))
     =>  #if (lastChar(Str) ==String "l") orBool (lastChar(Str) ==String "L")
@@ -113,6 +118,14 @@ rule [Lit-FFloat]:
         #fi
 
 //@ \subsection{bool literals}
+
+/*@ 'Lit('Bool('True(.KList)))
+    'Lit('Bool('False(.KList)))
+*/
+syntax KLabel ::= "'Bool"
+                | "'True"
+                | "'False"
+
 rule 'Lit('Bool('True(.KList))) => true
 
 rule 'Lit('Bool('False(.KList))) => false
@@ -186,6 +199,8 @@ rule 'Lit('String('ListWrap(.KList))) => ""
 
 //@ \subsection{Null literal}
 
+//@ 'Lit('Null(.KList))
+syntax KLabel ::= "'Null"
 rule 'Lit('Null(.KList)) => null
 
 endmodule

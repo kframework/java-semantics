@@ -53,6 +53,9 @@ when
 
 //@ \subsection{Synchronized statement}
 
+//@ 'Synchronized(objectClosure(...)::_,, Block)
+syntax KLabel ::= "'Synchronized"
+
 //evaluate the expression
 context 'Synchronized(HOLE,, _)
 

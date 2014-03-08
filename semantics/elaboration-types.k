@@ -13,6 +13,10 @@ module ELABORATION-TYPES
 
 /*@ \subsection{Elaboration of types} */
 
+syntax KLabel ::= "'ClassOrInterfaceType"
+                | "'ClassType"
+                | "'InterfaceType"
+
 rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK [structural]
 rule 'InterfaceType(TypeK:K,, _) => TypeK        [structural]
 rule 'ClassType(TypeK:K,, _) => TypeK            [structural]
@@ -21,6 +25,9 @@ rule 'ClassType(TypeK:K,, _) => TypeK            [structural]
     'TypeName('PackageOrTypeName('PackageOrTypeName(pack),,p2),,A)
 */
 
+//@ 'PackageOrTypeName(Qual,, Name)
+syntax KLabel ::= "'PackageOrTypeName"
+
 context 'PackageOrTypeName(HOLE,, _:K)
 
 rule 'PackageOrTypeName(KRs:KList,, K:K) => 'TypeName(KRs,,K) ?? 'PackageName('ListWrap(KRs,,K))
@@ -28,6 +35,9 @@ when isKResult(KRs)                              [structural]
 
 /*@ When we search for a class qualified by another class, we simply convert
     the qualifier into a package.*/
+
+//@ 'TypeName(Qual,, X:Id)
+syntax KLabel ::= "'TypeName"
 
 context 'TypeName(HOLE,,_:Id)
 

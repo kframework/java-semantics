@@ -23,6 +23,9 @@ rule [compUnitImportsStart]:
 
 //Process K-AST terms 'TypeImportDec or 'TypeImportOnDemandDec
 
+syntax KLabel ::= "'TypeImportDec"
+                | "'TypeImportOnDemandDec"
+
 context 'TypeImportDec(HOLE)
 
 rule [TypeImportDec]:

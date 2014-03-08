@@ -18,6 +18,9 @@ syntax K ::=  RawVal "::" "elem" Type
 /*@ \subsection{Array access}
 Check array bounds, as part of the dynamic typing policy. */
 
+//@ 'ArrayAccess(arrayRef(_)::arrayOf T:Type,, N:Int::_)
+syntax KLabel ::= "'ArrayAccess"
+
 /* ArrayAccess arguments are heated left-to-right, because if the evaluation of the first argument
   throws an exception, the second one should not be evaluated. JLS $15.3.1
 */
@@ -88,6 +91,9 @@ syntax K ::=  newArrayImpl (
 */
 context newArrayImpl(_:Type, 'ListWrap(Dims:KList,, HOLE,, _), _,_)
 when isKResult(Dims)
+
+//@ newArrayImpl(_:Type, 'ListWrap('Dim(_),, ...), _,_)
+syntax KLabel ::= "'Dim"
 
 //applies right after the previous rule, because HOLE is of the form 'Dim(K)
 rule 'Dim(K:K) => K [structural]

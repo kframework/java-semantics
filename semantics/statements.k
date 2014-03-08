@@ -38,6 +38,28 @@ syntax K ::=  sl (
                 Bag //MethContext - the content of <methodContext>
               )
 
+syntax KLabel ::= "'Empty"
+                | "'Labeled"
+                | "'ExprStm"
+                | "'If"
+                | "'AssertStm"
+                | "'Switch"
+                | "'SwitchBlock"
+                | "'SwitchGroup"
+                | "'Case"
+                | "'Default"
+                | "'While"
+                | "'DoWhile"
+                | "'For"
+                | "'Break"
+                | "'Continue"
+                | "'Return"
+                | "'Throw"
+                | "'Try"
+                | "'Catch"
+                | "'Block"
+
+
 //@ \subsection{Blocks} JLS \$14.2
 
 rule [Block]:
@@ -69,7 +91,10 @@ rule [env-double-Discard]:
 /*@ \subsection{Local Variable Declaration Statements} JLS \$14.4
     Not only local but fields also*/
 
+//@ 'LocalVarDec(_:K,, T:Type,, 'ListWrap('VarDec(X:Id)))
 syntax KLabel ::= "'LocalVarDec"
+                | "'VarDec"
+
 rule [LocalVarDec]:
     <k> 'LocalVarDec(_:K,, T:Type,,'ListWrap('VarDec(X:Id))) => . ...</k>
     <env> Env:Map => Env[L/X] </env>

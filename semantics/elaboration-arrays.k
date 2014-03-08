@@ -9,8 +9,12 @@ module ELABORATION-ARRAYS
 
 //@ \subsection{Desugaring of array declarators with c-style dimensions and initializers}
 
-//C-style array declaration
-//Applied in both elaboration and execution phase
+syntax KLabel ::= "'ArrayVarDecId"
+                | "'ArrayInit"
+
+/*@ C-style array declaration
+    Applied in both elaboration and execution phase
+*/
 rule [elab-LocalVarDec-ArrayVarDecId-desugar]:
     elab('LocalVarDec(
       _:K,,
@@ -88,6 +92,9 @@ rule [elabEnd-Field-ArrayLength]:
     => elabRes(cast(int, lookupField(cast(arrayOf T, Qual), arrayOf T, X)))
 when
     Id2String(X) ==String "length"
+
+//@ 'ArrayType(T:Type)
+syntax KLabel ::= "'ArrayType"
 
 context 'ArrayType(HOLE)
 rule 'ArrayType(T:Type) => arrayOf T     [structural]

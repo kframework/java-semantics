@@ -356,6 +356,9 @@ rule <k> setRuntimeEnclosingLocalEnv(OL:Int) => . ...</k>
       ...
      </store>
 
+//@ 'Param(_:K,, T:Type,, X:Id)
+syntax KLabel ::= "'Param"
+
 /*@ Binds a list of formal parameters to their values. Used by method calls and try-catch.
 */
 syntax K ::= bindTo ( KList, // List{'Param(...)} - parameter declarations

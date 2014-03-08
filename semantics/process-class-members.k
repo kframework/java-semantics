@@ -274,6 +274,10 @@ closures, so that their type contract can be checked at invocation
 time.  The rule below is conceptually similar to that of untyped KOOL;
 the only difference is the addition of the types.  */
 
+//@ 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, 'ListWrap(_,, 'Param(_:K,, HOLE,,_:K),, _),, _:K),, _:K)
+syntax KLabel ::= "'MethodDec"
+                | "'MethodDecHead"
+
 //resolving the return type
 context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _),, _)
 
@@ -300,6 +304,9 @@ when
 syntax K ::= paramTypesResolved( KList )              [function]
 rule paramTypesResolved(('Param(_:K,, TypeK:K,, _:Id) => .KList),, _)
 rule paramTypesResolved(.KList) => true
+
+syntax KLabel ::= "'AbstractMethodDec"
+                | "'NoMethodBody"
 
 rule [AbstractMethodDec]:
     'AbstractMethodDec(_:K,, Ks:KList)
@@ -333,6 +340,10 @@ rule [storeMethod]:
         methodClosure(Class, 'ListWrap(Params), CT, Acc, RT, FirstLine, Body) :: methodType(Sig,ReturnType) / Sig
       ]
     </methodDecs>
+
+syntax KLabel ::= "'ConstrDec"
+                | "'ConstrDecHead"
+                | "'ConstrBody"
 
 rule [ConstrDec-SuperCall-Desugar]:
     <k>
@@ -389,6 +400,9 @@ when paramTypesResolved(Params)
 syntax K ::= getConsName ( ClassType )                               [function]
 rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(ClassId))
 
+//@ 'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,, InitExp:K),, _))
+syntax KLabel ::= "'FieldDec"
+
 //resolve field declaration type
 context 'FieldDec(_:K,, HOLE,, _)
 
@@ -427,6 +441,8 @@ syntax KResult ::=  fieldEntry (
                       ContextType // staticCT | instanceCT
                     )
 
+syntax KLabel ::= "'InstanceInit"
+
 rule [InstanceInit]:
     <k> 'InstanceInit(K:K) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
@@ -436,7 +452,7 @@ rule [InstanceInit]:
 
 /*@ Desugaring a static field declaration with initializer into a declaration without initializer.
 Followed by a static initializer block, if this field is not a compile-time constant.*/
-rule [FieldDec-StaticInitDesugar]:
+rule [FieldDec-StaticInit-Desugar]:
     'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .KList)) ))
     ~> (. => 'StaticInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
@@ -460,12 +476,16 @@ when
     getContextType(Modifiers) ==K staticCT
         [structural]
 
+syntax KLabel ::= "'StaticInit"
+
 rule [StaticInit-Save]:
     <k> 'StaticInit(K:K) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticInit> 'ListWrap(_,,(.KList => K)) </staticInit>
         [structural]
+
+syntax KLabel ::= "'ConstantDec"
 
 /*@ The parser represents interface fields as 'ConstantDec labels.
   This rule desugars them into 'FieldDec labels and adds the modifiers "public static final".

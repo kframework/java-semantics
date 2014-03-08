@@ -255,6 +255,9 @@ rule [setObjLocalClassesEnv]:
 
 /*@ \subsection{Instance Of} */
 
+//@ 'InstanceOf(V::T,, T2)
+syntax KLabel ::= "'InstanceOf"
+
 context 'InstanceOf(HOLE,,_)
 
 rule [InstanceOf]:

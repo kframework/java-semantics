@@ -18,6 +18,8 @@ module ELABORATION-EXPRESSIONS
 
 //@ Elaboration of rules in java-var-lookup
 
+syntax KLabel ::= "'AmbName"
+
 //@ Both unqualified and qualified AmbName.
 rule [elabEnd-AmbName]:
     elabEnd('AmbName(Ks:KList)) => elabEnd('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName('ListWrap(Ks))
@@ -147,6 +149,8 @@ rule [elabLookup-Set]:
 rule [elabLookup-Set-NotFound]:
     elabLookup(_, .Set) => noValue
 
+syntax KLabel ::= "'This"
+
 rule [elabEnd-This]:
     <k> elabEnd('This(.KList) => 'QThis(Class)) ...</k>
     <crntClass> Class:ClassType </crntClass>
@@ -159,6 +163,8 @@ rule [elabEnd-QThis-StaticCT]:
     <k> elabEnd('QThis(_)) => noValue ...</k>
     <contextType> staticCT </contextType>
 
+syntax KLabel ::= "'Field"
+
 rule [elabEnd-Field-QualRef]:
     elabEnd('Field(cast(Class:ClassType, Qual:K),, X:Id))
     => elabFieldImpl(cast(Class, Qual), X, elabLookup(X, Class))
@@ -167,12 +173,18 @@ rule [elabEnd-Field-QualClass]:
     elabEnd('Field(Class:ClassType,, X:Id))
     => elabFieldImpl(noValue, X, elabLookup(X, Class))
 
+//@ 'SuperField(X:Id)
+syntax KLabel ::= "'SuperField"
+
 rule [elabEnd-SuperField]:
     <k>
       elabEnd('SuperField(X:Id) => 'QSuperField(Class,, X:Id))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
+
+//@ 'QSuperField(Class:ClassType,, X:Id)
+syntax KLabel ::= "'QSuperField"
 
 rule [elabEnd-QSuperField]:
     <k>
@@ -379,9 +391,11 @@ when
 
 /*@ \subsection{Elaboration of non-numeric expressions} */
 
+syntax KLabel ::= "'CastPrim"
+                | "'CastRef"
 //@ elab cast
-rule elabEnd('CastRef(T:Type,, TExp:K)  => cast(T, TExp))      [structural]
 rule elabEnd('CastPrim(T:Type,, TExp:K) => cast(T, TExp))      [structural]
+rule elabEnd('CastRef(T:Type,, TExp:K)  => cast(T, TExp))      [structural]
 
 rule [elabEnd-cast]:
     elabEnd(cast(T1:Type, TExp:K)) => elabRes(cast(T1, TExp))

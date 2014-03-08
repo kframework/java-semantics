@@ -13,6 +13,34 @@ module EXPRESSIONS
     imports ELABORATION-EXPRESSIONS //for "isCompoundAssignLabel
     imports TO-STRING
 
+syntax KLabel ::= "'Mul"
+                | "'Div"
+                | "'Remain"
+                | "'Plus"
+                | "'Minus"
+                | "'LeftShift"
+                | "'RightShift"
+                | "'URightShift"
+                | "'Lt"
+                | "'Gt"
+                | "'LtEq"
+                | "'GtEq"
+                | "'Eq"
+                | "'NotEq"
+                | "'LazyAnd"
+                //K bug #260 makes strictness on KLabels impossible. Replace contexts with strictness when fixed.
+                | "'LazyOr"     //[strict(1)]
+                | "'And"
+                | "'ExcOr"
+                | "'Or"
+                | "'Cond"
+                | "'PreIncr"
+                | "'PreDecr"
+                | "'Complement"
+                | "'Not"
+                | "'PostIncr"
+                | "'PostDecr"
+
 /*@ Used to denote a temporary type of an expression. Such an expression should always be wrapped inside a cast
   expression. The cast will then replace tempType with the proper compile-time type.
 */

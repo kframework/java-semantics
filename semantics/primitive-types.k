@@ -7,6 +7,16 @@ module PRIMITIVE-TYPES
     imports CORE-SORTS
     imports SUBTYPING
 
+syntax KLabel ::= "'Boolean"
+                | "'Byte"
+                | "'Short"
+                | "'Int"
+                | "'Long"
+                | "'Char"
+                | "'Float"
+                | "'Double"
+                | "'Void"
+
 //@ \subsection{Type labels}
 //@Here we rewrite Java AST terms for primitive types into their corresponding Type.
 

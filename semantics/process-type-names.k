@@ -14,6 +14,9 @@ module PROCESS-TYPE-NAMES
 
 /*@ \subsection{Compilation units and packages}*/
 
+//@ 'PackageName('ListWrap(Ks))
+syntax KLabel ::= "'PackageName"
+
 rule [PackageName-Start]:
     'PackageName('ListWrap(Ks:KList)) => packageNameImpl("", Ks:KList)                  [structural]
 
@@ -34,6 +37,10 @@ when Str =/=String ""                                                           
 
 rule [packageNameImpl-End]:
     packageNameImpl(Str:String, .KList) => packageId(String2Id(Str))                    [structural]
+
+//@ 'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _)
+syntax KLabel ::= "'CompilationUnit"
+                | "'PackageDec"
 
 rule [CompilationUnit-DefaultPackage-Desugar]:
     'CompilationUnit(
