@@ -120,7 +120,12 @@ rule 'Lit('Bool('False(.KList))) => false
 //@ \subsection{char literals}
 //@ Chars are represented as int values, as described in java specification.
 
+//@ 'Lit('Char('Single( I:Int )))
+syntax KLabel ::= "'Single"
 rule 'Lit('Char('Single( I:Int ))) => I :: char
+
+// 'Lit('Char('NamedEscape( Int )))
+syntax KLabel ::= "'NamedEscape"
 
 //K bug the three escape characters below are not parsed by K3 in their nice form. Confirmed on 04/03/2014.
 rule 'Lit('Char('NamedEscape(  98 ))) =>                 8 :: char  // \b
@@ -134,6 +139,14 @@ rule 'Lit('Char('NamedEscape( 114 ))) => ordChar("\r") :: char
 rule 'Lit('Char('NamedEscape(  34 ))) => ordChar("\"") :: char  //"
 rule 'Lit('Char('NamedEscape(  92 ))) => ordChar("\\") :: char  //"
 
+/*@ 'Lit('Char('OctaEscape1( I:Int )))
+    'Lit('Char('OctaEscape2( I1:Int,, I2:Int )))
+    'Lit('Char('OctaEscape3( I1:Int,, I2:Int,, I3:Int )))
+*/
+syntax KLabel ::= "'OctaEscape1"
+                | "'OctaEscape2"
+                | "'OctaEscape3"
+
 rule 'Lit('Char('OctaEscape1( I:Int ))) => octaAsciiToInt(I) :: char
 
 rule 'Lit('Char('OctaEscape2( I1:Int,, I2:Int )))
@@ -145,6 +158,8 @@ rule 'Lit('Char('OctaEscape3( I1:Int,, I2:Int,, I3:Int )))
      +Int octaAsciiToInt(I2) *Int  8
      +Int octaAsciiToInt(I3)          :: char
 
+//@ 'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
+syntax KLabel ::= "'UnicodeEscape"
 rule 'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
     =>    hexAsciiToInt(I1) *Int 4096
      +Int hexAsciiToInt(I2) *Int  256
@@ -152,6 +167,10 @@ rule 'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
      +Int hexAsciiToInt(I4)           :: char
 
 //@ \subsection{String literals}
+
+//@ 'Lit('String('ListWrap('Chars(Str:String),, 'NamedEscape(_),, _:KList )))
+syntax KLabel ::= "'String"
+                | "'Chars"
 
 rule  'Lit('String('ListWrap(K1:K,, K2:K,, Ks:KList)))
       => 'Plus('Lit('String('ListWrap(K1))),,

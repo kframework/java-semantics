@@ -207,16 +207,54 @@ Thus we don't have to worry about proper type conversion here.*/
 rule 'Cond(CondExp:K,, TrueExp:K,, FalseExp:K) => 'If(CondExp,, TrueExp,, FalseExp)
 
 /*@ \subsubsection{Assignment operators}
-Typed KOOL allows to assign subtype instance values to supertype lvalues.
-Assignment operators are seqstrict according to JLS. */
+Both basic assignment and compound assignments like +=, -=, etc. */
+
+//@ 'Assign(loc(L)::T,, V::T)
+syntax KLabel ::= "'Assign"
 
 context 'Assign(_:KResult,,HOLE)
 
 rule [Assign]:
     'Assign(loc(L:Int) :: ResT:Type,, V:RawVal :: ResT) => store(L, V::ResT) ~> V::ResT
 
-//question: Why can't we move this desugaring into elaboration phase?
-rule [CompoundAssign]:
+//@ Assign***:KLabel(LHS,, RHS)
+syntax KLabel ::= "'AssignMul"
+                | "'AssignDiv"
+                | "'AssignRemain"
+                | "'AssignPlus"
+                | "'AssignMinus"
+                | "'AssignLeftShift"
+                | "'AssignRightShift"
+                | "'AssignURightShift"
+                | "'AssignAnd"
+                | "'AssignExcOr"
+                | "'AssignOr"
+
+syntax K ::= isCompoundAssignLabel ( KLabel )    [function]
+rule isCompoundAssignLabel('AssignPlus) => true
+rule isCompoundAssignLabel('AssignMinus) => true
+rule isCompoundAssignLabel('AssignMul) => true
+rule isCompoundAssignLabel('AssignDiv) => true
+rule isCompoundAssignLabel('AssignAnd) => true
+rule isCompoundAssignLabel('AssignOr) => true
+rule isCompoundAssignLabel('AssignExcOr) => true
+rule isCompoundAssignLabel('AssignRemain) => true
+rule isCompoundAssignLabel('AssignLeftShift) => true
+rule isCompoundAssignLabel('AssignPlus) => true
+rule isCompoundAssignLabel('AssignPlus) => true
+
+/*@ Desugars compound assign into the underlying operator + assign.
+
+    Question: Why not during elaboration phase?
+    Answer:
+  - in the LHS of => location L is referred once
+  - in the RHS of => it is referred twice
+  - at elaboration phase we would have to rewrite the original expresion that produces L
+      from one occurence to two occuences.
+  - if operator LHS expression have side effects, we would end up with the side effect twice.
+  - Example: v[i++] += 1
+*/
+rule [Compound-Assign]:
     KL:KLabel(loc(L:Int) :: T:Type,, Exp2:K)
     => 'Assign(loc(L)::T,, cast(T, getOperatorLabel(KL)(lookup(L, T),, Exp2)))
 when isCompoundAssignLabel(KL)
@@ -268,7 +306,7 @@ when
     orBool KL ==KLabel 'PostIncr
     orBool KL ==KLabel 'PostDecr
     orBool KL ==KLabel 'Assign
-    orBool isCompoundAssignLabel(KL)
+    orBool isCompoundAssignLabel(KL) ==K true
     )
     andBool notBool (isKResult(K) ==K true)
 

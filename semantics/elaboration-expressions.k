@@ -247,23 +247,9 @@ rule isExpressionLabel(KL:KLabel) =>
       /* ? : */ orBool (KL ==KLabel 'Cond)
       /* =   */ orBool (KL ==KLabel 'Assign)
 
-                orBool isCompoundAssignLabel(KL)
+                orBool isCompoundAssignLabel(KL) ==K true
                 orBool isNonNumericExp(KL)
                 orBool isAuxFuncExpressionLabel(KL)
-
-syntax K ::= isCompoundAssignLabel ( KLabel ) [function]
-rule isCompoundAssignLabel(KL:KLabel) =>
-           (KL ==KLabel 'AssignPlus)
-    orBool (KL ==KLabel 'AssignMinus)
-    orBool (KL ==KLabel 'AssignMul)
-    orBool (KL ==KLabel 'AssignDiv)
-    orBool (KL ==KLabel 'AssignAnd)
-    orBool (KL ==KLabel 'AssignOr)
-    orBool (KL ==KLabel 'AssignExcOr)
-    orBool (KL ==KLabel 'AssignRemain)
-    orBool (KL ==KLabel 'AssignLeftShift)
-    orBool (KL ==KLabel 'AssignRightShift)
-    orBool (KL ==KLabel 'AssignURightShift)
 
 syntax K ::= isNonNumericExp ( KLabel )       [function]
 rule isNonNumericExp(KL:KLabel) =>
@@ -390,7 +376,7 @@ when
 rule [elabEnd-CompoundAssign]:
     elabEnd(KL:KLabel(cast(T1:Type, Exp1:K),, TE2:K)) => elabRes(cast(T1, KL(Exp1,, TE2)))
 when
-    isCompoundAssignLabel(KL)
+    isCompoundAssignLabel(KL) ==K true
 
 /*@ \subsection{Elaboration of non-numeric expressions} */
 

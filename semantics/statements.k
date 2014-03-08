@@ -45,6 +45,9 @@ rule [Block]:
     <env> Env </env>
         [structural]
 
+//@ generic list of terms. Any length. The only KLabel not present in the source SDF grammar.
+syntax KLabel ::= "'ListWrap"
+
 rule [ListWrap-statements]:
     'ListWrap(S1:K,, Stmts:KList) => S1 ~> 'ListWrap(Stmts)
         [structural]
