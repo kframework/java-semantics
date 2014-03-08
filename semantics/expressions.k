@@ -240,8 +240,8 @@ rule isCompoundAssignLabel('AssignOr) => true
 rule isCompoundAssignLabel('AssignExcOr) => true
 rule isCompoundAssignLabel('AssignRemain) => true
 rule isCompoundAssignLabel('AssignLeftShift) => true
-rule isCompoundAssignLabel('AssignPlus) => true
-rule isCompoundAssignLabel('AssignPlus) => true
+rule isCompoundAssignLabel('AssignRightShift) => true
+rule isCompoundAssignLabel('AssignURightShift) => true
 
 /*@ Desugars compound assign into the underlying operator + assign.
 
