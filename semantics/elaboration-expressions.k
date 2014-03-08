@@ -276,7 +276,6 @@ rule isAuxFuncExpressionLabel(KL:KLabel)
     =>     KL ==KLabel 'localVar
     orBool KL ==KLabel 'cast
     orBool KL ==KLabel 'stmtAndExp
-    orBool KL ==KLabel 'getQThisSubclassOf
 
 rule [elabEnd-BoolOnlyResultExp-binary]:
     elabEnd(KL:KLabel(TE1:K,, TE2:K)) => elabRes(cast(bool, KL(TE1,,TE2)))
@@ -419,8 +418,8 @@ rule [elab-NewInstance]:
 */
 rule customElabHeating('QNewInstance, Ks:KList,,KHole:K)
      => length(Ks,,KHole) in (SetItem(1) SetItem(2) SetItem(4) SetItem(5))
-        orBool (length(Ks,,KHole) ==K 3 andBool notBool isId(KHole) ==K true)
-        orBool (length(Ks,,KHole) ==K 6 andBool KHole ==K 'None(.KList))
+        orBool (length(Ks,,KHole) ==K 3 andBool notBool isId(KHole) ==K true) //isId(KHole) => class not resolved yet
+        orBool (length(Ks,,KHole) ==K 6 andBool KHole ==K 'None(.KList))      // KHole =/= 'None(_) => anon. class
 
 //Resolve the class name with the help of qualifier type
 rule [elab-QNewInstance-resolve-class]:
@@ -435,6 +434,8 @@ syntax K ::=  resolveInnerClass (
                 ClassType,  //QualClass - the type of the qualifier
                 Id          //Name - instantiated class simple name
               )
+
+rule isAuxFuncElabNaked('resolveInnerClass) => true
 
 rule [resolveInnerClass]:
     <k>

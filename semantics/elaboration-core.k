@@ -81,6 +81,7 @@ syntax K ::= elab ( K )
 
 //@ Wraps the elaboration result. Since elaboration may happen at both ElaborationPhase and ExecutionPhase, it cannot be KResult. Actually it is not KResult for HOLE, but is for CHOLE.
 syntax ElabKResult ::= elabRes ( K )
+rule isElabKResult(KR:KResult) => true
 
 /*@ \subsection{Operator ??}*/
 
@@ -374,6 +375,7 @@ context elab(KL:KLabel(HeadKs:KList,, HOLE,, _:KList))
 when
             (defaultElabHeating(KL) orBool customElabHeating(KL, (HeadKs,,HOLE)) ==K true)
     andBool isElabNaked(HOLE)
+        [result(ElabKResult)]
 
 /*@ Naked terms are those that should be computed directly into KResult during elaboration.
   Those are literals, types and packages. They are heated "as is", without being wrapped into elab().
@@ -392,13 +394,12 @@ rule isElabNaked(K:K) =>
     orBool (getKLabel(K) ==KLabel 'PackageOrTypeName)
     orBool (getKLabel(K) ==KLabel 'Id)
     orBool (getKLabel(K) ==KLabel 'Lit andBool getInnerKLabel(K) =/=KLabel 'Class)
-    orBool isAuxFuncElabNaked(getKLabel(K))
+    orBool isAuxFuncElabNaked(getKLabel(K)) ==K true
 
 syntax KLabel ::= getInnerKLabel ( K )                            [function]
 rule getInnerKLabel(_:KLabel(KL:KLabel(_))) => KL
 
 syntax K ::= isAuxFuncElabNaked( KLabel )                         [function]
-rule isAuxFuncElabNaked(KL:KLabel) => false
 
 /*@ Terms that should use custom elaboration rules. For those terms:
     - They will not be automatically heated from their parents into the elab() state.
@@ -480,16 +481,17 @@ syntax K ::=  getQThisSubclassOf (
                 ClassType,  //The context class in which qualifier is searched for.
                 ClassType   //Qualifier should be subclass of this class
               )
+              [strict(2)]
 
-context elab(getQThisSubclassOf(_, HOLE))
+rule isAuxFuncElabNaked('getQThisSubclassOf) => true
 
 rule [elabEnd-getQThisSubclassOf]:
     <k>
-      elabEnd(getQThisSubclassOf(QualClass:ClassType, ReqClass:ClassType))
+      getQThisSubclassOf(QualClass:ClassType, ReqClass:ClassType)
       => 'If(
             subtype(QualClass, ReqClass),,
             elabRes(cast(QualClass,'QThis(QualClass))),,
-            elabEnd(getQThisSubclassOf(QualEncloserClass, ReqClass))
+            getQThisSubclassOf(QualEncloserClass, ReqClass)
           )
       ...
     </k>
@@ -499,11 +501,11 @@ when
     ReqClass =/=K noClass
 
 rule [elabEnd-getQThisSubclassOf-top-level]:
-    elabEnd(getQThisSubclassOf(K:K, noClass)) => elabRes(noValue)
+    getQThisSubclassOf(K:K, noClass) => noValue
 
 //@Happens for 'NewInstance expressions for static inner classes.
 rule [elabEnd-getQThisSubclassOf-static]:
-    elabEnd(getQThisSubclassOf(noClass, K:K)) => elabRes(noValue)
+    getQThisSubclassOf(noClass, K:K) => noValue
 
 /*@ \subsection{Elaboration of statements - step elabEnd} */
 
