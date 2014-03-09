@@ -220,86 +220,89 @@ rule elabFieldImpl(_,_, noValue) => noValue
     Each expression needs a specialized rule for disposing, that will compute, among others,
     the type of the expression.
 */
-syntax K ::= isExpressionLabel ( KLabel ) [function]
-rule isExpressionLabel(KL:KLabel) =>
+syntax K ::= isExpressionLabel ( KLabel )     [function]
+
     //Infix operators
-    /* ||  */        (KL ==KLabel 'LazyOr)
-    /* &&  */ orBool (KL ==KLabel 'LazyAnd)
-    /* |   */ orBool (KL ==KLabel 'Or)
-    /* ^   */ orBool (KL ==KLabel 'ExcOr)
-    /* &   */ orBool (KL ==KLabel 'And)
-    /* ==  */ orBool (KL ==KLabel 'Eq)
-    /* !=  */ orBool (KL ==KLabel 'NotEq)
-    /* <   */ orBool (KL ==KLabel 'Lt)
-    /* >   */ orBool (KL ==KLabel 'Gt)
-    /* <=  */ orBool (KL ==KLabel 'LtEq)
-    /* >=  */ orBool (KL ==KLabel 'GtEq)
-    /* <<  */ orBool (KL ==KLabel 'LeftShift)
-    /* >>  */ orBool (KL ==KLabel 'RightShift)
-    /* >>> */ orBool (KL ==KLabel 'URightShift)
-    /* +   */ orBool (KL ==KLabel 'Plus)
-    /* -   */ orBool (KL ==KLabel 'Minus)
-    /* *   */ orBool (KL ==KLabel 'Mul)
-    /* /   */ orBool (KL ==KLabel 'Div)
-    /* %   */ orBool (KL ==KLabel 'Remain)
+rule isExpressionLabel('LazyOr) => true       /* ||  */
+rule isExpressionLabel('LazyAnd) => true      /* &&  */
+rule isExpressionLabel('Or) => true           /* |   */
+rule isExpressionLabel('ExcOr) => true        /* ^   */
+rule isExpressionLabel('And) => true          /* &   */
+rule isExpressionLabel('Eq) => true           /* ==  */
+rule isExpressionLabel('NotEq) => true        /* !=  */
+rule isExpressionLabel('Lt) => true           /* <   */
+rule isExpressionLabel('Gt) => true           /* >   */
+rule isExpressionLabel('LtEq) => true         /* <=  */
+rule isExpressionLabel('GtEq) => true         /* >=  */
+rule isExpressionLabel('LeftShift) => true    /* <<  */
+rule isExpressionLabel('RightShift) => true   /* >>  */
+rule isExpressionLabel('URightShift) => true  /* >>> */
+rule isExpressionLabel('Plus) => true         /* +   */
+rule isExpressionLabel('Minus) => true        /* -   */
+rule isExpressionLabel('Mul) => true          /* *   */
+rule isExpressionLabel('Div) => true          /* /   */
+rule isExpressionLabel('Remain) => true       /* %   */
 
     //Prefix operators
-    /* ++  */ orBool (KL ==KLabel 'PreIncr)
-    /* --  */ orBool (KL ==KLabel 'PreDecr)
-    /* !   */ orBool (KL ==KLabel 'Not)
-    /* ~   */ orBool (KL ==KLabel 'Complement)
+rule isExpressionLabel('PreIncr) => true      /* ++  */
+rule isExpressionLabel('PreDecr) => true      /* --  */
+rule isExpressionLabel('Not) => true          /* !   */
+rule isExpressionLabel('Complement) => true   /* ~   */
     /* +   */ //'Plus   - defined earlier
     /* -   */ //'Minus  - defined earlier
 
     //Postfix operators
-    /* ++  */ orBool (KL ==KLabel 'PostIncr)
-    /* --  */ orBool (KL ==KLabel 'PostDecr)
+rule isExpressionLabel('PostIncr) => true     /* ++  */
+rule isExpressionLabel('PostDecr) => true     /* --  */
 
     //Ternary operators
-      /* ? : */ orBool (KL ==KLabel 'Cond)
-      /* =   */ orBool (KL ==KLabel 'Assign)
+rule isExpressionLabel('Cond) => true         /* ? : */
+rule isExpressionLabel('Assign) => true       /* =   */
 
-                orBool isCompoundAssignLabel(KL) ==K true
-                orBool isNonNumericExp(KL)
-                orBool isAuxFuncExpressionLabel(KL)
+rule isExpressionLabel(KL:KLabel) => true
+when
+           isCompoundAssignLabel(KL) ==K true
+    orBool isNonNumericExp(KL) ==K true
+    orBool isAuxFuncExpressionLabel(KL) ==K true
 
 syntax K ::= isNonNumericExp ( KLabel )       [function]
-rule isNonNumericExp(KL:KLabel) =>
-           (KL ==KLabel 'ArrayAccess)
-    orBool (KL ==KLabel 'NewInstance)   // also in customElabChildren
-    orBool (KL ==KLabel 'QNewInstance)  // also in customElabChildren
-    orBool (KL ==KLabel 'InstanceOf)
-    orBool (KL ==KLabel 'Invoke)
-    orBool (KL ==KLabel 'This)
-    orBool (KL ==KLabel 'QThis)
-    orBool (KL ==KLabel 'AmbName)
-    orBool (KL ==KLabel 'ExprName)
-    orBool (KL ==KLabel 'Field)
-    orBool (KL ==KLabel 'SuperField)
-    orBool (KL ==KLabel 'QSuperField)
-    orBool (KL ==KLabel 'NewArray)
-    orBool (KL ==KLabel 'CastPrim)
-    orBool (KL ==KLabel 'CastRef)
+rule isNonNumericExp('ArrayAccess) => true
+rule isNonNumericExp('NewInstance) => true    // also in customElabChildren
+rule isNonNumericExp('QNewInstance) => true   // also in customElabChildren
+rule isNonNumericExp('InstanceOf) => true
+rule isNonNumericExp('Invoke) => true
+rule isNonNumericExp('This) => true
+rule isNonNumericExp('QThis) => true
+rule isNonNumericExp('AmbName) => true
+rule isNonNumericExp('ExprName) => true
+rule isNonNumericExp('Field) => true
+rule isNonNumericExp('SuperField) => true
+rule isNonNumericExp('QSuperField) => true
+rule isNonNumericExp('NewArray) => true
+rule isNonNumericExp('CastPrim) => true
+rule isNonNumericExp('CastRef) => true
 
 /*@ Auxiliary functions that should be threated as expressions in the elaboration phase.
 */
 syntax K ::= isAuxFuncExpressionLabel ( KLabel )    [function]
-rule isAuxFuncExpressionLabel(KL:KLabel)
-    =>     KL ==KLabel 'localVar
-    orBool KL ==KLabel 'cast
-    orBool KL ==KLabel 'stmtAndExp
+rule isAuxFuncExpressionLabel('localVar) => true
+rule isAuxFuncExpressionLabel('cast) => true
+rule isAuxFuncExpressionLabel('stmtAndExp) => true
 
-rule [elabEnd-BoolOnlyResultExp-binary]:
+syntax K ::= isBoolResultBinaryExpLabel ( KLabel )  [function]
+rule isBoolResultBinaryExpLabel('LazyOr) => true
+rule isBoolResultBinaryExpLabel('LazyAnd) => true
+rule isBoolResultBinaryExpLabel('Eq) => true
+rule isBoolResultBinaryExpLabel('NotEq) => true
+rule isBoolResultBinaryExpLabel('Lt) => true
+rule isBoolResultBinaryExpLabel('Gt) => true
+rule isBoolResultBinaryExpLabel('LtEq) => true
+rule isBoolResultBinaryExpLabel('GtEq) => true
+
+rule [elabEnd-BoolResultBinaryExp]:
     elabEnd(KL:KLabel(TE1:K,, TE2:K)) => elabRes(cast(bool, KL(TE1,,TE2)))
 when
-           (KL ==KLabel 'LazyOr)
-    orBool (KL ==KLabel 'LazyAnd)
-    orBool (KL ==KLabel 'Eq)
-    orBool (KL ==KLabel 'NotEq)
-    orBool (KL ==KLabel 'Lt)
-    orBool (KL ==KLabel 'Gt)
-    orBool (KL ==KLabel 'LtEq)
-    orBool (KL ==KLabel 'GtEq)
+    isBoolResultBinaryExpLabel(KL) ==K true
 
 rule [elabEnd-BoolOnlyResultExp-unary]:
     elabEnd('Not(TE:K)) => elabRes(cast(bool,'Not(TE)))
@@ -335,10 +338,13 @@ when
 rule [elabEnd-PrefixPostfix]:
     elabEnd(KL:KLabel(cast(T1:Type, Exp1:K))) => elabRes(cast(T1, KL(Exp1)))
 when
-           (KL ==KLabel 'PreIncr)
-    orBool (KL ==KLabel 'PreDecr)
-    orBool (KL ==KLabel 'PostIncr)
-    orBool (KL ==KLabel 'PostDecr)
+    isPrefixPostfixExpLabel(KL) ==K true
+
+syntax K ::= isPrefixPostfixExpLabel ( KLabel )  [function]
+rule isPrefixPostfixExpLabel('PreIncr) => true
+rule isPrefixPostfixExpLabel('PreDecr) => true
+rule isPrefixPostfixExpLabel('PostIncr) => true
+rule isPrefixPostfixExpLabel('PostDecr) => true
 
 rule [elabEnd-StringPlusAny]:
     elabEnd('Plus(TE1:K,, TE2:K)) => elabRes(cast(stringClass,'Plus(TE1,, TE2)))

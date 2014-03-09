@@ -12,7 +12,12 @@ module ELABORATION-STATEMENTS
 /*@ 'ListWrap nodes need to be elaborated left-to-right. Required when direct child elements might contain variable
 declarations.
 */
-rule customElabHeating('ListWrap, HeadKs:KList,, K:K) => isElab(HeadKs)
+rule customElabHeating('ListWrap, HeadKs:KList,, K:K) => isElabKList(HeadKs)
+
+syntax K ::= isVarDecHolderLabel ( KLabel )                 [function]
+rule isVarDecHolderLabel('Block) => true
+rule isVarDecHolderLabel('For) => true
+rule isVarDecHolderLabel('Catch) => true
 
 /*@ In addition to what defaul elab heating does, when we heat the first argument of 'Block, 'For of 'Catch
 we need to save a copy of elaboration environment - e.g. the last entry of <elabEnv> <localTypes>.
@@ -23,26 +28,20 @@ rule [elab-Block-For-Catch-heat-FirstSubterm]:
     <elabEnv> (. => ElabEnvLI) ElabEnvLI:ListItem ...</elabEnv>
     <localTypes> (. => LocalTypesLI) LocalTypesLI:ListItem ...</localTypes>
 when
-    (KL ==KLabel 'Block orBool KL ==KLabel 'For orBool KL ==KLabel 'Catch)
-    andBool notBool isElab(K)
+    isVarDecHolderLabel(KL) ==K true andBool notBool isElabKResult(K) ==K true
 
-rule [customElabHeating-For-first-child]:
-    customElabHeating('For, KHole:K) => false
-
-//Seqstrict logic: children should be heated left-to-right
+//Seqstrict starting from 2-nd argument.
 rule [customElabHeating-For-next-children]:
-    customElabHeating('For, HeadKs:KList,, KPrec:K,, KHole:K) => isElab(HeadKs,,KPrec)
+    customElabHeating('For, HeadKs:KList,, KPrec:K,, KHole:K) => isElabKList(HeadKs,,KPrec)
 
-rule [customElabHeating-Catch-first-child]:
-    customElabHeating('Catch, KHole:K) => false
-
+//Seqstrict starting from 2-nd argument.
 rule [customElabHeating-For-next-children]:
-    customElabHeating('Catch, K1:K,, KHole:K) => isElab(K1)
+    customElabHeating('Catch, K1:K,, KHole:K) => isElabKResult(K1)
 
 rule [elabEnd-Block-For-Catch]:
     elabEnd(KL:KLabel(ElabResL:KList)) => removeLastElabEnv ~> elabRes(KL(ElabResL))
 when
-    KL ==KLabel 'Block orBool KL ==KLabel 'For orBool KL ==KLabel 'Catch
+    isVarDecHolderLabel(KL) ==K true
 
 //@ Local var declarations desugaring
 

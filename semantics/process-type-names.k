@@ -112,7 +112,7 @@ rule [processTypeNames-Discard]:
 */
 syntax K ::= processInnerTypes ( K , PackageId )
 rule processInnerTypes('ClassBody('ListWrap(Ks:KList)), Pack:PackageId) => processTypeNames(Ks, Pack)
-rule processInnerTypes('ListWrap(Ks:KList), Pack:PackageId) => processTypeNames(Ks, Pack)
+rule processInnerTypes('ListWrap(Ks:KList), Pack:PackageId) => processTypeNames(Ks, Pack)             //interface body
 
 /*@ \subsection{Auxiliary constructs}*/
 

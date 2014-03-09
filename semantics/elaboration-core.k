@@ -95,11 +95,11 @@ syntax K ::= K "??" K [right]
 rule [chainOfResponsibility-Heat]:
     (. => Arg1) ~> (Arg1:K => CHOLE) ?? _
 when
-    notBool isElab(Arg1)
+    notBool isElabKResult(Arg1) ==K true
 
 rule [chainOfResponsibility-Result1]:
-    ElabRes:K ~> (CHOLE ?? _) => ElabRes
-when isElab(ElabRes) andBool (ElabRes =/=K noValue)
+    ElabRes:ElabKResult ~> (CHOLE ?? _) => ElabRes
+when ElabRes =/=K noValue
 
 rule [chainOfResponsibility-Result2]:
     noValue ~> (CHOLE ?? K:K) => K
@@ -112,12 +112,9 @@ rule [chainOfResponsibility-Result2]:
   It is notably NOT a cast() expression. This, together with the fact that cast() have no elaboration heatig rules,
   makes the whole elaboration phase non-reentrant.
 */
-syntax K ::= isElab ( KList )                 [function]
-rule isElab(K:K,, Ks:KList)
-     =>      ((getKLabel(K) ==KLabel 'elabRes) orBool (isKResult(K) ==K true))
-     andBool isElab(Ks)
-
-rule isElab(.KList) => true
+syntax K ::= isElabKList ( KList )                 [function]
+rule isElabKList(ElabKR:ElabKResult,, Ks:KList) => isElabKList(Ks)
+rule isElabKList(.KList) => true
 
 //@ Elaborate parameter type, if not elaborated yet. For catch clause.
 context  elab('Param(_:K,, HOLE,, _:Id))
@@ -141,19 +138,23 @@ rule [removeLastElabEnv]:
 The attribute [transition-strictness] is used as transition attribute for testing strictness.
 This is a rule that may lead to unexpected nondeterminism if it is wrongly implemented.
 In order to expose incorrect nondeterminism we need to model-check a program that exposes the nondeterminism.
+
+Labels that are "naked" should be heated in their pure form. Other terms should be heated wrapped into elab().
 */
 rule [elab-heat-default]:
-    (. => elab(K)) ~> elab(KL:KLabel(HeadKs:KList,, (K:K => CHOLE),, _:KList))
+    (. => #if isElabNaked(K) ==K true
+            #then K
+            #else elab(K)
+          #fi
+    )
+    ~> elab(KL:KLabel(HeadKs:KList,, (K:K => CHOLE),, _:KList))
 when
-    (defaultElabHeating(KL) orBool customElabHeating(KL, (HeadKs,,K)) ==K true)
-    andBool notBool isElab(K)
-    andBool notBool isElabNaked(K)
+    (defaultElabHeating(KL) ==K true orBool customElabHeating(KL, (HeadKs,,K)) ==K true)
+    andBool notBool isElabKResult(K) ==K true
         [transition-strictness]
 
 rule [elab-cool-default]:
-    (ElabK:K => .) ~> elab(_:KLabel(_,, (CHOLE => ElabK),, _))
-when
-    isElab(ElabK)
+    (ElabK:ElabKResult => .) ~> elab(_:KLabel(_,, (CHOLE => ElabK),, _))
 
 /*@ Java KLabels that are processed by default heating/cooling rules of elaboration.
 All KLabels that can be part of a code block during elaboration phase,
@@ -162,243 +163,230 @@ except those members of customElabChildren or isElabNaked groups.
 This predicate should be disjoint with customElabChildren (no longer used) and isElabNaked
 */
 syntax K ::= defaultElabHeating ( KLabel )                [function]
-rule defaultElabHeating(KL:KLabel) =>
-           /*(KL ==KLabel 'ListWrap)*/
-           (KL ==KLabel 'Some)
-    orBool (KL ==KLabel 'None)
-    /*orBool (KL ==KLabel 'Single)
-    orBool (KL ==KLabel 'NamedEscape)
-    orBool (KL ==KLabel 'OctaEscape1)
-    orBool (KL ==KLabel 'OctaEscape2)
-    orBool (KL ==KLabel 'OctaEscape3)
-    orBool (KL ==KLabel 'UnicodeEscape)
-    orBool (KL ==KLabel 'String)
-    orBool (KL ==KLabel 'Chars)*/
 
-    orBool (KL ==KLabel 'Assign)
-    orBool (KL ==KLabel 'AssignMul)
-    orBool (KL ==KLabel 'AssignDiv)
-    orBool (KL ==KLabel 'AssignRemain)
-    orBool (KL ==KLabel 'AssignPlus)
-    orBool (KL ==KLabel 'AssignMinus)
-    orBool (KL ==KLabel 'AssignLeftShift)
-    orBool (KL ==KLabel 'AssignRightShift)
-    orBool (KL ==KLabel 'AssignURightShift)
-    orBool (KL ==KLabel 'AssignAnd)
-    orBool (KL ==KLabel 'AssignExcOr)
-    orBool (KL ==KLabel 'AssignOr)
-    orBool (KL ==KLabel 'InstanceOf)
-    orBool (KL ==KLabel 'Mul)
-    orBool (KL ==KLabel 'Div)
-    orBool (KL ==KLabel 'Remain)
-    orBool (KL ==KLabel 'Plus)
-    orBool (KL ==KLabel 'Minus)
-    orBool (KL ==KLabel 'LeftShift)
-    orBool (KL ==KLabel 'RightShift)
-    orBool (KL ==KLabel 'URightShift)
-    orBool (KL ==KLabel 'Lt)
-    orBool (KL ==KLabel 'Gt)
-    orBool (KL ==KLabel 'LtEq)
-    orBool (KL ==KLabel 'GtEq)
-    orBool (KL ==KLabel 'Eq)
-    orBool (KL ==KLabel 'NotEq)
-    orBool (KL ==KLabel 'LazyAnd)
-    orBool (KL ==KLabel 'LazyOr)
-    orBool (KL ==KLabel 'And)
-    orBool (KL ==KLabel 'ExcOr)
-    orBool (KL ==KLabel 'Or)
-    orBool (KL ==KLabel 'Cond)
-    orBool (KL ==KLabel 'PreIncr)
-    orBool (KL ==KLabel 'PreDecr)
-    orBool (KL ==KLabel 'Complement)
-    orBool (KL ==KLabel 'Not)
-    orBool (KL ==KLabel 'CastPrim)
-    orBool (KL ==KLabel 'CastRef)
-    orBool (KL ==KLabel 'PostIncr)
-    orBool (KL ==KLabel 'PostDecr)
-    orBool (KL ==KLabel 'Invoke)
-    orBool (KL ==KLabel 'Method)
-    orBool (KL ==KLabel 'SuperMethod)
-    orBool (KL ==KLabel 'QSuperMethod)
-    orBool (KL ==KLabel 'GenericMethod)
-    orBool (KL ==KLabel 'ArrayAccess)
-    orBool (KL ==KLabel 'Field)
-    orBool (KL ==KLabel 'SuperField)
-    orBool (KL ==KLabel 'QSuperField)
-    orBool (KL ==KLabel 'NewArray)
-//    orBool (KL ==KLabel 'UnboundWld)
-    orBool (KL ==KLabel 'Dim)
+           /*(KL ==KLabel 'ListWrap)*/
+rule defaultElabHeating('Some) => true
+rule defaultElabHeating('None) => true
+    /*orBool (KL ==KLabel 'Single)
+rule defaultElabHeating('NamedEscape) => true
+rule defaultElabHeating('OctaEscape1) => true
+rule defaultElabHeating('OctaEscape2) => true
+rule defaultElabHeating('OctaEscape3) => true
+rule defaultElabHeating('UnicodeEscape) => true
+rule defaultElabHeating('String) => true
+rule defaultElabHeating('Chars) => true*/
+
+rule defaultElabHeating('Assign) => true
+rule defaultElabHeating('AssignMul) => true
+rule defaultElabHeating('AssignDiv) => true
+rule defaultElabHeating('AssignRemain) => true
+rule defaultElabHeating('AssignPlus) => true
+rule defaultElabHeating('AssignMinus) => true
+rule defaultElabHeating('AssignLeftShift) => true
+rule defaultElabHeating('AssignRightShift) => true
+rule defaultElabHeating('AssignURightShift) => true
+rule defaultElabHeating('AssignAnd) => true
+rule defaultElabHeating('AssignExcOr) => true
+rule defaultElabHeating('AssignOr) => true
+rule defaultElabHeating('InstanceOf) => true
+rule defaultElabHeating('Mul) => true
+rule defaultElabHeating('Div) => true
+rule defaultElabHeating('Remain) => true
+rule defaultElabHeating('Plus) => true
+rule defaultElabHeating('Minus) => true
+rule defaultElabHeating('LeftShift) => true
+rule defaultElabHeating('RightShift) => true
+rule defaultElabHeating('URightShift) => true
+rule defaultElabHeating('Lt) => true
+rule defaultElabHeating('Gt) => true
+rule defaultElabHeating('LtEq) => true
+rule defaultElabHeating('GtEq) => true
+rule defaultElabHeating('Eq) => true
+rule defaultElabHeating('NotEq) => true
+rule defaultElabHeating('LazyAnd) => true
+rule defaultElabHeating('LazyOr) => true
+rule defaultElabHeating('And) => true
+rule defaultElabHeating('ExcOr) => true
+rule defaultElabHeating('Or) => true
+rule defaultElabHeating('Cond) => true
+rule defaultElabHeating('PreIncr) => true
+rule defaultElabHeating('PreDecr) => true
+rule defaultElabHeating('Complement) => true
+rule defaultElabHeating('Not) => true
+rule defaultElabHeating('CastPrim) => true
+rule defaultElabHeating('CastRef) => true
+rule defaultElabHeating('PostIncr) => true
+rule defaultElabHeating('PostDecr) => true
+rule defaultElabHeating('Invoke) => true
+rule defaultElabHeating('Method) => true
+rule defaultElabHeating('SuperMethod) => true
+rule defaultElabHeating('QSuperMethod) => true
+rule defaultElabHeating('GenericMethod) => true
+rule defaultElabHeating('ArrayAccess) => true
+rule defaultElabHeating('Field) => true
+rule defaultElabHeating('SuperField) => true
+rule defaultElabHeating('QSuperField) => true
+rule defaultElabHeating('NewArray) => true
+//rule defaultElabHeating('UnboundWld) => true
+rule defaultElabHeating('Dim) => true
 
     /*orBool (KL ==KLabel 'NewInstance)
-    orBool (KL ==KLabel 'QNewInstance)
-    orBool (KL ==KLabel 'Lit)
-    orBool (KL ==KLabel 'Class)
-    orBool (KL ==KLabel 'VoidClass)*/
-    orBool (KL ==KLabel 'This)
-    orBool (KL ==KLabel 'QThis)
+rule defaultElabHeating('QNewInstance) => true
+rule defaultElabHeating('Lit) => true
+rule defaultElabHeating('Class) => true
+rule defaultElabHeating('VoidClass) => true*/
+rule defaultElabHeating('This) => true
+rule defaultElabHeating('QThis) => true
     /*orBool (KL ==KLabel 'PackageDec)
-    orBool (KL ==KLabel 'TypeImportDec)
-    orBool (KL ==KLabel 'TypeImportOnDemandDec) //ok
-    orBool (KL ==KLabel 'StaticImportDec)
-    orBool (KL ==KLabel 'StaticImportOnDemandDec)
-    orBool (KL ==KLabel 'AnnoDec)
-    orBool (KL ==KLabel 'AnnoDecHead)
-    orBool (KL ==KLabel 'AnnoMethodDec)
-    orBool (KL ==KLabel 'Semicolon)
-    orBool (KL ==KLabel 'DefaultVal)
-    orBool (KL ==KLabel 'AbstractMethodDec)
-    orBool (KL ==KLabel 'DeprAbstractMethodDec)
-    orBool (KL ==KLabel 'ConstantDec)
-    orBool (KL ==KLabel 'InterfaceDec)
-    orBool (KL ==KLabel 'InterfaceDecHead)
-    orBool (KL ==KLabel 'ExtendsInterfaces)
-    orBool (KL ==KLabel 'EnumDec)
-    orBool (KL ==KLabel 'EnumDecHead)
-    orBool (KL ==KLabel 'EnumBody)
-    orBool (KL ==KLabel 'EnumConst)
-    orBool (KL ==KLabel 'EnumBodyDecs)
-    orBool (KL ==KLabel 'ConstrDec)
-    orBool (KL ==KLabel 'ConstrDecHead)
-    orBool (KL ==KLabel 'ConstrBody)*/
-    orBool (KL ==KLabel 'AltConstrInv)
+rule defaultElabHeating('TypeImportDec) => true
+rule defaultElabHeating('TypeImportOnDemandDec) => true //ok
+rule defaultElabHeating('StaticImportDec) => true
+rule defaultElabHeating('StaticImportOnDemandDec) => true
+rule defaultElabHeating('AnnoDec) => true
+rule defaultElabHeating('AnnoDecHead) => true
+rule defaultElabHeating('AnnoMethodDec) => true
+rule defaultElabHeating('Semicolon) => true
+rule defaultElabHeating('DefaultVal) => true
+rule defaultElabHeating('AbstractMethodDec) => true
+rule defaultElabHeating('DeprAbstractMethodDec) => true
+rule defaultElabHeating('ConstantDec) => true
+rule defaultElabHeating('InterfaceDec) => true
+rule defaultElabHeating('InterfaceDecHead) => true
+rule defaultElabHeating('ExtendsInterfaces) => true
+rule defaultElabHeating('EnumDec) => true
+rule defaultElabHeating('EnumDecHead) => true
+rule defaultElabHeating('EnumBody) => true
+rule defaultElabHeating('EnumConst) => true
+rule defaultElabHeating('EnumBodyDecs) => true
+rule defaultElabHeating('ConstrDec) => true
+rule defaultElabHeating('ConstrDecHead) => true
+rule defaultElabHeating('ConstrBody) => true*/
+rule defaultElabHeating('AltConstrInv) => true
     /*orBool (KL ==KLabel 'SuperConstrInv)*/
-    orBool (KL ==KLabel 'QSuperConstrInv)
+rule defaultElabHeating('QSuperConstrInv) => true
     /*orBool (KL ==KLabel 'StaticInit)
-    orBool (KL ==KLabel 'InstanceInit)*/
-    orBool (KL ==KLabel 'Empty)
-    orBool (KL ==KLabel 'Labeled)
-    orBool (KL ==KLabel 'ExprStm)
-    orBool (KL ==KLabel 'If)
-    orBool (KL ==KLabel 'AssertStm)
-    orBool (KL ==KLabel 'Switch)
-    orBool (KL ==KLabel 'SwitchBlock)
-    orBool (KL ==KLabel 'SwitchGroup)
-    orBool (KL ==KLabel 'Case)
-    orBool (KL ==KLabel 'Default) //default keyword from switch
-    orBool (KL ==KLabel 'While)
-    orBool (KL ==KLabel 'DoWhile)
-//    orBool (KL ==KLabel 'For)
-//    orBool (KL ==KLabel 'ForEach)
-    orBool (KL ==KLabel 'Break)
-    orBool (KL ==KLabel 'Continue)
-    orBool (KL ==KLabel 'Return)
-    orBool (KL ==KLabel 'Throw)
-    orBool (KL ==KLabel 'Synchronized)
-    orBool (KL ==KLabel 'Try)
+rule defaultElabHeating('InstanceInit) => true*/
+rule defaultElabHeating('Empty) => true
+rule defaultElabHeating('Labeled) => true
+rule defaultElabHeating('ExprStm) => true
+rule defaultElabHeating('If) => true
+rule defaultElabHeating('AssertStm) => true
+rule defaultElabHeating('Switch) => true
+rule defaultElabHeating('SwitchBlock) => true
+rule defaultElabHeating('SwitchGroup) => true
+rule defaultElabHeating('Case) => true
+rule defaultElabHeating('Default) => true //default keyword from switch
+rule defaultElabHeating('While) => true
+rule defaultElabHeating('DoWhile) => true
+//rule defaultElabHeating('For) => true
+//rule defaultElabHeating('ForEach) => true
+rule defaultElabHeating('Break) => true
+rule defaultElabHeating('Continue) => true
+rule defaultElabHeating('Return) => true
+rule defaultElabHeating('Throw) => true
+rule defaultElabHeating('Synchronized) => true
+rule defaultElabHeating('Try) => true
     /*orBool (KL ==KLabel 'Catch)
-    orBool (KL ==KLabel 'LocalVarDecStm)
-    orBool (KL ==KLabel 'LocalVarDec)
-    orBool (KL ==KLabel 'Block)
-    orBool (KL ==KLabel 'ClassDecStm)*/
-    /*orBool (KL ==KLabel 'MethodDec)
-    orBool (KL ==KLabel 'MethodDecHead)
-    orBool (KL ==KLabel 'DeprMethodDecHead)
-    orBool (KL ==KLabel 'Void)
-    orBool (KL ==KLabel 'Param)
-    orBool (KL ==KLabel 'VarArityParam)
-    orBool (KL ==KLabel 'ThrowsDec) */
-    orBool (KL ==KLabel 'NoMethodBody)
-    orBool (KL ==KLabel 'ArrayInit)
+rule defaultElabHeating('LocalVarDecStm) => true
+rule defaultElabHeating('LocalVarDec) => true
+rule defaultElabHeating('Block) => true
+rule defaultElabHeating('ClassDecStm) => true
+    orBool (KL ==KLabel 'MethodDec)
+rule defaultElabHeating('MethodDecHead) => true
+rule defaultElabHeating('DeprMethodDecHead) => true
+rule defaultElabHeating('Void) => true
+rule defaultElabHeating('Param) => true
+rule defaultElabHeating('VarArityParam) => true
+rule defaultElabHeating('ThrowsDec) => true */
+rule defaultElabHeating('NoMethodBody) => true
+rule defaultElabHeating('ArrayInit) => true
     /*orBool (KL ==KLabel 'Anno)
-    orBool (KL ==KLabel 'SingleElemAnno)
-    orBool (KL ==KLabel 'MarkerAnno)
-    orBool (KL ==KLabel 'ElemValPair)
-    orBool (KL ==KLabel 'ElemValArrayInit)
-    orBool (KL ==KLabel 'FieldDec)*/
-    orBool (KL ==KLabel 'VarDec)
-    orBool (KL ==KLabel 'ArrayVarDecId)
+rule defaultElabHeating('SingleElemAnno) => true
+rule defaultElabHeating('MarkerAnno) => true
+rule defaultElabHeating('ElemValPair) => true
+rule defaultElabHeating('ElemValArrayInit) => true
+rule defaultElabHeating('FieldDec) => true*/
+rule defaultElabHeating('VarDec) => true
+rule defaultElabHeating('ArrayVarDecId) => true
     /*orBool (KL ==KLabel 'ClassDec)
-    orBool (KL ==KLabel 'ClassBody)
-    orBool (KL ==KLabel 'ClassDecHead)
-    orBool (KL ==KLabel 'SuperDec)
-    orBool (KL ==KLabel 'ImplementsDec)
-    orBool (KL ==KLabel 'CompilationUnit)
-    orBool (KL ==KLabel 'PackageName)*/
+rule defaultElabHeating('ClassBody) => true
+rule defaultElabHeating('ClassDecHead) => true
+rule defaultElabHeating('SuperDec) => true
+rule defaultElabHeating('ImplementsDec) => true
+rule defaultElabHeating('CompilationUnit) => true
+rule defaultElabHeating('PackageName) => true*/
 
-    orBool (KL ==KLabel 'AmbName)
-//    orBool (KL ==KLabel 'TypeName)
-    orBool (KL ==KLabel 'ExprName)
+rule defaultElabHeating('AmbName) => true
+//rule defaultElabHeating('TypeName) => true
+rule defaultElabHeating('ExprName) => true
 
-    orBool (KL ==KLabel 'MethodName)
-    orBool auxLabelInElab(KL)
+rule defaultElabHeating('MethodName) => true
     /*orBool (KL ==KLabel 'PackageOrTypeName)
-    orBool (KL ==KLabel 'TypeArgs)
-    orBool (KL ==KLabel 'TypeArgs)
-    orBool (KL ==KLabel 'Wildcard)
-    orBool (KL ==KLabel 'WildcardUpperBound)
-    orBool (KL ==KLabel 'TypeParam)
-    orBool (KL ==KLabel 'TypeBound)
-    orBool (KL ==KLabel 'TypeParams)
-    orBool (KL ==KLabel 'ClassOrInterfaceType)
-    orBool (KL ==KLabel 'ClassType)
+rule defaultElabHeating('TypeArgs) => true
+rule defaultElabHeating('TypeArgs) => true
+rule defaultElabHeating('Wildcard) => true
+rule defaultElabHeating('WildcardUpperBound) => true
+rule defaultElabHeating('TypeParam) => true
+rule defaultElabHeating('TypeBound) => true
+rule defaultElabHeating('TypeParams) => true
+rule defaultElabHeating('ClassOrInterfaceType) => true
+rule defaultElabHeating('ClassType) => true
     orBool (KL ==KLabel 'InterfaceType
-    orBool (KL ==KLabel 'Member)
-    orBool (KL ==KLabel 'TypeVar)
-    orBool (KL ==KLabel 'ArrayType)
-    orBool (KL ==KLabel 'Boolean)
-    orBool (KL ==KLabel 'Byte)
-    orBool (KL ==KLabel 'Short)
-    orBool (KL ==KLabel 'Int)
-    orBool (KL ==KLabel 'Long)
-    orBool (KL ==KLabel 'Char)
-    orBool (KL ==KLabel 'Float)
-    orBool (KL ==KLabel 'Double)
-    orBool (KL ==KLabel 'Null)
-    orBool (KL ==KLabel 'Bool)
-    orBool (KL ==KLabel 'True)
-    orBool (KL ==KLabel 'False)
-    orBool (KL ==KLabel 'Deci)
-    orBool (KL ==KLabel 'Hexa)
-    orBool (KL ==KLabel 'Octa)
-    orBool (KL ==KLabel 'Public)
-    orBool (KL ==KLabel 'Private)
-    orBool (KL ==KLabel 'Protected)
-    orBool (KL ==KLabel 'Abstract)
-    orBool (KL ==KLabel 'Final)
-    orBool (KL ==KLabel 'Static)
-    orBool (KL ==KLabel 'Native)
-    orBool (KL ==KLabel 'Transient)
-    orBool (KL ==KLabel 'Volatile)
-    orBool (KL ==KLabel 'StrictFP)
-    orBool (KL ==KLabel 'Id)*/
+rule defaultElabHeating('Member) => true
+rule defaultElabHeating('TypeVar) => true
+rule defaultElabHeating('ArrayType) => true
+rule defaultElabHeating('Boolean) => true
+rule defaultElabHeating('Byte) => true
+rule defaultElabHeating('Short) => true
+rule defaultElabHeating('Int) => true
+rule defaultElabHeating('Long) => true
+rule defaultElabHeating('Char) => true
+rule defaultElabHeating('Float) => true
+rule defaultElabHeating('Double) => true
+rule defaultElabHeating('Null) => true
+rule defaultElabHeating('Bool) => true
+rule defaultElabHeating('True) => true
+rule defaultElabHeating('False) => true
+rule defaultElabHeating('Deci) => true
+rule defaultElabHeating('Hexa) => true
+rule defaultElabHeating('Octa) => true
+rule defaultElabHeating('Public) => true
+rule defaultElabHeating('Private) => true
+rule defaultElabHeating('Protected) => true
+rule defaultElabHeating('Abstract) => true
+rule defaultElabHeating('Final) => true
+rule defaultElabHeating('Static) => true
+rule defaultElabHeating('Native) => true
+rule defaultElabHeating('Transient) => true
+rule defaultElabHeating('Volatile) => true
+rule defaultElabHeating('StrictFP) => true
+rule defaultElabHeating('Id) => true*/
 
-syntax K ::= auxLabelInElab( KLabel ) [function]
-rule auxLabelInElab(KL:KLabel) =>
-           KL ==KLabel 'setEncloser
-    orBool KL ==KLabel 'stmtAndExp
-
-/*@  elabHeat-naked-children
-  Since a naked term is always computed int oa KResult during elaboration,
-  we can use a simple context rule to heat such terms.
-*/
-context elab(KL:KLabel(HeadKs:KList,, HOLE,, _:KList))
-when
-            (defaultElabHeating(KL) orBool customElabHeating(KL, (HeadKs,,HOLE)) ==K true)
-    andBool isElabNaked(HOLE)
-        [result(ElabKResult)]
+//Auxiliary functions that should be default-heated
+rule defaultElabHeating('setEncloser) => true
+rule defaultElabHeating('stmtAndExp) => true
 
 /*@ Naked terms are those that should be computed directly into KResult during elaboration.
   Those are literals, types and packages. They are heated "as is", without being wrapped into elab().
   An exception is the class literal that is not executed during elaboration.
 */
 syntax K ::= isElabNaked ( K )                            [function]
-rule isElabNaked(K:K) =>
-           //warning: cannot use ==Bool in the first expression - looks like isRawVal(K) will not be computed
-           (isRawVal(K) ==K true)
-    orBool (getKLabel(K) ==KLabel 'TypeName)
-    orBool (getKLabel(K) ==KLabel 'ClassOrInterfaceType)
-    orBool (getKLabel(K) ==KLabel 'InterfaceType)
-    orBool (getKLabel(K) ==KLabel 'ClassType)
-    orBool (getKLabel(K) ==KLabel 'ArrayType)
-    orBool (getKLabel(K) ==KLabel 'PackageName)
-    orBool (getKLabel(K) ==KLabel 'PackageOrTypeName)
-    orBool (getKLabel(K) ==KLabel 'Id)
-    orBool (getKLabel(K) ==KLabel 'Lit andBool getInnerKLabel(K) =/=KLabel 'Class)
-    orBool isAuxFuncElabNaked(getKLabel(K)) ==K true
+rule isElabNaked(RV:RawVal) => true
+rule isElabNaked('TypeName(_)) => true
+rule isElabNaked('ClassOrInterfaceType(_)) => true
+rule isElabNaked('InterfaceType(_)) => true
+rule isElabNaked('ClassType(_)) => true
+rule isElabNaked('ArrayType(_)) => true
+rule isElabNaked('PackageName(_)) => true
+rule isElabNaked('PackageOrTypeName(_)) => true
+rule isElabNaked('Id(_)) => true
+rule isElabNaked('Lit(InnerKL:KLabel(_))) => InnerKL =/=KLabel 'Class
 
-syntax KLabel ::= getInnerKLabel ( K )                            [function]
-rule getInnerKLabel(_:KLabel(KL:KLabel(_))) => KL
+rule isElabNaked(KL:KLabel(_)) => true
+when
+    isAuxFuncElabNaked(KL) ==K true
 
+/*@ Implementation is scattered.*/
 syntax K ::= isAuxFuncElabNaked( KLabel )                         [function]
 
 /*@ Terms that should use custom elaboration rules. For those terms:
@@ -447,7 +435,7 @@ syntax K ::= elabDispose ( K )
 rule [elab-to-elabDispose]:
     elab(KL:KLabel(ElabResL:KList)) => elabDispose(KL(ElabResL))
 when
-    isElab(ElabResL)
+    isElabKList(ElabResL) ==K true
 
 rule [elabDispose-process]:
     elabDispose(KL:KLabel(_,, (elabRes(K:K) => K),, _))
@@ -455,14 +443,11 @@ rule [elabDispose-process]:
 rule [elabDispose-to-elabEnd]:
     elabDispose(KL:KLabel(Ks:KList)) => elabEnd(KL(Ks))
 when
-    haveNoElabRes(Ks)
+    notBool haveElabRes(Ks) ==K true
 
 //@ True if given KList have no terms of the form elabRes(...), false otherwise.
-syntax K ::= haveNoElabRes ( KList )          [function]
-rule haveNoElabRes(K:K,, Ks:KList)
-     => (getKLabel(K) =/=KLabel 'elabRes) andBool haveNoElabRes(Ks)
-
-rule haveNoElabRes(.KList) => true
+syntax K ::= haveElabRes ( KList )          [function]
+rule haveElabRes(_,, elabRes(_),,_) => true
 
 /*@ The 3rd elaboration-phase wrapper for expressions. Represents the case when children are completely elaborated and
 unwrapped from elabRes(), but root node might not be elaborated yet. The implementation is scattered across all modules
@@ -516,10 +501,11 @@ rule [elabEnd-default-all-except-expressions]:
 when
     notBool (customElabEnd(KL) ==K true)
 
+//@ The implementation is scattered across elaboration-related modules
 syntax K ::= customElabEnd ( KLabel )                       [function]
 rule customElabEnd(KL) => true
 when
-    isExpressionLabel(KL)
+    isExpressionLabel(KL) ==K true
 
 /*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
 such as an anonymous class declaration. Is typed with the type of the expression.
@@ -536,17 +522,7 @@ rule stmtAndExp(Stmt:K, Exp:K) => Stmt ~> Exp
 
 //@ \subsection{Hacks related to elaboration during execution phase}
 
-//@ Unwrap elaborated terms in execution phase, so that they could be executed.
-rule [elabRes-ExecutionPhase-discard1]:
-    <k> (elabRes(K:K) => K) ~> KL:KLabel(_) ...</k>
-    <globalPhase> ExecutionPhase </globalPhase>
-when
-    KL =/=KLabel 'elab
-
-rule [elabRes-ExecutionPhase-discard2]:
-    <k> elabRes(K:K) => K </k>
-    <globalPhase> ExecutionPhase </globalPhase>
-
+//todo investigate if needed
 //Required for [VarDecWithArrayInitDesugar], [FieldDecWithArrayInitDesugar]
 rule elab(elab(K:K)) => elab(K)
 

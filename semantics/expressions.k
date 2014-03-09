@@ -329,11 +329,8 @@ syntax K ::= lvalue ( K )
 rule [exp-lvalue-Heat]:
     (. => lvalue(K)) ~> KL:KLabel((K:K => HOLE),, _)
 when
-    (      KL ==KLabel 'PreIncr
-    orBool KL ==KLabel 'PreDecr
-    orBool KL ==KLabel 'PostIncr
-    orBool KL ==KLabel 'PostDecr
-    orBool KL ==KLabel 'Assign
+    (      KL ==KLabel 'Assign
+    orBool isPrefixPostfixExpLabel(KL) ==K true
     orBool isCompoundAssignLabel(KL) ==K true
     )
     andBool notBool (isKResult(K) ==K true)
