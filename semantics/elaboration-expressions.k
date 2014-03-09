@@ -420,7 +420,7 @@ rule [elab-NewInstance]:
         =>  'QNewInstance(
               #if CT ==K staticCT
                 #then noValue
-                #else getQThisSubclassOf(CrntClass, EnclosingClass)
+                #else findQualifierOfType(CrntClass, EnclosingClass)
               #fi,,
               Arg1,, Class,, 'None(.KList),, ActualArgsList,, 'None(.KList)
             )

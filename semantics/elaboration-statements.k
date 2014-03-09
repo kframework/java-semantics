@@ -88,7 +88,7 @@ rule [elab-SuperConstrInv-desugar]:
         'SuperConstrInv(K:K,, 'ListWrap( Args:KList ))
         =>  'QSuperConstrInv(
               #if CT ==K instanceCT
-                #then getQThisSubclassOf(EnclosingClass, BaseEnclosingClass)
+                #then findQualifierOfType(EnclosingClass, BaseEnclosingClass)
                 #else noValue
               #fi,,
               K,,

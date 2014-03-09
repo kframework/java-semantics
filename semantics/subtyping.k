@@ -77,7 +77,7 @@ rule [subtype-NoClassOfAnyFalse]:
     subtype( noClass, _ ) => false
 
 //The case subtype (noClass, noClass) should never be encountered
-//used by the rule [getQThisSubclassOf]
+//used by the rule [findQualifierOfType]
 rule [subtype-AnyOfNoClassFalse]:
     subtype( _, noClass ) => true
 

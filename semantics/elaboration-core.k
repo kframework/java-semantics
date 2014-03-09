@@ -460,23 +460,23 @@ syntax K ::= elabEnd ( K )
 /*@ Computes into an expression of the form elabRes(cast(QualClass, 'QThis(QualClass))),
 where QualClass is searched in the enclosing context of the first argument,
 being a subclass of the second one.
-Or elabRes(noValue) if no suitable result is found
+Or noValue if no suitable result is found
 */
-syntax K ::=  getQThisSubclassOf (
+syntax K ::=  findQualifierOfType (
                 ClassType,  //The context class in which qualifier is searched for.
                 ClassType   //Qualifier should be subclass of this class
               )
               [strict(2)]
 
-rule isAuxFuncElabNaked('getQThisSubclassOf) => true
+rule isAuxFuncElabNaked('findQualifierOfType) => true
 
-rule [elabEnd-getQThisSubclassOf]:
+rule [elabEnd-findQualifierOfType]:
     <k>
-      getQThisSubclassOf(QualClass:ClassType, ReqClass:ClassType)
+      findQualifierOfType(QualClass:ClassType, ReqClass:ClassType)
       => ifAux(
             subtype(QualClass, ReqClass),
             elabRes(cast(QualClass,'QThis(QualClass))),
-            getQThisSubclassOf(QualEncloserClass, ReqClass)
+            findQualifierOfType(QualEncloserClass, ReqClass)
           )
       ...
     </k>
@@ -485,12 +485,12 @@ rule [elabEnd-getQThisSubclassOf]:
 when
     ReqClass =/=K noClass
 
-rule [elabEnd-getQThisSubclassOf-top-level]:
-    getQThisSubclassOf(K:K, noClass) => noValue
+rule [elabEnd-findQualifierOfType-top-level]:
+    findQualifierOfType(K:K, noClass) => noValue
 
 //@Happens for 'NewInstance expressions for static inner classes.
-rule [elabEnd-getQThisSubclassOf-static]:
-    getQThisSubclassOf(noClass, K:K) => noValue
+rule [elabEnd-findQualifierOfType-static]:
+    findQualifierOfType(noClass, K:K) => noValue
 
 /*@ \subsection{Elaboration of statements - step elabEnd} */
 
@@ -499,13 +499,10 @@ rule [elabEnd-getQThisSubclassOf-static]:
 rule [elabEnd-default-all-except-expressions]:
     elabEnd(KL:KLabel(Ks:KList)) => elabRes(KL(Ks))
 when
-    notBool (customElabEnd(KL) ==K true)
+    notBool (isExpressionLabel(KL) ==K true orBool customElabEnd(KL) ==K true)
 
 //@ The implementation is scattered across elaboration-related modules
 syntax K ::= customElabEnd ( KLabel )                       [function]
-rule customElabEnd(KL) => true
-when
-    isExpressionLabel(KL) ==K true
 
 /*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
 such as an anonymous class declaration. Is typed with the type of the expression.

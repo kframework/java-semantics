@@ -17,24 +17,67 @@ module ELABORATION-METHOD-INVOKE
 syntax KLabel ::= "'Method"
                 | "'MethodName"
 
-rule 'Method(Qual:K,, _:K,, Name:Id => 'MethodName(Qual,, Name))  [structural, anywhere]
+rule customElabEnd('Method) => true
 
-rule isExtKResult('Method('MethodName(Qual:K,, Name:Id))) => true
+rule elabEnd('Method(Qual:K,, _:K,, Name:Id))  => elabEnd('Method('MethodName(Qual,, Name)))  [structural]
 
-rule [Method-MethodName-Unq-InstanceCT]:
+rule [elabEnd-Method-MethodName-Unq-InstanceCT]:
     <k>
-      'Method('MethodName(Name:Id) => 'MethodName(cast(Class, 'QThis(Class)),, Name))
+      elabEnd('Method('MethodName(Name:Id))) => elab('Method('MethodName(findQualifierForName(Class, Name),, Name)))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>                 [structural]
 
+rule [elabEnd-Method-MethodName-to-elabRes]:
+    ('elabEnd => 'elabRes)('Method('MethodName(_:K,, Name:Id)))
+
+/*@ Computes into an expression of the form elabRes(cast(QualClass, 'QThis(QualClass))),
+where QualClass is searched in the enclosing context of the first argument,
+being a class that have methods with name = the second argument.
+Or noValue if no suitable result is found
+
+The algorithm is slightly different from the previous one with chained lookupMethod. Here we just search for the first
+  class with an appropriate name. That one searches for the class with appropriate signature.
+  todo assure that either this algorithm is wrong or we need some more tests.
+*/
+syntax K ::=  findQualifierForName (
+                ClassType,  //The context class in which qualifier is searched for.
+                Id          //Qualifier should contain a method with this name
+              )
+              [strict(2)]
+
+rule isAuxFuncElabNaked('findQualifierForName) => true
+
+rule [elabEnd-findQualifierForName]:
+    <k>
+      findQualifierForName(QualClass:ClassType, Name:Id)
+      => ifAux(
+           containsName(Methods, Name) ==K true,
+           elabRes(cast(QualClass,'QThis(QualClass))),
+           findQualifierForName(QualEncloserClass, Name)
+         )
+      ...
+    </k>
+    <classType> QualClass </classType>
+    <enclosingClass> QualEncloserClass:ClassType </enclosingClass>
+    <methods> Methods:Map </methods>
+
+syntax K ::= containsName ( Map , Id )        [function]
+rule containsName((sig(Name, _) |-> _) _:Map, Name:Id) => true
+
+//@Happens for 'NewInstance expressions for static inner classes.
+rule [elabEnd-findQualifierForName-static]:
+    findQualifierForName(noClass, K:K) => noValue
+
 //@ 'SuperMethod(_:K,, Name:Id)
 syntax KLabel ::= "'SuperMethod"
+
+rule customElabEnd('SuperMethod) => true
 
 // super.X(_)
 rule [SuperMethod-desugar]:
     <k>
-      'SuperMethod(K:K,, Name:Id) => 'QSuperMethod(Class,, K:K,, Name:Id)
+      elabEnd('SuperMethod(K:K,, Name:Id)) => elabEnd('QSuperMethod(Class,, K:K,, Name:Id))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>  [structural]
@@ -42,55 +85,21 @@ rule [SuperMethod-desugar]:
 //@ 'QSuperMethod(Class:ClassType,, _:K,, Name:Id)
 syntax KLabel ::= "'QSuperMethod"
 
+rule customElabEnd('QSuperMethod) => true
+
 rule [QSuperMethod]:
     <k>
-      'QSuperMethod(Class:ClassType,, _:K,, Name:Id)
-      => 'Method('MethodName(cast(BaseClass, superMethod(cast(BaseClass, 'QThis(Class)))),, Name))
+      elabEnd('QSuperMethod(Class:ClassType,, _:K,, Name:Id))
+      => elabEnd('Method('MethodName(cast(BaseClass, superMethod(cast(BaseClass, 'QThis(Class)))),, Name)))
       ...
     </k>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>  [structural]
 
-//First argument is reduced up to lookupMethodData.
-context elabEnd('Invoke(HOLE,, _))                      [result(ExtKResult)]
+rule [elabEnd-Invoke-to-lookupMethod]:
+    ( . => lookupMethod(getLookupTargetType(typeOf(Qual)), Name, noValue, false, Qual, ParamExps) )
+    ~> elabEnd('Invoke( 'Method('MethodName(Qual:K,, Name:Id)),, 'ListWrap(ParamExps:KList) ))
 
-rule [elabEnd-Invoke-to-lookupMethod-qualified]:
-    elabEnd('Invoke(
-      'Method('MethodName(Qual:K,, Name:Id)),,
-      'ListWrap(ParamExps:KList)
-    )) => lookupMethod(
-      getLookupTargetType(typeOf(Qual)),
-      Name,
-      noValue,
-      false,
-      Qual,
-      ParamExps
-    )
-when notBool isCastOfQThis(Qual) ==K true
-
-rule [elabEnd-Invoke-to-lookupMethod-unqualified]:
-    <k>
-      elabEnd('Invoke(
-        'Method('MethodName(cast(Class, 'QThis(Class:ClassType)),, Name:Id)),,
-        'ListWrap(ParamExps:KList))
-      ) => lookupMethod(
-        Class,
-        Name,
-        noValue,
-        false,
-        cast(Class, 'QThis(Class)),
-        ParamExps
-      )
-      ?? elabEnd('Invoke(
-        'Method('MethodName(cast(EnclosingClass, 'QThis(EnclosingClass)),, Name:Id)),,
-        'ListWrap(ParamExps)
-      ))
-      ...
-    </k>
-    <classType> Class </classType>
-    <enclosingClass> EnclosingClass:ClassType </enclosingClass>
-
-//K bug: latex workaround - manual character escape.
 //@ True for cast(T,'QThis(\_)), false otherwise
 syntax K ::= isCastOfQThis ( K )                                      [function]
 rule isCastOfQThis(cast(_, 'QThis(_))) => true
@@ -173,39 +182,33 @@ rule [methodProcessArguments-process]:
     )
 
 //for now just a workaround implementation
-rule [methodProcessArguments-end]:
-    <k>
-      (methodProcessArguments(RetT:Type, QualClass:ClassType, QualK:K, Name:Id, types(.KList), .KList,
-                              ExpectedParamExps:KList, CT:ContextType)
-      =>  elabEnd(stmtAndExp(
+rule [methodProcessArguments-Invoke-end]:
+    methodProcessArguments(RetT:Type, _, _, Name:Id, types(.KList), .KList,
+                            ExpectedParamExps:KList, CT:ContextType)
+    ~>  elabEnd('Invoke( 'Method('MethodName(QualK:K,, Name:Id)),, _ ))
+    =>  elabEnd(stmtAndExp(
 
-            //if the context is static but qualifier isa valid expression, we have to evaluate it.
-            #if CT ==K staticCT andBool isCast(QualK) ==K true andBool notBool isCastOfQThis(QualK) ==K true
-              #then 'ExprStm(QualK)
-              #else 'Empty(.KList)
-            #fi,
+          //if the context is static but qualifier isa valid expression, we have to evaluate it.
+          #if CT ==K staticCT andBool isCast(QualK) ==K true andBool notBool isCastOfQThis(QualK) ==K true
+            #then 'ExprStm(QualK)
+            #else 'Empty(.KList)
+          #fi,
 
-            cast(RetT,
-              'Invoke(
-                'Method(
-                  'MethodName(
-                    #if CT ==K instanceCT
-                      #then QualK
-                      #else QualClass
-                    #fi,,
-                    Name:Id
-                  )
-                ),,
-                'ListWrap(ExpectedParamExps)
-              )
+          cast(RetT,
+            'Invoke(
+              'Method(
+                'MethodName(
+                  #if CT ==K instanceCT
+                    #then QualK
+                    #else typeOf(QualK)
+                  #fi,,
+                  Name:Id
+                )
+              ),,
+              'ListWrap(ExpectedParamExps)
             )
-          ))
-      )
-      ~> KI:KItem
-      ...
-    </k>
-when getKLabel(KI) =/=KLabel 'elabEnd //if it is elabEnd, then it is elabEnd('QNewInstance(...)),
-                                      //and we have a different rule for that.
+          )
+        ))
 
 /*Search for the correct method signature to use
 when calling a given MethodName with the given argument types.
