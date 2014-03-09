@@ -11,7 +11,7 @@ if [ $# -gt 1 ]; then
     echo "Your command:"
     echo `basename $0` $@
     echo "Usage: `basename $0`"
-    echo "Or:    `basename $0` <exec|strictness|threading|latex|pdf>"
+    echo "Or:    `basename $0` <--exec|--strictness|--threading|--symbolic|--latex|--pdf|--help>"
     exit
 fi
 
@@ -20,31 +20,36 @@ KOMPILE_CMD=$(cross-k.sh kompile)
 
 if [ $# -eq 1 ];
   then OPTION=$1
-  else OPTION=exec
+  else OPTION=--exec
 fi
 
 case "$OPTION" in
-"exec")
+"--exec")
     $KOMPILE_CMD -v java
     ;;
-"strictness")
+"--strictness")
     $KOMPILE_CMD -v -transition "transition-strictness" java
     ;;
-"threading")
+"--threading")
     $KOMPILE_CMD -v -transition "transition-threading" java
     ;;
-"symbolic")
+"--symbolic")
     $KOMPILE_CMD -v --backend symbolic --symbolic-rules "symbolic-rule" java
     ;;
-"latex")
+"--latex")
     $KOMPILE_CMD -v --backend latex --doc-style "style=math" java
     ;;
-"pdf")
+"--pdf")
     $KOMPILE_CMD -v --backend pdf --doc-style "style=math" java
+    ;;
+"--help")
+    echo "Usage: `basename $0`"
+    echo "Or:    `basename $0` <--exec|--strictness|--threading|--symbolic|--latex|--pdf|--help>"
     ;;
 *)
     echo "Invalid option: $OPTION"
-    echo "Usage: `basename $0` or `basename $0` <exec|strictness|threading|symbolic|latex|pdf>"
+    echo "Usage: `basename $0`"
+    echo "Or:    `basename $0` <--exec|--strictness|--threading|--symbolic|--latex|--pdf|--help>"
     exit 1
     ;;
 esac
