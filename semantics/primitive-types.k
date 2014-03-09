@@ -111,8 +111,8 @@ when (NT1 =/=K long) andBool (NT2 =/=K long)
 rule normalizeType(NT1:IntType, NT2:IntType) => long
 when (NT1 ==K long) orBool (NT2 ==K long)
 
-rule normalizeType(T:Type, FT:FloatType) => 'If(subtype(T, FT),, FT,, T)
-rule normalizeType(FT:FloatType, T:Type) => 'If(subtype(T, FT),, FT,, T)
+rule normalizeType(T:Type, FT:FloatType) => ifAux(subtype(T, FT), FT, T)
+rule normalizeType(FT:FloatType, T:Type) => ifAux(subtype(T, FT), FT, T)
 
 //not technically primitive types, but here is the most appropriate place to put the rules
 rule normalizeType(Class:ClassType, _) => Class

@@ -355,7 +355,7 @@ rule [elabEnd-Cond]:
 syntax K ::= condType ( Type, Type ) [strict]
 
 rule [condType-NoChar]:
-    condType(T1:Type,T2:Type) => 'If(subtype(T1,T2),, T2,, T1)
+    condType(T1:Type,T2:Type) => ifAux(subtype(T1,T2), T2, T1)
 when
     T1 =/=K char andBool T2 =/=K char
 
@@ -365,7 +365,7 @@ when
     T1 =/=K char
 
 rule [condType-FirstChar]:
-    condType(char, T2:Type) => 'If(subtype(char, T2),, T2,, int)
+    condType(char, T2:Type) => ifAux(subtype(char, T2), T2, int)
 
 /*@ Heats the second argument, that is reduced into a type.
     The whole expression is then rewritten into elabRes(cast(SecondArgAsType, FirstArg))

@@ -112,7 +112,7 @@ rule [processType]:
           ~> tryInheritSet(ISet)
 
           //interfaces should also contain the members of Object
-          ~> 'If((MetaT ==K interfaceMetaT),, tryInherit(objectClass))
+          ~> ifAux((MetaT ==K interfaceMetaT), tryInherit(objectClass), .K)
 
           ~> tryInherit(BaseClass)
           ~> Decls
@@ -192,9 +192,9 @@ rule [tryInheritImpl-Unfold]:
 rule [tryInheritImpl]:
     <k>
       tryInheritImpl(Sig:K |-> DecClass:ClassType)
-      => 'If(
-            isInheritable(getMethodAccessMode(TV)),,
-            inherit(Sig |-> DecClass),,
+      => ifAux(
+            isInheritable(getMethodAccessMode(TV)),
+            inherit(Sig |-> DecClass),
             .K
           )
       ...

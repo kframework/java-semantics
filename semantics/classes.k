@@ -268,9 +268,9 @@ rule [InstanceOf]:
 
 rule [cast-RefType]:
     cast(RT1:RefType, V:RawVal :: RT2:RefType)
-    =>  'If(
-          subtype(typeOf(V), RT1),,
-          (V::RT1),,
+    =>  ifAux(
+          subtype(typeOf(V), RT1),
+          (V::RT1),
           'Throw('NewInstance(
                   'None(.KList),,
                   class String2Id("java.lang.ClassCastException"),,

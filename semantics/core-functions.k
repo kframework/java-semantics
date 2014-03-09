@@ -75,6 +75,12 @@ when
 syntax K ::= eqAux ( K, K )                  [seqstrict]
 rule eqAux(KR1:KResult, KR2:KResult) => KR1 ==K KR2
 
+/*@ Alternative version of if, to be used whenever semantics needs an if logic.
+  The original 'If will only be used in the source programs.*/
+syntax K ::= ifAux ( K, K, K )                  [strict(1)]
+rule ifAux(true::bool, S:K, _) => S             [structural]
+rule ifAux(false::bool, _, S:K) => S            [structural]
+
 /*@ A wrapper for maps. Allows holding maps inside an arbitrary expression where a K term is required.
     Also used as part of mapUnion operation in PROCESS-CLASS-MEMBERS
 */

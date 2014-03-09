@@ -488,9 +488,9 @@ rule isAuxFuncElabNaked('getQThisSubclassOf) => true
 rule [elabEnd-getQThisSubclassOf]:
     <k>
       getQThisSubclassOf(QualClass:ClassType, ReqClass:ClassType)
-      => 'If(
-            subtype(QualClass, ReqClass),,
-            elabRes(cast(QualClass,'QThis(QualClass))),,
+      => ifAux(
+            subtype(QualClass, ReqClass),
+            elabRes(cast(QualClass,'QThis(QualClass))),
             getQThisSubclassOf(QualEncloserClass, ReqClass)
           )
       ...

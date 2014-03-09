@@ -229,7 +229,7 @@ rule [lookupSignature-Main]:
         mapWrap((sig(MethodName, SigTs:Types) |-> DecClass:ClassType => .) _:Map),
         IsQ:Bool,
         OldMethodDecRecord:KResult
-        => 'If(
+        => ifAux(
             'LazyAnd(
               'LazyAnd(
                 subtypeList(CallTs, SigTs),,
@@ -243,8 +243,8 @@ rule [lookupSignature-Main]:
                 getMethodContextType(NewMethTV),
                 DecClass, IsQ, QualClass
               )
-            ),,
-            NewMethTV,,
+            ),
+            NewMethTV,
             OldMethodDecRecord
           ),
         QualClass:ClassType
@@ -293,7 +293,7 @@ rule [isAccessible-protected]:
             'LazyAnd(
               'LazyOr((CT ==K staticCT),, 'Not(IsQ)),,
               subtype(
-                'If(IsQ,, CurrentClass,, TargetClass),
+                ifAux(IsQ, CurrentClass, TargetClass),
                 DeclaringClass
               )
             ),,
