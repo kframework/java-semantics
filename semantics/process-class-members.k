@@ -302,7 +302,7 @@ when
     paramTypesResolved(Params)                        [structural]
 
 syntax K ::= paramTypesResolved( KList )              [function]
-rule paramTypesResolved(('Param(_:K,, TypeK:K,, _:Id) => .KList),, _)
+rule paramTypesResolved(('Param(_:K,, T:Type,, _:Id) => .KList),, _)
 rule paramTypesResolved(.KList) => true
 
 syntax KLabel ::= "'AbstractMethodDec"

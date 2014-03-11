@@ -39,20 +39,23 @@ rule bitCount(int) => 32
 rule bitCount(long) => 64
 rule bitCount(char) => 16
 
-syntax K ::= normalize ( TypedVal ) [function]
+/*@ Symbolic execution limitation: this construct cannot be [function]
+    When conditionals are needed, implementation have to use 'If - the symbolically processed version of if.
+*/
+syntax K ::= normalize ( TypedVal )
 
 rule normalize(I:Int :: IntT:IntType)
-    =>  #if isInRange(I::IntT)
-          #then I::IntT
-          #else normalizeImpl(I::IntT)
-        #fi
+    =>  'If(isInRange(I::IntT),,
+          I::IntT,,
+          normalizeImpl(I::IntT)
+        )
 when IntT =/=K char
 
 rule normalize(I:Int :: char)
-    =>  #if isInRange(I::char)
-          #then I :: char
-          #else toUnsigned(normalizeImpl(I::char))
-        #fi
+    =>  'If(isInRange(I::char),,
+          I :: char,,
+          toUnsigned(normalizeImpl(I::char))
+        )
 
 rule normalize(I:Int :: FloatT:FloatType) => Int2Float(I)::FloatT
 
@@ -60,7 +63,8 @@ rule normalize(F:Float :: IntT:IntType) => normalize(Float2Int(F) :: IntT:IntTyp
 
 rule normalize(F:Float :: FloatT:FloatType) => F::FloatT
 
-syntax K ::= isInRange ( TypedVal )                                          [function]
+//@ Symbolic execution limitation: this construct cannot be [function]
+syntax K ::= isInRange ( TypedVal )
 rule isInRange(I:Int::byte) => ((I >=Int -128) andBool (I <=Int 127))
 rule isInRange(I:Int::short) => ((I >=Int -32768) andBool (I <=Int 32767))
 rule isInRange(I:Int::int) => ((I >=Int -2147483648) andBool (I <=Int 2147483647))
@@ -71,27 +75,35 @@ rule isInRange(I:Int::char) => ((I >=Int 0) andBool (I <=Int 65535))
 rule isInRange(RV:RawVal::_) => true
 when notBool (isInt(RV) ==K true)
 
-syntax K ::= normalizeImpl ( TypedVal ) [function]
+/*@ Symbolic execution limitation: this construct cannot be [function]
+*/
+syntax K ::= normalizeImpl ( TypedVal )
 
 rule normalizeImpl(I:Int :: T:Type)
     => normalizeSign((((I &Int ((1 <<Int bitCount(T)) -Int 1))
         +Int (1 <<Int bitCount(T)))
         &Int ((1 <<Int bitCount(T)) -Int 1)) :: T)
 
-syntax K ::= normalizeSign ( TypedVal ) [function]
+/*@ Symbolic execution limitation: this construct cannot be [function]
+    When conditionals are needed, implementation have to use 'If - the symbolically processed version of if.
+*/
+syntax K ::= normalizeSign ( TypedVal )       [strict]
 
 rule normalizeSign(I:Int :: T:Type)
-    =>  #if I <=Int ((1 <<Int (bitCount(T) -Int 1)) -Int 1)
-          #then I :: T
-          #else I -Int (1 <<Int bitCount(T)) :: T
-        #fi
+    =>  'If(I <=Int ((1 <<Int (bitCount(T) -Int 1)) -Int 1),,
+          I :: T,,
+          I -Int (1 <<Int bitCount(T)) :: T
+        )
 
-syntax K ::= toUnsigned ( TypedVal )          [function]
+/*@ Symbolic execution limitation: this construct cannot be [function]
+    When conditionals are needed, implementation have to use 'If - the symbolically processed version of if.
+*/
+syntax K ::= toUnsigned ( TypedVal )          [strict]
 rule toUnsigned(I:Int :: T:Type)
-    =>  #if I >=Int 0
-          #then I :: T
-          #else I +Int (1 <<Int bitCount(T)) :: T
-        #fi
+    =>  'If(I >=Int 0,,
+          I :: T,,
+          I +Int (1 <<Int bitCount(T)) :: T
+        )
 
 syntax K ::= normalizeType ( Type )           [function]
 rule normalizeType(ILT:IntOrLongType) => ILT

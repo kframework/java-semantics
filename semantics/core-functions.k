@@ -60,9 +60,10 @@ syntax K ::=  getTypes (
               )
               [function]
 
+// Without the second side condition it would be an infinite loop
 rule getTypes(_,, (K:K => typeOf(K)),, _)
 when
-    notBool isType(K) ==K true
+    isType(K) =/=K true andBool getKLabel(K) =/=KLabel 'typeOf
 
 rule getTypes(Ts:KList) => types(Ts)
 when
