@@ -425,21 +425,9 @@ rule [FieldDec-to-LocalVarDec]:
     <fieldDecs>
       'ListWrap(_,, ( .KList => 'LocalVarDec(.K,, T,, 'ListWrap('VarDec(X))) ))
     </fieldDecs>
-    <instanceEnv> Env:Map => Env[fieldEntry(Class,X,T, instanceCT)/X] </instanceEnv>
 when
     getContextType(Modifiers) ==K instanceCT
         [structural]
-
-
-//todo fields are also represented another way. Check whether we can eliminate this representation ot avoid duplicates.
-/*@ A representation of instance fields used in elaboration phase.
-*/
-syntax KResult ::=  fieldEntry (
-                      ClassType,  // target class
-                      Id,         // X - field name
-                      Type,       // Field type
-                      ContextType // staticCT | instanceCT
-                    )
 
 syntax KLabel ::= "'InstanceInit"
 

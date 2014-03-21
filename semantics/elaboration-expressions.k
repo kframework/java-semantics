@@ -99,19 +99,19 @@ syntax K ::=  elabLookup (
               )
 
 rule [elabLookup-FoundInstance]:
-    <k> elabLookup(X:Id, CT:ClassType) => FEntry ...</k>
-    <classType> CT </classType>
-    <instanceEnv>... X |-> FEntry:K ...</instanceEnv>
+    <k> elabLookup(X:Id, Class:ClassType) => fieldEntry(Class, X, T, instanceCT) ...</k>
+    <classType> Class </classType>
+    <fieldDecs> 'ListWrap(_,, 'LocalVarDec(.K,, T:Type,, 'ListWrap('VarDec(X))),, _) </fieldDecs>
 
-rule [elabLookup-FoundStatic]:
-    <k> elabLookup(X:Id, CT:ClassType) => fieldEntry(CT,X,T, staticCT) ...</k>
-    <classType> CT </classType>
+rule [elabLookup-Found-Static]:
+    <k> elabLookup(X:Id, Class:ClassType) => fieldEntry(Class, X, T, staticCT) ...</k>
+    <classType> Class </classType>
     <staticEnv>... X |-> L:Int ...</staticEnv>
     <store>... L |-> _ :: T:Type  ...</store>
 
-rule [elabLookup-FoundConstant]:
-    <k> elabLookup(X:Id, CT:ClassType) => TV ...</k>
-    <classType> CT </classType>
+rule [elabLookup-Found-constant]:
+    <k> elabLookup(X:Id, Class:ClassType) => TV ...</k>
+    <classType> Class </classType>
     <constantEnv>... X |-> TV:TypedVal ...</constantEnv>
 
 /*@If X is not found in the current class, search for it first in base interfaces, then in the base class.
@@ -120,17 +120,17 @@ interfaces have a public one. In this case we should choose the field from the i
 */
 rule [elabLookup-NextClass]:
     <k>
-      elabLookup(X:Id, CT:ClassType) => elabLookup(X, BaseInterfaces) ?? elabLookup(X, BaseClass)
+      elabLookup(X:Id, Class:ClassType) => elabLookup(X, BaseInterfaces) ?? elabLookup(X, BaseClass)
       ...
     </k>
-    <classType> CT </classType>
+    <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
     <implements> BaseInterfaces:Set </implements>
-    <instanceEnv> InstanceEnv:Map </instanceEnv>
+    <fieldDecs> 'ListWrap(InstanceVarDecs:KList) </fieldDecs>
     <staticEnv> StaticEnv:Map </staticEnv>
     <constantEnv> ConstantEnv:Map </constantEnv>
 when
-    notBool ((X in keys(InstanceEnv)) orBool (X in keys(StaticEnv)) orBool (X in keys(ConstantEnv)))
+    notBool ( nameInVarDecs(X, InstanceVarDecs) ==K true orBool (X in keys(StaticEnv)) orBool (X in keys(ConstantEnv)))
 
 rule [elabLookup-NotFound]:
     elabLookup(X:Id, noClass) => noValue
@@ -141,6 +141,15 @@ rule [elabLookup-Set]:
 
 rule [elabLookup-Set-NotFound]:
     elabLookup(_, .Set) => noValue
+
+syntax K ::=  nameInVarDecs(
+                Id,   //Target name
+                KList //The list of variable declarations, each of the form
+                      //  'LocalVarDec(.K,, T:Type,, 'ListWrap('VarDec(X)))
+              )
+              [function]
+
+rule nameInVarDecs(X:Id, (_,, 'LocalVarDec(.K,, T:Type,, 'ListWrap('VarDec(X))),, _)) => true
 
 syntax KLabel ::= "'This"
 
@@ -195,6 +204,14 @@ syntax K ::=  elabFieldImpl (
                 K   //elabLookup(...), computes into fieldEntry(...) or noValue
               )
               [strict(3)]
+
+/*@ A representation of fields used in elaboration phase. */
+syntax KResult ::=  fieldEntry (
+                      ClassType,  // target class
+                      Id,         // X - field name
+                      Type,       // Field type
+                      ContextType // staticCT | instanceCT
+                    )
 
 rule elabFieldImpl(SourceExp:K, X:Id, fieldEntry(Class:ClassType,_,T:Type, instanceCT))
     => elabRes(cast(T, 'ExprName(cast(Class, SourceExp),, X)))

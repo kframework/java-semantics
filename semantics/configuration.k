@@ -153,11 +153,6 @@ configuration
             //a "ListWrap containing a 'LocalVarDec for each field. Used during object instantiation.
             <fieldDecs color="Indigo"> 'ListWrap(.KList) </fieldDecs>
 
-            /*The map of instance fields declared in this class, but not in superclasses.
-              Map[Id -> fieldEntry(Class, X, T, ContextType)] (declaring class, field name, field type)
-              created in ProcClassMembersPhase along with <fieldDecs>, used in elaboration phase.*/
-            <instanceEnv color="Indigo"> .Map </instanceEnv>
-
             <br/>
 
             /*Contains concatenated instance initializer blocks and instance field initializers.
