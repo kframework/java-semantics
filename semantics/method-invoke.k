@@ -368,7 +368,7 @@ syntax K ::= bindTo ( KList, // List{'Param(...)} - parameter declarations
 rule [bindTo]:
     bindTo('Param(_:K,, T:Type,, X:Id),, RestP:KList, TV:TypedVal,, RestV:KList)
     => 'LocalVarDec(.K,, T:Type,,'ListWrap('VarDec(X)))
-      ~> 'ExprStm('Assign(localVar(X),, cast(T, TV:TypedVal)))
+      ~> 'ExprStm('Assign('ExprName(X),, cast(T, TV:TypedVal)))
       ~> bindTo(RestP, RestV)
 
 rule [bindTo-empty]:

@@ -11,7 +11,7 @@ module ELABORATION-EXPRESSIONS
     imports CORE-CLASSES
     imports PROCESS-TYPE-NAMES     //for toPackage()
     imports SUBTYPING
-    imports VAR-LOOKUP             //for localVar, lookupField, lookupStaticField
+    imports VAR-LOOKUP             //for lookupField, lookupStaticField
     imports ELABORATION-CORE
                                         //todo we should move all that depents on this to ELABORATION-METHOD-INVOKE
     imports ELABORATION-METHOD-INVOKE   // for lookupMethod
@@ -26,10 +26,15 @@ rule [elabEnd-AmbName]:
 
 syntax KLabel ::= "'ExprName"
 
-//@ "localVar" is defined in the module VAR-LOOKUP.
-rule [elabEnd-ExprName-unqualified]:
-    <k> elabEnd('ExprName(X:Id)) => elabEnd(localVar(X)) ?? externalVar(X, Class) ...</k>
+rule [elabEnd-ExprName-localVar-ok]:
+    <k> elabEnd('ExprName(X:Id)) => elabRes(cast(T, 'ExprName(X))) ...</k>
+    <elabEnv> ListItem(mapWrap(X |-> T:Type _)) ...</elabEnv>
+
+rule [elabEnd-localVar-to-noValue]:
+    <k> elabEnd('ExprName(X:Id)) => externalVar(X, Class) ...</k>
+    <elabEnv> ListItem(mapWrap(ElabEnv:Map)) ...</elabEnv>
     <crntClass> Class:ClassType </crntClass>
+when notBool (X in keys(ElabEnv))
 
 //@ This could be either a field, or a local var of some enclosing block.
 syntax K ::=  externalVar (
@@ -59,7 +64,7 @@ syntax K ::=  elabOuterLocalVar (
 
 rule [elabOuterLocalVar-ok]:
     <k>
-      elabOuterLocalVar(X:Id, Class:ClassType) => elabRes(cast(T, localVar(X)))
+      elabOuterLocalVar(X:Id, Class:ClassType) => elabRes(cast(T, 'ExprName(X)))
       ...
     </k>
     <classType> Class </classType>
@@ -77,15 +82,6 @@ when
 
 rule [elabEnd-ExprName-qualified]:
     elabEnd('ExprName(QualK:K,,X:Id)) => elabEnd('Field(QualK,,X))
-
-rule [elabEnd-localVar-ok]:
-  <k> elabEnd(localVar(X:Id)) => elabRes(cast(T, localVar(X))) ...</k>
-  <elabEnv> ListItem(mapWrap(X |-> T:Type _)) ...</elabEnv>
-
-rule [elabEnd-localVar-to-noValue]:
-  <k> elabEnd(localVar(X:Id)) => noValue ...</k>
-  <elabEnv> ListItem(mapWrap(ElabEnv:Map)) ...</elabEnv>
-when notBool (X in keys(ElabEnv))
 
 rule [elabEnd-Field-of-package]:
     elabEnd('Field( _:PackageId,, _:Id )) => noValue  [structural]
@@ -285,7 +281,6 @@ rule isNonNumericExp('CastRef) => true
 /*@ Auxiliary functions that should be threated as expressions in the elaboration phase.
 */
 syntax K ::= isAuxFuncExpressionLabel ( KLabel )    [function]
-rule isAuxFuncExpressionLabel('localVar) => true
 rule isAuxFuncExpressionLabel('cast) => true
 rule isAuxFuncExpressionLabel('stmtAndExp) => true
 

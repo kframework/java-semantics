@@ -15,15 +15,14 @@ module VAR-LOOKUP
 
 //@ \subsection{Names}
 
-//@ Lookup the given local var by name.
-syntax K ::= localVar ( Id ) //the var name
-
-rule [localVar]:
-    <k> localVar(X:Id) => typedLookup(L) ...</k>
+/*@ At execution phase 'ExprName(X) always represent a local variable.
+*/
+rule [ExprName-localVar]:
+    <k> 'ExprName(X:Id) => typedLookup(L) ...</k>
     <env>... X |-> L:Int ...</env>
 
-rule [lvalue-localVar]:
-    <k> lvalue(localVar(X:Id)) => typedLoc(L) ...</k>
+rule [lvalue-ExprName-localVar]:
+    <k> lvalue('ExprName(X:Id)) => typedLoc(L) ...</k>
     <env>... X |-> L:Int ...</env>
 
 /*@ \subsection{Self reference}
