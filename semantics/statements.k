@@ -456,7 +456,7 @@ rule [Throw-CausesThreadTermination]:
             'Invoke(
               'Method(
                 'MethodName(
-                  lookupStaticField( 'TypeName( String2Id("System")), String2Id("out") ),,
+                  'ExprName( 'TypeName( String2Id("System")),, String2Id("out") ),,
                   String2Id("println")
                 )
               ),,

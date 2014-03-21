@@ -24,8 +24,6 @@ syntax KLabel ::= "'AmbName"
 rule [elabEnd-AmbName]:
     elabEnd('AmbName(Ks:KList)) => elabEnd('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName('ListWrap(Ks))
 
-syntax KLabel ::= "'ExprName"
-
 rule [elabEnd-ExprName-localVar-ok]:
     <k> elabEnd('ExprName(X:Id)) => elabRes(cast(T, 'ExprName(X))) ...</k>
     <elabEnv> ListItem(mapWrap(X |-> T:Type _)) ...</elabEnv>
@@ -203,7 +201,7 @@ rule elabFieldImpl(SourceExp:K, X:Id, fieldEntry(Class:ClassType,_,T:Type, insta
     => elabRes(cast(T, lookupField(SourceExp,Class,X)))
 
 rule elabFieldImpl(_, X:Id, fieldEntry(Class:ClassType,_,T:Type, staticCT))
-    => elabRes(cast(T, lookupStaticField(Class,X)))
+    => elabRes(cast(T, 'ExprName(Class,, X)))
 
 //@for constant fields
 rule elabFieldImpl(_,_, TV:TypedVal) => TV

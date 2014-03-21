@@ -15,6 +15,13 @@ module VAR-LOOKUP
 
 //@ \subsection{Names}
 
+/*@ Variable access. May have 3 forms:
+    - 'ExprName(X:Id) - local variable
+    - 'ExprName(Class, X:Id) - static field
+    - 'ExprName(Qual, X:Id) - instance field
+*/
+syntax KLabel ::= "'ExprName"
+
 /*@ At execution phase 'ExprName(X) always represent a local variable.
 */
 rule [ExprName-localVar]:
@@ -103,16 +110,12 @@ rule [lookupField-OfNull]:
         ))
         [anywhere]
 
-//@ Elaboration result of a static field access expression
-syntax K ::=  lookupStaticField (
-                Type, //Precise type where the field is defined
-                Id    //X - field name
-              ) [strict(1)]//strictnes is for runtime produced terms
+context 'ExprName(HOLE,, _)
 
 rule [lookupStaticField]:
     <k>
-      lookupStaticField(
-        TargetClass:ClassType,
+      'ExprName(
+        TargetClass:ClassType,,
         X:Id
       )
       => staticInit(TargetClass) ~> typedLookup(L)
@@ -123,8 +126,8 @@ rule [lookupStaticField]:
 
 rule [lvalue-lookupStaticField]:
     <k>
-      lvalue(lookupStaticField(
-          TargetClass:ClassType,
+      lvalue('ExprName(
+          TargetClass:ClassType,,
           X:Id
       ))
       => staticInit(TargetClass) ~> lvalue(typedLookup(L))
