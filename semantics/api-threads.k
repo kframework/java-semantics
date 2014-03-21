@@ -31,9 +31,11 @@ rule [thread-start]:
             'Invoke(
               'Method(
                 'MethodName(
-                  lookupField(
-                    typedLookup(OL),
-                    class String2Id("java.lang.Thread"),
+                  'ExprName(
+                    cast(
+                      class String2Id("java.lang.Thread"),
+                      typedLookup(OL)
+                    ),,
                     String2Id("runnable")
                   ),,
                   String2Id("run")

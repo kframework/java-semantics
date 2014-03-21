@@ -11,7 +11,6 @@ module ELABORATION-EXPRESSIONS
     imports CORE-CLASSES
     imports PROCESS-TYPE-NAMES     //for toPackage()
     imports SUBTYPING
-    imports VAR-LOOKUP             //for lookupField, lookupStaticField
     imports ELABORATION-CORE
                                         //todo we should move all that depents on this to ELABORATION-METHOD-INVOKE
     imports ELABORATION-METHOD-INVOKE   // for lookupMethod
@@ -198,7 +197,7 @@ syntax K ::=  elabFieldImpl (
               [strict(3)]
 
 rule elabFieldImpl(SourceExp:K, X:Id, fieldEntry(Class:ClassType,_,T:Type, instanceCT))
-    => elabRes(cast(T, lookupField(SourceExp,Class,X)))
+    => elabRes(cast(T, 'ExprName(cast(Class, SourceExp),, X)))
 
 rule elabFieldImpl(_, X:Id, fieldEntry(Class:ClassType,_,T:Type, staticCT))
     => elabRes(cast(T, 'ExprName(Class,, X)))

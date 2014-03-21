@@ -2,6 +2,7 @@ require "core-sorts.k"
 require "process-class-members.k"
 require "elaboration-expressions.k"
 require "subtyping.k"
+require "method-invoke.k"
 
 //@ \section{Module ELABORATION-METHOD-INVOKE}
 
@@ -10,6 +11,7 @@ module ELABORATION-METHOD-INVOKE
     imports PROCESS-CLASS-MEMBERS
     imports ELABORATION-EXPRESSIONS
     imports SUBTYPING
+    imports METHOD-INVOKE //for superMethod()
 
 /*@ 'Method(Qual:K,, _:K,, Name:Id)
     'Method('MethodName(Qual:K,, Name:Id))

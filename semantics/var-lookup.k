@@ -13,7 +13,7 @@ module VAR-LOOKUP
     imports STATIC-INIT         //for staticInit()
     imports EXPRESSIONS
 
-//@ \subsection{Names}
+//@ \subsection{Local variable access}
 
 /*@ Variable access. May have 3 forms:
     - 'ExprName(X:Id) - local variable
@@ -24,16 +24,15 @@ syntax KLabel ::= "'ExprName"
 
 /*@ At execution phase 'ExprName(X) always represent a local variable.
 */
-rule [ExprName-localVar]:
+rule [ExprName-local]:
     <k> 'ExprName(X:Id) => typedLookup(L) ...</k>
     <env>... X |-> L:Int ...</env>
 
-rule [lvalue-ExprName-localVar]:
+rule [lvalue-ExprName-local]:
     <k> lvalue('ExprName(X:Id)) => typedLoc(L) ...</k>
     <env>... X |-> L:Int ...</env>
 
-/*@ \subsection{Self reference}
-Like in untyped KOOL. */
+/*@ \subsection{QThis - Self reference} */
 
 //@ 'QThis(Class:ClassType)
 syntax KLabel ::= "'QThis"
@@ -74,34 +73,22 @@ rule [lookupQThis-next]:
 when
     Class =/=K ObjClass
 
-/*@ \subsection{Object member access} */
+/*@ \subsection{Instance field access} */
 
-//new rules
+context 'ExprName(HOLE,, _)
+context lvalue('ExprName(HOLE,, _))
 
-//outside lvalue we have strictness rules
-
-//@ Elaboration result of a field access exp.
-syntax K ::=  lookupField (
-                K,    //Qualifier exp
-                Type, //Precise type where the field is defined
-                Id    //X - field name
-              )
-
-context lookupField(HOLE,_,_)
-context lvalue(lookupField(HOLE,_,_))
-
-rule [lookupField]:
-    lookupField(
+rule [ExprName-instance]:
+    'ExprName(
       objectClosure(_,
           (_:KList/*ObjLayers*/,, layer(TargetClass, <env>... X |-> L:Int ...</env>, _,_),, _:KList/*ObjLayers*/), _
-        ) ::_,
-      TargetClass:ClassType,
+        ) :: TargetClass:ClassType,,
       X:Id
     ) => typedLookup(L)
         [anywhere]
 
-rule [lookupField-OfNull]:
-    lookupField(null::_, _, _)
+rule [ExprName-instance-OfNull]:
+    'ExprName(null::_,, _)
     =>  'Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
@@ -110,9 +97,9 @@ rule [lookupField-OfNull]:
         ))
         [anywhere]
 
-context 'ExprName(HOLE,, _)
+/*@ \subsection{Static field access} */
 
-rule [lookupStaticField]:
+rule [ExprName-static]:
     <k>
       'ExprName(
         TargetClass:ClassType,,
@@ -124,7 +111,7 @@ rule [lookupStaticField]:
     <classType> TargetClass </classType>
     <staticEnv>... X |-> L:Int ...</staticEnv>
 
-rule [lvalue-lookupStaticField]:
+rule [lvalue-ExprName-static]:
     <k>
       lvalue('ExprName(
           TargetClass:ClassType,,
