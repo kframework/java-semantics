@@ -123,21 +123,17 @@ rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
-rule [elabEnd-QSuperConstrInv-methodProcessArguments-to-argsElaborated]:
-    (methodProcessArguments(_,_,_,_, types(.KList), .KList, ExpectedParamExps:KList, instanceCT) => argsElaborated)
-    ~> elabEnd('QSuperConstrInv(_:K,, _:K,, 'ListWrap( _ => ExpectedParamExps )))
-
 rule [elabEnd-QSuperConstrInv-qualified]:
-    argsElaborated
-    ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, 'ListWrap( Args:KList )))
-    => elabRes('QSuperConstrInv(Qual,, Arg2,, 'ListWrap( Args )))
+    argsElaborated(_, ExpectedParamExps:KList, instanceCT)
+    ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, 'ListWrap(_)))
+    => elabRes('QSuperConstrInv(Qual,, Arg2,, 'ListWrap( ExpectedParamExps )))
 when
     Qual =/=K noValue
 
 rule [elabEnd-QSuperConstrInv-to-SuperConstrInv]:
-    argsElaborated
-    ~> elabEnd('QSuperConstrInv(noValue,, Arg2:K,, 'ListWrap( Args:KList )))
-    => elabRes('SuperConstrInv(Arg2,, 'ListWrap( Args )))
+    argsElaborated(_, ExpectedParamExps:KList, instanceCT)
+    ~> elabEnd('QSuperConstrInv(noValue,, Arg2:K,, 'ListWrap(_)))
+    => elabRes('SuperConstrInv(Arg2,, 'ListWrap( ExpectedParamExps )))
 
 rule customElabEnd('AltConstrInv) => true
 
@@ -149,13 +145,9 @@ rule [elabEnd-AltConstrInv-to-lookupMethod]:
     </k>
     <crntClass> Class:ClassType </crntClass>
 
-rule [elabEnd-AltConstrInv-methodProcessArguments-to-argsElaborated]:
-    (methodProcessArguments(_,_,_,_, types(.KList), .KList, ExpectedParamExps:KList, instanceCT) => argsElaborated)
-    ~> elabEnd('AltConstrInv(Arg1:K,, 'ListWrap( _ => ExpectedParamExps )))
-
 rule [elab-AltConstrInv]:
-    argsElaborated
-    ~> elabEnd('AltConstrInv(Arg1:K,, 'ListWrap( Args:KList )))
-    => elabRes('AltConstrInv(Arg1:K,, 'ListWrap( Args:KList )))
+    argsElaborated(_, ExpectedParamExps:KList, instanceCT)
+    ~> elabEnd('AltConstrInv(Arg1:K,, 'ListWrap(_)))
+    => elabRes('AltConstrInv(Arg1:K,, 'ListWrap( ExpectedParamExps )))
 
 endmodule

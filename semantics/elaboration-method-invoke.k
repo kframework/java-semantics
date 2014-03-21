@@ -181,10 +181,22 @@ rule [methodProcessArguments-process]:
       CT:ContextType
     )
 
+rule [methodProcessArguments-end]:
+    methodProcessArguments(RetT:Type,_,_,_, types(.KList), .KList, ExpectedParamExps:KList, CT:ContextType)
+    => argsElaborated(RetT, ExpectedParamExps, CT)
+
+/*@ Marker indicating that arguments of the following 'Invoke, 'QNewInstance, 'QSuperConstrInv, 'AltConstrInv
+  have been elaborated.
+*/
+syntax K ::=  argsElaborated (
+                Type ,      // Return type
+                KList ,     // ExpectedParamExps
+                ContextType // Called method context type
+              )
+
 //for now just a workaround implementation
 rule [methodProcessArguments-Invoke-end]:
-    methodProcessArguments(RetT:Type, _, _, Name:Id, types(.KList), .KList,
-                            ExpectedParamExps:KList, CT:ContextType)
+    argsElaborated(RetT:Type, ExpectedParamExps:KList, CT:ContextType)
     ~>  elabEnd('Invoke( 'Method('MethodName(QualK:K,, Name:Id)),, _ ))
     =>  elabEnd(stmtAndExp(
 

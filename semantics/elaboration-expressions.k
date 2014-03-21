@@ -484,24 +484,17 @@ rule [elabEnd-QNewInstance-to-lookupMethod]:
     (. => lookupMethod(Class, getConsName(Class), noValue, false, Class, Args)) ~>
     elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, 'ListWrap(Args:KList),, 'None(.KList)))
 
-rule [elabEnd-QNewInstance-methodProcessArguments-to-argsElaborated]:
-    (methodProcessArguments(_,_,_,_, types(.KList), .KList, ExpectedParamExps:KList, instanceCT) => argsElaborated)
-    ~> elabEnd('QNewInstance(_:K,, _:K,, _:K,, _:K,, 'ListWrap(_ => ExpectedParamExps),, _:K))
-
-//@ Marker indicating that arguments of the following 'QNewInstance have been elaborated
-syntax K ::= "argsElaborated"
-
 /*@ All new instance creation expressions are converted into qualified ones - 'QNewInstance, during elaboration phase.
   For instance inner classes, the qualifier will be a valid expression for the qualifier. For other classes qualifier
   will be noValue. At this stage 'QNewInstance is wrapped in elabEnd.
 */
 rule [elabEnd-QNewInstance-argsElaborated-qualified-end]:
     <k>
-      argsElaborated
+      argsElaborated(_, ExpectedParamExps:KList, instanceCT)
       ~> elabEnd('QNewInstance( cast(_, QualExp:K),, Arg2:K,, Class:ClassType,, Arg4:K,,
-                                ExpectedArgsList:K,, 'None(.KList) ))
-      => elabRes(cast(Class, 'QNewInstance( cast(EnclosingClass, QualExp:K),, Arg2,,
-                                            getSimpleName(Class),, Arg4,, ExpectedArgsList,, 'None(.KList))))
+                                _:K,, 'None(.KList) ))
+      => elabRes(cast(Class, 'QNewInstance( cast(EnclosingClass, QualExp:K),, Arg2,, getSimpleName(Class),,
+                                            Arg4,, 'ListWrap(ExpectedParamExps),, 'None(.KList))))
       ...
     </k>
     <classType> Class </classType>
@@ -511,9 +504,9 @@ rule [elabEnd-QNewInstance-argsElaborated-qualified-end]:
     It will be desugared again into 'NewInstance at execution phase.
 */
 rule [elabEnd-QNewInstance-argsElaborated-to-NewInstance]:
-    argsElaborated
-    ~> elabEnd('QNewInstance(noValue,, Arg2:K,, Class:ClassType,, Arg4:K,, ExpectedArgsList:K,,'None(.KList)))
-    => elabRes(cast(Class, 'NewInstance(Arg2,, Class,, ExpectedArgsList,, 'None(.KList))))
+    argsElaborated(_, ExpectedParamExps:KList, instanceCT)
+    ~> elabEnd('QNewInstance(noValue,, Arg2:K,, Class:ClassType,, Arg4:K,, _:K,, 'None(.KList)))
+    => elabRes(cast(Class, 'NewInstance(Arg2,, Class,, 'ListWrap(ExpectedParamExps),, 'None(.KList))))
 
 rule [elabEnd-InstanceOf]:
     elabEnd('InstanceOf(TExp:K,, RT2:RefType)) => elabRes(cast(bool, 'InstanceOf(TExp,, RT2)))
