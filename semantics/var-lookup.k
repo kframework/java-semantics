@@ -45,15 +45,6 @@ rule [QThis]:
       ...
     </store>
 
-/*@ This case may happen when a field/method is called by simple name in a static context.
-Although there should be no qualifier, elaboration phase will introduce the qualifier 'QThis.*/
-rule [QThis-static]:
-    <k>
-      'QThis(_) => noValue
-      ...
-    </k>
-    <contextType> staticCT </contextType>
-
 //@ Search for the right value representing QThis(Class) - an expression of type Class.this
 syntax K ::=  lookupQThis (
                 ClassType,  //the type of this to look for,
@@ -75,11 +66,6 @@ rule [lookupQThis-next]:
     ) => lookupQThis(Class:ClassType, EnclosingObj)
 when
     Class =/=K ObjClass
-
-//This case may happen when a field/method is called by simple name in a static context.
-//Although there should be no qualifier, elaboration phase will introduce the qualifier noValue.
-rule [lookupQThis-on-noValue]:
-    lookupQThis(_, noValue) => noValue
 
 /*@ \subsection{Object member access} */
 
@@ -149,7 +135,7 @@ rule [lvalue-lookupStaticField]:
 
 /*@ \subsection{lvalue and loc} */
 
-//@ Typed version of lookup
+//@ Typed version of lookup and loc
 syntax K ::= typedLookup ( Int )
 
 rule [typedLookup]:
