@@ -97,7 +97,7 @@ rule [QSuperMethod]:
     <extends> BaseClass:ClassType </extends>  [structural]
 
 rule [elabEnd-Invoke-to-lookupMethod]:
-    ( . => lookupMethod(getLookupTargetType(typeOf(Qual)), Name, noValue, false, Qual, ParamExps) )
+    ( . => lookupMethod(getLookupTargetType(typeOf(Qual)), isThisOrSuper(Qual) ==K true, Name, ParamExps) )
     ~> elabEnd('Invoke( 'Method('MethodName(Qual:K,, Name:Id)),, 'ListWrap(ParamExps:KList) ))
 
 //@ True for cast(T,'QThis(\_)), false otherwise
@@ -106,28 +106,50 @@ rule isCastOfQThis(cast(_, 'QThis(_))) => true
 
 syntax K ::= isThisOrSuper( K )                                       [function]
 rule isThisOrSuper(cast(_, 'QThis(_))) => true
-rule isThisOrSuper(cast(_, 'superMethod(_))) => true
+rule isThisOrSuper(cast(_, superMethod(_))) => true
 
 /*@ Lookup the right methodClosure based on supplied parameters.
 If the method is not found in the supplied class list, we should search for it in the
 class list corresponding to the enclosing class of the caller class.
 First we search for the signature - lookupSignature construct.
-Afterwards we search for the right implementation in the hierarchy, once the signature is known
-- lookupMethodSigKnown.*/
+Afterwards we cast the actual arguments to the types expected by the found method signature.*/
 syntax K ::=  lookupMethod (
                 ClassType,//target class, even for arrays.
+                Bool,     //QualIsThis - true if qualifier is cast(_, 'QThis(_)) or cast(_, superMethod(_))
                 Id,       //method name
-                K,        //Evaluates to the signature to be called, or noValue if no signature was found yet
-                          // Sig format: mapWrap(Sig |-> MethodTV)
-                Bool,     //SigSearched: true if Sig was already searched for the current class, false otherwise.
-                          // Starts with false.
-                K,        //Qual - either Cast - typed qualifier expression, or Class for class qualifiers.
                 KList     //ParamExps - parameter expressions of type Cast
               )
-              [strict(4)]
+
+rule lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, ParamExps:KList)
+     => lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, ParamExps:KList, tempKResult, tempKResult)
+
+/*@ Lookup the right methodClosure based on supplied parameters.
+If the method is not found in the supplied class list, we should search for it in the
+class list corresponding to the enclosing class of the caller class.
+First we search for the signature - lookupSignature construct.
+Afterwards we cast the actual arguments to the types expected by the found method signature.*/
+syntax K ::=  lookupMethod (
+                ClassType,//target class, even for arrays.
+                Bool,     //QualIsThis - true if qualifier is cast(_, 'QThis(_)) or cast(_, superMethod(_))
+                Id,       //method name
+                KList,    //ParamExps - parameter expressions of type Cast
+                K,        //Evaluates to the signature to be called, or noValue if no signature was found yet
+                          // Sig format: mapWrap(Sig |-> MethodTV)
+                          // Initialized with tempKResult
+                K         //Evaluates to the method arguments casted to expected argument types
+                          // Initialized with tempKResult
+              )
+              [strict(5,6)]
+
+/*@ A Temporary KResult that prevents this term to be heated before it is transformed by another rule int a proper
+  term to be heated. This is not a final KResult in its surrounding context. Basically, this term is used to cheat
+  K heating rules.
+*/
+syntax KResult ::= "tempKResult"
 
 //K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
-context lookupMethod(_,_,HOLE,_,_,_)
+context lookupMethod(_,_,_,_, HOLE, _)
+context lookupMethod(_,_,_,_,_, HOLE)
 
 syntax K ::= getLookupTargetType ( RefType )    [function]
 rule getLookupTargetType(Class:ClassType) => Class
@@ -140,55 +162,52 @@ rule arrayImplClass => class String2Id("java.lang.ArrayImpl")
 rule [lookupMethod-to-lookupSignature]:
     lookupMethod(
       QualClass:ClassType,
+      QualIsThis:Bool,
       MethodName:Id,
-      noValue => lookupSignature(MethodName, getTypes(ParamExps), getMethods(QualClass),
-                                 notBool isThisOrSuper(Qual) ==K true, noValue, QualClass),
-      false => true,
-      Qual:K,
-      ParamExps:KList
+      ParamExps:KList,
+      tempKResult => lookupSignature(MethodName, getTypes(ParamExps), getMethods(QualClass),
+                                 notBool QualIsThis, noValue, QualClass),
+      tempKResult
     )
 
 /*If resolved method is static, we cannot insert in the construct the actual method body,
 because this body might not be elaborated.*/
 rule [lookupMethod-SigFound]:
     lookupMethod(
-      QualClass:ClassType,
-      _,
-      methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(sig( Name:Id, ArgTypes:Types ), RetT:Type),
-      true, QualK:K, ParamExps:KList
-    ) => methodProcessArguments(RetT, QualClass, QualK, Name, ArgTypes, ParamExps, .KList, CT)
-
-rule [lookupMethod-Sig-NotFound]:
-    lookupMethod(_,_, noValue, true, _,_) => noValue
-
-syntax K ::=  methodProcessArguments (
-                Type,       //RetT - method return type
-                ClassType,  //QualClass - target class
-                K,          //QualK - method qualifier
-                Id,         //Name - method name
-                Types,      //ArgTypes - argument types
-                KList,      //ParamExps - actual parameters
-                KList,      //will be used later as parameters casted to expected parameter types
-                ContextType // CT - context type of the found method (not of the caller context!), instance or static
-              )
-
-rule [methodProcessArguments-process]:
-    methodProcessArguments(
-      RetT:Type, QualClass:ClassType, QualK:K, Name:Id,
-      types(((ArgType:Type) => .KList),, _),
-      ((ParamExp:K => .KList),, _),
-      (_,, (.KList => cast(ArgType, ParamExp))),
-      CT:ContextType
+      _,_,_,
+      ParamExps:KList,
+      methodClosure(_,_,_,_,_,_,_) :: methodType(sig( Name:Id, ArgTypes:Types ), _),
+      tempKResult => methodCastArguments(ArgTypes, ParamExps, .KList)
     )
 
-rule [methodProcessArguments-end]:
-    methodProcessArguments(RetT:Type,_,_,_, types(.KList), .KList, ExpectedParamExps:KList, CT:ContextType)
-    => argsElaborated(RetT, ExpectedParamExps, CT)
+syntax K ::=  methodCastArguments (
+                Types,      //ArgTypes - argument types
+                KList,      //ParamExps - actual parameters
+                KList       //Result of parameter casting. Initialized with .KList
+              )
+
+rule [methodCastArguments-process]:
+    methodCastArguments(
+      types(((ArgType:Type) => .KList),, _),
+      ((ParamExp:K => .KList),, _),
+      (_,, (.KList => cast(ArgType, ParamExp)))
+    )
+
+rule [methodCastArguments-end]:
+    methodCastArguments(types(.KList), .KList, ExpectedParamExps:KList) => resultListWrap(ExpectedParamExps)
+
+rule [lookupMethod-end]:
+    lookupMethod(
+      _,_,_,_,
+      methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(sig( Name:Id, ArgTypes:Types ), RetT:Type),
+      resultListWrap(ExpectedParamExps:KList)
+    )
+    => methodLookupResult(RetT, ExpectedParamExps, CT)
 
 /*@ Marker indicating that arguments of the following 'Invoke, 'QNewInstance, 'QSuperConstrInv, 'AltConstrInv
   have been elaborated.
 */
-syntax K ::=  argsElaborated (
+syntax K ::=  methodLookupResult (
                 Type ,      // Return type
                 KList ,     // ExpectedParamExps
                 ContextType // Called method context type
@@ -196,7 +215,7 @@ syntax K ::=  argsElaborated (
 
 //for now just a workaround implementation
 rule [methodProcessArguments-Invoke-end]:
-    argsElaborated(RetT:Type, ExpectedParamExps:KList, CT:ContextType)
+    methodLookupResult(RetT:Type, ExpectedParamExps:KList, CT:ContextType)
     ~>  elabEnd('Invoke( 'Method('MethodName(QualK:K,, Name:Id)),, _ ))
     =>  elabEnd(stmtAndExp(
 

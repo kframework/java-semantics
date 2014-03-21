@@ -481,16 +481,16 @@ rule [getClassIfExists]:
     <namesToClasses>... Pack:PackageId |-> mapWrap(NamesToClasses:Map) ...</namesToClasses>
 
 rule [elabEnd-QNewInstance-to-lookupMethod]:
-    (. => lookupMethod(Class, getConsName(Class), noValue, false, Class, Args)) ~>
+    (. => lookupMethod(Class, false, getConsName(Class), Args)) ~>
     elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, 'ListWrap(Args:KList),, 'None(.KList)))
 
 /*@ All new instance creation expressions are converted into qualified ones - 'QNewInstance, during elaboration phase.
   For instance inner classes, the qualifier will be a valid expression for the qualifier. For other classes qualifier
   will be noValue. At this stage 'QNewInstance is wrapped in elabEnd.
 */
-rule [elabEnd-QNewInstance-argsElaborated-qualified-end]:
+rule [elabEnd-QNewInstance-methodLookupResult-qualified-end]:
     <k>
-      argsElaborated(_, ExpectedParamExps:KList, instanceCT)
+      methodLookupResult(_, ExpectedParamExps:KList, instanceCT)
       ~> elabEnd('QNewInstance( cast(_, QualExp:K),, Arg2:K,, Class:ClassType,, Arg4:K,,
                                 _:K,, 'None(.KList) ))
       => elabRes(cast(Class, 'QNewInstance( cast(EnclosingClass, QualExp:K),, Arg2,, getSimpleName(Class),,
@@ -503,8 +503,8 @@ rule [elabEnd-QNewInstance-argsElaborated-qualified-end]:
 /*@ A 'QNewInstance with target noValue should be packed back into a NewInstance, for compatibility with Java.
     It will be desugared again into 'NewInstance at execution phase.
 */
-rule [elabEnd-QNewInstance-argsElaborated-to-NewInstance]:
-    argsElaborated(_, ExpectedParamExps:KList, instanceCT)
+rule [elabEnd-QNewInstance-methodLookupResult-to-NewInstance]:
+    methodLookupResult(_, ExpectedParamExps:KList, instanceCT)
     ~> elabEnd('QNewInstance(noValue,, Arg2:K,, Class:ClassType,, Arg4:K,, _:K,, 'None(.KList)))
     => elabRes(cast(Class, 'NewInstance(Arg2,, Class,, 'ListWrap(ExpectedParamExps),, 'None(.KList))))
 

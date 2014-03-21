@@ -115,7 +115,7 @@ rule customElabEnd('QSuperConstrInv) => true
 
 rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
     <k>                                                                     //The signature lookup is unqualified
-      (. => lookupMethod(BaseClass, getConsName(BaseClass), noValue, false, cast(BaseClass, 'QThis(BaseClass)), Args))
+      (. => lookupMethod(BaseClass, true, getConsName(BaseClass), Args))
       ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, 'ListWrap( Args:KList )))
       ...
     </k>
@@ -124,14 +124,14 @@ rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
     <extends> BaseClass:ClassType </extends>
 
 rule [elabEnd-QSuperConstrInv-qualified]:
-    argsElaborated(_, ExpectedParamExps:KList, instanceCT)
+    methodLookupResult(_, ExpectedParamExps:KList, instanceCT)
     ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, 'ListWrap(_)))
     => elabRes('QSuperConstrInv(Qual,, Arg2,, 'ListWrap( ExpectedParamExps )))
 when
     Qual =/=K noValue
 
 rule [elabEnd-QSuperConstrInv-to-SuperConstrInv]:
-    argsElaborated(_, ExpectedParamExps:KList, instanceCT)
+    methodLookupResult(_, ExpectedParamExps:KList, instanceCT)
     ~> elabEnd('QSuperConstrInv(noValue,, Arg2:K,, 'ListWrap(_)))
     => elabRes('SuperConstrInv(Arg2,, 'ListWrap( ExpectedParamExps )))
 
@@ -139,14 +139,14 @@ rule customElabEnd('AltConstrInv) => true
 
 rule [elabEnd-AltConstrInv-to-lookupMethod]:
     <k>                                                           //lookup could be either qualified or unqualified
-      (. => lookupMethod(Class, getConsName(Class), noValue, false, Class, Args))
+      (. => lookupMethod(Class, true, getConsName(Class), Args))
       ~> elabEnd('AltConstrInv(Arg1:K,, 'ListWrap( Args:KList )))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
 
 rule [elab-AltConstrInv]:
-    argsElaborated(_, ExpectedParamExps:KList, instanceCT)
+    methodLookupResult(_, ExpectedParamExps:KList, instanceCT)
     ~> elabEnd('AltConstrInv(Arg1:K,, 'ListWrap(_)))
     => elabRes('AltConstrInv(Arg1:K,, 'ListWrap( ExpectedParamExps )))
 

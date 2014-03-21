@@ -241,9 +241,6 @@ Third arg - a counter used to generate var names
 syntax K ::= buildConstructorFormalParams ( KList, KList, Int )
            | buildConstructorFirstLineArgs ( KList, KList, Int )
 
-//A wrapper over an arbitrary KList, wrapper being of type KResult.
-syntax KResult ::= resultListWrap ( KList )
-
 rule buildConstructorFormalParams(
       (ActualParam:K => .KList),, _,
       _,, (.KList => 'Param('ListWrap(.KList),, typeOf(ActualParam),, String2Id("$" +String Int2String(Num) ))),

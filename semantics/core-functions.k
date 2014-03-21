@@ -115,6 +115,9 @@ when
 rule setUnion(setWrap( S1:Set SetItem(K) ), setWrap( S2:Set (SetItem(K:K) => .) ))
 rule setUnion(setWrap(S1:Set), setWrap(.Set)) => setWrap(S1)
 
+//@ A wrapper over an arbitrary KList, wrapper being of type KResult.
+syntax KResult ::= resultListWrap ( KList )
+
 //@ Counts the number of elements in the KList list. Evaluates to an Int.
 syntax K ::= length ( KList )                                       [function]
            | length ( Int, KList )                                  [function]
