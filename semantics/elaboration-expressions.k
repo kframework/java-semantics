@@ -165,8 +165,6 @@ rule [elabEnd-QThis-StaticCT]:
     <k> elabEnd('QThis(_)) => noValue ...</k>
     <contextType> staticCT </contextType>
 
-syntax KLabel ::= "'Field"
-
 rule [elabEnd-Field-QualRef]:
     elabEnd('Field(cast(Class:ClassType, Qual:K),, X:Id))
     => elabFieldImpl(cast(Class, Qual), X, elabLookup(X, Class))
@@ -214,10 +212,10 @@ syntax KResult ::=  fieldEntry (
                     )
 
 rule elabFieldImpl(SourceExp:K, X:Id, fieldEntry(Class:ClassType,_,T:Type, instanceCT))
-    => elabRes(cast(T, 'ExprName(cast(Class, SourceExp),, X)))
+    => elabRes(cast(T, 'Field(cast(Class, SourceExp),, X)))
 
 rule elabFieldImpl(_, X:Id, fieldEntry(Class:ClassType,_,T:Type, staticCT))
-    => elabRes(cast(T, 'ExprName(Class,, X)))
+    => elabRes(cast(T, 'Field(Class,, X)))
 
 //@for constant fields
 rule elabFieldImpl(_,_, TV:TypedVal) => TV

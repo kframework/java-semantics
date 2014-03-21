@@ -66,8 +66,8 @@ rule [ArrayAccess-null-to-NullPointerException]:
         [anywhere]
 
 //@ Array length, as defined in JDK
-rule [ExprName-array-length]:
-    'ExprName(arrayRef(_,_:Int, N:Int)::_,, X:Id) => N::int
+rule [Field-array-length]:
+    'Field(arrayRef(_,_:Int, N:Int)::_,, X:Id) => N::int
 when
     Id2String(X) ==String "length"
 

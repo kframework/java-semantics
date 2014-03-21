@@ -31,7 +31,7 @@ rule [thread-start]:
             'Invoke(
               'Method(
                 'MethodName(
-                  'ExprName(
+                  'Field(
                     cast(
                       class String2Id("java.lang.Thread"),
                       typedLookup(OL)

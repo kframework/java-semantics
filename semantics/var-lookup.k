@@ -15,10 +15,8 @@ module VAR-LOOKUP
 
 //@ \subsection{Local variable access}
 
-/*@ Variable access. May have 3 forms:
+/*@ Local variable access. At runtime may have one form:
     - 'ExprName(X:Id) - local variable
-    - 'ExprName(Class, X:Id) - static field
-    - 'ExprName(Qual, X:Id) - instance field
 */
 syntax KLabel ::= "'ExprName"
 
@@ -75,11 +73,17 @@ when
 
 /*@ \subsection{Instance field access} */
 
-context 'ExprName(HOLE,, _)
-context lvalue('ExprName(HOLE,, _))
+/*@ Variable access. May have 2 forms:
+    - 'ExprName(Class, X:Id) - static field
+    - 'ExprName(Qual, X:Id) - instance field
+*/
+syntax KLabel ::= "'Field"
 
-rule [ExprName-instance]:
-    'ExprName(
+context 'Field(HOLE,, _)
+context lvalue('Field(HOLE,, _))
+
+rule [Field-instance]:
+    'Field(
       objectClosure(_,
           (_:KList/*ObjLayers*/,, layer(TargetClass, <env>... X |-> L:Int ...</env>, _,_),, _:KList/*ObjLayers*/), _
         ) :: TargetClass:ClassType,,
@@ -87,8 +91,8 @@ rule [ExprName-instance]:
     ) => typedLookup(L)
         [anywhere]
 
-rule [ExprName-instance-OfNull]:
-    'ExprName(null::_,, _)
+rule [Field-instance-OfNull]:
+    'Field(null::_,, _)
     =>  'Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
@@ -99,9 +103,9 @@ rule [ExprName-instance-OfNull]:
 
 /*@ \subsection{Static field access} */
 
-rule [ExprName-static]:
+rule [Field-static]:
     <k>
-      'ExprName(
+      'Field(
         TargetClass:ClassType,,
         X:Id
       )
@@ -111,9 +115,9 @@ rule [ExprName-static]:
     <classType> TargetClass </classType>
     <staticEnv>... X |-> L:Int ...</staticEnv>
 
-rule [lvalue-ExprName-static]:
+rule [lvalue-Field-static]:
     <k>
-      lvalue('ExprName(
+      lvalue('Field(
           TargetClass:ClassType,,
           X:Id
       ))

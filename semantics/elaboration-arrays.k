@@ -89,7 +89,7 @@ rule [elabEnd-ArrayAccess]:
 
 rule [elabEnd-Field-ArrayLength]:
     elabEnd('Field(cast(arrayOf T:Type, Qual:K),, X:Id))
-    => elabRes(cast(int, 'ExprName(cast(arrayOf T, Qual),, X)))
+    => elabRes(cast(int, 'Field(cast(arrayOf T, Qual),, X)))
 when
     Id2String(X) ==String "length"
 
