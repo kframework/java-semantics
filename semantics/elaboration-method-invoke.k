@@ -33,12 +33,13 @@ rule [elabEnd-Method-MethodName-to-elabRes]:
 
 /*@ Computes into an expression of the form elabRes(cast(QualClass, 'QThis(QualClass))),
 where QualClass is searched in the enclosing context of the first argument,
-being a class that have methods with name = the second argument.
-Or noValue if no suitable result is found
+being the innermost class that have a method with name = the second argument.
+Or noValue if no suitable result is found.
 
-The algorithm is slightly different from the previous one with chained lookupMethod. Here we just search for the first
-  class with an appropriate name. That one searches for the class with appropriate signature.
-  todo assure that either this algorithm is wrong or we need some more tests.
+This algorithm is correct even when both inner and outer class have methods with the same name.
+Java don't support method overloading in the context of nesting. In other words, inner class methods
+don't overload but rather hide methods with the same name from outer classes. See program
+inner_in_81_inner_overl_outer as example.
 */
 syntax K ::=  findQualifierForName (
                 ClassType,  //The context class in which qualifier is searched for.

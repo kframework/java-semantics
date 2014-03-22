@@ -198,3 +198,13 @@ Part 7. Interplay of static and non-static inner members. (If any).
   - Mid static method
   - I static field
   Instantiate the class Inner from A: new Mid().new Inner()
+
+Part 8. Method overloading in the nesting hierarchy.
+
+81. Inner class method overloads outer class method with the same name.
+  class O: void f(String)
+  class O.A: void f(int)
+  main: call from A: f(int), f(String)
+
+  Important: the call to f(String) is commented because it gives compile-time error. Such overloading is not
+    supported in Java.
