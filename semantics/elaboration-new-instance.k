@@ -62,7 +62,7 @@ syntax K ::=  resolveInnerClass (
                 Id          //Name - instantiated class simple name
               )
 
-rule isAuxFuncElabNaked('resolveInnerClass) => true
+rule isElabNaked(resolveInnerClass(_,_)) => true
 
 rule [resolveInnerClass]:
     <k>

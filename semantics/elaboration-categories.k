@@ -213,6 +213,8 @@ rule defaultElabHeating('stmtAndExp) => true
 /*@ Naked terms are those that should be computed directly into KResult during elaboration.
   Those are literals, types and packages. They are heated "as is", without being wrapped into elab().
   An exception is the class literal that is not executed during elaboration.
+
+  Some auxiliary functions are also included in this cathegory in order to reduce the usage of elaboration wrappers.
 */
 syntax K ::= isElabNaked ( K )                            [function]
 rule isElabNaked(RV:RawVal) => true
@@ -225,13 +227,6 @@ rule isElabNaked('PackageName(_)) => true
 rule isElabNaked('PackageOrTypeName(_)) => true
 rule isElabNaked('Id(_)) => true
 rule isElabNaked('Lit(InnerKL:KLabel(_))) => InnerKL =/=KLabel 'Class
-
-rule isElabNaked(KL:KLabel(_)) => true
-when
-    isAuxFuncElabNaked(KL) ==K true
-
-/*@ Implementation is scattered.*/
-syntax K ::= isAuxFuncElabNaked( KLabel )                         [function]
 
 /*@ Terms that should use custom elaboration rules. For those terms:
     - They will not be automatically heated from their parents into the elab() state.

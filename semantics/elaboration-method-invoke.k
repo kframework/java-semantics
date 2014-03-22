@@ -46,7 +46,7 @@ syntax K ::=  findQualifierForName (
               )
               [strict(2)]
 
-rule isAuxFuncElabNaked('findQualifierForName) => true
+rule isElabNaked(findQualifierForName(_,_)) => true
 
 rule [elabEnd-findQualifierForName]:
     <k>

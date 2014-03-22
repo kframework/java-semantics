@@ -216,7 +216,7 @@ syntax K ::=  findQualifierOfType (
               )
               [strict(2)]
 
-rule isAuxFuncElabNaked('findQualifierOfType) => true
+rule isElabNaked(findQualifierOfType(_,_)) => true
 
 rule [elabEnd-findQualifierOfType]:
     <k>
