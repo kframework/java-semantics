@@ -167,11 +167,11 @@ rule [elabEnd-QThis-StaticCT]:
 
 rule [elabEnd-Field-QualRef]:
     elabEnd('Field(cast(Class:ClassType, Qual:K),, X:Id))
-    => elabFieldImpl(cast(Class, Qual), X, elabLookup(X, Class))
+    => elabFieldImpl(cast(Class, Qual), elabLookup(X, Class))
 
 rule [elabEnd-Field-QualClass]:
     elabEnd('Field(Class:ClassType,, X:Id))
-    => elabFieldImpl(noValue, X, elabLookup(X, Class))
+    => elabFieldImpl(noValue, elabLookup(X, Class))
 
 //@ 'SuperField(X:Id)
 syntax KLabel ::= "'SuperField"
@@ -189,7 +189,7 @@ syntax KLabel ::= "'QSuperField"
 rule [elabEnd-QSuperField]:
     <k>
       elabEnd('QSuperField(Class:ClassType,, X:Id))
-      => elabFieldImpl(cast(Class, 'QThis(Class)), X, elabLookup(X, BaseClass))
+      => elabFieldImpl(cast(Class, 'QThis(Class)), elabLookup(X, BaseClass))
       ...
     </k>
     <classType> Class </classType>
@@ -198,10 +198,9 @@ rule [elabEnd-QSuperField]:
 //@Computed the Cast expression for a given expression and its type
 syntax K ::=  elabFieldImpl (
                 K,  // Field qualifier exp (noValue for fields qualified by a class)
-                Id, // X - the field name
                 K   //elabLookup(...), computes into fieldEntry(...) or noValue
               )
-              [strict(3)]
+              [strict(2)]
 
 /*@ A representation of fields used in elaboration phase. */
 syntax KResult ::=  fieldEntry (
@@ -211,16 +210,16 @@ syntax KResult ::=  fieldEntry (
                       ContextType // staticCT | instanceCT
                     )
 
-rule elabFieldImpl(SourceExp:K, X:Id, fieldEntry(Class:ClassType,_,T:Type, instanceCT))
-    => elabRes(cast(T, 'Field(cast(Class, SourceExp),, X)))
+rule elabFieldImpl(QualExp:K, fieldEntry(Class:ClassType, X:Id, T:Type, instanceCT))
+    => elabRes(cast(T, 'Field(cast(Class, QualExp),, X)))
 
-rule elabFieldImpl(_, X:Id, fieldEntry(Class:ClassType,_,T:Type, staticCT))
+rule elabFieldImpl(_, fieldEntry(Class:ClassType, X:Id, T:Type, staticCT))
     => elabRes(cast(T, 'Field(Class,, X)))
 
 //@for constant fields
-rule elabFieldImpl(_,_, TV:TypedVal) => TV
+rule elabFieldImpl(_, TV:TypedVal) => TV
 
-rule elabFieldImpl(_,_, noValue) => noValue
+rule elabFieldImpl(_, noValue) => noValue
 
 /*@ \subsection{Elaboration of numeric expressions} */
 
