@@ -517,10 +517,4 @@ rule elabEnd(           stmtAndExp(Stmt:K, cast(T:Type, Exp:K)) )
 //runtime
 rule stmtAndExp(Stmt:K, Exp:K) => Stmt ~> Exp
 
-//@ \subsection{Hacks related to elaboration during execution phase}
-
-//todo investigate if needed
-//Required for [VarDecWithArrayInitDesugar], [FieldDecWithArrayInitDesugar]
-rule elab(elab(K:K)) => elab(K)
-
 endmodule
