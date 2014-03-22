@@ -12,7 +12,9 @@ require "process-class-members.k"
 require "elaboration-top-blocks.k"
 require "elaboration-statements.k"
 require "elaboration-expressions.k"
+require "elaboration-vars.k"
 require "elaboration-method-invoke.k"
+require "elaboration-new-instance.k"
 require "elaboration-arrays.k"
 require "elaboration-types.k"
 require "process-local-classes.k"
@@ -44,7 +46,9 @@ module JAVA
     imports ELABORATION-TOP-BLOCKS
     imports ELABORATION-STATEMENTS
     imports ELABORATION-EXPRESSIONS
+    imports ELABORATION-VARS
     imports ELABORATION-METHOD-INVOKE
+    imports ELABORATION-NEW-INSTANCE
     imports ELABORATION-ARRAYS
     imports ELABORATION-TYPES
     imports PROCESS-LOCAL-CLASSES

@@ -1,5 +1,5 @@
 require "core-sorts.k"
-require "elaboration-expressions.k"
+require "elaboration-method-invoke.k"
 require "classes.k"
 require "statements.k"
 require "static-init.k"
@@ -8,6 +8,7 @@ require "static-init.k"
 
 module METHOD-INVOKE
     imports CORE-SORTS
+    imports ELABORATION-METHOD-INVOKE   // for getLookupTargetType
     imports CLASSES
     imports STATEMENTS
     imports STATIC-INIT

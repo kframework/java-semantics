@@ -3,6 +3,7 @@ require "subtyping.k"
 require "primitive-types.k"
 require "elaboration-expressions.k"
 require "to-string.k"
+require "var-lookup.k"
 
 //@ \section{Module EXPRESSIONS}
 
@@ -10,8 +11,9 @@ module EXPRESSIONS
     imports CORE-SORTS
     imports SUBTYPING
     imports PRIMITIVE-TYPES
-    imports ELABORATION-EXPRESSIONS //for "isCompoundAssignLabel
+    imports ELABORATION-EXPRESSIONS //for isPrefixPostfixExpLabel
     imports TO-STRING
+    imports VAR-LOOKUP  // for lookup
 
 syntax KLabel ::= "'Mul"
                 | "'Div"

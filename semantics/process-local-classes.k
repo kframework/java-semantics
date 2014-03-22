@@ -2,7 +2,6 @@ require "core-sorts.k"
 require "core-classes.k"
 require "process-comp-units.k"
 require "process-class-decs.k"
-require "elaboration-expressions.k"
 
 //@ \section{Module PROCESS-LOCAL-CLASSES}
 
@@ -11,7 +10,6 @@ module PROCESS-LOCAL-CLASSES
     imports CORE-CLASSES
     imports PROCESS-COMP-UNITS
     imports PROCESS-CLASS-DECS
-    imports ELABORATION-EXPRESSIONS
 
 //@ ClassDecStm('ClassDec(...))
 syntax KLabel ::= "'ClassDecStm"

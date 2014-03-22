@@ -1,6 +1,5 @@
 require "core-sorts.k"
 require "process-class-members.k"
-require "elaboration-expressions.k"
 require "subtyping.k"
 require "method-invoke.k"
 
@@ -9,7 +8,6 @@ require "method-invoke.k"
 module ELABORATION-METHOD-INVOKE
     imports CORE-SORTS
     imports PROCESS-CLASS-MEMBERS
-    imports ELABORATION-EXPRESSIONS
     imports SUBTYPING
     imports METHOD-INVOKE //for superMethod()
 
