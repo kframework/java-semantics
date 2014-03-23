@@ -87,9 +87,27 @@ rule [getClassIfExists]:
     </k>
     <namesToClasses>... Pack:PackageId |-> mapWrap(NamesToClasses:Map) ...</namesToClasses>
 
+/*@ The logic related to <enclosingLocalEnv> is for local classes only.
+  Constructor call have to be augmented with extra arguments, one for each enclosing local variable,
+    so that the class could act as an inner class.*/
 rule [elabEnd-QNewInstance-to-lookupMethod]:
-    (. => lookupMethod(Class, false, getConsName(Class), resultListWrap(Args))) ~>
-    elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, 'ListWrap(Args:KList),, 'None(.KList)))
+    <k>
+      (. => lookupMethod(Class, false, getConsName(Class),
+                         klistConcat(resultListWrap(Args), getActualParams(EnclosingLocalEnv)))) ~>
+      elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, 'ListWrap(Args:KList),, 'None(.KList)))
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingLocalEnv> EnclosingLocalEnv:Map </enclosingLocalEnv>
+
+/*@ Converts the given map of the form Map[Name |-> Type] into into KList['ExprName(Name)]
+*/
+syntax K ::= getActualParams ( Map )
+          |  getActualParams ( Map, KList )
+
+rule getActualParams(Env:Map) => getActualParams(Env, .KList)
+rule getActualParams((Env:Map X:Id |-> T:Type), KL:KList) => getActualParams(Env, cast(T, 'ExprName(X)),, KL:KList)
+rule getActualParams(.Map, KL:KList) => resultListWrap(KL)
 
 /*@ All new instance creation expressions are converted into qualified ones - 'QNewInstance, during elaboration phase.
   For instance inner classes, the qualifier will be a valid expression for the qualifier. For other classes qualifier

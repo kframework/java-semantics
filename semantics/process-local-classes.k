@@ -82,6 +82,8 @@ rule [processLocalClassDecStep2]:
                                                    // will be elaborated by getInnerClasses(Encloser) that follows.
 
         // processClassDecs will alter <crntClass>, that's why we have to restore it at the end
+        ~> localClassTransformIntoInner(Class)  //todo have to be implemented before processTypeWithDepends,
+                                                //todo or processTypeWithDepends have to be non-recursive
         ~> restoreAfterProcessLocalClass(OldCrntClass, CT)
 
         //this is what is left from the original class declaration
@@ -109,6 +111,116 @@ rule [restoreAfterProcessLocalClass]:
     <k> restoreAfterProcessLocalClass(Class:ClassType, CT:ContextType) => . ...</k>
     <crntClass> _ => Class </crntClass>
     <contextType> _ => CT </contextType>
+
+/*@ Convert the given local class into an equivalent inner class, with the following transformations:
+  - Add a field to the class for each outer local variable
+  - For each constructor add an argument for each outer local variable
+*/
+syntax K ::= localClassTransformIntoInner ( ClassType )
+
+rule [localClassTransformIntoInner]:
+    <k>
+      localClassTransformIntoInner(Class:ClassType)
+      => localClassAugmentFields(Class, EnclosingLocalEnv)
+      ~> localClassAugmentConsParams(Class, buildParams(EnclosingLocalEnv))
+      ...
+    </k>
+    <elabEnv> ListItem(mapWrap(EnclosingLocalEnv:Map)) ...</elabEnv>
+
+rule [localClassAddFields]:
+    <k> localClassAugmentFields(Class:ClassType, ((X:Id |-> T:Type => .Map) _:Map)) ...</k>
+    <classType> Class </classType>
+    <fieldDecs> 'ListWrap(_,, ( .KList => 'LocalVarDec(.K,, T,, 'ListWrap('VarDec(X))) )) </fieldDecs>
+
+rule [localClassAddFields-end]:
+    localClassAugmentFields(Class:ClassType, .Map) => .K
+
+/*@ Add the given fields definitions to the given class. The class is in MembersProcessedCPhase*/
+syntax K ::=  localClassAugmentFields (
+                ClassType,  //The class to be processed
+                Map         // Map[Name |-> Type] - the fields
+              )
+
+/*@ Converts the given map of the form Map[Name |-> Type] into into KList['Param()]
+*/
+syntax K ::= buildParams ( Map )
+          |  buildParams ( Map, KList )
+
+rule buildParams(Env:Map) => buildParams(Env, .KList)
+rule buildParams((Env:Map X:Id |-> T:Type), KL:KList) => buildParams(Env, ('Param(.K,, T,, X),, KL:KList))
+rule buildParams(.Map, KL:KList) => resultListWrap(KL)
+
+/*@ Adds the given params at the end of each constructor declaration of the given class.
+*/
+syntax K ::=  localClassAugmentConsParams (
+                ClassType,  // the augmented class
+                K           // params to add
+              ) [strict(2)]
+            | localClassAugmentConsParams (
+                ClassType,  // the augmented class
+                K,          // params to add
+                Map,        // MethodDecs - the methods of the given class. Target for constructors search
+                Map,        // new MethodDecs - the augmented methods of the class.
+                Map,        //Methods
+                Map         // new Methods
+              )
+
+rule [localClassAugmentConsParams-start]:
+    <k>
+      localClassAugmentConsParams(Class:ClassType, resultListWrap(Params:KList))
+      => localClassAugmentConsParams(Class, resultListWrap(Params), MethodDecs, .Map, Methods, .Map)
+      ...
+    </k>
+    <classType> Class </classType>
+    <methods> Methods:Map </methods>
+    <methodDecs> MethodDecs:Map </methodDecs>
+
+rule [localClassAugmentConsParams-method]:
+    localClassAugmentConsParams( Class:ClassType, _, ( (sig(Name:Id, Ts:Types) |-> MClosure:K => .Map) _:Map),
+                                                     ( (.Map => sig(Name:Id, Ts:Types) |-> MClosure:K) _:Map),
+                                 _,_)
+when
+    Name =/=K getConsName(Class)
+
+rule [localClassAugmentConsParams-constructor]:
+    localClassAugmentConsParams( Class:ClassType, resultListWrap(NewParams:KList),
+                                 ( (sig(Name:Id, types(TList:KList)) |-> MClosure:K => .Map) _:Map),
+            ( (.Map => sig(Name:Id, getTypes(TList,, NewParams)) |-> addFormalParams(MClosure, NewParams)) _:Map),
+            (sig(Name:Id, types(TList:KList)) |-> DeclClass:ClassType => .Map) _,
+            (.Map => sig(Name:Id, getTypes(TList,, NewParams)) |-> DeclClass:ClassType) _)
+when
+    Name ==K getConsName(Class)
+
+//@ Add to the given methodClosure the given formal parameters
+syntax K ::= addFormalParams ( K, KList)                     [function]
+
+rule addFormalParams( methodClosure(_, 'ListWrap(ExistingParams:KList,, (.KList => NewParams)), _,_,_,_,
+                      Body:K => 'ListWrap(extraParamAssignments(NewParams),, Body)
+                      )
+                      ::methodType(sig( Name:Id, types(TList:KList) => getTypes(TList,, NewParams) ), _),
+                      NewParams:KList => .KList)
+when
+    length(NewParams) >Int 0
+
+rule addFormalParams( MClosure:K, .KList) => MClosure
+
+syntax K ::= extraParamAssignments( KList ) [function]
+
+rule extraParamAssignments('Param(_:K,,_:Type,,X:Id),, Rest:KList)
+     => 'ExprStm('Assign( 'Field('This(.KList),, X ),, 'ExprName( X ) )),,
+        extraParamAssignments(Rest:KList)
+
+rule extraParamAssignments(.KList) => .KList
+
+rule [localClassAugmentConsParams-discard]:
+    <k>
+      localClassAugmentConsParams(Class:ClassType,_, .Map, NewMethodDecs:Map,
+                                  RemainingMeth:Map, TransformedMeth:Map) => .K
+      ...
+    </k>
+    <classType> Class </classType>
+    <methods> _ => RemainingMeth TransformedMeth </methods>
+    <methodDecs> _ => NewMethodDecs </methodDecs>
 
 //\section{Local classes - runtime}
 

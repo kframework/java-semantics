@@ -33,7 +33,7 @@ rule [externalVar]:
     <k>
       externalVar(X:Id, Class:ClassType)
       => elabEnd('Field( cast(Class, 'QThis(Class)),, X ))
-          ?? elabOuterLocalVar(X, Class) ?? externalVar(X, EnclosingClass)
+          /*?? elabOuterLocalVar(X, Class)*/ ?? externalVar(X, EnclosingClass)  //todo remove elabOuterLocalVar when works
       ...
     </k>
     <classType> Class </classType>
