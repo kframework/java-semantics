@@ -88,7 +88,7 @@ rule [getClassIfExists]:
     <namesToClasses>... Pack:PackageId |-> mapWrap(NamesToClasses:Map) ...</namesToClasses>
 
 rule [elabEnd-QNewInstance-to-lookupMethod]:
-    (. => lookupMethod(Class, false, getConsName(Class), Args)) ~>
+    (. => lookupMethod(Class, false, getConsName(Class), resultListWrap(Args))) ~>
     elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, 'ListWrap(Args:KList),, 'None(.KList)))
 
 /*@ All new instance creation expressions are converted into qualified ones - 'QNewInstance, during elaboration phase.

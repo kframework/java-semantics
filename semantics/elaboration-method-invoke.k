@@ -98,7 +98,8 @@ rule [QSuperMethod]:
     <extends> BaseClass:ClassType </extends>  [structural]
 
 rule [elabEnd-Invoke-to-lookupMethod]:
-    ( . => lookupMethod(getLookupTargetType(typeOf(Qual)), isThisOrSuper(Qual) ==K true, Name, ParamExps) )
+    ( . => lookupMethod(getLookupTargetType(typeOf(Qual)),
+                        isThisOrSuper(Qual) ==K true, Name, resultListWrap(ParamExps)) )
     ~> elabEnd('Invoke( 'Method('MethodName(Qual:K,, Name:Id)),, 'ListWrap(ParamExps:KList) ))
 
 //@ True for cast(T,'QThis(\_)), false otherwise
@@ -118,11 +119,8 @@ syntax K ::=  lookupMethod (
                 ClassType,//target class, even for arrays.
                 Bool,     //QualIsThis - true if qualifier is cast(_, 'QThis(_)) or cast(_, superMethod(_))
                 Id,       //method name
-                KList     //ParamExps - parameter expressions of type Cast
+                K         //resultListWrap(ParamExps) - parameter expressions of type Cast
               )
-
-rule lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, ParamExps:KList)
-     => lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, ParamExps:KList, tempKResult, tempKResult)
 
 /*@ Lookup the right methodClosure based on supplied parameters.
 If the method is not found in the supplied class list, we should search for it in the
@@ -133,24 +131,23 @@ syntax K ::=  lookupMethod (
                 ClassType,//target class, even for arrays.
                 Bool,     //QualIsThis - true if qualifier is cast(_, 'QThis(_)) or cast(_, superMethod(_))
                 Id,       //method name
-                KList,    //ParamExps - parameter expressions of type Cast
+                K,        //resultListWrap(ParamExps) - parameter expressions of type Cast
                 K,        //Evaluates to the signature to be called, or noValue if no signature was found yet
                           // Sig format: mapWrap(Sig |-> MethodTV)
                           // Initialized with tempKResult
                 K         //Evaluates to the method arguments casted to expected argument types
                           // Initialized with tempKResult
               )
-              [strict(5,6)]
+              [strict(4, 5, 6)]
+
+rule lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, ParamExpsWrap:K)
+     => lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, ParamExpsWrap:K, tempKResult, tempKResult)
 
 /*@ A Temporary KResult that prevents this term to be heated before it is transformed by another rule int a proper
   term to be heated. This is not a final KResult in its surrounding context. Basically, this term is used to cheat
   K heating rules.
 */
 syntax KResult ::= "tempKResult"
-
-//K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
-context lookupMethod(_,_,_,_, HOLE, _)
-context lookupMethod(_,_,_,_,_, HOLE)
 
 syntax K ::= getLookupTargetType ( RefType )    [function]
 rule getLookupTargetType(Class:ClassType) => Class
@@ -165,7 +162,7 @@ rule [lookupMethod-to-lookupSignature]:
       QualClass:ClassType,
       QualIsThis:Bool,
       MethodName:Id,
-      ParamExps:KList,
+      resultListWrap(ParamExps:KList),
       tempKResult => lookupSignature(MethodName, getTypes(ParamExps), getMethods(QualClass),
                                  notBool QualIsThis, noValue, QualClass),
       tempKResult
@@ -176,7 +173,7 @@ because this body might not be elaborated.*/
 rule [lookupMethod-SigFound]:
     lookupMethod(
       _,_,_,
-      ParamExps:KList,
+      resultListWrap(ParamExps:KList),
       methodClosure(_,_,_,_,_,_,_) :: methodType(sig( Name:Id, ArgTypes:Types ), _),
       tempKResult => methodCastArguments(ArgTypes, ParamExps, .KList)
     )

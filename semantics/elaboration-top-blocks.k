@@ -61,7 +61,7 @@ rule [elabMethods-Heat-MethodFirstLine]:
     </methodDecs>
     <contextType> _ => CT </contextType>
 
-//@Required when processing first constructor line of Object, which is .K
+//@Required when processing first line of the constructor of Object, which is .K
 rule [elab-DotK]:
     elab(.K) => elabRes(.K)
 
@@ -102,7 +102,7 @@ rule [elabMethods-Cool-Constructor]:
       Sig:Signature |-> methodClosure(MClass:ClassType, 'ListWrap(Params:KList), _,_,
         constructorRT => methodRT,
         FirstLine:K => noValue,
-        CHOLE => FirstLine ~> Body
+        CHOLE => 'ListWrap(FirstLine,, Body)
       ) :: MethodType:Type
       ...
     </methodDecs>

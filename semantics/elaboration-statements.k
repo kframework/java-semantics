@@ -115,7 +115,7 @@ rule customElabEnd('QSuperConstrInv) => true
 
 rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
     <k>                                                                     //The signature lookup is unqualified
-      (. => lookupMethod(BaseClass, true, getConsName(BaseClass), Args))
+      (. => lookupMethod(BaseClass, true, getConsName(BaseClass), resultListWrap(Args)))
       ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, 'ListWrap( Args:KList )))
       ...
     </k>
@@ -139,7 +139,7 @@ rule customElabEnd('AltConstrInv) => true
 
 rule [elabEnd-AltConstrInv-to-lookupMethod]:
     <k>                                                           //lookup could be either qualified or unqualified
-      (. => lookupMethod(Class, true, getConsName(Class), Args))
+      (. => lookupMethod(Class, true, getConsName(Class), resultListWrap(Args)))
       ~> elabEnd('AltConstrInv(Arg1:K,, 'ListWrap( Args:KList )))
       ...
     </k>

@@ -118,6 +118,10 @@ rule setUnion(setWrap(S1:Set), setWrap(.Set)) => setWrap(S1)
 //@ A wrapper over an arbitrary KList, wrapper being of type KResult.
 syntax KResult ::= resultListWrap ( KList )
 
+/*@ the concatenation of two resultListWrap(KList) items */
+syntax K ::= klistConcat ( K, K ) [strict]
+rule klistConcat(resultListWrap(KL1:KList), resultListWrap(KL2:KList)) => resultListWrap(KL1,,KL2)
+
 //@ Counts the number of elements in the KList list. Evaluates to an Int.
 syntax K ::= length ( KList )                                       [function]
            | length ( Int, KList )                                  [function]
