@@ -82,8 +82,9 @@ rule [processLocalClassDecStep2]:
                                                    // will be elaborated by getInnerClasses(Encloser) that follows.
 
         // processClassDecs will alter <crntClass>, that's why we have to restore it at the end
-        ~> localClassTransformIntoInner(Class)  //todo have to be implemented before processTypeWithDepends,
-                                                //todo or processTypeWithDepends have to be non-recursive
+                                                        //todo have to be implemented before processTypeWithDepends,
+                                                        //todo or processTypeWithDepends have to be non-recursive
+        ~> localClassTransformIntoInner(Class, localClassGetAccessibleOuterEnv(Class))
         ~> restoreAfterProcessLocalClass(OldCrntClass, CT)
 
         //this is what is left from the original class declaration
@@ -95,13 +96,34 @@ rule [processLocalClassDecStep2]:
     <contextType> CT:ContextType </contextType>
 
 //@ Sets the enclosing local environment for this class, from the cell <elabEnv>
-syntax K ::= setEnclosingLocalEnv ( ClassType )
+syntax K ::= setEnclosingLocalEnv ( ClassType )     //todo check if still needed
 rule <k> setEnclosingLocalEnv(Class:ClassType) => . ...</k>
      <elabEnv> ListItem(mapWrap(EnclosingLocalEnv:Map)) ...</elabEnv>
      <classType> Class </classType>
      <enclosingLocalEnv> _ => EnclosingLocalEnv </enclosingLocalEnv>
 
-//restore the content of <crntClass> and <contextType> with the given class
+/*@ Computes the accessible outer local environment for the given local class. */
+syntax K ::=  localClassGetAccessibleOuterEnv( ClassType )
+            | localClassGetAccessibleOuterEnv(
+                ClassType,  //the local class
+                K,          //mapWrap(Env) - the full outer local environment
+                K           //setWrap(Env) - the set of fields in this class
+              )
+              [strict(3)]
+
+rule [localClassGetAccessibleOuterEnv-start]:
+    <k>
+      localClassGetAccessibleOuterEnv(Class:ClassType)
+      => localClassGetAccessibleOuterEnv(Class:ClassType, mapWrap(EnclosingLocalEnv:Map), setWrap(.Set))
+      ...
+    </k>
+    <elabEnv> ListItem(mapWrap(EnclosingLocalEnv:Map)) ...</elabEnv>
+
+rule [localClassGetAccessibleOuterEnv]:        //todo implement
+    localClassGetAccessibleOuterEnv(Class:ClassType, mapWrap(EnclosingLocalEnv:Map), setWrap(.Set))
+    => mapWrap(EnclosingLocalEnv)
+
+//@ Restore the content of <crntClass> and <contextType> with the given class
 syntax K ::=  restoreAfterProcessLocalClass (
                 ClassType, //old content of <crntClass>
                 ContextType //old content of <contextType>
@@ -116,16 +138,16 @@ rule [restoreAfterProcessLocalClass]:
   - Add a field to the class for each outer local variable
   - For each constructor add an argument for each outer local variable
 */
-syntax K ::= localClassTransformIntoInner ( ClassType )
+syntax K ::=  localClassTransformIntoInner (
+                ClassType,  //the local class
+                K           // computes into mapWrap(Map[Id |-> Type]) - the accessible outer local var environment
+              )
+              [strict(2)]
 
 rule [localClassTransformIntoInner]:
-    <k>
-      localClassTransformIntoInner(Class:ClassType)
-      => localClassAugmentFields(Class, EnclosingLocalEnv)
-      ~> localClassAugmentConsParams(Class, buildParams(EnclosingLocalEnv))
-      ...
-    </k>
-    <elabEnv> ListItem(mapWrap(EnclosingLocalEnv:Map)) ...</elabEnv>
+    localClassTransformIntoInner(Class:ClassType, mapWrap(EnclosingLocalEnv:Map))
+    => localClassAugmentFields(Class, EnclosingLocalEnv)
+    ~> localClassAugmentConsParams(Class, buildParams(EnclosingLocalEnv))
 
 rule [localClassAddFields]:
     <k> localClassAugmentFields(Class:ClassType, ((X:Id |-> T:Type => .Map) _:Map)) ...</k>
