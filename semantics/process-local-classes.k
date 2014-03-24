@@ -2,14 +2,16 @@ require "core-sorts.k"
 require "core-classes.k"
 require "process-comp-units.k"
 require "process-class-decs.k"
+require "elaboration-vars.k"
 
 //@ \section{Module PROCESS-LOCAL-CLASSES}
 
 module PROCESS-LOCAL-CLASSES
     imports CORE-SORTS
     imports CORE-CLASSES
-    imports PROCESS-COMP-UNITS
-    imports PROCESS-CLASS-DECS
+    imports PROCESS-COMP-UNITS //for processTypeDecsInPCUPhase
+    imports PROCESS-CLASS-DECS //for processClassDecs
+    imports ELABORATION-VARS   //for elabLookup
 
 //@ ClassDecStm('ClassDec(...))
 syntax KLabel ::= "'ClassDecStm"
@@ -75,8 +77,7 @@ syntax K ::=  processLocalClassDecStep2 (
 rule [processLocalClassDecStep2]:
     <k>
       processLocalClassDecStep2(Class:ClassType)
-      =>   setEnclosingLocalEnv(Class)
-        ~> processClassDecs(setWrap(SetItem(Class)))
+      =>   processClassDecs(setWrap(SetItem(Class)))
         ~> processTypeWithDepends(Class)
         //~> elaborateBlocks(setWrap(SetItem(Class))) Now that this class's package = Encloser, it
                                                    // will be elaborated by getInnerClasses(Encloser) that follows.
@@ -95,33 +96,47 @@ rule [processLocalClassDecStep2]:
     <crntClass> OldCrntClass:ClassType </crntClass>
     <contextType> CT:ContextType </contextType>
 
-//@ Sets the enclosing local environment for this class, from the cell <elabEnv>
-syntax K ::= setEnclosingLocalEnv ( ClassType )     //todo check if still needed
-rule <k> setEnclosingLocalEnv(Class:ClassType) => . ...</k>
-     <elabEnv> ListItem(mapWrap(EnclosingLocalEnv:Map)) ...</elabEnv>
-     <classType> Class </classType>
-     <enclosingLocalEnv> _ => EnclosingLocalEnv </enclosingLocalEnv>
-
 /*@ Computes the accessible outer local environment for the given local class. */
 syntax K ::=  localClassGetAccessibleOuterEnv( ClassType )
             | localClassGetAccessibleOuterEnv(
                 ClassType,  //the local class
-                K,          //mapWrap(Env) - the full outer local environment
-                K           //setWrap(Env) - the set of fields in this class
+                Map,        //The full outer local environment
+                Map,        //The filtered outer local environment
+                Id,         //Temporary. The last searched var name. Necessary if it is constant
+                K           //Temporary. Tests each local var if it is also a field
               )
-              [strict(3)]
+              [strict(5)]
 
 rule [localClassGetAccessibleOuterEnv-start]:
     <k>
       localClassGetAccessibleOuterEnv(Class:ClassType)
-      => localClassGetAccessibleOuterEnv(Class:ClassType, mapWrap(EnclosingLocalEnv:Map), setWrap(.Set))
+      => localClassGetAccessibleOuterEnv(Class, EnclosingLocalEnv, .Map, .K, noValue)
       ...
     </k>
     <elabEnv> ListItem(mapWrap(EnclosingLocalEnv:Map)) ...</elabEnv>
 
-rule [localClassGetAccessibleOuterEnv]:        //todo implement
-    localClassGetAccessibleOuterEnv(Class:ClassType, mapWrap(EnclosingLocalEnv:Map), setWrap(.Set))
-    => mapWrap(EnclosingLocalEnv)
+rule [localClassGetAccessibleOuterEnv-start-test]:
+    localClassGetAccessibleOuterEnv(
+      Class:ClassType,
+      (X:Id |-> T:Type => .Map) _:Map,
+      (.Map => X:Id |-> T:Type) _:Map,
+      _ => X,
+      noValue => elabLookup(X, Class)
+    )
+
+rule [localClassGetAccessibleOuterEnv-test-found]:
+    localClassGetAccessibleOuterEnv(
+      Class:ClassType,
+      _:Map,
+      (X:Id |-> _ => .Map) _:Map,
+      X:Id,
+      KR:KResult => noValue
+    )
+when
+    KR =/=K noValue
+
+rule [localClassGetAccessibleOuterEnv-end]:
+    localClassGetAccessibleOuterEnv( Class:ClassType, .Map, NewOuterEnv:Map, _, noValue ) => mapWrap(NewOuterEnv)
 
 //@ Restore the content of <crntClass> and <contextType> with the given class
 syntax K ::=  restoreAfterProcessLocalClass (
@@ -145,9 +160,14 @@ syntax K ::=  localClassTransformIntoInner (
               [strict(2)]
 
 rule [localClassTransformIntoInner]:
-    localClassTransformIntoInner(Class:ClassType, mapWrap(EnclosingLocalEnv:Map))
-    => localClassAugmentFields(Class, EnclosingLocalEnv)
-    ~> localClassAugmentConsParams(Class, buildParams(EnclosingLocalEnv))
+    <k>
+      localClassTransformIntoInner(Class:ClassType, mapWrap(EnclosingLocalEnv:Map))
+      => localClassAugmentFields(Class, EnclosingLocalEnv)
+      ~> localClassAugmentConsParams(Class, buildParams(EnclosingLocalEnv))
+    ...
+    </k>
+    <classType> Class </classType>
+    <enclosingLocalEnv> _ => EnclosingLocalEnv </enclosingLocalEnv>
 
 rule [localClassAddFields]:
     <k> localClassAugmentFields(Class:ClassType, ((X:Id |-> T:Type => .Map) _:Map)) ...</k>
