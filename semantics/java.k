@@ -18,6 +18,7 @@ require "elaboration-new-instance.k"
 require "elaboration-arrays.k"
 require "elaboration-types.k"
 require "process-local-classes.k"
+require "process-anonymous-classes.k"
 require "primitive-types.k"
 require "literals.k"
 require "subtyping.k"
@@ -52,6 +53,7 @@ module JAVA
     imports ELABORATION-ARRAYS
     imports ELABORATION-TYPES
     imports PROCESS-LOCAL-CLASSES
+    imports PROCESS-ANONYMOUS-CLASSES
     imports PRIMITIVE-TYPES
     imports LITERALS
     imports SUBTYPING
