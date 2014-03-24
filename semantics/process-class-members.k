@@ -422,9 +422,7 @@ rule [FieldDec-to-LocalVarDec]:
     <k> 'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id))) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <fieldDecs>
-      'ListWrap(_,, ( .KList => 'LocalVarDec(.K,, T,, 'ListWrap('VarDec(X))) ))
-    </fieldDecs>
+    <fieldDecs> 'ListWrap(_,, ( .KList => 'LocalVarDec(.K,, T,, 'ListWrap('VarDec(X))) )) </fieldDecs>
 when
     getContextType(Modifiers) ==K instanceCT
         [structural]

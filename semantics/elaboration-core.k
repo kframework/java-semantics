@@ -203,7 +203,7 @@ that deal with the elaboration phase.
 */
 syntax K ::= elabEnd ( K )
 
-//@ \subsection{Auxiliary functions for execution phase}
+//@ \subsection{Auxiliary functions for elaboration phase}
 
 /*@ Computes into an expression of the form elabRes(cast(QualClass, 'QThis(QualClass))),
 where QualClass is searched in the enclosing context of the first argument,

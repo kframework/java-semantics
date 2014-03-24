@@ -32,8 +32,7 @@ syntax K ::=  externalVar (
 rule [externalVar]:
     <k>
       externalVar(X:Id, Class:ClassType)
-      => elabEnd('Field( cast(Class, 'QThis(Class)),, X ))
-          /*?? elabOuterLocalVar(X, Class)*/ ?? externalVar(X, EnclosingClass)  //todo remove elabOuterLocalVar when works
+      => elabEnd('Field( cast(Class, 'QThis(Class)),, X )) ?? externalVar(X, EnclosingClass)
       ...
     </k>
     <classType> Class </classType>
@@ -41,31 +40,6 @@ rule [externalVar]:
 
 rule [externalVar-noClass]:
     externalVar(_, noClass) => noValue
-
-//@Attempts to resolve this expression into a local var from the enclosing local environment
-//@of type being precisely the given class.
-syntax K ::=  elabOuterLocalVar (
-                Id,       //X - var name
-                ClassType //Class - the class where the name should be searched
-              )
-
-rule [elabOuterLocalVar-ok]:
-    <k>
-      elabOuterLocalVar(X:Id, Class:ClassType) => elabRes(cast(T, 'ExprName(X)))
-      ...
-    </k>
-    <classType> Class </classType>
-    <enclosingLocalEnv>... X |-> T:Type ...</enclosingLocalEnv>
-
-rule [elabOuterLocalVar-not-found]:
-    <k>
-      elabOuterLocalVar(X:Id, Class:ClassType) => noValue
-      ...
-    </k>
-    <classType> Class </classType>
-    <enclosingLocalEnv> EnclosingLocalEnv:Map </enclosingLocalEnv>
-when
-    notBool X in keys(EnclosingLocalEnv)
 
 rule [elabEnd-ExprName-qualified]:
     elabEnd('ExprName(QualK:K,,X:Id)) => elabEnd('Field(QualK,,X))
@@ -88,12 +62,12 @@ syntax K ::=  elabLookup (
                 Set //A set of interfaces under search
               )
 
-rule [elabLookup-FoundInstance]:
+rule [elabLookup-Found-instance]:
     <k> elabLookup(X:Id, Class:ClassType) => fieldEntry(Class, X, T, instanceCT) ...</k>
     <classType> Class </classType>
     <fieldDecs> 'ListWrap(_,, 'LocalVarDec(.K,, T:Type,, 'ListWrap('VarDec(X))),, _) </fieldDecs>
 
-rule [elabLookup-Found-Static]:
+rule [elabLookup-Found-static]:
     <k> elabLookup(X:Id, Class:ClassType) => fieldEntry(Class, X, T, staticCT) ...</k>
     <classType> Class </classType>
     <staticEnv>... X |-> L:Int ...</staticEnv>

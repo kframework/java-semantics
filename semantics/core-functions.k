@@ -99,6 +99,21 @@ syntax K ::=  mapUnion (
 rule mapUnion(mapWrap( M1:Map => M1[K2/K1] ), mapWrap( _:Map (K1:K |-> K2:K => .Map) ))
 rule mapUnion(mapWrap(M1:Map), mapWrap(.Map)) => mapWrap(M1)
 
+//@ Substracts fron the given map the keys found in the given set
+syntax K ::=  mapDiff(
+                K,  //mapWrap(Map)
+                K   //setWrap(Set)
+              )
+              [strict]
+
+rule mapDiff( mapWrap( (Key:K |-> _ => .Map) _), setWrap( (SetItem(Key) => .Set) _) )
+
+rule mapDiff( mapWrap( MyMap:Map ), setWrap( (SetItem(Key:K) => .Set) _) )
+when
+    notBool Key in keys(MyMap)
+
+rule mapDiff(mapWrap( MyMap:Map ), setWrap(.Set)) => mapWrap(MyMap)
+
 /*@A wrapper for sets, similar to the one for maps.*/
 syntax KResult ::= setWrap ( Set )
 
@@ -114,6 +129,9 @@ when
     notBool(K in S1)
 rule setUnion(setWrap( S1:Set SetItem(K) ), setWrap( S2:Set (SetItem(K:K) => .) ))
 rule setUnion(setWrap(S1:Set), setWrap(.Set)) => setWrap(S1)
+
+syntax Set ::= getSet ( K )           [function]
+rule getSet(setWrap(S1:Set)) => S1
 
 //@ A wrapper over an arbitrary KList, wrapper being of type KResult.
 syntax KResult ::= resultListWrap ( KList )
