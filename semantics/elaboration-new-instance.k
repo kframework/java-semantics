@@ -103,10 +103,10 @@ rule [elabEnd-QNewInstance-to-lookupMethod]:
 
 /*@ Converts the given map of the form Map[Name |-> Type] into into KList['ExprName(Name)]
 */
-syntax K ::= getActualParams ( K )  [strict]    //mapWrap(Map)
+syntax K ::= getActualParams ( Map )
           |  getActualParams ( Map, KList )
 
-rule getActualParams(mapWrap(Env:Map)) => getActualParams(Env, .KList)
+rule getActualParams(Env:Map) => getActualParams(Env, .KList)
 rule getActualParams((Env:Map X:Id |-> T:Type), KL:KList) => getActualParams(Env, cast(T, 'ExprName(X)),, KL:KList)
 rule getActualParams(.Map, KL:KList) => resultListWrap(KL)
 
