@@ -13,7 +13,18 @@ module PROCESS-LOCAL-CLASSES
     imports PROCESS-CLASS-DECS //for processClassDecs
     imports ELABORATION-VARS   //for elabLookup
 
-//@ ClassDecStm('ClassDec(...))
+/*@ ClassDecStm('ClassDec(...))
+
+todo # Define an outer env class for each local class, at the place of local class definition.
+todo # Add to outer env class one field for each outer local var.
+  We only need to save the direct local environment. If this is a deep local class,
+  indirect local variables will be resolved by the variable lookup mechanism when it will analyse the enclosing class.
+  There's no need to change anything here.
+todo # Instantiate the outer env class.
+todo # Assign to each outer env class field its respective value
+todo # Augment each local class constructor with one extra argument - the outer env object
+See http://java-semantics.myjetbrains.com/youtrack/issue/KJ-55 for more details.
+*/
 syntax KLabel ::= "'ClassDecStm"
 
 rule [elab-ClassDecStm]:
@@ -79,13 +90,12 @@ rule [processLocalClassDecStep2]:
       processLocalClassDecStep2(Class:ClassType)
       =>   processClassDecs(setWrap(SetItem(Class)))
         ~> processTypeWithDepends(Class)
+        ~> localClassTransformIntoInner(Class, localClassGetAccessibleOuterEnv(Class))
+
         //~> elaborateBlocks(setWrap(SetItem(Class))) Now that this class's package = Encloser, it
                                                    // will be elaborated by getInnerClasses(Encloser) that follows.
 
         // processClassDecs will alter <crntClass>, that's why we have to restore it at the end
-                                                        //todo have to be implemented before processTypeWithDepends,
-                                                        //todo or processTypeWithDepends have to be non-recursive
-        ~> localClassTransformIntoInner(Class, localClassGetAccessibleOuterEnv(Class))
         ~> restoreAfterProcessLocalClass(OldCrntClass, CT)
 
         //this is what is left from the original class declaration

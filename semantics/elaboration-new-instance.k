@@ -87,6 +87,7 @@ rule [getClassIfExists]:
     </k>
     <namesToClasses>... Pack:PackageId |-> mapWrap(NamesToClasses:Map) ...</namesToClasses>
 
+//todo constructor call - Augment each local class constructor with one extra argument - the outer env object
 /*@ The logic related to <enclosingLocalEnv> is for local classes only.
   Constructor call have to be augmented with extra arguments, one for each enclosing local variable,
     so that the class could act as an inner class.*/
@@ -102,10 +103,10 @@ rule [elabEnd-QNewInstance-to-lookupMethod]:
 
 /*@ Converts the given map of the form Map[Name |-> Type] into into KList['ExprName(Name)]
 */
-syntax K ::= getActualParams ( Map )
+syntax K ::= getActualParams ( K )  [strict]    //mapWrap(Map)
           |  getActualParams ( Map, KList )
 
-rule getActualParams(Env:Map) => getActualParams(Env, .KList)
+rule getActualParams(mapWrap(Env:Map)) => getActualParams(Env, .KList)
 rule getActualParams((Env:Map X:Id |-> T:Type), KL:KList) => getActualParams(Env, cast(T, 'ExprName(X)),, KL:KList)
 rule getActualParams(.Map, KL:KList) => resultListWrap(KL)
 
