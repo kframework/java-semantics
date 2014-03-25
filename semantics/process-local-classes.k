@@ -15,13 +15,6 @@ module PROCESS-LOCAL-CLASSES
 
 /*@ ClassDecStm('ClassDec(...))
 
-todo # Define an outer env class for each local class, at the place of local class definition.
-todo # Add to outer env class one field for each outer local var.
-  We only need to save the direct local environment. If this is a deep local class,
-  indirect local variables will be resolved by the variable lookup mechanism when it will analyse the enclosing class.
-  There's no need to change anything here.
-todo # Instantiate the outer env class.
-todo # Assign to each outer env class field its respective value
 todo # Augment each local class constructor with one extra argument - the outer env object
 See http://java-semantics.myjetbrains.com/youtrack/issue/KJ-55 for more details.
 */
@@ -57,8 +50,7 @@ rule [processLocalClassDec-register-name]:
       processLocalClassDec(
         'ClassDec(
           'ClassDecHead(
-            'ListWrap( (.KList => #if CT ==K staticCT #then 'Static(.KList) #else 'StrictFP(.KList)/*vacuous*/ #fi),,
-                        _ ),,
+          ( 'ListWrap(OldModifiers:KList) => generateLocalClassModifiers( CT, OldModifiers ) ),,
             (InitName:Id => getSimpleName(GeneratedClass)),,
             _:K,, _:K,, _:K
           ),, _:K
@@ -70,6 +62,14 @@ rule [processLocalClassDec-register-name]:
     <localTypes> ListItem(mapWrap(LocalTypes:Map => LocalTypes[GeneratedClass / InitName])) ...</localTypes>
     <contextType> CT:ContextType </contextType>
 
+//@ The second argument: existing modifiers
+syntax K ::= generateLocalClassModifiers( ContextType, KList )  [function]
+rule generateLocalClassModifiers( CT:ContextType, OldModifiers:KList )
+     => #if CT ==K staticCT
+          #then 'ListWrap('Static(.KList),,OldModifiers)
+          #else 'ListWrap(OldModifiers)
+        #fi
+
 rule [processLocalClassDec-process]:
     <k>
       processLocalClassDec(ClassDec:K, Class:ClassType, true)
@@ -78,7 +78,8 @@ rule [processLocalClassDec-process]:
 
         //this is what is left from the original class declaration
         //used at runtime to compute enclosing local environment
-        ~> elabRes('ClassDecStm(Class))
+        ~> appendToElabBuffer(elabRes('ClassDecStm(Class)))
+        ~> loadElabBuffer
       ...
     </k>
     <crntClass> CrntClass:ClassType </crntClass>
@@ -160,12 +161,96 @@ syntax K ::=  localClassTransformIntoInner (
 rule [localClassTransformIntoInner]:
     <k>
       localClassTransformIntoInner(Class:ClassType, mapWrap(AccessibleLocalEnv:Map))
-      => localClassAugmentFields(Class, AccessibleLocalEnv)
+      => localEnvObjectBuild(generateLocalEnvClassType(Class), AccessibleLocalEnv)
+      ~> localClassAugmentFields(Class, AccessibleLocalEnv)                        //debug delete when v2 works
       ~> localClassAugmentConsParams(Class, buildParams(AccessibleLocalEnv))
     ...
     </k>
     <classType> Class </classType>
     <enclosingLocalEnv> _ => AccessibleLocalEnv </enclosingLocalEnv>
+
+syntax K ::= generateLocalEnvClassType( ClassType )
+rule generateLocalEnvClassType(class X:Id) => class String2Id(Id2String(X) +String "$LocalEnv")
+
+/*@ Add the given fields definitions to the given class. The class is in MembersProcessedCPhase*/
+syntax K ::=  localEnvObjectBuild (
+                K,          // LocalEnvClass - The name of the local env class
+                Map         // Map[Name |-> Type] - the fields
+              )
+              [strict(1)]
+
+rule [localEnvObjectBuild]:
+    <k>
+      localEnvObjectBuild(LocalEnvClass:ClassType, AccessibleLocalEnv:Map)
+      => localEnvClassAddFieldsAndRegister(
+            'ClassDec(
+              'ClassDecHead(
+                generateLocalClassModifiers( CT, .KList ),,
+                getSimpleName(LocalEnvClass),,
+                'None(.KList),,
+                'None(.KList),,
+                'None(.KList)
+              ),,
+              'ClassBody('ListWrap(.KList))
+            ),
+            LocalEnvClass,
+            AccessibleLocalEnv
+         )
+      ~> appendToElabBuffer(elab(
+            'LocalVarDec('None(.KList),, LocalEnvClass,, 'ListWrap('VarDec(
+              generateLocalEnvVarName(LocalEnvClass),,
+              'NewInstance('None(.KList),, LocalEnvClass,, 'ListWrap(.KList),, 'None(.KList) )
+            )))
+         ))
+      ~> localEnvObjectSetFields(
+            generateLocalEnvVarName(LocalEnvClass),
+            AccessibleLocalEnv
+      )
+      ...
+    </k>
+    <contextType> CT:ContextType </contextType>
+
+syntax K ::=  localEnvClassAddFieldsAndRegister(
+                K,          // 'ClassDec
+                ClassType,  // LocalEnvClass
+                Map         // AccessibleLocalEnv
+              )
+
+rule [localEnvClassAddFieldsAndRegister-add-field]:
+    localEnvClassAddFieldsAndRegister(
+      'ClassDec(
+        'ClassDecHead(_:KList),,
+        'ClassBody('ListWrap(_,, ( .KList => 'FieldDec('ListWrap(.KList),, T,, 'ListWrap('VarDec(X))) )))
+      ), _,
+      (X:Id |-> T:Type => .Map) _:Map
+    )
+
+rule [localEnvClassAddFieldsAndRegister-register]:
+    <k>
+      localEnvClassAddFieldsAndRegister( ClassDec:K, LocalEnvClass:ClassType, .Map )
+      => registerClass(ClassDec, toPackage(CrntClass), LocalEnvClass, CrntClass)
+      ...
+    </k>
+    <crntClass> CrntClass:ClassType </crntClass>
+
+//@ should be function because Id is not a KResult
+syntax K ::= generateLocalEnvVarName( ClassType )   [function]
+rule generateLocalEnvVarName(class X:Id) => String2Id(Id2String(X) +String "_obj")
+
+syntax K ::=  localEnvObjectSetFields(
+                Id,    // LocalEnvVar
+                Map    // AccessibleLocalEnv
+              )
+
+rule [localEnvObjectSetFields]:
+    (. => appendToElabBuffer(elab( 'ExprStm('Assign('Field('ExprName(LocalEnvVar),,X),, 'ExprName(X))) )))
+    ~> localEnvObjectSetFields(
+      LocalEnvVar:Id,
+      (X:Id |-> _:Type => .Map) _:Map
+    )
+
+rule [localEnvObjectSetFields-discard]:
+    localEnvObjectSetFields(_, .Map) => .K
 
 rule [localClassAddFields]:
     <k> localClassAugmentFields(Class:ClassType, ((X:Id |-> T:Type => .Map) _:Map)) ...</k>
@@ -261,6 +346,20 @@ rule [localClassAugmentConsParams-discard]:
     <classType> Class </classType>
     <methods> _ => RemainingMeth TransformedMeth </methods>
     <methodDecs> _ => NewMethodDecs </methodDecs>
+
+//@ Elaborates the given node and saves it to <elabBuffer>
+syntax K ::= appendToElabBuffer ( K ) //[strict, context(result(ElabKResult))] //K bug generalized strictness
+context appendToElabBuffer ( HOLE )              [result(ElabKResult)]
+
+rule [appendToElabBuffer]:
+    <k> appendToElabBuffer(elabRes(K:K)) => . ...</k>
+    <elabBuffer> 'ListWrap(_,, (.KList => K)) </elabBuffer>
+
+syntax K ::= "loadElabBuffer"
+
+rule [loadElabBuffer]:
+    <k> loadElabBuffer => elabRes(ElabBuffer) ...</k>
+    <elabBuffer> ElabBuffer:K => 'ListWrap(.KList) </elabBuffer>
 
 //\section{Local classes - runtime}
 

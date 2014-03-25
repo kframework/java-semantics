@@ -267,6 +267,10 @@ configuration
         //Counter used to generate unique package names for local classes. Elaboration phase only.
         <nextLocalId color="Orange"> 1 </nextLocalId>
 
+        //A list of terms that are collected during elaboration phase by a call to appendToElabBuffer()
+        //and are restored back to K by a call to loadElabBuffer()
+        <elabBuffer> 'ListWrap(.KList) </elabBuffer>
+
       </phElab>
 
       <br/>
