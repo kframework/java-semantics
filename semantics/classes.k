@@ -27,7 +27,7 @@ module CLASSES
 
 /*@ \subsection{New instance creation}*/
 
-//@ _:K,, Class:ClassType,, 'ListWrap(Args),, 'None(.KList)
+//@ 'NewInstance( _:K,, Class:ClassType,, 'ListWrap(Args),, 'None(.KList) )
 syntax KLabel ::= "'NewInstance"
 
 /*@Unpack 'NewInstance back into 'QNewInstance.

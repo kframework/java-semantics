@@ -52,7 +52,11 @@ rule [elabEnd-Field-of-noValue]:
 
 //@Computation of instance and static environment of a class, e.g. set of fields
 
-//@Searches the given field name in the given type (set of types), both static and instance context.
+/*@ Searches the given field name in the given type (set of types), both static and instance context.
+
+Important!!! The name is searched in this type and base types only. It is not searched in outer classes.
+  That is the job of externalVar().
+*/
 syntax K ::=  elabLookup (
                 Id,       //The field to search
                 ClassType //The current class under search
