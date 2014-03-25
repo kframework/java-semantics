@@ -21,11 +21,12 @@ rule [elaborateBlocks]:
     <k>
       (. => elabInstanceInit ~> elabMethods(MethodDecs) ~> elabStaticInit
         ~> elaborateBlocks(getInnerClasses(Class))
+        ~> restoreCrntClass(OldCrntClass)
       )
       ~> elaborateBlocks(setWrap((SetItem(Class:ClassType) => .) _:Set))
       ...
     </k>
-    <crntClass> _ => Class </crntClass>
+    <crntClass> OldCrntClass:ClassType => Class </crntClass>
     <classType> Class </classType>
     <methodDecs> MethodDecs:Map </methodDecs>
 

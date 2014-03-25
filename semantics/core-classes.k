@@ -135,4 +135,13 @@ rule [getInnerClasses-no-inners]:
 when
     notBool toPackage(Class) in keys(TypeNamesMap)
 
+//@ Restore the content of <crntClass> with the given class
+syntax K ::=  restoreCrntClass (
+                ClassType //old content of <crntClass>
+              )
+
+rule [restoreAfterProcessLocalClass]:
+    <k> restoreCrntClass(Class:ClassType) => . ...</k>
+    <crntClass> _ => Class </crntClass>
+
 endmodule

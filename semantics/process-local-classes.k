@@ -28,33 +28,33 @@ See http://java-semantics.myjetbrains.com/youtrack/issue/KJ-55 for more details.
 syntax KLabel ::= "'ClassDecStm"
 
 rule [elab-ClassDecStm]:
+    elab('ClassDecStm(ClassDec:K)) => processLocalClassDec( ClassDec, generateLocalClassType(ClassDec), false )
+
+//@ generates a ClassType for the given 'ClassDec term representign a local class
+syntax K ::=  generateLocalClassType(
+                K //ClassDec
+              )
+
+rule [generateLocalClassType]:
     <k>
-      elab('ClassDecStm(ClassDec:K))
-      =>   processLocalClassDecStep1( ClassDec, toPackage(CrntClass),
-              getClassType(toPackage(CrntClass),
-                           String2Id(Id2String(getNameFromClassDec(ClassDec)) +String "$" +String Int2String(LocalId))),
-              false
-           )
+      generateLocalClassType('ClassDec('ClassDecHead( _:K,, ClassName:Id,, _:K,, _:K,, _:K ),, _:K))
+      => getClassType(toPackage(CrntClass), String2Id(Id2String(ClassName) +String "$" +String Int2String(LocalId)))
       ...
     </k>
     <crntClass> CrntClass:ClassType </crntClass>
     <nextLocalId> LocalId:Int => LocalId +Int 1 </nextLocalId>
 
-syntax K ::=  getNameFromClassDec ( K //the 'ClassDec(...)
-                                  )  [function]
-rule getNameFromClassDec('ClassDec('ClassDecHead( _:K,, Name:Id,, _:K,, _:K,, _:K ),, _:K)) => Name
-
 //@ Register a local class in the given generated package and fully process it.
-syntax K ::=  processLocalClassDecStep1 (
+syntax K ::=  processLocalClassDec (
                 K,          //the 'ClassDec term
-                PackageId,  //the package = the enclosing class
                 ClassType,  //GeneratedClass:ClassType at substep 1, .K when generated name have been registered.
                 Bool        //ClassRegistered - false for substep 1, true for substep 2.
               )
+              [strict(2)]
 
-rule [processLocalClassDecStep1-register-name]:
+rule [processLocalClassDec-register-name]:
     <k>
-      processLocalClassDecStep1(
+      processLocalClassDec(
         'ClassDec(
           'ClassDecHead(
             'ListWrap( (.KList => #if CT ==K staticCT #then 'Static(.KList) #else 'StrictFP(.KList)/*vacuous*/ #fi),,
@@ -63,50 +63,49 @@ rule [processLocalClassDecStep1-register-name]:
             _:K,, _:K,, _:K
           ),, _:K
         ),
-        Pack:PackageId, GeneratedClass:ClassType, false => true
+        GeneratedClass:ClassType, false => true
       )
       ...
     </k>
     <localTypes> ListItem(mapWrap(LocalTypes:Map => LocalTypes[GeneratedClass / InitName])) ...</localTypes>
     <contextType> CT:ContextType </contextType>
 
-rule [processLocalClassDecStep1-process]:
+rule [processLocalClassDec-process]:
     <k>
-      processLocalClassDecStep1(ClassDec:K, Pack:PackageId, Class:ClassType, true)
-      =>   processTypeNames(ClassDec, Pack)
-        ~> processTypeDecsInPCUPhase(ClassDec, Pack, CrntClass)
-        ~> processLocalClassDecStep2(Class)
-      ...
-    </k>
-    <crntClass> CrntClass:ClassType </crntClass>
-
-//@ Fully process the local class
-syntax K ::=  processLocalClassDecStep2 (
-                ClassType //the generated class
-              )
-
-rule [processLocalClassDecStep2]:
-    <k>
-      processLocalClassDecStep2(Class:ClassType)
-      =>   processClassDecs(setWrap(SetItem(Class)))
-        ~> processTypeWithDepends(Class)
+      processLocalClassDec(ClassDec:K, Class:ClassType, true)
+      => registerClass(ClassDec, toPackage(CrntClass), Class, CrntClass)
         ~> localClassTransformIntoInner(Class, localClassGetAccessibleOuterEnv(Class))
-
-        //~> elaborateBlocks(setWrap(SetItem(Class))) Now that this class's package = Encloser, it
-                                                   // will be elaborated by getInnerClasses(Encloser) that follows.
-
-        // processClassDecs will alter <crntClass>, that's why we have to restore it at the end
-        ~> restoreAfterProcessLocalClass(OldCrntClass, CT)
 
         //this is what is left from the original class declaration
         //used at runtime to compute enclosing local environment
         ~> elabRes('ClassDecStm(Class))
       ...
     </k>
-    <crntClass> OldCrntClass:ClassType </crntClass>
-    <contextType> CT:ContextType </contextType>
+    <crntClass> CrntClass:ClassType </crntClass>
 
-/*@ Computes the accessible outer local environment for the given local class. */
+/*@ Passes the freshly discovered/constructed class declaration through all the preprocessing steps
+  except elaboration. Only usable for individual classes, when the rest of the classpath is already preprocessed.
+*/
+syntax K ::=  registerClass(
+                K,          // ClassDec:K,
+                PackageId,  // Pack:PackageId,
+                ClassType,  // Class:ClassType,
+                ClassType   // EnclosingClass:ClassType
+              )
+
+rule [registerClass]:
+    registerClass(ClassDec:K, Pack:PackageId, Class:ClassType, EnclosingClass:ClassType)
+    =>   processTypeNames(ClassDec, Pack)
+      ~> processTypeDecsInPCUPhase(ClassDec, Pack, EnclosingClass)
+      ~> processClassDecs(setWrap(SetItem(Class)))
+      ~> processTypeWithDepends(Class)
+      //~> elaborateBlocks(setWrap(SetItem(Class))) Now that this class's package = Encloser, it
+                                                 // will be elaborated by getInnerClasses(Encloser) that follows.
+
+/*@ Computes the accessible outer local environment for the given local class.
+  {Accessible outer env} = (the whole outer env} - {all names X that could be resolved by elabLookup(Class, X)}
+  elabLookup don't search the var in otuer classes. Just in this class and base classes.
+*/
 syntax K ::=  localClassGetAccessibleOuterEnv( ClassType )
             | localClassGetAccessibleOuterEnv(
                 ClassType,  //the local class
@@ -148,17 +147,6 @@ when
 rule [localClassGetAccessibleOuterEnv-end]:
     localClassGetAccessibleOuterEnv( Class:ClassType, .Map, NewOuterEnv:Map, _, noValue ) => mapWrap(NewOuterEnv)
 
-//@ Restore the content of <crntClass> and <contextType> with the given class
-syntax K ::=  restoreAfterProcessLocalClass (
-                ClassType, //old content of <crntClass>
-                ContextType //old content of <contextType>
-              )
-
-rule [restoreAfterProcessLocalClass]:
-    <k> restoreAfterProcessLocalClass(Class:ClassType, CT:ContextType) => . ...</k>
-    <crntClass> _ => Class </crntClass>
-    <contextType> _ => CT </contextType>
-
 /*@ Convert the given local class into an equivalent inner class, with the following transformations:
   - Add a field to the class for each outer local variable
   - For each constructor add an argument for each outer local variable
@@ -171,13 +159,13 @@ syntax K ::=  localClassTransformIntoInner (
 
 rule [localClassTransformIntoInner]:
     <k>
-      localClassTransformIntoInner(Class:ClassType, mapWrap(EnclosingLocalEnv:Map))
-      => localClassAugmentFields(Class, EnclosingLocalEnv)
-      ~> localClassAugmentConsParams(Class, buildParams(EnclosingLocalEnv))
+      localClassTransformIntoInner(Class:ClassType, mapWrap(AccessibleLocalEnv:Map))
+      => localClassAugmentFields(Class, AccessibleLocalEnv)
+      ~> localClassAugmentConsParams(Class, buildParams(AccessibleLocalEnv))
     ...
     </k>
     <classType> Class </classType>
-    <enclosingLocalEnv> _ => EnclosingLocalEnv </enclosingLocalEnv>
+    <enclosingLocalEnv> _ => AccessibleLocalEnv </enclosingLocalEnv>
 
 rule [localClassAddFields]:
     <k> localClassAugmentFields(Class:ClassType, ((X:Id |-> T:Type => .Map) _:Map)) ...</k>

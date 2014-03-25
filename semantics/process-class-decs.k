@@ -9,33 +9,45 @@ module PROCESS-CLASS-DECS
 
 /*@ \subsection{Third pass - processing class dependencies and imports} */
 
+rule [ProcClassDecsPhase-start]:
+    <k> . => processClassDecs(getTopLevelClasses) </k>
+    <globalPhase> ProcCompUnitsPhase => ProcClassDecsPhase  </globalPhase>
+
 //@ Processes all classes from CreatedCPhase to DecsProcessedCPhase.
 syntax K ::=  processClassDecs (
                 K //setWrap(Set) - the set of all classes
               )
               [strict]
 
-rule [ProcClassDecsPhase-start]:
-    <k> . => processClassDecs(getTopLevelClasses) </k>
-    <globalPhase> ProcCompUnitsPhase => ProcClassDecsPhase  </globalPhase>
-
 /*@ Question: how do we know if bases were already resolved for this class or not?
   Answer: When resolveBases(Class) is consumed by the rule [resolveBasesEnd], the class
   changes its state: CreatedCPhase => BasesResolvedCPhase
 */
 rule [processClassDecs-resolveBases-TopLevel-Start]:
-    <k> (. => resolveBases(Class, RawExtends, RawImplements)) ~> processClassDecs(_) ...</k>
+    <k>
+      (. => resolveBases(Class, RawExtends, RawImplements) ~> restoreCrntClass(OldCrntClass))
+      ~> processClassDecs(_)
+      ...
+    </k>
+    <crntClass> OldCrntClass:ClassType => noClass </crntClass>
+    <compUnitImports> _ => CuImports </compUnitImports>
+
     <classType> Class:ClassType </classType>
     <rawExtends> RawExtends:K </rawExtends>
     <rawImplements> 'ListWrap(RawImplements:KList) </rawImplements>
     <enclosingClass> noClass </enclosingClass>
     <cuImports> CuImports:Map </cuImports>
     <classPhase> CreatedCPhase </classPhase>
-    <crntClass> _ => noClass </crntClass>
-    <compUnitImports> _ => CuImports </compUnitImports>
 
 rule [processClassDecs-resolveBases-Inner-Start]:
-    <k> (. => resolveBases(Class, RawExtends, RawImplements)) ~> processClassDecs(_) ...</k>
+    <k>
+      (. => resolveBases(Class, RawExtends, RawImplements) ~> restoreCrntClass(OldCrntClass))
+      ~> processClassDecs(_)
+      ...
+    </k>
+    <crntClass> OldCrntClass:ClassType => OuterClass </crntClass>
+    <compUnitImports> _ => .Map </compUnitImports>
+
     <class>
       <classType> Class:ClassType </classType>
       <rawExtends> RawExtends:K </rawExtends>
@@ -49,8 +61,6 @@ rule [processClassDecs-resolveBases-Inner-Start]:
       <classPhase> OuterClassPhase:ClassPhase </classPhase>
       ...
     </class>
-    <crntClass> _ => OuterClass </crntClass>
-    <compUnitImports> _ => .Map </compUnitImports>
 when
     OuterClassPhase ==K DecsProcessedCPhase orBool OuterClassPhase ==K MembersProcessedCPhase
 

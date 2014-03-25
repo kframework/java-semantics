@@ -7,64 +7,18 @@ module PROCESS-CLASS-MEMBERS
     imports CORE-SORTS
     imports CORE-CLASSES
 
-//@ \subsection{Auxiliary functions}
-
-syntax K ::=  getContextType (
-                K               //'ListWrap(...) - the list of method attributes
-              )
-              [function]
-
-rule getContextType('ListWrap('Static(_),,_)) => staticCT
-
-rule getContextType('ListWrap((KL:KLabel(_) => .KList),, _))
-when        KL =/=KLabel 'Static
-
-rule getContextType('ListWrap(.KList))      => instanceCT
-
-//@ Evaluates to true::bool if synchronized is among modifiers, false otherwise
-syntax K ::=  isSynchronized (
-                K //'ListWrap(...) - the list of method attributes
-              )
-              [function]
-
-rule isSynchronized('ListWrap('Synchronized(_),,_)) => true::bool
-
-rule isSynchronized('ListWrap((KL:KLabel(_) => .KList),, _))
-when        KL =/=KLabel 'Synchronized
-
-rule isSynchronized('ListWrap(.KList)) => false::bool
-
-//@ Used to provide an approximate implementation of the distinction between static constant and non-constant fields.
-syntax K ::=  isFinal (
-                K //'ListWrap(...) - the list of method attributes
-              )
-              [function]
-
-rule isFinal('ListWrap('Final(_),,_)) => true
-
-rule isFinal('ListWrap((KL:KLabel(_) => .KList),, _))
-when        KL =/=KLabel 'Final
-
-rule isFinal('ListWrap(.KList))      => false
-
 /*@ \subsection{Third pass - processing class members} */
-
-syntax K ::=  processClasses (
-                K //setWrap(Set) - the set of all classes
-              )         [strict]
-            | processTypeWithDepends (
-                ClassType  //the class to be processed,
-                           //or noClass if no processing is required
-              )
-            | processType (
-                ClassType  //the class to be processed
-              )
 
 /*@ We need to process Object first. Thus when we will process any interfaces,
     Object class will already be processed.*/
 rule [Start-ProcClassMembersPhase]:
     <k> . => processTypeWithDepends(objectClass) ~> processClasses(getTopLevelClasses) </k>
-     <globalPhase> ProcClassDecsPhase => ProcClassMembersPhase  </globalPhase>
+    <globalPhase> ProcClassDecsPhase => ProcClassMembersPhase  </globalPhase>
+
+syntax K ::=  processClasses (
+                K //setWrap(Set) - the set of all classes
+              )
+              [strict]
 
 rule [processClasses]:
     (. => processTypeWithDepends(Class))
@@ -72,6 +26,11 @@ rule [processClasses]:
 
 rule [processClasses-Discard]:
     processClasses(setWrap(.)) => .
+
+syntax K ::=  processTypeWithDepends (
+                ClassType  //the class to be processed,
+                           //or noClass if no processing is required
+              )
 
 rule [processTypeWithDepends]:
     <k>
@@ -92,6 +51,10 @@ rule [processTypeWithDepends-Discard]:
 
 rule [processTypeWithDepends-Discard2]:
     processTypeWithDepends(noClass) => .K
+
+syntax K ::=  processType (
+                ClassType  //the class to be processed
+              )
 
 /*@ For each class compute the set of inherited interfaces, inherit all the members,
 process inner declarations. Compute the following class cells:
@@ -116,8 +79,10 @@ rule [processType]:
 
           ~> tryInherit(BaseClass)
           ~> Decls
+          ~> restoreCrntClass(OldCrntClass)
       ...
     </k>
+    <crntClass> OldCrntClass:ClassType => Class </crntClass>
     <class>
       <classType> Class </classType>
       <extends> BaseClass:ClassType </extends>
@@ -128,7 +93,6 @@ rule [processType]:
       <classPhase> DecsProcessedCPhase => MembersProcessedCPhase </classPhase>
       ...
     </class>
-    <crntClass> _ => Class </crntClass>
 
 //Could happen when hierarchies of inheritance and that of enclosing get messed up.
 rule [processType-discard]:
@@ -510,5 +474,45 @@ when
 */
 rule [ClassDec-discard]: 'ClassDec(_) => .
 rule [InterfaceDec-discard]: 'InterfaceDec(_) => .
+
+//@ \subsection{Auxiliary functions}
+
+syntax K ::=  getContextType (
+                K               //'ListWrap(...) - the list of method attributes
+              )
+              [function]
+
+rule getContextType('ListWrap('Static(_),,_)) => staticCT
+
+rule getContextType('ListWrap((KL:KLabel(_) => .KList),, _))
+when        KL =/=KLabel 'Static
+
+rule getContextType('ListWrap(.KList))      => instanceCT
+
+//@ Evaluates to true::bool if synchronized is among modifiers, false otherwise
+syntax K ::=  isSynchronized (
+                K //'ListWrap(...) - the list of method attributes
+              )
+              [function]
+
+rule isSynchronized('ListWrap('Synchronized(_),,_)) => true::bool
+
+rule isSynchronized('ListWrap((KL:KLabel(_) => .KList),, _))
+when        KL =/=KLabel 'Synchronized
+
+rule isSynchronized('ListWrap(.KList)) => false::bool
+
+//@ Used to provide an approximate implementation of the distinction between static constant and non-constant fields.
+syntax K ::=  isFinal (
+                K //'ListWrap(...) - the list of method attributes
+              )
+              [function]
+
+rule isFinal('ListWrap('Final(_),,_)) => true
+
+rule isFinal('ListWrap((KL:KLabel(_) => .KList),, _))
+when        KL =/=KLabel 'Final
+
+rule isFinal('ListWrap(.KList))      => false
 
 endmodule
