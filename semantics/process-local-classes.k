@@ -333,7 +333,25 @@ rule [loadElabBuffer]:
     <k> loadElabBuffer => elabRes(ElabBuffer) ...</k>
     <elabBuffer> ElabBuffer:K => 'ListWrap(.KList) </elabBuffer>
 
-//\section{Local classes - runtime}
+//@\section{Utility functions for other modules}
+
+syntax K ::= localClassGetExtraArgs( ClassType )
+
+/*@ When <enclosingLocalEnv> is not empty (only possible for certain local classes),
+  we add one more argument to the consturctor call - the local environment object. */
+rule [elab-QNewInstance-local-augment-arguments]:
+    <k>
+      localClassGetExtraArgs(Class:ClassType)
+      => #if notBool isEmpty(EnclosingLocalEnv) ==K true
+            #then elab('ListWrap('ExprName(generateLocalEnvVarName(generateLocalEnvClassType(Class)))))
+            #else elab('ListWrap(.KList))
+         #fi
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingLocalEnv> EnclosingLocalEnv:Map </enclosingLocalEnv>
+
+//@\section{Local classes - runtime}
 
 /*@ Initialize the registration of local environment, when a local class declaration is encountered.
 This environment is precisely <env>. It don't contain local vars of the outer env for enclosing classes,

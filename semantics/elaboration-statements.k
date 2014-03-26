@@ -1,11 +1,13 @@
 require "core-sorts.k"
 require "classes.k"
 require "elaboration-core.k"
+require "process-local-classes.k"
 
 module ELABORATION-STATEMENTS
     imports CORE-SORTS
     imports CLASSES             //for setEncloser
     imports ELABORATION-CORE
+    imports PROCESS-LOCAL-CLASSES //for localClassGetExtraArgs
 
 //@ Elaboration of 'ListWrap, 'Block, 'For or 'Catch - nodes that may contain variable declarations.
 
@@ -113,9 +115,21 @@ rule [elab-SuperConstrInv-desugar]:
 
 rule customElabEnd('QSuperConstrInv) => true
 
+rule [elabEnd-QSuperConstrInv-local-augment-arguments]:
+    <k>
+      (. => localClassGetExtraArgs(BaseClass))
+      ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, 'ListWrap( Args:KList )))
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    <extends> BaseClass:ClassType </extends>
+
 rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
     <k>                                                                     //The signature lookup is unqualified
-      (. => lookupMethod(BaseClass, true, getConsName(BaseClass), resultListWrap(Args)))
+      ( elabRes('ListWrap(ExtraArgs:KList))
+        => lookupMethod(BaseClass, true, getConsName(BaseClass), resultListWrap(Args,,ExtraArgs))
+      )
       ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, 'ListWrap( Args:KList )))
       ...
     </k>
@@ -137,7 +151,7 @@ rule [elabEnd-QSuperConstrInv-to-SuperConstrInv]:
 
 rule customElabEnd('AltConstrInv) => true
 
-rule [elabEnd-AltConstrInv-to-lookupMethod]:
+rule [elabEnd-AltConstrInv-to-lookupMethod]:      //todo test problems with local classes
     <k>                                                           //lookup could be either qualified or unqualified
       (. => lookupMethod(Class, true, getConsName(Class), resultListWrap(Args)))
       ~> elabEnd('AltConstrInv(Arg1:K,, 'ListWrap( Args:KList )))

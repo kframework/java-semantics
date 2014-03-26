@@ -13,21 +13,14 @@ module ELABORATION-NEW-INSTANCE
     imports SUBTYPING
     imports ELABORATION-CORE
     imports ELABORATION-METHOD-INVOKE   // for lookupMethod, methodLookupResult
-    imports PROCESS-LOCAL-CLASSES //for generateLocalEnvClassType, generateLocalEnvVarName
+    imports PROCESS-LOCAL-CLASSES //for localClassGetExtraArgs
 
 /*@ \subsubsection{Elaboration of 'NewInstance and 'QNewInstance} */
 
-/*@ elab('NewInstance()) is strict in the following arguments:
-  - arg 2 - class name
-  - arg 3 - constructor arguments, but only when this is an anonymous class.
+/*@ elab('NewInstance()) is strict in arguments 2 and 3 - class name and constrctor arguments.
     Constrctor arguments have to be heated if this class is anonymous.
-    //todo conflict: local classes require constructor arguments to be heated by a custom rule
 */
-rule customElabHeating('NewInstance, Ks:KList) => length(Ks) ==K 2
-
-rule [NewInstance-anonymous-heat-arguments]:
-    (. => elab('ListWrap(Args:KList)))
-    ~> elab('NewInstance(Qual:K,, Class:ClassType,, ('ListWrap(Args:KList) => CHOLE),, 'Some(_) ))
+rule customElabHeating('NewInstance, Ks:KList) => length(Ks) in (SetItem(2) SetItem(3))
 
 rule [elab-NewInstance]:
     <k>
@@ -50,11 +43,10 @@ rule [elab-NewInstance]:
 
 /*@ elab('QNewInstance()) is strict in all its arguments except the class name (3) and anonymous body(6).
   - Argument (3) is heated if it is not a simple name but a precusros to a type
-  - Argument (5) - consturctor arguments - is heated by a custom rule
   - Argument (6) is heated if it is 'None() - an empty body.
 */
 rule customElabHeating('QNewInstance, Ks:KList,,KHole:K)
-     => length(Ks,,KHole) in (SetItem(1) SetItem(2) SetItem(4))
+     => length(Ks,,KHole) in (SetItem(1) SetItem(2) SetItem(4) SetItem(5))
         orBool (length(Ks,,KHole) ==K 3 andBool notBool isId(KHole) ==K true) //isId(KHole) => class not resolved yet
         orBool (length(Ks,,KHole) ==K 6 andBool KHole ==K 'None(.KList))      // KHole =/= 'None(_) => anon. class
 
@@ -97,40 +89,14 @@ rule [getClassIfExists]:
     </k>
     <namesToClasses>... Pack:PackageId |-> mapWrap(NamesToClasses:Map) ...</namesToClasses>
 
-/*@ When <enclosingLocalEnv> is not empty (only possible for certain local classes),
-  we add one more argument to the consturctor call - the local environment object. */
 rule [elab-QNewInstance-local-augment-arguments]:
-    <k>
-      elab('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,,
-          'ListWrap(Args:KList,, ( .KList => 'ExprName(generateLocalEnvVarName(generateLocalEnvClassType(Class))) ) ),,
-          elabRes('None(.KList))
-      ))
-      ...
-    </k>
-    <classType> Class </classType>
-    <enclosingLocalEnv> EnclosingLocalEnv:Map </enclosingLocalEnv>
-when
-    notBool isEmpty(EnclosingLocalEnv) ==K true
-    andBool notBool getLastKListElement(Args) ==K 'ExprName(generateLocalEnvVarName(generateLocalEnvClassType(Class)))
+    (. => localClassGetExtraArgs(Class))
+    ~> elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, 'ListWrap(Args:KList),, 'None(.KList) ))
 
-rule [elab-QNewInstance-heat-arguments]:
-    <k>
-      (. => elab('ListWrap(Args:KList)))
-      ~> elab('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,,
-                         ('ListWrap(Args:KList) => CHOLE),,
-                         elabRes('None(.KList))
-         ))
-      ...
-    </k>
-    <classType> Class </classType>
-    <enclosingLocalEnv> EnclosingLocalEnv:Map </enclosingLocalEnv>
-when
-    isEmpty(EnclosingLocalEnv) ==K true
-    orBool getLastKListElement(Args) ==K 'ExprName(generateLocalEnvVarName(generateLocalEnvClassType(Class)))
-
-/*@ When <enclosingLocalEnv> is empty we lookup for the constructor signature the usual way*/
 rule [elabEnd-QNewInstance-to-lookupMethod]:
-    (. => lookupMethod(Class, false, getConsName(Class), resultListWrap(Args)))
+    ( elabRes('ListWrap(ExtraArgs:KList))
+      => lookupMethod(Class, false, getConsName(Class), resultListWrap(Args,,ExtraArgs))
+    )
     ~> elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, 'ListWrap(Args:KList),, 'None(.KList)))
 
 /*@ All new instance creation expressions are converted into qualified ones - 'QNewInstance, during elaboration phase.
