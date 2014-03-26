@@ -17,11 +17,17 @@ module ELABORATION-NEW-INSTANCE
 
 /*@ \subsubsection{Elaboration of 'NewInstance and 'QNewInstance} */
 
-/*@ elab('NewInstance()) is strict in arguments 2 and 3 - class name and constrctor arguments.
+/*@ elab('NewInstance()) is strict in the following arguments:
+  - arg 2 - class name
+  - arg 3 - constructor arguments, but only when this is an anonymous class.
     Constrctor arguments have to be heated if this class is anonymous.
     //todo conflict: local classes require constructor arguments to be heated by a custom rule
 */
-rule customElabHeating('NewInstance, Ks:KList) => length(Ks) in (SetItem(2) SetItem(3))
+rule customElabHeating('NewInstance, Ks:KList) => length(Ks) ==K 2
+
+rule [NewInstance-anonymous-heat-arguments]:
+    (. => elab('ListWrap(Args:KList)))
+    ~> elab('NewInstance(Qual:K,, Class:ClassType,, ('ListWrap(Args:KList) => CHOLE),, 'Some(_) ))
 
 rule [elab-NewInstance]:
     <k>
