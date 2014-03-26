@@ -38,7 +38,7 @@ rule [NewInstance-to-QNewInstance-unpack]:
     'NewInstance(Arg1:K,, Class:ClassType,, ActualArgsList:K,, 'None(.KList))
     => 'QNewInstance(noValue,, Arg1,, Class,, 'None(.KList),, ActualArgsList,, 'None(.KList))
 
-//@ Qual,, _:K,, Class,, _:K,, 'ListWrap(Args),, 'None(.KList)
+//@ 'QNewInstance( Qual,, _:K,, Class,, _:K,, 'ListWrap(Args),, 'None(.KList) )
 syntax KLabel ::= "'QNewInstance"
 
 //@Resolve new instance qualifier

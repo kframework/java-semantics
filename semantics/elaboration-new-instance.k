@@ -97,7 +97,7 @@ rule [elab-QNewInstance-local-augment-arguments]:
     <k>
       elab('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,,
           'ListWrap(Args:KList,, ( .KList => 'ExprName(generateLocalEnvVarName(generateLocalEnvClassType(Class))) ) ),,
-          'None(.KList)
+          elabRes('None(.KList))
       ))
       ...
     </k>
@@ -112,7 +112,7 @@ rule [elab-QNewInstance-heat-arguments]:
       (. => elab('ListWrap(Args:KList)))
       ~> elab('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,,
                          ('ListWrap(Args:KList) => CHOLE),,
-                         'None(.KList)
+                         elabRes('None(.KList))
          ))
       ...
     </k>
