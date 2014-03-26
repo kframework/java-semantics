@@ -53,6 +53,10 @@
   enclosing class after the body of LA.
 45. Local class LA accessing a field of the enclosing class, that was shadowed by a local var of the
   enclosing class before the body of LA, but whose scope is over.
+46. Accessing outer local vars in the instance initializer, before local class constructor arguments
+  are accessible.
+47. Accessing outer local vars in the superclass constructor invocation,
+  before local class constructor arguments are accessible.
 
   Part 5. Three-level nesting.
 
