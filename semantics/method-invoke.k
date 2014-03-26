@@ -274,7 +274,7 @@ rule [invokeImpl-Instance]:
         loc(OL:Int)::_,
         'ListWrap(ParamValues:KList)
       ) ~> K:K
-       => setRuntimeEnclosingLocalEnv(OL) ~> bindTo(Params, ParamValues) ~> Body ~> 'Return('None(.KList))
+       => bindTo(Params, ParamValues) ~> Body ~> 'Return('None(.KList))
     </k>
     <stack>
       . =>  ListItem(sl(K,
@@ -291,8 +291,7 @@ rule [invokeImpl-Instance]:
     <methodContext>
       <envGroup>
         OldEnvGroup:Bag
-        => <env> .Map </env> //will be populated later by setRuntimeEnclosingLocalEnv()
-           <localClassesEnv> ObjLocalClassesEnv </localClassesEnv>
+        => <env> .Map </env>
       </envGroup>
       <return> OldT:Type => T </return>
       <contextType> OldCT:ContextType => instanceCT </contextType>
@@ -335,7 +334,7 @@ rule [invokeImpl-Static]:
     <methodContext>
       <envGroup>
         OldEnvGroup:Bag
-        => <env> .Map </env> <localClassesEnv> .Map </localClassesEnv>
+        => <env> .Map </env>
       </envGroup>
       <return> OldT:Type => T </return>
       <contextType> OldCT:ContextType => staticCT </contextType>
@@ -346,16 +345,6 @@ rule [invokeImpl-Static]:
       </crntObj>
       RestMethContext:Bag
     </methodContext>
-
-syntax K ::= setRuntimeEnclosingLocalEnv ( Int )
-rule <k> setRuntimeEnclosingLocalEnv(OL:Int) => . ...</k>
-     <crntClass> Class:ClassType </crntClass>
-     <env> _ => OuterLocalEnv </env>
-     <store>
-      ...
-      OL |-> objectClosure(_, (_:KList/*ObjLayers*/,, layer(Class,_,_,OuterLocalEnv:Map),, _:KList/*ObjLayers*/), _) :: _
-      ...
-     </store>
 
 //@ 'Param(_:K,, T:Type,, X:Id)
 syntax KLabel ::= "'Param"

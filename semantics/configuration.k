@@ -25,13 +25,6 @@ configuration
 
               //The map from local vars to their location in the store. Also includes outer local vars, for local classes.
               <env color="Crimson"> .Map </env>
-
-              /* Map[Id -> mapWrap(Map[Id -> Loc])]
-              A map associating to any local class accessible in this environment its outer local environment.
-              The local environment is determined in the place where the class is declared.
-              When a local class is instantiated, its enclosing environment is taken from this map.
-              This cell have the same lifecycle as <env>, that is why they are both grouped to <envGroup>*/
-              <localClassesEnv color="Crimson"> .Map </localClassesEnv>
             </envGroup>
 
             <br/>

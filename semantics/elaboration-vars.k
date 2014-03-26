@@ -32,7 +32,8 @@ syntax K ::=  externalVar (
 rule [externalVar]:
     <k>
       externalVar(X:Id, Class:ClassType)
-      => elabEnd('Field( cast(Class, 'QThis(Class)),, X )) ?? externalVar(X, EnclosingClass)
+      => elabEnd('Field( cast(Class, 'QThis(Class)),, X ))
+          ?? elabOuterLocalVar(X, Class) ?? externalVar(X, EnclosingClass)
       ...
     </k>
     <classType> Class </classType>
@@ -40,6 +41,32 @@ rule [externalVar]:
 
 rule [externalVar-noClass]:
     externalVar(_, noClass) => noValue
+
+/*@ Attempts to resolve this expression into a local var from the enclosing local environment
+    of type being precisely the given class.
+*/
+syntax K ::=  elabOuterLocalVar (
+                Id,       //X - var name
+                ClassType //Class - the possibly local class whose local env should be searched
+              )
+
+rule [elabOuterLocalVar-ok]:
+    <k>
+      elabOuterLocalVar(X:Id, Class:ClassType) => elab('Field('Field('QThis(Class),, String2Id("$local_env")),, X))
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingLocalEnv>... X |-> T:Type ...</enclosingLocalEnv>
+
+rule [elabOuterLocalVar-not-found]:
+    <k>
+      elabOuterLocalVar(X:Id, Class:ClassType) => noValue
+      ...
+    </k>
+    <classType> Class </classType>
+    <enclosingLocalEnv> EnclosingLocalEnv:Map </enclosingLocalEnv>
+when
+    notBool X in keys(EnclosingLocalEnv)
 
 rule [elabEnd-ExprName-qualified]:
     elabEnd('ExprName(QualK:K,,X:Id)) => elabEnd('Field(QualK,,X))

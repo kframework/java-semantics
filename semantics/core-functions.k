@@ -114,6 +114,9 @@ when
 
 rule mapDiff(mapWrap( MyMap:Map ), setWrap(.Set)) => mapWrap(MyMap)
 
+syntax K ::= isEmpty( Map )   [function]
+rule isEmpty(.Map) => true
+
 /*@A wrapper for sets, similar to the one for maps.*/
 syntax KResult ::= setWrap ( Set )
 
@@ -143,6 +146,9 @@ rule klistConcat(resultListWrap(KL1:KList), resultListWrap(KL2:KList)) => result
 //@ Counts the number of elements in the KList list. Evaluates to an Int.
 syntax K ::= length ( KList )                                       [function]
            | length ( Int, KList )                                  [function]
+
+syntax K ::= getLastKListElement( KList )                           [function]
+rule getLastKListElement(_,, K:K) => K
 
 rule length(Ks:KList) => length(0, Ks)
 rule length(I:Int, K:K,, Ks:KList) => length(I +Int 1, Ks)

@@ -14,9 +14,6 @@ module PROCESS-LOCAL-CLASSES
     imports ELABORATION-VARS   //for elabLookup
 
 /*@ ClassDecStm('ClassDec(...))
-
-todo # Augment each local class constructor with one extra argument - the outer env object
-See http://java-semantics.myjetbrains.com/youtrack/issue/KJ-55 for more details.
 */
 syntax KLabel ::= "'ClassDecStm"
 
@@ -161,15 +158,18 @@ syntax K ::=  localClassTransformIntoInner (
 rule [localClassTransformIntoInner]:
     <k>
       localClassTransformIntoInner(Class:ClassType, mapWrap(AccessibleLocalEnv:Map))
-      => localEnvObjectBuild(generateLocalEnvClassType(Class), AccessibleLocalEnv)
-      ~> localClassAugmentFields(Class, AccessibleLocalEnv)                        //debug delete when v2 works
-      ~> localClassAugmentConsParams(Class, buildParams(AccessibleLocalEnv))
+      => #if notBool isEmpty(AccessibleLocalEnv) ==K true
+           #then localEnvObjectBuild(generateLocalEnvClassType(Class), AccessibleLocalEnv)
+                 ~> localClassAugmentFields(Class, generateLocalEnvClassType(Class))
+                 ~> localClassAugmentConsParams(Class, getConsName(Class), generateLocalEnvClassType(Class))
+           #else .K
+         #fi
     ...
     </k>
     <classType> Class </classType>
     <enclosingLocalEnv> _ => AccessibleLocalEnv </enclosingLocalEnv>
 
-syntax K ::= generateLocalEnvClassType( ClassType )
+syntax K ::= generateLocalEnvClassType( ClassType )                              [function]
 rule generateLocalEnvClassType(class X:Id) => class String2Id(Id2String(X) +String "$LocalEnv")
 
 /*@ Add the given fields definitions to the given class. The class is in MembersProcessedCPhase*/
@@ -252,69 +252,51 @@ rule [localEnvObjectSetFields]:
 rule [localEnvObjectSetFields-discard]:
     localEnvObjectSetFields(_, .Map) => .K
 
-rule [localClassAddFields]:
-    <k> localClassAugmentFields(Class:ClassType, ((X:Id |-> T:Type => .Map) _:Map)) ...</k>
-    <classType> Class </classType>
-    <fieldDecs> 'ListWrap(_,, ( .KList => 'LocalVarDec(.K,, T,, 'ListWrap('VarDec(X))) )) </fieldDecs>
-
-rule [localClassAddFields-end]:
-    localClassAugmentFields(Class:ClassType, .Map) => .K
-
 /*@ Add the given fields definitions to the given class. The class is in MembersProcessedCPhase*/
 syntax K ::=  localClassAugmentFields (
-                ClassType,  //The class to be processed
-                Map         // Map[Name |-> Type] - the fields
+                ClassType,  // LocalClass
+                ClassType   // LocalEnvClass
               )
 
-/*@ Converts the given map of the form Map[Name |-> Type] into into KList['Param()]
-*/
-syntax K ::= buildParams ( Map )
-          |  buildParams ( Map, KList )
+rule [localClassAugmentFields]:
+    <k> localClassAugmentFields(LocalClass:ClassType, LocalEnvClass:ClassType) => .K ...</k>
+    <classType> LocalClass </classType>
+    <fieldDecs>
+      'ListWrap(_,, ( .KList => 'LocalVarDec(.K,, LocalEnvClass,, 'ListWrap('VarDec(String2Id("$local_env")))) ) )
+    </fieldDecs>
 
-rule buildParams(Env:Map) => buildParams(Env, .KList)
-rule buildParams((Env:Map X:Id |-> T:Type), KL:KList) => buildParams(Env, ('Param(.K,, T,, X),, KL:KList))
-rule buildParams(.Map, KL:KList) => resultListWrap(KL)
-
-/*@ Adds the given params at the end of each constructor declaration of the given class.
-*/
 syntax K ::=  localClassAugmentConsParams (
-                ClassType,  // the augmented class
-                K           // params to add
-              ) [strict(2)]
-            | localClassAugmentConsParams (
-                ClassType,  // the augmented class
-                K,          // params to add
-                Map,        // MethodDecs - the methods of the given class. Target for constructors search
-                Map,        // new MethodDecs - the augmented methods of the class.
-                Map,        //Methods
-                Map         // new Methods
+                ClassType,  // LocalClass
+                Id,         // ConsName - constructor name
+                ClassType   // LocalEnvClass
               )
+              [strict(2)]
 
-rule [localClassAugmentConsParams-start]:
-    <k>
-      localClassAugmentConsParams(Class:ClassType, resultListWrap(Params:KList))
-      => localClassAugmentConsParams(Class, resultListWrap(Params), MethodDecs, .Map, Methods, .Map)
+rule [localClassAugmentConsParams-augment]:
+    <k> localClassAugmentConsParams(LocalClass:ClassType, ConsName:Id, LocalEnvClass:ClassType) ...</k>
+    <classType> LocalClass </classType>
+    <methods> sig(ConsName:Id, types(TList:KList,, (.KList => LocalEnvClass))) |-> _ ...</methods>
+    <methodDecs>
+      sig(ConsName:Id, types(TList:KList,, (.KList => LocalEnvClass)))
+      |-> (MClosure:K => addFormalParams(MClosure, 'Param(.K,, LocalEnvClass,, String2Id("$local_env"))))
       ...
-    </k>
-    <classType> Class </classType>
+    </methodDecs>
+when
+    notBool getLastKListElement(TList) ==K LocalEnvClass
+
+rule [localClassAugmentConsParams-end]:
+    <k> localClassAugmentConsParams(LocalClass:ClassType, ConsName:Id, LocalEnvClass:ClassType) => .K ...</k>
+    <classType> LocalClass </classType>
     <methods> Methods:Map </methods>
     <methodDecs> MethodDecs:Map </methodDecs>
-
-rule [localClassAugmentConsParams-method]:
-    localClassAugmentConsParams( Class:ClassType, _, ( (sig(Name:Id, Ts:Types) |-> MClosure:K => .Map) _:Map),
-                                                     ( (.Map => sig(Name:Id, Ts:Types) |-> MClosure:K) _:Map),
-                                 _,_)
 when
-    Name =/=K getConsName(Class)
+    notBool haveUnaugmentedConstructors(ConsName, LocalEnvClass, Methods) ==K true
 
-rule [localClassAugmentConsParams-constructor]:
-    localClassAugmentConsParams( Class:ClassType, resultListWrap(NewParams:KList),
-                                 ( (sig(Name:Id, types(TList:KList)) |-> MClosure:K => .Map) _:Map),
-            ( (.Map => sig(Name:Id, getTypes(TList,, NewParams)) |-> addFormalParams(MClosure, NewParams)) _:Map),
-            (sig(Name:Id, types(TList:KList)) |-> DeclClass:ClassType => .Map) _,
-            (.Map => sig(Name:Id, getTypes(TList,, NewParams)) |-> DeclClass:ClassType) _)
+syntax K ::= haveUnaugmentedConstructors( Id, ClassType, Map )                [function]
+rule haveUnaugmentedConstructors(ConsName:Id, LocalEnvClass:ClassType,
+                                 (sig(ConsName:Id, types(TList:KList)) |-> _) _:Map) => true
 when
-    Name ==K getConsName(Class)
+    notBool getLastKListElement(TList) ==K LocalEnvClass
 
 //@ Add to the given methodClosure the given formal parameters
 syntax K ::= addFormalParams ( K, KList)                     [function]
@@ -337,16 +319,6 @@ rule extraParamAssignments('Param(_:K,,_:Type,,X:Id),, Rest:KList)
 
 rule extraParamAssignments(.KList) => .KList
 
-rule [localClassAugmentConsParams-discard]:
-    <k>
-      localClassAugmentConsParams(Class:ClassType,_, .Map, NewMethodDecs:Map,
-                                  RemainingMeth:Map, TransformedMeth:Map) => .K
-      ...
-    </k>
-    <classType> Class </classType>
-    <methods> _ => RemainingMeth TransformedMeth </methods>
-    <methodDecs> _ => NewMethodDecs </methodDecs>
-
 //@ Elaborates the given node and saves it to <elabBuffer>
 syntax K ::= appendToElabBuffer ( K ) //[strict, context(result(ElabKResult))] //K bug generalized strictness
 context appendToElabBuffer ( HOLE )              [result(ElabKResult)]
@@ -366,9 +338,7 @@ rule [loadElabBuffer]:
 /*@ Initialize the registration of local environment, when a local class declaration is encountered.
 This environment is precisely <env>. It don't contain local vars of the outer env for enclosing classes,
 in case of multi-level local classes.*/
-rule [ClassDecStm-runtime]:
-    <k> 'ClassDecStm(Class:ClassType) => . ...</k>
-    <env> LocalEnv:Map </env>
-    <localClassesEnv> LocalClasses:Map => LocalClasses[mapWrap(LocalEnv)/Class] </localClassesEnv>
+rule [ClassDecStm-runtime]:  //todo probably have to be removed
+    'ClassDecStm(Class:ClassType) => .K
 
 endmodule
