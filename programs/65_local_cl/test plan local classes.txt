@@ -210,3 +210,6 @@ Part 9.5. Interaction of outer local vars with this(), super() and instance init
   before local class fields are accessible.
 955. Accessing outer local vars in the instance initializer,
   before local class fields could be initialized from constructor arguments.
+956. Instantiating a local class from itself.
+957. Instantiating an enclosing local class from a deep local class.
+958. Deep local class derived from an enclosing local. Outer env vars present.
