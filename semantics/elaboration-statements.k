@@ -125,8 +125,9 @@ rule [elabEnd-QSuperConstrInv-local-augment-arguments]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
+//@ QSuperConstrInv lookup is always unqualified
 rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
-    <k>                                                                     //The signature lookup is unqualified
+    <k>
       ( elabRes('ListWrap(ExtraArgs:KList))
         => lookupMethod(BaseClass, true, getConsName(BaseClass), resultListWrap(Args,,ExtraArgs))
       )
@@ -151,9 +152,20 @@ rule [elabEnd-QSuperConstrInv-to-SuperConstrInv]:
 
 rule customElabEnd('AltConstrInv) => true
 
-rule [elabEnd-AltConstrInv-to-lookupMethod]:      //todo test problems with local classes
-    <k>                                                           //lookup could be either qualified or unqualified
-      (. => lookupMethod(Class, true, getConsName(Class), resultListWrap(Args)))
+rule [elabEnd-AltConstrInv-local-augment-arguments]:
+    <k>
+      (. => localClassGetExtraArgs(Class))
+      ~> elabEnd('AltConstrInv(Arg1:K,, 'ListWrap( Args:KList )))
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+
+//@ AltConstrInv lookup is always unqualified
+rule [elabEnd-AltConstrInv-to-lookupMethod]:
+    <k>
+      ( elabRes('ListWrap(ExtraArgs:KList))
+        => lookupMethod(Class, true, getConsName(Class), resultListWrap(Args,,ExtraArgs))
+      )
       ~> elabEnd('AltConstrInv(Arg1:K,, 'ListWrap( Args:KList )))
       ...
     </k>

@@ -52,9 +52,17 @@ syntax K ::=  elabOuterLocalVar (
 
 rule [elabOuterLocalVar-ok]:
     <k>
-      elabOuterLocalVar(X:Id, Class:ClassType) => elab('Field('Field('QThis(Class),, String2Id("$local_env")),, X))
+      elabOuterLocalVar(X:Id, Class:ClassType)
+      =>  #if Class ==K CrntClass
+            //this way in constructors we will access the parameter $local_var, not the field
+            #then elab('Field('ExprName(String2Id("$local_env")),, X))
+
+            //if this is an outer var for some enclosing class, always access it via a field
+            #else elab('Field('Field('QThis(Class),, String2Id("$local_env")),, X))
+          #fi
       ...
     </k>
+    <crntClass> CrntClass:ClassType </crntClass>
     <classType> Class </classType>
     <enclosingLocalEnv>... X |-> T:Type ...</enclosingLocalEnv>
 

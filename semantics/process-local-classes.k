@@ -343,11 +343,15 @@ rule [elab-QNewInstance-local-augment-arguments]:
     <k>
       localClassGetExtraArgs(Class:ClassType)
       => #if notBool isEmpty(EnclosingLocalEnv) ==K true
-            #then elab('ListWrap('ExprName(generateLocalEnvVarName(generateLocalEnvClassType(Class)))))
+            #then #if Class ==K CrntClass
+                    #then elab('ListWrap('ExprName(String2Id("$local_env"))))
+                    #else elab('ListWrap('ExprName(generateLocalEnvVarName(generateLocalEnvClassType(Class)))))
+                  #fi
             #else elab('ListWrap(.KList))
          #fi
       ...
     </k>
+    <crntClass> CrntClass:ClassType </crntClass>
     <classType> Class </classType>
     <enclosingLocalEnv> EnclosingLocalEnv:Map </enclosingLocalEnv>
 
