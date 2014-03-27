@@ -93,6 +93,9 @@ rule [elab-QNewInstance-local-augment-arguments]:
     (. => localClassGetExtraArgs(Class))
     ~> elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, 'ListWrap(Args:KList),, 'None(.KList) ))
 
+/*@ QNewInstance lookup is always qualified (e.g. not this), because the object we are creating
+    is different from the current object.
+*/
 rule [elabEnd-QNewInstance-to-lookupMethod]:
     ( elabRes('ListWrap(ExtraArgs:KList))
       => lookupMethod(Class, false, getConsName(Class), resultListWrap(Args,,ExtraArgs))
