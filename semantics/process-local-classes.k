@@ -72,10 +72,6 @@ rule [processLocalClassDec-process]:
       processLocalClassDec(ClassDec:K, Class:ClassType, true)
       => registerClass(ClassDec, toPackage(CrntClass), Class, CrntClass)
         ~> localClassTransformIntoInner(Class, localClassGetAccessibleOuterEnv(Class))
-
-        //this is what is left from the original class declaration
-        //used at runtime to compute enclosing local environment
-        ~> appendToElabBuffer(elabRes('ClassDecStm(Class)))
         ~> loadElabBuffer
       ...
     </k>
@@ -372,13 +368,5 @@ rule [elab-QNewInstance-local-augment-arguments]:
     <crntClass> CrntClass:ClassType </crntClass>
     <classType> Class </classType>
     <enclosingLocalEnv> EnclosingLocalEnv:Map </enclosingLocalEnv>
-
-//@\section{Local classes - runtime}
-
-/*@ Initialize the registration of local environment, when a local class declaration is encountered.
-This environment is precisely <env>. It don't contain local vars of the outer env for enclosing classes,
-in case of multi-level local classes.*/
-rule [ClassDecStm-runtime]:  //todo probably have to be removed
-    'ClassDecStm(Class:ClassType) => .K
 
 endmodule

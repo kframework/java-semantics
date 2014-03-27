@@ -163,6 +163,7 @@ syntax ObjLayer ::= layer (
                       BagItem,    //<env> instance fields </env>
                       K           //objectClosure(...)::_ - the enclosing object,
                                   //  or noValue for top-level and static classes
+                                  //  Used by lookupQThis.
                     )
 
 syntax ObjLayers ::= List{ObjLayer, ","}
