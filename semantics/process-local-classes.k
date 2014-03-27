@@ -156,14 +156,32 @@ syntax K ::=  localClassTransformIntoInner (
               [strict(2)]
 
 rule [localClassTransformIntoInner]:
+    localClassTransformIntoInner(Class:ClassType, mapWrap(AccessibleLocalEnv:Map))
+    => #if notBool isEmpty(AccessibleLocalEnv) ==K true
+         #then localClassTransformIntoInnerImpl(Class:ClassType,
+                  mapWrap(
+                    AccessibleLocalEnv:Map
+                    generateLocalEnvVarName(generateLocalEnvClassType(Class)) |-> generateLocalEnvClassType(Class)
+                  )
+               )
+         #else .K
+       #fi
+
+/*@ Same as localClassTransformIntoInner but AccessibleLocalEnv have one more entry
+    - the field LocaClass@LocalEnv_obj that will be created later, a self reference required when a local class
+    instantiates either itself or an enclosing local class. See tests 957, 958.
+*/
+syntax K ::=  localClassTransformIntoInnerImpl (
+                ClassType,  //the local class
+                K           // computes into mapWrap(Map[Id |-> Type]) - the accessible outer local var environment
+              )
+
+rule [localClassTransformIntoInnerImpl]:
     <k>
-      localClassTransformIntoInner(Class:ClassType, mapWrap(AccessibleLocalEnv:Map))
-      => #if notBool isEmpty(AccessibleLocalEnv) ==K true
-           #then localEnvObjectBuild(generateLocalEnvClassType(Class), AccessibleLocalEnv)
-                 ~> localClassAugmentFields(Class, generateLocalEnvClassType(Class))
-                 ~> localClassAugmentConsParams(Class, getConsName(Class), generateLocalEnvClassType(Class))
-           #else .K
-         #fi
+      localClassTransformIntoInnerImpl(Class:ClassType, mapWrap(AccessibleLocalEnv:Map))
+      =>  localEnvObjectBuild(generateLocalEnvClassType(Class), AccessibleLocalEnv)
+          ~> localClassAugmentFields(Class, generateLocalEnvClassType(Class))
+          ~> localClassAugmentConsParams(Class, getConsName(Class), generateLocalEnvClassType(Class))
     ...
     </k>
     <classType> Class </classType>
