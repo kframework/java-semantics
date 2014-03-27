@@ -1,12 +1,12 @@
 /*
 Two instances of the same Local, declared inside a for may see different values
-  for the same vars. If they instantiate another local class from the smae for,
+  for the same vars. If they instantiate another local class from the same for,
   they will also see different <localClassesEnv>.
   Test:
   - for i = 1..2, a = i, class Local1, class Local2, instantiate Local2 and save it.
-  - From outside for, use the two isntances of Local2 to instantiate and display
+  - From outside for, use the two instances of Local2 to instantiate and display
     two instances of Local1.
-  - instances of Local1 print diffrent values for a.
+  - instances of Local1 print different values for a.
 */
 
 public class local_cl_917_local_decl_env_in_for {

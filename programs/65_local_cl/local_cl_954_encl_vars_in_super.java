@@ -1,9 +1,9 @@
 /*
-Accessing outer local vars in the superclass constructor invocation,
-  before local class constructor arguments are accessible.
+Calling super() with arguments being outer local vars in a local class,
+  before local class fields are accessible.
 */
 
-public class local_cl_47_encl_vars_in_super {
+public class local_cl_954_encl_vars_in_super {
   public static void main(String[] args) {
     new O().test();
     System.out.println("Done!");
@@ -20,14 +20,14 @@ class O {
 
   void test() {
 
-    final int a = 1, b = 20;
+    final int a = 1, b = 10;
 
     class Local extends Base {
-      Local() {
-        super("a=" + a + " ,b=" + b);
+      Local(int b) {
+        super("a = " + a + ", b = " + b);
       }
     }
 
-    new Local();
+    new Local(20);
   }
 }

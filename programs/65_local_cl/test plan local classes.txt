@@ -7,7 +7,7 @@
 14. A local class LB implementing an interface with method test(). Also have an own method and field,
   accessed by test().
 15. Local class LB accessing fields and methods of the enclosing class by simple name.
-16. Local class LB caling a superclass constructor with parameters.
+16. Local class LB calling a superclass constructor with parameters.
 17. Local class and hiding.
   - Class O, members: av, af(), bv, bf(), test(),
   - Class O.test().LA, members: av, af(), test().
@@ -35,7 +35,7 @@
     - constructor with three arguments - one for qualifier, two for the base class args.
       Calls qualified superclass constructor.
   Local class's test() calls super.test() that prints something from its enclosing class.
-  Instantiate 3 LB's:
+  Instantiate 3 LB objects:
     - using two-args constructor
     - using three-args constructor, base encloser O.this
     - using three-args constructor, base encloser new O(...)
@@ -53,10 +53,6 @@
   enclosing class after the body of LA.
 45. Local class LA accessing a field of the enclosing class, that was shadowed by a local var of the
   enclosing class before the body of LA, but whose scope is over.
-46. Accessing outer local vars in the instance initializer, before local class constructor arguments
-  are accessible.
-47. Accessing outer local vars in the superclass constructor invocation,
-  before local class constructor arguments are accessible.
 
   Part 5. Three-level nesting.
 
@@ -194,12 +190,23 @@ Distinction between "cheat" implementations and a complete one.
   will have access to level 1, not 2 as it was in the innermost call to f().
 
 917. Two instances of the same Local, declared inside a for may see different values
-  for the same vars. If they instantiate another local class from the smae for,
+  for the same vars. If they instantiate another local class from the same for,
   they will also see different <localClassesEnv>.
   Test:
   - for i = 1..2, a = i, class Local1, class Local2, instantiate Local2 and save it.
-  - From outside for, use the two isntances of Local2 to instantiate and display
+  - From outside for, use the two instances of Local2 to instantiate and display
     two instances of Local1.
-  - instances of Local1 print diffrent values for a.
+  - instances of Local1 print different values for a.
 
 918. Instantiate a local class from an instance initializer.
+
+Part 9.5. Interaction of outer local vars with this(), super() and instance initializers.
+
+951. Calling this() from a local class. Instantiating the local class with both constructor arguments.
+952. Calling super() from a local class, where the base class is also a local class.
+953. Calling this() with arguments being outer local vars in a local class,
+ before local class fields are accessible.
+954. Calling super() with arguments being outer local vars in a local class,
+  before local class fields are accessible.
+955. Accessing outer local vars in the instance initializer,
+  before local class fields could be initialized from constructor arguments.
