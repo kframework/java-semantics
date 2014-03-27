@@ -74,8 +74,7 @@ syntax K ::= elaborateBlocks ( K ) [strict]
 
 //@ Elaborates the methods of the current class. The map contains already elaborated methods. Initially the map is empty.
 syntax K ::= elabMethods ( Map )
-syntax K ::= "elabInstanceInit"
-           | "elabStaticInit"
+syntax K ::= "elabStaticInit"
 
 //@Elaborates the given statement/expression. The first step of elaboration.
 syntax K ::= elab ( K )

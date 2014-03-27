@@ -43,7 +43,7 @@ syntax GlobalPhase ::=
         <fieldDecs>
         <methods>
         <methodDecs>
-        <instanceInit>
+        <instanceInit> - temporary cell, deleted after class body is processed.
         <staticEnv>
         <staticInit>
   */
@@ -51,7 +51,6 @@ syntax GlobalPhase ::=
 
   /* Elaborates the content of each code block. Specifically the content of the following cells:
         <methodDecs>
-        <instanceInit>
         <staticInit>
     The following transformations over expressions are performed:
       - each name is resolved to its specific meaning - fully qualified class name, local variable name, static/instance

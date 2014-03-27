@@ -19,7 +19,7 @@ rule [elaborateBlocksStart]:
 */
 rule [elaborateBlocks]:
     <k>
-      (. => elabInstanceInit ~> elabMethods(MethodDecs) ~> elabStaticInit
+      (. => elabMethods(MethodDecs) ~> elabStaticInit
         ~> elaborateBlocks(getInnerClasses(Class))
         ~> restoreCrntClass(OldCrntClass)
       )
@@ -110,20 +110,6 @@ rule [elabMethods-Cool-Constructor]:
 
 rule [elabMethods-End]:
     elabMethods( .Map ) => .
-
-rule [elabInstanceInit-Heat]:
-    <k> (. => addElabEnv ~> elab(K)) ~> elabInstanceInit ...</k>
-    <crntClass> Class:ClassType </crntClass>
-    <classType> Class </classType>
-    <instanceInit> K:K => CHOLE </instanceInit>
-    <contextType> _ => instanceCT </contextType>
-when K =/=K CHOLE
-
-rule [elabInstanceInit-eEnd]:
-    <k> elabRes(K:K) ~> elabInstanceInit => removeLastElabEnv ...</k>
-    <crntClass> Class:ClassType </crntClass>
-    <classType> Class </classType>
-    <instanceInit> CHOLE => K </instanceInit>
 
 rule [elabStaticInit-Heat]:
     <k> (. => addElabEnv ~> elab(K)) ~> elabStaticInit ...</k>

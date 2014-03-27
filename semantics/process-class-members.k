@@ -62,7 +62,7 @@ process inner declarations. Compute the following class cells:
   <fieldDecs>
   <methods>
   <methodDecs>
-  <instanceInit>
+  <instanceInit> - temporary cell, deleted after class body is processed.
   <staticEnv>
   <staticInit>
 
@@ -79,6 +79,10 @@ rule [processType]:
 
           ~> tryInherit(BaseClass)
           ~> Decls
+
+          //performance problem - adds 1s of execution to helloWorld, Windows.
+          ~> convertInstanceInitIntoMethod
+
           ~> restoreCrntClass(OldCrntClass)
       ...
     </k>
@@ -254,10 +258,10 @@ rule [MethodDec]:
         'MethodDecHead(Modifiers:K,, _:K,, ReturnType:Type,, Name:Id,,
             'ListWrap(Params:KList),, _:K
         ),,
-        S:K
+        Body:K
       )
       => storeMethod('ListWrap(Params),
-            getContextType(Modifiers), getAccessMode(Modifiers), isSynchronized(Modifiers), methodRT, noValue, S,
+            getContextType(Modifiers), getAccessMode(Modifiers), isSynchronized(Modifiers), methodRT, noValue, Body,
             methodType(sig(Name, getTypes(Params)), ReturnType))
       ...
     </k>
@@ -292,8 +296,8 @@ syntax K ::=  storeMethod (
 
 rule [storeMethod]:
     <k>
-      storeMethod('ListWrap(Params:KList), CT:ContextType, Acc:AccessMode, false::bool, RT:RoutineType, FirstLine:K, Body:K,
-          methodType(Sig:Signature, ReturnType:Type)) => .
+      storeMethod('ListWrap(Params:KList), CT:ContextType, Acc:AccessMode, false::bool, RT:RoutineType, FirstLine:K,
+                  Body:K, methodType(Sig:Signature, ReturnType:Type)) => .
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -351,9 +355,19 @@ rule [ConstrDec]:
     <k>
       'ConstrDec('ConstrDecHead(Modifiers:K,, _:K,, Name:Id,, 'ListWrap(Params:KList),, _),,
           'ConstrBody(
-        'Some(FirstLine:K) ,,S:K))
+        'Some(FirstLine:K) ,,'ListWrap(BodyKs:KList)))
       => storeMethod('ListWrap(Params),
-          instanceCT, getAccessMode(Modifiers), isSynchronized(Modifiers), constructorRT, FirstLine, S,
+          instanceCT, getAccessMode(Modifiers), isSynchronized(Modifiers), constructorRT, FirstLine,
+          'ListWrap(
+
+            //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
+            //Invocation of instance initializer converted into a method.
+            #if getKLabel(FirstLine) ==KLabel 'SuperConstrInv orBool getKLabel(FirstLine) ==KLabel 'QSuperConstrInv
+              #then 'ExprStm('Invoke('Method('MethodName( String2Id("$instance_init") )),, 'ListWrap(.KList)))
+              #else 'ListWrap(.KList) //vacuous
+            #fi,,
+            BodyKs
+          ),
           methodType(sig(getConsName(Class), getTypes(Params)), void))
       ...
     </k>
@@ -474,6 +488,19 @@ when
 */
 rule [ClassDec-discard]: 'ClassDec(_) => .
 rule [InterfaceDec-discard]: 'InterfaceDec(_) => .
+
+syntax K ::= "convertInstanceInitIntoMethod"
+
+rule [convertInstanceInitIntoMethod]:
+    <k>
+      convertInstanceInitIntoMethod
+      => storeMethod('ListWrap(.KList), instanceCT, private, false::bool, methodRT, noValue, 'Block(InstanceInit),
+                      methodType(sig(String2Id("$instance_init"), types(.KList)), void))
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    (<instanceInit> InstanceInit:K </instanceInit> => .Bag)
 
 //@ \subsection{Auxiliary functions}
 

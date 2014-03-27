@@ -229,13 +229,11 @@ rule [QSuperConstrInv]:
               'Method('MethodName(superMethod(cast(BaseClass, 'QThis(Class))),, getConsName(BaseClass))),,
               'ListWrap(Args)
             ))
-         ~>IInit
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
-    <instanceInit> IInit:K </instanceInit>
 
 //@ _:K,, 'ListWrap( Args:KList )
 syntax KLabel ::= "'AltConstrInv"
