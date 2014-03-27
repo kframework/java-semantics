@@ -141,12 +141,10 @@ The object closure have the following structure:
   ListItem(layer(
     Class,
     <env>Env</env>,
-    enclosingObjClosure::T,
-    enclosingLocalEnv:Map
+    enclosingObjClosure::T
   ))
   ...
 \end{verbatim}
-\item Map -- The init content of <localClassesEnv> when methods are invoked. For local classes only.
 \end{itemize}
 */
 syntax RawRefVal ::=  objectClosure (
@@ -156,16 +154,15 @@ syntax RawRefVal ::=  objectClosure (
                                       layer(
                                         Class,
                                         <env>Env</env>,
-                                        enclosingObjClosure::T,
-                                        enclosingLocalEnv:Map
+                                        enclosingObjClosure::T
                                       ) */
                       )
 
 syntax ObjLayer ::= layer (
                       ClassType,  //The class corresponding to the current layer
                       BagItem,    //<env> instance fields </env>
-                      K,          //objectClosure(...)::_ - the enclosing object, or noValue for top-level classes
-                      Map         //Map[Id ->Loc], enclosingLocalEnv, local classes only.  //todo remove
+                      K           //objectClosure(...)::_ - the enclosing object,
+                                  //  or noValue for top-level and static classes
                     )
 
 syntax ObjLayers ::= List{ObjLayer, ","}

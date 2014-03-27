@@ -91,7 +91,7 @@ rule [object-getClass-on-object]:
     </k>
     <store>
       ...
-      OL |-> objectClosure(_, (layer(T:ClassType, _,_,_),, _:KList/*ObjLayers*/) ) :: _
+      OL |-> objectClosure(_, (layer(T:ClassType, _,_),, _:KList/*ObjLayers*/) ) :: _
       ...
     </store>
 when

@@ -44,14 +44,14 @@ rule [Invoke-Method-Instance-On-Class]:
       'Invoke('Method('MethodName(
         objectClosure(
           OL:Int,
-          (Rest:KList/*ObjLayers*/,, layer(Class:ClassType, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map),, _)
+          (Rest:KList/*ObjLayers*/,, layer(Class:ClassType, BI:BagItem, EnclosingObj:KResult),, _)
         )::Class:ClassType,,
         Name:Id
         )),, 'ListWrap(ParamVals:KList)
       )
       => invokeImpl(
         lookupOverloadedMethod(
-          sig(Name, getTypes(ParamVals)), getClassList(Rest,, layer(Class, BI, EnclosingObj, LocalEnv)),
+          sig(Name, getTypes(ParamVals)), getClassList(Rest,, layer(Class, BI, EnclosingObj)),
           mapWrap(.Map), noValue
         ),
         loc(OL)::Class, 'ListWrap(ParamVals)
@@ -77,7 +77,7 @@ rule [Invoke-Method-Instance-On-Interface]:
       'Invoke('Method('MethodName(
           objectClosure(
             OL:Int,
-            (layer(ActualClass:ClassType, _,_,_),, _)
+            (layer(ActualClass:ClassType, _,_),, _)
           )::Class:ClassType,,
           Name:Id
         )),,
@@ -130,17 +130,17 @@ rule [superMethod]:
         OL:Int,
         //The layers above the layer where method should be searched
         // should be discarded in order to implement syper.m() functionality.
-        (_:KList/*ObjLayers*/,, layer(BaseClass, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map),, Rest:KList/*ObjLayers*/)
+        (_:KList/*ObjLayers*/,, layer(BaseClass, BI:BagItem, EnclosingObj:KResult),, Rest:KList/*ObjLayers*/)
       )::BaseClass:ClassType  //due to the way term superMethod() is first constructed, this is the upper search layer
     )
     => objectClosure(
       OL,
-      (layer(BaseClass, BI, EnclosingObj, LocalEnv),, Rest)
+      (layer(BaseClass, BI, EnclosingObj),, Rest)
     )::BaseClass
 
-//@ Converts a list of ListItem(layer(Class, BI, EnclosingObj, _)) into KList with elements of sort ClassType
+//@ Converts a list of ListItem(layer(Class, BI, EnclosingObj)) into KList with elements of sort ClassType
 syntax K ::= getClassList ( KList )
-rule (.KList => Class),, getClassList((layer(Class:ClassType, _,_,_) => .KList),, _)
+rule (.KList => Class),, getClassList((layer(Class:ClassType, _,_) => .KList),, _)
         [structural, anywhere]
 rule getClassList(.KList) => .KList
         [structural, anywhere]

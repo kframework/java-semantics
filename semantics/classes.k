@@ -126,7 +126,7 @@ rule [addEnvLayer]:
     <store>
       ...
       L |-> objectClosure(L,
-          ( ( .KList => layer(Class, <env>Env</env>, noValue, .Map) ),, _:KList/*ObjLayers*/ ) )::_
+          ( ( .KList => layer(Class, <env>Env</env>, noValue) ),, _:KList/*ObjLayers*/ ) )::_
       ...
     </store>
         [structural]
@@ -168,7 +168,7 @@ rule [setEncloser-value]:
     <store>
       ...
       OL |->
-        objectClosure(_, (_:KList/*ObjLayers*/,, layer(Class,_, _ => EncloserRV::EncloserClass, _),, _:KList/*ObjLayers*/) )::_
+        objectClosure(_, (_:KList/*ObjLayers*/,, layer(Class,_, _ => EncloserRV::EncloserClass),, _:KList/*ObjLayers*/) )::_
       ...
     </store>
     <classType> Class </classType>
