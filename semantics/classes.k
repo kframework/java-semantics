@@ -85,7 +85,7 @@ rule [QNewInstance]:
     </methodContext>
     <store>
       ...
-      . => L |-> objectClosure(L, .KList, .Map) :: Class
+      . => L |-> objectClosure(L, .KList) :: Class
       ...
     </store>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
@@ -126,7 +126,7 @@ rule [addEnvLayer]:
     <store>
       ...
       L |-> objectClosure(L,
-          ( ( .KList => layer(Class, <env>Env</env>, noValue, .Map) ),, _:KList/*ObjLayers*/ ), _)::_
+          ( ( .KList => layer(Class, <env>Env</env>, noValue, .Map) ),, _:KList/*ObjLayers*/ ) )::_
       ...
     </store>
         [structural]
@@ -162,13 +162,13 @@ syntax K ::=  setEncloser (
 
 rule [setEncloser-value]:
     <k>
-      setEncloser(objectClosure(OL:Int, _,_)::_, Class:ClassType, EncloserRV:RawVal::_) => .
+      setEncloser(objectClosure(OL:Int, _)::_, Class:ClassType, EncloserRV:RawVal::_) => .
       ...
     </k>
     <store>
       ...
       OL |->
-        objectClosure(_, (_:KList/*ObjLayers*/,, layer(Class,_, _ => EncloserRV::EncloserClass, _),, _:KList/*ObjLayers*/), _)::_
+        objectClosure(_, (_:KList/*ObjLayers*/,, layer(Class,_, _ => EncloserRV::EncloserClass, _),, _:KList/*ObjLayers*/) )::_
       ...
     </store>
     <classType> Class </classType>

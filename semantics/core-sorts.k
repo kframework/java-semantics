@@ -150,23 +150,22 @@ The object closure have the following structure:
 \end{itemize}
 */
 syntax RawRefVal ::=  objectClosure (
-                        Int, //OL - object location
+                        Int,  //OL - object location
                         //K bug #266 - when solved replace with ObjLayers
-                        KList, /*ObjLayers - The object content, a list of ObjLayer elements, each of the form:
+                        KList /*ObjLayers - The object content, a list of ObjLayer elements, each of the form:
                                       layer(
                                         Class,
                                         <env>Env</env>,
                                         enclosingObjClosure::T,
                                         enclosingLocalEnv:Map
                                       ) */
-                        Map //The init content of <localClassesEnv> when methods are invoked. For local classes only.
                       )
 
 syntax ObjLayer ::= layer (
                       ClassType,  //The class corresponding to the current layer
                       BagItem,    //<env> instance fields </env>
                       K,          //objectClosure(...)::_ - the enclosing object, or noValue for top-level classes
-                      Map         //Map[Id ->Loc], enclosingLocalEnv, local classes only.
+                      Map         //Map[Id ->Loc], enclosingLocalEnv, local classes only.  //todo remove
                     )
 
 syntax ObjLayers ::= List{ObjLayer, ","}

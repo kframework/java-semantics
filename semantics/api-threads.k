@@ -63,7 +63,7 @@ context 'Synchronized(HOLE,, _)
 
 rule [Synchronized-first-time]:
     <k>
-      'Synchronized(objectClosure(OL:Int,_,_)::_,, Block:K)
+      'Synchronized(objectClosure(OL:Int,_)::_,, Block:K)
       => 'Try(Block,, 'ListWrap(.KList),, releaseLock(OL))
       ...
     </k>
@@ -75,7 +75,7 @@ when
 
 rule [Synchronized-nested]:
     <k>
-      'Synchronized(objectClosure(OL:Int,_,_)::_,, Block:K)
+      'Synchronized(objectClosure(OL:Int,_)::_,, Block:K)
       => 'Try(Block,, 'ListWrap(.KList),, releaseLock(OL))
       ...
     </k>

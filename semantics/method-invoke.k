@@ -44,8 +44,7 @@ rule [Invoke-Method-Instance-On-Class]:
       'Invoke('Method('MethodName(
         objectClosure(
           OL:Int,
-          (Rest:KList/*ObjLayers*/,, layer(Class:ClassType, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map),, _),
-          _
+          (Rest:KList/*ObjLayers*/,, layer(Class:ClassType, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map),, _)
         )::Class:ClassType,,
         Name:Id
         )),, 'ListWrap(ParamVals:KList)
@@ -78,8 +77,7 @@ rule [Invoke-Method-Instance-On-Interface]:
       'Invoke('Method('MethodName(
           objectClosure(
             OL:Int,
-            (layer(ActualClass:ClassType, _,_,_),, _),
-            _
+            (layer(ActualClass:ClassType, _,_,_),, _)
           )::Class:ClassType,,
           Name:Id
         )),,
@@ -132,14 +130,12 @@ rule [superMethod]:
         OL:Int,
         //The layers above the layer where method should be searched
         // should be discarded in order to implement syper.m() functionality.
-        (_:KList/*ObjLayers*/,, layer(BaseClass, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map),, Rest:KList/*ObjLayers*/),
-        ObjLocalClassesEnv:Map
+        (_:KList/*ObjLayers*/,, layer(BaseClass, BI:BagItem, EnclosingObj:KResult, LocalEnv:Map),, Rest:KList/*ObjLayers*/)
       )::BaseClass:ClassType  //due to the way term superMethod() is first constructed, this is the upper search layer
     )
     => objectClosure(
       OL,
-      (layer(BaseClass, BI, EnclosingObj, LocalEnv),, Rest),
-      ObjLocalClassesEnv
+      (layer(BaseClass, BI, EnclosingObj, LocalEnv),, Rest)
     )::BaseClass
 
 //@ Converts a list of ListItem(layer(Class, BI, EnclosingObj, _)) into KList with elements of sort ClassType
@@ -304,7 +300,7 @@ rule [invokeImpl-Instance]:
     </methodContext>
     <store>
       ...
-      OL |-> objectClosure(NewOL:Int, Obj:KList/*ObjLayers*/, ObjLocalClassesEnv:Map) :: _
+      OL |-> objectClosure(NewOL:Int, Obj:KList/*ObjLayers*/) :: _
       ...
     </store>
 when getKLabel(Body) =/=KLabel 'NoMethodBody

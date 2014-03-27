@@ -65,7 +65,7 @@ and we will be able to pick the correct enclosing object inside both O.A and O.B
 */
 rule [lookupQThis-next]:
     lookupQThis(Class:ClassType,
-      objectClosure(_, (_:KList/*ObjLayers*/,, layer(ObjClass,_, EnclosingObj:KResult, _),, _:KList/*ObjLayers*/), _)
+      objectClosure(_, (_:KList/*ObjLayers*/,, layer(ObjClass,_, EnclosingObj:KResult, _),, _:KList/*ObjLayers*/) )
         :: ObjClass:ClassType
     ) => lookupQThis(Class:ClassType, EnclosingObj)
 when
@@ -85,8 +85,8 @@ context lvalue('Field(HOLE,, _))
 rule [Field-instance]:
     'Field(
       objectClosure(_,
-          (_:KList/*ObjLayers*/,, layer(TargetClass, <env>... X |-> L:Int ...</env>, _,_),, _:KList/*ObjLayers*/), _
-        ) :: TargetClass:ClassType,,
+          (_:KList/*ObjLayers*/,, layer(TargetClass, <env>... X |-> L:Int ...</env>, _,_),, _:KList/*ObjLayers*/)
+      ) :: TargetClass:ClassType,,
       X:Id
     ) => typedLookup(L)
         [anywhere]
