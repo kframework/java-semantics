@@ -292,7 +292,16 @@ rule [localClassAugmentConsParams-augment]:
     <methods> sig(ConsName:Id, types(TList:KList,, (.KList => LocalEnvClass))) |-> _ ...</methods>
     <methodDecs>
       sig(ConsName:Id, types(TList:KList,, (.KList => LocalEnvClass)))
-      |-> (MClosure:K => addFormalParams(MClosure, 'Param(.K,, LocalEnvClass,, String2Id("$local_env"))))
+      |-> methodClosure(_, 'ListWrap(_:KList,, (.KList => 'Param(.K,, LocalEnvClass,, String2Id("$local_env")))),
+            _,_,_,_,
+            Body:K => 'ListWrap(
+              'ExprStm('Assign(
+                'Field('This(.KList),, String2Id("$local_env") ),,
+                'ExprName( String2Id("$local_env") )
+              )),,
+              Body
+            )
+          ) :: methodType(sig( Name:Id, types(TList:KList,, (.KList => LocalEnvClass)) ), _)
       ...
     </methodDecs>
 when
@@ -311,27 +320,6 @@ rule haveUnaugmentedConstructors(ConsName:Id, LocalEnvClass:ClassType,
                                  (sig(ConsName:Id, types(TList:KList)) |-> _) _:Map) => true
 when
     notBool getLastKListElement(TList) ==K LocalEnvClass
-
-//@ Add to the given methodClosure the given formal parameters
-syntax K ::= addFormalParams ( K, KList)                     [function]
-
-rule addFormalParams( methodClosure(_, 'ListWrap(ExistingParams:KList,, (.KList => NewParams)), _,_,_,_,
-                      Body:K => 'ListWrap(extraParamAssignments(NewParams),, Body)
-                      )
-                      ::methodType(sig( Name:Id, types(TList:KList) => getTypes(TList,, NewParams) ), _),
-                      NewParams:KList => .KList)
-when
-    length(NewParams) >Int 0
-
-rule addFormalParams( MClosure:K, .KList) => MClosure
-
-syntax K ::= extraParamAssignments( KList ) [function]
-
-rule extraParamAssignments('Param(_:K,,_:Type,,X:Id),, Rest:KList)
-     => 'ExprStm('Assign( 'Field('This(.KList),, X ),, 'ExprName( X ) )),,
-        extraParamAssignments(Rest:KList)
-
-rule extraParamAssignments(.KList) => .KList
 
 //@ Elaborates the given node and saves it to <elabBuffer>
 syntax K ::= appendToElabBuffer ( K ) //[strict, context(result(ElabKResult))] //K bug generalized strictness

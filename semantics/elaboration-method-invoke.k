@@ -171,12 +171,15 @@ rule [lookupMethod-to-lookupSignature]:
 /*If resolved method is static, we cannot insert in the construct the actual method body,
 because this body might not be elaborated.*/
 rule [lookupMethod-SigFound]:
-    lookupMethod(
-      _,_,_,
-      resultListWrap(ParamExps:KList),
-      methodClosure(_,_,_,_,_,_,_) :: methodType(sig( Name:Id, ArgTypes:Types ), _),
-      tempKResult => methodCastArguments(ArgTypes, ParamExps, .KList)
-    )
+    <k>
+      lookupMethod(
+        _,_,_,
+        resultListWrap(ParamExps:KList),
+        methodClosure(_,_,_,_,_,_,_) :: methodType(sig( Name:Id, ArgTypes:Types ), _),
+        tempKResult => methodCastArguments(ArgTypes, ParamExps, .KList)
+      )
+      ...
+    </k>
 
 syntax K ::=  methodCastArguments (
                 Types,      //ArgTypes - argument types
@@ -195,12 +198,15 @@ rule [methodCastArguments-end]:
     methodCastArguments(types(.KList), .KList, ExpectedParamExps:KList) => resultListWrap(ExpectedParamExps)
 
 rule [lookupMethod-end]:
-    lookupMethod(
-      _,_,_,_,
-      methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(sig( Name:Id, ArgTypes:Types ), RetT:Type),
-      resultListWrap(ExpectedParamExps:KList)
-    )
-    => methodLookupResult(RetT, ExpectedParamExps, CT)
+    <k>
+      lookupMethod(
+        _,_,_,_,
+        methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(sig( Name:Id, ArgTypes:Types ), RetT:Type),
+        resultListWrap(ExpectedParamExps:KList)
+      )
+      => methodLookupResult(RetT, ExpectedParamExps, CT)
+      ...
+    </k>
 
 /*@ Marker indicating that arguments of the following 'Invoke, 'QNewInstance, 'QSuperConstrInv, 'AltConstrInv
   have been elaborated.

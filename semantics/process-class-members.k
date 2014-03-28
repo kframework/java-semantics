@@ -222,15 +222,19 @@ rule [inherit]:
 
 //@ Returns the access mode of a method closure given as argument
 syntax K ::= getMethodAccessMode ( TypedVal )   [strict]
-rule getMethodAccessMode( methodClosure(_,_,_, Acc:AccessMode, _,_,_)::_ ) => Acc
+rule [getMethodAccessMode]:
+    <k>
+      getMethodAccessMode( methodClosure(_,_,_, Acc:AccessMode, _,_,_)::_ ) => Acc
+      ...
+    </k>
 
 //@ Returns the context type of a method closure given as argument
 syntax K ::= getMethodContextType ( TypedVal )  [strict]
-rule getMethodContextType( methodClosure(_,_, CT:ContextType, _,_,_,_) :: _ ) => CT
-
-//@ Returns the class in which this method was defined
-syntax K ::= getMethodDeclaringClass ( TypedVal )   [function]
-rule getMethodDeclaringClass( methodClosure(Class:ClassType, _,_,_,_,_,_)::_ ) => Class
+rule [getMethodContextType]:
+    <k>
+      getMethodContextType( methodClosure(_,_, CT:ContextType, _,_,_,_) :: _ ) => CT
+      ...
+    </k>
 
 //@ Returns the return type of a method closure given as argument
 syntax K ::= getMethodReturnType ( TypedVal )       [function]

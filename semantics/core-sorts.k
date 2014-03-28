@@ -238,6 +238,13 @@ syntax MetaType ::= "classMetaT" | "interfaceMetaT"
 
 syntax KResult ::= "noValue"
 
+/*@ Represents a reference to a method or constructor. */
+syntax KResult ::=  methodRef(
+                      RefType,    //Usually Class - class defining the method
+                                  //  Could also be array type, because we may invoke methods over arrays.
+                      Signature   //Method signature
+                    )
+
 /*@ A list of types. Elements are of sort Type. Used especially to denote argument types of a method.*/
 syntax Types ::=  types (
                     KList // List of Type elements, when processed

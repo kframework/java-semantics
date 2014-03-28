@@ -245,7 +245,11 @@ rule [getMethodDec-ClassType]:
 
 //@ Returns the defining class of the given method TypedVal.
 syntax K ::= getMethConsClosureClass ( TypedVal )                 [strict]
-rule getMethConsClosureClass( methodClosure(Class:ClassType, _,_,_,_,_,_) ::_ ) => Class
+rule [getMethConsClosureClass]:
+    <k>
+      getMethConsClosureClass( methodClosure(Class:ClassType, _,_,_,_,_,_) ::_ ) => Class
+      ...
+    </k>
         [structural]
 
 syntax K ::=  invokeImpl (
