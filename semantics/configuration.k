@@ -67,14 +67,20 @@ configuration
       <classes color="Red">
         <class multiplicity="*" color="Red">
 
-          //sort ClassType. Contains the fully qualified class name.
-          <classType color="Red"> .K </classType>
+          <cphDiscovered color="Yellow">
+            //sort ClassType. Contains the fully qualified class name.
+            <classType color="Red"> .K </classType>
 
-          //Either classMetaT or interfaceMetaT. Used in many semantics phases, including execution.
-          <metaType color="Maroon"> .K </metaType>
+            //Either classMetaT or interfaceMetaT. Used in many semantics phases, including execution.
+            <metaType color="Maroon"> .K </metaType>
 
-          //The major phase of <class> lifecycle. See ClassPhase definition.
-          <classPhase color="Maroon"> .K </classPhase>
+            //Class access mode - either public or package.
+            <accessMode color="Maroon"> .K </accessMode>
+
+            //The major phase of <class> lifecycle. See ClassPhase definition.
+            <classPhase color="Maroon"> .K </classPhase>
+
+          </cphDiscovered>
 
           <br/>
 
@@ -225,10 +231,6 @@ configuration
         //cell type: Map[PackageId->Map[Id->ClassType]], Id = simple name, ClassType = full name
         //Computed during ProcTypeNamesPhase. Used in all the elaboration phases.
         <namesToClasses color="OrangeRed"> .Map </namesToClasses>
-
-        //cell type: Map[ClassType->AccessMode]
-        //Computed during ProcTypeNamesPhase. Used in ProcCompUnitsPhase, module PROCESS-IMPORTS
-        <classesToAccessModes color="OrangeRed"> .Map </classesToAccessModes>
 
       </phTN>
 

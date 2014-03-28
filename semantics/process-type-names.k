@@ -93,9 +93,13 @@ rule [processTypeNames]:
       )
       ...
     </namesToClasses>
-    <classesToAccessModes>
-      _ (. => getClassType(PackId,SimpleClass) |-> getAccessMode(Modifiers))
-    </classesToAccessModes>
+    ( . =>  <class>
+              <classType> getClassType(PackId,SimpleClass) </classType>
+              <metaType> getMetaType(DecLabel) </metaType>
+              <classPhase> DiscoveredCPhase </classPhase>
+              <accessMode> getAccessMode(Modifiers) </accessMode>
+              ...
+            </class> )
 when DecLabel ==KLabel 'ClassDec orBool DecLabel ==KLabel 'InterfaceDec
 
 rule [processTypeNames-ElemDiscard]:
@@ -115,6 +119,15 @@ rule processInnerTypes('ClassBody('ListWrap(Ks:KList)), Pack:PackageId) => proce
 rule processInnerTypes('ListWrap(Ks:KList), Pack:PackageId) => processTypeNames(Ks, Pack)             //interface body
 
 /*@ \subsection{Auxiliary constructs}*/
+
+/*@ Computes the metaType based on type declaration label*/
+syntax K ::=  getMetaType (
+                KLabel //type declaration label
+              )
+              [function]
+
+rule getMetaType('ClassDec) => classMetaT
+rule getMetaType('InterfaceDec) => interfaceMetaT
 
 //@ Converts a pair of PackagId, Id into a fully qualified class name
 syntax K ::=  getClassType (

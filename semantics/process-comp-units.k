@@ -133,38 +133,34 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
       ~> processTypeDecsInPCUPhase(Decls, toPackage(Class), Class)
       ...
     </k>
-    ( . =>  <class>
-              <classType> Class </classType>
-              <enclosingClass> OuterClass </enclosingClass>
-              <rawExtends> BaseClassRaw </rawExtends>
-              <rawImplements> ImplTypesRaw </rawImplements>
-              <rawDeclarations>
-                'ListWrap(
-                    //default constructor
-                    //if there is a no-arguments constructor in Decls, it will overwrite this one
-                    'ConstrDec(
-                      'ConstrDecHead(
-                        'ListWrap('Public(.KList)),,
-                        'None(.KList),,
-                        getSimpleName(Class),,
-                        'ListWrap(.KList),,
-                        'None(.KList)
-                      ),,
-                      'ConstrBody('None(.KList),, 'ListWrap(.KList))
-                    ),,
-                    Decls
-                )
-              </rawDeclarations>
-              <metaType> classMetaT </metaType>
-              <classPhase> CreatedCPhase </classPhase>
-              <classContextType>
-                #if OuterClass ==K noClass
-                  #then staticCT
-                  #else getContextType(Modifiers)
-                #fi
-              </classContextType>
-              ...
-            </class> )
+    <classType> Class </classType>
+    <classPhase> DiscoveredCPhase => StoredCPhase </classPhase>
+    <enclosingClass> _ => OuterClass </enclosingClass>
+    <rawExtends> _ => BaseClassRaw </rawExtends>
+    <rawImplements> _ => ImplTypesRaw </rawImplements>
+    <rawDeclarations>
+      _ => 'ListWrap(
+                //default constructor
+                //if there is a no-arguments constructor in Decls, it will overwrite this one
+                'ConstrDec(
+                  'ConstrDecHead(
+                    'ListWrap('Public(.KList)),,
+                    'None(.KList),,
+                    getSimpleName(Class),,
+                    'ListWrap(.KList),,
+                    'None(.KList)
+                  ),,
+                  'ConstrBody('None(.KList),, 'ListWrap(.KList))
+                ),,
+                Decls
+            )
+    </rawDeclarations>
+    <classContextType>
+      _ =>  #if OuterClass ==K noClass
+              #then staticCT
+              #else getContextType(Modifiers)
+            #fi
+    </classContextType>
 
 syntax KLabel ::= "'InterfaceDec"
                 | "'InterfaceDecHead"
@@ -185,17 +181,13 @@ rule [processTypeDecsInPCUPhase-IInterfaceDec]:
       ~> processTypeDecsInPCUPhase(Decls, toPackage(Class), Class)
       ...
     </k>
-    ( . =>  <class>
-              <classType> Class </classType>
-              <enclosingClass> OuterClass </enclosingClass>
-              <rawExtends> noClass </rawExtends>
-              <rawImplements> ImplTypesRaw </rawImplements>
-              <rawDeclarations> 'ListWrap(Decls) </rawDeclarations>
-              <metaType> interfaceMetaT </metaType>
-              <classPhase> CreatedCPhase </classPhase>
-              <classContextType> staticCT </classContextType>
-              ...
-            </class> )
+    <classType> Class </classType>
+    <classPhase> DiscoveredCPhase => StoredCPhase </classPhase>
+    <enclosingClass> _ => OuterClass </enclosingClass>
+    <rawExtends> _ => noClass </rawExtends>
+    <rawImplements> _ => ImplTypesRaw </rawImplements>
+    <rawDeclarations> _ => 'ListWrap(Decls) </rawDeclarations>
+    <classContextType> _ => staticCT </classContextType>
 
 /*@ If the given type is top-level, then save <imports> from the <compUnitImports> cell.
 Otherwise do nothing.*/

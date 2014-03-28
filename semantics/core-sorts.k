@@ -26,7 +26,7 @@ syntax GlobalPhase ::=
         <rawDeclarations>
         <metaType>
         <cuImports> - imports of the enclosing CU, for top-level classes only.
-      A class first registered in a <class> cell is in the state CreatedCPhase.
+      A class first registered in a <class> cell is in the state StoredCPhase.
     */
   | "ProcCompUnitsPhase"
 
@@ -68,7 +68,8 @@ syntax GlobalPhase ::=
 
 /*@ the class phase. See configuration documentation for details.*/
 syntax ClassPhase ::=
-    "CreatedCPhase"
+    "DiscoveredCPhase"
+  | "StoredCPhase"
   | "BasesResolvedCPhase"
   | "DecsProcessedCPhase"
   | "MembersProcessedCPhase"

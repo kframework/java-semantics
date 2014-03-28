@@ -13,7 +13,7 @@ rule [ProcClassDecsPhase-start]:
     <k> . => processClassDecs(getTopLevelClasses) </k>
     <globalPhase> ProcCompUnitsPhase => ProcClassDecsPhase  </globalPhase>
 
-//@ Processes all classes from CreatedCPhase to DecsProcessedCPhase.
+//@ Processes all classes from StoredCPhase to DecsProcessedCPhase.
 syntax K ::=  processClassDecs (
                 K //setWrap(Set) - the set of all classes
               )
@@ -21,7 +21,7 @@ syntax K ::=  processClassDecs (
 
 /*@ Question: how do we know if bases were already resolved for this class or not?
   Answer: When resolveBases(Class) is consumed by the rule [resolveBasesEnd], the class
-  changes its state: CreatedCPhase => BasesResolvedCPhase
+  changes its state: StoredCPhase => BasesResolvedCPhase
 */
 rule [processClassDecs-resolveBases-TopLevel-Start]:
     <k>
@@ -37,7 +37,7 @@ rule [processClassDecs-resolveBases-TopLevel-Start]:
     <rawImplements> 'ListWrap(RawImplements:KList) </rawImplements>
     <enclosingClass> noClass </enclosingClass>
     <cuImports> CuImports:Map </cuImports>
-    <classPhase> CreatedCPhase </classPhase>
+    <classPhase> StoredCPhase </classPhase>
 
 rule [processClassDecs-resolveBases-Inner-Start]:
     <k>
@@ -53,7 +53,7 @@ rule [processClassDecs-resolveBases-Inner-Start]:
       <rawExtends> RawExtends:K </rawExtends>
       <rawImplements> 'ListWrap(RawImplements:KList) </rawImplements>
       <enclosingClass> OuterClass:ClassType </enclosingClass>
-      <classPhase> CreatedCPhase </classPhase>
+      <classPhase> StoredCPhase </classPhase>
       ...
     </class>
     <class>
@@ -64,7 +64,7 @@ rule [processClassDecs-resolveBases-Inner-Start]:
 when
     OuterClassPhase ==K DecsProcessedCPhase orBool OuterClassPhase ==K MembersProcessedCPhase
 
-//@ Process the given class from CreatedCPhase to BasesResolvedCPhase.
+//@ Process the given class from StoredCPhase to BasesResolvedCPhase.
 syntax K ::=  resolveBases (
                 ClassType,  //The class for which we resolve bases
                 K,          //Base class
@@ -80,7 +80,7 @@ rule [resolveBases]:
     <rawExtends> _ => BaseClass </rawExtends>
     <rawImplements> _ => 'ListWrap(ImplTypes) </rawImplements>
     <unprocessedBases> .K => 'ListWrap(BaseClass,,ImplTypes) </unprocessedBases>
-    <classPhase> CreatedCPhase => BasesResolvedCPhase </classPhase>
+    <classPhase> StoredCPhase => BasesResolvedCPhase </classPhase>
 when isKResult(ImplTypes)
 
 rule [processClassDecs-mark-Base-Processed]:

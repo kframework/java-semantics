@@ -43,20 +43,24 @@ rule [TypeImportOnDemandDec]:
     <namesToClasses>... Pack |-> mapWrap(PackMap:Map) ...</namesToClasses>
     <compUnitImports> Imp:Map </compUnitImports>
 
-//import to <compUnitImports> cell public packages in the given map.
-syntax K ::= importOnDemandImpl ( Map )
+//@ Imports to <compUnitImports> cell public classes from the given map. Classes with package access are ignored.
+syntax K ::=  importOnDemandImpl (
+                Map //Map[X |-> Class] - classes to consider for importing.
+              )
 
 rule [importOnDemandImpl-public]:
     <k> importOnDemandImpl((X:Id |-> Class:ClassType => .) _) ...</k>
     <compUnitImports> Imp:Map => Imp[Class / X] </compUnitImports>
-    <classesToAccessModes>... Class |-> public ...</classesToAccessModes>
+    <classType> Class </classType>
+    <accessMode> public </accessMode>
 
 rule [importOnDemandImpl-package]:
     <k> importOnDemandImpl((X:Id |-> Class:ClassType => .) _) ...</k>
-    <classesToAccessModes>... Class |-> package ...</classesToAccessModes>
+    <classType> Class </classType>
+    <accessMode> package </accessMode>
 
 rule [importOnDemandImpl-discard]:
-    importOnDemandImpl(.) => .K
+    importOnDemandImpl(.Map) => .K
 
 /*@ Importing a nonexistent package have no effect.
 This is required because some tests import some packages from JDK that are not included in
