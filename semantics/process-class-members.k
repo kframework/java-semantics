@@ -161,14 +161,14 @@ rule [tryInheritImpl]:
     <k>
       tryInheritImpl(Sig:K |-> DecClass:ClassType)
       => ifAux(
-            isInheritable(getMethodAccessMode(TV)),
+            isInheritable(getMethodAccessMode(TMClosure)),
             inherit(Sig |-> DecClass),
             .K
           )
       ...
     </k>
     <classType> DecClass </classType>
-    <methodDecs>... Sig |-> TV:TypedVal ...</methodDecs>
+    <methodDecs>... Sig |-> TMClosure:TMethClosure ...</methodDecs>
 
 rule [tryInheritImpl-empty-Discard]: tryInheritImpl(.Map) => .
 
@@ -221,7 +221,7 @@ rule [inherit]:
     </class>
 
 //@ Returns the access mode of a method closure given as argument
-syntax K ::= getMethodAccessMode ( TypedVal )   [strict]
+syntax K ::= getMethodAccessMode ( TMethClosure )   [strict]
 rule [getMethodAccessMode]:
     <k>
       getMethodAccessMode( methodClosure(_,_,_, Acc:AccessMode, _,_,_)::_ ) => Acc
@@ -229,7 +229,7 @@ rule [getMethodAccessMode]:
     </k>
 
 //@ Returns the context type of a method closure given as argument
-syntax K ::= getMethodContextType ( TypedVal )  [strict]
+syntax K ::= getMethodContextType ( TMethClosure )  [strict]
 rule [getMethodContextType]:
     <k>
       getMethodContextType( methodClosure(_,_, CT:ContextType, _,_,_,_) :: _ ) => CT
@@ -237,7 +237,7 @@ rule [getMethodContextType]:
     </k>
 
 //@ Returns the return type of a method closure given as argument
-syntax K ::= getMethodReturnType ( TypedVal )       [function]
+syntax K ::= getMethodReturnType ( TMethClosure )       [function]
 rule getMethodReturnType( _::methodType(_, T:Type ) ) => T
 
 /*@ \subsection{Method declaration}
@@ -295,7 +295,7 @@ syntax K ::=  storeMethod (
                 RoutineType, //either methodRT or constructorRT
                 K,           //FirstLine for constructor, noValue for method.
                 K,           //S - method body
-                MethodType   //method closure type: methodType(Signature, ReturnType)
+                MethType     //method closure type: methodType(Signature, ReturnType)
               )
 
 rule [storeMethod]:

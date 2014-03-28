@@ -311,7 +311,6 @@ rule [localClassAugmentConsParams-end]:
     <k> localClassAugmentConsParams(LocalClass:ClassType, ConsName:Id, LocalEnvClass:ClassType) => .K ...</k>
     <classType> LocalClass </classType>
     <methods> Methods:Map </methods>
-    <methodDecs> MethodDecs:Map </methodDecs>
 when
     notBool haveUnaugmentedConstructors(ConsName, LocalEnvClass, Methods) ==K true
 

@@ -143,7 +143,7 @@ configuration
               Used in elaboration of method calls.*/
             <methods color="Blue"> .Map </methods>
 
-            /*All methods declared in this class. Map[Sig -> methodClosure :: MethodType ]
+            /*All methods declared in this class. Map[Sig -> methodClosure :: MethType ]
               Used in elaboration of method calls.*/
             <methodDecs color="Blue"> .Map </methodDecs>
 

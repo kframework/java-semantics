@@ -91,7 +91,6 @@ syntax PrimitiveType ::= NumericType | "bool"
 
 syntax Type ::= PrimitiveType
               | RefType
-              | MethodType
               | "void"
 
 /*@ The interface of a method - signature and return type.
@@ -184,38 +183,6 @@ syntax RawRefVal ::=  arrayRef (
 
 syntax RawRefVal ::= String | "null"
 
-/*@ Represents either a method or a constructor. This record contains all the information stored in the
-    method/constructor definition, except the name, plus other info:
-\begin{itemize}
-\item Class:ClassType -- class defining the method
-\item 'ListWrap(Params):K -- params
-\item ContextType -- Either staticCT, instanceCT
-\item AccessMode -- The access mode
-\item RoutineType -- Either methodRT or constructorRT
-\item K -- first line, constructors only. Either of:
-  \begin{itemize}
-  \item 'SuperInv -- superclass constructor invocation
-  \item 'AltConstrInv -- alternate this class constructor invocation
-  \item .K -- none, if this class is Object
-  \end{itemize}
-    For methods this argument is noValue
-\item S:K -- method body
-\end{itemize}
-*/
-syntax RawVal ::= methodClosure (
-                    RefType,      // Usually Class - class defining the method
-                                  // Could also be array type, because we may invoke methods over arrays.
-                    K,            // 'ListWrap(Params) - params
-                    ContextType,  // Either staticCT, instanceCT
-                    AccessMode,   // The access mode
-                    RoutineType,  // Either methodRT or constructorRT
-                    K,            // first line, constructors only. Either of:
-                                  //   'SuperInv - superclass constructor invocation
-                                  //   'AltConstrInv - alternate this class constructor invocation
-                                  //   .K - none, if this class is Object
-                                  //   For methods this argument is noValue
-                    K             // S - method body
-                  )
 /*@ A typed value is a pair of of a raw value and a type. Anywhere during execution we will evaluated typed expressions
     into typed values, never into raw values alone.
 */
@@ -237,6 +204,50 @@ syntax RoutineType ::= "methodRT" | "constructorRT"
 syntax MetaType ::= "classMetaT" | "interfaceMetaT"
 
 syntax KResult ::= "noValue"
+
+/*@ Represents either a method or a constructor. This record contains all the information stored in the
+    method/constructor definition, except the name, plus other info:
+\begin{itemize}
+\item Class:ClassType -- class defining the method
+\item 'ListWrap(Params):K -- params
+\item ContextType -- Either staticCT, instanceCT
+\item AccessMode -- The access mode
+\item RoutineType -- Either methodRT or constructorRT
+\item K -- first line, constructors only. Either of:
+  \begin{itemize}
+  \item 'SuperInv -- superclass constructor invocation
+  \item 'AltConstrInv -- alternate this class constructor invocation
+  \item .K -- none, if this class is Object
+  \end{itemize}
+    For methods this argument is noValue
+\item S:K -- method body
+\end{itemize}
+*/
+syntax MethClosure ::=  methodClosure (
+                          RefType,      // Usually Class - class defining the method
+                                        // Could also be array type, because we may invoke methods over arrays.
+                          K,            // 'ListWrap(Params) - params
+                          ContextType,  // Either staticCT, instanceCT
+                          AccessMode,   // The access mode
+                          RoutineType,  // Either methodRT or constructorRT
+                          K,            // first line, constructors only. Either of:
+                                        //   'SuperInv - superclass constructor invocation
+                                        //   'AltConstrInv - alternate this class constructor invocation
+                                        //   .K - none, if this class is Object
+                                        //   For methods this argument is noValue
+                          K             // S - method body
+                        )
+
+/*@ The interface of a method - signature and return type.
+*/
+syntax MethType   ::= methodType (
+                        Signature,  // method signature
+                        Type        // return type
+                      )
+
+syntax TMethClosure ::= MethClosure "::" MethType
+                      | "noMethod"
+syntax KResult ::= TMethClosure
 
 /*@ Represents a reference to a method or constructor. */
 syntax KResult ::=  methodRef(
