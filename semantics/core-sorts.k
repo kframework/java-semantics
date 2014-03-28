@@ -93,13 +93,6 @@ syntax Type ::= PrimitiveType
               | RefType
               | "void"
 
-/*@ The interface of a method - signature and return type.
-*/
-syntax MethodType ::= methodType (
-                        Signature,  // method signature
-                        Type        // return type
-                      )
-
 /*@ A method signature. Required to be KResult by rules in METHOD-INVOKE.*/
 syntax Signature ::= sig ( Id, Types )
 syntax KResult ::= Signature
@@ -223,38 +216,34 @@ syntax KResult ::= "noValue"
 \item S:K -- method body
 \end{itemize}
 */
-syntax MethClosure ::=  methodClosure (
-                          RefType,      // Usually Class - class defining the method
-                                        // Could also be array type, because we may invoke methods over arrays.
-                          K,            // 'ListWrap(Params) - params
-                          ContextType,  // Either staticCT, instanceCT
-                          AccessMode,   // The access mode
-                          RoutineType,  // Either methodRT or constructorRT
-                          K,            // first line, constructors only. Either of:
-                                        //   'SuperInv - superclass constructor invocation
-                                        //   'AltConstrInv - alternate this class constructor invocation
-                                        //   .K - none, if this class is Object
-                                        //   For methods this argument is noValue
-                          K             // S - method body
-                        )
-
-/*@ The interface of a method - signature and return type.
-*/
-syntax MethType   ::= methodType (
-                        Signature,  // method signature
-                        Type        // return type
-                      )
-
-syntax TMethClosure ::= MethClosure "::" MethType
-                      | "noMethod"
-syntax KResult ::= TMethClosure
+syntax TMethClosure ::= "methodClosure" "("
+                          RefType ","      // Usually Class - class defining the method
+                                           // Could also be array type, because we may invoke methods over arrays.
+                          K ","            // 'ListWrap(Params) - params
+                          ContextType ","  // Either staticCT, instanceCT
+                          AccessMode ","   // The access mode
+                          RoutineType ","  // Either methodRT or constructorRT
+                          K ","            // first line, constructors only. Either of:
+                                           //   'SuperInv - superclass constructor invocation
+                                           //   'AltConstrInv - alternate this class constructor invocation
+                                           //   .K - none, if this class is Object
+                                           //   For methods this argument is noValue
+                          K                // S - method body
+                        ")"
+                        "::"
+                        "methodType" "("
+                          Signature ","    // method signature
+                          Type             // return type
+                        ")"
 
 /*@ Represents a reference to a method or constructor. */
-syntax KResult ::=  methodRef(
-                      RefType,    //Usually Class - class defining the method
-                                  //  Could also be array type, because we may invoke methods over arrays.
-                      Signature   //Method signature
-                    )
+syntax MethodRef ::=   methodRef(
+                            Signature,  //Method signature
+                            RefType     //Usually Class - class defining the method
+                                        //  Could also be array type, because we may invoke methods over arrays.
+                          )
+                        | "noMethodRef"
+syntax KResult ::= MethodRef
 
 /*@ A list of types. Elements are of sort Type. Used especially to denote argument types of a method.*/
 syntax Types ::=  types (

@@ -158,21 +158,16 @@ rule [tryInheritImpl-Unfold]:
     <k> (. => tryInheritImpl(MI)) ~> tryInheritImpl( (MI:MapItem => .) _:MapItem _) ...</k>
 
 rule [tryInheritImpl]:
-    <k>
-      tryInheritImpl(Sig:K |-> DecClass:ClassType)
-      => ifAux(
-            isInheritable(getMethodAccessMode(TMClosure)),
-            inherit(Sig |-> DecClass),
-            .K
-          )
-      ...
-    </k>
-    <classType> DecClass </classType>
-    <methodDecs>... Sig |-> TMClosure:TMethClosure ...</methodDecs>
+    tryInheritImpl(Sig:K |-> DecClass:ClassType)
+    => ifAux(
+          isInheritable(getMethodAccessMode(methodRef(Sig, DecClass))),
+          inherit(methodRef(Sig, DecClass)),
+          .K
+       )
 
 rule [tryInheritImpl-empty-Discard]: tryInheritImpl(.Map) => .
 
-syntax K ::= isInheritable ( K )                        [strict]
+syntax K ::= isInheritable ( AccessMode )                        [strict]
 
 rule [isInheritable]:
     <k>
@@ -204,41 +199,36 @@ rule isAccessibleForOverwriting(BaseClass:ClassType, package, SubClass:ClassType
 
 rule isAccessibleForOverwriting(_, private, _) => false
 
-/*@ Inherit a list of methods by the current class. The inherited methods overwrite previous methods
+/*@ Inherit a method by the current class. The inherited method overwrites previous methods
   with the same signature in <methods>
 */
-syntax K ::=  inherit (
-                Map //Map[Signature |-> ClassType] - the map of signatures
-              )
+syntax K ::=  inherit ( MethodRef )
 
 rule [inherit]:
-    <k> inherit(Sig:K |-> DeclClass:ClassType) => . ...</k>
+    <k> inherit(methodRef(Sig:Signature, DecClass:ClassType)) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
-    <class>
-      <classType> Class </classType>
-      <methods> Env:Map => Env[DeclClass/Sig] </methods>
-      ...
-    </class>
+    <classType> Class </classType>
+    <methods> Env:Map => Env[DecClass/Sig] </methods>
 
 //@ Returns the access mode of a method closure given as argument
-syntax K ::= getMethodAccessMode ( TMethClosure )   [strict]
+syntax K ::= getMethodAccessMode ( MethodRef )   [strict]
 rule [getMethodAccessMode]:
     <k>
-      getMethodAccessMode( methodClosure(_,_,_, Acc:AccessMode, _,_,_)::_ ) => Acc
+      getMethodAccessMode( methodRef(Sig:Signature, Class:ClassType) ) => Acc
       ...
     </k>
+    <classType> Class </classType>
+    <methodDecs> Sig |-> methodClosure(_,_,_, Acc:AccessMode, _,_,_):: methodType(_,_) ...</methodDecs>
 
 //@ Returns the context type of a method closure given as argument
-syntax K ::= getMethodContextType ( TMethClosure )  [strict]
+syntax K ::= getMethodContextType ( MethodRef )  [strict]
 rule [getMethodContextType]:
     <k>
-      getMethodContextType( methodClosure(_,_, CT:ContextType, _,_,_,_) :: _ ) => CT
+      getMethodContextType( methodRef(Sig:Signature, Class:ClassType) ) => CT
       ...
     </k>
-
-//@ Returns the return type of a method closure given as argument
-syntax K ::= getMethodReturnType ( TMethClosure )       [function]
-rule getMethodReturnType( _::methodType(_, T:Type ) ) => T
+    <classType> Class </classType>
+    <methodDecs> Sig |-> methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(_,_) ...</methodDecs>
 
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
@@ -266,7 +256,7 @@ rule [MethodDec]:
       )
       => storeMethod('ListWrap(Params),
             getContextType(Modifiers), getAccessMode(Modifiers), isSynchronized(Modifiers), methodRT, noValue, Body,
-            methodType(sig(Name, getTypes(Params)), ReturnType))
+            sig(Name, getTypes(Params)), ReturnType)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -289,19 +279,20 @@ rule [AbstractMethodDec]:
 
 syntax K ::=  storeMethod (
                 K,           //'ListWrap(Params)
-                K,           //will evaluate to ContextType - staticCT or instanceCT
-                K,           //will evaluate to AccessMode
-                K,           //IsSync:bool - whether method is synchronized or not
+                ContextType, //will evaluate to ContextType - staticCT or instanceCT
+                AccessMode,  //will evaluate to AccessMode
+                TypedVal,    //IsSync:bool - whether method is synchronized or not
                 RoutineType, //either methodRT or constructorRT
                 K,           //FirstLine for constructor, noValue for method.
                 K,           //S - method body
-                MethType     //method closure type: methodType(Signature, ReturnType)
+                Signature,   //method signature
+                Type         //method return type
               )
 
 rule [storeMethod]:
     <k>
       storeMethod('ListWrap(Params:KList), CT:ContextType, Acc:AccessMode, false::bool, RT:RoutineType, FirstLine:K,
-                  Body:K, methodType(Sig:Signature, ReturnType:Type)) => .
+                  Body:K, Sig:Signature, ReturnType:Type) => .
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -372,7 +363,7 @@ rule [ConstrDec]:
             #fi,,
             BodyKs
           ),
-          methodType(sig(getConsName(Class), getTypes(Params)), void))
+          sig(getConsName(Class), getTypes(Params)), void)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -499,7 +490,7 @@ rule [convertInstanceInitIntoMethod]:
     <k>
       convertInstanceInitIntoMethod
       => storeMethod('ListWrap(.KList), instanceCT, private, false::bool, methodRT, noValue, 'Block(InstanceInit),
-                      methodType(sig(String2Id("$instance_init"), types(.KList)), void))
+                      sig(String2Id("$instance_init"), types(.KList)), void)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>

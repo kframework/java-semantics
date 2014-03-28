@@ -52,7 +52,7 @@ rule [Invoke-Method-Instance-On-Class]:
       => invokeImpl(
         lookupOverloadedMethod(
           sig(Name, getTypes(ParamVals)), getClassList(Rest,, layer(Class, BI, EnclosingObj)),
-          mapWrap(.Map), noMethod
+          mapWrap(.Map), noMethodRef
         ),
         loc(OL)::Class, 'ListWrap(ParamVals)
       )
@@ -66,7 +66,7 @@ when
 rule [Invoke-Method-Static-On-Class]:
     'Invoke('Method('MethodName(Class:ClassType,, Name:Id )),, 'ListWrap(ParamVals:KList) )
     => invokeImpl(
-      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), Class, mapWrap(.Map), noMethod),
+      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), Class, mapWrap(.Map), noMethodRef),
       noValue, 'ListWrap(ParamVals)
     )
 when
@@ -84,7 +84,7 @@ rule [Invoke-Method-Instance-On-Interface]:
         'ListWrap(ParamVals:KList)
       )
       => invokeImpl(
-        lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), ActualClass, mapWrap(.Map), noMethod),
+        lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), ActualClass, mapWrap(.Map), noMethodRef),
         loc(OL)::Class, 'ListWrap(ParamVals)
       )      ...
     </k>
@@ -101,7 +101,7 @@ rule [Invoke-Method-On-other]:
       'ListWrap(ParamVals:KList)
     )
     => invokeImpl(
-      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), getLookupTargetType(QualT), mapWrap(.Map), noMethod),
+      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), getLookupTargetType(QualT), mapWrap(.Map), noMethodRef),
       QualRV::QualT, 'ListWrap(ParamVals)
     )
 when
@@ -156,7 +156,7 @@ syntax K ::=  lookupOverloadedMethod (
                          // from derived to base.
                          // To be processed from base to derived when methods map will be exhausted.
                 K,       //mapWrap(Map) - methods map of current LayerClass
-                TMethClosure  //method closure of the most specific method found so far
+                MethodRef  //method closure of the most specific method found so far
                               // or noValue if no applicable method was found yet
               )
               [strict(1,3,4)]
@@ -171,7 +171,7 @@ rule [lookupOverloadedMethod-SigKnownFirstCandidate]:
       Sig:Signature,
       _,
       mapWrap( (Sig |-> DecClass:ClassType _:Map) => .Map ),
-      noMethod => getMethodDec(Sig, DecClass)
+      noMethodRef => methodRef(Sig, DecClass)
     )
 
 rule [lookupOverloadedMethod-SigKnownOtherCandidates]:
@@ -180,24 +180,22 @@ rule [lookupOverloadedMethod-SigKnownOtherCandidates]:
         Sig:Signature,
         _,
         mapWrap( (Sig |-> NewDecClass:ClassType => .) _:Map ),
-        OldTMClosure:TMethClosure
+        OldMethodRef:MethodRef
         => 'If(
               'LazyAnd(
-                (eqAux(getMethodContextType(OldTMClosure), instanceCT)),,
+                (eqAux(getMethodContextType(OldMethodRef), instanceCT)),,
                 isAccessibleForOverwriting(
-                  getMethConsClosureClass(OldTMClosure),
-                  getMethodAccessMode(OldTMClosure),
-                  getMethConsClosureClass(NewTMClosure)
+                  getMethConsClosureClass(OldMethodRef),
+                  getMethodAccessMode(OldMethodRef),
+                  NewDecClass
                 )
               ),,
-              NewTMClosure,,
-              OldTMClosure
+              methodRef(Sig, NewDecClass),,
+              OldMethodRef
             )
       )
       ...
     </k>
-    <classType> NewDecClass </classType>
-    <methodDecs>...Sig |-> NewTMClosure:TMethClosure ...</methodDecs>
 
 rule [lookupOverloadedMethod-SigKnownEntryDiscard]:
     lookupOverloadedMethod(
@@ -218,12 +216,7 @@ rule [lookupOverloadedMethod-SigKnownLayerDiscard]:
     )
 
 rule [lookupOverloadedMethod-SigKnownEnd]:
-    lookupOverloadedMethod(
-      _,
-      .KList,
-      mapWrap(.Map),
-     TMClosure:TMethClosure
-    ) => TMClosure
+    lookupOverloadedMethod(_, .KList, mapWrap(.Map), MethodRef:MethodRef ) => MethodRef
 
 //@ Retrieve the content of <methods> for the given class
 syntax K ::=  getMethods ( ClassType )
@@ -232,28 +225,14 @@ rule [getMethods-ClassType]:
     <classType> Class </classType>
     <methods> Methods:Map </methods>
 
-/*@ Returns the method declaration (stored in <methodDecs>) based on provided signature and declaring type*/
-syntax K ::=  getMethodDec (
-                Signature,  // The signature of the method
-                ClassType   // The declaring class.
-              )
-
-rule [getMethodDec-ClassType]:
-    <k> getMethodDec(Sig:Signature, DeclClass:ClassType) => NewTMClosure ...</k>
-    <classType> DeclClass </classType>
-    <methodDecs>... Sig |-> NewTMClosure:TMethClosure ...</methodDecs>
-
 //@ Returns the defining class of the given method TypedVal.
-syntax K ::= getMethConsClosureClass ( TMethClosure )                 [strict]
+syntax K ::= getMethConsClosureClass ( MethodRef )                 [strict]
 rule [getMethConsClosureClass]:
-    <k>
-      getMethConsClosureClass( methodClosure(Class:ClassType, _,_,_,_,_,_) ::_ ) => Class
-      ...
-    </k>
+    getMethConsClosureClass( methodRef(_, Class:ClassType) ) => Class
         [structural]
 
 syntax K ::=  invokeImpl (
-                K,  //lookupOverloadedMethod statement, evaluates to typed methodClosure
+                MethodRef,  //lookupOverloadedMethod statement, evaluates to typed methodClosure
                 K,  //KResult - method call target
                     //  loc(OL)::_ - object location, target type for methods on non-object refs,
                     //  typed string or array, or noValue for static methods
@@ -269,8 +248,7 @@ and then pop it when the method returns. */
 rule [invokeImpl-Instance]:
     <k>
       invokeImpl(
-        methodClosure(Class:ClassType, 'ListWrap(Params:KList), instanceCT, _,methodRT, noValue, Body:K)
-            :: methodType(_, T:Type),
+        methodRef(Sig:Signature, Class:ClassType),
         loc(OL:Int)::_,
         'ListWrap(ParamValues:KList)
       ) ~> K:K
@@ -307,13 +285,14 @@ rule [invokeImpl-Instance]:
       OL |-> objectClosure(NewOL:Int, Obj:KList/*ObjLayers*/) :: _
       ...
     </store>
+    <classType> Class </classType>
+    <methodDecs> Sig |-> methodClosure(Class, 'ListWrap(Params:KList), instanceCT, _,methodRT, noValue, Body:K) :: methodType(_, T:Type) ...</methodDecs>
 when getKLabel(Body) =/=KLabel 'NoMethodBody
 
 rule [invokeImpl-Static]:
     <k>
       invokeImpl(
-        methodClosure(Class:ClassType, 'ListWrap(Params:KList), staticCT, _,methodRT, _, Body:K)
-            :: methodType(_, T:Type),
+        methodRef(Sig:Signature, Class:ClassType),
         noValue,
         'ListWrap(ParamValues:KList)
       ) ~> K:K
@@ -345,6 +324,8 @@ rule [invokeImpl-Static]:
       </crntObj>
       RestMethContext:Bag
     </methodContext>
+    <classType> Class </classType>
+    <methodDecs> Sig |-> methodClosure(Class, 'ListWrap(Params:KList), staticCT, _,methodRT, _, Body:K) :: methodType(_, T:Type) ...</methodDecs>
 
 //@ 'Param(_:K,, T:Type,, X:Id)
 syntax KLabel ::= "'Param"

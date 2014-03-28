@@ -132,7 +132,7 @@ syntax K ::=  lookupMethod (
                 Bool,     //QualIsThis - true if qualifier is cast(_, 'QThis(_)) or cast(_, superMethod(_))
                 Id,       //method name
                 K,        //resultListWrap(ParamExps) - parameter expressions of type Cast
-                TMethClosure, //Evaluates to the signature to be called, or noValue if no signature was found yet
+                MethodRef, //Evaluates to the signature to be called, or noValue if no signature was found yet
                               // Sig format: mapWrap(Sig |-> MethodTV)
                               // Initialized with noMethod
                 K         //Evaluates to the method arguments casted to expected argument types
@@ -141,7 +141,7 @@ syntax K ::=  lookupMethod (
               [strict(4, 5, 6)]
 
 rule lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, ParamExpsWrap:K)
-     => lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, ParamExpsWrap:K, noMethod, tempKResult)
+     => lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, ParamExpsWrap:K, noMethodRef, tempKResult)
 
 /*@ A Temporary KResult that prevents this term to be heated before it is transformed by another rule int a proper
   term to be heated. This is not a final KResult in its surrounding context. Basically, this term is used to cheat
@@ -163,23 +163,20 @@ rule [lookupMethod-to-lookupSignature]:
       QualIsThis:Bool,
       MethodName:Id,
       resultListWrap(ParamExps:KList),
-      noMethod => lookupSignature(MethodName, getTypes(ParamExps), getMethods(QualClass),
-                                  notBool QualIsThis, noMethod, QualClass),
+      noMethodRef => lookupSignature(MethodName, getTypes(ParamExps), getMethods(QualClass),
+                                  notBool QualIsThis, noMethodRef, QualClass),
       tempKResult
     )
 
 /*If resolved method is static, we cannot insert in the construct the actual method body,
 because this body might not be elaborated.*/
 rule [lookupMethod-SigFound]:
-    <k>
-      lookupMethod(
-        _,_,_,
-        resultListWrap(ParamExps:KList),
-        methodClosure(_,_,_,_,_,_,_) :: methodType(sig( Name:Id, ArgTypes:Types ), _),
-        tempKResult => methodCastArguments(ArgTypes, ParamExps, .KList)
-      )
-      ...
-    </k>
+    lookupMethod(
+      _,_,_,
+      resultListWrap(ParamExps:KList),
+      methodRef(sig( Name:Id, ArgTypes:Types ), _),
+      tempKResult => methodCastArguments(ArgTypes, ParamExps, .KList)
+    )
 
 syntax K ::=  methodCastArguments (
                 Types,      //ArgTypes - argument types
@@ -201,12 +198,14 @@ rule [lookupMethod-end]:
     <k>
       lookupMethod(
         _,_,_,_,
-        methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(sig( Name:Id, ArgTypes:Types ), RetT:Type),
+         methodRef(Sig:Signature, Class:ClassType),
         resultListWrap(ExpectedParamExps:KList)
       )
       => methodLookupResult(RetT, ExpectedParamExps, CT)
       ...
     </k>
+    <classType> Class </classType>
+    <methodDecs> Sig |-> methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(Sig, RetT:Type) ...</methodDecs>
 
 /*@ Marker indicating that arguments of the following 'Invoke, 'QNewInstance, 'QSuperConstrInv, 'AltConstrInv
   have been elaborated.
@@ -253,7 +252,7 @@ syntax K ::=  lookupSignature (
                 K,        // Computes into Types - argument types
                 K,        // methods environment - mapWrap(Map[sig -> Class])
                 Bool,     // IsQ - whether the original method call was qualified
-                TMethClosure, // The best signature found so far
+                MethodRef, // The best signature found so far
                               // or noValue if none found
                 ClassType // QualClass - target type.
               )
@@ -266,34 +265,32 @@ rule [lookupSignature-Main]:
         CallTs:Types,
         mapWrap((sig(MethodName, SigTs:Types) |-> DecClass:ClassType => .) _:Map),
         IsQ:Bool,
-        OldTMClosure:TMethClosure
+        OldMethodRef:MethodRef
         => ifAux(
             'LazyAnd(
               'LazyAnd(
                 subtypeList(CallTs, SigTs),,
-                #if OldTMClosure ==K noMethod
+                #if OldMethodRef ==K noMethodRef
                   #then true
-                  #else subtypeList(SigTs, getMethodDecArgTypes(OldTMClosure))
+                  #else subtypeList(SigTs, getMethodRefArgTypes(OldMethodRef))
                 #fi
               ),,
               isAccessible(
-                getMethodAccessMode(NewTMClosure),
-                getMethodContextType(NewTMClosure),
+                getMethodAccessMode(methodRef(sig(MethodName, SigTs), DecClass)),
+                getMethodContextType(methodRef(sig(MethodName, SigTs), DecClass)),
                 DecClass, IsQ, QualClass
               )
             ),
-            NewTMClosure,
-            OldTMClosure
+            methodRef(sig(MethodName, SigTs), DecClass),
+            OldMethodRef
           ),
         QualClass:ClassType
       )
       ...
     </k>
-    <classType> DecClass </classType>
-    <methodDecs>... sig(MethodName, SigTs) |-> NewTMClosure:TMethClosure ...</methodDecs>
 
-syntax K ::= getMethodDecArgTypes ( K )   [function]
-rule getMethodDecArgTypes(_ :: methodType(sig(_, Ts:Types), _)) => Ts
+syntax K ::= getMethodRefArgTypes ( MethodRef )   [function]
+rule getMethodRefArgTypes( methodRef(sig(_, Ts:Types), _) ) => Ts
 
 rule [lookupSignature-SigDiscard]:
     lookupSignature(
@@ -306,7 +303,7 @@ when
     Name =/=K MethodName
 
 rule [lookupSignature-End]:
-    lookupSignature(_,_,mapWrap(.Map),_, SigWrap:TMethClosure, _) => SigWrap
+    lookupSignature(_,_,mapWrap(.Map),_, MethodRef:MethodRef, _) => MethodRef
 
 /*@ Tests whether a method from a given class with a given AccessMode and ContextType
 may be called from the current object environment*/

@@ -13,19 +13,28 @@ module API-CORE
 
 /*@ This module contains the minimal part of java API required to perform console read/write operations, as well as a few other API functions mentioned in JLS.*/
 
+//@system-out-print-convert heat argument
+context
+    invokeImpl(
+      methodRef(sig(MethodName:Id, _), Class:ClassType), _,
+      'ListWrap(HOLE)
+    )
+when
+    Class ==K class String2Id("java.io.PrintWriter") andBool Id2String(MethodName) ==String "print"
+
 //@ System.out.print(). For integers and strings, print their value. For classes, print class type.
 
 rule [system-out-print-string]:
     <k>
       invokeImpl(
-        methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
+        methodRef(sig(MethodName:Id, _), Class:ClassType), _,
         'ListWrap(Str:String :: _)
       ) => nothing::void
       ...
     </k>
     <out>... . => ListItem(Str) </out>
 when
-    Id2String(MethodName) ==String "print"
+    Class ==K class String2Id("java.io.PrintWriter") andBool Id2String(MethodName) ==String "print"
 
   //With [transition-threading], the time to produce 2 solutions for the test threads_11_two_th_msg is 14s.
   //But with [transition-strictness], the same test takes 3m52s, with java heap = 16GB.
@@ -34,37 +43,30 @@ when
 //@Is only used for primitive type arguments. Object arguments are converted by java code inside the class PrintWriter.
 rule [system-out-print-convert]:
     invokeImpl(
-      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
+      methodRef(sig(MethodName:Id, _), Class:ClassType), _,
       'ListWrap(RV:RawVal :: T:Type => toString(RV::T))
     )
 when
-    (Id2String(MethodName) ==String "print") andBool notBool (isString(RV) ==K true)
-
-//@system-out-print-convert heat argument
-context
-    invokeImpl(
-      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
-      'ListWrap(HOLE)
-    )
-when
-    Id2String(MethodName) ==String "print"
+            Class ==K class String2Id("java.io.PrintWriter")
+    andBool (Id2String(MethodName) ==String "print")
+    andBool notBool (isString(RV) ==K true)
 
 /*@Scanner.nextInt(), used to read from the console.*/
 rule [scanner-nextInt]:
     invokeImpl(
-      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
+      methodRef(sig(MethodName:Id, _), Class:ClassType), _,
       'ListWrap(.KList)
     ) => readInt
 when
-    Id2String(MethodName) ==String "nextInt"
+    Class ==K class String2Id("java.util.Scanner") andBool Id2String(MethodName) ==String "nextInt"
 
-rule [scanner-nextInt]:
+rule [scanner-nextLine]:
     invokeImpl(
-      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
+      methodRef(sig(MethodName:Id, _), Class:ClassType), _,
       'ListWrap(.KList)
     ) => readString
 when
-    Id2String(MethodName) ==String "nextLine"
+    Class ==K class String2Id("java.util.Scanner") andBool Id2String(MethodName) ==String "nextLine"
 
 //@An intermediate construct for reading from console, meant mostly to simplify debugging.
 syntax K ::=  "readInt"
@@ -84,7 +86,7 @@ syntax KLabel ::= "'Class"        // X.class : the class literal
 rule [object-getClass-on-object]:
     <k>
       invokeImpl(
-        methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), loc(OL:Int)::_,
+        methodRef(sig(MethodName:Id, _), Class:ClassType), loc(OL:Int)::_,
         'ListWrap(.KList)
       ) => 'Lit('Class(T))
       ...
@@ -95,39 +97,38 @@ rule [object-getClass-on-object]:
       ...
     </store>
 when
-    Id2String(MethodName) ==String "getClass"
+    Class ==K class objectClass andBool Id2String(MethodName) ==String "getClass"
 
 rule [object-getClass-on-String]:
     invokeImpl(
-      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), Str:String::_,
+      methodRef(sig(MethodName:Id, _), Class:ClassType), Str:String::_,
       'ListWrap(.KList)
     ) => 'Lit('Class(stringClass))
 when
-    Id2String(MethodName) ==String "getClass"
+    Class ==K class objectClass andBool Id2String(MethodName) ==String "getClass"
 
 rule [object-getClass-on-array]:
     invokeImpl(
-      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), arrayRef(ArrT:Type,_,_)::_,
+      methodRef(sig(MethodName:Id, _), Class:ClassType), arrayRef(ArrT:Type,_,_)::_,
       'ListWrap(.KList)
     ) => 'Lit('Class(ArrT))
 when
-    Id2String(MethodName) ==String "getClass"
+    Class ==K class objectClass andBool Id2String(MethodName) ==String "getClass"
 
 /*@ String.toString(). For Object.toString() the implementation is in the library java code.*/
 rule [object-toString-on-String]:
     invokeImpl(
-      methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), Str:String::Class:ClassType,
+      methodRef(sig(MethodName:Id, _), Class:ClassType), Str:String::_,
       'ListWrap(.KList)
     ) => Str::stringClass
 when
-    Id2String(MethodName) ==String "toString"
-    andBool Class ==K stringClass
+    Class ==K stringClass andBool Id2String(MethodName) ==String "toString"
 
 /*@Object.hashCode(). Returns the canonical memory location of the objectClosure. */
 rule [object-hashCode]:
     <k>
       invokeImpl(
-        methodClosure(_,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), loc(OL:Int)::_,
+        methodRef(sig(MethodName:Id, _), Class:ClassType), loc(OL:Int)::_,
         'ListWrap(.KList)
       ) => NewOL :: int
       ...
@@ -138,87 +139,80 @@ rule [object-hashCode]:
       ...
     </store>
 when
-    Id2String(MethodName) ==String "hashCode"
+    Class ==K class objectClass andBool Id2String(MethodName) ==String "hashCode"
 
 //@\subsection{String methods}
 
 //@ int String.length()
 rule [String-length]:
     invokeImpl(
-      methodClosure(Class:ClassType, 'ListWrap(.KList), instanceCT, _,methodRT, noValue, _)
-          :: methodType(sig(MethodName:Id, _), _),
+      methodRef(sig(MethodName:Id, _), Class:ClassType),
       Str:String::Class,
       'ListWrap(.KList)
     )
     => lengthString(Str)
-when Id2String(MethodName) ==String "length"
-     andBool Class ==K stringClass
+when
+    Class ==K stringClass andBool Id2String(MethodName) ==String "length"
 
 rule [String-charAt]:
     invokeImpl(
-      methodClosure(Class:ClassType, _, instanceCT, _,methodRT, noValue, _)
-          :: methodType(sig(MethodName:Id, _), _),
+      methodRef(sig(MethodName:Id, _), Class:ClassType),
       Str:String::Class,
       'ListWrap(I:Int :: int)
     )
     => ordChar(substrString(Str, I, I +Int 1)) :: char
-when Id2String(MethodName) ==String "charAt"
-     andBool Class ==K stringClass
+when
+    Class ==K stringClass andBool Id2String(MethodName) ==String "charAt"
 
 //@static native String String.valueOf(int i);
 rule [String-valueOf]:
     invokeImpl(
-      methodClosure(Class:ClassType, _, instanceCT, _,methodRT, noValue, _)
-          :: methodType(sig(MethodName:Id, _), _),
+      methodRef(sig(MethodName:Id, _), Class:ClassType),
       Str:String::Class,
       'ListWrap(I:Int :: int)
     )
     => Int2String(I)
-when Id2String(MethodName) ==String "valueOf"
-     andBool Class ==K stringClass
+when
+    Class ==K stringClass andBool Id2String(MethodName) ==String "valueOf"
 
 //@boolean String.equals(Object)
 rule [String-equals]:
     invokeImpl(
-      methodClosure(Class:ClassType, _, instanceCT, _,methodRT, noValue, _)
-          :: methodType(sig(MethodName:Id, _), _),
+      methodRef(sig(MethodName:Id, _), Class:ClassType),
       Str:String::Class,
       'ListWrap(ParamStr:String::_)
     )
     => 'Eq(Str,, ParamStr)
-when Id2String(MethodName) ==String "equals"
-     andBool Class ==K stringClass
+when
+    Class ==K stringClass andBool Id2String(MethodName) ==String "equals"
 
 //@String.toString()
 rule [String-toString]:
     invokeImpl(
-      methodClosure(Class:ClassType, _, instanceCT, _,methodRT, noValue, _)
-          :: methodType(sig(MethodName:Id, _), _),
+      methodRef(sig(MethodName:Id, _), Class:ClassType),
       Str:String::Class,
       'ListWrap(.KList)
     )
     => Str
-when Id2String(MethodName) ==String "toString"
-     andBool Class ==K stringClass
+when
+    Class ==K stringClass andBool Id2String(MethodName) ==String "toString"
 
 //@ int String.compareTo(Object another)
 rule [String-compareTo]:
     invokeImpl(
-      methodClosure(Class:ClassType, _, instanceCT, _,methodRT, noValue, _)
-          :: methodType(sig(MethodName:Id, _), _),
+      methodRef(sig(MethodName:Id, _), Class:ClassType),
       Str:String::Class,
       'ListWrap(ParamStr:String::_)
     )
     => 'If(Str <String ParamStr,, -1,, 'If(Str ==String ParamStr,, 0,, 1))
-when Id2String(MethodName) ==String "compareTo"
-     andBool Class ==K stringClass
+when
+    Class ==K stringClass andBool Id2String(MethodName) ==String "compareTo"
 
 //@\subsection{Array clone}
 
 rule [array-clone]:
     invokeImpl(
-      methodClosure(TargetClass:ClassType, _, instanceCT, _,methodRT, noValue, _)
-          :: methodType(sig(MethodName:Id, _), _),
+      methodRef(sig(MethodName:Id, _), Class:ClassType),
       arrayRef(arrayOf ElemT, Loc:Int, Len:Int)::CompileT:RefType,
       'ListWrap(.KList)
     )
@@ -227,8 +221,7 @@ rule [array-clone]:
         allocAndInitArray(ElemT, 'ListWrap(Len::int), undefined :: ElemT)
       )
 when
-    Id2String(MethodName) ==String "clone"
-    andBool TargetClass ==K arrayImplClass
+    Class ==K arrayImplClass andBool Id2String(MethodName) ==String "clone"
 
 //@ Construct to copy content of an array to another after copy, the term is rewritten into the destination array.
 syntax K ::=  arrayCopy (

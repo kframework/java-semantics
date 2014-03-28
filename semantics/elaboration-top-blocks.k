@@ -43,7 +43,7 @@ rule [elabMethods-Heat-MethodParams]:
     <classType> Class </classType>
     <methodDecs>
       Sig:Signature
-      |-> methodClosure(MClass:ClassType, (ParamsList:K => CHOLE), CT:ContextType,_,_,_,_) :: MethodType:MethType
+      |-> methodClosure(MClass:ClassType, (ParamsList:K => CHOLE), CT:ContextType,_,_,_,_) :: methodType(_,_)
       ...
     </methodDecs>
     <contextType> _ => CT </contextType>
@@ -57,7 +57,7 @@ rule [elabMethods-Heat-MethodFirstLine]:
     <classType> Class </classType>
     <methodDecs>
       Sig:Signature |-> methodClosure(MClass:ClassType, (CHOLE => ParamsList), CT:ContextType,_,_,
-                                      (FirstLine:K => CHOLE), Body:K) :: MethodType:MethType
+                                      (FirstLine:K => CHOLE), Body:K) :: methodType(_,_)
       ...
     </methodDecs>
     <contextType> _ => CT </contextType>
@@ -75,7 +75,7 @@ rule [elabMethods-Heat-MethodBody]:
     <classType> Class </classType>
     <methodDecs>
       Sig:Signature |-> methodClosure(MClass:ClassType, 'ListWrap(Params:KList), _,_,_,
-                                      CHOLE => FirstLine, Body:K => CHOLE) :: MethodType:MethType
+                                      CHOLE => FirstLine, Body:K => CHOLE) :: methodType(_,_)
       ...
     </methodDecs>
 
@@ -88,7 +88,7 @@ rule [elabMethods-Cool-Method]:
     <classType> Class </classType>
     <methodDecs>
       Sig:Signature |-> methodClosure(MClass:ClassType, 'ListWrap(Params:KList), _,_, methodRT,
-                                      FirstLine:K, CHOLE => Body) :: MethodType:MethType
+                                      FirstLine:K, CHOLE => Body) :: methodType(_,_)
       ...
     </methodDecs>
 
@@ -104,7 +104,7 @@ rule [elabMethods-Cool-Constructor]:
         constructorRT => methodRT,
         FirstLine:K => noValue,
         CHOLE => 'ListWrap(FirstLine,, Body)
-      ) :: MethodType:MethType
+      ) :: methodType(_,_)
       ...
     </methodDecs>
 

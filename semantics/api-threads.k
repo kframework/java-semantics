@@ -14,7 +14,7 @@ rule [thread-start]:
     <thread>
       <k>
         invokeImpl(
-          methodClosure(ThreadClass:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
+          methodRef(sig(MethodName:Id, _), Class:ClassType),
           loc(OL:Int)::_,
           'ListWrap(TId:Int :: _)
         ) => nothing::void
@@ -50,8 +50,7 @@ rule [thread-start]:
       </thread>
     )
 when
-            Id2String(MethodName) ==String "startImpl"
-    andBool ThreadClass ==K class String2Id("java.lang.Thread")
+    Class ==K class String2Id("java.lang.Thread") andBool Id2String(MethodName) ==String "startImpl"
 
 //@ \subsection{Synchronized statement}
 
@@ -118,13 +117,13 @@ rule [monitor-completely-released]:
 rule [storeMethod-Synchronized-method-inst-desugar]:
     storeMethod(_, instanceCT, _, (true => false)::bool, _,_,
         Body:K => 'Synchronized('This(.KList),, Body),
-        _)
+        _,_)
 
 rule [storeMethod-Synchronized-method-static-desugar]:
     <k>
       storeMethod(_, staticCT, _, (true => false)::bool, _,_,
           Body:K => 'Synchronized('Lit('Class(Class)),, Body),
-          _)
+          _,_)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -134,7 +133,7 @@ rule [storeMethod-Synchronized-method-static-desugar]:
 rule [thread-join]:
     <k>
       invokeImpl(
-        methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
+        methodRef(sig(MethodName:Id, _), Class:ClassType), _,
         'ListWrap(TId:Int :: _)
       ) => nothing::void
       ...
@@ -142,14 +141,13 @@ rule [thread-join]:
     <interrupted> false </interrupted>
     <terminated>... SetItem(TId) ...</terminated>
 when
-            Class ==K class String2Id("java.lang.Thread")
-    andBool Id2String(MethodName) ==String "joinImpl"
+    Class ==K class String2Id("java.lang.Thread") andBool Id2String(MethodName) ==String "joinImpl"
         [transition-threading]
 
 rule [thread-join-interrupted]:
     <k>
       invokeImpl(
-        methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_), _,
+        methodRef(sig(MethodName:Id, _), Class:ClassType), _,
         'ListWrap(TId:Int :: _)
       )
       =>  'Throw('NewInstance(
@@ -162,8 +160,7 @@ rule [thread-join-interrupted]:
     </k>
     <interrupted> true => false </interrupted>
 when
-            Class ==K class String2Id("java.lang.Thread")
-    andBool Id2String(MethodName) ==String "joinImpl"
+    Class ==K class String2Id("java.lang.Thread") andBool Id2String(MethodName) ==String "joinImpl"
         [transition-threading]
 
 //@ \subsection{Object.wait()}
@@ -172,7 +169,7 @@ when
 rule [object-wait]:
     <k>
       invokeImpl(
-        methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
+        methodRef(sig(MethodName:Id, _), Class:ClassType),
         loc(OL:Int)::_, 'ListWrap(.KList)
       ) => waitImpl(OL)
       ...
@@ -182,7 +179,7 @@ rule [object-wait]:
     <busy>... (SetItem(OL) => .) ...</busy>
     <waitingThreads>... (. => TId |-> OL ) ...</waitingThreads>
 when
-            Class ==K class String2Id("java.lang.Object")
+            Class ==K objectClass
     andBool Id2String(MethodName) ==String "wait"
     andBool HoldLevel >=Int 1
         [transition-threading]
@@ -190,7 +187,7 @@ when
 rule [object-wait-notify-notifyAll-without-sync]:
     <k>
       invokeImpl(
-        methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
+        methodRef(sig(MethodName:Id, _), Class:ClassType),
         loc(OL:Int)::_, 'ListWrap(.KList)
       )
       =>  'Throw('NewInstance(
@@ -203,7 +200,7 @@ rule [object-wait-notify-notifyAll-without-sync]:
     </k>
     <holds> Holds:Map </holds>
 when
-            Class ==K class String2Id("java.lang.Object")
+            Class ==K objectClass
     andBool (
              Id2String(MethodName) ==String "wait"
       orBool Id2String(MethodName) ==String "notify"
@@ -255,14 +252,14 @@ when
 rule [object-notify]:
     <k>
       invokeImpl(
-        methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
+        methodRef(sig(MethodName:Id, _), Class:ClassType),
         loc(OL:Int)::_, 'ListWrap(.KList)
       ) => objectNotifyImpl(OL)
       ...
     </k>
     <holds>... OL |-> HoldLevel:Int ...</holds>
 when
-            Class ==K class String2Id("java.lang.Object")
+            Class ==K objectClass
     andBool Id2String(MethodName) ==String "notify"
     andBool HoldLevel >=Int 1
 
@@ -292,14 +289,14 @@ when
 rule [object-notifyAll]:
     <k>
       invokeImpl(
-        methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
+        methodRef(sig(MethodName:Id, _), Class:ClassType),
         loc(OL:Int)::_, 'ListWrap(.KList)
       ) => objectNotifyAllImpl(OL)
       ...
     </k>
     <holds>... OL |-> HoldLevel:Int ...</holds>
 when
-            Class ==K class String2Id("java.lang.Object")
+            Class ==K objectClass
     andBool Id2String(MethodName) ==String "notifyAll"
     andBool HoldLevel >=Int 1
 
@@ -332,7 +329,7 @@ rule [thread-interrupt]:
     <thread>
       <k>
         invokeImpl(
-          methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
+          methodRef(sig(MethodName:Id, _), Class:ClassType),
           loc(OL:Int)::_,
           'ListWrap(TId:Int :: _)
         ) => nothing::void
@@ -347,14 +344,13 @@ rule [thread-interrupt]:
       ...
     </thread>
 when
-            Class ==K class String2Id("java.lang.Thread")
-    andBool Id2String(MethodName) ==String "interruptImpl"
+    Class ==K class String2Id("java.lang.Thread") andBool Id2String(MethodName) ==String "interruptImpl"
         [transition-threading]
 
 rule [thread-interrupt-ended-thread]:
     <k>
       invokeImpl(
-        methodClosure(Class:ClassType,_,_,_,_,_, 'NoMethodBody(_))::methodType(sig(MethodName:Id, _),_),
+        methodRef(sig(MethodName:Id, _), Class:ClassType),
         loc(OL:Int)::_,
         'ListWrap(TId:Int :: _)
       ) => nothing::void
@@ -362,8 +358,7 @@ rule [thread-interrupt-ended-thread]:
     </k>
     <terminated>... SetItem(TId) ...</terminated>
 when
-            Class ==K class String2Id("java.lang.Thread")
-    andBool Id2String(MethodName) ==String "interruptImpl"
+    Class ==K class String2Id("java.lang.Thread") andBool Id2String(MethodName) ==String "interruptImpl"
 
 //@ \subsection{Thread termination}
 
