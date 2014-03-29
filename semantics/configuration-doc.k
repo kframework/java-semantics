@@ -139,7 +139,7 @@ During this global phase class members are distributed into the following cells:
 \begin{itemize}
 \item $\kall{implTrans}{Set[ClassType]}$ -- The transitive closure of implemented interfaces. In the remaining phases this set is used by the subtyping relationship.
 \item $\kall{methods}{Map[Signature\mapsto{}ClassType]}$ -- The map of accessible methods. Keys are method signatures, values are classes where methods are defined. Includes both methods declared within this class as well amd methods inherited from base classes/ base interfaces.
-\item $\kall{methodDecs}{Map[Signature\mapsto{}MethodClosure]}$ -- The map of defined methods. Map values are method implementations. This cell includes only methods defined within the body of the present class.
+\item $\kall{methodDecs}{Multiple inner cells}$ -- The map of defined methods. Map values are method implementations. This cell includes only methods defined within the body of the present class.
 \item $\kall{fieldDecs}{K}$ -- The list of instance field declarations, stored as a list of local variable declaration statements, without initializers. Used during object instantiation.
 \item $\kall{instanceEnv}{Map[Id\mapsto Field Entry]}$ -- the same fields as in $\kall{fieldDecs}{}$ but in a different form. Used in the elaboration phase.
 \item $\kall{instanceInit}{K}$ -- The list of instance initializers of the class combined into one big instance initializer. Instance field initializers are also concatenated into this cell in their textual order. The content of this cell is executed as part of object instantiation.

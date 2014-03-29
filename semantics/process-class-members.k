@@ -218,7 +218,8 @@ rule [getMethodAccessMode]:
       ...
     </k>
     <classType> Class </classType>
-    <methodDecs> Sig |-> methodClosure(_,_,_, Acc:AccessMode, _,_,_):: methodType(_,_) ...</methodDecs>
+    <methodSignature> Sig </methodSignature>
+    <methodAccessMode> Acc:AccessMode </methodAccessMode>
 
 //@ Returns the context type of a method closure given as argument
 syntax K ::= getMethodContextType ( MethodRef )  [strict]
@@ -228,7 +229,8 @@ rule [getMethodContextType]:
       ...
     </k>
     <classType> Class </classType>
-    <methodDecs> Sig |-> methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(_,_) ...</methodDecs>
+    <methodSignature> Sig </methodSignature>
+    <methodContextType> CT:ContextType </methodContextType>
 
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
@@ -298,11 +300,17 @@ rule [storeMethod]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <methods> Env:Map => Env[Class / Sig] </methods>
-    <methodDecs>
-      DecsEnv:Map => DecsEnv[
-        methodClosure(Class, 'ListWrap(Params), CT, Acc, RT, FirstLine, Body) :: methodType(Sig,ReturnType) / Sig
-      ]
-    </methodDecs>
+    ( .Bag => <methodDec>
+                <methodSignature> Sig </methodSignature>
+                <methodReturnType> ReturnType </methodReturnType>
+                <methodParams> 'ListWrap(Params) </methodParams>
+                <methodFirstLine> FirstLine </methodFirstLine>
+                <methodBody> Body </methodBody>
+                <methodAccessMode> Acc </methodAccessMode>
+                <methodContextType> CT </methodContextType>
+                <methodRoutineType> RT </methodRoutineType>
+              </methodDec>
+    )
 
 syntax KLabel ::= "'ConstrDec"
                 | "'ConstrDecHead"

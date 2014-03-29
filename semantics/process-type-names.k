@@ -97,7 +97,7 @@ rule [processTypeNames]:
               <classType> getClassType(PackId,SimpleClass) </classType>
               <metaType> getMetaType(DecLabel) </metaType>
               <classPhase> DiscoveredCPhase </classPhase>
-              <accessMode> getAccessMode(Modifiers) </accessMode>
+              <classAccessMode> getAccessMode(Modifiers) </classAccessMode>
               ...
             </class> )
 when DecLabel ==KLabel 'ClassDec orBool DecLabel ==KLabel 'InterfaceDec

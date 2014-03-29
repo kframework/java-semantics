@@ -8,9 +8,14 @@ module ELABORATION-TOP-BLOCKS
     imports CORE-SORTS
     imports ELABORATION-CORE
 
-rule [elaborateBlocksStart]:
+rule [ElaborationPhase-start]:
     <k> . => elaborateBlocks(getTopLevelClasses) </k>
     <globalPhase> ProcClassMembersPhase => ElaborationPhase  </globalPhase>
+
+/*@ Elaborate the blocks inside all classes.
+Argument K = setWrap(Set) - the set of all classes.
+*/
+syntax K ::= elaborateBlocks ( K ) [strict]
 
 /*@ It is important to elaborate the instance initializers before the methods.
     This way, when 'SuperConstrEnv is encountered, it inserts the already elaborated instance
@@ -19,7 +24,7 @@ rule [elaborateBlocksStart]:
 */
 rule [elaborateBlocks]:
     <k>
-      (. => elabMethods(MethodDecs) ~> elabStaticInit
+      (. => elabMethods(Methods) ~> elabStaticInit
         ~> elaborateBlocks(getInnerClasses(Class))
         ~> restoreCrntClass(OldCrntClass)
       )
@@ -28,25 +33,29 @@ rule [elaborateBlocks]:
     </k>
     <crntClass> OldCrntClass:ClassType => Class </crntClass>
     <classType> Class </classType>
-    <methodDecs> MethodDecs:Map </methodDecs>
+    <methods> Methods:Map </methods>
 
 rule [elaborateBlocks-discard]:
     elaborateBlocks(setWrap(.)) => .
 
+/*@ Elaborates the methods of the current class. The map contains the methods that were not elaborated yet.
+When a class elaboration starts, the map is initialized with the contet of <methods> - all the methods accessible in
+the current class. Only methods declared in the current class are elaborated. The rest are discarded from the map.
+*/
+syntax K ::= elabMethods ( Map )
+
 rule [elabMethods-Heat-MethodParams]:
     <k>
       (. => addElabEnv ~> elab(ParamsList))
-      ~> elabMethods( (Sig |-> _ => .Map) _)
+      ~> elabMethods( (Sig:Signature |-> Class => .Map) _)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-    <classType> Class </classType>
-    <methodDecs>
-      Sig:Signature
-      |-> methodClosure(MClass:ClassType, (ParamsList:K => CHOLE), CT:ContextType,_,_,_,_) :: methodType(_,_)
-      ...
-    </methodDecs>
     <contextType> _ => CT </contextType>
+    <classType> Class </classType>
+    <methodSignature> Sig </methodSignature>
+    <methodParams> ParamsList:K => CHOLE </methodParams>
+    <methodContextType> CT:ContextType </methodContextType>
 
 rule [elabMethods-Heat-MethodFirstLine]:
     <k>
@@ -54,13 +63,11 @@ rule [elabMethods-Heat-MethodFirstLine]:
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-    <classType> Class </classType>
-    <methodDecs>
-      Sig:Signature |-> methodClosure(MClass:ClassType, (CHOLE => ParamsList), CT:ContextType,_,_,
-                                      (FirstLine:K => CHOLE), Body:K) :: methodType(_,_)
-      ...
-    </methodDecs>
     <contextType> _ => CT </contextType>
+    <classType> Class </classType>
+    <methodParams> CHOLE => ParamsList </methodParams>
+    <methodFirstLine> FirstLine:K => CHOLE </methodFirstLine>
+    <methodContextType> CT:ContextType </methodContextType>
 
 //@Required when processing first line of the constructor of Object, which is .K
 rule [elab-DotK]:
@@ -73,11 +80,8 @@ rule [elabMethods-Heat-MethodBody]:
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <methodDecs>
-      Sig:Signature |-> methodClosure(MClass:ClassType, 'ListWrap(Params:KList), _,_,_,
-                                      CHOLE => FirstLine, Body:K => CHOLE) :: methodType(_,_)
-      ...
-    </methodDecs>
+    <methodFirstLine> CHOLE => FirstLine </methodFirstLine>
+    <methodBody> Body:K => CHOLE </methodBody>
 
 rule [elabMethods-Cool-Method]:
     <k>
@@ -86,11 +90,8 @@ rule [elabMethods-Cool-Method]:
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <methodDecs>
-      Sig:Signature |-> methodClosure(MClass:ClassType, 'ListWrap(Params:KList), _,_, methodRT,
-                                      FirstLine:K, CHOLE => Body) :: methodType(_,_)
-      ...
-    </methodDecs>
+    <methodBody> CHOLE => Body </methodBody>
+    <methodRoutineType> methodRT </methodRoutineType>
 
 rule [elabMethods-Cool-Constructor]:
     <k>
@@ -99,17 +100,20 @@ rule [elabMethods-Cool-Constructor]:
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <methodDecs>
-      Sig:Signature |-> methodClosure(MClass:ClassType, 'ListWrap(Params:KList), _,_,
-        constructorRT => methodRT,
-        FirstLine:K => noValue,
-        CHOLE => 'ListWrap(FirstLine,, Body)
-      ) :: methodType(_,_)
-      ...
-    </methodDecs>
+    <methodFirstLine> FirstLine:K => noValue </methodFirstLine>
+    <methodBody> CHOLE => 'ListWrap(FirstLine,, Body) </methodBody>
+    <methodRoutineType> constructorRT => methodRT </methodRoutineType>
+
+rule [elabMethods-discard-method]:
+    <k> elabMethods( (Sig:Signature |-> DeclClass:ClassType => .Map) _) ... </k>
+    <crntClass> Class:ClassType </crntClass>
+when
+    DeclClass =/=K Class
 
 rule [elabMethods-End]:
     elabMethods( .Map ) => .
+
+syntax K ::= "elabStaticInit"
 
 rule [elabStaticInit-Heat]:
     <k> (. => addElabEnv ~> elab(K)) ~> elabStaticInit ...</k>

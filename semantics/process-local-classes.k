@@ -290,20 +290,17 @@ rule [localClassAugmentConsParams-augment]:
     <k> localClassAugmentConsParams(LocalClass:ClassType, ConsName:Id, LocalEnvClass:ClassType) ...</k>
     <classType> LocalClass </classType>
     <methods> sig(ConsName:Id, types(TList:KList,, (.KList => LocalEnvClass))) |-> _ ...</methods>
-    <methodDecs>
-      sig(ConsName:Id, types(TList:KList,, (.KList => LocalEnvClass)))
-      |-> methodClosure(_, 'ListWrap(_:KList,, (.KList => 'Param(.K,, LocalEnvClass,, String2Id("$local_env")))),
-            _,_,_,_,
-            Body:K => 'ListWrap(
-              'ExprStm('Assign(
-                'Field('This(.KList),, String2Id("$local_env") ),,
-                'ExprName( String2Id("$local_env") )
-              )),,
-              Body
-            )
-          ) :: methodType(sig( Name:Id, types(TList:KList,, (.KList => LocalEnvClass)) ), _)
-      ...
-    </methodDecs>
+    <methodSignature> sig(ConsName:Id, types(TList:KList,, (.KList => LocalEnvClass))) </methodSignature>
+    <methodParams> 'ListWrap(_:KList,, (.KList => 'Param(.K,, LocalEnvClass,, String2Id("$local_env")))) </methodParams>
+    <methodBody>
+      Body:K => 'ListWrap(
+        'ExprStm('Assign(
+          'Field('This(.KList),, String2Id("$local_env") ),,
+          'ExprName( String2Id("$local_env") )
+        )),,
+        Body
+      )
+    </methodBody>
 when
     notBool getLastKListElement(TList) ==K LocalEnvClass
 

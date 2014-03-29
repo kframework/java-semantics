@@ -67,15 +67,6 @@ module ELABORATION-CORE
 /*@Custom hole used for custom heating/cooling rules in the elaboration phase.*/
 syntax K ::= "CHOLE"
 
-/*@ Elaborate the blocks inside all classes.
-Argument K = setWrap(Set) - the set of all classes.
-*/
-syntax K ::= elaborateBlocks ( K ) [strict]
-
-//@ Elaborates the methods of the current class. The map contains already elaborated methods. Initially the map is empty.
-syntax K ::= elabMethods ( Map )
-syntax K ::= "elabStaticInit"
-
 //@Elaborates the given statement/expression. The first step of elaboration.
 syntax K ::= elab ( K )
 

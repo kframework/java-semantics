@@ -52,12 +52,12 @@ rule [importOnDemandImpl-public]:
     <k> importOnDemandImpl((X:Id |-> Class:ClassType => .) _) ...</k>
     <compUnitImports> Imp:Map => Imp[Class / X] </compUnitImports>
     <classType> Class </classType>
-    <accessMode> public </accessMode>
+    <classAccessMode> public </classAccessMode>
 
 rule [importOnDemandImpl-package]:
     <k> importOnDemandImpl((X:Id |-> Class:ClassType => .) _) ...</k>
     <classType> Class </classType>
-    <accessMode> package </accessMode>
+    <classAccessMode> package </classAccessMode>
 
 rule [importOnDemandImpl-discard]:
     importOnDemandImpl(.Map) => .K

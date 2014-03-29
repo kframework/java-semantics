@@ -72,10 +72,10 @@ configuration
             <classType color="Red"> .K </classType>
 
             //Either classMetaT or interfaceMetaT. Used in many semantics phases, including execution.
-            <metaType color="Maroon"> .K </metaType>
+            <metaType color="Maroon"> .K </metaType>                //todo rename into classMetaType
 
             //Class access mode - either public or package.
-            <accessMode color="Maroon"> .K </accessMode>
+            <classAccessMode color="Maroon"> .K </classAccessMode>
 
             //The major phase of <class> lifecycle. See ClassPhase definition.
             <classPhase color="Maroon"> .K </classPhase>
@@ -143,9 +143,41 @@ configuration
               Used in elaboration of method calls.*/
             <methods color="Blue"> .Map </methods>
 
-            /*All methods declared in this class. Map[Sig -> methodClosure :: MethType ]
+            /*All methods declared in this class.
               Used in elaboration of method calls.*/
-            <methodDecs color="Blue"> .Map </methodDecs>
+            <methodDecs color="Blue">
+
+              <methodDec multiplicity="*" color="Blue">
+
+                //Method signature, of type Signature
+                <methodSignature> .K </methodSignature>
+
+                //Method return type
+                <methodReturnType> .K </methodReturnType>
+
+                //Method params
+                <methodParams> 'ListWrap(.KList) </methodParams>
+
+                // first line, constructors only. Either of:
+                //   'SuperInv - superclass constructor invocation
+                //   'AltConstrInv - alternate this class constructor invocation
+                //   .K - none, if this class is Object
+                //   For methods this argument is noValue
+                <methodFirstLine> .K </methodFirstLine>
+
+                //Method body
+                <methodBody> .K </methodBody>
+
+                <methodAccessMode> .K </methodAccessMode>
+
+                //Either staticCT or instanceCT
+                <methodContextType> .K </methodContextType>
+
+                //Either methodRT or constructorRT
+                <methodRoutineType> .K </methodRoutineType>  //todo rename into methodMetaType
+
+              </methodDec>
+            </methodDecs>
 
             <br/>
 

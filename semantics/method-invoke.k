@@ -232,7 +232,7 @@ rule [getMethConsClosureClass]:
         [structural]
 
 syntax K ::=  invokeImpl (
-                MethodRef,  //lookupOverloadedMethod statement, evaluates to typed methodClosure
+                MethodRef,  //lookupOverloadedMethod statement, evaluates to methodRef()
                 K,  //KResult - method call target
                     //  loc(OL)::_ - object location, target type for methods on non-object refs,
                     //  typed string or array, or noValue for static methods
@@ -271,7 +271,7 @@ rule [invokeImpl-Instance]:
         OldEnvGroup:Bag
         => <env> .Map </env>
       </envGroup>
-      <return> OldT:Type => T </return>
+      <return> OldT:Type => ReturnT </return>
       <contextType> OldCT:ContextType => instanceCT </contextType>
       <crntObj>
         OldObj:Bag
@@ -280,13 +280,15 @@ rule [invokeImpl-Instance]:
       </crntObj>
       RestMethContext:Bag
     </methodContext>
-    <store>
-      ...
-      OL |-> objectClosure(NewOL:Int, Obj:KList/*ObjLayers*/) :: _
-      ...
-    </store>
+    <store>... OL |-> objectClosure(NewOL:Int, _:KList/*ObjLayers*/)::_ ...</store>
+
     <classType> Class </classType>
-    <methodDecs> Sig |-> methodClosure(Class, 'ListWrap(Params:KList), instanceCT, _,methodRT, noValue, Body:K) :: methodType(_, T:Type) ...</methodDecs>
+    <methodSignature> Sig </methodSignature>
+    <methodReturnType> ReturnT:Type </methodReturnType>
+    <methodParams> 'ListWrap(Params:KList) </methodParams>
+    <methodBody> Body:K </methodBody>
+    <methodContextType> instanceCT </methodContextType>
+    <methodRoutineType> methodRT </methodRoutineType>
 when getKLabel(Body) =/=KLabel 'NoMethodBody
 
 rule [invokeImpl-Static]:
@@ -315,7 +317,7 @@ rule [invokeImpl-Static]:
         OldEnvGroup:Bag
         => <env> .Map </env>
       </envGroup>
-      <return> OldT:Type => T </return>
+      <return> OldT:Type => ReturnT </return>
       <contextType> OldCT:ContextType => staticCT </contextType>
       <crntObj>
         OldObj:Bag
@@ -324,8 +326,14 @@ rule [invokeImpl-Static]:
       </crntObj>
       RestMethContext:Bag
     </methodContext>
+
     <classType> Class </classType>
-    <methodDecs> Sig |-> methodClosure(Class, 'ListWrap(Params:KList), staticCT, _,methodRT, _, Body:K) :: methodType(_, T:Type) ...</methodDecs>
+    <methodSignature> Sig </methodSignature>
+    <methodReturnType> ReturnT:Type </methodReturnType>
+    <methodParams> 'ListWrap(Params:KList) </methodParams>
+    <methodBody> Body:K </methodBody>
+    <methodContextType> staticCT </methodContextType>
+    <methodRoutineType> methodRT </methodRoutineType>
 
 //@ 'Param(_:K,, T:Type,, X:Id)
 syntax KLabel ::= "'Param"

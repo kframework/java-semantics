@@ -110,7 +110,7 @@ syntax K ::= isThisOrSuper( K )                                       [function]
 rule isThisOrSuper(cast(_, 'QThis(_))) => true
 rule isThisOrSuper(cast(_, superMethod(_))) => true
 
-/*@ Lookup the right methodClosure based on supplied parameters.
+/*@ Lookup the right methodRef() based on supplied parameters.
 If the method is not found in the supplied class list, we should search for it in the
 class list corresponding to the enclosing class of the caller class.
 First we search for the signature - lookupSignature construct.
@@ -122,19 +122,14 @@ syntax K ::=  lookupMethod (
                 K         //resultListWrap(ParamExps) - parameter expressions of type Cast
               )
 
-/*@ Lookup the right methodClosure based on supplied parameters.
-If the method is not found in the supplied class list, we should search for it in the
-class list corresponding to the enclosing class of the caller class.
-First we search for the signature - lookupSignature construct.
-Afterwards we cast the actual arguments to the types expected by the found method signature.*/
 syntax K ::=  lookupMethod (
                 ClassType,//target class, even for arrays.
                 Bool,     //QualIsThis - true if qualifier is cast(_, 'QThis(_)) or cast(_, superMethod(_))
                 Id,       //method name
                 K,        //resultListWrap(ParamExps) - parameter expressions of type Cast
-                MethodRef, //Evaluates to the signature to be called, or noValue if no signature was found yet
-                              // Sig format: mapWrap(Sig |-> MethodTV)
-                              // Initialized with noMethod
+                MethodRef,  //Evaluates to the signature to be called, or noMethodRef if no signature was found yet
+                            // Sig format: mapWrap(Sig |-> MethodTV)
+                            // Initialized with noMethodRef
                 K         //Evaluates to the method arguments casted to expected argument types
                           // Initialized with tempKResult
               )
@@ -205,7 +200,9 @@ rule [lookupMethod-end]:
       ...
     </k>
     <classType> Class </classType>
-    <methodDecs> Sig |-> methodClosure(_,_, CT:ContextType, _,_,_,_) :: methodType(Sig, RetT:Type) ...</methodDecs>
+    <methodSignature> Sig </methodSignature>
+    <methodReturnType> RetT:Type </methodReturnType>
+    <methodContextType> CT:ContextType </methodContextType>
 
 /*@ Marker indicating that arguments of the following 'Invoke, 'QNewInstance, 'QSuperConstrInv, 'AltConstrInv
   have been elaborated.

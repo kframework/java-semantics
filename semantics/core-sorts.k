@@ -198,44 +198,6 @@ syntax MetaType ::= "classMetaT" | "interfaceMetaT"
 
 syntax KResult ::= "noValue"
 
-/*@ Represents either a method or a constructor. This record contains all the information stored in the
-    method/constructor definition, except the name, plus other info:
-\begin{itemize}
-\item Class:ClassType -- class defining the method
-\item 'ListWrap(Params):K -- params
-\item ContextType -- Either staticCT, instanceCT
-\item AccessMode -- The access mode
-\item RoutineType -- Either methodRT or constructorRT
-\item K -- first line, constructors only. Either of:
-  \begin{itemize}
-  \item 'SuperInv -- superclass constructor invocation
-  \item 'AltConstrInv -- alternate this class constructor invocation
-  \item .K -- none, if this class is Object
-  \end{itemize}
-    For methods this argument is noValue
-\item S:K -- method body
-\end{itemize}
-*/
-syntax TMethClosure ::= "methodClosure" "("
-                          RefType ","      // Usually Class - class defining the method
-                                           // Could also be array type, because we may invoke methods over arrays.
-                          K ","            // 'ListWrap(Params) - params
-                          ContextType ","  // Either staticCT, instanceCT
-                          AccessMode ","   // The access mode
-                          RoutineType ","  // Either methodRT or constructorRT
-                          K ","            // first line, constructors only. Either of:
-                                           //   'SuperInv - superclass constructor invocation
-                                           //   'AltConstrInv - alternate this class constructor invocation
-                                           //   .K - none, if this class is Object
-                                           //   For methods this argument is noValue
-                          K                // S - method body
-                        ")"
-                        "::"
-                        "methodType" "("
-                          Signature ","    // method signature
-                          Type             // return type
-                        ")"
-
 /*@ Represents a reference to a method or constructor. */
 syntax MethodRef ::=   methodRef(
                             Signature,  //Method signature
