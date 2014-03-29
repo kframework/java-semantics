@@ -372,7 +372,7 @@ rule [ThreadTermination]:
     => .)
     <busy> Busy:Set => Busy -Set keys(H) </busy>
     <terminated>... . => SetItem(TId) ...</terminated>
-     <globalPhase> ExecutionPhase  </globalPhase>
+    <globalPhase> ExecutionPhase  </globalPhase>
     <dissolveEmptyK> true </dissolveEmptyK>
 
 //@ \subsection{Debug aids}
@@ -391,7 +391,8 @@ rule [DissolveAllExceptOut]:
     <T>
       <out> Out:List </out>
       <threads> .Bag </threads>
-       <globalPhase> ExecutionPhase  </globalPhase>
+      <globalPhase> ExecutionPhase  </globalPhase>
+      <dissolveClasses> true </dissolveClasses>
       <dissolveAllExceptOut> true </dissolveAllExceptOut>
       ...
     </T>
