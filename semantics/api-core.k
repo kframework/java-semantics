@@ -97,7 +97,7 @@ rule [object-getClass-on-object]:
       ...
     </store>
 when
-    Class ==K class objectClass andBool Id2String(MethodName) ==String "getClass"
+    Class ==K objectClass andBool Id2String(MethodName) ==String "getClass"
 
 rule [object-getClass-on-String]:
     invokeImpl(
@@ -105,7 +105,7 @@ rule [object-getClass-on-String]:
       'ListWrap(.KList)
     ) => 'Lit('Class(stringClass))
 when
-    Class ==K class objectClass andBool Id2String(MethodName) ==String "getClass"
+    Class ==K objectClass andBool Id2String(MethodName) ==String "getClass"
 
 rule [object-getClass-on-array]:
     invokeImpl(
@@ -113,7 +113,7 @@ rule [object-getClass-on-array]:
       'ListWrap(.KList)
     ) => 'Lit('Class(ArrT))
 when
-    Class ==K class objectClass andBool Id2String(MethodName) ==String "getClass"
+    Class ==K objectClass andBool Id2String(MethodName) ==String "getClass"
 
 /*@ String.toString(). For Object.toString() the implementation is in the library java code.*/
 rule [object-toString-on-String]:
@@ -139,7 +139,7 @@ rule [object-hashCode]:
       ...
     </store>
 when
-    Class ==K class objectClass andBool Id2String(MethodName) ==String "hashCode"
+    Class ==K objectClass andBool Id2String(MethodName) ==String "hashCode"
 
 //@\subsection{String methods}
 
