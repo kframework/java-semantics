@@ -299,18 +299,32 @@ rule [storeMethod]:
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <methods> Env:Map => Env[Class / Sig] </methods>
+    <methods> Env:Map (.Map => Sig |-> Class) </methods>
     ( .Bag => <methodDec>
-                <methodSignature> Sig </methodSignature>
-                <methodReturnType> ReturnType </methodReturnType>
-                <methodParams> 'ListWrap(Params) </methodParams>
-                <methodFirstLine> FirstLine </methodFirstLine>
-                <methodBody> Body </methodBody>
-                <methodAccessMode> Acc </methodAccessMode>
-                <methodContextType> CT </methodContextType>
-                <methodRoutineType> RT </methodRoutineType>
-              </methodDec>
-    )
+                     <methodSignature> Sig </methodSignature>
+                     <methodReturnType> ReturnType </methodReturnType>
+                     <methodParams> 'ListWrap(Params) </methodParams>
+                     <methodFirstLine> FirstLine </methodFirstLine>
+                     <methodBody> Body </methodBody>
+                     <methodAccessMode> Acc </methodAccessMode>
+                     <methodContextType> CT </methodContextType>
+                     <methodRoutineType> RT </methodRoutineType>
+                   </methodDec>
+         )
+when
+    notBool (Sig in keys(Env) andBool RT ==K constructorRT)
+
+/*@ Discard the default consturctor that was added by the rule [processTypeDecsInPCUPhase-ClassDec]
+    if this class already have a default constructor.
+*/
+rule [storeMethod-discard-default-constructor]:
+    <k>
+      storeMethod('ListWrap(.KList),_,_,_, constructorRT, _,_, Sig:Signature, _) => .
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    <methods>... Sig |-> _ ...</methods>
 
 syntax KLabel ::= "'ConstrDec"
                 | "'ConstrDecHead"

@@ -140,8 +140,10 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
     <rawImplements> _ => ImplTypesRaw </rawImplements>
     <rawDeclarations>
       _ => 'ListWrap(
-                //default constructor
-                //if there is a no-arguments constructor in Decls, it will overwrite this one
+                Decls,,
+
+                //Default constructor.
+                //If there is a no-arguments constructor in Decls, this one will be discarded
                 'ConstrDec(
                   'ConstrDecHead(
                     'ListWrap('Public(.KList)),,
@@ -151,8 +153,7 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
                     'None(.KList)
                   ),,
                   'ConstrBody('None(.KList),, 'ListWrap(.KList))
-                ),,
-                Decls
+                )
             )
     </rawDeclarations>
     <classContextType>

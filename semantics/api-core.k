@@ -125,7 +125,7 @@ rule [object-toString-on-String]:
       'ListWrap(.KList)
     ) => Str::stringClass
 when
-    Class ==K stringClass andBool Id2String(MethodName) ==String "toString"
+    Class ==K objectClass andBool Id2String(MethodName) ==String "toString"
 
 /*@Object.hashCode(). Returns the canonical memory location of the objectClosure. */
 rule [object-hashCode]:
