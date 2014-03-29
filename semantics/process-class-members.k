@@ -299,7 +299,7 @@ rule [storeMethod]:
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <methods> Env:Map (.Map => Sig |-> Class) </methods>
+    <methods> Env:Map => Env[Class / Sig] </methods>
     ( .Bag => <methodDec>
                      <methodSignature> Sig </methodSignature>
                      <methodReturnType> ReturnType </methodReturnType>
