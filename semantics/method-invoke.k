@@ -23,7 +23,7 @@ General structure:
       Name:Id
     )
   ),,
-  'ListWrap('Param(),, ...) - arguments
+  ['Param(),, ...] - arguments
 )
 */
 syntax KLabel ::= "'Invoke"
@@ -37,7 +37,7 @@ context 'Invoke('Method( 'MethodName( HOLE,, Name:Id ) ),, _)
 //totest - if qualifier evaluates to null, NullPoitnerException should be thrown after the evaluation of the arguments
 /* JLS \$15.12.4.2 - Evaluate Arguments. Arguments are evaluated regardless of the evaluation result of the qualifier.
 */
-context 'Invoke('Method('MethodName(_:KResult,, Name:Id )),, 'ListWrap(_,,HOLE,,_) )
+context 'Invoke('Method('MethodName(_:KResult,, Name:Id )),, [_,,HOLE,,_] )
 
 rule [Invoke-Method-Instance-On-Class]:
     <k>
@@ -47,14 +47,14 @@ rule [Invoke-Method-Instance-On-Class]:
           (Rest:KList/*ObjLayers*/,, layer(Class:ClassType, BI:BagItem, EnclosingObj:KResult),, _)
         )::Class:ClassType,,
         Name:Id
-        )),, 'ListWrap(ParamVals:KList)
+        )),, [ParamVals:KList]
       )
       => invokeImpl(
         lookupOverloadedMethod(
           sig(Name, getTypes(ParamVals)), getClassList(Rest,, layer(Class, BI, EnclosingObj)),
           mapWrap(.Map), noMethodRef
         ),
-        loc(OL)::Class, 'ListWrap(ParamVals)
+        loc(OL)::Class, [ParamVals]
       )
       ...
     </k>
@@ -64,10 +64,10 @@ when
     isKResult(ParamVals)
 
 rule [Invoke-Method-Static-On-Class]:
-    'Invoke('Method('MethodName(Class:ClassType,, Name:Id )),, 'ListWrap(ParamVals:KList) )
+    'Invoke('Method('MethodName(Class:ClassType,, Name:Id )),, [ParamVals:KList] )
     => invokeImpl(
       lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), Class, mapWrap(.Map), noMethodRef),
-      noValue, 'ListWrap(ParamVals)
+      noValue, [ParamVals]
     )
 when
     isKResult(ParamVals)
@@ -81,11 +81,11 @@ rule [Invoke-Method-Instance-On-Interface]:
           )::Class:ClassType,,
           Name:Id
         )),,
-        'ListWrap(ParamVals:KList)
+        [ParamVals:KList]
       )
       => invokeImpl(
         lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), ActualClass, mapWrap(.Map), noMethodRef),
-        loc(OL)::Class, 'ListWrap(ParamVals)
+        loc(OL)::Class, [ParamVals]
       )      ...
     </k>
     <classType> Class </classType>
@@ -98,21 +98,21 @@ rule [Invoke-Method-On-other]:
         QualRV:RawVal::QualT:RefType,,
         Name:Id
       )),,
-      'ListWrap(ParamVals:KList)
+      [ParamVals:KList]
     )
     => invokeImpl(
       lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), getLookupTargetType(QualT), mapWrap(.Map), noMethodRef),
-      QualRV::QualT, 'ListWrap(ParamVals)
+      QualRV::QualT, [ParamVals]
     )
 when
     getKLabel(QualRV) =/=KLabel 'objectClosure andBool QualRV =/=K null andBool isKResult(ParamVals)
 
 rule [Invoke-Method-On-Null]:
-    'Invoke( 'Method('MethodName( null::_,, _:Id )),, 'ListWrap(ParamVals:KList) )
+    'Invoke( 'Method('MethodName( null::_,, _:Id )),, [ParamVals:KList] )
     =>  'Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
-          'ListWrap( null::stringClass ),,
+          [ null::stringClass ],,
           'None(.KList)
         ))
 when
@@ -236,7 +236,7 @@ syntax K ::=  invokeImpl (
                 K,  //KResult - method call target
                     //  loc(OL)::_ - object location, target type for methods on non-object refs,
                     //  typed string or array, or noValue for static methods
-                K   //evaluates to 'ListWrap(ParamValues:List{KResult})
+                K   //evaluates to [ParamValues:List{KResult}]
               )
               [strict(1)]
 
@@ -250,7 +250,7 @@ rule [invokeImpl-Instance]:
       invokeImpl(
         methodRef(Sig:Signature, Class:ClassType),
         loc(OL:Int)::_,
-        'ListWrap(ParamValues:KList)
+        [ParamValues:KList]
       ) ~> K:K
        => bindTo(Params, ParamValues) ~> Body ~> 'Return('None(.KList))
     </k>
@@ -285,7 +285,7 @@ rule [invokeImpl-Instance]:
     <classType> Class </classType>
     <methodSignature> Sig </methodSignature>
     <methodReturnType> ReturnT:Type </methodReturnType>
-    <methodParams> 'ListWrap(Params:KList) </methodParams>
+    <methodParams> [Params:KList] </methodParams>
     <methodBody> Body:K </methodBody>
     <methodContextType> instanceCT </methodContextType>
     <methodRoutineType> methodRT </methodRoutineType>
@@ -296,7 +296,7 @@ rule [invokeImpl-Static]:
       invokeImpl(
         methodRef(Sig:Signature, Class:ClassType),
         noValue,
-        'ListWrap(ParamValues:KList)
+        [ParamValues:KList]
       ) ~> K:K
        => staticInit(Class) ~> bindTo(Params, ParamValues) ~> Body ~> 'Return('None(.KList))
     </k>
@@ -330,7 +330,7 @@ rule [invokeImpl-Static]:
     <classType> Class </classType>
     <methodSignature> Sig </methodSignature>
     <methodReturnType> ReturnT:Type </methodReturnType>
-    <methodParams> 'ListWrap(Params:KList) </methodParams>
+    <methodParams> [Params:KList] </methodParams>
     <methodBody> Body:K </methodBody>
     <methodContextType> staticCT </methodContextType>
     <methodRoutineType> methodRT </methodRoutineType>
@@ -346,7 +346,7 @@ syntax K ::= bindTo ( KList, // List{'Param(...)} - parameter declarations
 
 rule [bindTo]:
     bindTo('Param(_:K,, T:Type,, X:Id),, RestP:KList, TV:TypedVal,, RestV:KList)
-    => 'LocalVarDec(.K,, T:Type,,'ListWrap('VarDec(X)))
+    => 'LocalVarDec(.K,, T:Type,,['VarDec(X)])
       ~> 'ExprStm('Assign('ExprName(X),, cast(T, TV:TypedVal)))
       ~> bindTo(RestP, RestV)
 

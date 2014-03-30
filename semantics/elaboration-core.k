@@ -187,6 +187,9 @@ when
 syntax K ::= haveElabRes ( KList )          [function]
 rule haveElabRes(_,, elabRes(_),,_) => true
 
+//todo additional rule required since we introduced KListWrap
+rule haveElabRes(_,, KList2KLabel _,,elabRes(_),,_ (_),,_) => true
+
 /*@ The 3rd elaboration-phase wrapper for expressions. Represents the case when children are completely elaborated and
 unwrapped from elabRes(), but root node might not be elaborated yet. The implementation is scattered across all modules
 that deal with the elaboration phase.
@@ -254,5 +257,37 @@ rule elabEnd(           stmtAndExp(Stmt:K, cast(T:Type, Exp:K)) )
 
 //runtime
 rule stmtAndExp(Stmt:K, Exp:K) => Stmt ~> Exp
+
+/*@ \subsection{Elaboration of KListWrap - the list of terms} */
+//todo this section is a workaround t a serious K' bug that prevents [...] to be properly heated and cooled
+
+rule [elab-heat-KListWrap]:
+    (. => #if isElabNaked(K) ==K true
+            #then K
+            #else elab(K)
+          #fi
+    )
+    ~> elab([HeadKs:KList,, (K:K => CHOLE),, _:KList])
+when
+    isElabKList(HeadKs) andBool notBool isElabKResult(K) ==K true
+
+rule [elab-cool-KListWrap]:
+    (ElabK:ElabKResult => .) ~> elab([_,, (CHOLE => ElabK),, _])
+
+rule [elab-to-elabDispose-KListWrap]:
+    elab([K1:K,,ElabResL:KList]) => elabDispose([K1,,ElabResL])
+when
+    isElabKList(K1,,ElabResL) ==K true
+
+rule [elabDispose-process-KListWrap]:
+    elabDispose([_,, (elabRes(K:K) => K),, _])
+
+rule [elabDispose-to-elabEnd-KListWrap]:
+    elabDispose([K1:K,,Ks:KList]) => elabRes([K1,,Ks])
+when
+    notBool haveElabRes(Ks) ==K true
+
+rule [elab-to-elabRes-KListWrap-empty]:
+    elab([.KList]) => elabRes([.KList])
 
 endmodule

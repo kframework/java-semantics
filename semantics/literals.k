@@ -181,21 +181,21 @@ rule 'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
 
 //@ \subsection{String literals}
 
-//@ 'Lit('String('ListWrap('Chars(Str:String),, 'NamedEscape(_),, _:KList )))
+//@ 'Lit('String(['Chars(Str:String),, 'NamedEscape(_),, _:KList ]))
 syntax KLabel ::= "'String"
                 | "'Chars"
 
-rule  'Lit('String('ListWrap(K1:K,, K2:K,, Ks:KList)))
-      => 'Plus('Lit('String('ListWrap(K1))),,
-               'Lit('String('ListWrap(K2,, Ks)))
+rule  'Lit('String([K1:K,, K2:K,, Ks:KList]))
+      => 'Plus('Lit('String([K1])),,
+               'Lit('String([K2,, Ks]))
           )
 
-rule 'Lit('String('ListWrap('Chars(Str:String)))) => Str
+rule 'Lit('String(['Chars(Str:String)])) => Str
 
-rule 'Lit('String('ListWrap(K:K))) => toString('Lit('Char(K)))
+rule 'Lit('String([K:K])) => toString('Lit('Char(K)))
 when getKLabel(K) =/=KLabel 'Chars
 
-rule 'Lit('String('ListWrap(.KList))) => ""
+rule 'Lit('String([.KList])) => ""
 
 //@ \subsection{Null literal}
 

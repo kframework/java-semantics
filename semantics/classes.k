@@ -27,7 +27,7 @@ module CLASSES
 
 /*@ \subsection{New instance creation}*/
 
-//@ 'NewInstance( _:K,, Class:ClassType,, 'ListWrap(Args),, 'None(.KList) )
+//@ 'NewInstance( _:K,, Class:ClassType,, [Args],, 'None(.KList) )
 syntax KLabel ::= "'NewInstance"
 
 /*@Unpack 'NewInstance back into 'QNewInstance.
@@ -38,7 +38,7 @@ rule [NewInstance-to-QNewInstance-unpack]:
     'NewInstance(Arg1:K,, Class:ClassType,, ActualArgsList:K,, 'None(.KList))
     => 'QNewInstance(noValue,, Arg1,, Class,, 'None(.KList),, ActualArgsList,, 'None(.KList))
 
-//@ 'QNewInstance( Qual,, _:K,, Class,, _:K,, 'ListWrap(Args),, 'None(.KList) )
+//@ 'QNewInstance( Qual,, _:K,, Class,, _:K,, [Args],, 'None(.KList) )
 syntax KLabel ::= "'QNewInstance"
 
 //@Resolve new instance qualifier
@@ -47,7 +47,7 @@ context 'QNewInstance(HOLE,, _:KList)
 //totest model check - test the arguments evaluation order
 /*@ Resolve new instance expression parameter values
 */
-context 'QNewInstance(_:KResult,,_:K,,_:K,,_:K,, 'ListWrap(_,,HOLE,,_),, _)
+context 'QNewInstance(_:KResult,,_:K,,_:K,,_:K,, [_,,HOLE,,_],, _)
 
 rule [QNewInstance-resolve-class]:
     'QNewInstance(_::QualT:ClassType,,_:K,, (Name:Id => getClassType(toPackage(QualT), Name)),,_:K,, _:K,, _)
@@ -61,7 +61,7 @@ rule [QNewInstance]:
         _:K,,
         Class:ClassType,,
         _:K,,
-        'ListWrap( Vals:KList ),,
+        [ Vals:KList ],,
         _:K
       )
       => staticInit(Class)
@@ -147,7 +147,7 @@ rule [invokeConstr]:
     => setEncloser(lookup(OL, Class), Class, EnclosingObj)
     ~> 'ExprStm('Invoke(
           'Method('MethodName( typedLookup(OL),, getConsName(Class) )),,
-          'ListWrap( Vals )
+          [ Vals ]
         ))
 
 /*@ Sets the enclosing object for a given object.
@@ -207,8 +207,8 @@ rule [cast-RefType]:
           'Throw('NewInstance(
                   'None(.KList),,
                   class String2Id("java.lang.ClassCastException"),,
-                  'ListWrap( 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to "),,
-                      toString(RT1)) ),,
+                  [ 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to "),,
+                      toString(RT1)) ],,
                   'None(.KList)
           ))
         )
@@ -218,16 +218,16 @@ rule [cast-RefType]:
 rule [SuperConstrInv-to-QSuperConstrInv-unpack]:
     'SuperConstrInv(Arg1:K,, ArgsList:K) => 'QSuperConstrInv(noValue,, Arg1,, ArgsList)
 
-//@ Qual:K,, _:K,, 'ListWrap( Args:KList )
+//@ Qual:K,, _:K,, [ Args:KList ]
 syntax KLabel ::=  "'QSuperConstrInv"
 
 rule [QSuperConstrInv]:
     <k>
-      'QSuperConstrInv(Qual:K,, _,, 'ListWrap( Args:KList ))
+      'QSuperConstrInv(Qual:K,, _,, [ Args:KList ])
       => setEncloser('QThis(Class), BaseClass, Qual)
          ~> 'ExprStm('Invoke(
               'Method('MethodName(superMethod(cast(BaseClass, 'QThis(Class))),, getConsName(BaseClass))),,
-              'ListWrap(Args)
+              [Args]
             ))
       ...
     </k>
@@ -235,15 +235,15 @@ rule [QSuperConstrInv]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
-//@ _:K,, 'ListWrap( Args:KList )
+//@ _:K,, [ Args:KList ]
 syntax KLabel ::= "'AltConstrInv"
 
 rule [AltConstrInv]:
     <k>
-      'AltConstrInv(_,, 'ListWrap( Args:KList ))
+      'AltConstrInv(_,, [ Args:KList ])
       => 'ExprStm('Invoke(
                 'Method('MethodName( 'QThis(Class),, getConsName(Class) )),,
-                'ListWrap(Args)
+                [Args]
           ))
       ...
     </k>

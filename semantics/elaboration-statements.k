@@ -9,12 +9,13 @@ module ELABORATION-STATEMENTS
     imports ELABORATION-CORE
     imports PROCESS-LOCAL-CLASSES //for localClassGetExtraArgs
 
-//@ Elaboration of 'ListWrap, 'Block, 'For or 'Catch - nodes that may contain variable declarations.
+//@ Elaboration of 'KListWrap, 'Block, 'For or 'Catch - nodes that may contain variable declarations.
 
-/*@ 'ListWrap nodes need to be elaborated left-to-right. Required when direct child elements might contain variable
+//todo this rule was replaced by a special section for elaboration of KListWrap. See other to-do-s.
+/*@ 'KListWrap nodes need to be elaborated left-to-right. Required when direct child elements might contain variable
 declarations.
 */
-rule customElabHeating('ListWrap, HeadKs:KList,, K:K) => isElabKList(HeadKs)
+//rule customElabHeating('KListWrap, HeadKs:KList,, K:K) => isElabKList(HeadKs)
 
 syntax K ::= isVarDecHolderLabel ( KLabel )                 [function]
 rule isVarDecHolderLabel('Block) => true
@@ -58,43 +59,43 @@ rule [elab-LocalVarDecStm-desugar]:
 context elab('LocalVarDec(_:K,, HOLE,, _:K))
 
 rule [elab-LocalVarDec-multi-desugar]:
-    elab('LocalVarDec(K:K,, T:Type,, 'ListWrap(Var1:K,, Var2:K,, VarDecs:KList))
-      => 'ListWrap('LocalVarDec(K,, T,, 'ListWrap(Var1)),,
-            'LocalVarDec(K,, T,, 'ListWrap(Var2,, VarDecs)))
+    elab('LocalVarDec(K:K,, T:Type,, [Var1:K,, Var2:K,, VarDecs:KList])
+      => ['LocalVarDec(K,, T,, [Var1]),,
+            'LocalVarDec(K,, T,, [Var2,, VarDecs])]
     )                                                   [structural]
 
 rule [elab-LocalVarDec-with-init-desugar]:
-    elab('LocalVarDec(K:K,, T:Type,, 'ListWrap('VarDec(X:Id,,InitExp:K)))
-    => 'ListWrap('LocalVarDec(K,, T,, 'ListWrap('VarDec(X:Id))),,
-        'ExprStm('Assign('ExprName(X),, InitExp))))
+    elab('LocalVarDec(K:K,, T:Type,, ['VarDec(X:Id,,InitExp:K)])
+    => ['LocalVarDec(K,, T,, ['VarDec(X:Id)]),,
+        'ExprStm('Assign('ExprName(X),, InitExp))])
 when
     getKLabel(InitExp) =/=KLabel 'ArrayInit             [structural]
 
 rule [elab-LocalVarDec]:
     <k>
-      elab('LocalVarDec(K:K,, T:Type,, 'ListWrap('VarDec(X:Id))))
-      => elabRes('LocalVarDec(K,, T,, 'ListWrap('VarDec(X))))
+      elab('LocalVarDec(K:K,, T:Type,, ['VarDec(X:Id)]))
+      => elabRes('LocalVarDec(K,, T,, ['VarDec(X)]))
       ...
     </k>
     <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv>
 
 //@\subsection{Elaboration of SuperConstrInv, QSuperConstrInv, AltConstrInv}
 
-//@ _:K,, 'ListWrap( Args:KList )
+//@ _:K,, [ Args:KList ]
 syntax KLabel ::=  "'SuperConstrInv"
 
 //@ Desugaring unqualified superclass constructor invocation into a qualified one
 rule [elab-SuperConstrInv-desugar]:
     <k>
       elab(
-        'SuperConstrInv(K:K,, 'ListWrap( Args:KList ))
+        'SuperConstrInv(K:K,, [ Args:KList ])
         =>  'QSuperConstrInv(
               #if CT ==K instanceCT
                 #then findQualifierOfType(EnclosingClass, BaseEnclosingClass)
                 #else noValue
               #fi,,
               K,,
-              'ListWrap(Args)
+              [Args]
             )
       )
       ...
@@ -118,7 +119,7 @@ rule customElabEnd('QSuperConstrInv) => true
 rule [elabEnd-QSuperConstrInv-local-augment-arguments]:
     <k>
       (. => localClassGetExtraArgs(BaseClass))
-      ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, 'ListWrap( Args:KList )))
+      ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, [ Args:KList ]))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -128,10 +129,10 @@ rule [elabEnd-QSuperConstrInv-local-augment-arguments]:
 //@ QSuperConstrInv lookup is always unqualified
 rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
     <k>
-      ( elabRes('ListWrap(ExtraArgs:KList))
+      ( elabRes([ExtraArgs:KList])
         => lookupMethod(BaseClass, true, getConsName(BaseClass), resultListWrap(Args,,ExtraArgs))
       )
-      ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, 'ListWrap( Args:KList )))
+      ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, [ Args:KList ]))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -140,22 +141,22 @@ rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
 
 rule [elabEnd-QSuperConstrInv-qualified]:
     methodLookupResult(_, ExpectedParamExps:KList, instanceCT)
-    ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, 'ListWrap(_)))
-    => elabRes('QSuperConstrInv(Qual,, Arg2,, 'ListWrap( ExpectedParamExps )))
+    ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, [_]))
+    => elabRes('QSuperConstrInv(Qual,, Arg2,, [ ExpectedParamExps ]))
 when
     Qual =/=K noValue
 
 rule [elabEnd-QSuperConstrInv-to-SuperConstrInv]:
     methodLookupResult(_, ExpectedParamExps:KList, instanceCT)
-    ~> elabEnd('QSuperConstrInv(noValue,, Arg2:K,, 'ListWrap(_)))
-    => elabRes('SuperConstrInv(Arg2,, 'ListWrap( ExpectedParamExps )))
+    ~> elabEnd('QSuperConstrInv(noValue,, Arg2:K,, [_]))
+    => elabRes('SuperConstrInv(Arg2,, [ ExpectedParamExps ]))
 
 rule customElabEnd('AltConstrInv) => true
 
 rule [elabEnd-AltConstrInv-local-augment-arguments]:
     <k>
       (. => localClassGetExtraArgs(Class))
-      ~> elabEnd('AltConstrInv(Arg1:K,, 'ListWrap( Args:KList )))
+      ~> elabEnd('AltConstrInv(Arg1:K,, [ Args:KList ]))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -163,17 +164,17 @@ rule [elabEnd-AltConstrInv-local-augment-arguments]:
 //@ AltConstrInv lookup is always unqualified
 rule [elabEnd-AltConstrInv-to-lookupMethod]:
     <k>
-      ( elabRes('ListWrap(ExtraArgs:KList))
+      ( elabRes([ExtraArgs:KList])
         => lookupMethod(Class, true, getConsName(Class), resultListWrap(Args,,ExtraArgs))
       )
-      ~> elabEnd('AltConstrInv(Arg1:K,, 'ListWrap( Args:KList )))
+      ~> elabEnd('AltConstrInv(Arg1:K,, [ Args:KList ]))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
 
 rule [elab-AltConstrInv]:
     methodLookupResult(_, ExpectedParamExps:KList, instanceCT)
-    ~> elabEnd('AltConstrInv(Arg1:K,, 'ListWrap(_)))
-    => elabRes('AltConstrInv(Arg1:K,, 'ListWrap( ExpectedParamExps )))
+    ~> elabEnd('AltConstrInv(Arg1:K,, [_]))
+    => elabRes('AltConstrInv(Arg1:K,, [ ExpectedParamExps ]))
 
 endmodule

@@ -238,7 +238,7 @@ closures, so that their type contract can be checked at invocation
 time.  The rule below is conceptually similar to that of untyped KOOL;
 the only difference is the addition of the types.  */
 
-//@ 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, 'ListWrap(_,, 'Param(_:K,, HOLE,,_:K),, _),, _:K),, _:K)
+//@ 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, [_,, 'Param(_:K,, HOLE,,_:K),, _],, _:K),, _:K)
 syntax KLabel ::= "'MethodDec"
                 | "'MethodDecHead"
 
@@ -246,17 +246,17 @@ syntax KLabel ::= "'MethodDec"
 context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _),, _)
 
 //Resolve parameter types
-context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, 'ListWrap(_,, 'Param(_:K,, HOLE,,_:K),, _),, _:K),, _:K)
+context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, [_,, 'Param(_:K,, HOLE,,_:K),, _],, _:K),, _:K)
 
 rule [MethodDec]:
     <k>
       'MethodDec(
         'MethodDecHead(Modifiers:K,, _:K,, ReturnType:Type,, Name:Id,,
-            'ListWrap(Params:KList),, _:K
+            [Params:KList],, _:K
         ),,
         Body:K
       )
-      => storeMethod('ListWrap(Params),
+      => storeMethod([Params],
             getContextType(Modifiers), getAccessMode(Modifiers), isSynchronized(Modifiers), methodRT, noValue, Body,
             sig(Name, getTypes(Params)), ReturnType)
       ...
@@ -275,12 +275,12 @@ syntax KLabel ::= "'AbstractMethodDec"
 rule [AbstractMethodDec]:
     'AbstractMethodDec(_:K,, Ks:KList)
     =>  'MethodDec(
-          'MethodDecHead('ListWrap('Public(.KList),,'Abstract(.KList)),, Ks),,
+          'MethodDecHead(['Public(.KList),,'Abstract(.KList)],, Ks),,
           'NoMethodBody(.KList)
         )
 
 syntax K ::=  storeMethod (
-                K,           //'ListWrap(Params)
+                K,           //[Params]
                 ContextType, //will evaluate to ContextType - staticCT or instanceCT
                 AccessMode,  //will evaluate to AccessMode
                 TypedVal,    //IsSync:bool - whether method is synchronized or not
@@ -293,7 +293,7 @@ syntax K ::=  storeMethod (
 
 rule [storeMethod]:
     <k>
-      storeMethod('ListWrap(Params:KList), CT:ContextType, Acc:AccessMode, false::bool, RT:RoutineType, FirstLine:K,
+      storeMethod([Params:KList], CT:ContextType, Acc:AccessMode, false::bool, RT:RoutineType, FirstLine:K,
                   Body:K, Sig:Signature, ReturnType:Type) => .
       ...
     </k>
@@ -303,7 +303,7 @@ rule [storeMethod]:
     ( .Bag => <methodDec>
                      <methodSignature> Sig </methodSignature>
                      <methodReturnType> ReturnType </methodReturnType>
-                     <methodParams> 'ListWrap(Params) </methodParams>
+                     <methodParams> [Params] </methodParams>
                      <methodFirstLine> FirstLine </methodFirstLine>
                      <methodBody> Body </methodBody>
                      <methodAccessMode> Acc </methodAccessMode>
@@ -319,7 +319,7 @@ when
 */
 rule [storeMethod-discard-default-constructor]:
     <k>
-      storeMethod('ListWrap(.KList),_,_,_, constructorRT, _,_, Sig:Signature, _) => .
+      storeMethod([.KList],_,_,_, constructorRT, _,_, Sig:Signature, _) => .
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -337,7 +337,7 @@ rule [ConstrDec-SuperCall-Desugar]:
         'ConstrBody(
           (
             'None(_)
-            => 'Some('SuperConstrInv( 'None(.KList),, 'ListWrap(.KList) ))
+            => 'Some('SuperConstrInv( 'None(.KList),, [.KList] ))
           ),,
           _:K
         )
@@ -366,25 +366,25 @@ when
     Class ==K objectClass
 
 //Resolve parameter types
-context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, 'ListWrap(_,, 'Param(_:K,, HOLE,,_:K),, _),, _),, _:K)
+context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, [_,, 'Param(_:K,, HOLE,,_:K),, _],, _),, _:K)
 
 rule [ConstrDec]:
     <k>
-      'ConstrDec('ConstrDecHead(Modifiers:K,, _:K,, Name:Id,, 'ListWrap(Params:KList),, _),,
+      'ConstrDec('ConstrDecHead(Modifiers:K,, _:K,, Name:Id,, [Params:KList],, _),,
           'ConstrBody(
-        'Some(FirstLine:K) ,,'ListWrap(BodyKs:KList)))
-      => storeMethod('ListWrap(Params),
+        'Some(FirstLine:K) ,,[BodyKs:KList]))
+      => storeMethod([Params],
           instanceCT, getAccessMode(Modifiers), isSynchronized(Modifiers), constructorRT, FirstLine,
-          'ListWrap(
+          [
 
             //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
             //Invocation of instance initializer converted into a method.
             #if getKLabel(FirstLine) ==KLabel 'SuperConstrInv orBool getKLabel(FirstLine) ==KLabel 'QSuperConstrInv
-              #then 'ExprStm('Invoke('Method('MethodName( String2Id("$instance_init") )),, 'ListWrap(.KList)))
-              #else 'ListWrap(.KList) //vacuous
+              #then 'ExprStm('Invoke('Method('MethodName( String2Id("$instance_init") )),, [.KList]))
+              #else [.KList] //vacuous
             #fi,,
             BodyKs
-          ),
+          ],
           sig(getConsName(Class), getTypes(Params)), void)
       ...
     </k>
@@ -395,18 +395,18 @@ when paramTypesResolved(Params)
 syntax K ::= getConsName ( ClassType )                               [function]
 rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(ClassId))
 
-//@ 'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,, InitExp:K),, _))
+//@ 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, InitExp:K),, _])
 syntax KLabel ::= "'FieldDec"
 
 //resolve field declaration type
 context 'FieldDec(_:K,, HOLE,, _)
 
 rule [FieldDec-Multi-Desugar]:
-    (. => 'FieldDec(SomeK,, T,, 'ListWrap(K1))) ~>
-    'FieldDec(SomeK:K,, T:Type,, 'ListWrap((K1:K => .KList),, K2:K,, Ks:KList))
+    (. => 'FieldDec(SomeK,, T,, [K1])) ~>
+    'FieldDec(SomeK:K,, T:Type,, [(K1:K => .KList),, K2:K,, Ks:KList])
 
 rule [FieldDec-with-init-desugar]:
-    'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .KList)) ))
+    'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
     ~> (. => 'InstanceInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
@@ -414,10 +414,10 @@ when
         [structural]
 
 rule [FieldDec-to-LocalVarDec]:
-    <k> 'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id))) => . ...</k>
+    <k> 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <fieldDecs> 'ListWrap(_,, ( .KList => 'LocalVarDec(.K,, T,, 'ListWrap('VarDec(X))) )) </fieldDecs>
+    <fieldDecs> [_,, ( .KList => 'LocalVarDec(.K,, T,, ['VarDec(X)]) )] </fieldDecs>
 when
     getContextType(Modifiers) ==K instanceCT
         [structural]
@@ -428,13 +428,13 @@ rule [InstanceInit]:
     <k> 'InstanceInit(K:K) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <instanceInit> 'ListWrap(_,,(.KList => K)) </instanceInit>
+    <instanceInit> [_,,(.KList => K)] </instanceInit>
         [structural]
 
 /*@ Desugaring a static field declaration with initializer into a declaration without initializer.
 Followed by a static initializer block, if this field is not a compile-time constant.*/
 rule [FieldDec-StaticInit-Desugar]:
-    'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,,(InitExp:K => .KList)) ))
+    'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
     ~> (. => 'StaticInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
@@ -447,7 +447,7 @@ when
         [structural]
 
 rule [FieldDec-Static]:
-    <k> 'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id))) => . ...</k>
+    <k> 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticEnv> Env:Map => Env[L/X] </staticEnv>
@@ -463,7 +463,7 @@ rule [StaticInit-Save]:
     <k> 'StaticInit(K:K) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <staticInit> 'ListWrap(_,,(.KList => K)) </staticInit>
+    <staticInit> [_,,(.KList => K)] </staticInit>
         [structural]
 
 syntax KLabel ::= "'ConstantDec"
@@ -473,16 +473,16 @@ syntax KLabel ::= "'ConstantDec"
   Interface fields are not necessarily compile-time constants.
 */
 rule [ConstantDec-Desugar]:
-    'ConstantDec('ListWrap(ModifiersKs:KList),, TypeK:K,, VarDecs:K)
+    'ConstantDec([ModifiersKs:KList],, TypeK:K,, VarDecs:K)
     => 'FieldDec(
-          'ListWrap(ModifiersKs,, 'Public(.KList),, 'Static(.KList),, 'Final(.KList)),,
+          [ModifiersKs,, 'Public(.KList),, 'Static(.KList),, 'Final(.KList)],,
           TypeK,, VarDecs
         )
 
 /*@Subsection compile-time constants*/
 
 //compute the value of a compile-time constant
-context 'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,, HOLE) ))
+context 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, HOLE) ])
 when
             getContextType(Modifiers) ==K staticCT
     //condition for not being compile-time constant
@@ -490,7 +490,7 @@ when
 
 rule [FieldDec-compile-time-constant]:
     <k>
-      'FieldDec(Modifiers:K,, T:Type,, 'ListWrap('VarDec(X:Id,, TV:TypedVal) )) => .
+      'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, TV:TypedVal) ]) => .
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -511,7 +511,7 @@ syntax K ::= "convertInstanceInitIntoMethod"
 rule [convertInstanceInitIntoMethod]:
     <k>
       convertInstanceInitIntoMethod
-      => storeMethod('ListWrap(.KList), instanceCT, private, false::bool, methodRT, noValue, 'Block(InstanceInit),
+      => storeMethod([.KList], instanceCT, private, false::bool, methodRT, noValue, 'Block(InstanceInit),
                       sig(String2Id("$instance_init"), types(.KList)), void)
       ...
     </k>
@@ -522,41 +522,41 @@ rule [convertInstanceInitIntoMethod]:
 //@ \subsection{Auxiliary functions}
 
 syntax K ::=  getContextType (
-                K               //'ListWrap(...) - the list of method attributes
+                K               //[...] - the list of method attributes
               )
               [function]
 
-rule getContextType('ListWrap('Static(_),,_)) => staticCT
+rule getContextType(['Static(_),,_]) => staticCT
 
-rule getContextType('ListWrap((KL:KLabel(_) => .KList),, _))
+rule getContextType([(KL:KLabel(_) => .KList),, _])
 when        KL =/=KLabel 'Static
 
-rule getContextType('ListWrap(.KList))      => instanceCT
+rule getContextType([.KList])      => instanceCT
 
 //@ Evaluates to true::bool if synchronized is among modifiers, false otherwise
 syntax K ::=  isSynchronized (
-                K //'ListWrap(...) - the list of method attributes
+                K //[...] - the list of method attributes
               )
               [function]
 
-rule isSynchronized('ListWrap('Synchronized(_),,_)) => true::bool
+rule isSynchronized(['Synchronized(_),,_]) => true::bool
 
-rule isSynchronized('ListWrap((KL:KLabel(_) => .KList),, _))
+rule isSynchronized([(KL:KLabel(_) => .KList),, _])
 when        KL =/=KLabel 'Synchronized
 
-rule isSynchronized('ListWrap(.KList)) => false::bool
+rule isSynchronized([.KList]) => false::bool
 
 //@ Used to provide an approximate implementation of the distinction between static constant and non-constant fields.
 syntax K ::=  isFinal (
-                K //'ListWrap(...) - the list of method attributes
+                K //[...] - the list of method attributes
               )
               [function]
 
-rule isFinal('ListWrap('Final(_),,_)) => true
+rule isFinal(['Final(_),,_]) => true
 
-rule isFinal('ListWrap((KL:KLabel(_) => .KList),, _))
+rule isFinal([(KL:KLabel(_) => .KList),, _])
 when        KL =/=KLabel 'Final
 
-rule isFinal('ListWrap(.KList))      => false
+rule isFinal([.KList])      => false
 
 endmodule

@@ -197,6 +197,6 @@ syntax KLabel ::= /*"'Some"
                 | "'Volatile"
                 | "'StrictFP"*/
 //                | "'Id"
-                //"'ListWrap"   //the only KLabel not is SDF
+                //"'KListWrap"   //the only KLabel not is SDF
 
 endmodule

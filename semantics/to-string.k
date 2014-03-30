@@ -72,7 +72,7 @@ rule [toString-ClassType-Inner]:
 rule toString(objectClosure(I:Int, Obj:KList/*ObjLayers*/) :: T:Type)
     =>  'Invoke(
           'Method('MethodName(objectClosure(I, Obj) :: T,, String2Id("toString"))),,
-          'ListWrap(.KList)
+          [.KList]
         )
         [anywhere]
 
@@ -95,7 +95,7 @@ rule debugString(B:Bool) => Bool2String(B)
 rule debugString(Fl:Float) => Float2String(Fl)
 rule debugString(Str:String) => Str
 rule debugString(types(Ks:KList)) => "types(" +String debugStringList(Ks) +String ")"
-rule debugString('ListWrap(Ks:KList)) => "'ListWrap(" +String debugStringList(Ks) +String ")"
+rule debugString([Ks:KList]) => "[" +String debugStringList(Ks) +String "]"
 
 rule debugString(KL:KLabel(Ks:KList)) => KLabel2String(KL) +String "(" +String debugStringList(Ks) +String ")"
 when
@@ -132,6 +132,6 @@ rule isDebugStringLeaf(_:Bool) => true
 rule isDebugStringLeaf(_:Float) => true
 rule isDebugStringLeaf(_:String) => true
 rule isDebugStringLeaf(_:Types) => true
-rule isDebugStringLeaf('ListWrap(_)) => true
+rule isDebugStringLeaf([_]) => true
 
 endmodule

@@ -51,6 +51,7 @@ syntax K ::=  importOnDemandImpl (
 rule [importOnDemandImpl-public]:
     <k> importOnDemandImpl((X:Id |-> Class:ClassType => .) _) ...</k>
     <compUnitImports> Imp:Map => Imp[Class / X] </compUnitImports>
+    //<compUnitImports> (Imp:Map => update(Imp, X |-> Class)) </compUnitImports>
     <classType> Class </classType>
     <classAccessMode> public </classAccessMode>
 

@@ -14,11 +14,11 @@ module PROCESS-TYPE-NAMES
 
 /*@ \subsection{Compilation units and packages}*/
 
-//@ 'PackageName('ListWrap(Ks))
+//@ 'PackageName([Ks])
 syntax KLabel ::= "'PackageName"
 
 rule [PackageName-Start]:
-    'PackageName('ListWrap(Ks:KList)) => packageNameImpl("", Ks:KList)                  [structural]
+    'PackageName([Ks:KList]) => packageNameImpl("", Ks:KList)                  [structural]
 
 //Aux construct for processing packages
 syntax K ::= packageNameImpl ( String, KList )
@@ -44,7 +44,7 @@ syntax KLabel ::= "'CompilationUnit"
 
 rule [CompilationUnit-DefaultPackage-Desugar]:
     'CompilationUnit(
-      ( 'None(_) => 'Some('PackageDec(.K,, 'PackageName( 'ListWrap(.KList) ))) ),,
+      ( 'None(_) => 'Some('PackageDec(.K,, 'PackageName( [.KList] ))) ),,
       _
     )
 
@@ -54,11 +54,11 @@ context 'CompilationUnit('Some('PackageDec(_:K,, HOLE)),, _)
 rule [CompilationUnit]:
     <k>
       'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _:K,,
-          'ListWrap(Decs:KList)
+          [Decs:KList]
       ) => processTypeNames(Decs, Pack)
       ...
     </k>
-     <globalPhase> ProcTypeNamesPhase  </globalPhase>
+    <globalPhase> ProcTypeNamesPhase </globalPhase>
 
 /*@ \subsection{Class declaration}*/
 
@@ -115,8 +115,8 @@ rule [processTypeNames-Discard]:
   have to extract the list of memers from the body and pass them to processTypeNames.
 */
 syntax K ::= processInnerTypes ( K , PackageId )
-rule processInnerTypes('ClassBody('ListWrap(Ks:KList)), Pack:PackageId) => processTypeNames(Ks, Pack)
-rule processInnerTypes('ListWrap(Ks:KList), Pack:PackageId) => processTypeNames(Ks, Pack)             //interface body
+rule processInnerTypes('ClassBody([Ks:KList]), Pack:PackageId) => processTypeNames(Ks, Pack)
+rule processInnerTypes([Ks:KList], Pack:PackageId) => processTypeNames(Ks, Pack)             //interface body
 
 /*@ \subsection{Auxiliary constructs}*/
 

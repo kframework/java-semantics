@@ -11,7 +11,7 @@ syntax KLabel ::= "'AmbName"
 
 //@ Both unqualified and qualified AmbName.
 rule [elabEnd-AmbName]:
-    elabEnd('AmbName(Ks:KList)) => elabEnd('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName('ListWrap(Ks))
+    elabEnd('AmbName(Ks:KList)) => elabEnd('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName([Ks])
 
 rule [elabEnd-ExprName-localVar-ok]:
     <k> elabEnd('ExprName(X:Id)) => elabRes(cast(T, 'ExprName(X))) ...</k>
@@ -104,7 +104,7 @@ syntax K ::=  elabLookup (
 rule [elabLookup-Found-instance]:
     <k> elabLookup(X:Id, Class:ClassType) => fieldEntry(Class, X, T, instanceCT) ...</k>
     <classType> Class </classType>
-    <fieldDecs> 'ListWrap(_,, 'LocalVarDec(.K,, T:Type,, 'ListWrap('VarDec(X))),, _) </fieldDecs>
+    <fieldDecs> [_,, 'LocalVarDec(.K,, T:Type,, ['VarDec(X)]),, _] </fieldDecs>
 
 rule [elabLookup-Found-static]:
     <k> elabLookup(X:Id, Class:ClassType) => fieldEntry(Class, X, T, staticCT) ...</k>
@@ -129,7 +129,7 @@ rule [elabLookup-NextClass]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
     <implements> BaseInterfaces:Set </implements>
-    <fieldDecs> 'ListWrap(InstanceVarDecs:KList) </fieldDecs>
+    <fieldDecs> [InstanceVarDecs:KList] </fieldDecs>
     <staticEnv> StaticEnv:Map </staticEnv>
     <constantEnv> ConstantEnv:Map </constantEnv>
 when
@@ -148,11 +148,11 @@ rule [elabLookup-Set-NotFound]:
 syntax K ::=  nameInVarDecs(
                 Id,   //Target name
                 KList //The list of variable declarations, each of the form
-                      //  'LocalVarDec(.K,, T:Type,, 'ListWrap('VarDec(X)))
+                      //  'LocalVarDec(.K,, T:Type,, ['VarDec(X)])
               )
               [function]
 
-rule nameInVarDecs(X:Id, (_,, 'LocalVarDec(.K,, T:Type,, 'ListWrap('VarDec(X))),, _)) => true
+rule nameInVarDecs(X:Id, (_,, 'LocalVarDec(.K,, T:Type,, ['VarDec(X)]),, _)) => true
 
 syntax KLabel ::= "'This"
 

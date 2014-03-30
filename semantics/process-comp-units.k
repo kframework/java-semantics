@@ -39,7 +39,7 @@ rule [ProcCompUnitsPhase-start]:
 rule [CompilationUnit]:
     <k>
       'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),,
-          ImpDecs:K,, 'ListWrap(Ks:KList)
+          ImpDecs:K,, [Ks:KList]
       )
       => compUnitImportsStart(Pack) ~> ImpDecs ~> processTypeDecsInPCUPhase(Ks, Pack, noClass)
       ...
@@ -77,13 +77,13 @@ rule [processTypeDecsInPCUPhase-typeDec-ComputeFullName]:
 /*@
 'ClassDec(
   'ClassDecHead(
-    'ListWrap(Modifiers),,
+    [Modifiers],,
     Class:ClassType,,
     'None(.KList),,
     'Some('SuperDec( BaseClassRaw - extends declaration )),,
-    'Some('ImplementsDec('ListWrap( ImplTypesRaw - implements declarations )))
+    'Some('ImplementsDec([ ImplTypesRaw - implements declarations ]))
   ),,
-  'ClassBody( 'ListWrap( Decls - member declarations ) )
+  'ClassBody( [ Decls - member declarations ] )
 )
 */
 syntax KLabel ::= "'ClassDec"
@@ -107,13 +107,13 @@ rule [ClassDec-NoExtendsDesugar]:
 
 rule [ClassDec-NoImplementsDesugar]:
     processTypeDecsInPCUPhase('ClassDec('ClassDecHead(_:K,, Class:ClassType,, _:K,, _:K,,
-        ( 'None(.KList) => 'Some('ImplementsDec('ListWrap(.KList))) )
+        ( 'None(.KList) => 'Some('ImplementsDec([.KList])) )
       ),, _:K
     ), _,_)                [structural]
 
 rule [InterfaceDec-NoExtendsDesugar]:
     processTypeDecsInPCUPhase('InterfaceDec('InterfaceDecHead(_:K,, Class:ClassType,, _:K,,
-        ( 'None(.KList) => 'Some('ExtendsInterfaces('ListWrap(.KList))) )
+        ( 'None(.KList) => 'Some('ExtendsInterfaces([.KList])) )
       ),, _:K
     ), _,_)                [structural]
 
@@ -125,7 +125,7 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
             'Some('SuperDec(BaseClassRaw:K)),,
             'Some('ImplementsDec(ImplTypesRaw:K))
           ),,
-          'ClassBody( 'ListWrap(Decls:KList) )
+          'ClassBody( [Decls:KList] )
         ),
         Pack:PackageId, OuterClass:ClassType
       )
@@ -139,22 +139,22 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
     <rawExtends> _ => BaseClassRaw </rawExtends>
     <rawImplements> _ => ImplTypesRaw </rawImplements>
     <rawDeclarations>
-      _ => 'ListWrap(
+      _ => [
                 Decls,,
 
                 //Default constructor.
                 //If there is a no-arguments constructor in Decls, this one will be discarded
                 'ConstrDec(
                   'ConstrDecHead(
-                    'ListWrap('Public(.KList)),,
+                    ['Public(.KList)],,
                     'None(.KList),,
                     getSimpleName(Class),,
-                    'ListWrap(.KList),,
+                    [.KList],,
                     'None(.KList)
                   ),,
-                  'ConstrBody('None(.KList),, 'ListWrap(.KList))
+                  'ConstrBody('None(.KList),, [.KList])
                 )
-            )
+            ]
     </rawDeclarations>
     <classContextType>
       _ =>  #if OuterClass ==K noClass
@@ -174,7 +174,7 @@ rule [processTypeDecsInPCUPhase-IInterfaceDec]:
           'InterfaceDecHead( _:K,, Class:ClassType,, _:K,,
             'Some('ExtendsInterfaces(ImplTypesRaw:K))
           ),,
-          'ListWrap(Decls:KList)
+          [Decls:KList]
         ),
         Pack:PackageId, OuterClass:ClassType
       )
@@ -187,7 +187,7 @@ rule [processTypeDecsInPCUPhase-IInterfaceDec]:
     <enclosingClass> _ => OuterClass </enclosingClass>
     <rawExtends> _ => noClass </rawExtends>
     <rawImplements> _ => ImplTypesRaw </rawImplements>
-    <rawDeclarations> _ => 'ListWrap(Decls) </rawDeclarations>
+    <rawDeclarations> _ => [Decls] </rawDeclarations>
     <classContextType> _ => staticCT </classContextType>
 
 /*@ If the given type is top-level, then save <imports> from the <compUnitImports> cell.

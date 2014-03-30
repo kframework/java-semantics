@@ -20,7 +20,7 @@ module API-CORE
 context
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType), _,
-      'ListWrap(HOLE)
+      [HOLE]
     )
 when
     Class ==K class String2Id("java.io.PrintWriter") andBool Id2String(MethodName) ==String "print"
@@ -31,7 +31,7 @@ rule [system-out-print-string]:
     <k>
       invokeImpl(
         methodRef(sig(MethodName:Id, _), Class:ClassType), _,
-        'ListWrap(Str:String :: _)
+        [Str:String :: _]
       ) => nothing::void
       ...
     </k>
@@ -47,7 +47,7 @@ when
 rule [system-out-print-convert]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType), _,
-      'ListWrap(RV:RawVal :: T:Type => toString(RV::T))
+      [RV:RawVal :: T:Type => toString(RV::T)]
     )
 when
             Class ==K class String2Id("java.io.PrintWriter")
@@ -58,7 +58,7 @@ when
 rule [scanner-nextInt]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType), _,
-      'ListWrap(.KList)
+      [.KList]
     ) => readInt
 when
     Class ==K class String2Id("java.util.Scanner") andBool Id2String(MethodName) ==String "nextInt"
@@ -66,7 +66,7 @@ when
 rule [scanner-nextLine]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType), _,
-      'ListWrap(.KList)
+      [.KList]
     ) => readString
 when
     Class ==K class String2Id("java.util.Scanner") andBool Id2String(MethodName) ==String "nextLine"
@@ -90,7 +90,7 @@ rule [object-getClass-on-object]:
     <k>
       invokeImpl(
         methodRef(sig(MethodName:Id, _), Class:ClassType), loc(OL:Int)::_,
-        'ListWrap(.KList)
+        [.KList]
       ) => 'Lit('Class(T))
       ...
     </k>
@@ -105,7 +105,7 @@ when
 rule [object-getClass-on-String]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType), Str:String::_,
-      'ListWrap(.KList)
+      [.KList]
     ) => 'Lit('Class(stringClass))
 when
     Class ==K objectClass andBool Id2String(MethodName) ==String "getClass"
@@ -113,7 +113,7 @@ when
 rule [object-getClass-on-array]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType), arrayRef(ArrT:Type,_,_)::_,
-      'ListWrap(.KList)
+      [.KList]
     ) => 'Lit('Class(ArrT))
 when
     Class ==K objectClass andBool Id2String(MethodName) ==String "getClass"
@@ -122,7 +122,7 @@ when
 rule [object-toString-on-String]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType), Str:String::_,
-      'ListWrap(.KList)
+      [.KList]
     ) => Str::stringClass
 when
     Class ==K objectClass andBool Id2String(MethodName) ==String "toString"
@@ -132,7 +132,7 @@ rule [object-hashCode]:
     <k>
       invokeImpl(
         methodRef(sig(MethodName:Id, _), Class:ClassType), loc(OL:Int)::_,
-        'ListWrap(.KList)
+        [.KList]
       ) => NewOL :: int
       ...
     </k>
@@ -151,7 +151,7 @@ rule [String-length]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType),
       Str:String::Class,
-      'ListWrap(.KList)
+      [.KList]
     )
     => lengthString(Str)
 when
@@ -161,7 +161,7 @@ rule [String-charAt]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType),
       Str:String::Class,
-      'ListWrap(I:Int :: int)
+      [I:Int :: int]
     )
     => ordChar(substrString(Str, I, I +Int 1)) :: char
 when
@@ -172,7 +172,7 @@ rule [String-valueOf]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType),
       Str:String::Class,
-      'ListWrap(I:Int :: int)
+      [I:Int :: int]
     )
     => Int2String(I)
 when
@@ -183,7 +183,7 @@ rule [String-equals]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType),
       Str:String::Class,
-      'ListWrap(ParamStr:String::_)
+      [ParamStr:String::_]
     )
     => 'Eq(Str,, ParamStr)
 when
@@ -194,7 +194,7 @@ rule [String-toString]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType),
       Str:String::Class,
-      'ListWrap(.KList)
+      [.KList]
     )
     => Str
 when
@@ -205,7 +205,7 @@ rule [String-compareTo]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType),
       Str:String::Class,
-      'ListWrap(ParamStr:String::_)
+      [ParamStr:String::_]
     )
     => 'If(Str <String ParamStr,, -1,, 'If(Str ==String ParamStr,, 0,, 1))
 when
@@ -217,11 +217,11 @@ rule [array-clone]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType),
       arrayRef(arrayOf ElemT, Loc:Int, Len:Int)::CompileT:RefType,
-      'ListWrap(.KList)
+      [.KList]
     )
     => arrayCopy(
         arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT,
-        allocAndInitArray(ElemT, 'ListWrap(Len::int), undefined :: ElemT)
+        allocAndInitArray(ElemT, [Len::int], undefined :: ElemT)
       )
 when
     Class ==K arrayImplClass andBool Id2String(MethodName) ==String "clone"
@@ -273,7 +273,7 @@ rule [Lit-Class-Instantiate]:
           'NewInstance(
                 'None(.KList),,
                 class String2Id("java.lang.Class"),,
-                'ListWrap(toString(T)),,
+                [toString(T)],,
                 'None(.KList)
           ))
         )

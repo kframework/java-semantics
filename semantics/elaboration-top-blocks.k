@@ -101,7 +101,7 @@ rule [elabMethods-Cool-Constructor]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <methodFirstLine> FirstLine:K => noValue </methodFirstLine>
-    <methodBody> CHOLE => 'ListWrap(FirstLine,, Body) </methodBody>
+    <methodBody> CHOLE => [FirstLine,, Body] </methodBody>
     <methodRoutineType> constructorRT => methodRT </methodRoutineType>
 
 rule [elabMethods-discard-method]:

@@ -68,20 +68,20 @@ syntax KLabel ::=   "'Public"
 
 /*@Extracts the access mode from the list of modifiers of some Java entity.*/
 syntax K ::=  getAccessMode (
-                K //'ListWrap(...) - the list of class/method attributes
+                K //[...] - the list of class/method attributes
               )
               [function]
 
-rule getAccessMode('ListWrap('Public(_),,_))    => public
-rule getAccessMode('ListWrap('Protected(_),,_)) => protected
-rule getAccessMode('ListWrap('Private(_),,_))   => private
+rule getAccessMode(['Public(_),,_])    => public
+rule getAccessMode(['Protected(_),,_]) => protected
+rule getAccessMode(['Private(_),,_])   => private
 
-rule getAccessMode('ListWrap((KL:KLabel(_) => .KList),, _))
+rule getAccessMode([(KL:KLabel(_) => .KList),, _])
 when        (KL =/=KLabel 'Public)
     andBool (KL =/=KLabel 'Protected)
     andBool (KL =/=KLabel 'Private)
 
-rule getAccessMode('ListWrap(.KList)) => package
+rule getAccessMode([.KList]) => package
 
 //@ \subsection{Auxiliary constructs for retrieving a set of classes}
 

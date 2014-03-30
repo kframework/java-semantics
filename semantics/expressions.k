@@ -160,7 +160,7 @@ rule                  'Div(_:TypedVal,, 0::_)
    => 'Throw('NewInstance(
         'None(.KList),,
         (class String2Id("java.lang.ArithmeticException")),,
-        'ListWrap( "/ by zero" ),,
+        [ "/ by zero" ],,
         'None(.KList)
       ))
 
@@ -173,7 +173,7 @@ rule                  'Remain(_:TypedVal,, 0::_)
    => 'Throw('NewInstance(
         'None(.KList),,
         (class String2Id("java.lang.ArithmeticException")),,
-        'ListWrap( "/ by zero" ),,
+        [ "/ by zero" ],,
         'None(.KList)
       ))
 

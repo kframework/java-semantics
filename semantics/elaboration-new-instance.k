@@ -91,16 +91,16 @@ rule [getClassIfExists]:
 
 rule [elab-QNewInstance-local-augment-arguments]:
     (. => localClassGetExtraArgs(Class))
-    ~> elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, 'ListWrap(Args:KList),, 'None(.KList) ))
+    ~> elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, [Args:KList],, 'None(.KList) ))
 
 /*@ QNewInstance lookup is always qualified (e.g. not this), because the object we are creating
     is different from the current object.
 */
 rule [elabEnd-QNewInstance-to-lookupMethod]:
-    ( elabRes('ListWrap(ExtraArgs:KList))
+    ( elabRes([ExtraArgs:KList])
       => lookupMethod(Class, false, getConsName(Class), resultListWrap(Args,,ExtraArgs))
     )
-    ~> elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, 'ListWrap(Args:KList),, 'None(.KList)))
+    ~> elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, [Args:KList],, 'None(.KList)))
 
 /*@ All new instance creation expressions are converted into qualified ones - 'QNewInstance, during elaboration phase.
   For instance inner classes, the qualifier will be a valid expression for the qualifier. For other classes qualifier
@@ -112,7 +112,7 @@ rule [elabEnd-QNewInstance-methodLookupResult-qualified-end]:
       ~> elabEnd('QNewInstance( cast(_, QualExp:K),, Arg2:K,, Class:ClassType,, Arg4:K,,
                                 _:K,, 'None(.KList) ))
       => elabRes(cast(Class, 'QNewInstance( cast(EnclosingClass, QualExp:K),, Arg2,, getSimpleName(Class),,
-                                            Arg4,, 'ListWrap(ExpectedParamExps),, 'None(.KList))))
+                                            Arg4,, [ExpectedParamExps],, 'None(.KList))))
       ...
     </k>
     <classType> Class </classType>
@@ -124,6 +124,6 @@ rule [elabEnd-QNewInstance-methodLookupResult-qualified-end]:
 rule [elabEnd-QNewInstance-methodLookupResult-to-NewInstance]:
     methodLookupResult(_, ExpectedParamExps:KList, instanceCT)
     ~> elabEnd('QNewInstance(noValue,, Arg2:K,, Class:ClassType,, Arg4:K,, _:K,, 'None(.KList)))
-    => elabRes(cast(Class, 'NewInstance(Arg2,, Class,, 'ListWrap(ExpectedParamExps),, 'None(.KList))))
+    => elabRes(cast(Class, 'NewInstance(Arg2,, Class,, [ExpectedParamExps],, 'None(.KList))))
 
 endmodule

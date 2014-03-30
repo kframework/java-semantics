@@ -100,7 +100,7 @@ rule [QSuperMethod]:
 rule [elabEnd-Invoke-to-lookupMethod]:
     ( . => lookupMethod(getLookupTargetType(typeOf(Qual)),
                         isThisOrSuper(Qual) ==K true, Name, resultListWrap(ParamExps)) )
-    ~> elabEnd('Invoke( 'Method('MethodName(Qual:K,, Name:Id)),, 'ListWrap(ParamExps:KList) ))
+    ~> elabEnd('Invoke( 'Method('MethodName(Qual:K,, Name:Id)),, [ParamExps:KList] ))
 
 //@ True for cast(T,'QThis(\_)), false otherwise
 syntax K ::= isCastOfQThis ( K )                                      [function]
@@ -236,7 +236,7 @@ rule [methodProcessArguments-Invoke-end]:
                   Name:Id
                 )
               ),,
-              'ListWrap(ExpectedParamExps)
+              [ExpectedParamExps]
             )
           )
         ))

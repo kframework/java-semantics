@@ -16,7 +16,7 @@ rule [thread-start]:
         invokeImpl(
           methodRef(sig(MethodName:Id, _), Class:ClassType),
           loc(OL:Int)::_,
-          'ListWrap(TId:Int :: _)
+          [TId:Int :: _]
         ) => nothing::void
         ...
       </k>
@@ -41,7 +41,7 @@ rule [thread-start]:
                   String2Id("run")
                 )
               ),,
-              'ListWrap(.KList)
+              [.KList]
             )
           )
         </k>
@@ -63,7 +63,7 @@ context 'Synchronized(HOLE,, _)
 rule [Synchronized-first-time]:
     <k>
       'Synchronized(objectClosure(OL:Int,_)::_,, Block:K)
-      => 'Try(Block,, 'ListWrap(.KList),, releaseLock(OL))
+      => 'Try(Block,, [.KList],, releaseLock(OL))
       ...
     </k>
     <holds>... (. => OL |-> 1) ...</holds>
@@ -75,7 +75,7 @@ when
 rule [Synchronized-nested]:
     <k>
       'Synchronized(objectClosure(OL:Int,_)::_,, Block:K)
-      => 'Try(Block,, 'ListWrap(.KList),, releaseLock(OL))
+      => 'Try(Block,, [.KList],, releaseLock(OL))
       ...
     </k>
     <holds>... OL |-> (Level:Int => Level +Int 1) ...</holds>
@@ -86,7 +86,7 @@ rule [Synchronized-on-null]:
     =>  'Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
-          'ListWrap( null::stringClass ),,
+          [ null::stringClass ],,
           'None(.KList)
         ))
 
@@ -134,7 +134,7 @@ rule [thread-join]:
     <k>
       invokeImpl(
         methodRef(sig(MethodName:Id, _), Class:ClassType), _,
-        'ListWrap(TId:Int :: _)
+        [TId:Int :: _]
       ) => nothing::void
       ...
     </k>
@@ -148,12 +148,12 @@ rule [thread-join-interrupted]:
     <k>
       invokeImpl(
         methodRef(sig(MethodName:Id, _), Class:ClassType), _,
-        'ListWrap(TId:Int :: _)
+        [TId:Int :: _]
       )
       =>  'Throw('NewInstance(
             'None(.KList),,
             class String2Id("java.lang.InterruptedException"),,
-            'ListWrap( null::stringClass ),,
+            [ null::stringClass ],,
             'None(.KList)
           ))
       ...
@@ -170,7 +170,7 @@ rule [object-wait]:
     <k>
       invokeImpl(
         methodRef(sig(MethodName:Id, _), Class:ClassType),
-        loc(OL:Int)::_, 'ListWrap(.KList)
+        loc(OL:Int)::_, [.KList]
       ) => waitImpl(OL)
       ...
     </k>
@@ -188,12 +188,12 @@ rule [object-wait-notify-notifyAll-without-sync]:
     <k>
       invokeImpl(
         methodRef(sig(MethodName:Id, _), Class:ClassType),
-        loc(OL:Int)::_, 'ListWrap(.KList)
+        loc(OL:Int)::_, [.KList]
       )
       =>  'Throw('NewInstance(
             'None(.KList),,
             class String2Id("java.lang.IllegalMonitorStateException"),,
-            'ListWrap( null::stringClass ),,
+            [ null::stringClass ],,
             'None(.KList)
           ))
       ...
@@ -235,7 +235,7 @@ rule [waitImpl-interrupted]:
       =>  'Throw('NewInstance(
             'None(.KList),,
             class String2Id("java.lang.InterruptedException"),,
-            'ListWrap( null::stringClass ),,
+            [ null::stringClass ],,
             'None(.KList)
           ))
       ...
@@ -253,7 +253,7 @@ rule [object-notify]:
     <k>
       invokeImpl(
         methodRef(sig(MethodName:Id, _), Class:ClassType),
-        loc(OL:Int)::_, 'ListWrap(.KList)
+        loc(OL:Int)::_, [.KList]
       ) => objectNotifyImpl(OL)
       ...
     </k>
@@ -290,7 +290,7 @@ rule [object-notifyAll]:
     <k>
       invokeImpl(
         methodRef(sig(MethodName:Id, _), Class:ClassType),
-        loc(OL:Int)::_, 'ListWrap(.KList)
+        loc(OL:Int)::_, [.KList]
       ) => objectNotifyAllImpl(OL)
       ...
     </k>
@@ -331,7 +331,7 @@ rule [thread-interrupt]:
         invokeImpl(
           methodRef(sig(MethodName:Id, _), Class:ClassType),
           loc(OL:Int)::_,
-          'ListWrap(TId:Int :: _)
+          [TId:Int :: _]
         ) => nothing::void
         ...
       </k>
@@ -352,7 +352,7 @@ rule [thread-interrupt-ended-thread]:
       invokeImpl(
         methodRef(sig(MethodName:Id, _), Class:ClassType),
         loc(OL:Int)::_,
-        'ListWrap(TId:Int :: _)
+        [TId:Int :: _]
       ) => nothing::void
       ...
     </k>

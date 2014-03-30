@@ -47,7 +47,7 @@ rule [processLocalClassDec-register-name]:
       processLocalClassDec(
         'ClassDec(
           'ClassDecHead(
-          ( 'ListWrap(OldModifiers:KList) => generateLocalClassModifiers( CT, OldModifiers ) ),,
+          ( [OldModifiers:KList] => generateLocalClassModifiers( CT, OldModifiers ) ),,
             (InitName:Id => getSimpleName(GeneratedClass)),,
             _:K,, _:K,, _:K
           ),, _:K
@@ -63,8 +63,8 @@ rule [processLocalClassDec-register-name]:
 syntax K ::= generateLocalClassModifiers( ContextType, KList )  [function]
 rule generateLocalClassModifiers( CT:ContextType, OldModifiers:KList )
      => #if CT ==K staticCT
-          #then 'ListWrap('Static(.KList),,OldModifiers)
-          #else 'ListWrap(OldModifiers)
+          #then ['Static(.KList),,OldModifiers]
+          #else [OldModifiers]
         #fi
 
 rule [processLocalClassDec-process]:
@@ -205,16 +205,16 @@ rule [localEnvObjectBuild]:
                 'None(.KList),,
                 'None(.KList)
               ),,
-              'ClassBody('ListWrap(.KList))
+              'ClassBody([.KList])
             ),
             LocalEnvClass,
             AccessibleLocalEnv
          )
       ~> appendToElabBuffer(elab(
-            'LocalVarDec('None(.KList),, LocalEnvClass,, 'ListWrap('VarDec(
+            'LocalVarDec('None(.KList),, LocalEnvClass,, ['VarDec(
               generateLocalEnvVarName(LocalEnvClass),,
-              'NewInstance('None(.KList),, LocalEnvClass,, 'ListWrap(.KList),, 'None(.KList) )
-            )))
+              'NewInstance('None(.KList),, LocalEnvClass,, [.KList],, 'None(.KList) )
+            )])
          ))
       ~> localEnvObjectSetFields(
             generateLocalEnvVarName(LocalEnvClass),
@@ -234,7 +234,7 @@ rule [localEnvClassAddFieldsAndRegister-add-field]:
     localEnvClassAddFieldsAndRegister(
       'ClassDec(
         'ClassDecHead(_:KList),,
-        'ClassBody('ListWrap(_,, ( .KList => 'FieldDec('ListWrap(.KList),, T,, 'ListWrap('VarDec(X))) )))
+        'ClassBody([_,, ( .KList => 'FieldDec([.KList],, T,, ['VarDec(X)]) )])
       ), _,
       (X:Id |-> T:Type => .Map) _:Map
     )
@@ -276,7 +276,7 @@ rule [localClassAugmentFields]:
     <k> localClassAugmentFields(LocalClass:ClassType, LocalEnvClass:ClassType) => .K ...</k>
     <classType> LocalClass </classType>
     <fieldDecs>
-      'ListWrap(_,, ( .KList => 'LocalVarDec(.K,, LocalEnvClass,, 'ListWrap('VarDec(String2Id("$local_env")))) ) )
+      [_,, ( .KList => 'LocalVarDec(.K,, LocalEnvClass,, ['VarDec(String2Id("$local_env"))]) ) ]
     </fieldDecs>
 
 syntax K ::=  localClassAugmentConsParams (
@@ -291,15 +291,15 @@ rule [localClassAugmentConsParams-augment]:
     <classType> LocalClass </classType>
     <methods> sig(ConsName:Id, types(TList:KList,, (.KList => LocalEnvClass))) |-> _ ...</methods>
     <methodSignature> sig(ConsName:Id, types(TList:KList,, (.KList => LocalEnvClass))) </methodSignature>
-    <methodParams> 'ListWrap(_:KList,, (.KList => 'Param(.K,, LocalEnvClass,, String2Id("$local_env")))) </methodParams>
+    <methodParams> [_:KList,, (.KList => 'Param(.K,, LocalEnvClass,, String2Id("$local_env")))] </methodParams>
     <methodBody>
-      Body:K => 'ListWrap(
+      Body:K => [
         'ExprStm('Assign(
           'Field('This(.KList),, String2Id("$local_env") ),,
           'ExprName( String2Id("$local_env") )
         )),,
         Body
-      )
+      ]
     </methodBody>
 when
     notBool getLastKListElement(TList) ==K LocalEnvClass
@@ -323,13 +323,13 @@ context appendToElabBuffer ( HOLE )              [result(ElabKResult)]
 
 rule [appendToElabBuffer]:
     <k> appendToElabBuffer(elabRes(K:K)) => . ...</k>
-    <elabBuffer> 'ListWrap(_,, (.KList => K)) </elabBuffer>
+    <elabBuffer> [_,, (.KList => K)] </elabBuffer>
 
 syntax K ::= "loadElabBuffer"
 
 rule [loadElabBuffer]:
     <k> loadElabBuffer => elabRes(ElabBuffer) ...</k>
-    <elabBuffer> ElabBuffer:K => 'ListWrap(.KList) </elabBuffer>
+    <elabBuffer> ElabBuffer:K => [.KList] </elabBuffer>
 
 //@\section{Utility functions for other modules}
 
@@ -342,10 +342,10 @@ rule [elab-QNewInstance-local-augment-arguments]:
       localClassGetExtraArgs(Class:ClassType)
       => #if notBool isEmpty(EnclosingLocalEnv) ==K true
             #then #if Class ==K CrntClass
-                    #then elab('ListWrap('ExprName(String2Id("$local_env"))))
-                    #else elab('ListWrap('ExprName(generateLocalEnvVarName(generateLocalEnvClassType(Class)))))
+                    #then elab(['ExprName(String2Id("$local_env"))])
+                    #else elab(['ExprName(generateLocalEnvVarName(generateLocalEnvClassType(Class)))])
                   #fi
-            #else elab('ListWrap(.KList))
+            #else elab([.KList])
          #fi
       ...
     </k>

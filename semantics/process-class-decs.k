@@ -34,7 +34,7 @@ rule [processClassDecs-resolveBases-TopLevel-Start]:
 
     <classType> Class:ClassType </classType>
     <rawExtends> RawExtends:K </rawExtends>
-    <rawImplements> 'ListWrap(RawImplements:KList) </rawImplements>
+    <rawImplements> [RawImplements:KList] </rawImplements>
     <enclosingClass> noClass </enclosingClass>
     <cuImports> CuImports:Map </cuImports>
     <classPhase> StoredCPhase </classPhase>
@@ -51,7 +51,7 @@ rule [processClassDecs-resolveBases-Inner-Start]:
     <class>
       <classType> Class:ClassType </classType>
       <rawExtends> RawExtends:K </rawExtends>
-      <rawImplements> 'ListWrap(RawImplements:KList) </rawImplements>
+      <rawImplements> [RawImplements:KList] </rawImplements>
       <enclosingClass> OuterClass:ClassType </enclosingClass>
       <classPhase> StoredCPhase </classPhase>
       ...
@@ -78,15 +78,15 @@ rule [resolveBases]:
     <k> resolveBases(Class:ClassType, BaseClass:ClassType, ImplTypes:KList) => . ...</k>
     <classType> Class </classType>
     <rawExtends> _ => BaseClass </rawExtends>
-    <rawImplements> _ => 'ListWrap(ImplTypes) </rawImplements>
-    <unprocessedBases> .K => 'ListWrap(BaseClass,,ImplTypes) </unprocessedBases>
+    <rawImplements> _ => [ImplTypes] </rawImplements>
+    <unprocessedBases> .K => [BaseClass,,ImplTypes] </unprocessedBases>
     <classPhase> StoredCPhase => BasesResolvedCPhase </classPhase>
 when isKResult(ImplTypes)
 
 rule [processClassDecs-mark-Base-Processed]:
     <k> processClassDecs(_) ...</k>
     <class>
-      <unprocessedBases> 'ListWrap((BaseClass:ClassType => .KList) ,,_) </unprocessedBases>
+      <unprocessedBases> [(BaseClass:ClassType => .KList) ,,_] </unprocessedBases>
       ...
     </class>
     <class>
@@ -100,7 +100,7 @@ when
 //@ This one is for class Object
 rule [processClassDecs-mark-noClass-Processed]:
     <k> processClassDecs(_) ...</k>
-    <unprocessedBases> 'ListWrap((noClass => .KList) ,,_) </unprocessedBases>
+    <unprocessedBases> [(noClass => .KList) ,,_] </unprocessedBases>
 
 rule [processClassDecs-end]:
     <k>
@@ -117,8 +117,8 @@ rule [processClassDecs-end]:
     <classPhase> BasesResolvedCPhase => DecsProcessedCPhase </classPhase>
     <extends> .K => BaseClass </extends>
     ( <rawExtends> BaseClass:ClassType </rawExtends>
-      <rawImplements> 'ListWrap(ImplTypes:KList) </rawImplements> => .Bag)
-    ( <unprocessedBases> 'ListWrap(.KList) </unprocessedBases> => .Bag)
+      <rawImplements> [ImplTypes:KList] </rawImplements> => .Bag)
+    ( <unprocessedBases> [.KList] </unprocessedBases> => .Bag)
 
 rule [processClassDecs-discard]:
     processClassDecs(setWrap(.)) => .K

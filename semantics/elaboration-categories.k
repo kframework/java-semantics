@@ -8,7 +8,7 @@ This predicate should be disjoint with customElabChildren (no longer used) and i
 */
 syntax K ::= defaultElabHeating ( KLabel )                [function]
 
-           /*(KL ==KLabel 'ListWrap)*/
+           /*(KL ==KLabel 'KListWrap)*/
 rule defaultElabHeating('Some) => true
 rule defaultElabHeating('None) => true
     /*orBool (KL ==KLabel 'Single)
@@ -237,7 +237,7 @@ rule isElabNaked('Lit(InnerKL:KLabel(_))) => InnerKL =/=KLabel 'Class
 */
 syntax K ::= customElabChildren ( KLabel )                [function]
 rule customElabChildren(KL:KLabel) =>
-           (KL ==KLabel 'ListWrap)        //Elaboration left-to-right if children contain variable declarations
+           (KL ==KLabel 'KListWrap)           //Elaboration left-to-right if children contain variable declarations
     orBool (KL ==KLabel 'Block)           //Allocation of new <elabEnv>
     orBool (KL ==KLabel 'For)             //Allocation of new <elabEnv>
     orBool (KL ==KLabel 'Catch)           //Allocation of new <elabEnv>

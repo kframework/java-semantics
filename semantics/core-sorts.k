@@ -213,4 +213,16 @@ syntax Types ::=  types (
                   )
 syntax KResult ::= Types
 
+//@ \subsection{Sequence of terms}
+
+/*@ Represent a parser form for a sequence of terms. Is desugared into the pretty form [...]*/
+syntax KLabel ::= "'ListWrap"
+rule 'ListWrap(Ks:KList) => [Ks]                  [structural, anywhere]
+
+//@ Sequence of terms and of any other statements. The first term is moved to the top of computation.
+syntax KListWrap ::= "[" KList "]" [klabel('KListWrap)]
+
+rule [S1:K,, Stmts:KList] => S1 ~> [Stmts]        [structural]
+rule [.KList] => .K                               [structural]
+
 endmodule

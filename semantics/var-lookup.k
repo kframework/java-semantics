@@ -96,7 +96,7 @@ rule [Field-instance-OfNull]:
     =>  'Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
-          'ListWrap( null::stringClass),,
+          [ null::stringClass],,
           'None(.KList)
         ))
         [anywhere]

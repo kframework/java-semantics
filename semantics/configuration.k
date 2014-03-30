@@ -156,7 +156,7 @@ configuration
                 <methodReturnType> .K </methodReturnType>
 
                 //Method params
-                <methodParams> 'ListWrap(.KList) </methodParams>
+                <methodParams> [.KList] </methodParams>
 
                 // first line, constructors only. Either of:
                 //   'SuperInv - superclass constructor invocation
@@ -182,7 +182,7 @@ configuration
             <br/>
 
             //a "ListWrap containing a 'LocalVarDec for each field. Used during object instantiation.
-            <fieldDecs color="Indigo"> 'ListWrap(.KList) </fieldDecs>
+            <fieldDecs color="Indigo"> [.KList] </fieldDecs>
 
             <br/>
 
@@ -190,7 +190,7 @@ configuration
               At the end of class processing in the ProcClassMembersPhase the content of this cell is converted into
               the method $instance_init and the cell is deleted. This conversion is required for local classes,
               see test local_cl_955. */
-            <instanceInit color="Indigo"> 'ListWrap(.KList) </instanceInit>
+            <instanceInit color="Indigo"> [.KList] </instanceInit>
 
             <br/>
 
@@ -201,7 +201,7 @@ configuration
 
             //The sequence of static initializers (that also includes field initializers)
             //see static-init.k for more details.
-            <staticInit color="DarkSlateGray"> 'ListWrap(.KList) </staticInit>
+            <staticInit color="DarkSlateGray"> [.KList] </staticInit>
 
             //The map of compile-time constant fields. We consider compile-time constants only final static fields
             //initialized with a literal expression.
@@ -298,7 +298,7 @@ configuration
 
         //A list of terms that are collected during elaboration phase by a call to appendToElabBuffer()
         //and are restored back to K by a call to loadElabBuffer()
-        <elabBuffer> 'ListWrap(.KList) </elabBuffer>
+        <elabBuffer> [.KList] </elabBuffer>
 
       </phElab>
 

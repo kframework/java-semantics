@@ -49,7 +49,7 @@ rule [ArrayAccess-to-ArrayIndexOutOfBoundsException]:
     => 'Throw('NewInstance(
       'None(.KList),,
       (class String2Id("java.lang.ArrayIndexOutOfBoundsException")),,
-      'ListWrap( Int2String(N) ),,
+      [ Int2String(N) ],,
       'None(.KList)
     ))
 when notBool ((N >=Int 0) andBool (N <Int M))
@@ -60,7 +60,7 @@ rule [ArrayAccess-null-to-NullPointerException]:
     => 'Throw('NewInstance(
       'None(.KList),,
       class String2Id("java.lang.NullPointerException"),,
-      'ListWrap( null::stringClass ),,
+      [ null::stringClass ],,
       'None(.KList)
     ))
         [anywhere]
@@ -80,7 +80,7 @@ and assign the right type ($T$) to the allocated array locations. */
 //@Elaboration result of expressions new T[]...
 syntax K ::=  newArrayImpl (
                 Type, // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
-                K,    // 'ListWrap(Dims) - array dimensions
+                K,    // [Dims] - array dimensions
                 K,    // InitExp - expression used to initialize each array element, or .K if argument 4 is specified.
                 KList // InitContent - array initializer, if any, or .K if argument 3 is specified.
                       // From arguments 3 and 4 just one may be specified. This initializer is for the whole array,
@@ -89,10 +89,10 @@ syntax K ::=  newArrayImpl (
 
 /* HOLE is of the form 'Dim(K)
 */
-context newArrayImpl(_:Type, 'ListWrap(Dims:KList,, HOLE,, _), _,_)
+context newArrayImpl(_:Type, [Dims:KList,, HOLE,, _], _,_)
 when isKResult(Dims)
 
-//@ newArrayImpl(_:Type, 'ListWrap('Dim(_),, ...), _,_)
+//@ newArrayImpl(_:Type, ['Dim(_),, ...], _,_)
 syntax KLabel ::= "'Dim"
 
 //applies right after the previous rule, because HOLE is of the form 'Dim(K)
@@ -102,13 +102,13 @@ rule 'Dim(K:K) => K [structural]
 after that begin array allocation
 */
 rule [newArrayImpl]:
-    newArrayImpl(T:Type, 'ListWrap(Dims:KList), InitExp:K, .KList)
-    => checkNonNegative(Dims) ~> allocAndInitArray(T, 'ListWrap(Dims), InitExp)
+    newArrayImpl(T:Type, [Dims:KList], InitExp:K, .KList)
+    => checkNonNegative(Dims) ~> allocAndInitArray(T, [Dims], InitExp)
 when isKResult(Dims) andBool InitExp =/=K .K
 
 rule [newArrayImpl-with-init]:
-    newArrayImpl(T:Type, 'ListWrap(Dim:TypedVal), .K, InitContent:KList)
-    => arrayInitAlloc(newArrayImpl(T, 'ListWrap(Dim), undefined :: T, .KList), InitContent)
+    newArrayImpl(T:Type, [Dim:TypedVal], .K, InitContent:KList)
+    => arrayInitAlloc(newArrayImpl(T, [Dim], undefined :: T, .KList), InitContent)
 
 /*Computation designed to check that array creation expression dimensions are non-negative. If they are non-negative,
 checkNonNegative is dissolved. Otherwise NegativeArraySizeException is thrown.
@@ -125,7 +125,7 @@ rule [checkNonNegative-to-NegativeArraySizeException]:
     => 'Throw('NewInstance(
       'None(.KList),,
       class String2Id("java.lang.NegativeArraySizeException"),,
-      'ListWrap( null::stringClass ),,
+      [ null::stringClass ],,
       'None(.KList)
     ))
 when
@@ -136,16 +136,16 @@ rule checkNonNegative(.KList) => .
 //@ Same as newArrayImpl, but after dims were computed and checked
 syntax K ::=  allocAndInitArray (
                 Type, // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
-                K,    // 'ListWrap(Dims:List{KResult}) - array dimensions
+                K,    // [Dims:List{KResult}] - array dimensions
                 K     // InitExp - expression used to initialize each array element
               )
 
 rule [allocAndInitArray-MultiDim-desugar]:
-    allocAndInitArray(T:Type, 'ListWrap(Dims:KList,,Dim1K:TypedVal,,Dim2K:TypedVal), InitExp:K)
+    allocAndInitArray(T:Type, [Dims:KList,,Dim1K:TypedVal,,Dim2K:TypedVal], InitExp:K)
     =>  allocAndInitArray(
           arrayOf T,
-          'ListWrap(Dims,,Dim1K),
-          allocAndInitArray(T, 'ListWrap(Dim2K), InitExp)
+          [Dims,,Dim1K],
+          allocAndInitArray(T, [Dim2K], InitExp)
         )
 when isKResult(Dims)
         [structural]
@@ -157,7 +157,7 @@ when isKResult(Dims)
 */
 rule [allocAndInitArray]:
     <k>
-      allocAndInitArray(T:Type, 'ListWrap(NI:Int::_), InitExp:K)
+      allocAndInitArray(T:Type, [NI:Int::_], InitExp:K)
       => allocArray(NI, T) ~> initArray(LI +Int 1, NI, InitExp)
          ~> arrayRef( arrayOf T, LI +Int 1, NI) :: arrayOf T
       ...
@@ -228,18 +228,18 @@ rule [store-array-location-check-type]:
             'Throw('NewInstance(
               'None(.KList),,
               (class String2Id("java.lang.ArrayStoreException")),,
-              'ListWrap(
+              [
                 //the ArrayStoreException argument is the assigned object type
                 'Invoke(
                   'Method('MethodName(
                     'Invoke(
                       'Method('MethodName(V::T,, String2Id("getClass"))),,
-                      'ListWrap(.KList)
+                      [.KList]
                     ),,
                     String2Id("getName"))),,
-                  'ListWrap(.KList)
+                  [.KList]
                 )
-              ),,
+              ],,
               'None(.KList)
             ))
           )
@@ -278,11 +278,11 @@ when
     getKLabel(K) =/=KLabel 'ArrayInit
 
 rule [arrayInitImpl-inner-ArrayInit-desugar]:
-    ( . => store(L, newArrayImpl(T, 'ListWrap(length(InitContent)::int), .K, InitContent)) )
+    ( . => store(L, newArrayImpl(T, [length(InitContent)::int], .K, InitContent)) )
     ~> arrayInitImpl(
           arrayOf arrayOf T:Type,
           (L:Int => L +Int 1),
-          (('ArrayInit('ListWrap(InitContent:KList)) => .KList),, _)
+          (('ArrayInit([InitContent:KList]) => .KList),, _)
        )
 
 rule [arrayInitImpl-discard]:

@@ -34,33 +34,33 @@ syntax K ::=  staticInit (
 rule [staticInit]:
     <k>
       staticInit(Class:ClassType)
-      => 'ListWrap(
+      => [
         staticInit(BaseClass),,
         'Try(
             StaticInit,,
 
             //catch clause of 'Try
-            'ListWrap(
+            [
               'Catch(
-                'Param( 'ListWrap(.KList),, objectClass,, String2Id("e") ),,
+                'Param( [.KList],, objectClass,, String2Id("e") ),,
                 'Throw(
                   'NewInstance(
                     'None(.KList),,
                     class String2Id("java.lang.ExceptionInInitializerError"),,
-                    'ListWrap(cast(objectClass, 'ExprName(String2Id("e")))),,
+                    [cast(objectClass, 'ExprName(String2Id("e")))],,
                     'None(.KList)
                   )
                 )
               )
-            ),,
+            ],,
 
             //finally clause of 'Try
-            'ListWrap(
+            [
               restoreMethContext(MethContext),,
               staticInitDone(Class)
-            )
+            ]
         )
-      )
+      ]
       ...
     </k>
 

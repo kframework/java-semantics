@@ -20,9 +20,9 @@ rule [ExecutionPhase-Start]:
       . =>  'ExprStm(
               'Invoke(
                 'Method('MethodName('TypeName(packageId(String2Id("")),,String2Id(MainClassS)),, String2Id("main"))),,
-                'ListWrap(
-                  newArrayImpl(stringClass, 'ListWrap('Dim(0 :: int)), null :: stringClass, .KList)
-                )
+                [
+                  newArrayImpl(stringClass, ['Dim(0 :: int)], null :: stringClass, .KList)
+                ]
               )
             )
     </k>
@@ -67,17 +67,6 @@ rule [Block]:
     <env> Env </env>
         [structural]
 
-//@ generic list of terms. Any length. The only KLabel not present in the source SDF grammar.
-syntax KLabel ::= "'ListWrap"
-
-rule [ListWrap-statements]:
-    'ListWrap(S1:K,, Stmts:KList) => S1 ~> 'ListWrap(Stmts)
-        [structural]
-
-rule [ListWrap-empty]:
-    <k> 'ListWrap(.KList) => . ...</k>
-        [structural]
-
 //@ \texttt{env} Restore the env cell content from env(...) statement argument
 syntax K ::= env ( Map )
 rule <k> env(Env:Map) => . ...</k>
@@ -91,12 +80,12 @@ rule [env-double-Discard]:
 /*@ \subsection{Local Variable Declaration Statements} JLS \$14.4
     Not only local but fields also*/
 
-//@ 'LocalVarDec(_:K,, T:Type,, 'ListWrap('VarDec(X:Id)))
+//@ 'LocalVarDec(_:K,, T:Type,, ['VarDec(X:Id)])
 syntax KLabel ::= "'LocalVarDec"
                 | "'VarDec"
 
 rule [LocalVarDec]:
-    <k> 'LocalVarDec(_:K,, T:Type,,'ListWrap('VarDec(X:Id))) => . ...</k>
+    <k> 'LocalVarDec(_:K,, T:Type,,['VarDec(X:Id)]) => . ...</k>
     <env> Env:Map => Env[L/X] </env>
     <store>... . => L |-> default(T) ...</store>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
@@ -150,7 +139,7 @@ rule [AssertStm-OneArg]:
     =>  'Throw('NewInstance(
           'None(.KList),,
           (class String2Id("java.lang.AssertionError")),,
-          'ListWrap(null::stringClass),,
+          [null::stringClass],,
           'None(.KList)
         ))
 
@@ -161,7 +150,7 @@ rule [AssertStm-TwoArgs]:
     =>  'Throw('NewInstance(
           'None(.KList),,
           (class String2Id("java.lang.AssertionError")),,
-          'ListWrap( toString(TV) ),,
+          [ toString(TV) ],,
           'None(.KList)
         ))
 
@@ -177,21 +166,21 @@ context 'Switch(HOLE,,_)
 
 //@ The switchEnd in the right-hand side of => is required to properly interact with break.
 rule [Switch]:
-    'Switch(TV:TypedVal,, 'SwitchBlock('ListWrap(Ks:KList),, TrailingLabels:K))
+    'Switch(TV:TypedVal,, 'SwitchBlock([Ks:KList],, TrailingLabels:K))
     => switchImpl(TV, (Ks,, 'SwitchGroup(TrailingLabels,, .K)), .K)
     ~> switchEnd
 
 context switchImpl( _,
-          ( 'SwitchGroup('ListWrap('Case(HOLE),,_:KList),,_),, _:KList ), _)
+          ( 'SwitchGroup(['Case(HOLE),,_:KList],,_),, _:KList ), _)
 
 /*@ The type associated to V and V2 is not important for match, only the value.
 JLS3 \$14.11, page 377: Every case constant expression associated with
 a switch statement must be assignable (�5.2) to the type of the switch Expression.*/
 
 rule [switchImpl-CaseNotMatch]:
-    switchImpl( V:RawVal :: _, ( 'SwitchGroup('ListWrap(
+    switchImpl( V:RawVal :: _, ( 'SwitchGroup([
         ( 'Case(V2:RawVal :: _) => .KList ),,
-        _:KList ),,_),, _), _)
+        _:KList ],,_),, _), _)
 when
     V =/=K V2
 
@@ -199,21 +188,21 @@ when
 by it's block. The execution rules for switch will discard switch-related
 constructs and will execute the statements. */
 rule [switchImpl-CaseMatch]:
-    switchImpl( V:RawVal :: _, ('SwitchGroup('ListWrap('Case(V :: _),,_:KList),,S:K),,Ks:KList), _)
-    => 'ListWrap(S,,Ks)
+    switchImpl( V:RawVal :: _, ('SwitchGroup(['Case(V :: _),,_:KList],,S:K),,Ks:KList), _)
+    => [S,,Ks]
 
 rule [switchImpl-DefaultSave]:
     switchImpl( TV:TypedVal, (
-      'SwitchGroup('ListWrap(
+      'SwitchGroup([
           ( 'Default(_) => .KList ),,
-          _:KList),, S:K),, Ks:KList
+          _:KList],, S:K),, Ks:KList
       ),
-      ( _:K => 'ListWrap(S,, Ks) )
+      ( _:K => [S,, Ks] )
     )
 
 rule [switchImpl-SwitchGroup-Discard]:
     switchImpl( TV:TypedVal,
-      (( 'SwitchGroup('ListWrap( .KList ),,_) => .KList ),,_),
+      (( 'SwitchGroup([ .KList ],,_) => .KList ),,_),
     _)
 
 rule [switchImpl-Default-Exec]:
@@ -248,29 +237,29 @@ rule 'DoWhile(S:K,,E:K) => S ~> whileImpl(E, S)  [structural]
 syntax K ::= stm ( K )
 
 rule [stm-ListWrap-empty]:
-    stm('ListWrap(.KList)) => .
+    stm([.KList]) => .
         [structural]
 
 rule [stm-ListWrap-exp]:
-    stm('ListWrap(E:K,, Es:KList)) => 'ExprStm(E) ~> stm('ListWrap(Es))
+    stm([E:K,, Es:KList]) => 'ExprStm(E) ~> stm([Es])
 when
     getKLabel(E) ==KLabel 'cast                                           [structural]
 
 rule [stm-ListWrap-LocalVarDec]:
-    stm('ListWrap(K:K,,Ks:KList)) => 'ListWrap(K,,Ks)
+    stm([K:K,,Ks:KList]) => [K,,Ks]
 when
     notBool ( getKLabel(K) ==KLabel 'cast )                               [structural]
 
 rule [For-FirstArgV1Red]:
     'For((
-      'ListWrap(InitExps:KList) => stm('ListWrap(InitExps))
+      [InitExps:KList] => stm([InitExps])
     ),,_:KList)
         [structural]
 
 //Works also in elaboration phase
 rule [For-FirstArgV2Red]:
     'For((
-      'LocalVarDec(Ks:KList) => stm('ListWrap('LocalVarDec(Ks)))
+      'LocalVarDec(Ks:KList) => stm(['LocalVarDec(Ks)])
     ),,_:KList)
         [structural]
 
@@ -282,7 +271,7 @@ rule [For-SecondArgRed]:
 
 rule [For-ThirdArgRed]:
     'For(_:K,,_:K,,(
-      'ListWrap(UpdExps:KList) => stm('ListWrap(UpdExps))
+      [UpdExps:KList] => stm([UpdExps])
     ),,_:K)
         [structural]
 
@@ -423,10 +412,10 @@ context checkCatch(HOLE)
 rule [Throw-checkCatch-True]:
     checkCatch(true::bool) ~> 'Throw(TV:TypedVal)
     ~> catchBlocks(catchImpl(Param:ExtKResult, CatchS:K),, _)
-    => 'Block('ListWrap(
+    => 'Block([
           bindTo(Param, TV),,
           CatchS
-        ))
+        ])
 
 rule [Throw-checkCatch-False]:
     (checkCatch(false::bool) => .)
@@ -460,7 +449,7 @@ rule [Throw-CausesThreadTermination]:
                   String2Id("println")
                 )
               ),,
-              'ListWrap( cast(objectClass, 'Plus( "Thread terminated with exception: ",, TV )) )
+              [ cast(objectClass, 'Plus( "Thread terminated with exception: ",, TV )) ]
             )
           )
     </k>
@@ -469,15 +458,15 @@ rule [Throw-CausesThreadTermination]:
 //@ \subsection{Try statement}
 
 rule [Try-Catch-Finally-Desugar]:
-    'Try(TryS:K,, 'ListWrap(K:K,, Ks:KList),,FinallyS:K)
-    => 'Try('Try(TryS,,'ListWrap(K,,Ks)),,'ListWrap(.KList),,FinallyS)
+    'Try(TryS:K,, [K:K,, Ks:KList],,FinallyS:K)
+    => 'Try('Try(TryS,,[K,,Ks]),,[.KList],,FinallyS)
         [structural]
 
 /*@ \subsubsection{Execution of try-catch} JLS \$14.20.1
 */
 
 //resolve the catch clauses of try statement
-context 'Try(_:K,,'ListWrap(_,, HOLE,, _))
+context 'Try(_:K,,[_,, HOLE,, _])
 
 //resolve 'Param term of the catch clause
 context 'Catch(HOLE,, _)                                [result(ExtKResult)]
@@ -491,7 +480,7 @@ syntax KResult ::=  catchImpl (
                     )
 
 rule [Try-Catch]:
-    'Try(TryS:K,, 'ListWrap(KRs:KList)) => TryS ~> catchBlocks(KRs)
+    'Try(TryS:K,, [KRs:KList]) => TryS ~> catchBlocks(KRs)
 when isKResult(KRs)
 
 /*@ The auxiliary constructs that hold catch clauses / finally clause
@@ -505,7 +494,7 @@ rule [catchBlocks-Discard]:
 */
 
 rule [Try-Finally]:
-    'Try(TryS:K,,'ListWrap(.KList),,FinallyS:K) => TryS ~> finallyBlock(FinallyS)
+    'Try(TryS:K,,[.KList],,FinallyS:K) => TryS ~> finallyBlock(FinallyS)
 
 syntax K ::= finallyBlock ( K )      //arg - finally block
 

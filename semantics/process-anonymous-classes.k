@@ -13,8 +13,8 @@ but the members provided in the anonymous class definition block.
 rule [elab-NewInstance-anonymous-implements-interface]:
     <k>
       elab('NewInstance(Arg1:K,, Class:ClassType,,
-          elabRes('ListWrap(ActualArgs:KList)),,
-          'Some('ClassBody('ListWrap(AnonClassDecs:KList)))
+          elabRes([ActualArgs:KList]),,
+          'Some('ClassBody([AnonClassDecs:KList]))
       ))
       => processAnonymousClass(
         String2Id("Anonymous_$" +String Int2String(LocalId)),
@@ -35,8 +35,8 @@ rule [elab-NewInstance-anonymous-implements-interface]:
 rule [elab-NewInstance-anonymous-extends-class]:
     <k>
       elab('NewInstance(Arg1:K,, Class:ClassType,,
-          elabRes('ListWrap(ActualArgs:KList)),,
-          'Some('ClassBody('ListWrap(AnonClassDecs:KList)))
+          elabRes([ActualArgs:KList]),,
+          'Some('ClassBody([AnonClassDecs:KList]))
       ))
       => processAnonymousClass(
         String2Id("Anonymous_$" +String Int2String(LocalId)),
@@ -85,33 +85,33 @@ rule [processAnonymousClass]:
         'ClassDecStm(
           'ClassDec(
             'ClassDecHead(
-              'ListWrap(.KList),,
+              [.KList],,
               Name,,
               'None(.KList),,
               'Some('SuperDec(BaseClass)),,
-              'Some('ImplementsDec('ListWrap(BaseInterfaces)))
+              'Some('ImplementsDec([BaseInterfaces]))
             ),,
-            'ClassBody('ListWrap(
+            'ClassBody([
               AnonClassDecs,,
 
               //Anonymous class constructor
               'ConstrDec(
                 'ConstrDecHead(
-                  'ListWrap('Public(.KList)),,
+                  ['Public(.KList)],,
                   'None(.KList),,
                   Name,,
-                  'ListWrap(ConstructorFormalParams),,
+                  [ConstructorFormalParams],,
                   'None(.KList)
                 ),,
                 'ConstrBody(
-                  'Some('SuperConstrInv('None(.KList),,'ListWrap(ConstructorFirstLineArgs))),,
-                  'ListWrap(.KList)
+                  'Some('SuperConstrInv('None(.KList),,[ConstructorFirstLineArgs])),,
+                  [.KList]
                 )
               )
-            ))
+            ])
           )
         ),
-        'NewInstance(Arg1,, 'TypeName(Name),, elabRes('ListWrap(ActualArgs)),, 'None(.KList))
+        'NewInstance(Arg1,, 'TypeName(Name),, elabRes([ActualArgs]),, 'None(.KList))
       )
     )
 
@@ -126,7 +126,7 @@ syntax K ::= buildConstructorFormalParams ( KList, KList, Int )
 
 rule buildConstructorFormalParams(
       (ActualParam:K => .KList),, _,
-      _,, (.KList => 'Param('ListWrap(.KList),, typeOf(ActualParam),, String2Id("$" +String Int2String(Num) ))),
+      _,, (.KList => 'Param([.KList],, typeOf(ActualParam),, String2Id("$" +String Int2String(Num) ))),
       Num:Int => Num +Int 1
     )
 
@@ -143,8 +143,8 @@ rule buildConstructorFirstLineArgs(.KList, Ks:KList, _) => resultListWrap(Ks)
 rule [elab-QNewInstance-anonymous-extends-class]:
     <k>
       elab('QNewInstance(elabRes(TypedQual:K),, elabRes(Arg2:K),, Class:ClassType,, elabRes(Arg4:K),,
-          elabRes('ListWrap(ActualArgs:KList)),,
-          'Some('ClassBody('ListWrap(AnonClassDecs:KList)))
+          elabRes([ActualArgs:KList]),,
+          'Some('ClassBody([AnonClassDecs:KList]))
       ))
       => processQAnonymousClass(
         String2Id("Anonymous_$" +String Int2String(LocalId)),
@@ -194,33 +194,33 @@ rule [processQAnonymousClass]:
         'ClassDecStm(
           'ClassDec(
             'ClassDecHead(
-              'ListWrap(.KList),,
+              [.KList],,
               Name,,
               'None(.KList),,
               'Some('SuperDec(BaseClass)),,
-              'Some('ImplementsDec('ListWrap(.KList)))
+              'Some('ImplementsDec([.KList]))
             ),,
-            'ClassBody('ListWrap(
+            'ClassBody([
               AnonClassDecs,,
 
               //Anonymous class constructor
               'ConstrDec(
                 'ConstrDecHead(
-                  'ListWrap('Public(.KList)),,
+                  ['Public(.KList)],,
                   'None(.KList),,
                   Name,,
-                  'ListWrap(ConstructorFormalParams),,
+                  [ConstructorFormalParams],,
                   'None(.KList)
                 ),,
                 'ConstrBody(
-                  'Some('QSuperConstrInv(ConstrQual,,'None(.KList),,'ListWrap(ConstructorFirstLineArgs))),,
-                  'ListWrap(.KList)
+                  'Some('QSuperConstrInv(ConstrQual,,'None(.KList),,[ConstructorFirstLineArgs])),,
+                  [.KList]
                 )
               )
-            ))
+            ])
           )
         ),
-        'NewInstance(Arg2,, 'TypeName(Name),, elabRes('ListWrap(TypedQual,, ActualArgs)),, 'None(.KList))
+        'NewInstance(Arg2,, 'TypeName(Name),, elabRes([TypedQual,, ActualArgs]),, 'None(.KList))
       )
     )
 
