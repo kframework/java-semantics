@@ -253,15 +253,12 @@ when
 
 //@ \subsection{Array initializer}
 
-//allocates the array based on previously computed size, the proceeds to array initialization
+//@ Allocates the array based on previously computed size, then proceeds to array initialization
 syntax K ::=  arrayInitAlloc (
                 K,        //newArrayAlloc(), reduces to arrayRef()
                 KListWrap //InitContent - list of initialization expressions
               )
               [strict(1)]
-
-//K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
-context arrayInitAlloc(HOLE,_)
 
 rule [arrayInitAlloc]:
     arrayInitAlloc(arrayRef(T:Type, L:Int, Len:Int)::T, [InitContent:KList])

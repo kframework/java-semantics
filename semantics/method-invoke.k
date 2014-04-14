@@ -163,10 +163,6 @@ syntax K ::=  lookupOverloadedMethod (
               )
               [strict(1,3,4)]
 
-//K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
-context lookupOverloadedMethod(HOLE,_,_,_)
-context lookupOverloadedMethod(_,_,HOLE,_)
-context lookupOverloadedMethod(_,_,_,HOLE)
 rule [lookupOverloadedMethod-SigKnownFirstCandidate]:
     lookupOverloadedMethod(
       Sig:Signature,

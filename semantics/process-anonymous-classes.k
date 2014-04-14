@@ -64,10 +64,7 @@ syntax K ::=  processAnonymousClass (
                 K,         //To be processed into resultListWrap(constructor formal params)
                 K          //To be processed into resultListWrap(constructor first line arguments)
               )
-
-//heat constructor formal params and first line arguments
-context processAnonymousClass(_,_,_,_,_,_,HOLE,_)
-context processAnonymousClass(_,_,_,_,_,_,_,HOLE)
+              [strict(7,8)]
 
 rule [processAnonymousClass]:
     processAnonymousClass(
@@ -173,10 +170,7 @@ syntax K ::=  processQAnonymousClass (
                 K,         //To be processed into resultListWrap(constructor formal params)
                 K          //To be processed into resultListWrap(constructor first line arguments)
               )
-
-//heat constructor formal params and first line arguments
-context processQAnonymousClass(_,_,_,_,_,_,HOLE,_)
-context processQAnonymousClass(_,_,_,_,_,_,_,HOLE)
+              [strict(7,8)]
 
 rule [processQAnonymousClass]:
     processQAnonymousClass(

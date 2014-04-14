@@ -71,7 +71,7 @@ syntax K ::=  resolveBases (
                 KListWrap   //Implements clauses
               )
 
-context resolveBases(_, HOLE, _)      //Heat extends declaration
+context resolveBases(_, HOLE, _)        //Heat extends declaration
 context resolveBases(_,_, [_,,HOLE,,_]) //Heat implements declarations
 
 rule [resolveBases]:
@@ -152,11 +152,6 @@ syntax K ::=  saveImports  (
                 K           //the result map, to be computed
               )
               [strict(4,5,6)]
-
-//K bug - [strict] and KList arguments don't work together. Tested with K version of 23/02/2014.
-context saveImports(_,_,_,HOLE,_,_)
-context saveImports(_,_,_,_,HOLE,_)
-context saveImports(_,_,_,_,_,HOLE)
 
 //@ Compute outer classes if this class is a top-level class
 rule [saveImports-ComputeExternalTop]:
