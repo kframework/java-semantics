@@ -21,7 +21,7 @@ rule [ExecutionPhase-Start]:
               'Invoke(
                 'Method('MethodName('TypeName(packageId(String2Id("")),,String2Id(MainClassS)),, String2Id("main"))),,
                 [
-                  newArrayImpl(stringClass, ['Dim(0 :: int)], null :: stringClass, .KList)
+                  newArrayImpl(stringClass, ['Dim(0 :: int)], null :: stringClass, [.KList])
                 ]
               )
             )
@@ -406,14 +406,14 @@ context 'Throw(HOLE)
 rule [Throw]:
     (. => checkCatch(subtype(typeOf(TV), T)))
     ~> 'Throw(TV:TypedVal)
-    ~> catchBlocks(catchImpl('Param(_:K,, T:Type,, X:Id),_),, _)
+    ~> catchBlocks([catchImpl('Param(_:K,, T:Type,, X:Id),_),, _])
 
 syntax K ::= checkCatch ( K )
 context checkCatch(HOLE)
 
 rule [Throw-checkCatch-True]:
     checkCatch(true::bool) ~> 'Throw(TV:TypedVal)
-    ~> catchBlocks(catchImpl(Param:ExtKResult, CatchS:K),, _)
+    ~> catchBlocks([catchImpl(Param:ExtKResult, CatchS:K),, _])
     => 'Block([
           bindTo([Param], [TV]),,
           CatchS
@@ -421,10 +421,10 @@ rule [Throw-checkCatch-True]:
 
 rule [Throw-checkCatch-False]:
     (checkCatch(false::bool) => .)
-    ~> 'Throw(TV:TypedVal) ~> catchBlocks((catchImpl(_,_) => .KList),, _)
+    ~> 'Throw(TV:TypedVal) ~> catchBlocks([(catchImpl(_,_) => .KList),, _])
 
 rule [Throw-catchBlocks-EmptyDiscard]:
-    'Throw(TV:TypedVal) ~> (catchBlocks(.KList) => .)
+    'Throw(TV:TypedVal) ~> (catchBlocks([.KList]) => .)
 
 rule [Throw-Propagate]:
     'Throw(TV:TypedVal) ~> (KL:KLabel(_) => .)
@@ -482,15 +482,16 @@ syntax KResult ::=  catchImpl (
                     )
 
 rule [Try-Catch]:
-    'Try(TryS:K,, [KRs:KList]) => TryS ~> catchBlocks(KRs)
+    'Try(TryS:K,, [KRs:KList]) => TryS ~> catchBlocks([KRs])
 when isKResult(KRs)
 
 /*@ The auxiliary constructs that hold catch clauses / finally clause
 after try clause has been moved to the top of computation*/
-syntax K ::= catchBlocks ( KList ) //arg - list of catchImpl
+syntax K ::= catchBlocks ( KListWrap ) //arg - list of catchImpl
 
+//todo possibly redundant - should not be needed. Also see if catchBlocks() could be simplified.
 rule [catchBlocks-Discard]:
-    catchBlocks(_) => .K
+    catchBlocks([_]) => .K
 
 /*@ \subsubsection{Execution of try-finally} JLS \$14.20.2
 */

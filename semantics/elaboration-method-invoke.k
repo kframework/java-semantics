@@ -158,7 +158,7 @@ rule [lookupMethod-to-lookupSignature]:
       QualIsThis:Bool,
       MethodName:Id,
       resultListWrap(ParamExps:KList),
-      noMethodRef => lookupSignature(MethodName, getTypes(ParamExps), getMethods(QualClass),
+      noMethodRef => lookupSignature(MethodName, getTypes([ParamExps]), getMethods(QualClass),
                                   notBool QualIsThis, noMethodRef, QualClass),
       tempKResult
     )

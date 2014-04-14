@@ -82,9 +82,9 @@ syntax K ::= debugPrint ( K )                [strict]
 rule <k> debugPrint(Str:String::_) => . ...</k>
      <out>... . => ListItem(Str +String "\n") </out>
 
-syntax K ::= debugString( K )           [function]
-           | debugStringList( KList )   [function]
-           | Bool2String( Bool )        [function]
+syntax K ::= debugString( K )             [function]
+           | debugStringList( KListWrap ) [function]
+           | Bool2String( Bool )          [function]
 
 rule debugString(KI:KItem ~> KI2:KItem ~> K:K)
      => debugString(KI:KItem) +String " ~> " +String debugString(KI2:KItem ~> K:K)
@@ -94,10 +94,10 @@ rule debugString(I:Int) => Int2String(I)
 rule debugString(B:Bool) => Bool2String(B)
 rule debugString(Fl:Float) => Float2String(Fl)
 rule debugString(Str:String) => Str
-rule debugString(types(Ks:KList)) => "types(" +String debugStringList(Ks) +String ")"
-rule debugString([Ks:KList]) => "[" +String debugStringList(Ks) +String "]"
+rule debugString(types(Ks:KList)) => "types(" +String debugStringList([Ks]) +String ")"
+rule debugString([Ks:KList]) => "[" +String debugStringList([Ks]) +String "]"
 
-rule debugString(KL:KLabel(Ks:KList)) => KLabel2String(KL) +String "(" +String debugStringList(Ks) +String ")"
+rule debugString(KL:KLabel(Ks:KList)) => KLabel2String(KL) +String "(" +String debugStringList([Ks]) +String ")"
 when
             (notBool isDebugStringLeaf(KL(Ks)) ==K true)
     andBool isString(KLabel2String(KL)) ==K true
@@ -115,12 +115,12 @@ when
 
 rule debugString(.K) => ""
 
-rule debugStringList(K1:K,,Ks:KList) => debugString(K1:K) +String ",, " +String debugStringList(Ks:KList)
+rule debugStringList([K1:K,,Ks:KList]) => debugString(K1:K) +String ",, " +String debugStringList([Ks:KList])
 when
     Ks =/=KList .KList
 
-rule debugStringList(K1:K) => debugString(K1)
-rule debugStringList(.KList) => ""
+rule debugStringList([K1:K]) => debugString(K1)
+rule debugStringList([.KList]) => ""
 
 rule Bool2String(true) => "true"
 rule Bool2String(false) => "false"

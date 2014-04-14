@@ -47,7 +47,7 @@ rule [processLocalClassDec-register-name]:
       processLocalClassDec(
         'ClassDec(
           'ClassDecHead(
-          ( [OldModifiers:KList] => generateLocalClassModifiers( CT, OldModifiers ) ),,
+          ( [OldModifiers:KList] => generateLocalClassModifiers( CT, [OldModifiers] ) ),,
             (InitName:Id => getSimpleName(GeneratedClass)),,
             _:K,, _:K,, _:K
           ),, _:K
@@ -60,8 +60,8 @@ rule [processLocalClassDec-register-name]:
     <contextType> CT:ContextType </contextType>
 
 //@ The second argument: existing modifiers
-syntax KListWrap ::= generateLocalClassModifiers( ContextType, KList )  [function]
-rule generateLocalClassModifiers( CT:ContextType, OldModifiers:KList )
+syntax KListWrap ::= generateLocalClassModifiers( ContextType, KListWrap )  [function]
+rule generateLocalClassModifiers( CT:ContextType, [OldModifiers:KList] )
      => #if CT ==K staticCT
           #then ['Static(.KList),,OldModifiers]
           #else [OldModifiers]
@@ -199,7 +199,7 @@ rule [localEnvObjectBuild]:
       => localEnvClassAddFieldsAndRegister(
             'ClassDec(
               'ClassDecHead(
-                generateLocalClassModifiers( CT, .KList ),,
+                generateLocalClassModifiers( CT, [.KList] ),,
                 getSimpleName(LocalEnvClass),,
                 'None(.KList),,
                 'None(.KList),,
@@ -302,7 +302,7 @@ rule [localClassAugmentConsParams-augment]:
       ]
     </methodBody>
 when
-    notBool getLastKListElement(TList) ==K LocalEnvClass
+    notBool getLastKListElement([TList]) ==K LocalEnvClass
 
 rule [localClassAugmentConsParams-end]:
     <k> localClassAugmentConsParams(LocalClass:ClassType, ConsName:Id, LocalEnvClass:ClassType) => .K ...</k>
@@ -315,7 +315,7 @@ syntax K ::= haveUnaugmentedConstructors( Id, ClassType, Map )                [f
 rule haveUnaugmentedConstructors(ConsName:Id, LocalEnvClass:ClassType,
                                  (sig(ConsName:Id, types(TList:KList)) |-> _) _:Map) => true
 when
-    notBool getLastKListElement(TList) ==K LocalEnvClass
+    notBool getLastKListElement([TList]) ==K LocalEnvClass
 
 //@ Elaborates the given node and saves it to <elabBuffer>
 syntax K ::= appendToElabBuffer ( K ) //[strict, context(result(ElabKResult))] //K bug generalized strictness

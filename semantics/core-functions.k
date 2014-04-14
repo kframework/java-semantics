@@ -54,16 +54,16 @@ rule toTypedVal(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T       
 
 //@ Converts a KList of terms to Types. Uses typeOf underneath.
 syntax K ::=  getTypes (
-                KList     //List{KResult} a list of source expressions
+                KListWrap     //[...,, KResult,, ...] - a list of source expressions
               )
               [function]
 
 // Without the second side condition it would be an infinite loop
-rule getTypes(_,, (K:K => typeOf(K)),, _)
+rule getTypes([_,, (K:K => typeOf(K)),, _])
 when
     isType(K) =/=K true andBool getKLabel(K) =/=KLabel 'typeOf
 
-rule getTypes(Ts:KList) => types(Ts)
+rule getTypes([Ts:KList]) => types(Ts)
 when
     isKResult(Ts)
 
@@ -142,15 +142,15 @@ syntax K ::= klistConcat ( K, K ) [strict]
 rule klistConcat(resultListWrap(KL1:KList), resultListWrap(KL2:KList)) => resultListWrap(KL1,,KL2)
 
 //@ Counts the number of elements in the KList list. Evaluates to an Int.
-syntax K ::= length ( KList )                                       [function]
-           | length ( Int, KList )                                  [function]
+syntax K ::= length ( KListWrap )                                   [function]
+           | length ( Int, KListWrap )                              [function]
 
-syntax K ::= getLastKListElement( KList )                           [function]
-rule getLastKListElement(_,, K:K) => K
+syntax K ::= getLastKListElement( KListWrap )                       [function]
+rule getLastKListElement([_,, K:K]) => K
 
-rule length(Ks:KList) => length(0, Ks)
-rule length(I:Int, K:K,, Ks:KList) => length(I +Int 1, Ks)
-rule length(I:Int, .KList) => I
+rule length([Ks:KList]) => length(0, [Ks])
+rule length(I:Int, [K:K,, Ks:KList]) => length(I +Int 1, [Ks])
+rule length(I:Int, [.KList]) => I
 
 /*@ \subsection{Identifiers}*/
 

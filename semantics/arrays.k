@@ -79,12 +79,14 @@ and assign the right type ($T$) to the allocated array locations. */
 
 //@Elaboration result of expressions new T[]...
 syntax K ::=  newArrayImpl (
-                Type, // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
+                Type,       // T - type of each allocated element. So for new int[1][1][][],
+                              // T will be "arrayOf arrayOf int".
                 KListWrap,  // [Dims] - array dimensions
-                K,    // InitExp - expression used to initialize each array element, or .K if argument 4 is specified.
-                KList // InitContent - array initializer, if any, or .K if argument 3 is specified.
-                      // From arguments 3 and 4 just one may be specified. This initializer is for the whole array,
-                      //  not for each element as the previous one.
+                K,          // InitExp - expression used to initialize each array element,
+                              // or .K if argument 4 is specified.
+                KListWrap   // InitContent - array initializer, if any, or .K if argument 3 is specified.
+                              // From arguments 3 and 4 just one may be specified. This initializer is for the whole
+                              // array, not for each element as the previous one.
               )
 
 /* HOLE is of the form 'Dim(K)
@@ -102,26 +104,26 @@ rule 'Dim(K:K) => K [structural]
 after that begin array allocation
 */
 rule [newArrayImpl]:
-    newArrayImpl(T:Type, [Dims:KList], InitExp:K, .KList)
-    => checkNonNegative(Dims) ~> allocAndInitArray(T, [Dims], InitExp)
+    newArrayImpl(T:Type, [Dims:KList], InitExp:K, [.KList])
+    => checkNonNegative([Dims]) ~> allocAndInitArray(T, [Dims], InitExp)
 when isKResult(Dims) andBool InitExp =/=K .K
 
 rule [newArrayImpl-with-init]:
-    newArrayImpl(T:Type, [Dim:TypedVal], .K, InitContent:KList)
-    => arrayInitAlloc(newArrayImpl(T, [Dim], undefined :: T, .KList), InitContent)
+    newArrayImpl(T:Type, [Dim:TypedVal], .K, [InitContent:KList])
+    => arrayInitAlloc(newArrayImpl(T, [Dim], undefined :: T, [.KList]), [InitContent])
 
 /*Computation designed to check that array creation expression dimensions are non-negative. If they are non-negative,
 checkNonNegative is dissolved. Otherwise NegativeArraySizeException is thrown.
 */
 syntax K ::=  checkNonNegative (
-                KList           // List{KResult} - computed array dimensions
+                KListWrap           // [...,, KResult,, ...] - computed array dimensions
               )
 
-rule checkNonNegative((NI:Int::_ => .KList),, _)
+rule checkNonNegative([(NI:Int::_ => .KList),, _])
 when NI >=Int 0
 
 rule [checkNonNegative-to-NegativeArraySizeException]:
-    checkNonNegative((NI:Int::_),, _)
+    checkNonNegative([NI:Int::_,, _])
     => 'Throw('NewInstance(
       'None(.KList),,
       class String2Id("java.lang.NegativeArraySizeException"),,
@@ -131,7 +133,7 @@ rule [checkNonNegative-to-NegativeArraySizeException]:
 when
     NI <Int 0
 
-rule checkNonNegative(.KList) => .
+rule checkNonNegative([.KList]) => .
 
 //@ Same as newArrayImpl, but after dims were computed and checked
 syntax K ::=  allocAndInitArray (
@@ -253,8 +255,8 @@ when
 
 //allocates the array based on previously computed size, the proceeds to array initialization
 syntax K ::=  arrayInitAlloc (
-                K,    //newArrayAlloc(), reduces to arrayRef()
-                KList //InitContent - list of initialization expressions
+                K,        //newArrayAlloc(), reduces to arrayRef()
+                KListWrap //InitContent - list of initialization expressions
               )
               [strict(1)]
 
@@ -262,30 +264,30 @@ syntax K ::=  arrayInitAlloc (
 context arrayInitAlloc(HOLE,_)
 
 rule [arrayInitAlloc]:
-    arrayInitAlloc(arrayRef(T:Type, L:Int, Len:Int)::T, InitContent:KList)
-    => arrayInitImpl(T, L, InitContent) ~> arrayRef(T, L, Len)::T
+    arrayInitAlloc(arrayRef(T:Type, L:Int, Len:Int)::T, [InitContent:KList])
+    => arrayInitImpl(T, L, [InitContent]) ~> arrayRef(T, L, Len)::T
 
 syntax K ::=  arrayInitImpl (
-                Type, //T - array type, used by inner ArrayInit's
-                Int,  //L - location of first element in store
-                KList //InitContent - list of initialization expressions
+                Type,     //T - array type, used by inner ArrayInit's
+                Int,      //L - location of first element in store
+                KListWrap //InitContent - list of initialization expressions
               )
 
 rule [arrayInitImpl]:
     ( . => store(L, K) )
-    ~> arrayInitImpl(_, (L:Int => L +Int 1), ((K:K => .KList),, _) )
+    ~> arrayInitImpl(_, (L:Int => L +Int 1), [(K:K => .KList),, _] )
 when
     getKLabel(K) =/=KLabel 'ArrayInit
 
 rule [arrayInitImpl-inner-ArrayInit-desugar]:
-    ( . => store(L, newArrayImpl(T, [length(InitContent)::int], .K, InitContent)) )
+    ( . => store(L, newArrayImpl(T, [length([InitContent])::int], .K, [InitContent])) )
     ~> arrayInitImpl(
           arrayOf arrayOf T:Type,
           (L:Int => L +Int 1),
-          (('ArrayInit([InitContent:KList]) => .KList),, _)
+          [('ArrayInit([InitContent:KList]) => .KList),, _]
        )
 
 rule [arrayInitImpl-discard]:
-    arrayInitImpl(_, _, .KList) => .
+    arrayInitImpl(_, _, [.KList]) => .
 
 endmodule

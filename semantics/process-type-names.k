@@ -18,25 +18,25 @@ module PROCESS-TYPE-NAMES
 syntax KLabel ::= "'PackageName"
 
 rule [PackageName-Start]:
-    'PackageName([Ks:KList]) => packageNameImpl("", Ks:KList)                  [structural]
+    'PackageName([Ks:KList]) => packageNameImpl("", [Ks:KList])                  [structural]
 
 //Aux construct for processing packages
-syntax K ::= packageNameImpl ( String, KList )
+syntax K ::= packageNameImpl ( String, KListWrap )
 
 rule [packageNameImpl-FirstInnerDesugar]:
-    packageNameImpl(_:String, (X:Id => packageId(X)),, Ks:KList)                        [structural]
+    packageNameImpl(_:String, [(X:Id => packageId(X)),, Ks:KList])                        [structural]
 
 rule [packageNameImpl-FirstPack]:
-    packageNameImpl("", packageId(NextKId:Id),, Ks:KList)
-    => packageNameImpl(Id2String(NextKId), Ks)                                          [structural]
+    packageNameImpl("", [packageId(NextKId:Id),, Ks:KList])
+    => packageNameImpl(Id2String(NextKId), [Ks])                                          [structural]
 
 rule [packageNameImpl-NextPack]:
-    packageNameImpl(Str:String, packageId(NextKId:Id),, Ks:KList)
-    => packageNameImpl(Str +String "." +String Id2String(NextKId), Ks)
+    packageNameImpl(Str:String, [packageId(NextKId:Id),, Ks:KList])
+    => packageNameImpl(Str +String "." +String Id2String(NextKId), [Ks])
 when Str =/=String ""                                                                   [structural]
 
 rule [packageNameImpl-End]:
-    packageNameImpl(Str:String, .KList) => packageId(String2Id(Str))                    [structural]
+    packageNameImpl(Str:String, [.KList]) => packageId(String2Id(Str))                  [structural]
 
 //@ 'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _)
 syntax KLabel ::= "'CompilationUnit"

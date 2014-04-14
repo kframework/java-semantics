@@ -25,7 +25,7 @@ syntax K ::=  processClassDecs (
 */
 rule [processClassDecs-resolveBases-TopLevel-Start]:
     <k>
-      (. => resolveBases(Class, RawExtends, RawImplements) ~> restoreCrntClass(OldCrntClass))
+      (. => resolveBases(Class, RawExtends, [RawImplements]) ~> restoreCrntClass(OldCrntClass))
       ~> processClassDecs(_)
       ...
     </k>
@@ -41,7 +41,7 @@ rule [processClassDecs-resolveBases-TopLevel-Start]:
 
 rule [processClassDecs-resolveBases-Inner-Start]:
     <k>
-      (. => resolveBases(Class, RawExtends, RawImplements) ~> restoreCrntClass(OldCrntClass))
+      (. => resolveBases(Class, RawExtends, [RawImplements]) ~> restoreCrntClass(OldCrntClass))
       ~> processClassDecs(_)
       ...
     </k>
@@ -68,14 +68,14 @@ when
 syntax K ::=  resolveBases (
                 ClassType,  //The class for which we resolve bases
                 K,          //Base class
-                KList       //Implements clauses
+                KListWrap   //Implements clauses
               )
 
 context resolveBases(_, HOLE, _)      //Heat extends declaration
-context resolveBases(_,_, _,,HOLE,,_) //Heat implements declarations
+context resolveBases(_,_, [_,,HOLE,,_]) //Heat implements declarations
 
 rule [resolveBases]:
-    <k> resolveBases(Class:ClassType, BaseClass:ClassType, ImplTypes:KList) => . ...</k>
+    <k> resolveBases(Class:ClassType, BaseClass:ClassType, [ImplTypes:KList]) => . ...</k>
     <classType> Class </classType>
     <rawExtends> _ => BaseClass </rawExtends>
     <rawImplements> _ => [ImplTypes] </rawImplements>

@@ -133,7 +133,8 @@ rule [elabLookup-NextClass]:
     <staticEnv> StaticEnv:Map </staticEnv>
     <constantEnv> ConstantEnv:Map </constantEnv>
 when
-    notBool ( nameInVarDecs(X, InstanceVarDecs) ==K true orBool (X in keys(StaticEnv)) orBool (X in keys(ConstantEnv)))
+    notBool ( nameInVarDecs(X, [InstanceVarDecs]) ==K true orBool (X in keys(StaticEnv)) orBool (X in keys
+    (ConstantEnv)))
 
 rule [elabLookup-NotFound]:
     elabLookup(X:Id, noClass) => noValue
@@ -146,13 +147,13 @@ rule [elabLookup-Set-NotFound]:
     elabLookup(_, .Set) => noValue
 
 syntax K ::=  nameInVarDecs(
-                Id,   //Target name
-                KList //The list of variable declarations, each of the form
-                      //  'LocalVarDec(.K,, T:Type,, ['VarDec(X)])
+                Id,       //Target name
+                KListWrap //The list of variable declarations, each of the form
+                          //  'LocalVarDec(.K,, T:Type,, ['VarDec(X)])
               )
               [function]
 
-rule nameInVarDecs(X:Id, (_,, 'LocalVarDec(.K,, T:Type,, ['VarDec(X)]),, _)) => true
+rule nameInVarDecs(X:Id, [_,, 'LocalVarDec(.K,, T:Type,, ['VarDec(X)]),, _]) => true
 
 syntax KLabel ::= "'This"
 

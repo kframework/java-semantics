@@ -35,11 +35,11 @@ when
 
 //Seqstrict starting from 2-nd argument.
 rule [customElabHeating-For-next-children]:
-    customElabHeating('For, HeadKs:KList,, KPrec:K,, KHole:K) => isElabKList(HeadKs,,KPrec)
+    customElabHeating('For, [HeadKs:KList,, KPrec:K,, KHole:K]) => isElabKList([HeadKs,,KPrec])
 
 //Seqstrict starting from 2-nd argument.
 rule [customElabHeating-For-next-children]:
-    customElabHeating('Catch, K1:K,, KHole:K) => isElabKResult(K1)
+    customElabHeating('Catch, [K1:K,, KHole:K]) => isElabKResult(K1)
 
 rule [elabEnd-Block-For-Catch]:
     elabEnd(KL:KLabel(ElabResL:KList)) => removeLastElabEnv ~> elabRes(KL(ElabResL))

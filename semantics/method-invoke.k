@@ -51,7 +51,7 @@ rule [Invoke-Method-Instance-On-Class]:
       )
       => invokeImpl(
         lookupOverloadedMethod(
-          sig(Name, getTypes(ParamVals)), [getClassList(Rest,, layer(Class, BI, EnclosingObj))],
+          sig(Name, getTypes([ParamVals])), [getClassList([Rest,, layer(Class, BI, EnclosingObj)])],
           mapWrap(.Map), noMethodRef
         ),
         loc(OL)::Class, [ParamVals]
@@ -66,7 +66,7 @@ when
 rule [Invoke-Method-Static-On-Class]:
     'Invoke('Method('MethodName(Class:ClassType,, Name:Id )),, [ParamVals:KList] )
     => invokeImpl(
-      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), [Class], mapWrap(.Map), noMethodRef),
+      lookupOverloadedMethod(sig(Name, getTypes([ParamVals])), [Class], mapWrap(.Map), noMethodRef),
       noValue, [ParamVals]
     )
 when
@@ -84,7 +84,7 @@ rule [Invoke-Method-Instance-On-Interface]:
         [ParamVals:KList]
       )
       => invokeImpl(
-        lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), [ActualClass], mapWrap(.Map), noMethodRef),
+        lookupOverloadedMethod(sig(Name, getTypes([ParamVals])), [ActualClass], mapWrap(.Map), noMethodRef),
         loc(OL)::Class, [ParamVals]
       )      ...
     </k>
@@ -101,7 +101,8 @@ rule [Invoke-Method-On-other]:
       [ParamVals:KList]
     )
     => invokeImpl(
-      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), [getLookupTargetType(QualT)], mapWrap(.Map), noMethodRef),
+      lookupOverloadedMethod(sig(Name, getTypes([ParamVals])), [getLookupTargetType(QualT)], mapWrap(.Map),
+      noMethodRef),
       QualRV::QualT, [ParamVals]
     )
 when
@@ -140,10 +141,10 @@ rule [superMethod]:
 
 //todo change the result type to be KListWrap
 //@ Converts a list of ListItem(layer(Class, BI, EnclosingObj)) into KList with elements of sort ClassType
-syntax K ::= getClassList ( KList )
-rule (.KList => Class),, getClassList((layer(Class:ClassType, _,_) => .KList),, _)
+syntax K ::= getClassList ( KListWrap )
+rule (.KList => Class),, getClassList([(layer(Class:ClassType, _,_) => .KList),, _])
         [structural, anywhere]
-rule getClassList(.KList) => .KList
+rule getClassList([.KList]) => .KList
         [structural, anywhere]
 
 /*@ The right signature is already found.
@@ -166,7 +167,6 @@ syntax K ::=  lookupOverloadedMethod (
 context lookupOverloadedMethod(HOLE,_,_,_)
 context lookupOverloadedMethod(_,_,HOLE,_)
 context lookupOverloadedMethod(_,_,_,HOLE)
-
 rule [lookupOverloadedMethod-SigKnownFirstCandidate]:
     lookupOverloadedMethod(
       Sig:Signature,

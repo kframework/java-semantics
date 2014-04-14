@@ -258,16 +258,16 @@ rule [MethodDec]:
       )
       => storeMethod([Params],
             getContextType(Modifiers), getAccessMode(Modifiers), isSynchronized(Modifiers), methodRT, noValue, Body,
-            sig(Name, getTypes(Params)), ReturnType)
+            sig(Name, getTypes([Params])), ReturnType)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
 when
-    paramTypesResolved(Params)                        [structural]
+    paramTypesResolved([Params])                            [structural]
 
-syntax K ::= paramTypesResolved( KList )              [function]
-rule paramTypesResolved(('Param(_:K,, T:Type,, _:Id) => .KList),, _)
-rule paramTypesResolved(.KList) => true
+syntax K ::= paramTypesResolved( KListWrap )              [function]
+rule paramTypesResolved([('Param(_:K,, T:Type,, _:Id) => .KList),, _])
+rule paramTypesResolved([.KList]) => true
 
 syntax KLabel ::= "'AbstractMethodDec"
                 | "'NoMethodBody"
@@ -385,11 +385,11 @@ rule [ConstrDec]:
             #fi,,
             BodyKs
           ],
-          sig(getConsName(Class), getTypes(Params)), void)
+          sig(getConsName(Class), getTypes([Params])), void)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-when paramTypesResolved(Params)
+when paramTypesResolved([Params])
 
 //@ Get the internal constructor name for a given class
 syntax K ::= getConsName ( ClassType )                               [function]

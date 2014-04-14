@@ -103,9 +103,9 @@ rule [chainOfResponsibility-Result2]:
   It is notably NOT a cast() expression. This, together with the fact that cast() have no elaboration heatig rules,
   makes the whole elaboration phase non-reentrant.
 */
-syntax K ::= isElabKList ( KList )                 [function]
-rule isElabKList(ElabKR:ElabKResult,, Ks:KList) => isElabKList(Ks)
-rule isElabKList(.KList) => true
+syntax K ::= isElabKList ( KListWrap )                 [function]
+rule isElabKList([ElabKR:ElabKResult,, Ks:KList]) => isElabKList([Ks])
+rule isElabKList([.KList]) => true
 
 //@ Elaborate parameter type, if not elaborated yet. For catch clause.
 context  elab('Param(_:K,, HOLE,, _:Id))
@@ -140,7 +140,7 @@ rule [elab-heat-default]:
     )
     ~> elab(KL:KLabel(HeadKs:KList,, (K:K => CHOLE),, _:KList))
 when
-    (defaultElabHeating(KL) ==K true orBool customElabHeating(KL, (HeadKs,,K)) ==K true)
+    (defaultElabHeating(KL) ==K true orBool customElabHeating(KL, [HeadKs,,K]) ==K true)
     andBool notBool isElabKResult(K) ==K true
         [transition-strictness]
 
@@ -157,7 +157,7 @@ of their children. The KLabels that heat all their children using default rules 
 defaultElabHeating.
 
 The predicate definition is scattered across modules related to elaboration.*/
-syntax K ::= customElabHeating ( KLabel, KList )          [function]
+syntax K ::= customElabHeating ( KLabel, KListWrap )          [function]
 
 /*@ The default algorithm of transforming the term from elab to elabRes, when the children were completely elaborated.
   Deletes elabRes wrappers from children. This algorithm is activated when the following conditions apply:
@@ -173,7 +173,7 @@ syntax K ::= elabDispose ( K )
 rule [elab-to-elabDispose]:
     elab(KL:KLabel(ElabResL:KList)) => elabDispose(KL(ElabResL))
 when
-    isElabKList(ElabResL) ==K true
+    isElabKList([ElabResL]) ==K true
 
 rule [elabDispose-process]:
     elabDispose(KL:KLabel(_,, (elabRes(K:K) => K),, _))
@@ -181,14 +181,14 @@ rule [elabDispose-process]:
 rule [elabDispose-to-elabEnd]:
     elabDispose(KL:KLabel(Ks:KList)) => elabEnd(KL(Ks))
 when
-    notBool haveElabRes(Ks) ==K true
+    notBool haveElabRes([Ks]) ==K true
 
 //@ True if given KList have no terms of the form elabRes(...), false otherwise.
-syntax K ::= haveElabRes ( KList )          [function]
-rule haveElabRes(_,, elabRes(_),,_) => true
+syntax K ::= haveElabRes ( KListWrap )          [function]
+rule haveElabRes([_,, elabRes(_),, _]) => true
 
-//todo additional rule required since we introduced KListWrap
-rule haveElabRes(_,, KList2KLabel _,,elabRes(_),,_ (_),,_) => true
+//K bug additional rule required since we introduced KListWrap
+rule haveElabRes([_,, KList2KLabel _,, elabRes(_),, _ (_),, _]) => true
 
 /*@ The 3rd elaboration-phase wrapper for expressions. Represents the case when children are completely elaborated and
 unwrapped from elabRes(), but root node might not be elaborated yet. The implementation is scattered across all modules
@@ -269,7 +269,7 @@ rule [elab-heat-KListWrap]:
     )
     ~> elab([HeadKs:KList,, (K:K => CHOLE),, _:KList])
 when
-    isElabKList(HeadKs) andBool notBool isElabKResult(K) ==K true
+    isElabKList([HeadKs]) andBool notBool isElabKResult(K) ==K true
 
 rule [elab-cool-KListWrap]:
     (ElabK:ElabKResult => .) ~> elab([_,, (CHOLE => ElabK),, _])
@@ -277,7 +277,7 @@ rule [elab-cool-KListWrap]:
 rule [elab-to-elabDispose-KListWrap]:
     elab([K1:K,,ElabResL:KList]) => elabDispose([K1,,ElabResL])
 when
-    isElabKList(K1,,ElabResL) ==K true
+    isElabKList([K1,,ElabResL]) ==K true
 
 rule [elabDispose-process-KListWrap]:
     elabDispose([_,, (elabRes(K:K) => K),, _])
@@ -285,7 +285,7 @@ rule [elabDispose-process-KListWrap]:
 rule [elabDispose-to-elabEnd-KListWrap]:
     elabDispose([K1:K,,Ks:KList]) => elabRes([K1,,Ks])
 when
-    notBool haveElabRes(Ks) ==K true
+    notBool haveElabRes([Ks]) ==K true
 
 rule [elab-to-elabRes-KListWrap-empty]:
     elab([.KList]) => elabRes([.KList])

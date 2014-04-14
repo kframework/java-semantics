@@ -108,19 +108,19 @@ rule [elabEnd-NewArray-EmptyDims]:
 
 rule [elabEnd-NewArray]:
     elabEnd('NewArray(T:Type,, [Dims:KList],, [.KList]))
-    => elabExpAndType(newArrayImpl(T, [Dims], default(T), .KList), getArrayType(T, Dims))
+    => elabExpAndType(newArrayImpl(T, [Dims], default(T), [.KList]), getArrayType(T, [Dims]))
         [structural]
 
 //@ Computes the array type based on allocated elem type and number of allocated dimensions.
-syntax K ::= getArrayType ( Type, KList )                          [function]
-rule getArrayType(T:Type, K:K,,Dims:KList) => getArrayType(arrayOf T, Dims)
-rule getArrayType(T:Type, .KList) => T
+syntax K ::= getArrayType ( Type, KListWrap )                          [function]
+rule getArrayType(T:Type, [K:K,,Dims:KList]) => getArrayType(arrayOf T, [Dims])
+rule getArrayType(T:Type, [.KList]) => T
 
 rule [elabEnd-NewArray-ArrayInit-Preprocess]:
     elabEnd('NewArray((T:Type => arrayOf T),, [('Dim(.KList) => .KList),, _],, 'ArrayInit(_)))
 
 rule [elabEnd-NewArray-ArrayInit]:
     elabEnd('NewArray(arrayOf T:Type,, [.KList],, 'ArrayInit([InitContent:KList])))
-    => elabRes(cast(arrayOf T, newArrayImpl(T, [length(InitContent)::int], .K, InitContent)))
+    => elabRes(cast(arrayOf T, newArrayImpl(T, [length([InitContent])::int], .K, [InitContent])))
 
 endmodule
