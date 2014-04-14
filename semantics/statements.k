@@ -234,18 +234,18 @@ rule 'DoWhile(S:K,,E:K) => S ~> whileImpl(E, S)  [structural]
 //@ \subsection{For statement}
 
 //wrapper of certain clauses of for statement
-syntax K ::= stm ( K )
+syntax K ::= stm ( KListWrap )
 
-rule [stm-ListWrap-empty]:
+rule [stm-KListWrap-empty]:
     stm([.KList]) => .
         [structural]
 
-rule [stm-ListWrap-exp]:
+rule [stm-KListWrap-exp]:
     stm([E:K,, Es:KList]) => 'ExprStm(E) ~> stm([Es])
 when
     getKLabel(E) ==KLabel 'cast                                           [structural]
 
-rule [stm-ListWrap-LocalVarDec]:
+rule [stm-KListWrap-LocalVarDec]:
     stm([K:K,,Ks:KList]) => [K,,Ks]
 when
     notBool ( getKLabel(K) ==KLabel 'cast )                               [structural]

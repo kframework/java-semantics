@@ -80,7 +80,7 @@ and assign the right type ($T$) to the allocated array locations. */
 //@Elaboration result of expressions new T[]...
 syntax K ::=  newArrayImpl (
                 Type, // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
-                K,    // [Dims] - array dimensions
+                KListWrap,  // [Dims] - array dimensions
                 K,    // InitExp - expression used to initialize each array element, or .K if argument 4 is specified.
                 KList // InitContent - array initializer, if any, or .K if argument 3 is specified.
                       // From arguments 3 and 4 just one may be specified. This initializer is for the whole array,
@@ -136,7 +136,7 @@ rule checkNonNegative(.KList) => .
 //@ Same as newArrayImpl, but after dims were computed and checked
 syntax K ::=  allocAndInitArray (
                 Type, // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
-                K,    // [Dims:List{KResult}] - array dimensions
+                KListWrap,  // [Dims:List{KResult}] - array dimensions
                 K     // InitExp - expression used to initialize each array element
               )
 

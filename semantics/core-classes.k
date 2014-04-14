@@ -68,7 +68,7 @@ syntax KLabel ::=   "'Public"
 
 /*@Extracts the access mode from the list of modifiers of some Java entity.*/
 syntax K ::=  getAccessMode (
-                K //[...] - the list of class/method attributes
+                KListWrap //[...] - the list of class/method attributes
               )
               [function]
 

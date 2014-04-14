@@ -280,13 +280,13 @@ rule [AbstractMethodDec]:
         )
 
 syntax K ::=  storeMethod (
-                K,           //[Params]
+                KListWrap,   //[Params]
                 ContextType, //will evaluate to ContextType - staticCT or instanceCT
                 AccessMode,  //will evaluate to AccessMode
                 TypedVal,    //IsSync:bool - whether method is synchronized or not
                 RoutineType, //either methodRT or constructorRT
                 K,           //FirstLine for constructor, noValue for method.
-                K,           //S - method body
+                K,           //S - method body. Either [...] or 'NoMethodBody(_)
                 Signature,   //method signature
                 Type         //method return type
               )
@@ -522,7 +522,7 @@ rule [convertInstanceInitIntoMethod]:
 //@ \subsection{Auxiliary functions}
 
 syntax K ::=  getContextType (
-                K               //[...] - the list of method attributes
+                KListWrap       //[...] - the list of method attributes
               )
               [function]
 
@@ -535,7 +535,7 @@ rule getContextType([.KList])      => instanceCT
 
 //@ Evaluates to true::bool if synchronized is among modifiers, false otherwise
 syntax K ::=  isSynchronized (
-                K //[...] - the list of method attributes
+                KListWrap       //[...] - the list of method attributes
               )
               [function]
 
@@ -548,7 +548,7 @@ rule isSynchronized([.KList]) => false::bool
 
 //@ Used to provide an approximate implementation of the distinction between static constant and non-constant fields.
 syntax K ::=  isFinal (
-                K //[...] - the list of method attributes
+                KListWrap   //[...] - the list of method attributes
               )
               [function]
 
