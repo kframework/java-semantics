@@ -55,7 +55,7 @@ rule [CompilationUnit]:
     <k>
       'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _:K,,
           [Decs:KList]
-      ) => processTypeNames(Decs, Pack)
+      ) => processTypeNames([Decs], Pack)
       ...
     </k>
     <globalPhase> ProcTypeNamesPhase </globalPhase>
@@ -65,7 +65,7 @@ rule [CompilationUnit]:
 /*@ Wrapper of declarations inside a compilation unit. Used to distinguish
 ProcTypeNamesPhase from ProcCompUnitsPhase*/
 syntax K ::=  processTypeNames (
-                KList,    //declarations inside a compilation unit
+                KListWrap,    //declarations inside a compilation unit
                 PackageId // the package of the processed types
               )
 
@@ -80,7 +80,7 @@ when notBool PackId in keys(PackMap)
 rule [processTypeNames]:
     <k>
       processTypeNames(
-        (DecLabel:KLabel(_:KLabel(Modifiers:KListWrap,, SimpleClass:Id,, _),, CBody:K) => .KList),, _,
+        [(DecLabel:KLabel(_:KLabel(Modifiers:KListWrap,, SimpleClass:Id,, _),, CBody:K) => .KList),, _],
         PackId:PackageId
       )
       ~> ( . => processInnerTypes(CBody, toPackage(getClassType(PackId,SimpleClass))) )
@@ -103,20 +103,20 @@ rule [processTypeNames]:
 when DecLabel ==KLabel 'ClassDec orBool DecLabel ==KLabel 'InterfaceDec
 
 rule [processTypeNames-ElemDiscard]:
-    processTypeNames((Label:KLabel(_) => .KList),,_,_)
+    processTypeNames([(Label:KLabel(_) => .KList),, _], _)
 when notBool( (Label ==KLabel 'ClassDec) orBool (Label ==KLabel 'InterfaceDec) )
 
 //We match PackId in <namesToClasses> just to be sure that the package was added to the map.
 rule [processTypeNames-Discard]:
-    <k> processTypeNames(.KList, PackId:PackageId) => .K ...</k>
+    <k> processTypeNames([.KList], PackId:PackageId) => .K ...</k>
     <namesToClasses>... PackId |-> _ ...</namesToClasses>
 
 /*@ Is converted into a processTypeNames. The first argument is a class/interface body. This function
   have to extract the list of memers from the body and pass them to processTypeNames.
 */
 syntax K ::= processInnerTypes ( K , PackageId )
-rule processInnerTypes('ClassBody([Ks:KList]), Pack:PackageId) => processTypeNames(Ks, Pack)
-rule processInnerTypes([Ks:KList], Pack:PackageId) => processTypeNames(Ks, Pack)             //interface body
+rule processInnerTypes('ClassBody([Ks:KList]), Pack:PackageId) => processTypeNames([Ks], Pack)
+rule processInnerTypes([Ks:KList], Pack:PackageId) => processTypeNames([Ks], Pack)             //interface body
 
 /*@ \subsection{Auxiliary constructs}*/
 

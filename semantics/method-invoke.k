@@ -51,7 +51,7 @@ rule [Invoke-Method-Instance-On-Class]:
       )
       => invokeImpl(
         lookupOverloadedMethod(
-          sig(Name, getTypes(ParamVals)), getClassList(Rest,, layer(Class, BI, EnclosingObj)),
+          sig(Name, getTypes(ParamVals)), [getClassList(Rest,, layer(Class, BI, EnclosingObj))],
           mapWrap(.Map), noMethodRef
         ),
         loc(OL)::Class, [ParamVals]
@@ -66,7 +66,7 @@ when
 rule [Invoke-Method-Static-On-Class]:
     'Invoke('Method('MethodName(Class:ClassType,, Name:Id )),, [ParamVals:KList] )
     => invokeImpl(
-      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), Class, mapWrap(.Map), noMethodRef),
+      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), [Class], mapWrap(.Map), noMethodRef),
       noValue, [ParamVals]
     )
 when
@@ -84,7 +84,7 @@ rule [Invoke-Method-Instance-On-Interface]:
         [ParamVals:KList]
       )
       => invokeImpl(
-        lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), ActualClass, mapWrap(.Map), noMethodRef),
+        lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), [ActualClass], mapWrap(.Map), noMethodRef),
         loc(OL)::Class, [ParamVals]
       )      ...
     </k>
@@ -101,7 +101,7 @@ rule [Invoke-Method-On-other]:
       [ParamVals:KList]
     )
     => invokeImpl(
-      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), getLookupTargetType(QualT), mapWrap(.Map), noMethodRef),
+      lookupOverloadedMethod(sig(Name, getTypes(ParamVals)), [getLookupTargetType(QualT)], mapWrap(.Map), noMethodRef),
       QualRV::QualT, [ParamVals]
     )
 when
@@ -138,6 +138,7 @@ rule [superMethod]:
       (layer(BaseClass, BI, EnclosingObj),, Rest)
     )::BaseClass
 
+//todo change the result type to be KListWrap
 //@ Converts a list of ListItem(layer(Class, BI, EnclosingObj)) into KList with elements of sort ClassType
 syntax K ::= getClassList ( KList )
 rule (.KList => Class),, getClassList((layer(Class:ClassType, _,_) => .KList),, _)
@@ -152,11 +153,11 @@ This is required in order to respect the rules of inheritance in the presence of
 Evaluates into typed method closure.*/
 syntax K ::=  lookupOverloadedMethod (
                 Signature,  //sig(Name, SigTL) - Method signature
-                KList,   //Class list, elements of type ClassType,
-                         // from derived to base.
-                         // To be processed from base to derived when methods map will be exhausted.
-                K,       //mapWrap(Map) - methods map of current LayerClass
-                MethodRef  //method closure of the most specific method found so far
+                KListWrap,  //Class list, elements of type ClassType,
+                              // from derived to base.
+                              // To be processed from base to derived when methods map will be exhausted.
+                K,          //mapWrap(Map) - methods map of current LayerClass
+                MethodRef   //method closure of the most specific method found so far
                               // or noValue if no applicable method was found yet
               )
               [strict(1,3,4)]
@@ -210,13 +211,13 @@ when
 rule [lookupOverloadedMethod-SigKnownLayerDiscard]:
     lookupOverloadedMethod(
       _,
-      (_,, (NewLayerType:ClassType => .KList)),
+      [_,, (NewLayerType:ClassType => .KList)],
       mapWrap(.Map) => getMethods(NewLayerType),
       _
     )
 
 rule [lookupOverloadedMethod-SigKnownEnd]:
-    lookupOverloadedMethod(_, .KList, mapWrap(.Map), MethodRef:MethodRef ) => MethodRef
+    lookupOverloadedMethod(_, [.KList], mapWrap(.Map), MethodRef:MethodRef ) => MethodRef
 
 //@ Retrieve the content of <methods> for the given class
 syntax K ::=  getMethods ( ClassType )
@@ -252,7 +253,7 @@ rule [invokeImpl-Instance]:
         loc(OL:Int)::_,
         [ParamValues:KList]
       ) ~> K:K
-       => bindTo(Params, ParamValues) ~> Body ~> 'Return('None(.KList))
+       => bindTo([Params], [ParamValues]) ~> Body ~> 'Return('None(.KList))
     </k>
     <stack>
       . =>  ListItem(sl(K,
@@ -298,7 +299,7 @@ rule [invokeImpl-Static]:
         noValue,
         [ParamValues:KList]
       ) ~> K:K
-       => staticInit(Class) ~> bindTo(Params, ParamValues) ~> Body ~> 'Return('None(.KList))
+       => staticInit(Class) ~> bindTo([Params], [ParamValues]) ~> Body ~> 'Return('None(.KList))
     </k>
     <stack>
       . =>  ListItem(sl(K,
@@ -340,18 +341,18 @@ syntax KLabel ::= "'Param"
 
 /*@ Binds a list of formal parameters to their values. Used by method calls and try-catch.
 */
-syntax K ::= bindTo ( KList, // List{'Param(...)} - parameter declarations
-                      KList  // List{KResult} - values
+syntax K ::= bindTo ( KListWrap, // [...,, 'Param(...),, ...] - parameter declarations
+                      KListWrap  // [...,, KResult,, ...] - values
                     )
 
 rule [bindTo]:
-    bindTo('Param(_:K,, T:Type,, X:Id),, RestP:KList, TV:TypedVal,, RestV:KList)
+    bindTo(['Param(_:K,, T:Type,, X:Id),, RestP:KList], [TV:TypedVal,, RestV:KList])
     => 'LocalVarDec(.K,, T:Type,,['VarDec(X)])
       ~> 'ExprStm('Assign('ExprName(X),, cast(T, TV:TypedVal)))
-      ~> bindTo(RestP, RestV)
+      ~> bindTo([RestP], [RestV])
 
 rule [bindTo-empty]:
-    bindTo(.KList,.KList) => .K
+    bindTo([.KList], [.KList]) => .K
         [structural]
 
 endmodule

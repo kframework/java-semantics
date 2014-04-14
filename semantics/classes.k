@@ -61,13 +61,13 @@ rule [QNewInstance]:
         _:K,,
         Class:ClassType,,
         _:K,,
-        [ Vals:KList ],,
+        [Args:KList],,
         _:K
       )
       => staticInit(Class)
         ~> create(Class)
         ~> restoreMethContext(<envGroup> OldEnvGroup </envGroup> <crntObj> OldCrntObj </crntObj> RestMethContext)
-        ~> invokeConstr(L, Class, Vals, EnclosingObj)
+        ~> invokeConstr(L, Class, [Args], EnclosingObj)
         ~> typedLookup(L)
       ...
     </k>
@@ -89,7 +89,7 @@ rule [QNewInstance]:
       ...
     </store>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
-when isKResult(Vals)
+when isKResult(Args)
 
 syntax K ::=  create ( ClassType )
 
@@ -134,7 +134,7 @@ rule [addEnvLayer]:
 syntax K ::=  invokeConstr (
                 Int,        //OL - object location
                 ClassType,  //The target class
-                KList,      //Arguments, evaluated
+                KListWrap,  //Arguments, evaluated
                 K           //EnclosingObj - the typed enclosing object, if any. Otherwise - noValue
               )
 
@@ -143,7 +143,7 @@ syntax K ::=  invokeConstr (
     Constructor calls are elaborated during execution phase.
 */
 rule [invokeConstr]:
-    invokeConstr(OL:Int, Class:ClassType, Args:KList, EnclosingObj:KResult)
+    invokeConstr(OL:Int, Class:ClassType, [Args:KList], EnclosingObj:KResult)
     => setEncloser(lookup(OL, Class), Class, EnclosingObj)
     ~> 'ExprStm('Invoke(
           'Method('MethodName( typedLookup(OL),, getConsName(Class) )),,

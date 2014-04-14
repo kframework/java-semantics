@@ -19,10 +19,10 @@ rule [elab-NewInstance-anonymous-implements-interface]:
       => processAnonymousClass(
         String2Id("Anonymous_$" +String Int2String(LocalId)),
         objectClass,
-        Class,
+        [Class],
         Arg1,
-        ActualArgs,
-        AnonClassDecs,
+        [ActualArgs],
+        [AnonClassDecs],
         resultListWrap(.KList),
         resultListWrap(.KList)
       )
@@ -41,12 +41,12 @@ rule [elab-NewInstance-anonymous-extends-class]:
       => processAnonymousClass(
         String2Id("Anonymous_$" +String Int2String(LocalId)),
         Class,
-        .KList,
+        [.KList],
         Arg1,
-        ActualArgs,
-        AnonClassDecs,
-        buildConstructorFormalParams(ActualArgs, .KList, 0),
-        buildConstructorFirstLineArgs(ActualArgs, .KList, 0)
+        [ActualArgs],
+        [AnonClassDecs],
+        buildConstructorFormalParams([ActualArgs], [.KList], 0),
+        buildConstructorFirstLineArgs([ActualArgs], [.KList], 0)
       )
       ...
     </k>
@@ -57,10 +57,10 @@ rule [elab-NewInstance-anonymous-extends-class]:
 syntax K ::=  processAnonymousClass (
                 Id,        //Class name
                 ClassType, //Base class
-                KList,     //Base interfaces, if any
+                KListWrap, //Base interfaces, if any //todo at most one interface is possible
                 K,         //'NewInstance Arg1
-                KList,     //ActualArgs
-                KList,     //Anonymous class block decs
+                KListWrap, //ActualArgs
+                KListWrap, //Anonymous class block decs
                 K,         //To be processed into resultListWrap(constructor formal params)
                 K          //To be processed into resultListWrap(constructor first line arguments)
               )
@@ -73,10 +73,10 @@ rule [processAnonymousClass]:
     processAnonymousClass(
       Name:Id,
       BaseClass:ClassType,
-      BaseInterfaces:KList,
+      [BaseInterfaces:KList],
       Arg1:K,
-      ActualArgs:KList,
-      AnonClassDecs:KList,
+      [ActualArgs:KList],
+      [AnonClassDecs:KList],
       resultListWrap(ConstructorFormalParams:KList),
       resultListWrap(ConstructorFirstLineArgs:KList)
     )
@@ -121,24 +121,24 @@ First KList - list of actual arguments
 Second KList - the result
 Third arg - a counter used to generate var names
 */
-syntax K ::= buildConstructorFormalParams ( KList, KList, Int )
-           | buildConstructorFirstLineArgs ( KList, KList, Int )
+syntax K ::= buildConstructorFormalParams ( KListWrap, KListWrap, Int )
+           | buildConstructorFirstLineArgs ( KListWrap, KListWrap, Int )
 
 rule buildConstructorFormalParams(
-      (ActualParam:K => .KList),, _,
-      _,, (.KList => 'Param([.KList],, typeOf(ActualParam),, String2Id("$" +String Int2String(Num) ))),
+      [(ActualParam:K => .KList),, _],
+      [_,, (.KList => 'Param([.KList],, typeOf(ActualParam),, String2Id("$" +String Int2String(Num) )))],
       Num:Int => Num +Int 1
     )
 
-rule buildConstructorFormalParams(.KList, Ks:KList, _) => resultListWrap(Ks)
+rule buildConstructorFormalParams([.KList], [Ks:KList], _) => resultListWrap(Ks)
 
 rule buildConstructorFirstLineArgs(
-      (_:K => .KList),, _,
-      _,, (.KList => 'ExprName(String2Id("$" +String Int2String(Num) ))),
+      [(_:K => .KList),, _],
+      [_,, (.KList => 'ExprName(String2Id("$" +String Int2String(Num) )))],
       Num:Int => Num +Int 1
     )
 
-rule buildConstructorFirstLineArgs(.KList, Ks:KList, _) => resultListWrap(Ks)
+rule buildConstructorFirstLineArgs([.KList], [Ks:KList], _) => resultListWrap(Ks)
 
 rule [elab-QNewInstance-anonymous-extends-class]:
     <k>
@@ -151,10 +151,10 @@ rule [elab-QNewInstance-anonymous-extends-class]:
         Class,
         TypedQual,
         Arg2,
-        ActualArgs,
-        AnonClassDecs,
-        buildConstructorFormalParams(TypedQual,,ActualArgs, .KList, 0),
-        buildConstructorFirstLineArgs(TypedQual,,ActualArgs, .KList, 0)
+        [ActualArgs],
+        [AnonClassDecs],
+        buildConstructorFormalParams([TypedQual,,ActualArgs], [.KList], 0),
+        buildConstructorFirstLineArgs([TypedQual,,ActualArgs], [.KList], 0)
       )
       ...
     </k>
@@ -168,8 +168,8 @@ syntax K ::=  processQAnonymousClass (
                 ClassType, //Base class
                 K,         //TypedQual - qualifier
                 K,         //'NewInstance Arg2
-                KList,     //ActualArgs
-                KList,     //Anonymous class block decs
+                KListWrap, //ActualArgs
+                KListWrap, //Anonymous class block decs
                 K,         //To be processed into resultListWrap(constructor formal params)
                 K          //To be processed into resultListWrap(constructor first line arguments)
               )
@@ -184,8 +184,8 @@ rule [processQAnonymousClass]:
       BaseClass:ClassType,
       TypedQual:K,
       Arg2:K,
-      ActualArgs:KList,
-      AnonClassDecs:KList,
+      [ActualArgs:KList],
+      [AnonClassDecs:KList],
       resultListWrap(ConstructorFormalParams:KList),
       resultListWrap(ConstrQual:K,, ConstructorFirstLineArgs:KList)
     )

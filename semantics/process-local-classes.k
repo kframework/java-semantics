@@ -89,8 +89,8 @@ syntax K ::=  registerClass(
 
 rule [registerClass]:
     registerClass(ClassDec:K, Pack:PackageId, Class:ClassType, EnclosingClass:ClassType)
-    =>   processTypeNames(ClassDec, Pack)
-      ~> processTypeDecsInPCUPhase(ClassDec, Pack, EnclosingClass)
+    =>   processTypeNames([ClassDec], Pack)
+      ~> processTypeDecsInPCUPhase([ClassDec], Pack, EnclosingClass)
       ~> processClassDecs(setWrap(SetItem(Class)))
       ~> processTypeWithDepends(Class)
       //~> elaborateBlocks(setWrap(SetItem(Class))) Now that this class's package = Encloser, it

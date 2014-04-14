@@ -141,14 +141,14 @@ rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
     <extends> BaseClass:ClassType </extends>
 
 rule [elabEnd-QSuperConstrInv-qualified]:
-    methodLookupResult(_, ExpectedParamExps:KList, instanceCT)
+    methodLookupResult(_, [ExpectedParamExps:KList], instanceCT)
     ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, [_]))
     => elabRes('QSuperConstrInv(Qual,, Arg2,, [ ExpectedParamExps ]))
 when
     Qual =/=K noValue
 
 rule [elabEnd-QSuperConstrInv-to-SuperConstrInv]:
-    methodLookupResult(_, ExpectedParamExps:KList, instanceCT)
+    methodLookupResult(_, [ExpectedParamExps:KList], instanceCT)
     ~> elabEnd('QSuperConstrInv(noValue,, Arg2:K,, [_]))
     => elabRes('SuperConstrInv(Arg2,, [ ExpectedParamExps ]))
 
@@ -174,7 +174,7 @@ rule [elabEnd-AltConstrInv-to-lookupMethod]:
     <crntClass> Class:ClassType </crntClass>
 
 rule [elab-AltConstrInv]:
-    methodLookupResult(_, ExpectedParamExps:KList, instanceCT)
+    methodLookupResult(_, [ExpectedParamExps:KList], instanceCT)
     ~> elabEnd('AltConstrInv(Arg1:K,, [_]))
     => elabRes('AltConstrInv(Arg1:K,, [ ExpectedParamExps ]))
 

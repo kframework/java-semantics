@@ -170,24 +170,24 @@ rule [lookupMethod-SigFound]:
       _,_,_,
       resultListWrap(ParamExps:KList),
       methodRef(sig( Name:Id, ArgTypes:Types ), _),
-      tempKResult => methodCastArguments(ArgTypes, ParamExps, .KList)
+      tempKResult => methodCastArguments(ArgTypes, [ParamExps], [.KList])
     )
 
 syntax K ::=  methodCastArguments (
                 Types,      //ArgTypes - argument types
-                KList,      //ParamExps - actual parameters
-                KList       //Result of parameter casting. Initialized with .KList
+                KListWrap,  //ParamExps - actual parameters
+                KListWrap   //Result of parameter casting. Initialized with .KList
               )
 
 rule [methodCastArguments-process]:
     methodCastArguments(
       types(((ArgType:Type) => .KList),, _),
-      ((ParamExp:K => .KList),, _),
-      (_,, (.KList => cast(ArgType, ParamExp)))
+      [(ParamExp:K => .KList),, _],
+      [_,, (.KList => cast(ArgType, ParamExp))]
     )
 
 rule [methodCastArguments-end]:
-    methodCastArguments(types(.KList), .KList, ExpectedParamExps:KList) => resultListWrap(ExpectedParamExps)
+    methodCastArguments(types(.KList), [.KList], [ExpectedParamExps:KList]) => resultListWrap(ExpectedParamExps)
 
 rule [lookupMethod-end]:
     <k>
@@ -196,7 +196,7 @@ rule [lookupMethod-end]:
          methodRef(Sig:Signature, Class:ClassType),
         resultListWrap(ExpectedParamExps:KList)
       )
-      => methodLookupResult(RetT, ExpectedParamExps, CT)
+      => methodLookupResult(RetT, [ExpectedParamExps], CT)
       ...
     </k>
     <classType> Class </classType>
@@ -209,13 +209,13 @@ rule [lookupMethod-end]:
 */
 syntax K ::=  methodLookupResult (
                 Type ,      // Return type
-                KList ,     // ExpectedParamExps
+                KListWrap , // ExpectedParamExps
                 ContextType // Called method context type
               )
 
 //for now just a workaround implementation
 rule [methodProcessArguments-Invoke-end]:
-    methodLookupResult(RetT:Type, ExpectedParamExps:KList, CT:ContextType)
+    methodLookupResult(RetT:Type, [ExpectedParamExps:KList], CT:ContextType)
     ~>  elabEnd('Invoke( 'Method('MethodName(QualK:K,, Name:Id)),, _ ))
     =>  elabEnd(stmtAndExp(
 

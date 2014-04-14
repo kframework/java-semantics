@@ -157,9 +157,9 @@ rule [AssertStm-TwoArgs]:
 //@ \subsection{Switch statement}
 
 syntax K ::=  switchImpl (
-                TypedVal, // TV - switch argument
-                KList,    // switch body - list of 'SwitchGroup labels
-                K         // DefaultStm - default block, if any
+                TypedVal,   // TV - switch argument
+                KListWrap,  // switch body - list of 'SwitchGroup labels
+                K           // DefaultStm - default block, if any
               )
 
 context 'Switch(HOLE,,_)
@@ -167,20 +167,22 @@ context 'Switch(HOLE,,_)
 //@ The switchEnd in the right-hand side of => is required to properly interact with break.
 rule [Switch]:
     'Switch(TV:TypedVal,, 'SwitchBlock([Ks:KList],, TrailingLabels:K))
-    => switchImpl(TV, (Ks,, 'SwitchGroup(TrailingLabels,, .K)), .K)
+    => switchImpl(TV, [Ks,, 'SwitchGroup(TrailingLabels,, .K)], .K)
     ~> switchEnd
 
 context switchImpl( _,
-          ( 'SwitchGroup(['Case(HOLE),,_:KList],,_),, _:KList ), _)
+          [ 'SwitchGroup(['Case(HOLE),,_:KList],,_),, _:KList ], _)
 
 /*@ The type associated to V and V2 is not important for match, only the value.
 JLS3 \$14.11, page 377: Every case constant expression associated with
 a switch statement must be assignable (�5.2) to the type of the switch Expression.*/
 
 rule [switchImpl-CaseNotMatch]:
-    switchImpl( V:RawVal :: _, ( 'SwitchGroup([
-        ( 'Case(V2:RawVal :: _) => .KList ),,
-        _:KList ],,_),, _), _)
+    switchImpl(
+      V:RawVal :: _,
+      [ 'SwitchGroup([ ( 'Case(V2:RawVal :: _) => .KList ),, _:KList ],,_),, _],
+      _
+    )
 when
     V =/=K V2
 
@@ -188,25 +190,25 @@ when
 by it's block. The execution rules for switch will discard switch-related
 constructs and will execute the statements. */
 rule [switchImpl-CaseMatch]:
-    switchImpl( V:RawVal :: _, ('SwitchGroup(['Case(V :: _),,_:KList],,S:K),,Ks:KList), _)
+    switchImpl( V:RawVal :: _, ['SwitchGroup(['Case(V :: _),,_:KList],,S:K),, Ks:KList], _)
     => [S,,Ks]
 
 rule [switchImpl-DefaultSave]:
-    switchImpl( TV:TypedVal, (
+    switchImpl( TV:TypedVal, [
       'SwitchGroup([
           ( 'Default(_) => .KList ),,
           _:KList],, S:K),, Ks:KList
-      ),
+      ],
       ( _:K => [S,, Ks] )
     )
 
 rule [switchImpl-SwitchGroup-Discard]:
     switchImpl( TV:TypedVal,
-      (( 'SwitchGroup([ .KList ],,_) => .KList ),,_),
+      [( 'SwitchGroup([ .KList ],,_) => .KList ),, _],
     _)
 
 rule [switchImpl-Default-Exec]:
-    switchImpl( _, .KList, DefaultStm:K) => DefaultStm
+    switchImpl( _, [.KList], DefaultStm:K) => DefaultStm
 
 rule [SwitchGroup-Exec]:
     'SwitchGroup(_:K,, S:K) => S
@@ -413,7 +415,7 @@ rule [Throw-checkCatch-True]:
     checkCatch(true::bool) ~> 'Throw(TV:TypedVal)
     ~> catchBlocks(catchImpl(Param:ExtKResult, CatchS:K),, _)
     => 'Block([
-          bindTo(Param, TV),,
+          bindTo([Param], [TV]),,
           CatchS
         ])
 

@@ -108,7 +108,7 @@ rule [elabEnd-QNewInstance-to-lookupMethod]:
 */
 rule [elabEnd-QNewInstance-methodLookupResult-qualified-end]:
     <k>
-      methodLookupResult(_, ExpectedParamExps:KList, instanceCT)
+      methodLookupResult(_, [ExpectedParamExps:KList], instanceCT)
       ~> elabEnd('QNewInstance( cast(_, QualExp:K),, Arg2:K,, Class:ClassType,, Arg4:K,,
                                 _:KListWrap,, 'None(.KList) ))
       => elabRes(cast(Class, 'QNewInstance( cast(EnclosingClass, QualExp:K),, Arg2,, getSimpleName(Class),,
@@ -122,7 +122,7 @@ rule [elabEnd-QNewInstance-methodLookupResult-qualified-end]:
     It will be desugared again into 'NewInstance at execution phase.
 */
 rule [elabEnd-QNewInstance-methodLookupResult-to-NewInstance]:
-    methodLookupResult(_, ExpectedParamExps:KList, instanceCT)
+    methodLookupResult(_, [ExpectedParamExps:KList], instanceCT)
     ~> elabEnd('QNewInstance(noValue,, Arg2:K,, Class:ClassType,, Arg4:K,, _:KListWrap,, 'None(.KList)))
     => elabRes(cast(Class, 'NewInstance(Arg2,, Class,, [ExpectedParamExps],, 'None(.KList))))
 

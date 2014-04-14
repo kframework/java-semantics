@@ -41,7 +41,7 @@ rule [CompilationUnit]:
       'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),,
           ImpDecs:K,, [Ks:KList]
       )
-      => compUnitImportsStart(Pack) ~> ImpDecs ~> processTypeDecsInPCUPhase(Ks, Pack, noClass)
+      => compUnitImportsStart(Pack) ~> ImpDecs ~> processTypeDecsInPCUPhase([Ks], Pack, noClass)
       ...
     </k>
     <globalPhase> ProcCompUnitsPhase  </globalPhase>
@@ -50,27 +50,27 @@ rule [CompilationUnit]:
 this phase from other preprocessing phases
 Type declarations are processed in this phase wrapped in a processTypeDecsInPCUPhase*/
 syntax K ::=  processTypeDecsInPCUPhase  (
-                KList,      //The list of terms from which we will process just type declarations
+                KListWrap,  //The list of terms from which we will process just type declarations
                 PackageId,  //The package of the processed types
                 ClassType   //The outer class of this class, if any, or noClass if this is a top-level class
               )
 
 rule [processTypeDecsInPCUPhase-Expand]:
-    (. => processTypeDecsInPCUPhase(K1, Pack, OuterClass))
-    ~> processTypeDecsInPCUPhase((K1:K => .KList),, _:K,,_, Pack:PackageId, OuterClass:ClassType)
+    (. => processTypeDecsInPCUPhase([K1], Pack, OuterClass))
+    ~> processTypeDecsInPCUPhase([(K1:K => .KList),, _:K,, _], Pack:PackageId, OuterClass:ClassType)
 
 rule [processTypeDecsInPCUPhase-Discard]:
-    processTypeDecsInPCUPhase(.KList, _,_) => .K
+    processTypeDecsInPCUPhase([.KList], _,_) => .K
 
 rule [processTypeDecsInPCUPhase-ElemDiscard]:
-    processTypeDecsInPCUPhase(Label:KLabel(_), _,_) => .
+    processTypeDecsInPCUPhase([Label:KLabel(_)], _,_) => .
 when notBool( Label ==KLabel 'ClassDec orBool Label ==KLabel 'InterfaceDec )
 
 /*@ \subsection{Class declaration processing}*/
 
 rule [processTypeDecsInPCUPhase-typeDec-ComputeFullName]:
     processTypeDecsInPCUPhase(
-      KL:KLabel(_:KLabel(_:K,, (SimpleClass:Id => getClassType(Pack,SimpleClass)),, _:KList),, _),
+      [KL:KLabel(_:KLabel(_:K,, (SimpleClass:Id => getClassType(Pack,SimpleClass)),, _:KList),, _)],
       Pack:PackageId, _
     )                [structural]
 
@@ -93,7 +93,8 @@ syntax KLabel ::= "'ClassDec"
                 | "'ImplementsDec"
 
 rule [ClassDec-NoExtendsDesugar]:
-    processTypeDecsInPCUPhase('ClassDec('ClassDecHead(_:KListWrap,, Class:ClassType,, _:K,,
+    processTypeDecsInPCUPhase(
+      ['ClassDec('ClassDecHead(_:KListWrap,, Class:ClassType,, _:K,,
         ( 'None(_)
           => 'Some('SuperDec(
                 #if (Class =/=K objectClass)
@@ -103,34 +104,36 @@ rule [ClassDec-NoExtendsDesugar]:
               ))
         ),,
         _:K),, _:K
-    ), Pack:PackageId, _)                [structural]
+      )],
+      Pack:PackageId, _
+    )                [structural]
 
 rule [ClassDec-NoImplementsDesugar]:
-    processTypeDecsInPCUPhase('ClassDec('ClassDecHead(_:KListWrap,, Class:ClassType,, _:K,, _:K,,
+    processTypeDecsInPCUPhase(['ClassDec('ClassDecHead(_:KListWrap,, Class:ClassType,, _:K,, _:K,,
         ( 'None(.KList) => 'Some('ImplementsDec([.KList])) )
       ),, _:K
-    ), _,_)                [structural]
+    )], _,_)                [structural]
 
 rule [InterfaceDec-NoExtendsDesugar]:
-    processTypeDecsInPCUPhase('InterfaceDec('InterfaceDecHead(_:K,, Class:ClassType,, _:K,,
+    processTypeDecsInPCUPhase(['InterfaceDec('InterfaceDecHead(_:K,, Class:ClassType,, _:K,,
         ( 'None(.KList) => 'Some('ExtendsInterfaces([.KList])) )
       ),, _:K
-    ), _,_)                [structural]
+    )], _,_)                [structural]
 
 rule [processTypeDecsInPCUPhase-ClassDec]:
     <k>
       processTypeDecsInPCUPhase(
-        'ClassDec(
+        ['ClassDec(
           'ClassDecHead( Modifiers:KListWrap,, Class:ClassType,, _:K,,
             'Some('SuperDec(BaseClassRaw:K)),,
             'Some('ImplementsDec(ImplTypesRaw:KListWrap))
           ),,
           'ClassBody( [Decls:KList] )
-        ),
+        )],
         Pack:PackageId, OuterClass:ClassType
       )
       => saveImportsInPCUPhase(Class)
-      ~> processTypeDecsInPCUPhase(Decls, toPackage(Class), Class)
+      ~> processTypeDecsInPCUPhase([Decls], toPackage(Class), Class)
       ...
     </k>
     <classType> Class </classType>
@@ -170,16 +173,16 @@ syntax KLabel ::= "'InterfaceDec"
 rule [processTypeDecsInPCUPhase-IInterfaceDec]:
     <k>
       processTypeDecsInPCUPhase(
-        'InterfaceDec(
+        ['InterfaceDec(
           'InterfaceDecHead( _:K,, Class:ClassType,, _:K,,
             'Some('ExtendsInterfaces(ImplTypesRaw:K))
           ),,
           [Decls:KList]
-        ),
+        )],
         Pack:PackageId, OuterClass:ClassType
       )
       => saveImportsInPCUPhase(Class)
-      ~> processTypeDecsInPCUPhase(Decls, toPackage(Class), Class)
+      ~> processTypeDecsInPCUPhase([Decls], toPackage(Class), Class)
       ...
     </k>
     <classType> Class </classType>
