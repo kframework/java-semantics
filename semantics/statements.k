@@ -277,7 +277,7 @@ rule [For-ThirdArgRed]:
 
 //this form of resulting while is required for compatibility with continue statement
 rule [For]:
-    'For(stm(InitClause:K),, 'Some(TestExp:K),, stm(UpdClause:K),, S:K)
+    'For(stm(InitClause:KListWrap),, 'Some(TestExp:K),, stm(UpdClause:KListWrap),, S:K)
      => 'Block(stm(InitClause)
         ~> 'If(TestExp,, 'Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S),, .K))  [structural]
 

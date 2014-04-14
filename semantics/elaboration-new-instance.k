@@ -25,7 +25,7 @@ rule customElabHeating('NewInstance, Ks:KList) => length(Ks) in (SetItem(2) SetI
 rule [elab-NewInstance]:
     <k>
       elab(
-        'NewInstance(Arg1:K,, Class:ClassType,, ActualArgsList:K,, 'None(.KList))
+        'NewInstance(Arg1:K,, Class:ClassType,, ActualArgsList:K /* Either [_] or elabRes() */,, 'None(.KList))
         =>  'QNewInstance(
               #if CT ==K staticCT
                 #then noValue
@@ -110,7 +110,7 @@ rule [elabEnd-QNewInstance-methodLookupResult-qualified-end]:
     <k>
       methodLookupResult(_, ExpectedParamExps:KList, instanceCT)
       ~> elabEnd('QNewInstance( cast(_, QualExp:K),, Arg2:K,, Class:ClassType,, Arg4:K,,
-                                _:K,, 'None(.KList) ))
+                                _:KListWrap,, 'None(.KList) ))
       => elabRes(cast(Class, 'QNewInstance( cast(EnclosingClass, QualExp:K),, Arg2,, getSimpleName(Class),,
                                             Arg4,, [ExpectedParamExps],, 'None(.KList))))
       ...
@@ -123,7 +123,7 @@ rule [elabEnd-QNewInstance-methodLookupResult-qualified-end]:
 */
 rule [elabEnd-QNewInstance-methodLookupResult-to-NewInstance]:
     methodLookupResult(_, ExpectedParamExps:KList, instanceCT)
-    ~> elabEnd('QNewInstance(noValue,, Arg2:K,, Class:ClassType,, Arg4:K,, _:K,, 'None(.KList)))
+    ~> elabEnd('QNewInstance(noValue,, Arg2:K,, Class:ClassType,, Arg4:K,, _:KListWrap,, 'None(.KList)))
     => elabRes(cast(Class, 'NewInstance(Arg2,, Class,, [ExpectedParamExps],, 'None(.KList))))
 
 endmodule

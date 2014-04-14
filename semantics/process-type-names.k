@@ -80,7 +80,7 @@ when notBool PackId in keys(PackMap)
 rule [processTypeNames]:
     <k>
       processTypeNames(
-        (DecLabel:KLabel(_:KLabel(Modifiers:K,, SimpleClass:Id,, _),, CBody:K) => .KList),, _,
+        (DecLabel:KLabel(_:KLabel(Modifiers:KListWrap,, SimpleClass:Id,, _),, CBody:K) => .KList),, _,
         PackId:PackageId
       )
       ~> ( . => processInnerTypes(CBody, toPackage(getClassType(PackId,SimpleClass))) )

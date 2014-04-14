@@ -93,7 +93,7 @@ syntax KLabel ::= "'ClassDec"
                 | "'ImplementsDec"
 
 rule [ClassDec-NoExtendsDesugar]:
-    processTypeDecsInPCUPhase('ClassDec('ClassDecHead(_:K,, Class:ClassType,, _:K,,
+    processTypeDecsInPCUPhase('ClassDec('ClassDecHead(_:KListWrap,, Class:ClassType,, _:K,,
         ( 'None(_)
           => 'Some('SuperDec(
                 #if (Class =/=K objectClass)
@@ -106,7 +106,7 @@ rule [ClassDec-NoExtendsDesugar]:
     ), Pack:PackageId, _)                [structural]
 
 rule [ClassDec-NoImplementsDesugar]:
-    processTypeDecsInPCUPhase('ClassDec('ClassDecHead(_:K,, Class:ClassType,, _:K,, _:K,,
+    processTypeDecsInPCUPhase('ClassDec('ClassDecHead(_:KListWrap,, Class:ClassType,, _:K,, _:K,,
         ( 'None(.KList) => 'Some('ImplementsDec([.KList])) )
       ),, _:K
     ), _,_)                [structural]
@@ -121,9 +121,9 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
     <k>
       processTypeDecsInPCUPhase(
         'ClassDec(
-          'ClassDecHead( Modifiers:K,, Class:ClassType,, _:K,,
+          'ClassDecHead( Modifiers:KListWrap,, Class:ClassType,, _:K,,
             'Some('SuperDec(BaseClassRaw:K)),,
-            'Some('ImplementsDec(ImplTypesRaw:K))
+            'Some('ImplementsDec(ImplTypesRaw:KListWrap))
           ),,
           'ClassBody( [Decls:KList] )
         ),

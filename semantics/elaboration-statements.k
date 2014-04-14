@@ -65,9 +65,10 @@ rule [elab-LocalVarDec-multi-desugar]:
     )                                                   [structural]
 
 rule [elab-LocalVarDec-with-init-desugar]:
-    elab('LocalVarDec(K:K,, T:Type,, ['VarDec(X:Id,,InitExp:K)])
-    => ['LocalVarDec(K,, T,, ['VarDec(X:Id)]),,
-        'ExprStm('Assign('ExprName(X),, InitExp))])
+    elab(
+      'LocalVarDec(K:K,, T:Type,, ['VarDec(X:Id,,InitExp:K)])
+    => ['LocalVarDec(K,, T,, ['VarDec(X:Id)]),, 'ExprStm('Assign('ExprName(X),, InitExp))]
+    )
 when
     getKLabel(InitExp) =/=KLabel 'ArrayInit             [structural]
 
@@ -81,7 +82,7 @@ rule [elab-LocalVarDec]:
 
 //@\subsection{Elaboration of SuperConstrInv, QSuperConstrInv, AltConstrInv}
 
-//@ _:K,, [ Args:KList ]
+//@ 'SuperConstrInv( _:K,, [ Args:KList ] )
 syntax KLabel ::=  "'SuperConstrInv"
 
 //@ Desugaring unqualified superclass constructor invocation into a qualified one

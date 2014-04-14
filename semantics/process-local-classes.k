@@ -27,7 +27,7 @@ syntax K ::=  generateLocalClassType(
 
 rule [generateLocalClassType]:
     <k>
-      generateLocalClassType('ClassDec('ClassDecHead( _:K,, ClassName:Id,, _:K,, _:K,, _:K ),, _:K))
+      generateLocalClassType('ClassDec('ClassDecHead( _:KListWrap,, ClassName:Id,, _:K,, _:K,, _:K ),, _:K))
       => getClassType(toPackage(CrntClass), String2Id(Id2String(ClassName) +String "$" +String Int2String(LocalId)))
       ...
     </k>
@@ -60,7 +60,7 @@ rule [processLocalClassDec-register-name]:
     <contextType> CT:ContextType </contextType>
 
 //@ The second argument: existing modifiers
-syntax K ::= generateLocalClassModifiers( ContextType, KList )  [function]
+syntax KListWrap ::= generateLocalClassModifiers( ContextType, KList )  [function]
 rule generateLocalClassModifiers( CT:ContextType, OldModifiers:KList )
      => #if CT ==K staticCT
           #then ['Static(.KList),,OldModifiers]

@@ -35,7 +35,7 @@ syntax KLabel ::= "'NewInstance"
   elaboration from execution. In the elaboration phase there is a opposite packing rule tht creates this construct.
 */
 rule [NewInstance-to-QNewInstance-unpack]:
-    'NewInstance(Arg1:K,, Class:ClassType,, ActualArgsList:K,, 'None(.KList))
+    'NewInstance(Arg1:K,, Class:ClassType,, ActualArgsList:KListWrap,, 'None(.KList))
     => 'QNewInstance(noValue,, Arg1,, Class,, 'None(.KList),, ActualArgsList,, 'None(.KList))
 
 //@ 'QNewInstance( Qual,, _:K,, Class,, _:K,, [Args],, 'None(.KList) )
@@ -50,7 +50,7 @@ context 'QNewInstance(HOLE,, _:KList)
 context 'QNewInstance(_:KResult,,_:K,,_:K,,_:K,, [_,,HOLE,,_],, _)
 
 rule [QNewInstance-resolve-class]:
-    'QNewInstance(_::QualT:ClassType,,_:K,, (Name:Id => getClassType(toPackage(QualT), Name)),,_:K,, _:K,, _)
+    'QNewInstance(_::QualT:ClassType,,_:K,, (Name:Id => getClassType(toPackage(QualT), Name)),,_:K,, _:KListWrap,, _)
 
 /*@ Qualified new instance creation expression. Unqualified new expressions are rewritten into qualified ones by other
 rules and also reach this point.*/
@@ -143,11 +143,11 @@ syntax K ::=  invokeConstr (
     Constructor calls are elaborated during execution phase.
 */
 rule [invokeConstr]:
-    invokeConstr(OL:Int, Class:ClassType, Vals:KList, EnclosingObj:KResult)
+    invokeConstr(OL:Int, Class:ClassType, Args:KList, EnclosingObj:KResult)
     => setEncloser(lookup(OL, Class), Class, EnclosingObj)
     ~> 'ExprStm('Invoke(
           'Method('MethodName( typedLookup(OL),, getConsName(Class) )),,
-          [ Vals ]
+          [ Args ]
         ))
 
 /*@ Sets the enclosing object for a given object.
@@ -216,9 +216,9 @@ rule [cast-RefType]:
 //@\subsection{Execution of SuperConstrInv, QSuperConstrInv, AltConstrInv}
 
 rule [SuperConstrInv-to-QSuperConstrInv-unpack]:
-    'SuperConstrInv(Arg1:K,, ArgsList:K) => 'QSuperConstrInv(noValue,, Arg1,, ArgsList)
+    'SuperConstrInv(Arg1:K,, ArgsList:KListWrap) => 'QSuperConstrInv(noValue,, Arg1,, ArgsList)
 
-//@ Qual:K,, _:K,, [ Args:KList ]
+//@ 'QSuperConstrInv( Qual:K,, _:K,, [ Args:KList ] )
 syntax KLabel ::=  "'QSuperConstrInv"
 
 rule [QSuperConstrInv]:
@@ -235,7 +235,7 @@ rule [QSuperConstrInv]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
-//@ _:K,, [ Args:KList ]
+//@ 'AltConstrInv( _:K,, [ Args:KList ] )
 syntax KLabel ::= "'AltConstrInv"
 
 rule [AltConstrInv]:

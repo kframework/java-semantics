@@ -251,7 +251,7 @@ context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, [_,, 'Param(_:K,, 
 rule [MethodDec]:
     <k>
       'MethodDec(
-        'MethodDecHead(Modifiers:K,, _:K,, ReturnType:Type,, Name:Id,,
+        'MethodDecHead(Modifiers:KListWrap,, _:K,, ReturnType:Type,, Name:Id,,
             [Params:KList],, _:K
         ),,
         Body:K
@@ -370,7 +370,7 @@ context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, [_,, 'Param(_:K,, HOLE,,_:K
 
 rule [ConstrDec]:
     <k>
-      'ConstrDec('ConstrDecHead(Modifiers:K,, _:K,, Name:Id,, [Params:KList],, _),,
+      'ConstrDec('ConstrDecHead(Modifiers:KListWrap,, _:K,, Name:Id,, [Params:KList],, _),,
           'ConstrBody(
         'Some(FirstLine:K) ,,[BodyKs:KList]))
       => storeMethod([Params],
@@ -406,7 +406,7 @@ rule [FieldDec-Multi-Desugar]:
     'FieldDec(SomeK:K,, T:Type,, [(K1:K => .KList),, K2:K,, Ks:KList])
 
 rule [FieldDec-with-init-desugar]:
-    'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
+    'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
     ~> (. => 'InstanceInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
@@ -414,7 +414,7 @@ when
         [structural]
 
 rule [FieldDec-to-LocalVarDec]:
-    <k> 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
+    <k> 'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <fieldDecs> [_,, ( .KList => 'LocalVarDec(.K,, T,, ['VarDec(X)]) )] </fieldDecs>
@@ -434,7 +434,7 @@ rule [InstanceInit]:
 /*@ Desugaring a static field declaration with initializer into a declaration without initializer.
 Followed by a static initializer block, if this field is not a compile-time constant.*/
 rule [FieldDec-StaticInit-Desugar]:
-    'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
+    'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
     ~> (. => 'StaticInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
@@ -447,7 +447,7 @@ when
         [structural]
 
 rule [FieldDec-Static]:
-    <k> 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
+    <k> 'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticEnv> Env:Map => Env[L/X] </staticEnv>
@@ -473,7 +473,7 @@ syntax KLabel ::= "'ConstantDec"
   Interface fields are not necessarily compile-time constants.
 */
 rule [ConstantDec-Desugar]:
-    'ConstantDec([ModifiersKs:KList],, TypeK:K,, VarDecs:K)
+    'ConstantDec([ModifiersKs:KList],, TypeK:K,, VarDecs:KListWrap)
     => 'FieldDec(
           [ModifiersKs,, 'Public(.KList),, 'Static(.KList),, 'Final(.KList)],,
           TypeK,, VarDecs
@@ -490,7 +490,7 @@ when
 
 rule [FieldDec-compile-time-constant]:
     <k>
-      'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, TV:TypedVal) ]) => .
+      'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id,, TV:TypedVal) ]) => .
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
