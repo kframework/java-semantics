@@ -11,7 +11,8 @@ module ELABORATION-STATEMENTS
 
 //@ Elaboration of 'KListWrap, 'Block, 'For or 'Catch - nodes that may contain variable declarations.
 
-//todo this rule was replaced by a special section for elaboration of KListWrap. See other to-do-s.
+//K bug: support for KListWrap. This rule was replaced by a special section for elaboration of KListWrap.
+// See other K-bug-s.
 /*@ 'KListWrap nodes need to be elaborated left-to-right. Required when direct child elements might contain variable
 declarations.
 */

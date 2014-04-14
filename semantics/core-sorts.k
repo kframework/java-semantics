@@ -24,7 +24,7 @@ syntax GlobalPhase ::=
         <rawExtends>
         <rawImplements>
         <rawDeclarations>
-        <metaType>
+        <classMetaType>
         <cuImports> - imports of the enclosing CU, for top-level classes only.
       A class first registered in a <class> cell is in the state StoredCPhase.
     */
@@ -142,7 +142,7 @@ The object closure have the following structure:
 */
 syntax RawRefVal ::=  objectClosure (
                         Int,  //OL - object location
-                        //K bug #266 - when solved replace with ObjLayers
+                        //K bug #266 - Matching in the middle of a syntactic list. when solved replace with ObjLayers
                         KList /*ObjLayers - The object content, a list of ObjLayer elements, each of the form:
                                       layer(
                                         Class,
@@ -191,10 +191,10 @@ syntax AccessMode ::= "public" | "protected" | "package" | "private"
 syntax KResult ::= AccessMode
 
 /*@ Types of routines represented by a method closure*/
-syntax RoutineType ::= "methodRT" | "constructorRT"
+syntax MethodMetaType ::= "methodMMT" | "constructorMMT"
 
 /*@ The two possibilities for a type represented by an objectClosure: class or interface.*/
-syntax MetaType ::= "classMetaT" | "interfaceMetaT"
+syntax ClassMetaType ::= "classCMT" | "interfaceCMT"
 
 syntax KResult ::= "noValue"
 

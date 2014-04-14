@@ -113,7 +113,7 @@ rule [processClassDecs-end]:
     <classType> Class </classType>
     <enclosingClass> OuterClass:ClassType </enclosingClass>
     <rawDeclarations> CBody:K </rawDeclarations>
-    <metaType> MetaT:MetaType </metaType>
+    <classMetaType> MetaT:ClassMetaType </classMetaType>
     <classPhase> BasesResolvedCPhase => DecsProcessedCPhase </classPhase>
     <extends> .K => BaseClass </extends>
     ( <rawExtends> BaseClass:ClassType </rawExtends>

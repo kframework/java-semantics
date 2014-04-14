@@ -72,7 +72,7 @@ configuration
             <classType color="Red"> .K </classType>
 
             //Either classMetaT or interfaceMetaT. Used in many semantics phases, including execution.
-            <metaType color="Maroon"> .K </metaType>                //todo rename into classMetaType
+            <classMetaType color="Maroon"> .K </classMetaType>
 
             //Class access mode - either public or package.
             <classAccessMode color="Maroon"> .K </classAccessMode>
@@ -173,8 +173,8 @@ configuration
                 //Either staticCT or instanceCT
                 <methodContextType> .K </methodContextType>
 
-                //Either methodRT or constructorRT
-                <methodRoutineType> .K </methodRoutineType>  //todo rename into methodMetaType
+                //Either methodMMT or constructorMMT
+                <methodMetaType> .K </methodMetaType>
 
               </methodDec>
             </methodDecs>

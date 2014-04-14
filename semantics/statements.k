@@ -412,7 +412,8 @@ syntax K ::= checkCatch ( K )
 context checkCatch(HOLE)
 
 rule [Throw-checkCatch-True]:
-    checkCatch(true::bool) ~> 'Throw(TV:TypedVal)
+    checkCatch(true::bool)
+    ~> 'Throw(TV:TypedVal)
     ~> catchBlocks([catchImpl(Param:ExtKResult, CatchS:K),, _])
     => 'Block([
           bindTo([Param], [TV]),,
@@ -421,7 +422,8 @@ rule [Throw-checkCatch-True]:
 
 rule [Throw-checkCatch-False]:
     (checkCatch(false::bool) => .)
-    ~> 'Throw(TV:TypedVal) ~> catchBlocks([(catchImpl(_,_) => .KList),, _])
+    ~> 'Throw(TV:TypedVal)
+    ~> catchBlocks([(catchImpl(_,_) => .KList),, _])
 
 rule [Throw-catchBlocks-EmptyDiscard]:
     'Throw(TV:TypedVal) ~> (catchBlocks([.KList]) => .)
@@ -485,11 +487,13 @@ rule [Try-Catch]:
     'Try(TryS:K,, [KRs:KList]) => TryS ~> catchBlocks([KRs])
 when isKResult(KRs)
 
-/*@ The auxiliary constructs that hold catch clauses / finally clause
+/*@ The auxiliary construct that holds catch clauses
 after try clause has been moved to the top of computation*/
 syntax K ::= catchBlocks ( KListWrap ) //arg - list of catchImpl
 
-//todo possibly redundant - should not be needed. Also see if catchBlocks() could be simplified.
+/*@ If try clause executed without raising an exception, this construct will reach the top of computation.
+    In this case it should be discarded.
+*/
 rule [catchBlocks-Discard]:
     catchBlocks([_]) => .K
 
@@ -499,6 +503,8 @@ rule [catchBlocks-Discard]:
 rule [Try-Finally]:
     'Try(TryS:K,,[.KList],,FinallyS:K) => TryS ~> finallyBlock(FinallyS)
 
+/*@ The auxiliary construct that holds finally clause
+after try clause has been moved to the top of computation*/
 syntax K ::= finallyBlock ( K )      //arg - finally block
 
 rule [finallyBlock-NormalEnd]:

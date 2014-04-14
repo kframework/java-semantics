@@ -95,7 +95,7 @@ rule [processTypeNames]:
     </namesToClasses>
     ( . =>  <class>
               <classType> getClassType(PackId,SimpleClass) </classType>
-              <metaType> getMetaType(DecLabel) </metaType>
+              <classMetaType> getMetaType(DecLabel) </classMetaType>
               <classPhase> DiscoveredCPhase </classPhase>
               <classAccessMode> getAccessMode(Modifiers) </classAccessMode>
               ...
@@ -126,8 +126,8 @@ syntax K ::=  getMetaType (
               )
               [function]
 
-rule getMetaType('ClassDec) => classMetaT
-rule getMetaType('InterfaceDec) => interfaceMetaT
+rule getMetaType('ClassDec) => classCMT
+rule getMetaType('InterfaceDec) => interfaceCMT
 
 //@ Converts a pair of PackagId, Id into a fully qualified class name
 syntax K ::=  getClassType (

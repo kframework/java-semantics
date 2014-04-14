@@ -259,7 +259,7 @@ rule elabEnd(           stmtAndExp(Stmt:K, cast(T:Type, Exp:K)) )
 rule stmtAndExp(Stmt:K, Exp:K) => Stmt ~> Exp
 
 /*@ \subsection{Elaboration of KListWrap - the list of terms} */
-//todo this section is a workaround t a serious K' bug that prevents [...] to be properly heated and cooled
+//K bug: this section is a workaround t a serious K' bug that prevents [...] to be properly heated and cooled
 
 rule [elab-heat-KListWrap]:
     (. => #if isElabNaked(K) ==K true

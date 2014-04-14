@@ -75,7 +75,7 @@ rule [processType]:
           ~> tryInheritSet(ISet)
 
           //interfaces should also contain the members of Object
-          ~> ifAux((MetaT ==K interfaceMetaT), tryInherit(objectClass), .K)
+          ~> ifAux((MetaT ==K interfaceCMT), tryInherit(objectClass), .K)
 
           ~> tryInherit(BaseClass)
           ~> Decls
@@ -93,7 +93,7 @@ rule [processType]:
       <implements> ISet:Set </implements>
       <implTrans> . => ISet </implTrans>
       ( <rawDeclarations> Decls:K </rawDeclarations> => .Bag)
-      <metaType> MetaT:MetaType </metaType>
+      <classMetaType> MetaT:ClassMetaType </classMetaType>
       <classPhase> DecsProcessedCPhase => MembersProcessedCPhase </classPhase>
       ...
     </class>
@@ -257,7 +257,7 @@ rule [MethodDec]:
         Body:K
       )
       => storeMethod([Params],
-            getContextType(Modifiers), getAccessMode(Modifiers), isSynchronized(Modifiers), methodRT, noValue, Body,
+            getContextType(Modifiers), getAccessMode(Modifiers), isSynchronized(Modifiers), methodMMT, noValue, Body,
             sig(Name, getTypes([Params])), ReturnType)
       ...
     </k>
@@ -284,7 +284,7 @@ syntax K ::=  storeMethod (
                 ContextType, //will evaluate to ContextType - staticCT or instanceCT
                 AccessMode,  //will evaluate to AccessMode
                 TypedVal,    //IsSync:bool - whether method is synchronized or not
-                RoutineType, //either methodRT or constructorRT
+                MethodMetaType, //either methodMMT or constructorMMT
                 K,           //FirstLine for constructor, noValue for method.
                 K,           //S - method body. Either [...] or 'NoMethodBody(_)
                 Signature,   //method signature
@@ -293,7 +293,7 @@ syntax K ::=  storeMethod (
 
 rule [storeMethod]:
     <k>
-      storeMethod([Params:KList], CT:ContextType, Acc:AccessMode, false::bool, RT:RoutineType, FirstLine:K,
+      storeMethod([Params:KList], CT:ContextType, Acc:AccessMode, false::bool, MMT:MethodMetaType, FirstLine:K,
                   Body:K, Sig:Signature, ReturnType:Type) => .
       ...
     </k>
@@ -308,18 +308,18 @@ rule [storeMethod]:
                      <methodBody> Body </methodBody>
                      <methodAccessMode> Acc </methodAccessMode>
                      <methodContextType> CT </methodContextType>
-                     <methodRoutineType> RT </methodRoutineType>
+                     <methodMetaType> MMT </methodMetaType>
                    </methodDec>
          )
 when
-    notBool (Sig in keys(Env) andBool RT ==K constructorRT)
+    notBool (Sig in keys(Env) andBool MMT ==K constructorMMT)
 
 /*@ Discard the default consturctor that was added by the rule [processTypeDecsInPCUPhase-ClassDec]
     if this class already have a default constructor.
 */
 rule [storeMethod-discard-default-constructor]:
     <k>
-      storeMethod([.KList],_,_,_, constructorRT, _,_, Sig:Signature, _) => .
+      storeMethod([.KList],_,_,_, constructorMMT, _,_, Sig:Signature, _) => .
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -374,7 +374,7 @@ rule [ConstrDec]:
           'ConstrBody(
         'Some(FirstLine:K) ,,[BodyKs:KList]))
       => storeMethod([Params],
-          instanceCT, getAccessMode(Modifiers), isSynchronized(Modifiers), constructorRT, FirstLine,
+          instanceCT, getAccessMode(Modifiers), isSynchronized(Modifiers), constructorMMT, FirstLine,
           [
 
             //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
@@ -511,7 +511,7 @@ syntax K ::= "convertInstanceInitIntoMethod"
 rule [convertInstanceInitIntoMethod]:
     <k>
       convertInstanceInitIntoMethod
-      => storeMethod([.KList], instanceCT, private, false::bool, methodRT, noValue, 'Block(InstanceInit),
+      => storeMethod([.KList], instanceCT, private, false::bool, methodMMT, noValue, 'Block(InstanceInit),
                       sig(String2Id("$instance_init"), types(.KList)), void)
       ...
     </k>

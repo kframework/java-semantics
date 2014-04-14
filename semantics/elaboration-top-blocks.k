@@ -91,7 +91,7 @@ rule [elabMethods-Cool-Method]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <methodBody> CHOLE => Body </methodBody>
-    <methodRoutineType> methodRT </methodRoutineType>
+    <methodMetaType> methodMMT </methodMetaType>
 
 rule [elabMethods-Cool-Constructor]:
     <k>
@@ -102,7 +102,7 @@ rule [elabMethods-Cool-Constructor]:
     <classType> Class </classType>
     <methodFirstLine> FirstLine:K => noValue </methodFirstLine>
     <methodBody> CHOLE => [FirstLine,, Body] </methodBody>
-    <methodRoutineType> constructorRT => methodRT </methodRoutineType>
+    <methodMetaType> constructorMMT => methodMMT </methodMetaType>
 
 rule [elabMethods-discard-method]:
     <k> elabMethods( (Sig:Signature |-> DeclClass:ClassType => .Map) _) ... </k>

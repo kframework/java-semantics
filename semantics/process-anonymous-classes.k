@@ -30,7 +30,7 @@ rule [elab-NewInstance-anonymous-implements-interface]:
     </k>
     <nextLocalId> LocalId:Int => LocalId +Int 1 </nextLocalId>
     <classType> Class </classType>
-    <metaType> interfaceMetaT </metaType>
+    <classMetaType> interfaceCMT </classMetaType>
 
 rule [elab-NewInstance-anonymous-extends-class]:
     <k>
@@ -52,12 +52,12 @@ rule [elab-NewInstance-anonymous-extends-class]:
     </k>
     <nextLocalId> LocalId:Int => LocalId +Int 1 </nextLocalId>
     <classType> Class </classType>
-    <metaType> classMetaT </metaType>
+    <classMetaType> classCMT </classMetaType>
 
 syntax K ::=  processAnonymousClass (
                 Id,        //Class name
                 ClassType, //Base class
-                KListWrap, //Base interfaces, if any //todo at most one interface is possible
+                KListWrap, //Base interfaces, if any. In fact either zero or one interface is possible at this point.
                 K,         //'NewInstance Arg1
                 KListWrap, //ActualArgs
                 KListWrap, //Anonymous class block decs
@@ -157,7 +157,7 @@ rule [elab-QNewInstance-anonymous-extends-class]:
     </k>
     <nextLocalId> LocalId:Int => LocalId +Int 1 </nextLocalId>
     <classType> Class </classType>
-    <metaType> classMetaT </metaType>
+    <classMetaType> classCMT </classMetaType>
 
 //Qualified anonymous class
 syntax K ::=  processQAnonymousClass (

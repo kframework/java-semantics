@@ -51,7 +51,7 @@ rule [Invoke-Method-Instance-On-Class]:
       )
       => invokeImpl(
         lookupOverloadedMethod(
-          sig(Name, getTypes([ParamVals])), [getClassList([Rest,, layer(Class, BI, EnclosingObj)])],
+          sig(Name, getTypes([ParamVals])), getClassList([Rest,, layer(Class, BI, EnclosingObj)]),
           mapWrap(.Map), noMethodRef
         ),
         loc(OL)::Class, [ParamVals]
@@ -59,7 +59,7 @@ rule [Invoke-Method-Instance-On-Class]:
       ...
     </k>
     <classType> Class </classType>
-    <metaType> classMetaT </metaType>
+    <classMetaType> classCMT </classMetaType>
 when
     isKResult(ParamVals)
 
@@ -89,7 +89,7 @@ rule [Invoke-Method-Instance-On-Interface]:
       )      ...
     </k>
     <classType> Class </classType>
-    <metaType> interfaceMetaT </metaType>
+    <classMetaType> interfaceCMT </classMetaType>
 when
     isKResult(ParamVals)
 
@@ -139,13 +139,14 @@ rule [superMethod]:
       (layer(BaseClass, BI, EnclosingObj),, Rest)
     )::BaseClass
 
-//todo change the result type to be KListWrap
 //@ Converts a list of ListItem(layer(Class, BI, EnclosingObj)) into KList with elements of sort ClassType
-syntax K ::= getClassList ( KListWrap )
-rule (.KList => Class),, getClassList([(layer(Class:ClassType, _,_) => .KList),, _])
-        [structural, anywhere]
-rule getClassList([.KList]) => .KList
-        [structural, anywhere]
+syntax KListWrap ::= getClassList ( KListWrap )       [function]
+
+rule getClassList([_,, (layer(Class:ClassType, _,_) => Class),, _])
+
+rule getClassList([Ts:KList]) => [Ts]
+when
+    isKResult(Ts) ==K true
 
 /*@ The right signature is already found.
 Search for the right implementation is performed from the compile-time type of the target
@@ -285,7 +286,7 @@ rule [invokeImpl-Instance]:
     <methodParams> [Params:KList] </methodParams>
     <methodBody> Body:K </methodBody>
     <methodContextType> instanceCT </methodContextType>
-    <methodRoutineType> methodRT </methodRoutineType>
+    <methodMetaType> methodMMT </methodMetaType>
 when getKLabel(Body) =/=KLabel 'NoMethodBody
 
 rule [invokeImpl-Static]:
@@ -330,7 +331,7 @@ rule [invokeImpl-Static]:
     <methodParams> [Params:KList] </methodParams>
     <methodBody> Body:K </methodBody>
     <methodContextType> staticCT </methodContextType>
-    <methodRoutineType> methodRT </methodRoutineType>
+    <methodMetaType> methodMMT </methodMetaType>
 
 //@ 'Param(_:K,, T:Type,, X:Id)
 syntax KLabel ::= "'Param"

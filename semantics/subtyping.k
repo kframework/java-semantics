@@ -61,12 +61,12 @@ rule [subtype-ClassOfClassRed]:
     <class>
       <classType> Class1 </classType>
       <extends> Class2 </extends>
-      <metaType> classMetaT </metaType>
+      <classMetaType> classCMT </classMetaType>
       ...
     </class>
     <class>
       <classType> Class </classType>
-      <metaType> classMetaT </metaType>
+      <classMetaType> classCMT </classMetaType>
       ...
     </class>
 when
@@ -85,20 +85,20 @@ rule [subtype-IInterfaceOfClass]:
     <k> subtype( Class1:ClassType, Class:ClassType ) => Class ==K objectClass ...</k>
     <class>
       <classType> Class1 </classType>
-      <metaType> interfaceMetaT </metaType>
+      <classMetaType> interfaceCMT </classMetaType>
       ...
     </class>
     <class>
       <classType> Class </classType>
-      <metaType> classMetaT </metaType>
+      <classMetaType> classCMT </classMetaType>
       ...
     </class>
 /*
 K Limitation: This way don't seem to work:
     <classType> Class1 </classType>
-    <metaType> interfaceMetaT </metaType>
+    <classMetaType> interfaceMetaT </classMetaType>
     <classType> Class </classType>
-    <metaType> classMetaT </metaType>
+    <classMetaType> classMetaT </classMetaType>
 */
 
 rule [subtype-OfInterface]:
@@ -110,7 +110,7 @@ rule [subtype-OfInterface]:
     </class>
     <class>
       <classType> Class2 </classType>
-      <metaType> interfaceMetaT </metaType>
+      <classMetaType> interfaceCMT </classMetaType>
       ...
     </class>
 

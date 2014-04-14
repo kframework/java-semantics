@@ -71,7 +71,8 @@ Next during this phase each class is stored into a $\kall{class}{}$ cell. Again,
 
 \begin{itemize}
 \item $\kall{className}{ClassType}$ -- The fully qualified class name.
-\item $\kall{metaType}{MetaType}$ -- Whether the type stored in this cell is class or interface. To avoid terminology superfluousness, we will refer from now on to both classes and interfaces as "classes", making distinctions only when necessary.
+\item $\kall{classMetaType}{ClassMetaType}$ -- Whether the type stored in this cell is class or interface. To avoid
+terminology superfluousness, we will refer from now on to both classes and interfaces as "classes", making distinctions only when necessary.
 \item $\kall{classPhase}{ClassPhase}$ -- represents the state of this class. In addition to the global computation phase, each class have its own lifecycle phase. Class phases are required to keep track which classes were processed in the current global phase and which were not. During each global phase all classes should transition to a certain class phase. However the relationship between global phases and class phases is not one-to-one. There could be several per-class transitions in one global phase, and none in another. The order in which classes are preprocessed is not their literal order but the order imposed by their dependency relationship. More details will be presented below. The class phases are:
 
 \begin{itemize}
