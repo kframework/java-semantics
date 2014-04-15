@@ -66,15 +66,15 @@ and we will be able to pick the correct enclosing object inside both O.A and O.B
 rule [lookupQThis-next]:
     <k>
       lookupQThis(Class:ClassType,
-        objectRef(OId:Int, ObjClass:ClassType) :: ObjClass
+        objectRef(OId:Int, _) :: RefClass:ClassType
       ) => lookupQThis(Class:ClassType, EnclosingObj)
       ...
     </k>
-    <object>
-      objectClosure(OId, (_:KList/*ObjLayers*/,, layer(ObjClass,_, EnclosingObj:KResult),, _:KList/*ObjLayers*/) ) :: _
-    </object>
+    <objectId> OId </objectId>
+    <layerClass> RefClass </layerClass>
+    <layerEnclosingObject> EnclosingObj:KResult </layerEnclosingObject>
 when
-    Class =/=K ObjClass
+    Class =/=K RefClass
 
 /*@ \subsection{Instance field access} */
 
@@ -95,11 +95,9 @@ rule [Field-instance]:
       ) => typedLookup(L)
       ...
     </k>
-    <object>
-      objectClosure(OId,
-          (_:KList/*ObjLayers*/,, layer(TargetClass, <env>... X |-> L:Int ...</env>, _),, _:KList/*ObjLayers*/)
-      ) :: _
-    </object>
+    <objectId> OId </objectId>
+    <layerClass> TargetClass </layerClass>
+    <layerEnv>... X |-> L:Int ...</layerEnv>
 
 rule [lvalue-Field-instance]:
     <k>
@@ -109,11 +107,9 @@ rule [lvalue-Field-instance]:
       )) => lvalue(typedLookup(L))
       ...
     </k>
-    <object>
-      objectClosure(OId,
-          (_:KList/*ObjLayers*/,, layer(TargetClass, <env>... X |-> L:Int ...</env>, _),, _:KList/*ObjLayers*/)
-      ) :: _
-    </object>
+    <objectId> OId </objectId>
+    <layerClass> TargetClass </layerClass>
+    <layerEnv>... X |-> L:Int ...</layerEnv>
 
 rule [Field-instance-OfNull]:
     'Field(null::_,, _)

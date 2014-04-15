@@ -50,7 +50,7 @@ rule [Invoke-Method-Instance-On-Class]:
       )
       => invokeImpl(
         lookupOverloadedMethod(
-          sig(Name, getTypes([ParamVals])), getClassesBetween(LowestClass, Class, OId),
+          sig(Name, getTypes([ParamVals])), getClassesBetween([LowestClass], Class),
           mapWrap(.Map), noMethodRef
         ),
         loc(OId)::Class, [ParamVals]
@@ -65,40 +65,22 @@ when
 /*Returns the list of classes representing the layer of the given object (by OId),
     located between LowestClass and UpperClass.
 */
-syntax K ::=  getClassesBetween(  ClassType,  //LowestClass
-                                  ClassType,  //UpperClass
-                                  Int         //OId
+syntax K ::=  getClassesBetween(  KListWrap,  //[LowestClass] at beginning, gradually accumulates the list of classes
+                                  ClassType   //UpperClass
               )
 
-rule [getClassesBetween-same]:
-    getClassesBetween(Class:ClassType, Class, _) => resultListWrap(Class)
-
-rule [getClassesBetween-different]:
+rule [getClassesBetween-process]:
     <k>
-      getClassesBetween(LowestClass:ClassType, UpperClass:ClassType, OId:Int)
-      => getClassList([LowestClass,, MiddleLayers,, UpperClass])
+      getClassesBetween([_,, LowestClass:ClassType,, (.KList => BaseClass)], UpperClass:ClassType)
       ...
     </k>
-    <object>
-      objectClosure(
-        OId:Int,
-        ( _:KList/*Lower ignored layers*/,,
-          layer(LowestClass:ClassType,_,_),,
-          MiddleLayers:KList/*ObjLayers*/,,
-          layer(UpperClass:ClassType,_, _),,
-          _:KList /*Upper ignored layers*/
-        )
-      )::_
-    </object>
-
-//@ Converts a list of ListItem(layer(Class, BI, EnclosingObj)) into KList with elements of sort ClassType
-syntax K ::= getClassList ( KListWrap )
-
-rule getClassList([_,, (layer(Class:ClassType, _,_) => Class),, _])
-
-rule getClassList([Ts:KList]) => resultListWrap(Ts)
+    <classType> LowestClass </classType>
+    <extends> BaseClass:ClassType </extends>
 when
-    isKResult(Ts) ==K true
+    LowestClass =/=K UpperClass
+
+rule [getClassesBetween-end]:
+    getClassesBetween([LowerClasses:KList,, Class:ClassType], Class) => resultListWrap(LowerClasses,, Class)
 
 rule [Invoke-Method-Static-On-Class]:
     'Invoke('Method('MethodName(Class:ClassType,, Name:Id )),, [ParamVals:KList] )

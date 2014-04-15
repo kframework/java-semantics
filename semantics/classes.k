@@ -88,7 +88,11 @@ rule [QNewInstance]:
       . => L |-> objectRef(L, Class) :: Class
       ...
     </store>
-    (.Bag => <object> objectClosure(L, .KList) :: Class </object>)
+    (.Bag =>  <object>
+                <objectId> L </objectId>
+                <objectType> Class </objectType>
+              </object>
+    )
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 when isKResult(Args)
 
@@ -125,8 +129,14 @@ rule [addEnvLayer]:
     <crntClass> Class:ClassType </crntClass>
     <location> OId:Int </location>
     <object>
-      objectClosure(OId,
-        ( ( .KList => layer(Class, <env>Env</env>, noValue) ),, _:KList/*ObjLayers*/ ) )::_
+      <objectId> OId </objectId>
+      (.Bag =>  <layer>
+                  <layerClass> Class </layerClass>
+                  <layerEnv> Env </layerEnv>
+                  ...
+                </layer>
+      )
+      ...
     </object>
         [structural]
 
@@ -164,10 +174,9 @@ rule [setEncloser-value]:
       setEncloser(objectRef(OId:Int, _)::_, Class:ClassType, EncloserRV:RawVal::_) => .
       ...
     </k>
-    <object>
-      objectClosure(OId, (_:KList/*ObjLayers*/,, layer(Class,_, _ => EncloserRV::EncloserClass),,
-        _:KList/*ObjLayers*/) )::_
-    </object>
+    <objectId> OId </objectId>
+    <layerClass> Class </layerClass>
+    <layerEnclosingObject> _ => EncloserRV::EncloserClass </layerEnclosingObject>
     <classType> Class </classType>
     <enclosingClass> EncloserClass:ClassType </enclosingClass>
 

@@ -312,7 +312,27 @@ configuration
         //Represents the storage of objects. Since objects have a complex inner structure,
         //we need to hold them separately if we want to represent that structure as a cell tree.
         <objectStore color="Cyan">
-          <object color="Cyan" multiplicity="*"> .K </object>
+          <object color="Cyan" multiplicity="*">
+
+            //The id of this object. Same as store location for the newly created object reference.
+            <objectId> .K </objectId>
+
+            //The actual object class
+            <objectType> .K </objectType>
+
+            //One layer for each class in the inheritance chain of this object
+            <layer multiplicity="*">
+
+              //The class corresponding to the given chain
+              <layerClass> .K </layerClass>
+
+              //Map[Id |-> Loc] -> fields defined in this layer
+              <layerEnv> .Map </layerEnv>
+
+              //objectRef() ::_ - a reference to the directly enclosing object, or noValue if none.
+              <layerEnclosingObject> noValue </layerEnclosingObject>
+            </layer>
+          </object>
         </objectStore>
 
         //Counter for next location to be used in the cell <store>.

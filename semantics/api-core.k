@@ -91,7 +91,7 @@ rule [object-getClass-on-object]:
       invokeImpl(
         methodRef(sig(MethodName:Id, _), Class:ClassType), loc(OL:Int)::_,
         [.KList]
-      ) => 'Lit('Class(T))
+      ) => 'Lit('Class(BottomClass))
       ...
     </k>
     <store>
@@ -99,9 +99,8 @@ rule [object-getClass-on-object]:
       OL |-> objectRef(OId:Int, _) :: _
       ...
     </store>
-    <object>
-      objectClosure(OId, (layer(T:ClassType, _,_),, _:KList/*ObjLayers*/) ) :: _
-    </object>
+    <objectId> OId </objectId>
+    <objectType> BottomClass:ClassType </objectType>
 when
     Class ==K objectClass andBool Id2String(MethodName) ==String "getClass"
 
