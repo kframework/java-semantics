@@ -90,7 +90,7 @@ context lvalue('Field(HOLE,, _))
 rule [Field-instance]:
     <k>
       'Field(
-        objectRef(OId:Int, TargetClass:ClassType ) :: TargetClass,,
+        objectRef(OId:Int, _ ) :: TargetClass:ClassType,,
         X:Id
       ) => typedLookup(L)
       ...
@@ -98,13 +98,13 @@ rule [Field-instance]:
     <object>
       objectClosure(OId,
           (_:KList/*ObjLayers*/,, layer(TargetClass, <env>... X |-> L:Int ...</env>, _),, _:KList/*ObjLayers*/)
-      ) :: TargetClass:ClassType
+      ) :: _
     </object>
 
 rule [lvalue-Field-instance]:
     <k>
       lvalue('Field(
-        objectRef(OId:Int, TargetClass:ClassType ) :: TargetClass,,
+        objectRef(OId:Int, _ ) :: TargetClass:ClassType,,
         X:Id
       )) => lvalue(typedLookup(L))
       ...
@@ -112,7 +112,7 @@ rule [lvalue-Field-instance]:
     <object>
       objectClosure(OId,
           (_:KList/*ObjLayers*/,, layer(TargetClass, <env>... X |-> L:Int ...</env>, _),, _:KList/*ObjLayers*/)
-      ) :: TargetClass:ClassType
+      ) :: _
     </object>
 
 rule [Field-instance-OfNull]:

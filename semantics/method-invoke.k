@@ -85,10 +85,10 @@ rule [getClassesBetween-different]:
         ( _:KList/*Lower ignored layers*/,,
           layer(LowestClass:ClassType,_,_),,
           MiddleLayers:KList/*ObjLayers*/,,
-          layer(Class:ClassType,_, _),,
+          layer(UpperClass:ClassType,_, _),,
           _:KList /*Upper ignored layers*/
         )
-      )::Class:ClassType
+      )::_
     </object>
 
 //@ Converts a list of ListItem(layer(Class, BI, EnclosingObj)) into KList with elements of sort ClassType
