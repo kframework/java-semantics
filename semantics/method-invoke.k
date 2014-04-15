@@ -42,19 +42,18 @@ context 'Invoke('Method('MethodName(_:KResult,, Name:Id )),, [_,,HOLE,,_] )
 rule [Invoke-Method-Instance-On-Class]:
     <k>
       'Invoke('Method('MethodName(
-        objectClosure(
-          OL:Int,
-          (Rest:KList/*ObjLayers*/,, layer(Class:ClassType, BI:BagItem, EnclosingObj:KResult),, _)
+        objectRef(
+          OId:Int, LowestClass:ClassType
         )::Class:ClassType,,
         Name:Id
         )),, [ParamVals:KList]
       )
       => invokeImpl(
         lookupOverloadedMethod(
-          sig(Name, getTypes([ParamVals])), getClassList([Rest,, layer(Class, BI, EnclosingObj)]),
+          sig(Name, getTypes([ParamVals])), getClassesBetween(LowestClass, Class, OId),
           mapWrap(.Map), noMethodRef
         ),
-        loc(OL)::Class, [ParamVals]
+        loc(OId)::Class, [ParamVals]
       )
       ...
     </k>
@@ -63,10 +62,48 @@ rule [Invoke-Method-Instance-On-Class]:
 when
     isKResult(ParamVals)
 
+/*Returns the list of classes representing the layer of the given object (by OId),
+    located between LowestClass and UpperClass.
+*/
+syntax K ::=  getClassesBetween(  ClassType,  //LowestClass
+                                  ClassType,  //UpperClass
+                                  Int         //OId
+              )
+
+rule [getClassesBetween-same]:
+    getClassesBetween(Class:ClassType, Class, _) => resultListWrap(Class)
+
+rule [getClassesBetween-different]:
+    <k>
+      getClassesBetween(LowestClass:ClassType, UpperClass:ClassType, OId:Int)
+      => getClassList([LowestClass,, MiddleLayers,, UpperClass])
+      ...
+    </k>
+    <object>
+      objectClosure(
+        OId:Int,
+        ( _:KList/*Lower ignored layers*/,,
+          layer(LowestClass:ClassType,_,_),,
+          MiddleLayers:KList/*ObjLayers*/,,
+          layer(Class:ClassType,_, _),,
+          _:KList /*Upper ignored layers*/
+        )
+      )::Class:ClassType
+    </object>
+
+//@ Converts a list of ListItem(layer(Class, BI, EnclosingObj)) into KList with elements of sort ClassType
+syntax K ::= getClassList ( KListWrap )
+
+rule getClassList([_,, (layer(Class:ClassType, _,_) => Class),, _])
+
+rule getClassList([Ts:KList]) => resultListWrap(Ts)
+when
+    isKResult(Ts) ==K true
+
 rule [Invoke-Method-Static-On-Class]:
     'Invoke('Method('MethodName(Class:ClassType,, Name:Id )),, [ParamVals:KList] )
     => invokeImpl(
-      lookupOverloadedMethod(sig(Name, getTypes([ParamVals])), [Class], mapWrap(.Map), noMethodRef),
+      lookupOverloadedMethod(sig(Name, getTypes([ParamVals])), resultListWrap(Class), mapWrap(.Map), noMethodRef),
       noValue, [ParamVals]
     )
 when
@@ -75,16 +112,18 @@ when
 rule [Invoke-Method-Instance-On-Interface]:
     <k>
       'Invoke('Method('MethodName(
-          objectClosure(
+          objectRef(
             OL:Int,
-            (layer(ActualClass:ClassType, _,_),, _)
+            ActualClass:ClassType
           )::Class:ClassType,,
           Name:Id
         )),,
         [ParamVals:KList]
       )
       => invokeImpl(
-        lookupOverloadedMethod(sig(Name, getTypes([ParamVals])), [ActualClass], mapWrap(.Map), noMethodRef),
+        lookupOverloadedMethod(sig(Name, getTypes([ParamVals])), resultListWrap(ActualClass), mapWrap(.Map),
+          noMethodRef
+        ),
         loc(OL)::Class, [ParamVals]
       )      ...
     </k>
@@ -101,12 +140,13 @@ rule [Invoke-Method-On-other]:
       [ParamVals:KList]
     )
     => invokeImpl(
-      lookupOverloadedMethod(sig(Name, getTypes([ParamVals])), [getLookupTargetType(QualT)], mapWrap(.Map),
-      noMethodRef),
+      lookupOverloadedMethod(sig(Name, getTypes([ParamVals])), resultListWrap(getLookupTargetType(QualT)),
+        mapWrap(.Map), noMethodRef
+      ),
       QualRV::QualT, [ParamVals]
     )
 when
-    getKLabel(QualRV) =/=KLabel 'objectClosure andBool QualRV =/=K null andBool isKResult(ParamVals)
+    getKLabel(QualRV) =/=KLabel 'objectRef andBool QualRV =/=K null andBool isKResult(ParamVals)
 
 rule [Invoke-Method-On-Null]:
     'Invoke( 'Method('MethodName( null::_,, _:Id )),, [ParamVals:KList] )
@@ -127,26 +167,14 @@ syntax K ::= superMethod ( K ) // is always equal to A.this - used to lookup the
 
 rule [superMethod]:
     superMethod(
-      objectClosure(
-        OL:Int,
+      objectRef(
+        OId:Int,
         //The layers above the layer where method should be searched
         // should be discarded in order to implement syper.m() functionality.
-        (_:KList/*ObjLayers*/,, layer(BaseClass, BI:BagItem, EnclosingObj:KResult),, Rest:KList/*ObjLayers*/)
+        _
       )::BaseClass:ClassType  //due to the way term superMethod() is first constructed, this is the upper search layer
     )
-    => objectClosure(
-      OL,
-      (layer(BaseClass, BI, EnclosingObj),, Rest)
-    )::BaseClass
-
-//@ Converts a list of ListItem(layer(Class, BI, EnclosingObj)) into KList with elements of sort ClassType
-syntax KListWrap ::= getClassList ( KListWrap )       [function]
-
-rule getClassList([_,, (layer(Class:ClassType, _,_) => Class),, _])
-
-rule getClassList([Ts:KList]) => [Ts]
-when
-    isKResult(Ts) ==K true
+    => objectRef( OId, BaseClass )::BaseClass
 
 /*@ The right signature is already found.
 Search for the right implementation is performed from the compile-time type of the target
@@ -155,14 +183,14 @@ This is required in order to respect the rules of inheritance in the presence of
 Evaluates into typed method closure.*/
 syntax K ::=  lookupOverloadedMethod (
                 Signature,  //sig(Name, SigTL) - Method signature
-                KListWrap,  //Class list, elements of type ClassType,
+                K,          //computes into resultListWrap(Class list), elements of type ClassType,
                               // from derived to base.
                               // To be processed from base to derived when methods map will be exhausted.
                 K,          //mapWrap(Map) - methods map of current LayerClass
                 MethodRef   //method closure of the most specific method found so far
                               // or noValue if no applicable method was found yet
               )
-              [strict(1,3,4)]
+              [strict]
 
 rule [lookupOverloadedMethod-SigKnownFirstCandidate]:
     lookupOverloadedMethod(
@@ -208,13 +236,13 @@ when
 rule [lookupOverloadedMethod-SigKnownLayerDiscard]:
     lookupOverloadedMethod(
       _,
-      [_,, (NewLayerType:ClassType => .KList)],
+      resultListWrap(_,, (NewLayerType:ClassType => .KList)),
       mapWrap(.Map) => getMethods(NewLayerType),
       _
     )
 
 rule [lookupOverloadedMethod-SigKnownEnd]:
-    lookupOverloadedMethod(_, [.KList], mapWrap(.Map), MethodRef:MethodRef ) => MethodRef
+    lookupOverloadedMethod(_, resultListWrap(.KList), mapWrap(.Map), MethodRef:MethodRef ) => MethodRef
 
 //@ Retrieve the content of <methods> for the given class
 syntax K ::=  getMethods ( ClassType )
@@ -274,11 +302,11 @@ rule [invokeImpl-Instance]:
       <crntObj>
         OldObj:Bag
         => <crntClass> Class </crntClass>
-           <location> NewOL </location>
+           <location> OId </location>
       </crntObj>
       RestMethContext:Bag
     </methodContext>
-    <store>... OL |-> objectClosure(NewOL:Int, _:KList/*ObjLayers*/)::_ ...</store>
+    <store>... OL |-> objectRef(OId:Int, _)::_ ...</store>
 
     <classType> Class </classType>
     <methodSignature> Sig </methodSignature>

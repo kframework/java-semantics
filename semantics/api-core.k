@@ -96,9 +96,12 @@ rule [object-getClass-on-object]:
     </k>
     <store>
       ...
-      OL |-> objectClosure(_, (layer(T:ClassType, _,_),, _:KList/*ObjLayers*/) ) :: _
+      OL |-> objectRef(OId:Int, _) :: _
       ...
     </store>
+    <object>
+      objectClosure(OId, (layer(T:ClassType, _,_),, _:KList/*ObjLayers*/) ) :: _
+    </object>
 when
     Class ==K objectClass andBool Id2String(MethodName) ==String "getClass"
 
@@ -133,12 +136,12 @@ rule [object-hashCode]:
       invokeImpl(
         methodRef(sig(MethodName:Id, _), Class:ClassType), loc(OL:Int)::_,
         [.KList]
-      ) => NewOL :: int
+      ) => OId :: int
       ...
     </k>
     <store>
       ...
-      OL |-> objectClosure(NewOL:Int, _) :: _
+      OL |-> objectRef(OId:Int, _) :: _
       ...
     </store>
 when

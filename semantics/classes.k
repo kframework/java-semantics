@@ -85,9 +85,10 @@ rule [QNewInstance]:
     </methodContext>
     <store>
       ...
-      . => L |-> objectClosure(L, .KList) :: Class
+      . => L |-> objectRef(L, Class) :: Class
       ...
     </store>
+    (.Bag => <object> objectClosure(L, .KList) :: Class </object>)
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 when isKResult(Args)
 
@@ -122,13 +123,11 @@ rule [addEnvLayer]:
     <k> addEnvLayer => . ...</k>
     <env> Env:Map => . </env>
     <crntClass> Class:ClassType </crntClass>
-    <location> L:Int </location>
-    <store>
-      ...
-      L |-> objectClosure(L,
-          ( ( .KList => layer(Class, <env>Env</env>, noValue) ),, _:KList/*ObjLayers*/ ) )::_
-      ...
-    </store>
+    <location> OId:Int </location>
+    <object>
+      objectClosure(OId,
+        ( ( .KList => layer(Class, <env>Env</env>, noValue) ),, _:KList/*ObjLayers*/ ) )::_
+    </object>
         [structural]
 
 syntax K ::=  invokeConstr (
@@ -162,15 +161,13 @@ syntax K ::=  setEncloser (
 
 rule [setEncloser-value]:
     <k>
-      setEncloser(objectClosure(OL:Int, _)::_, Class:ClassType, EncloserRV:RawVal::_) => .
+      setEncloser(objectRef(OId:Int, _)::_, Class:ClassType, EncloserRV:RawVal::_) => .
       ...
     </k>
-    <store>
-      ...
-      OL |->
-        objectClosure(_, (_:KList/*ObjLayers*/,, layer(Class,_, _ => EncloserRV::EncloserClass),, _:KList/*ObjLayers*/) )::_
-      ...
-    </store>
+    <object>
+      objectClosure(OId, (_:KList/*ObjLayers*/,, layer(Class,_, _ => EncloserRV::EncloserClass),,
+        _:KList/*ObjLayers*/) )::_
+    </object>
     <classType> Class </classType>
     <enclosingClass> EncloserClass:ClassType </enclosingClass>
 

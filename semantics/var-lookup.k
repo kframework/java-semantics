@@ -64,10 +64,15 @@ This way we may have O.B < O.A, with layers O.B and O.A having different enclosi
 and we will be able to pick the correct enclosing object inside both O.A and O.B.
 */
 rule [lookupQThis-next]:
-    lookupQThis(Class:ClassType,
-      objectClosure(_, (_:KList/*ObjLayers*/,, layer(ObjClass,_, EnclosingObj:KResult),, _:KList/*ObjLayers*/) )
-        :: ObjClass:ClassType
-    ) => lookupQThis(Class:ClassType, EnclosingObj)
+    <k>
+      lookupQThis(Class:ClassType,
+        objectRef(OId:Int, ObjClass:ClassType) :: ObjClass
+      ) => lookupQThis(Class:ClassType, EnclosingObj)
+      ...
+    </k>
+    <object>
+      objectClosure(OId, (_:KList/*ObjLayers*/,, layer(ObjClass,_, EnclosingObj:KResult),, _:KList/*ObjLayers*/) ) :: _
+    </object>
 when
     Class =/=K ObjClass
 
@@ -83,13 +88,32 @@ context 'Field(HOLE,, _)
 context lvalue('Field(HOLE,, _))
 
 rule [Field-instance]:
-    'Field(
-      objectClosure(_,
+    <k>
+      'Field(
+        objectRef(OId:Int, TargetClass:ClassType ) :: TargetClass,,
+        X:Id
+      ) => typedLookup(L)
+      ...
+    </k>
+    <object>
+      objectClosure(OId,
           (_:KList/*ObjLayers*/,, layer(TargetClass, <env>... X |-> L:Int ...</env>, _),, _:KList/*ObjLayers*/)
-      ) :: TargetClass:ClassType,,
-      X:Id
-    ) => typedLookup(L)
-        [anywhere]
+      ) :: TargetClass:ClassType
+    </object>
+
+rule [lvalue-Field-instance]:
+    <k>
+      lvalue('Field(
+        objectRef(OId:Int, TargetClass:ClassType ) :: TargetClass,,
+        X:Id
+      )) => lvalue(typedLookup(L))
+      ...
+    </k>
+    <object>
+      objectClosure(OId,
+          (_:KList/*ObjLayers*/,, layer(TargetClass, <env>... X |-> L:Int ...</env>, _),, _:KList/*ObjLayers*/)
+      ) :: TargetClass:ClassType
+    </object>
 
 rule [Field-instance-OfNull]:
     'Field(null::_,, _)

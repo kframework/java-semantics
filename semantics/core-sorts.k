@@ -140,7 +140,13 @@ The object closure have the following structure:
 \end{verbatim}
 \end{itemize}
 */
-syntax RawRefVal ::=  objectClosure (
+syntax RawRefVal ::=  objectRef (
+                        Int,  //OL - object location
+                        ClassType //LowestClass - the lowest class where we are allowed to search for method
+                                  // implementation, or actual object class if there are no restrictions.
+                      )
+
+syntax K ::=          objectClosure (
                         Int,  //OL - object location
                         //K bug #266 - Matching in the middle of a syntactic list. when solved replace with ObjLayers
                         KList /*ObjLayers - The object content, a list of ObjLayer elements, each of the form:
@@ -155,8 +161,8 @@ syntax ObjLayer ::= layer (
                       ClassType,  //The class corresponding to the current layer
                       BagItem,    //<env> instance fields </env>
                       K           //objectClosure(...)::_ - the enclosing object,
-                                  //  or noValue for top-level and static classes
-                                  //  Used by lookupQThis.
+                                    //or noValue for top-level and static classes.
+                                    //Used by lookupQThis.
                     )
 
 syntax ObjLayers ::= List{ObjLayer, ","}

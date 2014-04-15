@@ -309,6 +309,12 @@ configuration
         //Execution memory. Map[Location:Int->Value:TypedVal]. Both local vars and heap vars are stored here.
         <store color="Cyan"> .Map </store>
 
+        //Represents the storage of objects. Since objects have a complex inner structure,
+        //we need to hold them separately if we want to represent that structure as a cell tree.
+        <objectStore color="Cyan">
+          <object color="Cyan" multiplicity="*"> .K </object>
+        </objectStore>
+
         //Counter for next location to be used in the cell <store>.
         <nextLoc color="Cyan"> 0 </nextLoc>
 

@@ -14,7 +14,7 @@ rule typeOf(T:Type) => T
 rule typeOf(_ :: T:Type) => T
 rule typeOf(Str:String) => stringClass
 rule typeOf(null) => nullType
-rule typeOf(objectClosure(_, (layer(Class:ClassType, _,_),, _:KList/*ObjLayers*/) )) => Class
+rule typeOf(objectRef(_, Class:ClassType)) => Class
 rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T
 
 /* Required by getTypes in elaboration phase, invoked by lookupMethod. */
@@ -41,16 +41,10 @@ rule toTypedVal(I:Int) => I :: int                                              
 rule toTypedVal(B:Bool) => B :: bool                                                [structural]
 rule toTypedVal(Str:String) => Str :: stringClass                                   [structural]
 rule toTypedVal(null) => null :: nullType                                           [structural]
-rule toTypedVal( objectClosure(
-      OL:Int,
-      (layer(Class:ClassType, BI:BagItem, EnclosingObj:KResult),, Rest:KList/*ObjLayers*/)
-    ))
-    => objectClosure(
-      OL,
-      (layer(Class, BI, EnclosingObj),, Rest)
-    ) :: Class
-                                                                                      [structural]
-rule toTypedVal(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T             [structural]
+rule toTypedVal( objectRef(OL:Int, Class:ClassType) )
+    => objectRef(OL:Int, Class:ClassType) :: Class                                  [structural]
+
+rule toTypedVal(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T           [structural]
 
 //@ Converts a KList of terms to Types. Uses typeOf underneath.
 syntax K ::=  getTypes (

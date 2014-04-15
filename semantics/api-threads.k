@@ -62,23 +62,23 @@ context 'Synchronized(HOLE,, _)
 
 rule [Synchronized-first-time]:
     <k>
-      'Synchronized(objectClosure(OL:Int,_)::_,, Block:K)
-      => 'Try(Block,, [.KList],, releaseLock(OL))
+      'Synchronized(objectRef(OId:Int,_)::_,, Block:K)
+      => 'Try(Block,, [.KList],, releaseLock(OId))
       ...
     </k>
-    <holds>... (. => OL |-> 1) ...</holds>
-    <busy> Busy:Set (. => SetItem(OL)) </busy>
+    <holds>... (. => OId |-> 1) ...</holds>
+    <busy> Busy:Set (. => SetItem(OId)) </busy>
 when
-    notBool (OL in Busy)
+    notBool (OId in Busy)
         [transition-threading]
 
 rule [Synchronized-nested]:
     <k>
-      'Synchronized(objectClosure(OL:Int,_)::_,, Block:K)
-      => 'Try(Block,, [.KList],, releaseLock(OL))
+      'Synchronized(objectRef(OId:Int,_)::_,, Block:K)
+      => 'Try(Block,, [.KList],, releaseLock(OId))
       ...
     </k>
-    <holds>... OL |-> (Level:Int => Level +Int 1) ...</holds>
+    <holds>... OId |-> (Level:Int => Level +Int 1) ...</holds>
         [transition-threading]
 
 rule [Synchronized-on-null]:
