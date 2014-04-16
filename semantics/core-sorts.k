@@ -62,6 +62,10 @@ syntax GlobalPhase ::=
   */
   | "ElaborationPhase"
 
+  /* Folds the <class> cells into a preprocessed Java program. The last step of elaboration semantics.
+  */
+  | "FoldingPhase"
+
   /* When all preprocessing / elaboration phases are finished, the actual execution begins.
   */
   | "ExecutionPhase"
@@ -73,6 +77,7 @@ syntax ClassPhase ::=
   | "BasesResolvedCPhase"
   | "DecsProcessedCPhase"
   | "MembersProcessedCPhase"
+  | "FoldedCPhase"
 
 /*@
   The state of a class in relation to static initialization. See static-init.k for more details.

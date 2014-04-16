@@ -87,8 +87,9 @@ configuration
           <cphCreated color="Yellow">
 
             //Used by object instantiation
-            <enclosingClass color="DarkGoldenrod"> noClass </enclosingClass> //noClass if this is a top-level class,
-                                                       //ClassType of the enclosing class otherwise
+            //noClass if this is a top-level class,
+            //ClassType of the enclosing class otherwise
+            <enclosingClass color="DarkGoldenrod"> noClass </enclosingClass>
 
             <rawExtends color="DarkGoldenrod"> .K </rawExtends>
             <rawImplements color="DarkGoldenrod"> .K </rawImplements>
@@ -181,7 +182,7 @@ configuration
 
             <br/>
 
-            //a "ListWrap containing a 'LocalVarDec for each field. Used during object instantiation.
+            //[...,, 'LocalVarDec(_),, ...] - Instance field declarations. Used during object instantiation.
             <fieldDecs color="Indigo"> [.KList] </fieldDecs>
 
             <br/>
@@ -194,6 +195,7 @@ configuration
 
             <br/>
 
+            //todo add a cell <staticFields>, just like <fieldDecs>
             /*The map of static fields declared in this class only, and NOT in superclasses or superinterfaces.
               Map[Id -> Location]
               Used during object instantiation.*/
@@ -224,6 +226,16 @@ configuration
             <enclosingLocalEnv color="Teal"> .Map </enclosingLocalEnv>
 
           </clsElab>
+
+          <br/>
+
+          //Cells used during folding phase
+          <clsFolding color="Yellow">
+
+            //The whole class folded back into a 'ClassDec(...) node
+            <folded color="Teal"> .K </folded>
+
+          </clsFolding>
 
           <br/>
 
@@ -301,6 +313,14 @@ configuration
         <elabBuffer> [.KList] </elabBuffer>
 
       </phElab>
+
+      <br/>
+
+      <phFolding color="Yellow">
+
+        /*Folded representation of the whole program. */
+        <foldedProgram color="Cyan"> [.KList] </foldedProgram>
+      </phFolding>
 
       <br/>
 

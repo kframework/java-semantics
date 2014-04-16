@@ -69,8 +69,10 @@ rule [Block]:
 
 //@ \texttt{env} Restore the env cell content from env(...) statement argument
 syntax K ::= env ( Map )
-rule <k> env(Env:Map) => . ...</k>
-     <env> _ => Env </env>
+
+rule [env]:
+    <k> env(Env:Map) => . ...</k>
+    <env> _ => Env </env>
         [structural]
 
 rule [env-double-Discard]:
