@@ -101,13 +101,12 @@ syntax K ::=  create ( ClassType )
 rule [create]:
     <k>
       create(Class:ClassType)
-      => create(BaseClass) ~> setCrntClass(Class) ~> env(StaticEnv) /*todo why?*/ ~> FieldDecs ~> addEnvLayer
+      => create(BaseClass) ~> setCrntClass(Class) ~> FieldDecs ~> addEnvLayer
       ...
     </k>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
     <fieldDecs> FieldDecs:K </fieldDecs>
-    <staticEnv> StaticEnv:Map </staticEnv>
         [structural]
 
 rule [create-empty-discard]:
