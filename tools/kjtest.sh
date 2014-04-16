@@ -6,7 +6,7 @@
 
 if (( "$#" >= 1 )) && [ "$1" == "--help" ]; then
     echo "Usage: `basename $0` [target files/dirs]"
-    echo "Or:    `basename $0` <--run|--search|--t1|--t2|--t4> [target files/dirs]"
+    echo "Or:    `basename $0` <--run|--search|--t1|--t2|--t4|--t4> [target files/dirs]"
     echo "For more options use aux-kjtest.sh"
     exit 0
 fi
@@ -33,13 +33,16 @@ case "$OPTION" in
     aux-kjtest.sh -mode jdk      -threads 12 -timeout  10 -encodeXML false -clean true  ${@}
     ;;
 "--t1")
-    aux-kjtest.sh -mode run    -threads  1 -timeout 120 -encodeXML false -clean false ${@}
+    aux-kjtest.sh -mode run      -threads  1 -timeout 120 -encodeXML false -clean false ${@}
     ;;
 "--t2")
-    aux-kjtest.sh -mode run    -threads  2 -timeout 120 -encodeXML false -clean false ${@}
+    aux-kjtest.sh -mode run      -threads  2 -timeout 120 -encodeXML false -clean false ${@}
     ;;
 "--t4")
-    aux-kjtest.sh -mode run    -threads  4 -timeout 120 -encodeXML false -clean true ${@}
+    aux-kjtest.sh -mode run      -threads  4 -timeout 120 -encodeXML false -clean true  ${@}
+    ;;
+"--t8")
+    aux-kjtest.sh -mode run      -threads  8 -timeout 120 -encodeXML false -clean true  ${@}
     ;;
 *)
     echo "Invalid OPTION: ${OPTION}"
