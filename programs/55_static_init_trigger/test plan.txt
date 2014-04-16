@@ -92,7 +92,7 @@ Part 12. Init triggering chain for class/interface mix.
 Part 13. Init triggering loop for interfaces.
   211. I2, A, I1. I2 triggers init of A, that triggers init of I1, that triggers init of I2, A.
     Read a field on I2. Default values I2 should be observed in A and I1. Tracing.
-  212. B{f()} < abstract A < I1{f()}. All static and instance inits traced.
+  212. B{f()} < abstract A < I1{f()}. All static and instance initializers traced.
     B static accesses A fields, A static accesses I1 fields. A static instantiates B
     (after accessing I1). Observe static init order: A, I1, B. B observes partially
     statically initialized A, but fully instance initialized.
