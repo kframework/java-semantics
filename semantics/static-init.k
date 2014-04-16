@@ -35,6 +35,8 @@ rule [staticInit]:
     <k>
       staticInit(Class:ClassType)
       => [
+        StaticFields,, //Static fields have to be allocated before base class is statically initialized,
+                       // because during base class initialization those fields might be accessed.
         staticInit(BaseClass),,
         'Try(
             StaticInit,,
@@ -80,7 +82,8 @@ rule [staticInit]:
     <tid> TId:Int </tid>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
-    <staticInit> StaticInit:K </staticInit>
+    <staticFields> StaticFields:KListWrap </staticFields>
+    <staticInit> StaticInit:KListWrap </staticInit>
     <staticInitStatus> StaticUninitialized => StaticInitializing(TId) </staticInitStatus>
 
 rule [staticInit-already-initialized-discard]:
@@ -118,5 +121,13 @@ rule [staticInitDone]:
     <tid> TId:Int </tid>
     <classType> Class </classType>
     <staticInitStatus> StaticInitializing(TId) => StaticInitialized </staticInitStatus>
+
+rule [FieldDec-static]:
+    <k> 'FieldDec('Static(_),, T:Type,,['VarDec(X:Id)]) => . ...</k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    <staticEnv> Env:Map => Env[L/X] </staticEnv>
+    <store>... . => L |-> default(T) ...</store>
+    <nextLoc> L:Int => L +Int 1 </nextLoc>
 
 endmodule

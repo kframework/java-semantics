@@ -195,11 +195,8 @@ configuration
 
             <br/>
 
-            //todo add a cell <staticFields>, just like <fieldDecs>
-            /*The map of static fields declared in this class only, and NOT in superclasses or superinterfaces.
-              Map[Id -> Location]
-              Used during object instantiation.*/
-            <staticEnv color="DarkSlateGray"> .Map </staticEnv>
+            //[...,, 'LocalVarDec(_),, ...] - Static field declarations. Used during class instantiation.
+            <staticFields color="DarkSlateGray"> [.KList] </staticFields>
 
             //The sequence of static initializers (that also includes field initializers)
             //see static-init.k for more details.
@@ -245,6 +242,10 @@ configuration
             //Initialization status of this class. See static-init.k for more details.
             //Only used during execution phase.
             <staticInitStatus color="Teal"> StaticUninitialized </staticInitStatus>
+
+            /*The map of static fields declared in this class only, and NOT in superclasses or superinterfaces.
+              Map[Id -> Location] Used during static variable lookup.*/
+            <staticEnv color="DarkSlateGray"> .Map </staticEnv>
 
           </clsExec>
 

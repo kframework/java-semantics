@@ -124,12 +124,26 @@ rule [Field-instance-OfNull]:
 /*@ \subsection{Static field access} */
 
 rule [Field-static]:
+    'Field( TargetClass:ClassType,, X:Id )
+    => staticInit(TargetClass) ~> staticFieldLookup(TargetClass, X)
+
+rule [lvalue-Field-static]:
+    lvalue('Field( TargetClass:ClassType,, X:Id ))
+    => staticInit(TargetClass) ~> lvalue(staticFieldLookup(TargetClass, X))
+
+/*@ The actual implementation of static field lookup. The distinction between this function and
+    'Field(Class, X) term is that at the moment when this function is called the target clas is
+    surely initialized.
+*/
+syntax K ::= staticFieldLookup ( ClassType , Id )
+
+rule [staticFieldLookup]:
     <k>
-      'Field(
-        TargetClass:ClassType,,
+      staticFieldLookup(
+        TargetClass:ClassType,
         X:Id
       )
-      => staticInit(TargetClass) ~> typedLookup(L)
+      => typedLookup(L)
       ...
     </k>
     <classType> TargetClass </classType>
@@ -137,11 +151,11 @@ rule [Field-static]:
 
 rule [lvalue-Field-static]:
     <k>
-      lvalue('Field(
-          TargetClass:ClassType,,
-          X:Id
+      lvalue(staticFieldLookup(
+        TargetClass:ClassType,
+        X:Id
       ))
-      => staticInit(TargetClass) ~> lvalue(typedLookup(L))
+      => lvalue(typedLookup(L))
       ...
     </k>
     <classType> TargetClass </classType>

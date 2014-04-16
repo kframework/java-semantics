@@ -450,9 +450,7 @@ rule [FieldDec-Static]:
     <k> 'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <staticEnv> Env:Map => Env[L/X] </staticEnv>
-    <store>... . => L |-> default(T) ...</store>
-    <nextLoc> L:Int => L +Int 1 </nextLoc>
+    <staticFields> [_,, ( .KList => 'FieldDec('Static(.KList),, T,, ['VarDec(X)]) )] </staticFields>
 when
     getContextType(Modifiers) ==K staticCT
         [structural]

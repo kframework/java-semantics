@@ -109,8 +109,7 @@ rule [elabLookup-Found-instance]:
 rule [elabLookup-Found-static]:
     <k> elabLookup(X:Id, Class:ClassType) => fieldEntry(Class, X, T, staticCT) ...</k>
     <classType> Class </classType>
-    <staticEnv>... X |-> L:Int ...</staticEnv>
-    <store>... L |-> _ :: T:Type  ...</store>
+    <staticFields> [_,, 'FieldDec('Static(_),, T:Type,, ['VarDec(X)]),, _] </staticFields>
 
 rule [elabLookup-Found-constant]:
     <k> elabLookup(X:Id, Class:ClassType) => TV ...</k>
@@ -130,11 +129,13 @@ rule [elabLookup-NextClass]:
     <extends> BaseClass:ClassType </extends>
     <implements> BaseInterfaces:Set </implements>
     <fieldDecs> [InstanceVarDecs:KList] </fieldDecs>
-    <staticEnv> StaticEnv:Map </staticEnv>
+    <staticFields> [StaticVarDecs:KList] </staticFields>
     <constantEnv> ConstantEnv:Map </constantEnv>
 when
-    notBool ( nameInVarDecs(X, [InstanceVarDecs]) ==K true orBool (X in keys(StaticEnv)) orBool (X in keys
-    (ConstantEnv)))
+    notBool ( nameInVarDecs(X, [InstanceVarDecs]) ==K true
+              orBool nameInVarDecs(X, [StaticVarDecs]) ==K true
+              orBool (X in keys (ConstantEnv))
+    )
 
 rule [elabLookup-NotFound]:
     elabLookup(X:Id, noClass) => noValue
@@ -153,7 +154,7 @@ syntax K ::=  nameInVarDecs(
               )
               [function]
 
-rule nameInVarDecs(X:Id, [_,, 'LocalVarDec(.K,, T:Type,, ['VarDec(X)]),, _]) => true
+rule nameInVarDecs(X:Id, [_,, _:KLabel(.K,, T:Type,, ['VarDec(X)]),, _]) => true
 
 syntax KLabel ::= "'This"
 
