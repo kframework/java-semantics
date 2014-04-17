@@ -183,9 +183,7 @@ configuration
             <br/>
 
             //[...,, 'LocalVarDec(_),, ...] - Instance field declarations. Used during object instantiation.
-            <fieldDecs color="Indigo"> [.KList] </fieldDecs>
-
-            <br/>
+            <instanceFields color="Indigo"> [.KList] </instanceFields>
 
             /*Contains concatenated instance initializer blocks and instance field initializers.
               At the end of class processing in the ProcClassMembersPhase the content of this cell is converted into
@@ -195,7 +193,7 @@ configuration
 
             <br/>
 
-            //[...,, 'LocalVarDec(_),, ...] - Static field declarations. Used during class instantiation.
+            //[...,, 'FieldDec('Static(_),,T,,_),, ...] - Static field declarations. Used during class instantiation.
             <staticFields color="DarkSlateGray"> [.KList] </staticFields>
 
             //The sequence of static initializers (that also includes field initializers)

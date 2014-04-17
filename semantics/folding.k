@@ -21,7 +21,7 @@ rule [fold-start]:
     <enclosingClass> noClass </enclosingClass>
     <extends> BaseClass:ClassType </extends>
     <implTrans> ImplTrans:Set </implTrans>
-    <fieldDecs> [FieldDecs:KList] </fieldDecs>
+    <instanceFields> [FieldDecs:KList] </instanceFields>
     <folded>
       .K => 'ClassDec(
               'ClassDecHead(

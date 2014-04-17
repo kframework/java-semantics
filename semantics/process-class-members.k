@@ -59,7 +59,7 @@ syntax K ::=  processType (
 /*@ For each class compute the set of inherited interfaces, inherit all the members,
 process inner declarations. Compute the following class cells:
   <implTrans>
-  <fieldDecs>
+  <instanceFields>
   <methods>
   <methodDecs>
   <instanceInit> - temporary cell, deleted after class body is processed.
@@ -417,7 +417,7 @@ rule [FieldDec-to-LocalVarDec]:
     <k> 'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <fieldDecs> [_,, ( .KList => 'LocalVarDec(.K,, T,, ['VarDec(X)]) )] </fieldDecs>
+    <instanceFields> [_,, ( .KList => 'LocalVarDec(.K,, T,, ['VarDec(X)]) )] </instanceFields>
 when
     getContextType(Modifiers) ==K instanceCT
         [structural]

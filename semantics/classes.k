@@ -106,7 +106,7 @@ rule [create]:
     </k>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
-    <fieldDecs> FieldDecs:K </fieldDecs>
+    <instanceFields> FieldDecs:K </instanceFields>
         [structural]
 
 rule [create-empty-discard]:

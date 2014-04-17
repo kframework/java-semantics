@@ -40,7 +40,7 @@ syntax GlobalPhase ::=
   /* Saves into appropriate cells the list of transitively implemented interfaces, and all the
     content about this class members. Computes the following cells:
         <implTrans>
-        <fieldDecs>
+        <instanceFields>
         <methods>
         <methodDecs>
         <instanceInit> - temporary cell, deleted after class body is processed.

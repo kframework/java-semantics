@@ -275,9 +275,9 @@ syntax K ::=  localClassAugmentFields (
 rule [localClassAugmentFields]:
     <k> localClassAugmentFields(LocalClass:ClassType, LocalEnvClass:ClassType) => .K ...</k>
     <classType> LocalClass </classType>
-    <fieldDecs>
+    <instanceFields>
       [_,, ( .KList => 'LocalVarDec(.K,, LocalEnvClass,, ['VarDec(String2Id("$local_env"))]) ) ]
-    </fieldDecs>
+    </instanceFields>
 
 syntax K ::=  localClassAugmentConsParams (
                 ClassType,  // LocalClass

@@ -104,7 +104,7 @@ syntax K ::=  elabLookup (
 rule [elabLookup-Found-instance]:
     <k> elabLookup(X:Id, Class:ClassType) => fieldEntry(Class, X, T, instanceCT) ...</k>
     <classType> Class </classType>
-    <fieldDecs> [_,, 'LocalVarDec(.K,, T:Type,, ['VarDec(X)]),, _] </fieldDecs>
+    <instanceFields> [_,, 'LocalVarDec(.K,, T:Type,, ['VarDec(X)]),, _] </instanceFields>
 
 rule [elabLookup-Found-static]:
     <k> elabLookup(X:Id, Class:ClassType) => fieldEntry(Class, X, T, staticCT) ...</k>
@@ -128,7 +128,7 @@ rule [elabLookup-NextClass]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
     <implements> BaseInterfaces:Set </implements>
-    <fieldDecs> [InstanceVarDecs:KList] </fieldDecs>
+    <instanceFields> [InstanceVarDecs:KList] </instanceFields>
     <staticFields> [StaticVarDecs:KList] </staticFields>
     <constantEnv> ConstantEnv:Map </constantEnv>
 when
