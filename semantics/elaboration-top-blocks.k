@@ -66,7 +66,7 @@ rule [elabMethods-Heat-MethodFirstLine]:
     <contextType> _ => CT </contextType>
     <classType> Class </classType>
     <methodParams> CHOLE => ParamsList </methodParams>
-    <methodFirstLine> FirstLine:K => CHOLE </methodFirstLine>
+    <methodConstrFirstLine> FirstLine:K => CHOLE </methodConstrFirstLine>
     <methodContextType> CT:ContextType </methodContextType>
 
 //@Required when processing first line of the constructor of Object, which is .K
@@ -80,7 +80,7 @@ rule [elabMethods-Heat-MethodBody]:
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <methodFirstLine> CHOLE => FirstLine </methodFirstLine>
+    <methodConstrFirstLine> CHOLE => FirstLine </methodConstrFirstLine>
     <methodBody> Body:K => CHOLE </methodBody>
 
 rule [elabMethods-Cool-Method]:
@@ -90,6 +90,7 @@ rule [elabMethods-Cool-Method]:
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
+    (<methodConstrFirstLine> _ </methodConstrFirstLine> => .Bag)
     <methodBody> CHOLE => Body </methodBody>
     <methodMetaType> methodMMT </methodMetaType>
 
@@ -100,7 +101,7 @@ rule [elabMethods-Cool-Constructor]:
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <methodFirstLine> FirstLine:K => noValue </methodFirstLine>
+    (<methodConstrFirstLine> FirstLine:K </methodConstrFirstLine> => .Bag)
     <methodBody> CHOLE => [FirstLine,, Body] </methodBody>
     <methodMetaType> constructorMMT => methodMMT </methodMetaType>
 

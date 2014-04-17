@@ -238,7 +238,19 @@ closures, so that their type contract can be checked at invocation
 time.  The rule below is conceptually similar to that of untyped KOOL;
 the only difference is the addition of the types.  */
 
-//@ 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, [_,, 'Param(_:K,, HOLE,,_:K),, _],, _:K),, _:K)
+/*@
+'MethodDec(
+  'MethodDecHead(
+    Modifiers:KListWrap,,
+    _:K,,
+    ReturnType:Type,,
+    Name:Id,,
+    [_,, 'Param(_:K,, HOLE,,_:K),, _],,
+    _:K
+  ),,
+  Body:K
+)
+*/
 syntax KLabel ::= "'MethodDec"
                 | "'MethodDecHead"
 
@@ -304,12 +316,12 @@ rule [storeMethod]:
                      <methodSignature> Sig </methodSignature>
                      <methodReturnType> ReturnType </methodReturnType>
                      <methodParams> [Params] </methodParams>
-                     <methodFirstLine> FirstLine </methodFirstLine>
+                     <methodConstrFirstLine> FirstLine </methodConstrFirstLine>
                      <methodBody> Body </methodBody>
                      <methodAccessMode> Acc </methodAccessMode>
                      <methodContextType> CT </methodContextType>
                      <methodMetaType> MMT </methodMetaType>
-                   </methodDec>
+              </methodDec>
          )
 when
     notBool (Sig in keys(Env) andBool MMT ==K constructorMMT)

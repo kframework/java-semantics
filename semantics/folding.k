@@ -5,7 +5,7 @@ module FOLDING
 
 //todo unfold when folding phase will be ready.
 /*rule [FoldingPhase-start]:
-    <k> . => foldingPhase ...</k>
+    <k> . => foldingPhase </k>
     <globalPhase> ElaborationPhase => FoldingPhase </globalPhase>*/
 
 /*@ The sole content of <k> cell during FoldingPhase
@@ -13,17 +13,19 @@ module FOLDING
 syntax K ::= "foldingPhase"
 
 /*So far top-level classes only.*/
-rule [fold-start]:
+rule [folding-start]:
     <k> foldingPhase </k>
     <classType> Class:ClassType </classType>
-    <classMetaType> classCMT </classMetaType>
-    <classAccessMode> AccessMode:AccessMode </classAccessMode>
-    <enclosingClass> noClass </enclosingClass>
-    <extends> BaseClass:ClassType </extends>
-    <implTrans> ImplTrans:Set </implTrans>
-    <instanceFields> [FieldDecs:KList] </instanceFields>
+    ( <classMetaType> MetaType:ClassMetaType </classMetaType> => .Bag)
+    ( <classAccessMode> AccessMode:AccessMode </classAccessMode> => .Bag)
+    ( <extends> BaseClass:ClassType </extends> => .Bag)
+    ( <instanceFields> [InstanceFields:KList] </instanceFields> => .Bag)
+    ( <staticFields> [StaticFields:KList] </staticFields> => .Bag)
+    ( <staticInit> [StaticInit:KList] </staticInit> => .Bag)
     <folded>
-      .K => 'ClassDec(
+      .K => getClassDecLabel(MetaType)
+            (
+              //JDK comp: #if MetaType ==K classCMT #then 'ClassDecHead #else 'InterfaceDecHead #fi
               'ClassDecHead(
                 //JDK comp: #if AccessMode ==K package #then [.KList] #else [AccessMode] #fi
                 AccessMode,,
@@ -31,28 +33,98 @@ rule [fold-start]:
                 'None(.KList),,
                 //JDK comp: #if BaseClass ==K noClass #then 'None(_) #else 'Some('SuperDec( BaseClass )) #fi
                 'Some('SuperDec( BaseClass )),,
-                'Some('ImplementsDec( setToKListWrap(ImplTrans) ))
+                'Some('ImplementsDec( [.KList] )) //processed by [fold-implements-dec]
               ),,
-              'ClassBody( [FieldDecs /*,, kListWrapConcat( *//*todo all elements of the body*//*)*/] )
+              'ClassBody( [
+                  InstanceFields,,
+                  //instanceInit was converted into method, is not needed here.
+                  StaticFields,,
+                  'StaticInit('Block(StaticInit))
+              ] )
             )
     </folded>
 
-syntax K ::=  setToKListWrap ( Set ) [function]
-            | setToKListWrap ( Set, KListWrap ) [function]
+syntax KLabel ::= getClassDecLabel ( ClassMetaType ) [function]
+rule getClassDecLabel ( classCMT ) => 'ClassDec
+rule getClassDecLabel ( interfaceCMT ) => 'InterfaceDec
 
-rule setToKListWrap(S1:Set) => setToKListWrap ( S1, [.KList] )
-rule setToKListWrap( _:Set (SetItem(K:K) => .Set), [_,, (.KList => K)] )
-rule setToKListWrap(.Set, [Ks:KList]) => [Ks]
+rule [folding-ImplementsDec]:
+    <k> foldingPhase </k>
+    <classType> Class:ClassType </classType>
+    <implTrans>... SetItem(BaseInterface:ClassType) => .Set ...</implTrans>
+    <folded>
+      _:KLabel(
+        'ClassDecHead(
+          //JDK comp: #if AccessMode ==K package #then [.KList] #else [AccessMode] #fi
+          _:K,, _:K,, _:K,, _:K,,
+          'Some('ImplementsDec([_,, (.KList => BaseInterface)]))
+        ),,
+        _
+      )
+    </folded>
 
-/*@ Concatenates a KListWrap of KListWrap elements into one single KListWrap */
-syntax K ::=  kListWrapConcat ( KListWrap // [...,, KListWrap ,,...]
-                              ) [function]
-            | kListWrapConcat ( KListWrap, // [...,, KListWrap ,,...] - the original list
-                                KListWrap  // [...] - the result
-                              ) [function]
+rule [folding-MethodDec]:
+    <k> foldingPhase </k>
+    <classType> Class:ClassType </classType>
+    ( <methodDec>
+        <methodSignature> sig(Name:Id, _) </methodSignature>
+        <methodReturnType> ReturnType:Type </methodReturnType>
+        <methodParams> [Params:KList] </methodParams>
+        <methodBody> MethodBody:K </methodBody>
+        <methodAccessMode> Acc:AccessMode </methodAccessMode>
+        <methodContextType> CT:ContextType </methodContextType>
+        ...
+      </methodDec>
+      => .Bag
+    )
+    <folded>
+      _:KLabel(
+        'ClassDecHead(_),,
+        'ClassBody( [_,, (
+          .KList => 'MethodDec(
+                      'MethodDecHead(
+                        [Acc,, CT],,
+                        'None(.KList),,//don't know what should be here
+                        ReturnType,,
+                        Name,,
+                        [Params],,
+                        'None(.KList) //don't know what should be here
+                      ),,
+                      MethodBody
+                    )
 
-rule kListWrapConcat([Ks:KList]) => kListWrapConcat([Ks], [.KList])
-rule kListWrapConcat([_,, ([Ks:KList] => .KList)], [(.KList => Ks),, _])
-rule kListWrapConcat([.KList], [Ks:KList]) => [Ks]
+        )] )
+      )
+    </folded>
+
+rule [folding-class-end]:
+    <k> foldingPhase </k>
+    <classType> Class:ClassType </classType>
+    ( <implTrans> .Set </implTrans> => .Bag)
+    ( <methodDecs> .Bag </methodDecs> => .Bag)
+    ( <implements> _ </implements> => .Bag)
+    ( <methods> _ </methods> => .Bag)
+    ( <imports> _ </imports> => .Bag)
+    ( <constantEnv> _ </constantEnv> => .Bag)
+    ( <enclosingLocalEnv> _ </enclosingLocalEnv> => .Bag)
+    <folded> _:KLabel(_) </folded>
+    <classPhase> MembersProcessedCPhase => FoldedCPhase </classPhase>
+
+//Temporary rule, required while folding is performed on the class level only.
+rule [FoldingPhase-end]:
+    <k> foldingPhase => . </k>
+    <globalPhase> FoldingPhase => . </globalPhase>
+    <classes> ClassesBag:Bag </classes>
+when
+    notBool containsNotYetFoldedClasses(ClassesBag) ==K true
+
+syntax K ::= containsNotYetFoldedClasses ( Bag ) [function]
+rule containsNotYetFoldedClasses(
+      <class>
+        <classPhase> MembersProcessedCPhase </classPhase>
+        ...
+      </class>
+      _:Bag
+     ) => true
 
 endmodule

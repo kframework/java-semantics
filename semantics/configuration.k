@@ -164,7 +164,8 @@ configuration
                 //   'AltConstrInv - alternate this class constructor invocation
                 //   .K - none, if this class is Object
                 //   For methods this argument is noValue
-                <methodFirstLine> .K </methodFirstLine>
+                //The content of this cell is moved into method body during elaboration.
+                <methodConstrFirstLine> .K </methodConstrFirstLine>
 
                 //Method body
                 <methodBody> .K </methodBody>
