@@ -28,7 +28,7 @@ rule [ExecutionPhase-Start]:
     </k>
     <env> . </env>
     <mainClass> ListItem(MainClassS:String) </mainClass>
-    <globalPhase> ElaborationPhase => ExecutionPhase  </globalPhase>
+    <globalPhase> UnfoldingPhase => ExecutionPhase  </globalPhase>
 
 //@ \subsection{Program stack}
 

@@ -3,10 +3,9 @@ require "core-sorts.k"
 module FOLDING
     imports CORE-SORTS
 
-//todo unfold when folding phase will be ready.
-/*rule [FoldingPhase-start]:
+rule [FoldingPhase-start]:
     <k> . => foldingPhase </k>
-    <globalPhase> ElaborationPhase => FoldingPhase </globalPhase>*/
+    <globalPhase> ElaborationPhase => FoldingPhase </globalPhase>
 
 /*@ The sole content of <k> cell during FoldingPhase
 */
@@ -36,10 +35,10 @@ rule [folding-start]:
                 'Some('ImplementsDec( [.KList] )) //processed by [fold-implements-dec]
               ),,
               'ClassBody( [
-                  InstanceFields,,
-                  //instanceInit was converted into method, is not needed here.
                   StaticFields,,
-                  'StaticInit('Block(StaticInit))
+                  'StaticInit('Block(StaticInit)),,
+                  InstanceFields
+                  //instanceInit was converted into method, is not needed here.
               ] )
             )
     </folded>
@@ -55,7 +54,6 @@ rule [folding-ImplementsDec]:
     <folded>
       _:KLabel(
         'ClassDecHead(
-          //JDK comp: #if AccessMode ==K package #then [.KList] #else [AccessMode] #fi
           _:K,, _:K,, _:K,, _:K,,
           'Some('ImplementsDec([_,, (.KList => BaseInterface)]))
         ),,
@@ -110,18 +108,17 @@ rule [folding-class-end]:
     <folded> _:KLabel(_) </folded>
     <classPhase> MembersProcessedCPhase => FoldedCPhase </classPhase>
 
-//Temporary rule, required while folding is performed on the class level only.
 rule [FoldingPhase-end]:
     <k> foldingPhase => . </k>
-    <globalPhase> FoldingPhase => . </globalPhase>
+    <globalPhase> FoldingPhase </globalPhase>
     <classes> ClassesBag:Bag </classes>
 when
-    notBool containsNotYetFoldedClasses(ClassesBag) ==K true
+    notBool containsMembersProcessedClasses(ClassesBag) ==K true
 
-syntax K ::= containsNotYetFoldedClasses ( Bag ) [function]
-rule containsNotYetFoldedClasses(
+syntax K ::= containsMembersProcessedClasses ( Bag ) [function]
+rule containsMembersProcessedClasses(
       <class>
-        <classPhase> MembersProcessedCPhase </classPhase>
+        <cphDiscovered> <classPhase> MembersProcessedCPhase </classPhase> ...</cphDiscovered>
         ...
       </class>
       _:Bag

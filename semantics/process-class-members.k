@@ -74,11 +74,13 @@ rule [processType]:
       processType(Class:ClassType) => computeImplTrans(SetItem(BaseClass) ISet)
           ~> tryInheritSet(ISet)
 
-          //interfaces should also contain the members of Object
+          //interfaces should also contain the members of Object.
+          //In fact we could add object methods to classes as well
           ~> ifAux((MetaT ==K interfaceCMT), tryInherit(objectClass), .K)
 
-          ~> tryInherit(BaseClass)
-          ~> Decls
+          ~> tryInherit(BaseClass) //Method implementation from the base class could potentially
+                                   //overwrite methods inherited from interfaces
+          ~> Decls  //methods declared here will overwrite inherited methods
 
           //performance problem - adds 1s of execution to helloWorld, Windows.
           ~> convertInstanceInitIntoMethod

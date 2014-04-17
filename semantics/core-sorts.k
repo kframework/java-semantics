@@ -66,6 +66,10 @@ syntax GlobalPhase ::=
   */
   | "FoldingPhase"
 
+  /* Unfolds each class from its preprocessed 'ClassDec or 'InterfaceDec form back into a <class> cell.
+  */
+  | "UnfoldingPhase"
+
   /* When all preprocessing / elaboration phases are finished, the actual execution begins.
   */
   | "ExecutionPhase"
@@ -78,6 +82,8 @@ syntax ClassPhase ::=
   | "DecsProcessedCPhase"
   | "MembersProcessedCPhase"
   | "FoldedCPhase"
+  | "UnfoldingStartedCPhase"
+  | "UnfoldedCPhase"
 
 /*@
   The state of a class in relation to static initialization. See static-init.k for more details.

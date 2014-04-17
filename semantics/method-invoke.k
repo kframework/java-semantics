@@ -225,6 +225,8 @@ rule [lookupOverloadedMethod-SigKnownLayerDiscard]:
 
 rule [lookupOverloadedMethod-SigKnownEnd]:
     lookupOverloadedMethod(_, resultListWrap(.KList), mapWrap(.Map), MethodRef:MethodRef ) => MethodRef
+when
+    MethodRef =/=K noMethodRef
 
 //@ Retrieve the content of <methods> for the given class
 syntax K ::=  getMethods ( ClassType )
@@ -296,7 +298,6 @@ rule [invokeImpl-Instance]:
     <methodParams> [Params:KList] </methodParams>
     <methodBody> Body:K </methodBody>
     <methodContextType> instanceCT </methodContextType>
-    <methodMetaType> methodMMT </methodMetaType>
 when getKLabel(Body) =/=KLabel 'NoMethodBody
 
 rule [invokeImpl-Static]:
@@ -341,7 +342,6 @@ rule [invokeImpl-Static]:
     <methodParams> [Params:KList] </methodParams>
     <methodBody> Body:K </methodBody>
     <methodContextType> staticCT </methodContextType>
-    <methodMetaType> methodMMT </methodMetaType>
 
 //@ 'Param(_:K,, T:Type,, X:Id)
 syntax KLabel ::= "'Param"

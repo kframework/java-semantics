@@ -20,6 +20,7 @@ require "elaboration-types.k"
 require "process-local-classes.k"
 require "process-anonymous-classes.k"
 require "folding.k"
+require "unfolding.k"
 require "primitive-types.k"
 require "literals.k"
 require "subtyping.k"
@@ -56,6 +57,7 @@ module JAVA
     imports PROCESS-LOCAL-CLASSES
     imports PROCESS-ANONYMOUS-CLASSES
     imports FOLDING
+    imports UNFOLDING
     imports PRIMITIVE-TYPES
     imports LITERALS
     imports SUBTYPING
