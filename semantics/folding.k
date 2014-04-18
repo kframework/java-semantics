@@ -1,7 +1,9 @@
 require "core-sorts.k"
+require "core-classes.k"
 
 module FOLDING
     imports CORE-SORTS
+    imports CORE-CLASSES
 
 rule [FoldingPhase-start]:
     <k> . => foldingPhase </k>
@@ -90,7 +92,6 @@ rule [folding-MethodDec]:
                       ),,
                       MethodBody
                     )
-
         )] )
       )
     </folded>
@@ -100,28 +101,59 @@ rule [folding-class-end]:
     <classType> Class:ClassType </classType>
     ( <implTrans> .Set </implTrans> => .Bag)
     ( <methodDecs> .Bag </methodDecs> => .Bag)
-    ( <implements> _ </implements> => .Bag)
-    ( <methods> _ </methods> => .Bag)
-    ( <imports> _ </imports> => .Bag)
-    ( <constantEnv> _ </constantEnv> => .Bag)
-    ( <enclosingLocalEnv> _ </enclosingLocalEnv> => .Bag)
     <folded> _:KLabel(_) </folded>
     <classPhase> MembersProcessedCPhase => FoldedCPhase </classPhase>
+
+rule [folding-class-fold-inner]:
+    <k> foldingPhase </k>
+    <namesToClasses>
+      ClassPack:PackageId |-> mapWrap(.Map)
+      EnclosingClassPack:PackageId |-> mapWrap(_:Map (_ |-> Class => .Map) )
+      ...
+    </namesToClasses>
+    ( <class>
+        <classType> Class:ClassType </classType>
+        <enclosingClass> EnclosingClass:ClassType </enclosingClass>
+        <folded> ClassDec:K </folded>
+        <classPhase> FoldedCPhase </classPhase>
+        ...
+      </class> => .Bag
+    )
+    <class>
+      <classType> EnclosingClass </classType>
+      <folded>
+        _:KLabel(
+          'ClassDecHead(_),,
+          'ClassBody( [_,, ( .KList => ClassDec )] )
+        )
+      </folded>
+      <classPhase> FoldedCPhase </classPhase>
+      ...
+    </class>
+when
+    ClassPack ==K toPackage(Class) andBool EnclosingClassPack ==K toPackage(EnclosingClass)
+
+rule [folding-class-fold-top-level]:
+    <k> foldingPhase </k>
+    <namesToClasses>
+      ClassPack:PackageId |-> mapWrap(.Map)
+      ...
+    </namesToClasses>
+    ( <class>
+        <classType> Class:ClassType </classType>
+        <enclosingClass> noClass </enclosingClass>
+        <folded> ClassDec:K </folded>
+        <classPhase> FoldedCPhase </classPhase>
+        ...
+      </class> => .Bag
+    )
+    <foldedProgram> [_,, (.KList => ClassDec)] </foldedProgram>
+when
+    ClassPack ==K toPackage(Class)
 
 rule [FoldingPhase-end]:
     <k> foldingPhase => . </k>
     <globalPhase> FoldingPhase </globalPhase>
-    <classes> ClassesBag:Bag </classes>
-when
-    notBool containsMembersProcessedClasses(ClassesBag) ==K true
-
-syntax K ::= containsMembersProcessedClasses ( Bag ) [function]
-rule containsMembersProcessedClasses(
-      <class>
-        <cphDiscovered> <classPhase> MembersProcessedCPhase </classPhase> ...</cphDiscovered>
-        ...
-      </class>
-      _:Bag
-     ) => true
+    <classes> .Bag </classes>
 
 endmodule
