@@ -12,7 +12,41 @@ module PROCESS-TYPE-NAMES
     imports CORE-CLASSES
     imports AUX-STRINGS // for retainTail
 
-/*@ \subsection{Compilation units and packages}*/
+/*@ \subsection{Start of the phase ProcTypeNamesPhase}*/
+
+//Initial command for the preprocessing semantics
+syntax K ::= "procTypeNames"
+
+rule [ProcTypeNamesPhase-start]:
+    <k> procTypeNames => Program </k>
+    <program> Program:K </program>
+    <globalPhase> ProcTypeNamesPhase </globalPhase>
+
+/*@ \subsection{Compilation units}*/
+
+//@ 'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _)
+syntax KLabel ::= "'CompilationUnit"
+                | "'PackageDec"
+
+rule [CompilationUnit-DefaultPackage-Desugar]:
+    'CompilationUnit(
+      ( 'None(_) => 'Some('PackageDec(.K,, 'PackageName( [.KList] ))) ),,
+      _
+    )
+
+//resolve the package name
+context 'CompilationUnit('Some('PackageDec(_:K,, HOLE)),, _)
+
+rule [CompilationUnit]:
+    <k>
+      'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _:K,,
+          [Decs:KList]
+      ) => processTypeNames([Decs], Pack)
+      ...
+    </k>
+    <globalPhase> ProcTypeNamesPhase </globalPhase>
+
+/*@ \subsection{Packages}*/
 
 //@ 'PackageName([Ks])
 syntax KLabel ::= "'PackageName"
@@ -37,28 +71,6 @@ when Str =/=String ""                                                           
 
 rule [packageNameImpl-End]:
     packageNameImpl(Str:String, [.KList]) => packageId(String2Id(Str))                  [structural]
-
-//@ 'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _)
-syntax KLabel ::= "'CompilationUnit"
-                | "'PackageDec"
-
-rule [CompilationUnit-DefaultPackage-Desugar]:
-    'CompilationUnit(
-      ( 'None(_) => 'Some('PackageDec(.K,, 'PackageName( [.KList] ))) ),,
-      _
-    )
-
-//resolve the package name
-context 'CompilationUnit('Some('PackageDec(_:K,, HOLE)),, _)
-
-rule [CompilationUnit]:
-    <k>
-      'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _:K,,
-          [Decs:KList]
-      ) => processTypeNames([Decs], Pack)
-      ...
-    </k>
-    <globalPhase> ProcTypeNamesPhase </globalPhase>
 
 /*@ \subsection{Class declaration}*/
 

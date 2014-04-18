@@ -8,6 +8,7 @@ module UNFOLDING
 rule [UnfoldingPhase-start]:
     <k> . => unfoldingPhase </k>
     <globalPhase> FoldingPhase => UnfoldingPhase </globalPhase>
+    <lastGlobalPhase> ExecutionPhase </lastGlobalPhase>
 
 /*@ The sole content of <k> cell during UnfoldingPhase
 */
@@ -23,7 +24,7 @@ rule [unfolding-class-unfold-top-level]:
                 ...
               </class>
     )
-    <foldedProgram> [(ClassDec:K => .KList),, _] </foldedProgram>
+    <program> [(ClassDec:K => .KList),, _] </program>
 
 rule [unfolding-class-unfold-inner]:
     <k> unfoldingPhase </k>
@@ -198,7 +199,7 @@ rule [unfolding-class-end]:
 rule [UnfoldingPhase-end]:
     <k> unfoldingPhase => . </k>
     <globalPhase> UnfoldingPhase </globalPhase>
-    <foldedProgram> [.KList] </foldedProgram>
+    <program> [.KList] </program>
     <classes> ClassesBag:Bag </classes>
 when
     notBool containsFoldedClasses(ClassesBag) ==K true

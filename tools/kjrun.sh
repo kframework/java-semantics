@@ -6,14 +6,15 @@ if (( "$#" < 1 )) || (( "$#" > 2 )); then
     echo "Your command:"
     echo `basename $0` $@
     echo "Usage: `basename $0` <javaFile>"
-    echo "Or:    `basename $0` <--pretty|--raw|--none|--search|--cached|--search-cached|--debug|--symbolic|--symbolic-cached> <javaFile>"
+    echo "Or:    `basename $0` <--full-pretty|--prep|--exec-pretty|--split|--full-kast|--raw|--none|
+      --search|--cached|--search-cached|--debug|--symbolic|--symbolic-cached> <javaFile>"
     echo "For more options use aux-kjrun.sh"
     exit 1
 fi
 
 if (( "$#" == 1 ));
   then
-    OPTION=--pretty
+    OPTION=--full-pretty
     JAVA_FILE=$1
   else
     OPTION=$1
@@ -38,39 +39,75 @@ if [[ $(uname) == *Linux* ]]
   else SYMBOLIC_TIMEOUT=240
 fi
 
+BASE_JAVA_FILE=`basename ${JAVA_FILE}`  #simple file/dir name
+PKAST_FILE=`echo "$BASE_JAVA_FILE" | sed 's#/*$##'` # remove trailing slashes, important if JAVA_FILE is dir
+PKAST_FILE=${PKAST_FILE}.pkast
+
 case "$OPTION" in
-"--pretty")
-    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run --output pretty --kast-cache false ${JAVA_FILE}
+"--full-pretty")
+    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-full --output pretty --input java \
+      ${JAVA_FILE}
+    ;;
+"--prep")
+    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-prep --output raw --input java \
+      ${JAVA_FILE}
+    ;;
+"--exec-pretty")
+    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-exec --output pretty --input kast \
+      ${JAVA_FILE}
+    ;;
+"--split")
+    echo "preprocess:"
+
+    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-prep --output raw --input java \
+      ${JAVA_FILE} > ${PKAST_FILE}
+
+    echo
+    echo "execute:"
+    echo
+
+    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-exec --output pretty --input kast \
+      ${PKAST_FILE}
+
+    rm -f ${PKAST_FILE}
+    ;;
+"--full-kast")
+    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-full --output pretty --input kast \
+      ${JAVA_FILE}
     ;;
 "--raw")
-    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run --output raw --kast-cache false ${JAVA_FILE}
+    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-full --output raw --input java ${JAVA_FILE}
     ;;
 "--none")
-    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run --output none --kast-cache false ${JAVA_FILE}
+    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-full --output none --input java ${JAVA_FILE}
     ;;
 "--search")
-    aux-kjrun.sh --time true --timeout ${SEARCH_TIMEOUT} --mode search --output pretty --kast-cache false ${JAVA_FILE}
+    aux-kjrun.sh --time true --timeout ${SEARCH_TIMEOUT} --mode search --output pretty --input java ${JAVA_FILE}
     ;;
 "--cached")
-    aux-kjrun.sh --time false --timeout 0 --mode run --output none --kast-cache true ${JAVA_FILE}
+    aux-kjrun.sh --time false --timeout 0 --mode run-prep --output raw --input kast-cache ${JAVA_FILE} \
+      > ${PKAST_FILE}
+
+    aux-kjrun.sh --time false --timeout 0 --mode run-exec --output none --input kast ${PKAST_FILE}
     ;;
 "--search-cached")
-    aux-kjrun.sh --time false --timeout 0 --mode search-count --output raw --kast-cache true ${JAVA_FILE}
+    aux-kjrun.sh --time false --timeout 0 --mode search-count --output raw --input kast-cache ${JAVA_FILE}
     ;;
 "--debug")
-    aux-kjrun.sh --time false --timeout 0 --mode debug --output pretty --kast-cache false ${JAVA_FILE}
+    aux-kjrun.sh --time false --timeout 0 --mode debug --output pretty --input java ${JAVA_FILE}
     ;;
 "--symbolic")
     aux-kjrun.sh --time true --timeout ${SYMBOLIC_TIMEOUT} --mode symbolic \
-      --output pretty --kast-cache false ${JAVA_FILE}
+      --output pretty --input java ${JAVA_FILE}
     ;;
 "--symbolic-cached")
-    aux-kjrun.sh --time false --timeout 0 --mode symbolic-count --output raw --kast-cache true ${JAVA_FILE}
+    aux-kjrun.sh --time false --timeout 0 --mode symbolic-count --output raw --input kast-cache ${JAVA_FILE}
     ;;
 *)
     echo "Invalid option: $OPTION"
     echo "Usage: `basename $0` <javaFile>"
-    echo "Or:    `basename $0` <--pretty|--raw|--none|--search|--cached|--search-cached|--debug|--symbolic|--symbolic-cached> <javaFile>"
+    echo "Or:    `basename $0` <--full-pretty|--prep|--exec-pretty|--split|--full-kast|--raw|--none|
+      --search|--cached|--search-cached|--debug|--symbolic|--symbolic-cached> <javaFile>"
     echo "For more options use aux-kjrun.sh"
     exit 1
     ;;

@@ -10,7 +10,7 @@ configuration
     <T>
       <threads color="GreenYellow">
         <thread multiplicity="*" color="GreenYellow">
-          <k color="Green"> $PGM:K </k>
+          <k color="Green"> $COMMAND:K </k>
 
           <stack color="Green"> .List </stack>
 
@@ -254,13 +254,15 @@ configuration
       <br/>
       <br/>
 
-      <globalPhase  color="YellowGreen"> ProcTypeNamesPhase  </globalPhase>
+      <globalPhase color="YellowGreen"> $STARTPHASE:GlobalPhase </globalPhase>
+      <lastGlobalPhase color="YellowGreen"> $ENDPHASE:GlobalPhase </lastGlobalPhase>
 
       <br/>
 
       <phStart color="Yellow">
 
-        //required in ProcCompUnitsPhase
+        //The initial program loaded by krun. For full mode and preprocessing this is
+        //the initial java program, for execution mode it is the folded java program.
         <program color="LightSteelBlue"> $PGM:K </program>
 
         //Main class, passed as krun argument. We need it from the outside, just like JDK Java.
@@ -313,14 +315,6 @@ configuration
         <elabBuffer> [.KList] </elabBuffer>
 
       </phElab>
-
-      <br/>
-
-      <phFolding color="Yellow">
-
-        /*Folded representation of the whole program. */
-        <foldedProgram color="Cyan"> [.KList] </foldedProgram>
-      </phFolding>
 
       <br/>
 

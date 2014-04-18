@@ -8,6 +8,7 @@ module FOLDING
 rule [FoldingPhase-start]:
     <k> . => foldingPhase </k>
     <globalPhase> ElaborationPhase => FoldingPhase </globalPhase>
+    (.Bag => <program> [.KList] </program>)
 
 /*@ The sole content of <k> cell during FoldingPhase
 */
@@ -118,7 +119,7 @@ rule [folding-class-fold-top-level]:
         ...
       </class> => .Bag
     )
-    <foldedProgram> [_,, (.KList => ClassDec)] </foldedProgram>
+    <program> [_,, (.KList => ClassDec)] </program>
 when
     ClassPack ==K toPackage(Class)
 

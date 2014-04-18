@@ -19,10 +19,10 @@ rule [ExecutionPhase-Start]:
       //K-AST for new <MainClass>().main(new String[0]);
       . =>  'ExprStm(
               'Invoke(
-                'Method('MethodName('TypeName(packageId(String2Id("")),,String2Id(MainClassS)),, String2Id("main"))),,
-                [
-                  newArrayImpl(stringClass, ['Dim(0 :: int)], null :: stringClass, [.KList])
-                ]
+                'Method('MethodName(getClassType(packageId(String2Id("")), String2Id(MainClassS)),,
+                    String2Id("main"))
+                ),,
+                [ newArrayImpl(stringClass, ['Dim(0 :: int)], null :: stringClass, [.KList]) ]
               )
             )
     </k>
