@@ -59,13 +59,12 @@ rule [toString-ClassType-Inner]:
       toString(class ClassId:Id)
       => 'Plus(
             toString(class OuterClassId),,
-            "$" +String Id2String(SimpleName)
+            "$" +String Id2String(getSimpleName(class ClassId))
          )
       ...
     </k>
     <classType> class ClassId </classType>
     <enclosingClass> class OuterClassId:Id </enclosingClass>
-    <namesToClasses>... _ |-> mapWrap(SimpleName:Id |-> class ClassId _:Map) ...</namesToClasses>
 
 //@ \texttt{toString for objectClosure}
 

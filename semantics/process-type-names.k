@@ -139,14 +139,6 @@ syntax K ::=  getClassType (
 rule getClassType(packageId(PackKId:Id), SimpleClass:Id)
      => class String2Id(Id2String(PackKId) +String "." +String Id2String(SimpleClass))
 
-//@ Converts a fully qualified class type into a simple name (Id)
-syntax K ::= getSimpleName ( ClassType )                  [function]
-rule getSimpleName(class ClassId:Id)
-    => String2Id(trimHead(
-      Id2String(ClassId),
-      rfindString(Id2String(ClassId), ".", lengthString(Id2String(ClassId))) +Int 1
-    ))
-
 //@ Returns the types map for the given package, or mapWrap(.Map) if there's no such package.
 syntax K ::=  getNamesMap  (
                 PackageId //The package for which we want to retrieve the types map

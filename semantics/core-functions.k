@@ -146,6 +146,16 @@ rule length([Ks:KList]) => length(0, [Ks])
 rule length(I:Int, [K:K,, Ks:KList]) => length(I +Int 1, [Ks])
 rule length(I:Int, [.KList]) => I
 
+/*@ \subsection{ClassType functions} */
+
+//@ Converts a fully qualified class type into a simple name (Id)
+syntax K ::= getSimpleName ( ClassType )                  [function]
+rule getSimpleName(class ClassId:Id)
+    => String2Id(trimHead(
+      Id2String(ClassId),
+      rfindString(Id2String(ClassId), ".", lengthString(Id2String(ClassId))) +Int 1
+    ))
+
 /*@ \subsection{Identifiers}*/
 
 //@ 'Id(Str:String)

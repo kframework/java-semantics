@@ -104,6 +104,24 @@ rule [folding-class-end]:
     <folded> _:KLabel(_) </folded>
     <classPhase> MembersProcessedCPhase => FoldedCPhase </classPhase>
 
+rule [folding-class-fold-top-level]:
+    <k> foldingPhase </k>
+    <namesToClasses>
+      ClassPack:PackageId |-> mapWrap(.Map)
+      ...
+    </namesToClasses>
+    ( <class>
+        <classType> Class:ClassType </classType>
+        <enclosingClass> noClass </enclosingClass>
+        <folded> ClassDec:K </folded>
+        <classPhase> FoldedCPhase </classPhase>
+        ...
+      </class> => .Bag
+    )
+    <foldedProgram> [_,, (.KList => ClassDec)] </foldedProgram>
+when
+    ClassPack ==K toPackage(Class)
+
 rule [folding-class-fold-inner]:
     <k> foldingPhase </k>
     <namesToClasses>
@@ -132,24 +150,6 @@ rule [folding-class-fold-inner]:
     </class>
 when
     ClassPack ==K toPackage(Class) andBool EnclosingClassPack ==K toPackage(EnclosingClass)
-
-rule [folding-class-fold-top-level]:
-    <k> foldingPhase </k>
-    <namesToClasses>
-      ClassPack:PackageId |-> mapWrap(.Map)
-      ...
-    </namesToClasses>
-    ( <class>
-        <classType> Class:ClassType </classType>
-        <enclosingClass> noClass </enclosingClass>
-        <folded> ClassDec:K </folded>
-        <classPhase> FoldedCPhase </classPhase>
-        ...
-      </class> => .Bag
-    )
-    <foldedProgram> [_,, (.KList => ClassDec)] </foldedProgram>
-when
-    ClassPack ==K toPackage(Class)
 
 rule [FoldingPhase-end]:
     <k> foldingPhase => . </k>
