@@ -1,10 +1,10 @@
-/semantics/.test
-/semantics/.k
-/semantics/java-kompiled
+/src/.test
+/src/.k
+/src/java-kompiled
 
-/semantics/test-results.xml
-/semantics/workspace.xml
-/semantics/java.pdf
+/src/test-results.xml
+/src/workspace.xml
+/src/java.pdf
 
 /class-lib/*.kast
 /test-runner/out
@@ -12,8 +12,8 @@
 /test-runner/test-results.xml
 /test-runner/.test
 
-/semantics/java.tex
-/semantics/k.sty
+/src/java.tex
+/src/k.sty
 
 /.idea/workspace.xml
 /.idea/dictionaries/*.*
