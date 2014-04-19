@@ -33,7 +33,7 @@ MAIN_CLASS=`echo "$BASE_JAVA_FILE" | cut -d'.' -f1` #simple file minus extension
 
 TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 WORK_DIR="$(pwd)"
-SEMANTICS_DIR=$(cross-path-native.sh ${TOOLS_DIR}/../semantics)
+SEMANTICS_DIR=$(cross-path-native.sh ${TOOLS_DIR}/../src/full)
 
 KRUN_CMD="time"
 
@@ -55,7 +55,7 @@ KRUN_CMD="$KRUN_CMD \
                       --debug-info \
                       --color extended \
                       --directory=\"$SEMANTICS_DIR\" \
-                      --main-module=JAVA \
+                      --main-module=JAVA-FULL \
                       -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
 
 case "$MODE" in

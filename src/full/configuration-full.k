@@ -1,8 +1,8 @@
-require "core-sorts.k"
-require "core-functions.k"
-require "configuration-doc.k"
+require "../core-sorts.k"
+require "../core-functions.k"
+require "configuration-full-doc.k"
 
-module CONFIGURATION
+module CONFIGURATION-FULL
     imports CORE-SORTS
     imports CORE-FUNCTIONS
 

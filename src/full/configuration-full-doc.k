@@ -1,4 +1,4 @@
-/*@ \section{Module CONFIGURATION}
+/*@ \section{Module CONFIGURATION-FULL}
 
 The configuration is divided into three large cell groups. The group $\kall{threads}{}$ contains one or multiple cells $\kall{thread}{}$. Here is the data related to the execution of a thread, such as the computation, stack, local environment. The second group is contained inside $\kall{classes}{}$ that have multiple $\kall{class}{}$ cells -- anything class-related. What remains are the top-level cells -- the third group. Top-level cells are related to memory store, global thread-synchronization data and auxiliary cells for debugging.
 

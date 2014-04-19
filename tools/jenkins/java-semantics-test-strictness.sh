@@ -9,7 +9,7 @@ $PATH
 
 cat /home/denis.bogdanas/k-framework-stable/bin/krun
 chmod +x $TOOLS_DIR/*.sh
-cd $WORKSPACE/semantics
+cd $WORKSPACE/src
 
 kjkompile.sh --strictness
 

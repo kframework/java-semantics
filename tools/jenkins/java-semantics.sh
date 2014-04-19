@@ -12,7 +12,7 @@ chmod +x $TOOLS_DIR/*.sh
 echo "Using K Framework version:"
 kompile --version
 
-cd $WORKSPACE/semantics
+cd $WORKSPACE/src
 kjkompile.sh
 
 export TOOLS_DIR=$WORKSPACE/tools
@@ -20,7 +20,7 @@ export PATH=/home/denis.bogdanas/k-framework-stable/bin:\
 $TOOLS_DIR:\
 $PATH
 
-cd $WORKSPACE/semantics
+cd $WORKSPACE/src
 rm -f ../class-lib/*.kast
 rm -rf .test
 

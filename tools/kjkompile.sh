@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# kompile java into one of five possible outputs:
+# kompile java-full into one of five possible outputs:
 # exec - regular kompilation, for execution
 # strictness - kompilation for strictness checking
 # threading - kompilation for threading checking
@@ -25,22 +25,22 @@ fi
 
 case "$OPTION" in
 "--exec")
-    $KOMPILE_CMD -v java
+    $KOMPILE_CMD -v full/java-full
     ;;
 "--strictness")
-    $KOMPILE_CMD -v -transition "transition-strictness" java
+    $KOMPILE_CMD -v -transition "transition-strictness" full/java-full
     ;;
 "--threading")
-    $KOMPILE_CMD -v -transition "transition-threading" java
+    $KOMPILE_CMD -v -transition "transition-threading" full/java-full
     ;;
 "--symbolic")
-    $KOMPILE_CMD -v --backend symbolic --symbolic-rules "symbolic-rule" java
+    $KOMPILE_CMD -v --backend symbolic --symbolic-rules "symbolic-rule" full/java-full
     ;;
 "--latex")
-    $KOMPILE_CMD -v --backend latex --doc-style "style=math" java
+    $KOMPILE_CMD -v --backend latex --doc-style "style=math" full/java-full
     ;;
 "--pdf")
-    $KOMPILE_CMD -v --backend pdf --doc-style "style=math" java
+    $KOMPILE_CMD -v --backend pdf --doc-style "style=math" full/java-full
     ;;
 "--help")
     echo "Usage: `basename $0`"

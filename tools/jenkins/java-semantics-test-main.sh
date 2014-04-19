@@ -13,5 +13,5 @@ cat /home/denis.bogdanas/k-framework-stable/bin/krun
 rm -rf $WORKSPACE/*
 cp -rf $WORKSPACE/../java-semantics/* $WORKSPACE
 
-cd $WORKSPACE/semantics
+cd $WORKSPACE/src
 aux-kjtest.sh -mode run -threads 12 -timeout 120 -encodeXML true -clean true ../tests
