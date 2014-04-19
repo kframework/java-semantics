@@ -1,0 +1,79 @@
+require "../labels.k"
+require "configuration-prep.k"
+require "../core-sorts.k"
+require "../extended-KResult.k"
+require "../aux-strings.k"
+require "../process-type-names.k"
+require "../process-comp-units.k"
+require "../process-imports.k"
+require "../process-class-decs.k"
+require "../process-class-members.k"
+require "../elaboration-top-blocks.k"
+require "../elaboration-statements.k"
+require "../elaboration-expressions.k"
+require "../elaboration-vars.k"
+require "../elaboration-method-invoke.k"
+require "../elaboration-new-instance.k"
+require "../elaboration-arrays.k"
+require "../elaboration-types.k"
+require "../process-local-classes.k"
+require "../process-anonymous-classes.k"
+require "../folding.k"
+require "../unfolding.k"
+require "../primitive-types.k"
+require "../literals.k"
+require "../subtyping.k"
+require "../expressions.k"
+require "../statements.k"
+require "../arrays.k"
+require "../static-init.k"
+require "../classes.k"
+require "../var-lookup.k"
+require "../method-invoke.k"
+require "../to-string.k"
+require "../api-core.k"
+require "../api-threads.k"
+
+module JAVA-PREP
+    imports LABELS
+    imports CONFIGURATION-PREP
+    imports CORE-SORTS
+    imports EXTENDED-K-RESULT
+    imports AUX-STRINGS
+    imports PROCESS-TYPE-NAMES
+    imports PROCESS-COMP-UNITS
+    imports PROCESS-IMPORTS
+    imports PROCESS-CLASS-DECS
+    imports PROCESS-CLASS-MEMBERS
+    imports ELABORATION-TOP-BLOCKS
+    imports ELABORATION-STATEMENTS
+    imports ELABORATION-EXPRESSIONS
+    imports ELABORATION-VARS
+    imports ELABORATION-METHOD-INVOKE
+    imports ELABORATION-NEW-INSTANCE
+    imports ELABORATION-ARRAYS
+    imports ELABORATION-TYPES
+    imports PROCESS-LOCAL-CLASSES
+    imports PROCESS-ANONYMOUS-CLASSES
+    imports FOLDING
+    imports UNFOLDING
+    imports PRIMITIVE-TYPES
+    imports LITERALS
+    imports SUBTYPING
+    imports EXPRESSIONS
+    imports STATEMENTS
+    imports ARRAYS
+    imports STATIC-INIT
+    imports CLASSES
+    imports VAR-LOOKUP
+    imports METHOD-INVOKE
+    imports TO-STRING
+    imports API-CORE
+    imports API-THREADS
+    imports JAVA-SYNTAX
+
+endmodule
+
+module JAVA-SYNTAX
+// No syntax needed, we are using an external parser.
+endmodule

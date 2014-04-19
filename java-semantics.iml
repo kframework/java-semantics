@@ -7,9 +7,13 @@
       <excludeFolder url="file://$MODULE_DIR$/java-stmt" />
       <excludeFolder url="file://$MODULE_DIR$/src/.k" />
       <excludeFolder url="file://$MODULE_DIR$/src/.test" />
+      <excludeFolder url="file://$MODULE_DIR$/src/exec/.k" />
+      <excludeFolder url="file://$MODULE_DIR$/src/exec/java-exec-kompiled" />
       <excludeFolder url="file://$MODULE_DIR$/src/full/.k" />
       <excludeFolder url="file://$MODULE_DIR$/src/full/java-full-kompiled" />
       <excludeFolder url="file://$MODULE_DIR$/src/java-kompiled" />
+      <excludeFolder url="file://$MODULE_DIR$/src/prep/.k" />
+      <excludeFolder url="file://$MODULE_DIR$/src/prep/java-prep-kompiled" />
     </content>
     <orderEntry type="jdk" jdkName="1.7" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />

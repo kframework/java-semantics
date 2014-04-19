@@ -25,7 +25,31 @@ fi
 
 case "$OPTION" in
 "--exec")
-    $KOMPILE_CMD -v full/java-full
+    echo
+    echo
+    echo "Preprocessing semantics:"
+    $KOMPILE_CMD -v exec/java-exec > exec-out.txt \
+        & $KOMPILE_CMD -v full/java-full > full-out.txt \
+        & $KOMPILE_CMD -v prep/java-prep
+    wait
+
+    echo
+    echo
+    echo "Execution semantics:"
+
+    cat exec-out.txt
+    rm -rf exec-out.txt
+
+    echo
+    echo
+    echo "Full semantics:"
+
+    cat full-out.txt
+    rm -rf full-out.txt
+
+    echo
+    echo
+    echo "Done"
     ;;
 "--strictness")
     $KOMPILE_CMD -v -transition "transition-strictness" full/java-full

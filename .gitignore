@@ -1,6 +1,12 @@
 /src/.test
 /src/.k
 /src/java-kompiled
+/src/full/.k
+/src/full/java-full-kompiled
+/src/prep/.k
+/src/prep/java-prep-kompiled
+/src/exec/.k
+/src/exec/java-exec-kompiled
 
 /src/test-results.xml
 /src/workspace.xml
