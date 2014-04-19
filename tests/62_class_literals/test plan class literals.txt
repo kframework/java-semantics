@@ -1,0 +1,35 @@
+    Test plan for class literals:
+X.class expressions.
+
+From JLS:
+
+A class literal is an expression consisting of the name of a class, interface, array,
+or primitive type followed by a ‘.’ and the token class.
+
+Test suite structure: For all this literals we will test just X.class.getName() expression.
+Expressions of the form <primitiveType>.class are not supported.
+
+1. Class literals with no packages involved.
+  Classes Main and A. Test class literals Object, RuntimeException and A.
+
+2. Class literals involving packages.
+  Classes Main, p1.A, p1.B, p2.C imports p2.*.
+  From p1.A test .class.getName() for A, B, C, p2.C.
+
+3. Class literals for interfaces.
+  Class Main, interface I1. Test I1.class.getName().
+
+4. Class literals involving arrays.
+  Test Object[].class.getName(),
+       A.class.getName(),
+       int[].class.getName(),
+       int[][].class.getName().
+
+5. Testing equality of class literal objects, also after multiple expression calls.
+    class p1.A
+    Main imports p1.*;
+
+    Test that Object.class == java.lang.Object.class
+
+    A.class == A.class,
+    A.class = p1.A class

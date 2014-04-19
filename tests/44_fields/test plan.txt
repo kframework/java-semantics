@@ -1,0 +1,37 @@
+Testing class initialization sequence
+  - the last feature remaining for full support of non-static semantics of classes.
+
+Part 1 Fields
+1. fields and inheritance.
+
+Individual tests:
+101. Fields with unqualified access. Read and write a field from inside the class.
+102. Use a field of type reference. Pass a reference as a method argument.
+11. One class with fields.
+12. Subclass/superclass with fields, different names. Access from derived class.
+13. Fields hiding. Subclass/superclass with fields, same name, access from both base and derived class.
+131. Fields hiding. Subclass/superclass with fields, same name, access from both base and derived class.
+  Now fields are accessed locally, via unqualified expressions.
+132. B < A. B.x, A.x.
+Access a hidden field through super qualifier, cast to base class,
+  or named reference to base class.
+133. Accessing hidden fields through super in a three-level hierarchy.
+134. Field hiding with access modes. Private fields hides a public field.
+14. Local var hiding a field. Class with a field, method with a local var with the same name.
+  Access both from within and outside var scope. Also use this.field.
+15. Param hiding a field. Class with a field, method with a param with the same name.
+  Access both from within and outside method. Also use this.field.
+16. Field default values. Class with fields of all relevant types, without initializer.
+  Test their value.
+17. Multi-field. One field declaration with multiple fields.
+18. Final field. A simple final field. Initialized in constructor. Null semantics.
+
+Part 2. Chained qualifiers involving super.
+21. B < A. Call to B: super.x.y simple.
+22. B < A. Call to B: f(super.x) where A.x and B.x are of different types, f() overloaded.
+23. B < A. Call to B: f(super.x.y) where A.x.y and B.x.y are of different types, f() overloaded.
+24. B < A. Call to B: Assigning to super.x.
+
+Already tested in other suites:
+  - catch param hiding a field
+  - for param hiding a field

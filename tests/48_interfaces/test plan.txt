@@ -1,0 +1,119 @@
+Interfaces with just abstract methods.
+
+High-level plan:
+Part 1, interface cast and instanceof.
+Part 2. Interfaces with methods. One interface involved.
+Part 3. Interfaces with methods. Multiple interfaces. Multiple inheritance of interfaces.
+Part 4. Methods inherited from Object.
+Part 5. Access modes.
+Part 6. Subtyping. Complete testing.
+Part 7. Array of interfaces.
+
+Tests
+
+  Part 1, interface cast and instanceof
+
+11. B < I1, A. Test cast and instanceof among (A,I1) and (B, I1).
+12. B < A < I1. Test cast and instanceof among (A,I1) and (B, I1).
+13. B < A < (I1, I2). Test cast and instanceof among
+  (A,I1), (A,I2), (B,I1), (B,I2)
+14. A < InterSub < InterBase. Test cast and instanceof among all three pairs
+  where possible.
+15. IC < (IA, IB). C < IC, B < IB, A < IA Test instanceof
+  among (IA)A, (IB)B, (IC)C on one side and (IA, IB, IC) on other.
+16. A < (IA), B < (A, IB1, IB2, IB3). Test that b is instanceof all four interfaces.
+
+  Part 2. Interfaces with methods. One interface involved.
+
+21. Basic interface test.
+  Interface I1:
+    - void f()
+    - void g()
+  - class A < I1:
+    - implements f, g
+  - main:
+    - call f, g through interface and through A.
+
+22. Interface polymorphism.
+  Interface I1:
+    - void f()
+    - void g()
+  - class A < I1:
+    - implements f, g
+  - class B < I1:
+    - implements f, g
+  - main:
+    - call (I1)A.f(), (I1)A.g(), (I1)B.f(), (I1)B.g(), use just one var.
+
+23. Case B < A < I1 A don't implement all methods of the interface. One method is
+  implemented by A(), the second one is redeclared abstract, the third one is not mentioned.
+  They are all re-implemented by subclass B. Call the method through Intf, A, B.
+
+24. Declaration of a method in an interface and it's implementation are both inherited,
+  but on different paths.
+  Case B < (A, I1). Method f() is declared in I1, implemented by A.
+  (Method declared on one path, implemented on other one).
+  Add another method implemented by B.
+
+25. Interfaces and overloading.
+  A < I1. two versions of f(...) in I1, third, the most specific one - in A.
+
+  Part 3. Interfaces with methods. Multiple interfaces.
+
+31. A < (I1, I2). Call all interface methods through I1, I2.
+32. A < (I1, I2), one method is common across I1, I2, others are different.
+33. A < I1 < (I2, I3). Call through all interfaces.
+34. A < IA, B < (A, IB) One method is common across interfaces.
+  Call through interfaces.
+35. Diamond hierarchy.
+  A < I4. I4 < (I2, I3). (I2, I3) < I1.
+  Each interface have a specific method. Some methods are redeclared.
+36. Method Overloading through multiple interface inheritance.
+  A < (I3, I4). I3 < (I1, I2). I4 < I1.
+  Each class and interface have a specific version of f(). Test all cases.
+
+  Part 4.
+41. Access methods from Object() through an interface. According to JLS $9.2 this is possible.
+  A < I1 < I2. Test that both I1 and I2 have access to equals() and toString().
+
+  Part 5.
+51. Access modes - test that all interface methods are public.
+  a.A < a.I1.
+  a.I1: public f(int), f(byte).
+  Access I1 methods from main through A, I1.
+
+  Part 6. Subtyping. Complete testing.
+
+61. Overloading with interfaces as method arguments. Diamond hierarchy.
+  IC < (IA, IB) < IMax. A < IA ; B < (IB, IMax); C < (IB, IC).
+  Tester: have an f(IA), f(IB), f(IC), f(IMax). Call it with arguments
+  of static type A, B, C, IA, IB, IC, IMax.
+
+62. Interface subtype of other.
+  Class A < IA.
+  Class Tester, method f() with the following argument types:
+    - all primitive types, String, Object, int[], Object[], Object[][], A, A[].
+    - call arguments: IA, IA[], IA[][], IA[][][].
+
+63. Interfaces and others subtype of interface.
+  Class A < IA, IC < IB < IA.
+  Class Tester, method f() with the following argument types:
+    - Object, IA, IA[], IA[][], IC[], long, boolean.
+    - call arguments: all primitive types, Object, Object[], IA, IA[], IA[][], IA[][][],
+      IB, IB[], IB[][], IB[][][], IC, IC[], IC[][], A, A[][], A[][][], String, String[],
+      RuntimeException, int[], IOther, IOther[][].
+
+64. Null subtype of interface.
+  IB < IA
+  - T0: f(IA),   f(IB),   f(Object)
+  - T1: f(IA[]), f(IB[]), f(Object)
+  - call target: A,B,C
+  - call argument: null.
+
+Part 7.
+
+71. Array of interfaces. - The "Shape" example of polymorphism.
+  Interface: IShape
+  Classes: Rectangle < IShape, Circle < IShape
+  - function: maxArea(IShape[]) - returns the shape with the maximal area.
+  - test the function in main().

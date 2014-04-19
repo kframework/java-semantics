@@ -14,4 +14,4 @@ rm -rf $WORKSPACE/*
 cp -rf $WORKSPACE/../java-semantics/* $WORKSPACE
 
 cd $WORKSPACE/semantics
-aux-kjtest.sh -mode run -threads 12 -timeout 120 -encodeXML true -clean true ../programs
+aux-kjtest.sh -mode run -threads 12 -timeout 120 -encodeXML true -clean true ../tests

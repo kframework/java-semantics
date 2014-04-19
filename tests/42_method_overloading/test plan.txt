@@ -1,0 +1,121 @@
+Test plan for method call with overloading.
+
+Part 1. Two methods with the same name, distinct number of arguments.
+
+11. Same name, distinct argument number, exact call arguments type.
+  - f(int, int, int)
+  - f(int, int)
+  - f(Object[])
+  Call all with exact arg types.
+
+12. Two overloaded methods:
+   f(int), f(int, int), g(int), g(int,int). Call all of them.
+
+13. Same name, distinct arguments number, call arguments conversion.
+  - f(int, int, int)
+  - f(int, int)
+  - f(Object[])
+
+14. Distinct arguments number, conversion from null.
+  - f(Object), f(Object, Object)
+  Call types: (null), (null, String)
+  Call all arguments that require conversion.
+
+15. Inheritance, methods with other names, fields.
+    A: f(int), int i, g(). B: f() int j, h(), B < A.
+    - Calls: B.f(int), B.f(), g(), h().
+
+Part 2. Multiple methods with the same name and the same number of arguments,
+  just one with compatible argument types, thus just one potentially applicable method.
+
+21. One argument, no conversion.
+  - f(long), f(String), f(RuntimeException), f(A)
+22. One argument, conversion
+  - Definitions: f(long), f(String), f(RuntimeException), f(A)
+  - calls types: int, NPE, B (B < A).
+23. One argument, some methods share compatible values, but for the used calls
+  just one method is applicable.
+  - Definitions: Definitions: f(long), f(String), f(RuntimeException), f(NPE), f(A)
+  - calls types: int, B (B < A).
+24. Unambiguous null  - distinguishing between primitive type and reference.
+  - f(long), f(A)
+  - call types: int, null
+25. Multiple arguments, multiple argument number types:
+  - f(long), f(int, long), f(long, int)
+  - call types: int, long, (int, long), (long, int)
+26. case ambiguous in one argument, unambiguous in other:
+  - f(RuntimeException, String), f(String, RuntimeException)
+  - call tyes: (null, String), (null, RuntimeException)
+
+27. Overloading, same nr of args, one potentially applicable + inheritance:
+  - A: f(int), f(bool) B: f(String), C: f(int[]), C < B < A.
+  - calls: C.f(int) f(bool) f(String) f(int[])
+
+28. Overloading, same nr of args, one potentially applicable + polymorphism.
+  - A: f(String), f(int) B: f(bool), f(int).
+  - A aa, ab; B bb. Call all accessible members.
+
+Part 3.  Multiple potentially applicable methods - same name, same number
+  of arguments, compatible arguments type, but just one is the most specific.
+  Cases with and without conversion.
+
+31. One arg, multi applicable, no conversion.
+  - decl: f(byte), f(short), f(char), f(int), f(long), f(Object), f(RE)
+  - call with all types
+
+32. One arg, multi applicable, conversion
+  - decl: arg types: short, long, Object, Object[]
+  - call: byte, short, char, int, long, Object, RuntieException, Object[], Object[][].
+
+33. Multi args, multi applicable, conversion.
+  - decl: (short, short), (int, short), (short, int), (long, long),
+  - decl: (Object, Object), (Object, RE)
+  - call: (byte, byte), (int, byte), (byte, int), (int, int), (byte, long), (long, short)
+  - call: (Object, Object), (RE, Object), (Object, RE), (RE, RE)
+
+34. Multi applicable, inheritance simple:
+  - decl: A: (long) (Object) B:(int) (String) B < A
+  - call target: A aa, ab; B bb.
+  - arguments: short, int, long, String, Object.
+
+35. Multi applicable, polymorphism simple:
+    - decl: A: int, long B: int, short.
+    - call target: A aa, ab; B bb.
+    - arguments: short, int, long.
+
+36. Multi applicable, + other methods and fields, + inheritance/poly:
+    This test assures that all rules for lookupMethod searches the same stack layer -
+    either from the top or from the bottom of the stack.
+    If some rules search the top and others search the bottom, computation will get stuck.
+
+    - decl:
+      - A: f(int), f(long), g(), int x;
+      - B: f(int), f(long), g(), int y;
+    - call target: B.f(int)
+
+37. Extensive test of subtyping.
+    - A: long, Object, boolean
+    - B: int, char, String, Object[]
+    - C: byte, short, RE[], int[], Object[][]
+    - C < B < A
+    - Call targets: A a, B b, C c.
+    - call arguments: all primitive types, Object, String, RE, Object[], String[], RE[], int[], int[][], Object[][], RE[][]
+
+38. Subtyping of null.
+    - A: int, boolean, Object
+    - B: Object[]
+    - C: String[]
+    - C < B < A
+    - Call targets: A a, B b, C c
+    - call arguments: null
+	
+39. Multi applicable, inheritance simple.	
+	A more specific version of the method in the base class.
+	- A: f(int)
+	- B < A: f(long)	
+
+Done:
+  Refactor current overloading implementation so that we have just one level
+of maps, from method signatures, including name, to closures.
+This should simplify the semantics a lot. Also we can cleverly
+implement map search so that we will have the same performance.

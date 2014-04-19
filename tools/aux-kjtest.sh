@@ -4,7 +4,7 @@
 # -threads num_of_threads
 # -clean true/false
 # the other arguments: test directories.
-# If only four arguments are provided, test directory is assumed to be ../programs
+# If only four arguments are provided, test directory is assumed to be ../tests
 
 if (( "$#" < 10 )); then
     echo "Usage: `basename $0` -mode <run|search|symbolic|jdk> -threads <num_threads> -timeout <timeout in s> /
@@ -15,7 +15,7 @@ fi
 TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ $# == 10 ]; then
-    ${TOOLS_DIR}/aux-kjtest.sh ${@} ${TOOLS_DIR}/../programs/
+    ${TOOLS_DIR}/aux-kjtest.sh ${@} ${TOOLS_DIR}/../tests/
     exit
 fi
 

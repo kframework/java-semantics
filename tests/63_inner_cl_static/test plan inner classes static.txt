@@ -1,0 +1,467 @@
+    Test plan for static inner classes
+
+Part 1. Instance member visibility/access modes from outer class to inner class.
+Part 2. Instance member visibility/access modes from inner class to outer class.
+Part 3. Static member visibility from inner class to outer class.
+Part 4. Inner class declaration access modes.
+Part 5. Inner class type resolution - various inner class identification expressions.
+Part 6. Inner class type resolution - contexts of inner class references.
+Part 7. Three-level class nesting and other.
+Part 8. Inner and outer interfaces.
+
+Note: This test suite doesn't cover any shadowing/obscuring cases.
+  Those will be covered in the test suite for Names.
+
+101. Simple inner class. Classes A, A.B. Instantiate and toString() both from main().
+102. Access inner class from outer one. Class A.
+  A have the following members, declared in order:
+  - class B {toString()}
+  - toString() - calls inner classes toString()
+  - class C {toString()}
+
+103. Inner class members.
+  Inner class A.B have members of all access modes:
+  - private a
+  - package b
+  - protected c
+  - public d
+  - private f()
+  - package g()
+  - protected h()
+  - public k()
+  Instantiate A.B from A and access all the members.
+
+104. Inner class access modes. Classes p1.A, p1.A.B, p1.A.C, p1.P1Test, p1.P1Test.D,
+  DefTest, DefTest.E. p1.A.B members:
+    - private f(byte)
+    - package f(short)
+    - protected f(int)
+    - public f(long)
+  Call f(byte) from:
+    - p1.A
+    - p1.A.B
+    - p1.A.C
+    - p1.P1Test
+    - p1.P1Test.D
+    - <default>.DefTest
+    - DefTest.E
+
+105. Inner class as derived class.
+  classes A, B, A.Inner < B.
+  B members:
+    - String a
+    - String f()
+    - String g()
+  A.Inner members:
+    - String a
+    - String f()
+
+  print a, f(), g() on targets (A.Inner)A.Inner and (B)A.Inner.
+
+106. Inner class implements interface.
+  class A, interface I1, class A.C
+  I1:
+    - String a;
+    - String f();
+  A.C:
+    - String f()
+  Print ((I1)A.C).f().
+
+107. Access inner class from outer one, three level hierarchy.
+  Classes A, A.B, A.B.C.
+  Members:
+  - A.id
+  - B.id
+  - C.id
+  - A.test - calls A.id, B.id
+  - B.test - calls A.id, B.id, C.id
+  - C.test - calls A.id, B.id, C.id
+  All classes are referred by simple name inside A,B,C.
+
+108. Inner class access modes for inherited methods.
+  p1.A:
+    - private f(byte)
+    - package f(short)
+    - protected f(int)
+    - public f(long)
+  p1.B.InnerB:
+    - private f(byte)
+    - package f(short)
+    - protected f(int)
+    - public f(long)
+  Test classes:
+    - p1.A.Inner1      < p1.A
+    - p1.B.Inner2      < p1.B.InnerB
+    - p1.TestP1.Inner3 < p1.A
+    - p1.TestP1.Inner4 < p1.B.InnerB
+    - TestDef.Inner5   < p1.A
+    - TestDef.Inner6   < p1.B.InnerB
+  Call f(byte) from:
+    - Inner1, ... Inner6
+    - from main on targets Inner1, ... Inner6.
+
+109. Inner class derived from a top-level class. Call an overwritten method
+    through the base class ref.
+  Classes A, B, A.Inner < B.
+  B members:
+    - String f()
+  A.Inner members:
+    - String f()
+
+  Print f() on target (B)A.Inner.
+
+201. Inner class have a reference to the outer class.
+  A, A.B. Members:
+  - A: String id
+  - A.B: A parent,
+  - A.B: toString() (prints parent)
+  Instantiate and print A.B.
+
+202. Inner class calls outer class members of all modes.
+  A, A.B.
+  A members:
+    - private a
+    - package b
+    - protected c
+    - public d
+    - private f()
+    - package g()
+    - protected h()
+    - public k()
+  Call all from A.B.
+
+301. Static member access from inner class to outer class by simple name.
+  B < A, B.Inner.
+  Members:
+    - static A.a,
+    - static B.b,
+    - static B.f()
+  Call them as A.a, B.b, a, b from B.Inner from static and instance context.
+  In both contexts read the values, write them by simple name
+  and then read again by simple name.
+
+302. Static method access from inner class to outer class by simple name.
+  B, B.Inner.
+  Members:
+    - static B.f()
+  Call them as B.f(), f() from B.Inner from static and instance context.
+
+303. Inner class to outer class access modes.
+  Classes p1.P1A < p1.P1B < p2.P2C, p1.P1D, p1.P1A.Inner
+  Classes p1.P1A, p1.P1B, p2.P2C, p1.P1D have static overloaded methods f(), g(), h() and k()
+  respectively, with diff access modes. Call all with argument byte from p1.P1A.Inner.
+
+401. Inner class declaration access modes.
+  Class A. Class A inner classes:
+    - private A.Pri
+    - package A.Pack
+    - protected A.Prot
+    - public A.Pub
+    - public A.InnerTest
+  Tests. Print a static field from the following classes.
+    - from main:
+      - A.Pack
+      - A.Prot
+      - A.Pub
+    - from A:
+      - A.Pri
+      - A.Pack
+      - A.Prot
+      - A.Pub
+    - from A.InnerTest:
+      - A.Pri
+      - A.Pack
+      - A.Prot
+      - A.Pub
+
+501. Inner class qualifiers:
+  Classes p1.A, p1.A.Inner,
+    - p1.A.Inner.toString().
+  Instantiate A.Inner from A as:
+    - new p1.A.Inner()
+    - new A.Inner()
+    - new Inner().
+
+502. Inner class qualifiers disambiguation.
+  Classes p1.A, p1.B, p2.B, p1.A.C, p1.B.C, p2.B.C
+
+  From the context p1.A, instantiate the expressions:
+    - new C()
+    - new B.C()
+    - new p2.B.C()
+
+503. Inner class qualifiers disambiguation with imports.
+  classes: C, p1.B, p1.B.C, p2.B, p2.B.C
+  from main import p2.*
+  Instantiate:
+    - C, B.C, p1.B.C.
+
+504. Inner class disambiguation with outer class access modes.
+  classes:
+    - public p1.A, public p1.A.C
+    - package p1.B, public p2.B.C
+    - package p2.A, public p2.A.C
+    - public p2.B, public p2.B.C
+  main class imports p1.*, p2.* Instantiate from main:
+    - new A.C()
+    - new B.C()
+
+Places where class names are encountered:
+
+601. Inner classes as types of variables.
+  Classes p1.A, p1.A.Inner,
+    - p1.A.Inner.toString().
+  Refer p1.A.Inner from p1.A, as:
+    - p1.A.Inner,
+    - A.Inner,
+    - Inner
+  from:
+    - local var declaration
+    - field declaration
+    - static field declaration
+    - parameter declaration
+    - C_style array declaration
+
+602. Inner classes as part of operators.
+  - cast operator
+  - instanceof operator
+  - .class operator
+
+603. Inner classes as qualifiers for static members access.
+  - qualifier of static field read
+  - qualifier of static field write
+  - qualifier of static method call
+  - qualifier of interface field read
+
+604. Inner class in extends clause.
+  Two inner classes. One inherits the other.
+  Classes A, A.Inner1, A.Inner2 < Inner1.
+  Extends clause refers Inner1 by simple name.
+
+605. Inner class in extends clause, with forward reference.
+  Two inner classes. One inherits the other.
+  Classes A, A.Inner1 < Inner2, A.Inner2.
+  Extends clause refers Inner2 by simple name.
+
+606. Inner classes as part of type declarations, all class name expression types.
+  - class extends clause
+  - class implements clause
+  - interface extends clause
+  All cases will be tested in the following configurations:
+    - three expression typed for type reference: fully qualified, partially qualified and
+      unqualified (where applicable)
+    - two possible contexts: top-level and nested
+    - modifier static is always listed.
+
+701. Three-level class nesting.
+  Classes:
+    - p1.A
+    - p1.A.Mid
+    - p1.A.Mid.Inner
+    - p1.A.Test
+  .class the following names:
+    - from main (imports p1):
+      - p1.A.Mid.Inner
+      - A.Mid.Inner
+    - from p1.A:
+      - p1.A.Mid.Inner
+      - A.Mid.Inner
+      - Mid.Inner
+      - Inner
+    - from p1.A.Test:
+      - p1.A.Mid.Inner
+      - A.Mid.Inner
+      - Mid.Inner
+      - Inner
+    - from p1.A.Mid:
+      - p1.A.Mid.Inner
+      - A.Mid.Inner
+      - Mid.Inner
+      - Inner
+    - from p1.A.Mid.Inner:
+      - p1.A.Mid.Inner
+      - A.Mid.Inner
+      - Mid.Inner
+      - Inner
+      - A
+      - Mid
+      - Test
+
+702. Members in three-level class nesting.
+  Classes:
+    - A
+    - A.Mid
+    - A.Mid.Inner
+  Members:
+    - A.a
+    - A.Mid.b
+    - A.Mid.Inner.c
+  Access a,b,c from Inner
+
+703. Overloading with three-level class nesting.
+  Classes:
+    - A
+    - A.Mid
+    - A.Mid.Inner
+  Members:
+    - A.f(short)
+    - Mid.f(int)
+    - Inner.f(long)
+  Call f(long), f(int), f(byte) from Inner.
+
+704. Overloading with nesting/inheritance mix.
+  Classes:
+    - SuperA
+    - A < SuperA
+    - SuperInner
+    - A.Inner < SuperInner
+  Members:
+    - SuperA.f(byte)
+    - A.f(short)
+    - SuperInner.f(int)
+    - Inner.f(long)
+  Call f(long), f(int), f(short), f(byte) from Inner.
+
+705. Inheritance of inner class declarations.
+  class A, A.Inner, B < A.
+  Access Inner from B.
+
+706. Inner class derived from its outer class.
+  Class A, A.Inner < A. Members:
+  - A.x,
+  - A.f() reads x
+  - A.g() reads x
+  - Inner.x
+  - Inner.f() reads x.
+  Print Inner.f(), Inner.g(), (A)Inner.f()
+
+707. Outer class derived from the inner class of another class.
+  Class A, A.Inner, B < A.Inner. Declare A after B.
+  - A.x,
+  - Inner.y
+  - B.z
+  From main print A.x, A.Inner.y, B.y, B.z.
+  From B print y, z.
+
+708. Inner classes hiding.
+  Classes A, A.Inner, B < A, C < A, C.Inner.
+  Access a static field of Inner from A, B, C.
+
+709. Inner classes name collision with other language sorts.
+  Class A. Members:
+    - field x
+    - method x()
+    - inner type x.
+  Distinguish among them by:
+    - writing x
+    - calling x()
+    - instantiating x a = new x();
+  Repeat the test from A using name x, and from main using the name A.x.
+
+710. Inner class in extends clause, it's base class is inherited
+  by the outer class.
+  Classes A, A.InnerA, B < A, B.InnerB < InnerA (referred by simple name).
+
+711. Twisted inheritance among outer and inner classes.
+  Classes A, A.InnerA < B.InnerB, B < A, B.InnerB.
+
+Note: An outer class or interface cannot be derived from its inner class,
+  either directly or indirectly.
+
+801. Inner interface.
+  Class A, interface A.II1, class A.Inner < A.II1.
+  A.Inner implements an interface method and refers to a static field from II1.
+  Tested from main.
+
+802. Outer interface. Interface I1, class I1.InnerC, interface I1.InnerI.
+  Both access a static field from A by simple name.
+
+803. Inner interfaces are always static.
+  Types C, C.IInner, Impl < C.IInner.
+  IInner is declared without static modifier.
+  Members:
+    - IInner.f()
+    - Impl.f()
+  Call Impl.f() from main.
+
+804. Member types of an interface are static.
+  Types I1, I1.Inner. Inner is declared without static modifier.
+  Members:
+    Inner.f()
+  Instantiate Inner and call f() from main.
+
+805. Inner interface implements an outer interface.
+  interfaces I1, I1.IInner < I1, C < I1.IInner
+    - I1.f()
+    - I1.IInner.g()
+  Call both on (I1.IInner)C from main.
+
+806. Outer class and outer interface implement an inner interface of another class.
+  Class A, interface A.IInner, B < IInner, I2 < IInner.
+  Members:
+    - IInner.f()
+    - IInner.id
+    - B.f()
+  Call (IInner)B.f(), B.id, I2.id.
+
+807. Implementing an inner interface and name resolution.
+  Class A, interface A.IInner1, A.IInner2, B < A.IInner1, A.IInner2.
+  Members:
+    - static A.x
+    - static A.y
+    - IInner1.x
+    - IInner2.y
+  Access:
+    - x and y from B
+    - B.x, B.y from main.
+
+808. Static init of an inner class.
+  Classes A, A.Inner1. B, B.Inner2. Static init trace for A, A.Inner1, B, B.Inner2.
+  From main call A.Inner1.id, B.id. See static initialization in classes A.Inner1, B.
+
+809. Inner interface refers to a field and a method from the outer class by simple name,
+  during field init.
+  Class A, interface A.IInner.
+  members:
+    - static A.trace()
+    - static A.id calls trace
+    - static A.f() calls trace
+    - A.IInner.x calls A.id
+    - A.IInner.y calls A.f()
+  Main prints A.IInner.x and A.IInner.y
+
+810. Accessing inherited inner interfaces by simple name.
+  Interfaces IA, IA.IInner1, IA.IInner2, class B < IA.
+  Members:
+    - IInner1.id
+    - IInner2.id
+  Access:
+    - IInner1.id from B
+    - IInner2.id from B
+
+811. Inner interfaces in implements clause, by simple name, inherited.
+  Interfaces IA, IA.IInner1, IA.IInner2, class B < IA,
+  interfaces B.InnerB < IInner1, IInner2 (by simple name).
+  Members:
+    - IInner1.x
+    - IInner2.y
+  Access:
+    - x, y from IInnerB.toString()
+
+812. Accessing inherited inner interfaces by simple name, inside an interface.
+  interfaces IA, IA.IInner1, IA.IInner2, IB < IA.
+  Members:
+    - IInner1.id
+    - IInner2.id
+  Access:
+    - IInner1.id from IB
+    - IInner2.id from IB
+
+813. Inner interfaces in implements clause, by simple name, inherited, inside an outer interface.
+  Interfaces IA, IA.IInner1, IA.IInner2, IB < IA, IB.IInnerB < IInner1, IInner2 (by simple name).
+
+  Members:
+    - IInner1.x
+    - IInner2.y
+  Access:
+    - x, y from IInnerB.toString()

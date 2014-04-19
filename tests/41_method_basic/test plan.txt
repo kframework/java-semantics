@@ -1,0 +1,78 @@
+Test plan for basic method calls.
+All calls are done from outside the class, using qualified expressions.
+There are no tests of accessibility based on access specifiers.
+
+Part 1. Method call, one class, exact arguments.
+11. Simple method test.
+  - call a method, no args, return type void, printing a value.
+
+12. Test method return type. Call a method returning:
+  - int, bool, String, RuntimeException, int[].
+  - RuntimeException return, converted to Object. (return type conversion)
+  - RuntimeException return, ignored. Called using Expression statement.
+  Print the result.
+
+13. Testing method arguments:
+  - int, bool, String, RuntimeException, int[].
+  Print the arg inside method.
+
+14. Multiple methods, multiple argument types/numbers:
+  - method negation(one arg),
+  - method max(two args),
+  - method maxArray(one arg)
+
+15. Argument conversion.
+  Method with four arguments, arguments 2 and 3 needs conversion.
+  formal types: int, int, Object, String
+  actual method call types:
+    - int, short, RuntimeException, String
+    - int, int, null, null
+
+Part 2. Inheritance.
+
+21. Method inheritance.
+  - Three classes. A < B < C. A{f()} B{g()} C{h()} C c; c.f(); c.g(); c.h();
+
+Part 3. Overriding, polymorphism.
+
+31. Overriding, polymorphism.
+  Three classes. A < B < C.
+    - A{f() g() h() m()}
+    - B{g() h()}
+    - C{h() m()}
+  Six references: A aa, ab, ac; B bb, bc; C cc;
+  All six references call all accessible methods.
+
+32. Overriding. Test that an unqualified call to an overridden method
+  calls the method from the actual object type.
+
+33. Throws clause. A simple method with throws. Null semantics.
+
+34. Final method. A simple final method. Null semantics.
+
+35. Testing the explicit use of "this" to call a method.
+
+36. Return object. Test returning objects in methods and then invoking methods on them.
+
+37. Method with c-like array arguments. Three such arguments.
+
+38. Polymorphism for methods with c-like array arguments.
+  B < A. Both have methods f(int[]), g(int[]).
+  Class A: f(int a[]), g(int[] a)
+  Class B: f(int[] a), g(int a[])
+  Test that polymorphism works for both.
+
+Part 4. Order of evaluation.
+
+41. Method qualifier is evaluated prior to arguments.
+    Call a one-arg method with a traced qualifier and traced argument.
+
+42. When evaluation of the qualifier throws an exception, the argument is not evaluated.
+    Call a one-arg method with traced argument, on a constructor throwing an exception.
+    Catch the exception.
+
+43. When method qualifier is null, arguments are still evaluated. Only after that NPE is thrown.
+    Call a one-arg method with traced argument, on a null reference. Catch the exception.
+
+44. Method arguments are evaluated left-to-right.
+    Call a method with 5 arguments, all different and traced.

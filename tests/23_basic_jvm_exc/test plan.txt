@@ -1,0 +1,26 @@
+1. ArithmeticException:
+  - 2 / 0
+  - 2 % 0
+  - 2L / 0L
+2. NullPointerException:
+  - ((object)null).toString()
+  - ((UserClass)null).x
+  - ((UserClass)null).f()
+3. ClassCastException hierarchy.
+  Hierarchy: Object -> A B; B -> C; C -> D
+  - B a = A; (D)c;
+  - B c = C; (D)c;
+
+3.2: This test is not supported due to special string and array representation:
+  - (String)null.x
+  - (String)null.f()
+  - (array)null.x
+  - (array)null.f()
+
+4. ClassCastException types.
+  - (String) (obj)(UserClass)
+  - (String) (obj)(array)
+  - (array)  (obj)(UserClass)
+  - (array)  (obj)(String)
+  - (UserClass) (obj)(String)
+  - (UserClass) (obj)(Array)

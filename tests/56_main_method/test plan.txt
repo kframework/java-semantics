@@ -1,0 +1,40 @@
+    Precise semantics for the main method.
+
+01. Main method is executed in static context. Two static and two instance methods inside main class.
+  One static field - instance counter.
+  Call static ones from the static context, all of them from the instance context.
+  Test that class counter is 0 before main instantiation, 1 afterwards.
+
+02. Main method argument type / chosing main class.
+  A program with three public classes - one with the name before the main class, main class,
+  and the third one after the main class. Classes one and three also have public static
+  methods main, with one argument, but the type is int, respectively Object[].
+  The main class have a method main with type int[]. Test that the main class is correctly
+  choosen.
+
+03. Main method return type.
+  Three classes, all with a public static <Type> main(String[] args).
+  <Type> is:
+    - Object
+    - void
+    - String
+  Test that the second case is chosen.
+
+04. Main method modifiers.
+  Five public classes, all with a void main(String[] args)
+  Method modifiers are:
+    - none
+    - public
+    - public static
+    - static
+    - protected static
+
+05. Main method modifiers, other order.
+  - one class with a main method like:
+  - static public void main(String[] args)
+  It should be accepted.
+
+06. Main method argument, c-like array argument form.
+  - one class with a main method like:
+  - static public void main(String args[])
+  It should be accepted.

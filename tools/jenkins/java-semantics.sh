@@ -24,4 +24,4 @@ cd $WORKSPACE/semantics
 rm -f ../class-lib/*.kast
 rm -rf .test
 
-aux-kjtest.sh -mode run -threads 1 -timeout 120 -encodeXML true -clean true ../programs/01_smoke_tests/helloWorld.java
+aux-kjtest.sh -mode run -threads 1 -timeout 120 -encodeXML true -clean true ../tests/01_smoke_tests/helloWorld.java
