@@ -451,7 +451,7 @@ rule [Throw-CausesThreadTermination]:
             'Invoke(
               'Method(
                 'MethodName(
-                  'Field( 'TypeName( String2Id("System")),, String2Id("out") ),,
+                  'Field( class String2Id("java.lang.System"),, String2Id("out") ),,
                   String2Id("println")
                 )
               ),,
