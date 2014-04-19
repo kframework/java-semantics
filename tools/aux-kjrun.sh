@@ -11,7 +11,7 @@ if (( "$#" != 11 )); then
     echo "Your command:"
     echo `basename $0` $@
     echo "Usage: `basename $0` --time <true|false> --timeout <timeout in s> \
-      --mode <run-full|run-prep|run-exec|search|search-count|symbolic|symbolic-count|debug> \
+      --mode <run-full|run-prep-config|run-prep-ast|run-exec|search|search-count|symbolic|symbolic-count|debug> \
       --output <none|raw|pretty> \
       --input <java|kast-cache> \
       <javaFile>"
@@ -65,7 +65,7 @@ case "$MODE" in
                         -cSTARTPHASE=\"'ProcTypeNamesPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
     ;;
-"run-prep")
+"run-prep-config" | "run-prep-ast")
     KRUN_CMD="$KRUN_CMD -cModelCheck=\"true\" \
                         -cCOMMAND=\"'procTypeNames(.KList)\" \
                         -cSTARTPHASE=\"'ProcTypeNamesPhase(.KList)\" \
@@ -139,8 +139,8 @@ if [ ${MODE} == "search-count" ] || [ ${MODE} == "symbolic-count" ];
   then KRUN_CMD="$KRUN_CMD  | grep \"Solution\" | wc -l"
 fi
 
-if [ ${MODE} == "run-prep" ];
-  then KRUN_CMD="$KRUN_CMD  | grep -Po '< program > \K[^<]*'"
+if [ ${MODE} == "run-prep-ast" ];
+  then KRUN_CMD="$KRUN_CMD  | grep -Po '< program > \K.*(?=</ program > )'"
 fi
 
 # echo KRUN_CMD

@@ -31,9 +31,11 @@ rule toPackage(class Class:Id) => packageId(Class)
 
 /*@Returns the package of the given class*/
 syntax K ::= getPackage ( K )               [strict]
-rule [getPackage]:
-    <k> getPackage(Class:ClassType) => Pack ...</k>
-    <namesToClasses>... Pack:PackageId |-> mapWrap(_ |-> Class _) ...</namesToClasses>
+rule getPackage(class ClassId:Id)
+    => String2Id(retainHead(
+      Id2String(ClassId),
+      rfindString(Id2String(ClassId), ".", lengthString(Id2String(ClassId)))
+    ))
 
 /*@Returns the top-level class enclosing this class*/
 syntax K ::= getTopLevel ( ClassType )
