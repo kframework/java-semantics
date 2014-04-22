@@ -141,16 +141,6 @@ syntax K ::=  getMetaType (
 rule getMetaType('ClassDec) => classCMT
 rule getMetaType('InterfaceDec) => interfaceCMT
 
-//@ Converts a pair of PackagId, Id into a fully qualified class name
-syntax K ::=  getClassType (
-                PackageId, // the Package Id
-                Id        // Simple class name
-              )
-              [function]
-
-rule getClassType(packageId(PackKId:Id), SimpleClass:Id)
-     => class String2Id(Id2String(PackKId) +String "." +String Id2String(SimpleClass))
-
 //@ Returns the types map for the given package, or mapWrap(.Map) if there's no such package.
 syntax K ::=  getNamesMap  (
                 PackageId //The package for which we want to retrieve the types map

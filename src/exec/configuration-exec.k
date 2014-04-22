@@ -29,10 +29,6 @@ configuration
             <br/>
             <return color="DarkOrange"> void </return> // holds method return type
 
-            /*Current method/block context type - either staticCT or instanceCT
-            Used both during elaboration and execution*/
-            <contextType color="DarkOrange"> staticCT </contextType> //todo eliminate in exec semantics
-
             <br/>
             <crntObj color="DarkOrange">
               //current class during all phases, including early preprocessing
@@ -73,9 +69,6 @@ configuration
             //Either classMetaT or interfaceMetaT. Used in many semantics phases, including execution.
             <classMetaType color="Maroon"> .K </classMetaType>
 
-            //Class access mode - either public or package.
-            <classAccessMode color="Maroon"> .K </classAccessMode>
-
             //The major phase of <class> lifecycle. See ClassPhase definition.
             <classPhase color="Maroon"> .K </classPhase>
 
@@ -90,28 +83,9 @@ configuration
             //ClassType of the enclosing class otherwise
             <enclosingClass color="DarkGoldenrod"> noClass </enclosingClass>
 
-            <rawExtends color="DarkGoldenrod"> .K </rawExtends>
-            <rawImplements color="DarkGoldenrod"> .K </rawImplements>
-
             <br/>
 
-            //The list of class members, in their raw form.
-            <rawDeclarations color="DarkGoldenrod"> .K </rawDeclarations>
-
-            //Created in ProcCompUnitsPhase, used in ProcClassDecsPhase
-            <cuImports color="DarkGoldenrod"> .Map </cuImports> //imports of the enclosing CU, for top-level classes only.
-
-            //Either staticCT or instanceCT
-            <classContextType color="DarkGoldenrod"> .K </classContextType>
-
           </cphCreated>
-
-          <br/>
-
-          <cphBases color="Yellow">
-            <unprocessedBases color="Olive"> .K </unprocessedBases>//base classes that didn't
-                                                     //reached the state DecsProcessedCPhase yet.
-          </cphBases>
 
           <br/>
 
@@ -119,15 +93,6 @@ configuration
 
             //The base class, or noClass for interfaces and Object.
             <extends color="SpringGreen"> .K </extends>
-
-            /*Directly implemented interfaces, the resolved content of implements clause.
-              Only used during preprocessing. Mostly to compute <implTrans>, and when transitive list of
-              interfaces is not needed.*/
-            <implements color="SpringGreen"> .Set </implements>
-
-            /*Map[Id -> ClassType]. Map of classes accessible by simple name inside this class.
-              Used by type resolution in elaboration phase.*/
-            <imports color="SpringGreen"> .Map </imports>
 
           </cphDecs>
 
@@ -158,14 +123,6 @@ configuration
                 //Method params
                 <methodParams> [.KList] </methodParams>
 
-                // first line, constructors only. Either of:
-                //   'SuperInv - superclass constructor invocation
-                //   'AltConstrInv - alternate this class constructor invocation
-                //   .K - none, if this class is Object
-                //   For methods this argument is noValue
-                //The content of this cell is moved into method body during elaboration.
-                <methodConstrFirstLine> .K </methodConstrFirstLine>
-
                 //Method body
                 <methodBody> .K </methodBody>
 
@@ -174,9 +131,6 @@ configuration
                 //Either staticCT or instanceCT
                 <methodContextType> .K </methodContextType>
 
-                //Either methodMMT or constructorMMT
-                <methodMetaType> .K </methodMetaType>
-
               </methodDec>
             </methodDecs>
 
@@ -184,12 +138,6 @@ configuration
 
             //[...,, 'LocalVarDec(_),, ...] - Instance field declarations. Used during object instantiation.
             <instanceFields color="Indigo"> [.KList] </instanceFields>
-
-            /*Contains concatenated instance initializer blocks and instance field initializers.
-              At the end of class processing in the ProcClassMembersPhase the content of this cell is converted into
-              the method $instance_init and the cell is deleted. This conversion is required for local classes,
-              see test local_cl_955. */
-            <instanceInit color="Indigo"> [.KList] </instanceInit>
 
             <br/>
 
@@ -200,27 +148,7 @@ configuration
             //see static-init.k for more details.
             <staticInit color="DarkSlateGray"> [.KList] </staticInit>
 
-            //The map of compile-time constant fields. We consider compile-time constants only final static fields
-            //initialized with a literal expression.
-            //Constant references are replaced by their values during elaboration phase.
-            //Created during process classes phase.
-            //Map[Id -> TypedVal]
-            <constantEnv color="DarkSlateGray"> .Map </constantEnv>
-
           </cphMembers>
-
-          <br/>
-
-          //Cells used during elaboration phase
-          <clsElab color="Yellow">
-
-            //For local classes only. Map[Id -> Type] of vars accessible from the DIRECT enclosing local env.
-            //If we have more levels of Local classes nesting, more external local environments
-            //will be attached to more external classes.
-            //Used during elaboration phase only.
-            <enclosingLocalEnv color="Teal"> .Map </enclosingLocalEnv>
-
-          </clsElab>
 
           <br/>
 
@@ -252,7 +180,7 @@ configuration
 
       <br/>
       <br/>
-
+      //todo stopped here
       <globalPhase color="YellowGreen"> $STARTPHASE:GlobalPhase </globalPhase>
       <lastGlobalPhase color="YellowGreen"> $ENDPHASE:GlobalPhase </lastGlobalPhase>
 

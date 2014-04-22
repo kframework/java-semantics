@@ -1,7 +1,6 @@
 require "core-sorts.k"
 require "core-functions.k"
 require "core-classes.k"
-require "process-type-names.k"
 require "subtyping.k"
 require "expressions.k"
 require "statements.k"
@@ -17,7 +16,6 @@ module CLASSES
     imports CORE-SORTS
     imports CORE-FUNCTIONS
     imports CORE-CLASSES
-    imports PROCESS-TYPE-NAMES
     imports SUBTYPING
     imports EXPRESSIONS
     imports STATEMENTS

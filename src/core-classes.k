@@ -37,6 +37,18 @@ rule getPackage(class ClassId:Id)
       rfindString(Id2String(ClassId), ".", lengthString(Id2String(ClassId)))
     ))
 
+//@ \subsection{Classes}
+
+//@ Converts a pair of PackagId, Id into a fully qualified class name
+syntax K ::=  getClassType (
+                PackageId, // the Package Id
+                Id        // Simple class name
+              )
+              [function]
+
+rule getClassType(packageId(PackKId:Id), SimpleClass:Id)
+     => class String2Id(Id2String(PackKId) +String "." +String Id2String(SimpleClass))
+
 /*@Returns the top-level class enclosing this class*/
 syntax K ::= getTopLevel ( ClassType )
 

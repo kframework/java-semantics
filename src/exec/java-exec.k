@@ -3,7 +3,6 @@ require "configuration-exec.k"
 require "../core-sorts.k"
 require "../extended-KResult.k"
 require "../aux-strings.k"
-require "../folding.k"
 require "../unfolding.k"
 require "../primitive-types.k"
 require "../literals.k"
@@ -25,7 +24,6 @@ module JAVA-EXEC
     imports CORE-SORTS
     imports EXTENDED-K-RESULT
     imports AUX-STRINGS
-    imports FOLDING
     imports UNFOLDING
     imports PRIMITIVE-TYPES
     imports LITERALS

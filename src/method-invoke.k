@@ -293,7 +293,6 @@ rule [invokeImpl-Instance]:
               (
                 <envGroup> OldEnvGroup </envGroup>
                 <return> OldT </return>
-                <contextType> OldCT </contextType>
                 <crntObj> OldObj </crntObj>
                 RestMethContext
               )
@@ -306,7 +305,6 @@ rule [invokeImpl-Instance]:
         => <env> .Map </env>
       </envGroup>
       <return> OldT:Type => ReturnT </return>
-      <contextType> OldCT:ContextType => instanceCT </contextType>
       <crntObj>
         OldObj:Bag
         => <crntClass> Class </crntClass>
@@ -338,7 +336,6 @@ rule [invokeImpl-Static]:
               (
                 <envGroup> OldEnvGroup </envGroup>
                 <return> OldT </return>
-                <contextType> OldCT </contextType>
                 <crntObj> OldObj </crntObj>
                 RestMethContext
               )
@@ -351,7 +348,6 @@ rule [invokeImpl-Static]:
         => <env> .Map </env>
       </envGroup>
       <return> OldT:Type => ReturnT </return>
-      <contextType> OldCT:ContextType => staticCT </contextType>
       <crntObj>
         OldObj:Bag
         => <crntClass> Class </crntClass>

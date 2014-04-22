@@ -74,7 +74,6 @@ rule [staticInit]:
             <location> noValue </location>
           </crntObj>
           <return> void </return>
-          <contextType> staticCT </contextType>
     </methodContext>
 
     <tid> TId:Int </tid>

@@ -94,7 +94,6 @@ rule [unfolding-class-members-except-methods]:
     <k> unfoldingPhase </k>
     <classType> Class:ClassType </classType>
     <classMetaType> _ => getClassMetaType(KL) </classMetaType>
-    <classAccessMode> _ => AccessMode:AccessMode </classAccessMode>
     <extends> _ => BaseClass:ClassType </extends>
     <instanceFields> [_ => InstanceFields:KList] </instanceFields>
     <staticFields> [_ => StaticFields:KList] </staticFields>
