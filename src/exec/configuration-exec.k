@@ -180,7 +180,7 @@ configuration
 
       <br/>
       <br/>
-      //todo stopped here
+
       <globalPhase color="YellowGreen"> $STARTPHASE:GlobalPhase </globalPhase>
       <lastGlobalPhase color="YellowGreen"> $ENDPHASE:GlobalPhase </lastGlobalPhase>
 
@@ -196,52 +196,6 @@ configuration
         <mainClass color="LightSteelBlue"> $MainClass:ListItem </mainClass>
 
       </phStart>
-
-      <br/>
-
-      <phTN color="Yellow">
-
-        //cell type: Map[PackageId->Map[Id->ClassType]], Id = simple name, ClassType = full name
-        //Computed during ProcTypeNamesPhase. Used in all the elaboration phases.
-        <namesToClasses color="OrangeRed"> .Map </namesToClasses>
-
-      </phTN>
-
-      <br/>
-
-      <phCU color="Yellow">
-
-        //Types imported by the current compilation unit. Created in module PROCESS-IMPORTS, part of
-        //ProcCompUnitsPhase. Used in ProcCompUnitsPhase when imports for a compilation unit are computed,
-        //and in ProcClassDecsPhase, when they are used to lookup extends/implements clauses.
-        //Type: Map[Id -> ClassType]
-        <compUnitImports color="LightCoral"> .Map </compUnitImports>
-
-      </phCU>
-
-      <br/>
-
-      <phElab color="Yellow">
-
-        //The local variable environment, created and used during elaboration phase.
-        //Represents a stack. Each ListItem contains a Map[Id -> Type]
-        <elabEnv color="Orange"> ListItem(mapWrap(.Map)) </elabEnv>
-
-        //The global registry of all local classes
-        //When a local class is first encountered in the elaboration phase, a global class name is generated for it
-        //and the class is registered in this map.
-        //Type: Map[Id->ClassType] - map from simple local names to global names.
-        //Used in elaboration phase.
-        <localTypes color="Orange"> ListItem(mapWrap(.Map)) </localTypes>
-
-        //Counter used to generate unique package names for local classes. Elaboration phase only.
-        <nextLocalId color="Orange"> 1 </nextLocalId>
-
-        //A list of terms that are collected during elaboration phase by a call to appendToElabBuffer()
-        //and are restored back to K by a call to loadElabBuffer()
-        <elabBuffer> [.KList] </elabBuffer>
-
-      </phElab>
 
       <br/>
 
@@ -285,6 +239,7 @@ configuration
         //Standard output. Each token is a ListItem.
         <out color="LightPink" stream="stdout"> .List </out>
 
+        //todo rename objectClosure to objectRef in comments
         //A map from types to objectClosure() terms that represent their T.class value
         //Created an used in execution phase, by expressions of the form X.class
         //Type: Map[Type->TypedVal]. Type may be any reference type.

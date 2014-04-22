@@ -1,4 +1,5 @@
 require "core-sorts.k"
+require "core-preprocessing.k"
 require "elaboration-core.k"
 
 /*@ This module initialtes the elaboration phase. It is responsible for elaborating all top-level code blocks
@@ -6,6 +7,7 @@ require "elaboration-core.k"
 */
 module ELABORATION-TOP-BLOCKS
     imports CORE-SORTS
+    imports CORE-PREPROCESSING
     imports ELABORATION-CORE
 
 rule [ElaborationPhase-start]:

@@ -1,10 +1,12 @@
 require "core-sorts.k"
+require "core-preprocessing.k"
 require "process-type-names.k"
 
 //@ \section{Module PROCESS-CLASS-DECS}
 
 module PROCESS-CLASS-DECS
     imports CORE-SORTS
+    imports CORE-PREPROCESSING
     imports PROCESS-TYPE-NAMES
 
 /*@ \subsection{Third pass - processing class dependencies and imports} */

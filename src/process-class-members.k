@@ -1,11 +1,13 @@
 require "core-sorts.k"
 require "core-classes.k"
+require "core-preprocessing.k"
 
 //@ \section{Module PROCESS-CLASS-MEMBERS}
 
 module PROCESS-CLASS-MEMBERS
     imports CORE-SORTS
     imports CORE-CLASSES
+    imports CORE-PREPROCESSING
 
 /*@ \subsection{Third pass - processing class members} */
 

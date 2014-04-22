@@ -358,7 +358,7 @@ rule [ThreadTermination]:
     => .)
     <busy> Busy:Set => Busy -Set keys(H) </busy>
     <terminated>... . => SetItem(TId) ...</terminated>
-    <globalPhase> ExecutionPhase  </globalPhase>
+    <globalPhase> ExecutionPhase </globalPhase>
     <dissolveEmptyK> true </dissolveEmptyK>
 
 //@ \subsection{Debug aids}
@@ -366,10 +366,8 @@ rule [ThreadTermination]:
 /*@Dissolves classes cell so that configuration is not over-bloated, at the end of the execution.*/
 rule [DissolveClasses]:
     (<classes> _:Bag </classes> => .)
-    (<phTN> _:Bag </phTN> => .)
-    (<phCU> _:Bag </phCU> => .)
     <threads> .Bag </threads>
-    <globalPhase> ExecutionPhase  </globalPhase>
+    <globalPhase> ExecutionPhase </globalPhase>
     <dissolveClasses> true </dissolveClasses>
 
 /*@Dissolve all cells except <out> for the purpose of model checking. We will avoid duplicates caused by the same <out> but different order of content in other cells.*/
@@ -377,7 +375,7 @@ rule [DissolveAllExceptOut]:
     <T>
       <out> Out:List </out>
       <threads> .Bag </threads>
-      <globalPhase> ExecutionPhase  </globalPhase>
+      <globalPhase> ExecutionPhase </globalPhase>
       <dissolveClasses> true </dissolveClasses>
       <dissolveAllExceptOut> true </dissolveAllExceptOut>
       ...
