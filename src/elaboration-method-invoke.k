@@ -1,21 +1,17 @@
 require "core-sorts.k"
-require "process-class-members.k"
+require "core-classes.k"
 require "subtyping.k"
+require "elaboration-core.k"
 require "method-invoke.k"
 
 //@ \section{Module ELABORATION-METHOD-INVOKE}
 
 module ELABORATION-METHOD-INVOKE
     imports CORE-SORTS
-    imports PROCESS-CLASS-MEMBERS
+    imports CORE-CLASSES
     imports SUBTYPING
+    imports ELABORATION-CORE
     imports METHOD-INVOKE //for superMethod()
-
-/*@ 'Method(Qual:K,, _:K,, Name:Id)
-    'Method('MethodName(Qual:K,, Name:Id))
-*/
-syntax KLabel ::= "'Method"
-                | "'MethodName"
 
 rule customElabEnd('Method) => true
 
@@ -143,13 +139,6 @@ rule lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, ParamExps
   K heating rules.
 */
 syntax KResult ::= "tempKResult"
-
-syntax K ::= getLookupTargetType ( RefType )    [function]
-rule getLookupTargetType(Class:ClassType) => Class
-rule getLookupTargetType(arrayOf _) => arrayImplClass
-
-syntax K ::= "arrayImplClass"                   [function]
-rule arrayImplClass => class String2Id("java.lang.ArrayImpl")
 
 //All cases
 rule [lookupMethod-to-lookupSignature]:

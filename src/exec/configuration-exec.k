@@ -31,7 +31,7 @@ configuration
 
             /*Current method/block context type - either staticCT or instanceCT
             Used both during elaboration and execution*/
-            <contextType color="DarkOrange"> staticCT </contextType>
+            <contextType color="DarkOrange"> staticCT </contextType> //todo eliminate in exec semantics
 
             <br/>
             <crntObj color="DarkOrange">

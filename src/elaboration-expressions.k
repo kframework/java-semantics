@@ -1,8 +1,10 @@
 require "core-sorts.k"
+require "core-classes.k"
 require "elaboration-core.k"
 
 module ELABORATION-EXPRESSIONS
     imports CORE-SORTS
+    imports CORE-CLASSES
     imports ELABORATION-CORE
 
 /*@ \subsection{Elaboration of numeric expressions} */
@@ -129,12 +131,6 @@ rule [elabEnd-PrefixPostfix]:
     elabEnd(KL:KLabel(cast(T1:Type, Exp1:K))) => elabRes(cast(T1, KL(Exp1)))
 when
     isPrefixPostfixExpLabel(KL) ==K true
-
-syntax K ::= isPrefixPostfixExpLabel ( KLabel )  [function]
-rule isPrefixPostfixExpLabel('PreIncr) => true
-rule isPrefixPostfixExpLabel('PreDecr) => true
-rule isPrefixPostfixExpLabel('PostIncr) => true
-rule isPrefixPostfixExpLabel('PostDecr) => true
 
 rule [elabEnd-StringPlusAny]:
     elabEnd('Plus(TE1:K,, TE2:K)) => elabRes(cast(stringClass,'Plus(TE1,, TE2)))

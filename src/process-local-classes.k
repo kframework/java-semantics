@@ -2,6 +2,7 @@ require "core-sorts.k"
 require "core-classes.k"
 require "process-comp-units.k"
 require "process-class-decs.k"
+require "process-class-members.k"
 require "elaboration-vars.k"
 
 //@ \section{Module PROCESS-LOCAL-CLASSES}
@@ -11,6 +12,7 @@ module PROCESS-LOCAL-CLASSES
     imports CORE-CLASSES
     imports PROCESS-COMP-UNITS //for processTypeDecsInPCUPhase
     imports PROCESS-CLASS-DECS //for processClassDecs
+    imports PROCESS-CLASS-MEMBERS //for processTypeWithDepends
     imports ELABORATION-VARS   //for elabLookup
 
 /*@ ClassDecStm('ClassDec(...))

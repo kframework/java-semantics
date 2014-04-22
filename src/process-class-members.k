@@ -181,26 +181,6 @@ rule [isInheritable]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
-/*@ Tests if a method within BaseClass with BaseAccessMode is overwritten by a method with the same signature
-in SubClass with SubAccessMode.
-It is also possible that BaseClass and SubClass are the same, since the same method is inherited by many classes,
-and gets in their <methods> cell.*/
-syntax K ::=  isAccessibleForOverwriting (
-                ClassType,  //BaseClass
-                AccessMode, //BaseAccessMode
-                ClassType   //SubClass
-              )
-              [strict]
-
-rule isAccessibleForOverwriting(_, public,    _) => true
-rule isAccessibleForOverwriting(_, protected, _) => true
-
-//@ Object class cannot match this rule since it has public access mode
-rule isAccessibleForOverwriting(BaseClass:ClassType, package, SubClass:ClassType)
-    => eqAux(getPackage(getTopLevel(BaseClass)), getPackage(getTopLevel(SubClass)))
-
-rule isAccessibleForOverwriting(_, private, _) => false
-
 /*@ Inherit a method by the current class. The inherited method overwrites previous methods
   with the same signature in <methods>
 */
@@ -211,28 +191,6 @@ rule [inherit]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <methods> Env:Map => Env[DecClass/Sig] </methods>
-
-//@ Returns the access mode of a method closure given as argument
-syntax K ::= getMethodAccessMode ( MethodRef )   [strict]
-rule [getMethodAccessMode]:
-    <k>
-      getMethodAccessMode( methodRef(Sig:Signature, Class:ClassType) ) => Acc
-      ...
-    </k>
-    <classType> Class </classType>
-    <methodSignature> Sig </methodSignature>
-    <methodAccessMode> Acc:AccessMode </methodAccessMode>
-
-//@ Returns the context type of a method closure given as argument
-syntax K ::= getMethodContextType ( MethodRef )  [strict]
-rule [getMethodContextType]:
-    <k>
-      getMethodContextType( methodRef(Sig:Signature, Class:ClassType) ) => CT
-      ...
-    </k>
-    <classType> Class </classType>
-    <methodSignature> Sig </methodSignature>
-    <methodContextType> CT:ContextType </methodContextType>
 
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
@@ -304,6 +262,20 @@ syntax K ::=  storeMethod (
                 Signature,   //method signature
                 Type         //method return type
               )
+
+rule [storeMethod-Synchronized-method-inst-desugar]:
+    storeMethod(_, instanceCT, _, (true => false)::bool, _,_,
+        Body:K => 'Synchronized('This(.KList),, Body),
+        _,_)
+
+rule [storeMethod-Synchronized-method-static-desugar]:
+    <k>
+      storeMethod(_, staticCT, _, (true => false)::bool, _,_,
+          Body:K => 'Synchronized('Lit('Class(Class)),, Body),
+          _,_)
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
 
 rule [storeMethod]:
     <k>
@@ -404,10 +376,6 @@ rule [ConstrDec]:
     </k>
     <crntClass> Class:ClassType </crntClass>
 when paramTypesResolved([Params])
-
-//@ Get the internal constructor name for a given class
-syntax K ::= getConsName ( ClassType )                               [function]
-rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(ClassId))
 
 //@ 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, InitExp:K),, _])
 syntax KLabel ::= "'FieldDec"
@@ -532,18 +500,6 @@ rule [convertInstanceInitIntoMethod]:
     (<instanceInit> InstanceInit:K </instanceInit> => .Bag)
 
 //@ \subsection{Auxiliary functions}
-
-syntax K ::=  getContextType (
-                KListWrap       //[...] - the list of method attributes
-              )
-              [function]
-
-rule getContextType(['Static(_),,_]) => staticCT
-
-rule getContextType([(KL:KLabel(_) => .KList),, _])
-when        KL =/=KLabel 'Static
-
-rule getContextType([.KList])      => instanceCT
 
 //@ Evaluates to true::bool if synchronized is among modifiers, false otherwise
 syntax K ::=  isSynchronized (

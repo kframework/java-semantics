@@ -146,4 +146,69 @@ rule [restoreAfterProcessLocalClass]:
     <k> restoreCrntClass(Class:ClassType) => . ...</k>
     <crntClass> _ => Class </crntClass>
 
+//@ \subsection{Auxiliary constructs related to methods}
+
+//@ Returns the access mode of a method closure given as argument
+syntax K ::= getMethodAccessMode ( MethodRef )   [strict]
+rule [getMethodAccessMode]:
+    <k>
+      getMethodAccessMode( methodRef(Sig:Signature, Class:ClassType) ) => Acc
+      ...
+    </k>
+    <classType> Class </classType>
+    <methodSignature> Sig </methodSignature>
+    <methodAccessMode> Acc:AccessMode </methodAccessMode>
+
+//@ Returns the context type of a method closure given as argument
+syntax K ::= getMethodContextType ( MethodRef )  [strict]
+rule [getMethodContextType]:
+    <k>
+      getMethodContextType( methodRef(Sig:Signature, Class:ClassType) ) => CT
+      ...
+    </k>
+    <classType> Class </classType>
+    <methodSignature> Sig </methodSignature>
+    <methodContextType> CT:ContextType </methodContextType>
+
+syntax K ::= getLookupTargetType ( RefType )    [function]
+rule getLookupTargetType(Class:ClassType) => Class
+rule getLookupTargetType(arrayOf _) => arrayImplClass
+
+syntax K ::= "arrayImplClass"                   [function]
+rule arrayImplClass => class String2Id("java.lang.ArrayImpl")
+
+//@ \subsection{Preprocessing auxiliary functions}
+
+syntax K ::=  getContextType (
+                KListWrap       //[...] - the list of method attributes
+              )
+              [function]
+
+rule getContextType(['Static(_),,_]) => staticCT
+
+rule getContextType([(KL:KLabel(_) => .KList),, _])
+when        KL =/=KLabel 'Static
+
+rule getContextType([.KList])      => instanceCT
+
+//@ Get the internal constructor name for a given class
+syntax K ::= getConsName ( ClassType )                               [function]
+rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(ClassId))
+
+//@ \subsection{Elaboration auxiliary functions}
+
+syntax K ::= isPrefixPostfixExpLabel ( KLabel )  [function]
+rule isPrefixPostfixExpLabel('PreIncr) => true
+rule isPrefixPostfixExpLabel('PreDecr) => true
+rule isPrefixPostfixExpLabel('PostIncr) => true
+rule isPrefixPostfixExpLabel('PostDecr) => true
+
+//@ \subsection{Computation terms produced during elaboration}
+
+/*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
+such as an anonymous class declaration. Is typed with the type of the expression.
+At runtime is rewritten into the statement, that should evaluate into .K, followed by the expression,
+that should evaluate to value.*/
+syntax K ::= stmtAndExp ( K, K )
+
 endmodule

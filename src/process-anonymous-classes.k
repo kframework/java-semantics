@@ -1,11 +1,13 @@
 require "core-sorts.k"
 require "core-classes.k"
+require "elaboration-core.k"
 
 //@ \section{Module PROCESS-ANONYMOUS-CLASSES}
 
 module PROCESS-ANONYMOUS-CLASSES
     imports CORE-SORTS
     imports CORE-CLASSES
+    imports ELABORATION-CORE
 
 /*Case one - anonymous class implementing an interface. The class body have nothing else
 but the members provided in the anonymous class definition block.

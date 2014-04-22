@@ -114,20 +114,6 @@ rule [monitor-completely-released]:
     <holds>... (OL:Int |-> 0 => .) ...</holds>
     <busy>... (SetItem(OL) => .) ...</busy>
 
-rule [storeMethod-Synchronized-method-inst-desugar]:
-    storeMethod(_, instanceCT, _, (true => false)::bool, _,_,
-        Body:K => 'Synchronized('This(.KList),, Body),
-        _,_)
-
-rule [storeMethod-Synchronized-method-static-desugar]:
-    <k>
-      storeMethod(_, staticCT, _, (true => false)::bool, _,_,
-          Body:K => 'Synchronized('Lit('Class(Class)),, Body),
-          _,_)
-      ...
-    </k>
-    <crntClass> Class:ClassType </crntClass>
-
 //@ \subsection{Thread.join()}
 
 rule [thread-join]:

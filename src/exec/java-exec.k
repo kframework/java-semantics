@@ -1,23 +1,8 @@
-require "../labels.k"
+require "labels-exec.k"
 require "configuration-exec.k"
 require "../core-sorts.k"
 require "../extended-KResult.k"
 require "../aux-strings.k"
-require "../process-type-names.k"
-require "../process-comp-units.k"
-require "../process-imports.k"
-require "../process-class-decs.k"
-require "../process-class-members.k"
-require "../elaboration-top-blocks.k"
-require "../elaboration-statements.k"
-require "../elaboration-expressions.k"
-require "../elaboration-vars.k"
-require "../elaboration-method-invoke.k"
-require "../elaboration-new-instance.k"
-require "../elaboration-arrays.k"
-require "../elaboration-types.k"
-require "../process-local-classes.k"
-require "../process-anonymous-classes.k"
 require "../folding.k"
 require "../unfolding.k"
 require "../primitive-types.k"
@@ -35,26 +20,11 @@ require "../api-core.k"
 require "../api-threads.k"
 
 module JAVA-EXEC
-    imports LABELS
+    imports LABELS-EXEC
     imports CONFIGURATION-EXEC
     imports CORE-SORTS
     imports EXTENDED-K-RESULT
     imports AUX-STRINGS
-    imports PROCESS-TYPE-NAMES
-    imports PROCESS-COMP-UNITS
-    imports PROCESS-IMPORTS
-    imports PROCESS-CLASS-DECS
-    imports PROCESS-CLASS-MEMBERS
-    imports ELABORATION-TOP-BLOCKS
-    imports ELABORATION-STATEMENTS
-    imports ELABORATION-EXPRESSIONS
-    imports ELABORATION-VARS
-    imports ELABORATION-METHOD-INVOKE
-    imports ELABORATION-NEW-INSTANCE
-    imports ELABORATION-ARRAYS
-    imports ELABORATION-TYPES
-    imports PROCESS-LOCAL-CLASSES
-    imports PROCESS-ANONYMOUS-CLASSES
     imports FOLDING
     imports UNFOLDING
     imports PRIMITIVE-TYPES

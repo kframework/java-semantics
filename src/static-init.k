@@ -1,12 +1,10 @@
 require "core-sorts.k"
-require "process-class-members.k"
 require "var-lookup.k"
 
 //@ \section{Module STATIC-INIT}
 
 module STATIC-INIT
     imports CORE-SORTS
-    imports PROCESS-CLASS-MEMBERS
     imports CLASSES               //for restoreMethContext
     imports VAR-LOOKUP            //for localVar
 

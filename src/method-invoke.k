@@ -1,5 +1,4 @@
 require "core-sorts.k"
-require "elaboration-method-invoke.k"
 require "classes.k"
 require "statements.k"
 require "static-init.k"
@@ -8,7 +7,6 @@ require "static-init.k"
 
 module METHOD-INVOKE
     imports CORE-SORTS
-    imports ELABORATION-METHOD-INVOKE   // for getLookupTargetType
     imports CLASSES
     imports STATEMENTS
     imports STATIC-INIT
@@ -27,6 +25,12 @@ General structure:
 )
 */
 syntax KLabel ::= "'Invoke"
+
+/*@ 'Method(Qual:K,, _:K,, Name:Id)
+    'Method('MethodName(Qual:K,, Name:Id))
+*/
+syntax KLabel ::= "'Method"
+                | "'MethodName"
 
 /*Evaluates the qualifier.
 JLS \$15.12.4.1 - Compute Target Reference.*/
@@ -234,6 +238,26 @@ rule [getMethods-ClassType]:
     <k> getMethods(Class:ClassType) => mapWrap(Methods) ...</k>
     <classType> Class </classType>
     <methods> Methods:Map </methods>
+
+/*@ Tests if a method within BaseClass with BaseAccessMode is overwritten by a method with the same signature
+in SubClass with SubAccessMode.
+It is also possible that BaseClass and SubClass are the same, since the same method is inherited by many classes,
+and gets in their <methods> cell.*/
+syntax K ::=  isAccessibleForOverwriting (
+                ClassType,  //BaseClass
+                AccessMode, //BaseAccessMode
+                ClassType   //SubClass
+              )
+              [strict]
+
+rule isAccessibleForOverwriting(_, public,    _) => true
+rule isAccessibleForOverwriting(_, protected, _) => true
+
+//@ Object class cannot match this rule since it has public access mode
+rule isAccessibleForOverwriting(BaseClass:ClassType, package, SubClass:ClassType)
+    => eqAux(getPackage(getTopLevel(BaseClass)), getPackage(getTopLevel(SubClass)))
+
+rule isAccessibleForOverwriting(_, private, _) => false
 
 //@ Returns the defining class of the given method TypedVal.
 syntax K ::= getMethConsClosureClass ( MethodRef )                 [strict]

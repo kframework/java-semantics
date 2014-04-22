@@ -1,8 +1,8 @@
 require "core-sorts.k"
 require "core-functions.k"
+require "core-classes.k"
 require "process-type-names.k"
 require "subtyping.k"
-require "process-class-members.k"
 require "expressions.k"
 require "statements.k"
 require "arrays.k"
@@ -16,9 +16,9 @@ Object closures. The only change to untyped KOOL's values is that closures are n
 module CLASSES
     imports CORE-SORTS
     imports CORE-FUNCTIONS
+    imports CORE-CLASSES
     imports PROCESS-TYPE-NAMES
     imports SUBTYPING
-    imports PROCESS-CLASS-MEMBERS
     imports EXPRESSIONS
     imports STATEMENTS
     imports ARRAYS
@@ -218,10 +218,7 @@ rule [cast-RefType]:
           ))
         )
 
-//@\subsection{Execution of SuperConstrInv, QSuperConstrInv, AltConstrInv}
-
-rule [SuperConstrInv-to-QSuperConstrInv-unpack]:
-    'SuperConstrInv(Arg1:K,, ArgsList:KListWrap) => 'QSuperConstrInv(noValue,, Arg1,, ArgsList)
+//@\subsection{Execution of QSuperConstrInv, AltConstrInv}
 
 //@ 'QSuperConstrInv( Qual:K,, _:K,, [ Args:KList ] )
 syntax KLabel ::=  "'QSuperConstrInv"

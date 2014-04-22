@@ -1,12 +1,14 @@
 require "core-sorts.k"
 require "classes.k"
 require "elaboration-core.k"
+require "elaboration-method-invoke.k"
 require "process-local-classes.k"
 
 module ELABORATION-STATEMENTS
     imports CORE-SORTS
     imports CLASSES             //for setEncloser
     imports ELABORATION-CORE
+    imports ELABORATION-METHOD-INVOKE //for lookupMethod
     imports PROCESS-LOCAL-CLASSES //for localClassGetExtraArgs
 
 //@ Elaboration of 'KListWrap, 'Block, 'For or 'Catch - nodes that may contain variable declarations.
@@ -141,17 +143,10 @@ rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
-rule [elabEnd-QSuperConstrInv-qualified]:
+rule [elabEnd-QSuperConstrInv]:
     methodLookupResult(_, [ExpectedParamExps:KList], instanceCT)
     ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, [_]))
     => elabRes('QSuperConstrInv(Qual,, Arg2,, [ ExpectedParamExps ]))
-when
-    Qual =/=K noValue
-
-rule [elabEnd-QSuperConstrInv-to-SuperConstrInv]:
-    methodLookupResult(_, [ExpectedParamExps:KList], instanceCT)
-    ~> elabEnd('QSuperConstrInv(noValue,, Arg2:K,, [_]))
-    => elabRes('SuperConstrInv(Arg2,, [ ExpectedParamExps ]))
 
 rule customElabEnd('AltConstrInv) => true
 

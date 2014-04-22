@@ -1,4 +1,4 @@
-require "../labels.k"
+require "labels-prep.k"
 require "configuration-prep.k"
 require "../core-sorts.k"
 require "../extended-KResult.k"
@@ -35,7 +35,7 @@ require "../api-core.k"
 require "../api-threads.k"
 
 module JAVA-PREP
-    imports LABELS
+    imports LABELS-PREP
     imports CONFIGURATION-PREP
     imports CORE-SORTS
     imports EXTENDED-K-RESULT

@@ -1,5 +1,4 @@
 require "core-sorts.k"
-require "process-class-members.k"
 require "subtyping.k"
 require "static-init.k"
 require "expressions.k"
@@ -8,7 +7,6 @@ require "expressions.k"
 
 module VAR-LOOKUP
     imports CORE-SORTS
-    imports PROCESS-CLASS-MEMBERS
     imports SUBTYPING
     imports STATIC-INIT         //for staticInit()
     imports EXPRESSIONS
@@ -42,7 +40,6 @@ rule [QThis]:
     </k>
     <crntClass> CrntClass:ClassType </crntClass>
     <location> OL:Int </location>
-    <contextType> instanceCT </contextType>
     <store>
       ...
       OL |-> RV:RawVal :: _

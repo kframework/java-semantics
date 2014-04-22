@@ -1,5 +1,5 @@
 require "java-full-doc.k"
-require "../labels.k"
+require "labels-full.k"
 require "configuration-full.k"
 require "../core-sorts.k"
 require "../extended-KResult.k"
@@ -36,7 +36,7 @@ require "../api-core.k"
 require "../api-threads.k"
 
 module JAVA-FULL
-    imports LABELS
+    imports LABELS-FULL
     imports CONFIGURATION-FULL
     imports CORE-SORTS
     imports EXTENDED-K-RESULT

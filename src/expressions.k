@@ -1,7 +1,7 @@
 require "core-sorts.k"
+require "core-classes.k"
 require "subtyping.k"
 require "primitive-types.k"
-require "elaboration-expressions.k"
 require "to-string.k"
 require "var-lookup.k"
 
@@ -9,9 +9,9 @@ require "var-lookup.k"
 
 module EXPRESSIONS
     imports CORE-SORTS
+    imports CORE-CLASSES
     imports SUBTYPING
     imports PRIMITIVE-TYPES
-    imports ELABORATION-EXPRESSIONS //for isPrefixPostfixExpLabel
     imports TO-STRING
     imports VAR-LOOKUP  // for lookup
 
@@ -357,5 +357,9 @@ rule [store]:
     <k> store(L:Int, V:RawVal :: T:Type) => . ...</k>
     <store>... L |-> (_ => V) :: T ...</store>
         [transition-threading]
+
+/*@ \subsection{auxiliary terms produced during elaboration} */
+
+rule stmtAndExp(Stmt:K, Exp:K) => Stmt ~> Exp
 
 endmodule

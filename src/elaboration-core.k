@@ -1,7 +1,7 @@
 require "core-sorts.k"
 require "subtyping.k"
 require "elaboration-categories.k"
-require "process-class-members.k"
+require "elaboration-expressions.k"
 
 /*@ \section{Module ELABORATION-CORE}
 Elaborate the composition of code blocks of a class - the last step of preprocessing.
@@ -62,6 +62,7 @@ module ELABORATION-CORE
     imports CORE-SORTS
     imports SUBTYPING
     imports ELABORATION-CATEGORIES
+    imports ELABORATION-EXPRESSIONS // for isExpressionLabel
     imports EXPRESSIONS   //for cast()
 
 /*@Custom hole used for custom heating/cooling rules in the elaboration phase.*/
@@ -245,18 +246,9 @@ when
 //@ The implementation is scattered across elaboration-related modules
 syntax K ::= customElabEnd ( KLabel )                       [function]
 
-/*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
-such as an anonymous class declaration. Is typed with the type of the expression.
-At runtime is rewritten into the statement, that should evaluate into .K, followed by the expression,
-that should evaluate to value.*/
-syntax K ::= stmtAndExp ( K, K )
-
 //elaboration time
 rule elabEnd(           stmtAndExp(Stmt:K, cast(T:Type, Exp:K)) )
      => elabRes(cast(T, stmtAndExp(Stmt,   cast(T:Type, Exp:K))))
-
-//runtime
-rule stmtAndExp(Stmt:K, Exp:K) => Stmt ~> Exp
 
 /*@ \subsection{Elaboration of KListWrap - the list of terms} */
 //K bug: this section is a workaround t a serious K' bug that prevents [...] to be properly heated and cooled
