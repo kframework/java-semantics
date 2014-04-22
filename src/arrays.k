@@ -273,10 +273,9 @@ syntax K ::=  arrayInitImpl (
 rule [arrayInitImpl]:
     ( . => store(L, K) )
     ~> arrayInitImpl(_, (L:Int => L +Int 1), [(K:K => .KList),, _] )
-/*when
-    getKLabel(K) =/=KLabel 'ArrayInit*/ //todo remove when works 'ArrayInit should not exist at runtime
+when
+    getKLabel(K) =/=KLabel 'ArrayInit
 
-/*
 rule [arrayInitImpl-inner-ArrayInit-desugar]:
     ( . => store(L, newArrayImpl(T, [length([InitContent])::int], .K, [InitContent])) )
     ~> arrayInitImpl(
@@ -284,7 +283,6 @@ rule [arrayInitImpl-inner-ArrayInit-desugar]:
           (L:Int => L +Int 1),
           [('ArrayInit([InitContent:KList]) => .KList),, _]
        )
-*/ //todo remove when works
 
 rule [arrayInitImpl-discard]:
     arrayInitImpl(_, _, [.KList]) => .

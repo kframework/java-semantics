@@ -154,7 +154,7 @@ syntax KLabel ::=
 //                | "'Void"
 //                | "'Param"
                 | "'NoMethodBody"
-//                | "'ArrayInit"
+                | "'ArrayInit"    //required at execution, because there could be nested 'ArrayInit
                 | "'FieldDec"
 //                | "'VarDec"
 //                | "'ArrayVarDecId"
