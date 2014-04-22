@@ -66,7 +66,7 @@ rule [toString-ClassType-Inner]:
     <classType> class ClassId </classType>
     <enclosingClass> class OuterClassId:Id </enclosingClass>
 
-//@ \texttt{toString for objectClosure}
+//@ \texttt{toString for objectRef}
 
 rule toString(objectRef(OId:Int, LowestClass:ClassType) :: T:Type)
     =>  'Invoke(

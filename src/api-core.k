@@ -129,7 +129,7 @@ rule [object-toString-on-String]:
 when
     Class ==K objectClass andBool Id2String(MethodName) ==String "toString"
 
-/*@Object.hashCode(). Returns the canonical memory location of the objectClosure. */
+/*@Object.hashCode(). Returns the canonical memory location of the objectRef. */
 rule [object-hashCode]:
     <k>
       invokeImpl(

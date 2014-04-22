@@ -49,7 +49,7 @@ rule [QThis]:
 //@ Search for the right value representing QThis(Class) - an expression of type Class.this
 syntax K ::=  lookupQThis (
                 ClassType,  //the type of this to look for,
-                TypedVal    //the objectClosure where the type should be found
+                TypedVal    //the objectRef where the type should be found
               )
 
 rule [lookupQThis-found]:

@@ -358,7 +358,7 @@ configuration
         //Standard output. Each token is a ListItem.
         <out color="LightPink" stream="stdout"> .List </out>
 
-        //A map from types to objectClosure() terms that represent their T.class value
+        //A map from types to objectRef() terms that represent their T.class value
         //Created an used in execution phase, by expressions of the form X.class
         //Type: Map[Type->TypedVal]. Type may be any reference type.
         <classLiteralsMap color="LightPink"> .Map </classLiteralsMap>

@@ -189,7 +189,7 @@ syntax KResult ::= AccessMode
 /*@ Types of routines represented by a method closure*/
 syntax MethodMetaType ::= "methodMMT" | "constructorMMT"
 
-/*@ The two possibilities for a type represented by an objectClosure: class or interface.*/
+/*@ The two possibilities for a type represented by an objectRef: class or interface.*/
 syntax ClassMetaType ::= "classCMT" | "interfaceCMT"
 
 syntax KResult ::= "noValue"
