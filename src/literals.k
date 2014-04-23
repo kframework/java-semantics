@@ -188,9 +188,9 @@ syntax KLabel ::= "'String"
                 | "'Chars"
 
 rule  'Lit('String([K1:K,, K2:K,, Ks:KList]))
-      => 'Plus('Lit('String([K1])),,
-               'Lit('String([K2,, Ks]))
-          )
+      => plusAux( 'Lit('String([K1])),
+                  'Lit('String([K2,, Ks]))
+         )
 
 rule 'Lit('String(['Chars(Str:String)])) => Str
 

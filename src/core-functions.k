@@ -71,12 +71,20 @@ rule eqAux(KR1:KResult, KR2:KResult) => KR1 ==K KR2
 /*@ Alternative version of if, to be used whenever semantics needs an if logic.
   The original 'If will only be used in the source programs.*/
 syntax K ::= ifAux ( K, K, K )                  [strict(1)]
-rule ifAux(true::bool, S:K, _) => S             [structural]
-rule ifAux(false::bool, _, S:K) => S            [structural]
+rule ifAux(true::bool, S:K, _) => S
+rule ifAux(false::bool, _, S:K) => S
 
-syntax K ::= andAux(K, K) [strict(1)]
+syntax K ::= andAux(K, K)                       [strict(1)]
 rule andAux(true::bool, E:K) => E
 rule andAux(false::bool, _) => false
+
+syntax K ::= orAux(K, K)                       [strict(1)]
+rule orAux(true::bool, _) => true
+rule orAux(false::bool, E:K) => E
+
+//@ Replaces 'Plus in preprocessing phases
+syntax K ::= plusAux( K, K )                    [strict]
+rule plusAux(Str1:String :: _, Str2:String :: _) => (Str1 +String Str2) :: stringClass
 
 /*@ A wrapper for maps. Allows holding maps inside an arbitrary expression where a K term is required.
     Also used as part of mapUnion operation in PROCESS-CLASS-MEMBERS

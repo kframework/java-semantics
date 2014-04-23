@@ -308,14 +308,14 @@ rule [isAccessible-protected]:
       isAccessible(protected, CT:ContextType, DeclaringClass:ClassType, IsQ:Bool,
           TargetClass:ClassType
       )
-      => 'LazyOr(
+      => orAux(
             andAux(
-              'LazyOr((CT ==K staticCT),, 'Not(IsQ)),
+              orAux(CT ==K staticCT, IsQ ==K false::bool),
               subtype(
                 ifAux(IsQ, CurrentClass, TargetClass),
                 DeclaringClass
               )
-            ),,
+            ),
             isAccessible(package, CT, DeclaringClass, IsQ, TargetClass)
       )
       ...

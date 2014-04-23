@@ -45,15 +45,15 @@ rule bitCount(char) => 16
 syntax K ::= normalize ( TypedVal )
 
 rule normalize(I:Int :: IntT:IntType)
-    =>  'If(isInRange(I::IntT),,
-          I::IntT,,
+    =>  ifAux(isInRange(I::IntT),
+          I::IntT,
           normalizeImpl(I::IntT)
         )
 when IntT =/=K char
 
 rule normalize(I:Int :: char)
-    =>  'If(isInRange(I::char),,
-          I :: char,,
+    =>  ifAux(isInRange(I::char),
+          I :: char,
           toUnsigned(normalizeImpl(I::char))
         )
 
@@ -90,8 +90,8 @@ rule normalizeImpl(I:Int :: T:Type)
 syntax K ::= normalizeSign ( TypedVal )       [strict]
 
 rule normalizeSign(I:Int :: T:Type)
-    =>  'If(I <=Int ((1 <<Int (bitCount(T) -Int 1)) -Int 1),,
-          I :: T,,
+    =>  ifAux(I <=Int ((1 <<Int (bitCount(T) -Int 1)) -Int 1),
+          I :: T,
           I -Int (1 <<Int bitCount(T)) :: T
         )
 
@@ -100,8 +100,8 @@ rule normalizeSign(I:Int :: T:Type)
 */
 syntax K ::= toUnsigned ( TypedVal )          [strict]
 rule toUnsigned(I:Int :: T:Type)
-    =>  'If(I >=Int 0,,
-          I :: T,,
+    =>  ifAux(I >=Int 0,
+          I :: T,
           I +Int (1 <<Int bitCount(T)) :: T
         )
 
