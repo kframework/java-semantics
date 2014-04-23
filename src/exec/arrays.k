@@ -1,5 +1,5 @@
-require "core-sorts.k"
-require "subtyping.k"
+require "../common/core-sorts.k"
+require "../common/subtyping.k"
 require "expressions.k"
 
 //@ \section{Module ARRAYS}

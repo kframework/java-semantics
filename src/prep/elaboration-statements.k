@@ -1,4 +1,4 @@
-require "core-sorts.k"
+require "../common/core-sorts.k"
 require "elaboration-core.k"
 require "elaboration-method-invoke.k"
 require "process-local-classes.k"

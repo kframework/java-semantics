@@ -1,6 +1,6 @@
-require "core-sorts.k"
-require "core-classes.k"
-require "aux-strings.k"
+require "../common/core-sorts.k"
+require "../common/core-classes.k"
+require "../common/aux-strings.k"
 
 /*@ \section{Module PROCESS-TYPE-NAMES}
 First pass - collecting globally accessible names in the program. This includes packages,

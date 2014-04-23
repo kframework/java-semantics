@@ -1,5 +1,5 @@
-require "core-sorts.k"
-require "core-classes.k"
+require "../common/core-sorts.k"
+require "../common/core-classes.k"
 
 /*@ \section{Module PROCESS-IMPORTS}
 Rules related to processing import declarations. Part of ProcCompUnitsPhase.

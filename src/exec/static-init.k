@@ -1,4 +1,4 @@
-require "core-sorts.k"
+require "../common/core-sorts.k"
 require "var-lookup.k"
 
 //@ \section{Module STATIC-INIT}

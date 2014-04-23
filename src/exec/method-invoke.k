@@ -1,4 +1,4 @@
-require "core-sorts.k"
+require "../common/core-sorts.k"
 require "classes.k"
 require "statements.k"
 require "static-init.k"

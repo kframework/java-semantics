@@ -1,5 +1,5 @@
-require "../core-sorts.k"
-require "../core-functions.k"
+require "../common/core-sorts.k"
+require "../common/core-functions.k"
 
 module CONFIGURATION-EXEC
     imports CORE-SORTS

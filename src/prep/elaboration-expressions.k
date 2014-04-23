@@ -1,7 +1,7 @@
-require "core-sorts.k"
-require "core-classes.k"
+require "../common/core-sorts.k"
+require "../common/core-classes.k"
+require "../common/primitive-types.k"
 require "elaboration-core.k"
-require "primitive-types.k"
 
 module ELABORATION-EXPRESSIONS
     imports CORE-SORTS

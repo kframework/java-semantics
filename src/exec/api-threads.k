@@ -1,4 +1,4 @@
-require "core-sorts.k"
+require "../common/core-sorts.k"
 require "method-invoke.k"
 
 //@ \section{Module API-THREADS}

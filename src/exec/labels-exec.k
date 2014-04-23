@@ -105,7 +105,7 @@ syntax KLabel ::=
 //                | "'Dim"
                 //| "'NewInstance"
                 //| "'QNewInstance"
-//                | "'Lit"
+                | "'Lit"
 //                | "'Class"        // X.class : the class literal
 //                | "'This"
               //  | "'QThis"

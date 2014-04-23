@@ -1,7 +1,8 @@
-require "core-sorts.k"
-require "subtyping.k"
+require "../common/core-sorts.k"
+require "../common/subtyping.k"
 require "var-lookup.k"
 require "method-invoke.k"
+require "extended-KResult.k"
 
 //@ \section{Module STATEMENTS}
 
@@ -10,6 +11,7 @@ module STATEMENTS
     imports SUBTYPING
     imports VAR-LOOKUP
     imports METHOD-INVOKE // for bindTo
+    imports EXTENDED-K-RESULT
 
 //@ \subsection{Call of main method}
 

@@ -1,11 +1,6 @@
-require "core-functions.k"
-require "core-classes.k"
-
 //@ \section{Module CORE-SORTS}
 
 module CORE-SORTS
-    /*imports CORE-FUNCTIONS
-    imports CORE-CLASSES*/
 
 //@ \subsection{Computation phases}
 

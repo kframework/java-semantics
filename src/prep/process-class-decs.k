@@ -1,4 +1,4 @@
-require "core-sorts.k"
+require "../common/core-sorts.k"
 require "core-preprocessing.k"
 require "process-type-names.k"
 

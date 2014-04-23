@@ -1,4 +1,4 @@
-require "core-sorts.k"
+require "../common/core-sorts.k"
 
 module EXTENDED-K-RESULT
     imports CORE-SORTS

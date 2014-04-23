@@ -1,5 +1,5 @@
-require "../core-sorts.k"
-require "../core-functions.k"
+require "../common/core-sorts.k"
+require "../common/core-functions.k"
 require "configuration-full-doc.k"
 
 module CONFIGURATION-FULL

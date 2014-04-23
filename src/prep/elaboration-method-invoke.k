@@ -1,6 +1,6 @@
-require "core-sorts.k"
-require "core-classes.k"
-require "subtyping.k"
+require "../common/core-sorts.k"
+require "../common/core-classes.k"
+require "../common/subtyping.k"
 require "elaboration-core.k"
 
 //@ \section{Module ELABORATION-METHOD-INVOKE}

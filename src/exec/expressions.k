@@ -1,8 +1,8 @@
-require "core-sorts.k"
-require "core-classes.k"
-require "subtyping.k"
-require "primitive-types.k"
-require "to-string.k"
+require "../common/core-sorts.k"
+require "../common/core-classes.k"
+require "../common/subtyping.k"
+require "../common/primitive-types.k"
+require "../common/to-string.k"
 require "var-lookup.k"
 
 //@ \section{Module EXPRESSIONS}
@@ -11,7 +11,7 @@ module EXPRESSIONS
     imports CORE-SORTS
     imports CORE-CLASSES
     imports SUBTYPING
-    imports PRIMITIVE-TYPES
+    imports PRIMITIVE-TYPES // for normalizeType
     imports TO-STRING
     imports VAR-LOOKUP  // for lookup
 

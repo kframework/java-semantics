@@ -1,5 +1,5 @@
-require "core-sorts.k"
-require "core-classes.k"
+require "../common/core-sorts.k"
+require "../common/core-classes.k"
 require "process-comp-units.k"
 require "process-class-decs.k"
 require "process-class-members.k"

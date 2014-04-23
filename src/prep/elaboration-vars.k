@@ -1,4 +1,4 @@
-require "core-sorts.k"
+require "../common/core-sorts.k"
 require "elaboration-core.k"
 
 module ELABORATION-VARS
