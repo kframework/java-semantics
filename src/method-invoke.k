@@ -194,7 +194,7 @@ rule [lookupOverloadedMethod-SigKnownOtherCandidates]:
         mapWrap( (Sig |-> NewDecClass:ClassType => .) _:Map ),
         OldMethodRef:MethodRef
         => 'If(
-              'LazyAnd(
+              andAux(
                 (eqAux(getMethodContextType(OldMethodRef), instanceCT)),,
                 isAccessibleForOverwriting(
                   getMethConsClosureClass(OldMethodRef),

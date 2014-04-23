@@ -74,6 +74,10 @@ syntax K ::= ifAux ( K, K, K )                  [strict(1)]
 rule ifAux(true::bool, S:K, _) => S             [structural]
 rule ifAux(false::bool, _, S:K) => S            [structural]
 
+syntax K ::= andAux(K, K) [strict(1)]
+rule andAux(true, E:K) => E
+rule andAux(false, _) => false
+
 /*@ A wrapper for maps. Allows holding maps inside an arbitrary expression where a K term is required.
     Also used as part of mapUnion operation in PROCESS-CLASS-MEMBERS
 */

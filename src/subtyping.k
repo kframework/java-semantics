@@ -149,7 +149,7 @@ rule [subtype-OfNoClass]:
 
 rule [subtypeList]:
     subtypeList(types(T1:Type,,Ts:KList), types(Tp1:Type,,Tps:KList))
-    => 'LazyAnd( subtype(T1,Tp1),, subtypeList(types(Ts), types(Tps)) )
+    => andAux( subtype(T1,Tp1),, subtypeList(types(Ts), types(Tps)) )
         [structural]
 
 rule [subtypeList-EmptyLeft]:
