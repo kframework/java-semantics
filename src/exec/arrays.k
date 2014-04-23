@@ -77,30 +77,34 @@ similar to that in untyped SIMPLE, but we have to enforce that the
 type of an array declaration be of the form \texttt{arrayOf $T$}
 and assign the right type ($T$) to the allocated array locations. */
 
-//@ \subsubsection{newArrayImpl implementation}
+/*@ Either 'NewArray( T:ElemType,, ['Dim(N1),,'Dim('N2),, ...],, [...,, 'Dim(.KList),, ...] )
+    Or     'NewArray( T:ElemType,, [...,, 'Dim(.KList),, ...],, 'ArrayInit(_) )
+*/
+syntax KLabel ::= "'NewArray"
 
 /* HOLE is of the form 'Dim(K)
+  totest left-to-right evaluation of Dims
 */
-context newArrayImpl(_:Type, [Dims:KList,, HOLE,, _], _,_)
+context 'NewArray(_:Type,, [Dims:KList,, HOLE,, _],, _)
 when isKResult(Dims)
 
-//@ newArrayImpl(_:Type, ['Dim(_),, ...], _,_)
 syntax KLabel ::= "'Dim"
 
 //applies right after the previous rule, because HOLE is of the form 'Dim(K)
 rule 'Dim(K:K) => K [structural]
 
-/*When all dims were computed, check that dims are positive, and only
-after that begin array allocation
+/*@ When all dims were computed, check that dims are positive, and only
+    after that begin array allocation
 */
-rule [newArrayImpl]:
-    newArrayImpl(T:Type, [Dims:KList], InitExp:K, [.KList])
-    => checkNonNegative([Dims]) ~> allocAndInitArray(T, [Dims], InitExp)
-when isKResult(Dims) andBool InitExp =/=K .K
+rule [NewArray-simple]:
+    'NewArray(T:Type,, [Dims:KList],, [.KList])
+    => checkNonNegative([Dims]) ~> allocAndInitArray(T, [Dims], default(T))
+when isKResult(Dims)
+        [structural]
 
-rule [newArrayImpl-with-init]:
-    newArrayImpl(T:Type, [Dim:TypedVal], .K, [InitContent:KList])
-    => arrayInitAlloc(newArrayImpl(T, [Dim], undefined :: T, [.KList]), [InitContent])
+rule [NewArray-ArrayInit]:
+    'NewArray(arrayOf T:Type,, [.KList],, 'ArrayInit([InitContent:KList]))
+    => arrayInitAlloc('NewArray(T,, [length([InitContent])::int],, [.KList]), [InitContent])
 
 /*Computation designed to check that array creation expression dimensions are non-negative. If they are non-negative,
 checkNonNegative is dissolved. Otherwise NegativeArraySizeException is thrown.
@@ -125,7 +129,7 @@ when
 
 rule checkNonNegative([.KList]) => .
 
-//@ Same as newArrayImpl, but after dims were computed and checked
+//@ Same as 'NewArray, but after dims were computed and checked
 syntax K ::=  allocAndInitArray (
                 Type, // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
                 KListWrap,  // [Dims:List{KResult}] - array dimensions
@@ -267,7 +271,7 @@ when
     getKLabel(K) =/=KLabel 'ArrayInit
 
 rule [arrayInitImpl-inner-ArrayInit-desugar]:
-    ( . => store(L, newArrayImpl(T, [length([InitContent])::int], .K, [InitContent])) )
+    ( . => store(L, 'NewArray(arrayOf T,, [.KList],, 'ArrayInit([InitContent]))) )
     ~> arrayInitImpl(
           arrayOf arrayOf T:Type,
           (L:Int => L +Int 1),

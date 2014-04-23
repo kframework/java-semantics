@@ -99,8 +99,6 @@ syntax KLabel ::= "'ArrayType"
 context 'ArrayType(HOLE)
 rule 'ArrayType(T:Type) => arrayOf T     [structural]
 
-syntax KLabel ::= "'NewArray"
-
 rule [elabEnd-NewArray-EmptyDims]:
     elabEnd('NewArray( (T:Type => arrayOf T),, [_],,
         [ ( 'Dim(.KList) => .KList ) ,,_:KList] ))
@@ -108,7 +106,7 @@ rule [elabEnd-NewArray-EmptyDims]:
 
 rule [elabEnd-NewArray]:
     elabEnd('NewArray(T:Type,, [Dims:KList],, [.KList]))
-    => elabExpAndType(newArrayImpl(T, [Dims], default(T), [.KList]), getArrayType(T, [Dims]))
+    => elabExpAndType('NewArray(T,, [Dims],, [.KList]), getArrayType(T, [Dims]))
         [structural]
 
 //@ Computes the array type based on allocated elem type and number of allocated dimensions.
@@ -121,6 +119,6 @@ rule [elabEnd-NewArray-ArrayInit-Preprocess]:
 
 rule [elabEnd-NewArray-ArrayInit]:
     elabEnd('NewArray(arrayOf T:Type,, [.KList],, 'ArrayInit([InitContent:KList])))
-    => elabRes(cast(arrayOf T, newArrayImpl(T, [length([InitContent])::int], .K, [InitContent])))
+    => elabRes(cast(arrayOf T, 'NewArray(arrayOf T:Type,, [.KList],, 'ArrayInit([InitContent:KList]))))
 
 endmodule

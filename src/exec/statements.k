@@ -24,7 +24,7 @@ rule [ExecutionPhase-Start]:
                 'Method('MethodName(getClassType(packageId(String2Id("")), String2Id(MainClassS)),,
                     String2Id("main"))
                 ),,
-                [ newArrayImpl(stringClass, ['Dim(0 :: int)], null :: stringClass, [.KList]) ]
+                [ 'NewArray(stringClass,, ['Dim(0 :: int)],, [.KList]) ]
               )
             )
     </k>

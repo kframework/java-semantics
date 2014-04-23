@@ -101,7 +101,7 @@ syntax KLabel ::=
                 | "'Field"
 //                | "'SuperField"
 //                | "'QSuperField"
-//                | "'NewArray"
+                | "'NewArray"
                 | "'Dim"
                 | "'NewInstance"
                 | "'QNewInstance"
