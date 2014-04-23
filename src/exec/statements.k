@@ -2,7 +2,6 @@ require "../common/core-sorts.k"
 require "../common/subtyping.k"
 require "var-lookup.k"
 require "method-invoke.k"
-require "extended-KResult.k"
 
 //@ \section{Module STATEMENTS}
 
@@ -11,7 +10,6 @@ module STATEMENTS
     imports SUBTYPING
     imports VAR-LOOKUP
     imports METHOD-INVOKE // for bindTo
-    imports EXTENDED-K-RESULT
 
 //@ \subsection{Call of main method}
 
@@ -480,6 +478,15 @@ context 'Try(_:K,,[_,, HOLE,, _])
 context 'Catch(HOLE,, _)                                [result(ExtKResult)]
 
 rule 'Catch(KR:ExtKResult,, S:K) => catchImpl(KR,S)
+
+/*@ Extended K Result.
+  Represents KLabels that should be treated as KResult during execution phase, but not during elaboration phase.
+*/
+syntax ExtKResult ::= "dummy"
+
+rule isExtKResult(KR:KResult) => true
+
+rule isExtKResult('Param(_:K,, T:Type,, _:Id)) => true
 
 //@ Internal representation of a preprocessed catch clause
 syntax KResult ::=  catchImpl (
