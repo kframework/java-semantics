@@ -247,32 +247,6 @@ context 'Assign(_:KResult,,HOLE)
 rule [Assign]:
     'Assign(loc(L:Int) :: ResT:Type,, V:RawVal :: ResT) => store(L, V::ResT) ~> V::ResT
 
-//@ Assign***:KLabel(LHS,, RHS)
-syntax KLabel ::= "'AssignMul"
-                | "'AssignDiv"
-                | "'AssignRemain"
-                | "'AssignPlus"
-                | "'AssignMinus"
-                | "'AssignLeftShift"
-                | "'AssignRightShift"
-                | "'AssignURightShift"
-                | "'AssignAnd"
-                | "'AssignExcOr"
-                | "'AssignOr"
-
-syntax K ::= isCompoundAssignLabel ( KLabel )    [function]
-rule isCompoundAssignLabel('AssignPlus) => true
-rule isCompoundAssignLabel('AssignMinus) => true
-rule isCompoundAssignLabel('AssignMul) => true
-rule isCompoundAssignLabel('AssignDiv) => true
-rule isCompoundAssignLabel('AssignAnd) => true
-rule isCompoundAssignLabel('AssignOr) => true
-rule isCompoundAssignLabel('AssignExcOr) => true
-rule isCompoundAssignLabel('AssignRemain) => true
-rule isCompoundAssignLabel('AssignLeftShift) => true
-rule isCompoundAssignLabel('AssignRightShift) => true
-rule isCompoundAssignLabel('AssignURightShift) => true
-
 /*@ Desugars compound assign into the underlying operator + assign.
 
     Question: Why not during elaboration phase?
@@ -305,8 +279,6 @@ rule getOperatorLabel('AssignRightShift)  => 'RightShift
 rule getOperatorLabel('AssignURightShift) => 'URightShift
 
 /*@ \subsection{primitive types cast} */
-
-syntax Cast ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
 
 //@ The type of RV could either be NumericType or tempType. This rule matches both.
 rule [cast-Number]: cast(NT:NumericType, RV:RawVal::_) => normalize(RV::NT)

@@ -1,7 +1,6 @@
 require "core-sorts.k"
 require "subtyping.k"
 require "elaboration-categories.k"
-require "elaboration-expressions.k"
 
 /*@ \section{Module ELABORATION-CORE}
 Elaborate the composition of code blocks of a class - the last step of preprocessing.
@@ -63,7 +62,6 @@ module ELABORATION-CORE
     imports SUBTYPING
     imports ELABORATION-CATEGORIES
     imports ELABORATION-EXPRESSIONS // for isExpressionLabel
-    imports EXPRESSIONS   //for cast()
 
 /*@Custom hole used for custom heating/cooling rules in the elaboration phase.*/
 syntax K ::= "CHOLE"

@@ -1,9 +1,9 @@
 require "core-sorts.k"
-require "expressions.k"
+require "core-classes.k"
 
 module CORE-FUNCTIONS
     imports CORE-SORTS
-    imports EXPRESSIONS
+    imports CORE-CLASSES
 
 /*@ Returns the type associated with various K terms. The implementation is scattered among various K files.
   For a type - the type itself. For a typed expression - the type component. For some raw values - their most common
@@ -75,8 +75,8 @@ rule ifAux(true::bool, S:K, _) => S             [structural]
 rule ifAux(false::bool, _, S:K) => S            [structural]
 
 syntax K ::= andAux(K, K) [strict(1)]
-rule andAux(true, E:K) => E
-rule andAux(false, _) => false
+rule andAux(true::bool, E:K) => E
+rule andAux(false::bool, _) => false
 
 /*@ A wrapper for maps. Allows holding maps inside an arbitrary expression where a K term is required.
     Also used as part of mapUnion operation in PROCESS-CLASS-MEMBERS

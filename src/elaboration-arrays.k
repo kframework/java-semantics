@@ -102,7 +102,7 @@ rule 'ArrayType(T:Type) => arrayOf T     [structural]
 syntax KLabel ::= "'NewArray"
 
 rule [elabEnd-NewArray-EmptyDims]:
-    elabEnd('NewArray( (T:Type => arrayOf T),, _:K,,
+    elabEnd('NewArray( (T:Type => arrayOf T),, [_],,
         [ ( 'Dim(.KList) => .KList ) ,,_:KList] ))
         [structural]
 

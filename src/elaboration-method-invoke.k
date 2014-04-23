@@ -2,7 +2,6 @@ require "core-sorts.k"
 require "core-classes.k"
 require "subtyping.k"
 require "elaboration-core.k"
-require "method-invoke.k"
 
 //@ \section{Module ELABORATION-METHOD-INVOKE}
 
@@ -11,7 +10,6 @@ module ELABORATION-METHOD-INVOKE
     imports CORE-CLASSES
     imports SUBTYPING
     imports ELABORATION-CORE
-    imports METHOD-INVOKE //for superMethod()
 
 rule customElabEnd('Method) => true
 
@@ -253,14 +251,14 @@ rule [lookupSignature-Main]:
         IsQ:Bool,
         OldMethodRef:MethodRef
         => ifAux(
-            'LazyAnd(
-              'LazyAnd(
-                subtypeList(CallTs, SigTs),,
+            andAux(
+              andAux(
+                subtypeList(CallTs, SigTs),
                 #if OldMethodRef ==K noMethodRef
                   #then true
                   #else subtypeList(SigTs, getMethodRefArgTypes(OldMethodRef))
                 #fi
-              ),,
+              ),
               isAccessible(
                 getMethodAccessMode(methodRef(sig(MethodName, SigTs), DecClass)),
                 getMethodContextType(methodRef(sig(MethodName, SigTs), DecClass)),
@@ -311,8 +309,8 @@ rule [isAccessible-protected]:
           TargetClass:ClassType
       )
       => 'LazyOr(
-            'LazyAnd(
-              'LazyOr((CT ==K staticCT),, 'Not(IsQ)),,
+            andAux(
+              'LazyOr((CT ==K staticCT),, 'Not(IsQ)),
               subtype(
                 ifAux(IsQ, CurrentClass, TargetClass),
                 DeclaringClass

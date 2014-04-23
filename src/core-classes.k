@@ -1,5 +1,6 @@
 require "core-sorts.k"
 require "core-functions.k"
+require "aux-strings.k"
 
 //@ \section{Module CORE-CLASSES}
 /*@ Auxiliary functions related to classes and packages.
@@ -8,6 +9,7 @@ require "core-functions.k"
 module CORE-CLASSES
     imports CORE-SORTS
     imports CORE-FUNCTIONS
+    imports AUX-STRINGS // for retainHead
 
 //@ \subsection{Shortcuts for the most frequently used classes within the semantics}
 
@@ -68,6 +70,34 @@ rule [getTopLevel]:
     </k>
     <classType> Class </classType>
     <enclosingClass> noClass </enclosingClass>
+
+/*@ Tests if a method within BaseClass with BaseAccessMode is overwritten by a method with the same signature
+    in SubClass with SubAccessMode.
+    It is also possible that BaseClass and SubClass are the same, since the same method is inherited by many classes,
+    and gets in their <methods> cell.
+*/
+syntax K ::=  isAccessibleForOverwriting (
+                ClassType,  //BaseClass
+                AccessMode, //BaseAccessMode
+                ClassType   //SubClass
+              )
+              [strict]
+
+rule isAccessibleForOverwriting(_, public,    _) => true
+rule isAccessibleForOverwriting(_, protected, _) => true
+
+//@ Object class cannot match this rule since it has public access mode
+rule isAccessibleForOverwriting(BaseClass:ClassType, package, SubClass:ClassType)
+    => eqAux(getPackage(getTopLevel(BaseClass)), getPackage(getTopLevel(SubClass)))
+
+rule isAccessibleForOverwriting(_, private, _) => false
+
+//@ Retrieve the content of <methods> for the given class
+syntax K ::=  getMethods ( ClassType )
+rule [getMethods-ClassType]:
+    <k> getMethods(Class:ClassType) => mapWrap(Methods) ...</k>
+    <classType> Class </classType>
+    <methods> Methods:Map </methods>
 
 syntax KLabel ::=   "'Public"
                   | "'Private"
@@ -163,6 +193,32 @@ rule isPrefixPostfixExpLabel('PreDecr) => true
 rule isPrefixPostfixExpLabel('PostIncr) => true
 rule isPrefixPostfixExpLabel('PostDecr) => true
 
+//@ Assign***:KLabel(LHS,, RHS)
+syntax KLabel ::= "'AssignMul"
+                | "'AssignDiv"
+                | "'AssignRemain"
+                | "'AssignPlus"
+                | "'AssignMinus"
+                | "'AssignLeftShift"
+                | "'AssignRightShift"
+                | "'AssignURightShift"
+                | "'AssignAnd"
+                | "'AssignExcOr"
+                | "'AssignOr"
+
+syntax K ::= isCompoundAssignLabel ( KLabel )    [function]
+rule isCompoundAssignLabel('AssignPlus) => true
+rule isCompoundAssignLabel('AssignMinus) => true
+rule isCompoundAssignLabel('AssignMul) => true
+rule isCompoundAssignLabel('AssignDiv) => true
+rule isCompoundAssignLabel('AssignAnd) => true
+rule isCompoundAssignLabel('AssignOr) => true
+rule isCompoundAssignLabel('AssignExcOr) => true
+rule isCompoundAssignLabel('AssignRemain) => true
+rule isCompoundAssignLabel('AssignLeftShift) => true
+rule isCompoundAssignLabel('AssignRightShift) => true
+rule isCompoundAssignLabel('AssignURightShift) => true
+
 //@ \subsection{Computation terms produced during elaboration}
 
 /*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
@@ -170,5 +226,26 @@ such as an anonymous class declaration. Is typed with the type of the expression
 At runtime is rewritten into the statement, that should evaluate into .K, followed by the expression,
 that should evaluate to value.*/
 syntax K ::= stmtAndExp ( K, K )
+
+syntax Cast ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
+
+/*Elaboration result for super keyword in A.super.m() call.
+  Have to be a typed expression.
+*/
+syntax K ::= superMethod ( K ) // is always equal to A.this - used to lookup the right qualifier closure.
+        [strict]
+
+//todo replace with plain 'NewArray in the elaboration result
+//@Elaboration result of expressions new T[]...
+syntax K ::=  newArrayImpl (
+                Type,       // T - type of each allocated element. So for new int[1][1][][],
+                              // T will be "arrayOf arrayOf int".
+                KListWrap,  // [Dims] - array dimensions
+                K,          // InitExp - expression used to initialize each array element,
+                              // or .K if argument 4 is specified.
+                KListWrap   // InitContent - array initializer, if any, or .K if argument 3 is specified.
+                              // From arguments 3 and 4 just one may be specified. This initializer is for the whole
+                              // array, not for each element as the previous one.
+              )
 
 endmodule

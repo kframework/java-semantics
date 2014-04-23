@@ -145,12 +145,6 @@ rule [Invoke-Method-On-Null]:
 when
     isKResult(ParamVals)
 
-/*Elaboration result for super keyword in A.super.m() call.
-  Have to be a typed expression.
-*/
-syntax K ::= superMethod ( K ) // is always equal to A.this - used to lookup the right qualifier closure.
-        [strict]
-
 rule [superMethod]:
     superMethod(
       objectRef(
@@ -167,7 +161,7 @@ Search for the right implementation is performed from the compile-time type of t
 to more derived types, up to the object type of the target.
 This is required in order to respect the rules of inheritance in the presence of access modes.
 Evaluates into typed method closure.*/
-syntax K ::=  lookupOverloadedMethod (
+syntax K ::=  lookupOverloadedMethod ( //todo maybe we can simplify this logic, too much overlapping with elaboration
                 Signature,  //sig(Name, SigTL) - Method signature
                 K,          //computes into resultListWrap(Class list), elements of type ClassType,
                               // from derived to base.
@@ -187,27 +181,24 @@ rule [lookupOverloadedMethod-SigKnownFirstCandidate]:
     )
 
 rule [lookupOverloadedMethod-SigKnownOtherCandidates]:
-    <k>
-      lookupOverloadedMethod(
-        Sig:Signature,
-        _,
-        mapWrap( (Sig |-> NewDecClass:ClassType => .) _:Map ),
-        OldMethodRef:MethodRef
-        => 'If(
-              andAux(
-                (eqAux(getMethodContextType(OldMethodRef), instanceCT)),,
-                isAccessibleForOverwriting(
-                  getMethConsClosureClass(OldMethodRef),
-                  getMethodAccessMode(OldMethodRef),
-                  NewDecClass
-                )
-              ),,
-              methodRef(Sig, NewDecClass),,
-              OldMethodRef
-            )
-      )
-      ...
-    </k>
+    lookupOverloadedMethod(
+      Sig:Signature,
+      _,
+      mapWrap( (Sig |-> NewDecClass:ClassType => .) _:Map ),
+      OldMethodRef:MethodRef
+      => 'If(
+            andAux(
+              (eqAux(getMethodContextType(OldMethodRef), instanceCT)),
+              isAccessibleForOverwriting(
+                getMethConsClosureClass(OldMethodRef),
+                getMethodAccessMode(OldMethodRef),
+                NewDecClass
+              )
+            ),,
+            methodRef(Sig, NewDecClass),,
+            OldMethodRef
+          )
+    )
 
 rule [lookupOverloadedMethod-SigKnownEntryDiscard]:
     lookupOverloadedMethod(
@@ -231,33 +222,6 @@ rule [lookupOverloadedMethod-SigKnownEnd]:
     lookupOverloadedMethod(_, resultListWrap(.KList), mapWrap(.Map), MethodRef:MethodRef ) => MethodRef
 when
     MethodRef =/=K noMethodRef
-
-//@ Retrieve the content of <methods> for the given class
-syntax K ::=  getMethods ( ClassType )
-rule [getMethods-ClassType]:
-    <k> getMethods(Class:ClassType) => mapWrap(Methods) ...</k>
-    <classType> Class </classType>
-    <methods> Methods:Map </methods>
-
-/*@ Tests if a method within BaseClass with BaseAccessMode is overwritten by a method with the same signature
-in SubClass with SubAccessMode.
-It is also possible that BaseClass and SubClass are the same, since the same method is inherited by many classes,
-and gets in their <methods> cell.*/
-syntax K ::=  isAccessibleForOverwriting (
-                ClassType,  //BaseClass
-                AccessMode, //BaseAccessMode
-                ClassType   //SubClass
-              )
-              [strict]
-
-rule isAccessibleForOverwriting(_, public,    _) => true
-rule isAccessibleForOverwriting(_, protected, _) => true
-
-//@ Object class cannot match this rule since it has public access mode
-rule isAccessibleForOverwriting(BaseClass:ClassType, package, SubClass:ClassType)
-    => eqAux(getPackage(getTopLevel(BaseClass)), getPackage(getTopLevel(SubClass)))
-
-rule isAccessibleForOverwriting(_, private, _) => false
 
 //@ Returns the defining class of the given method TypedVal.
 syntax K ::= getMethConsClosureClass ( MethodRef )                 [strict]

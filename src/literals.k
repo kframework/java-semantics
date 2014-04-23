@@ -1,5 +1,6 @@
 require "core-sorts.k"
 require "aux-strings.k"
+require "to-string.k"
 require "primitive-types.k"
 
 //@ \section{Module LITERALS}
@@ -7,6 +8,7 @@ require "primitive-types.k"
 module LITERALS
     imports CORE-SORTS
     imports AUX-STRINGS
+    imports TO-STRING
     imports PRIMITIVE-TYPES
 
 //@ \subsection{Auxiliary constructs}

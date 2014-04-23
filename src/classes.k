@@ -26,7 +26,7 @@ module CLASSES
 /*@ \subsection{New instance creation}*/
 
 //@ 'NewInstance( _:K,, Class:ClassType,, [Args],, 'None(.KList) )
-syntax KLabel ::= "'NewInstance"
+syntax KLabel ::= "'NewInstance" //todo uniformity - remove from here
 
 /*@Unpack 'NewInstance back into 'QNewInstance.
   The difference between desugaring and unpacking is that unpacking is an artificial procedure required to separate

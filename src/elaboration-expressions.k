@@ -1,11 +1,13 @@
 require "core-sorts.k"
 require "core-classes.k"
 require "elaboration-core.k"
+require "primitive-types.k"
 
 module ELABORATION-EXPRESSIONS
     imports CORE-SORTS
     imports CORE-CLASSES
     imports ELABORATION-CORE
+    imports PRIMITIVE-TYPES
 
 /*@ \subsection{Elaboration of numeric expressions} */
 

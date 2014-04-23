@@ -1,4 +1,5 @@
 require "core-sorts.k"
+require "core-functions.k"
 require "core-classes.k"
 
 //@ \section{Module SUBTYPING}
@@ -6,6 +7,7 @@ require "core-classes.k"
 module SUBTYPING
     imports CORE-SORTS
     imports CORE-CLASSES
+    imports CORE-FUNCTIONS
 
 //@ Checks whether first type is a subtype of the second
 syntax K ::=  subtype (
@@ -149,7 +151,7 @@ rule [subtype-OfNoClass]:
 
 rule [subtypeList]:
     subtypeList(types(T1:Type,,Ts:KList), types(Tp1:Type,,Tps:KList))
-    => andAux( subtype(T1,Tp1),, subtypeList(types(Ts), types(Tps)) )
+    => andAux( subtype(T1,Tp1), subtypeList(types(Ts), types(Tps)) )
         [structural]
 
 rule [subtypeList-EmptyLeft]:

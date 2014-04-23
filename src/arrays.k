@@ -77,17 +77,7 @@ similar to that in untyped SIMPLE, but we have to enforce that the
 type of an array declaration be of the form \texttt{arrayOf $T$}
 and assign the right type ($T$) to the allocated array locations. */
 
-//@Elaboration result of expressions new T[]...
-syntax K ::=  newArrayImpl (
-                Type,       // T - type of each allocated element. So for new int[1][1][][],
-                              // T will be "arrayOf arrayOf int".
-                KListWrap,  // [Dims] - array dimensions
-                K,          // InitExp - expression used to initialize each array element,
-                              // or .K if argument 4 is specified.
-                KListWrap   // InitContent - array initializer, if any, or .K if argument 3 is specified.
-                              // From arguments 3 and 4 just one may be specified. This initializer is for the whole
-                              // array, not for each element as the previous one.
-              )
+//@ \subsubsection{newArrayImpl implementation}
 
 /* HOLE is of the form 'Dim(K)
 */

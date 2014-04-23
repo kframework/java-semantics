@@ -1,12 +1,10 @@
 require "core-sorts.k"
-require "classes.k"
 require "elaboration-core.k"
 require "elaboration-method-invoke.k"
 require "process-local-classes.k"
 
 module ELABORATION-STATEMENTS
     imports CORE-SORTS
-    imports CLASSES             //for setEncloser
     imports ELABORATION-CORE
     imports ELABORATION-METHOD-INVOKE //for lookupMethod
     imports PROCESS-LOCAL-CLASSES //for localClassGetExtraArgs

@@ -207,7 +207,6 @@ rule defaultElabHeating('StrictFP) => true
 rule defaultElabHeating('Id) => true*/
 
 //Auxiliary functions that should be default-heated
-rule defaultElabHeating('setEncloser) => true
 rule defaultElabHeating('stmtAndExp) => true
 
 /*@ Naked terms are those that should be computed directly into KResult during elaboration.

@@ -19,20 +19,9 @@ require "../elaboration-types.k"
 require "../process-local-classes.k"
 require "../process-anonymous-classes.k"
 require "../folding.k"
-require "../unfolding.k"
 require "../primitive-types.k"
 require "../literals.k"
 require "../subtyping.k"
-require "../expressions.k"
-require "../statements.k"
-require "../arrays.k"
-require "../static-init.k"
-require "../classes.k"
-require "../var-lookup.k"
-require "../method-invoke.k"
-require "../to-string.k"
-require "../api-core.k"
-require "../api-threads.k"
 
 module JAVA-PREP
     imports LABELS-PREP
@@ -56,20 +45,9 @@ module JAVA-PREP
     imports PROCESS-LOCAL-CLASSES
     imports PROCESS-ANONYMOUS-CLASSES
     imports FOLDING
-    imports UNFOLDING
     imports PRIMITIVE-TYPES
     imports LITERALS
     imports SUBTYPING
-    imports EXPRESSIONS
-    imports STATEMENTS
-    imports ARRAYS
-    imports STATIC-INIT
-    imports CLASSES
-    imports VAR-LOOKUP
-    imports METHOD-INVOKE
-    imports TO-STRING
-    imports API-CORE
-    imports API-THREADS
     imports JAVA-SYNTAX
 
 endmodule
