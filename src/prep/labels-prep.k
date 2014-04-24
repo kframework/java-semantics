@@ -96,7 +96,7 @@ syntax KLabel ::=
                 | "'Invoke"
                 | "'Method"
 //                | "'SuperMethod"
-//                | "'QSuperMethod"
+                | "'QSuperMethod"
                 | "'ArrayAccess"
                 | "'Field"
 //                | "'SuperField"

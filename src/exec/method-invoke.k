@@ -145,16 +145,37 @@ rule [Invoke-Method-On-Null]:
 when
     isKResult(ParamVals)
 
-rule [superMethod]:
-    superMethod(
-      objectRef(
-        OId:Int,
-        //The layers above the layer where method should be searched
-        // should be discarded in order to implement syper.m() functionality.
-        _
-      )::BaseClass:ClassType  //due to the way term superMethod() is first constructed, this is the upper search layer
+//@ 'QSuperMethod(Class:ClassType,, _:K,, Name:Id)
+syntax KLabel ::= "'QSuperMethod"
+
+rule [QSuperMethod]:
+    'Invoke(
+      ('QSuperMethod(Class:ClassType,, _:K,, Name:Id)
+       => 'Method('MethodName(superMethodImpl('QThis(Class)),, Name))
+      ),, _
     )
-    => objectRef( OId, BaseClass )::BaseClass
+
+/*Elaboration result for super keyword in A.super.m() call.
+  Have to be a typed expression.
+*/
+syntax K ::= superMethodImpl ( K ) // is always equal to A.this - used to lookup the right qualifier closure.
+        [strict]
+
+rule [superMethodImpl]:
+    <k>
+      superMethodImpl(
+        objectRef(
+          OId:Int,
+          //The layers above the layer where method should be searched
+          // should be discarded in order to implement syper.m() functionality.
+          _
+        )::Class:ClassType  //due to the way term superMethod() is first constructed, this is the upper search layer
+      )
+      => objectRef( OId, BaseClass )::BaseClass
+      ...
+    </k>
+    <classType> Class </classType>
+    <extends> BaseClass:ClassType </extends>
 
 /*@ The right signature is already found.
 Search for the right implementation is performed from the compile-time type of the target

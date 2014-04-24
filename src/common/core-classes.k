@@ -221,6 +221,8 @@ rule isCompoundAssignLabel('AssignURightShift) => true
 
 //@ \subsection{Computation terms produced during elaboration}
 
+//todo analize what of those could be eliminated
+
 /*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
 such as an anonymous class declaration. Is typed with the type of the expression.
 At runtime is rewritten into the statement, that should evaluate into .K, followed by the expression,
@@ -228,11 +230,5 @@ that should evaluate to value.*/
 syntax K ::= stmtAndExp ( K, K )
 
 syntax Cast ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
-
-/*Elaboration result for super keyword in A.super.m() call.
-  Have to be a typed expression.
-*/
-syntax K ::= superMethod ( K ) // is always equal to A.this - used to lookup the right qualifier closure.
-        [strict]
 
 endmodule

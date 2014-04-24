@@ -77,32 +77,46 @@ rule [SuperMethod-desugar]:
     </k>
     <crntClass> Class:ClassType </crntClass>  [structural]
 
-//@ 'QSuperMethod(Class:ClassType,, _:K,, Name:Id)
-syntax KLabel ::= "'QSuperMethod"
-
-rule customElabEnd('QSuperMethod) => true
-
-rule [QSuperMethod]:
+rule [elabEnd-Invoke-QSuperMethod-to-lookupMethod]:
     <k>
-      elabEnd('QSuperMethod(Class:ClassType,, _:K,, Name:Id))
-      => elabEnd('Method('MethodName(cast(BaseClass, superMethod(cast(BaseClass, 'QThis(Class)))),, Name)))
+      ( . => lookupMethod(BaseClass, true, Name, resultListWrap(ParamExps)) )
+      ~> elabEnd('Invoke( 'QSuperMethod(Class:ClassType,, _:K,, Name:Id),, [ParamExps:KList] ))
       ...
     </k>
     <classType> Class </classType>
-    <extends> BaseClass:ClassType </extends>  [structural]
+    <extends> BaseClass:ClassType </extends>
+
+rule [methodLookupResult-Invoke-QSuperMethod-static-end]:
+    <k>
+      methodLookupResult(RetT:Type, [ExpectedParamExps:KList], staticCT)
+      ~>  elabEnd('Invoke( 'QSuperMethod(Class:ClassType,, _:K,, Name:Id),, _ ))
+      =>  elabEnd(cast(RetT,
+                  'Invoke( 'Method( 'MethodName( BaseClass,, Name:Id ) ),, [ExpectedParamExps] )
+          ))
+      ...
+    </k>
+    <classType> Class </classType>
+    <extends> BaseClass:ClassType </extends>
+
+rule [methodLookupResult-Invoke-QSuperMethod-instance-end]:
+    methodLookupResult(RetT:Type, [ExpectedParamExps:KList], instanceCT)
+    ~>  elabEnd('Invoke( 'QSuperMethod(Class:ClassType,, K2:K,, Name:Id),, _ ))
+    =>  elabEnd(cast(RetT,
+            'Invoke(
+              'QSuperMethod(Class:ClassType,, K2:K,, Name:Id),,
+              [ExpectedParamExps]
+            )
+          )
+        )
 
 rule [elabEnd-Invoke-to-lookupMethod]:
     ( . => lookupMethod(getLookupTargetType(typeOf(Qual)),
-                        isThisOrSuper(Qual) ==K true, Name, resultListWrap(ParamExps)) )
+                        isCastOfQThis(Qual) ==K true, Name, resultListWrap(ParamExps)) )
     ~> elabEnd('Invoke( 'Method('MethodName(Qual:K,, Name:Id)),, [ParamExps:KList] ))
 
 //@ True for cast(T,'QThis(\_)), false otherwise
 syntax K ::= isCastOfQThis ( K )                                      [function]
 rule isCastOfQThis(cast(_, 'QThis(_))) => true
-
-syntax K ::= isThisOrSuper( K )                                       [function]
-rule isThisOrSuper(cast(_, 'QThis(_))) => true
-rule isThisOrSuper(cast(_, superMethod(_))) => true
 
 /*@ Lookup the right methodRef() based on supplied parameters.
 If the method is not found in the supplied class list, we should search for it in the
@@ -200,13 +214,13 @@ syntax K ::=  methodLookupResult (
                 ContextType // Called method context type
               )
 
-//for now just a workaround implementation
 rule [methodProcessArguments-Invoke-end]:
     methodLookupResult(RetT:Type, [ExpectedParamExps:KList], CT:ContextType)
     ~>  elabEnd('Invoke( 'Method('MethodName(QualK:K,, Name:Id)),, _ ))
     =>  elabEnd(stmtAndExp(
 
           //if the context is static but qualifier isa valid expression, we have to evaluate it.
+          //I fear this case cannot be universally translated into valid Java.
           #if CT ==K staticCT andBool isCast(QualK) ==K true andBool notBool isCastOfQThis(QualK) ==K true
             #then 'ExprStm(QualK)
             #else 'Empty(.KList)

@@ -230,7 +230,7 @@ rule [QSuperConstrInv]:
       'QSuperConstrInv(Qual:K,, _,, [ Args:KList ])
       => setEncloser('QThis(Class), BaseClass, Qual)
          ~> 'ExprStm('Invoke(
-              'Method('MethodName(superMethod(cast(BaseClass, 'QThis(Class))),, getConsName(BaseClass))),,
+              'QSuperMethod(Class,, .K,, getConsName(BaseClass)),,
               [Args]
             ))
       ...

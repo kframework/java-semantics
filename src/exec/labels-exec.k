@@ -96,7 +96,7 @@ syntax KLabel ::=
                 //| "'Invoke"
                 //| "'Method"
 //                | "'SuperMethod"
-                  "'QSuperMethod"
+//                  "'QSuperMethod"
 //                | "'ArrayAccess"
 //                | "'Field"
 //                | "'SuperField"
@@ -105,7 +105,7 @@ syntax KLabel ::=
 //                | "'Dim"
                 //| "'NewInstance"
                 //| "'QNewInstance"
-                | "'Lit"
+                  "'Lit"
 //                | "'Class"        // X.class : the class literal
 //                | "'This"
               //  | "'QThis"
