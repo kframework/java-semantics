@@ -51,6 +51,7 @@ context 'Invoke('Method('MethodName(_:KResult,, Name:Id )),, [_,,HOLE,,_] )
 syntax K ::=  methodInfo(
                 Signature,  //method signature
                 RefType,    //qualifier type, not necessarily class
+                ClassMetaType, //The either classCMT or interfaceCMT for the qualifier type
                 RefType,    //method definition class type - the class referred by the signature in <methods>
                               // for arrays - it remains noClass
                               // this argument is only used to compute the context type
@@ -62,7 +63,7 @@ syntax K ::=  methodInfo(
 rule [Invoke-Method-compute-Signature]:
     'Invoke('Method('MethodName(
       Qual:KResult,,
-      (Name:Id => methodInfo(sig(Name, getTypes([ParamVals])), typeOf(Qual), noClass, noValue))
+      (Name:Id => methodInfo(sig(Name, getTypes([ParamVals])), typeOf(Qual), noValue, noClass, noValue))
       )),, [ParamVals:KList]
     )
 when
@@ -72,11 +73,12 @@ rule [Invoke-Method-load-MethodDefClass]:
     <k>
       'Invoke('Method('MethodName(
         Qual:KResult,,
-        methodInfo(Sig:Signature, QualClass:ClassType, noClass => MethodDefClass, noValue)
+        methodInfo(Sig:Signature, QualClass:ClassType, noValue => MetaType, noClass => MethodDefClass, noValue)
         )),, _)
       ...
     </k>
     <classType> QualClass </classType>
+    <classMetaType> MetaType:ClassMetaType </classMetaType>
     <methods>... Sig |-> MethodDefClass:ClassType ...</methods>
 
 /*@ If the called method was not found in <methods> of the target type,
@@ -87,7 +89,7 @@ rule [Invoke-Method-load-unmapped-method-ContextType]:
     <k>
       'Invoke('Method('MethodName(
         Qual:KResult,,
-        methodInfo(Sig:Signature, QualClass:ClassType, noClass, noValue => instanceCT)
+        methodInfo(Sig:Signature, QualClass:ClassType, _,_, noValue => instanceCT)
         )),, _)
       ...
     </k>
@@ -104,14 +106,14 @@ when
 rule [Invoke-Method-load-MethodDefClass-arrays]:
     'Invoke('Method('MethodName(
       Qual:KResult,,
-      methodInfo(Sig:Signature, arrayOf T:Type, noClass, noValue => instanceCT)
+      methodInfo(Sig:Signature, arrayOf T:Type, _,_, noValue => instanceCT)
     )),, _)
 
 rule [Invoke-Method-load-ContextType]:
     <k>
       'Invoke('Method('MethodName(
         Qual:KResult,,
-        methodInfo(Sig:Signature, QualClass:ClassType, MethodDefClass:ClassType, noValue => CT)
+        methodInfo(Sig:Signature, QualClass:ClassType, _, MethodDefClass:ClassType, noValue => CT)
         )),, _)
       ...
     </k>
@@ -120,25 +122,20 @@ rule [Invoke-Method-load-ContextType]:
     <methodContextType> CT:ContextType </methodContextType>
 
 rule [Invoke-Method-Instance-On-Class]:
-    <k>
-      'Invoke('Method('MethodName(
-        objectRef(
-          OId:Int, MostDerivedClass:ClassType
-        )::QualClass:ClassType,,
-        methodInfo(Sig:Signature, QualClass:ClassType, _, instanceCT)
-        )),, [ParamVals:KList]
-      )
-      => invokeImpl(
-        lookupOverloadedMethod(
-          Sig, getClassesBetween([MostDerivedClass], QualClass),
-          mapWrap(.Map), noMethodRef
-        ),
-        loc(OId)::QualClass, [ParamVals]
-      )
-      ...
-    </k>
-    <classType> QualClass </classType>
-    <classMetaType> classCMT </classMetaType>
+    'Invoke('Method('MethodName(
+      objectRef(
+        OId:Int, MostDerivedClass:ClassType
+      )::QualClass:ClassType,,
+      methodInfo(Sig:Signature, QualClass:ClassType, classCMT, _, instanceCT)
+      )),, [ParamVals:KList]
+    )
+    => invokeImpl(
+      lookupOverloadedMethod(
+        Sig, getClassesBetween([MostDerivedClass], QualClass),
+        mapWrap(.Map), noMethodRef
+      ),
+      loc(OId)::QualClass, [ParamVals]
+    )
 
 /*Returns the list of classes representing the layer of the given object (by OId),
     located between LowestClass and UpperClass.
@@ -167,40 +164,38 @@ rule [Invoke-Method-Instance-On-interface]:
             OL:Int,
             ActualClass:ClassType
           )::QualClass:ClassType,,
-          methodInfo(Sig:Signature, QualClass:ClassType, _, instanceCT)
+          methodInfo(Sig:Signature, QualClass:ClassType, interfaceCMT, _, instanceCT)
         )),,
         [ParamVals:KList]
       )
-      => invokeImpl(
-        lookupOverloadedMethod(Sig, resultListWrap(ActualClass), mapWrap(.Map),
-          noMethodRef
-        ),
-        loc(OL)::QualClass, [ParamVals]
-      )
+      =>  invokeImpl( methodRef(Sig, MethodDecClass), loc(OL)::QualClass, [ParamVals] )
       ...
     </k>
-    <classType> QualClass </classType>
-    <classMetaType> interfaceCMT </classMetaType>
+    <classType> ActualClass </classType>
+    <methods>... Sig |-> MethodDecClass:ClassType ...</methods>
 
 rule [Invoke-Method-On-array]:
-    'Invoke('Method('MethodName(
-        QualRV:RawVal::QualT:RefType,,
-        methodInfo(Sig:Signature, QualT, _,_)
-      )),,
-      [ParamVals:KList]
-    )
-    => invokeImpl(
-      lookupOverloadedMethod(Sig, resultListWrap(getLookupTargetType(QualT)),
-        mapWrap(.Map), noMethodRef
-      ),
-      QualRV::QualT, [ParamVals]
-    )
+    <k>
+      'Invoke('Method('MethodName(
+          QualRV:RawVal::QualT:RefType,,
+          methodInfo(Sig:Signature, QualT, _,_,_)
+        )),,
+        [ParamVals:KList]
+      )
+      => invokeImpl( methodRef(Sig, MethodDecClass), QualRV::QualT, [ParamVals] ) //todo move getLookupTargetType to elab only
+      ...
+    </k>
+    <classType> ArrayImplClass:ClassType </classType>
+    <methods>... Sig |-> MethodDecClass:ClassType ...</methods>
 when
-    getKLabel(QualRV) =/=KLabel 'objectRef andBool QualRV =/=K null
+    getKLabel(QualRV) ==KLabel 'arrayRef andBool ArrayImplClass ==K arrayImplClass
 
-//@ Qualifier type could be either object or array
+/*@ Qualifier type could be either object or array.
+    We cannot move method invocation on null logic to invokeImpl, because
+    invokeImpl needs an actual methodRef, and we cannot produce a methidRef if our qualifier object is null.
+*/
 rule [Invoke-Method-instance-On-Null]:
-    'Invoke( 'Method('MethodName( null::_,, methodInfo(_,_,_, instanceCT) )),, [_] )
+    'Invoke( 'Method('MethodName( null::_,, methodInfo(_,_,_,_, instanceCT) )),, [_] )
     =>  'Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
@@ -209,11 +204,13 @@ rule [Invoke-Method-instance-On-Null]:
         ))
 
 rule [Invoke-Method-Static-On-Class]:
-    'Invoke('Method('MethodName(_,, methodInfo(Sig:Signature, QualClass:ClassType, _, staticCT) )),, [ParamVals:KList] )
-    => invokeImpl(
-      lookupOverloadedMethod(Sig, resultListWrap(QualClass), mapWrap(.Map), noMethodRef),
-      noValue, [ParamVals]
+    'Invoke(
+      'Method('MethodName(_,,
+        methodInfo(Sig:Signature, QualClass:ClassType, classCMT, MethodDecClass:ClassType, staticCT)
+      )),,
+      [ParamVals:KList]
     )
+    => invokeImpl( methodRef(Sig, MethodDecClass), noValue, [ParamVals] )
 
 //@ 'QSuperMethod(Class:ClassType,, _:K,, Name:Id)
 syntax KLabel ::= "'QSuperMethod"
@@ -278,21 +275,17 @@ rule [lookupOverloadedMethod-SigKnownOtherCandidates]:
       mapWrap( (Sig |-> NewDecClass:ClassType => .) _:Map ),
       OldMethodRef:MethodRef
       => 'If(
-            andAux(
-              //todo here we make sure that instance methods are never overwritten. Correct, but could be simplified
-              (eqAux(getMethodContextType(OldMethodRef), instanceCT)),
-              isAccessibleForOverwriting(
-                getMethConsClosureClass(OldMethodRef),
-                getMethodAccessMode(OldMethodRef),
-                NewDecClass
-              )
+            isAccessibleForOverwriting(
+              getMethConsClosureClass(OldMethodRef),
+              getMethodAccessMode(OldMethodRef),
+              NewDecClass
             ),,
             methodRef(Sig, NewDecClass),,
             OldMethodRef
           )
     )
 
-rule [lookupOverloadedMethod-SigKnownEntryDiscard]:
+rule [lookupOverloadedMethod-SigKnownEntryDiscard]: //todo combine this rule with the next one - LayerDiscard
     lookupOverloadedMethod(
       Sig:Signature,
       _,
