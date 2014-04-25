@@ -52,7 +52,8 @@ syntax K ::=  methodInfo(
                 Signature,  //method signature
                 RefType,    //qualifier type, not necessarily class
                 RefType,    //method definition class type - the class referred by the signature in <methods>
-                              // for arrays - the same as qualifier type
+                              // for arrays - it remains noClass
+                              // this argument is only used to compute the context type
                 ContextType //method context type - instance or static
                               // for arrays - instanceCT
               )
@@ -78,6 +79,23 @@ rule [Invoke-Method-load-MethodDefClass]:
     <classType> QualClass </classType>
     <methods>... Sig |-> MethodDefClass:ClassType ...</methods>
 
+/*@ If the called method was not found in <methods> of the target type,
+    then it is an interface method, and it is always instanceCT.
+    Recall that we do not put into <methods> methods inherited from base interfaces.
+*/
+rule [Invoke-Method-load-unmapped-method-ContextType]:
+    <k>
+      'Invoke('Method('MethodName(
+        Qual:KResult,,
+        methodInfo(Sig:Signature, QualClass:ClassType, noClass, noValue => instanceCT)
+        )),, _)
+      ...
+    </k>
+    <classType> QualClass </classType>
+    <methods> Methods:Map </methods>
+when
+    notBool Sig in keys(Methods)
+
 /*@ We cannot combine this rule with [Invoke-Method-On-array]
   because after this rule one of the following might be matched:
     - [Invoke-Method-On-array]
@@ -86,8 +104,8 @@ rule [Invoke-Method-load-MethodDefClass]:
 rule [Invoke-Method-load-MethodDefClass-arrays]:
     'Invoke('Method('MethodName(
       Qual:KResult,,
-      methodInfo(Sig:Signature, arrayOf T:Type, noClass => arrayOf T, noValue => instanceCT)
-      )),, _)
+      methodInfo(Sig:Signature, arrayOf T:Type, noClass, noValue => instanceCT)
+    )),, _)
 
 rule [Invoke-Method-load-ContextType]:
     <k>
@@ -295,7 +313,7 @@ rule [lookupOverloadedMethod-SigKnownLayerDiscard]:
 rule [lookupOverloadedMethod-SigKnownEnd]:
     lookupOverloadedMethod(_, resultListWrap(.KList), mapWrap(.Map), MethodRef:MethodRef ) => MethodRef
 when
-    MethodRef =/=K noMethodRef
+    MethodRef =/=K noMethodRef  //for debug purposes only
 
 //@ Returns the defining class of the given method TypedVal.
 syntax K ::= getMethConsClosureClass ( MethodRef )                 [strict]
