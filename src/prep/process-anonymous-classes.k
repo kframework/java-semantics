@@ -68,6 +68,14 @@ syntax K ::=  processAnonymousClass (
               )
               [strict(7,8)]
 
+/*@ In the current approach stmtAndExp cannot be elliminated from here. The local class declaration
+    will be transformed into the instantiation and initialziation of the parameter object.
+    This will imply a 'NewInstance and zero or more 'Assign statements.
+    Theoretically for anonymous classes the parameter object could be instantiated right in the 'NewInstance
+    expression of its local class, with parameters passed as constructor arguments, thus eliminating the need of a
+    separate variable declaration. But this would complicate the semantics too much. So in theory,
+    we could eliminate stmtAndExp even from this place.
+*/
 rule [processAnonymousClass]:
     processAnonymousClass(
       Name:Id,

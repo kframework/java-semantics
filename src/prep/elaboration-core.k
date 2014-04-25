@@ -244,9 +244,12 @@ when
 //@ The implementation is scattered across elaboration-related modules
 syntax K ::= customElabEnd ( KLabel )                       [function]
 
-//elaboration time
-rule elabEnd(           stmtAndExp(Stmt:K, cast(T:Type, Exp:K)) )
-     => elabRes(cast(T, stmtAndExp(Stmt,   cast(T:Type, Exp:K))))
+//@ Eliminate stmtAndExp if the first argument is empty, otherwise keep it for execution phase.
+rule elabEnd( stmtAndExp(Stmt:K, cast(T:Type, Exp:K)) )
+     => #if Stmt =/=K .K
+          #then elabRes(cast(T, stmtAndExp(Stmt,   cast(T:Type, Exp:K))))
+          #else elabRes(cast(T:Type, Exp:K))
+        #fi
 
 /*@ \subsection{Elaboration of KListWrap - the list of terms} */
 //K bug: this section is a workaround t a serious K' bug that prevents [...] to be properly heated and cooled

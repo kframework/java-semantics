@@ -43,28 +43,71 @@ context 'Invoke('Method( 'MethodName( HOLE,, Name:Id ) ),, _)
 */
 context 'Invoke('Method('MethodName(_:KResult,, Name:Id )),, [_,,HOLE,,_] )
 
+/*@ Information required to decide which method call algorithm to use
+    This intermediate construct is required because we cannot refer directly to the method signature from
+    rules that initiate method implementation search. This is because method defining clas could be
+    both target class or a different class. The two cases cannot be covered by one rule.
+*/
+syntax K ::=  methodInfo(
+                Signature,  //method signature
+                RefType,    //qualifier type, not necessarily class
+                ClassType,  //method definition class type - the class referred by the signature in <methods>
+                ContextType //method context type - instance or static
+              )
+
+//@ The check that ParamVals are KResult here makes possible to eliminate this check in further rules
+rule [Invoke-Method-compute-Signature]:
+    'Invoke('Method('MethodName(
+      Qual:KResult,,
+      (Name:Id => methodInfo(sig(Name, getTypes([ParamVals])), typeOf(Qual), noClass, noValue))
+      )),, [ParamVals:KList]
+    )
+when
+    isKResult(ParamVals)
+
+rule [Invoke-Method-load-MethodDefClass]:
+    <k>
+      'Invoke('Method('MethodName(
+        Qual:KResult,,
+        methodInfo(Sig:Signature, QualClass:ClassType, noClass => MethodDefClass, noValue)
+        )),, _)
+      ...
+    </k>
+    <classType> QualClass </classType>
+    <methods>... Sig |-> MethodDefClass:ClassType ...</methods>
+
+rule [Invoke-Method-load-ContextType]:
+    <k>
+      'Invoke('Method('MethodName(
+        Qual:KResult,,
+        methodInfo(Sig:Signature, QualClass:ClassType, MethodDefClass:ClassType, noValue => CT)
+        )),, _)
+      ...
+    </k>
+    <classType> MethodDefClass </classType>
+    <methodSignature> Sig </methodSignature>
+    <methodContextType> CT:ContextType </methodContextType>
+
 rule [Invoke-Method-Instance-On-Class]:
     <k>
       'Invoke('Method('MethodName(
         objectRef(
-          OId:Int, LowestClass:ClassType
-        )::Class:ClassType,,
-        Name:Id
+          OId:Int, MostDerivedClass:ClassType
+        )::QualClass:ClassType,,
+        methodInfo(Sig:Signature, QualClass:ClassType, _, instanceCT)
         )),, [ParamVals:KList]
       )
       => invokeImpl(
         lookupOverloadedMethod(
-          sig(Name, getTypes([ParamVals])), getClassesBetween([LowestClass], Class),
+          Sig, getClassesBetween([MostDerivedClass], QualClass),
           mapWrap(.Map), noMethodRef
         ),
-        loc(OId)::Class, [ParamVals]
+        loc(OId)::QualClass, [ParamVals]
       )
       ...
     </k>
-    <classType> Class </classType>
+    <classType> QualClass </classType>
     <classMetaType> classCMT </classMetaType>
-when
-    isKResult(ParamVals)
 
 /*Returns the list of classes representing the layer of the given object (by OId),
     located between LowestClass and UpperClass.
@@ -86,69 +129,64 @@ when
 rule [getClassesBetween-end]:
     getClassesBetween([LowerClasses:KList,, Class:ClassType], Class) => resultListWrap(LowerClasses,, Class)
 
-rule [Invoke-Method-Static-On-Class]:
-    'Invoke('Method('MethodName(Class:ClassType,, Name:Id )),, [ParamVals:KList] )
-    => invokeImpl(
-      lookupOverloadedMethod(sig(Name, getTypes([ParamVals])), resultListWrap(Class), mapWrap(.Map), noMethodRef),
-      noValue, [ParamVals]
-    )
-when
-    isKResult(ParamVals)
-
-rule [Invoke-Method-Instance-On-Interface]:
+rule [Invoke-Method-Instance-On-interface]:
     <k>
       'Invoke('Method('MethodName(
           objectRef(
             OL:Int,
             ActualClass:ClassType
-          )::Class:ClassType,,
-          Name:Id
+          )::QualClass:ClassType,,
+          methodInfo(Sig:Signature, QualClass:ClassType, _, instanceCT)
         )),,
         [ParamVals:KList]
       )
       => invokeImpl(
-        lookupOverloadedMethod(sig(Name, getTypes([ParamVals])), resultListWrap(ActualClass), mapWrap(.Map),
+        lookupOverloadedMethod(Sig, resultListWrap(ActualClass), mapWrap(.Map),
           noMethodRef
         ),
-        loc(OL)::Class, [ParamVals]
-      )      ...
+        loc(OL)::QualClass, [ParamVals]
+      )
+      ...
     </k>
-    <classType> Class </classType>
+    <classType> QualClass </classType>
     <classMetaType> interfaceCMT </classMetaType>
-when
-    isKResult(ParamVals)
 
 rule [Invoke-Method-On-other]:
     'Invoke('Method('MethodName(
         QualRV:RawVal::QualT:RefType,,
-        Name:Id
+        methodInfo(Sig:Signature, QualT, _,_)
       )),,
       [ParamVals:KList]
     )
     => invokeImpl(
-      lookupOverloadedMethod(sig(Name, getTypes([ParamVals])), resultListWrap(getLookupTargetType(QualT)),
+      lookupOverloadedMethod(Sig, resultListWrap(getLookupTargetType(QualT)),
         mapWrap(.Map), noMethodRef
       ),
       QualRV::QualT, [ParamVals]
     )
 when
-    getKLabel(QualRV) =/=KLabel 'objectRef andBool QualRV =/=K null andBool isKResult(ParamVals)
+    getKLabel(QualRV) =/=KLabel 'objectRef andBool QualRV =/=K null
 
-rule [Invoke-Method-On-Null]:
-    'Invoke( 'Method('MethodName( null::_,, _:Id )),, [ParamVals:KList] )
+rule [Invoke-Method-instance-On-Null]:
+    'Invoke( 'Method('MethodName( null::QualClass:ClassType,, methodInfo(_, QualClass, _, instanceCT) )),, [_] )
     =>  'Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
           [ null::stringClass ],,
           'None(.KList)
         ))
-when
-    isKResult(ParamVals)
+
+rule [Invoke-Method-Static-On-Class]:
+    'Invoke('Method('MethodName(_,, methodInfo(Sig:Signature, QualClass:ClassType, _, staticCT) )),, [ParamVals:KList] )
+    => invokeImpl(
+      lookupOverloadedMethod(Sig, resultListWrap(QualClass), mapWrap(.Map), noMethodRef),
+      noValue, [ParamVals]
+    )
 
 //@ 'QSuperMethod(Class:ClassType,, _:K,, Name:Id)
 syntax KLabel ::= "'QSuperMethod"
 
-rule [QSuperMethod]:
+rule [Invoke-QSuperMethod]:
     'Invoke(
       ('QSuperMethod(Class:ClassType,, _:K,, Name:Id)
        => 'Method('MethodName(superMethodImpl('QThis(Class)),, Name))
@@ -209,6 +247,7 @@ rule [lookupOverloadedMethod-SigKnownOtherCandidates]:
       OldMethodRef:MethodRef
       => 'If(
             andAux(
+              //todo here we make sure that instance methods are never overwritten. Correct, but could be simplified
               (eqAux(getMethodContextType(OldMethodRef), instanceCT)),
               isAccessibleForOverwriting(
                 getMethConsClosureClass(OldMethodRef),
@@ -252,10 +291,10 @@ rule [getMethConsClosureClass]:
 
 syntax K ::=  invokeImpl (
                 MethodRef,  //lookupOverloadedMethod statement, evaluates to methodRef()
-                K,  //KResult - method call target
-                    //  loc(OL)::_ - object location, target type for methods on non-object refs,
-                    //  typed string or array, or noValue for static methods
-                K   //evaluates to [ParamValues:List{KResult}]
+                K,          //KResult - method call target
+                              //loc(OL)::_ - object location, target type for methods on non-object refs,
+                              //typed string or array, or noValue for static methods
+                KListWrap   //[ParamValues:List{KResult}]
               )
               [strict(1)]
 

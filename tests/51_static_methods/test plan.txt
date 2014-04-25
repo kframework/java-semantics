@@ -109,4 +109,12 @@ Part 6. Implementation of console read/out and others through static members.
   No exception occurs, the method is executed.
 
 120. Static method call qualified with a traced object creation.
+  Testing that we cannot replace the qualifier with its type for all static method calls.
   Even if qualifier value is not used by the method call, it is still evaluated.
+
+121. Mix of non-"this" qualifier and hiding. Testing the distinction between hiding and overwriting in the case when
+  we cannot replace the qualifier with its type.
+    B < A.
+    B{ static sf()}
+    A{ static sf()}
+    ((A) new B()).sf();

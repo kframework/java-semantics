@@ -1,5 +1,6 @@
 /*
 Static method call qualified with a traced object creation.
+  Testing that we cannot replace the qualifier with its type for all static method calls.
   Even if qualifier value is not used by the method call, it is still evaluated.
 */
 

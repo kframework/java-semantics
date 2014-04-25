@@ -214,25 +214,22 @@ syntax K ::=  methodLookupResult (
                 ContextType // Called method context type
               )
 
+/*@ In the past implementation, the non-empty qualifier of a static method call
+    was moved to a separate statement in front of a method call using stmtAndExp().
+    But since stmtAndExp() is incompatible with java intermediate form, we keep the non-empty qualifier
+    as is even for static methods.
+*/
 rule [methodProcessArguments-Invoke-end]:
     methodLookupResult(RetT:Type, [ExpectedParamExps:KList], CT:ContextType)
     ~>  elabEnd('Invoke( 'Method('MethodName(QualK:K,, Name:Id)),, _ ))
-    =>  elabEnd(stmtAndExp(
-
-          //if the context is static but qualifier isa valid expression, we have to evaluate it.
-          //I fear this case cannot be universally translated into valid Java.
-          #if CT ==K staticCT andBool isCast(QualK) ==K true andBool notBool isCastOfQThis(QualK) ==K true
-            #then 'ExprStm(QualK)
-            #else 'Empty(.KList)
-          #fi,
-
+    =>  elabEnd(
           cast(RetT,
             'Invoke(
               'Method(
                 'MethodName(
-                  #if CT ==K instanceCT
-                    #then QualK
-                    #else typeOf(QualK)
+                  #if CT ==K staticCT andBool isCastOfQThis(QualK) ==K true
+                    #then typeOf(QualK)
+                    #else QualK
                   #fi,,
                   Name:Id
                 )
@@ -240,7 +237,7 @@ rule [methodProcessArguments-Invoke-end]:
               [ExpectedParamExps]
             )
           )
-        ))
+        )
 
 /*Search for the correct method signature to use
 when calling a given MethodName with the given argument types.
