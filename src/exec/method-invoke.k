@@ -51,8 +51,10 @@ context 'Invoke('Method('MethodName(_:KResult,, Name:Id )),, [_,,HOLE,,_] )
 syntax K ::=  methodInfo(
                 Signature,  //method signature
                 RefType,    //qualifier type, not necessarily class
-                ClassType,  //method definition class type - the class referred by the signature in <methods>
+                RefType,    //method definition class type - the class referred by the signature in <methods>
+                              // for arrays - the same as qualifier type
                 ContextType //method context type - instance or static
+                              // for arrays - instanceCT
               )
 
 //@ The check that ParamVals are KResult here makes possible to eliminate this check in further rules
@@ -75,6 +77,17 @@ rule [Invoke-Method-load-MethodDefClass]:
     </k>
     <classType> QualClass </classType>
     <methods>... Sig |-> MethodDefClass:ClassType ...</methods>
+
+/*@ We cannot combine this rule with [Invoke-Method-On-array]
+  because after this rule one of the following might be matched:
+    - [Invoke-Method-On-array]
+    - [Invoke-Method-instance-On-Null]
+*/
+rule [Invoke-Method-load-MethodDefClass-arrays]:
+    'Invoke('Method('MethodName(
+      Qual:KResult,,
+      methodInfo(Sig:Signature, arrayOf T:Type, noClass => arrayOf T, noValue => instanceCT)
+      )),, _)
 
 rule [Invoke-Method-load-ContextType]:
     <k>
@@ -151,7 +164,7 @@ rule [Invoke-Method-Instance-On-interface]:
     <classType> QualClass </classType>
     <classMetaType> interfaceCMT </classMetaType>
 
-rule [Invoke-Method-On-other]:
+rule [Invoke-Method-On-array]:
     'Invoke('Method('MethodName(
         QualRV:RawVal::QualT:RefType,,
         methodInfo(Sig:Signature, QualT, _,_)
@@ -167,8 +180,9 @@ rule [Invoke-Method-On-other]:
 when
     getKLabel(QualRV) =/=KLabel 'objectRef andBool QualRV =/=K null
 
+//@ Qualifier type could be either object or array
 rule [Invoke-Method-instance-On-Null]:
-    'Invoke( 'Method('MethodName( null::QualClass:ClassType,, methodInfo(_, QualClass, _, instanceCT) )),, [_] )
+    'Invoke( 'Method('MethodName( null::_,, methodInfo(_,_,_, instanceCT) )),, [_] )
     =>  'Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,

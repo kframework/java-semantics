@@ -45,7 +45,7 @@ Tests
   - main:
     - call (I1)A.f(), (I1)A.g(), (I1)B.f(), (I1)B.g(), use just one var.
 
-23. Case B < A < I1 A don't implement all methods of the interface. One method is
+23. Case B < A < I1. Class A doesn't implement all the methods of the interface. One method is
   implemented by A(), the second one is redeclared abstract, the third one is not mentioned.
   They are all re-implemented by subclass B. Call the method through Intf, A, B.
 

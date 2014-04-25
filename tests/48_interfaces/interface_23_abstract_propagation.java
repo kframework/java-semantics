@@ -1,5 +1,5 @@
 /*
-Case B < A < I1 A don't implement all methods of the interface. One method is
+Case B < A < I1. Class A doesn't implement all the methods of the interface. One method is
   not mentioned in A, the other one is redeclared abstract, the third one is implemented.
   They are all re-implemented by subclass B. Call the method through Intf, A, B.
 */
