@@ -1,6 +1,5 @@
 require "../common/core-sorts.k"
 require "../common/aux-strings.k"
-require "../common/to-string.k"
 require "../common/primitive-types.k"
 
 //@ \section{Module LITERALS}
@@ -8,7 +7,6 @@ require "../common/primitive-types.k"
 module LITERALS
     imports CORE-SORTS
     imports AUX-STRINGS
-    imports TO-STRING
     imports PRIMITIVE-TYPES
 
 //@ \subsection{Auxiliary constructs}
@@ -194,10 +192,13 @@ rule  'Lit('String([K1:K,, K2:K,, Ks:KList]))
 
 rule 'Lit('String(['Chars(Str:String)])) => Str
 
-rule 'Lit('String([K:K])) => toString('Lit('Char(K)))
+rule 'Lit('String([K:K])) => charToString('Lit('Char(K)))
 when getKLabel(K) =/=KLabel 'Chars
 
 rule 'Lit('String([.KList])) => ""
+
+syntax K ::= charToString ( K ) [strict]
+rule charToString(I:Int :: char) => chrChar(I)
 
 //@ \subsection{Null literal}
 

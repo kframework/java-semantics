@@ -2,7 +2,7 @@ require "../common/core-sorts.k"
 require "../common/core-classes.k"
 require "../common/subtyping.k"
 require "../common/primitive-types.k"
-require "../common/to-string.k"
+require "to-string.k"
 require "var-lookup.k"
 
 //@ \section{Module EXPRESSIONS}

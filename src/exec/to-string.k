@@ -1,6 +1,6 @@
-require "core-sorts.k"
-require "core-functions.k"
-require "aux-strings.k"
+require "../common/core-sorts.k"
+require "../common/core-functions.k"
+require "../common/aux-strings.k"
 
 module TO-STRING
     imports CORE-SORTS

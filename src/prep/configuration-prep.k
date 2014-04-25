@@ -7,58 +7,14 @@ module CONFIGURATION-PREP
 
 configuration
     <T>
-      <threads color="GreenYellow">
-        <thread multiplicity="*" color="GreenYellow">
-          <k color="Green"> $COMMAND:K </k>
+      <k color="Green"> $COMMAND:K </k>
 
-          <stack color="Green"> .List </stack>
+      /*Current method/block context type - either staticCT or instanceCT
+      Used both during elaboration and execution*/
+      <contextType color="DarkOrange"> staticCT </contextType>
 
-          //! \smallskip
-          <br/>
-
-          /*The execution context of the current method - local names environment, return type,
-            context type and current object.*/
-          <methodContext color="Orange">
-
-            <envGroup color="Yellow">
-
-              //The map from local vars to their location in the store. Also includes outer local vars, for local classes.
-              <env color="Crimson"> .Map </env>
-            </envGroup>
-
-            <br/>
-            <return color="DarkOrange"> void </return> // holds method return type
-
-            /*Current method/block context type - either staticCT or instanceCT
-            Used both during elaboration and execution*/
-            <contextType color="DarkOrange"> staticCT </contextType>
-
-            <br/>
-            <crntObj color="DarkOrange">
-              //current class during all phases, including early preprocessing
-              <crntClass color="DarkOrange"> noClass </crntClass>
-
-              <location color="DarkOrange" multiplicity="?"> .K </location>
-            </crntObj>
-          </methodContext>
-
-          <br/>
-
-          //Multithreading-related cells
-          <threadData color="Yellow">
-
-            //Thread Id
-            <tid color="BlueViolet"> 0 </tid>
-
-            //Map[OL |-> Count] - the amount of times this thread holds the monitor objects referred bu the keys
-            <holds color="BlueViolet"> .Map </holds>
-
-            //Whether this thread was interrupted by another thread by a call to Thread.interrupt()
-            <interrupted color="BlueViolet"> false </interrupted>
-
-          </threadData>
-        </thread>
-      </threads>
+      //current class during all phases, including early preprocessing
+      <crntClass color="DarkOrange"> noClass </crntClass>
 
       <br/>
       <br/>
@@ -232,21 +188,6 @@ configuration
 
           </clsFolding>
 
-          <br/>
-
-          //Cells used during execution phase
-          <clsExec color="Yellow">
-
-            //Initialization status of this class. See static-init.k for more details.
-            //Only used during execution phase.
-            <staticInitStatus color="Teal"> StaticUninitialized </staticInitStatus>
-
-            /*The map of static fields declared in this class only, and NOT in superclasses or superinterfaces.
-              Map[Id -> Location] Used during static variable lookup.*/
-            <staticEnv color="DarkSlateGray"> .Map </staticEnv>
-
-          </clsExec>
-
         </class>
       </classes>
 
@@ -263,9 +204,6 @@ configuration
         //The initial program loaded by krun. For full mode and preprocessing this is
         //the initial java program, for execution mode it is the folded java program.
         <program color="LightSteelBlue"> $PGM:K </program>
-
-        //Main class, passed as krun argument. We need it from the outside, just like JDK Java.
-        <mainClass color="LightSteelBlue"> $MainClass:ListItem </mainClass>
 
       </phStart>
 
@@ -314,83 +252,6 @@ configuration
         <elabBuffer> [.KList] </elabBuffer>
 
       </phElab>
-
-      <br/>
-
-      <phExec color="Yellow">
-
-        //Execution memory. Map[Location:Int->Value:TypedVal]. Both local vars and heap vars are stored here.
-        <store color="Cyan"> .Map </store>
-
-        //Represents the storage of objects. Since objects have a complex inner structure,
-        //we need to hold them separately if we want to represent that structure as a cell tree.
-        <objectStore color="Cyan">
-          <object color="Cyan" multiplicity="*">
-
-            //The id of this object. Same as store location for the newly created object reference.
-            <objectId> .K </objectId>
-
-            //The actual object class
-            <objectType> .K </objectType>
-
-            //One layer for each class in the inheritance chain of this object
-            <layer multiplicity="*">
-
-              //The class corresponding to the given chain
-              <layerClass> .K </layerClass>
-
-              //Map[Id |-> Loc] -> fields defined in this layer
-              <layerEnv> .Map </layerEnv>
-
-              //objectRef() ::_ - a reference to the directly enclosing object, or noValue if none.
-              <layerEnclosingObject> noValue </layerEnclosingObject>
-            </layer>
-          </object>
-        </objectStore>
-
-        //Counter for next location to be used in the cell <store>.
-        <nextLoc color="Cyan"> 0 </nextLoc>
-
-        //Standard input. Each token is a ListItem.
-        <in color="LightPink" stream="stdin"> .List </in>
-
-        //Standard output. Each token is a ListItem.
-        <out color="LightPink" stream="stdout"> .List </out>
-
-        //A map from types to objectRef() terms that represent their T.class value
-        //Created an used in execution phase, by expressions of the form X.class
-        //Type: Map[Type->TypedVal]. Type may be any reference type.
-        <classLiteralsMap color="LightPink"> .Map </classLiteralsMap>
-
-        <br/>
-
-        //Set[OL:Int] - the set of locations of used monitor objects
-        <busy color="LightGreen"> .Set </busy>
-
-        //Map[ThreadId:Int |-> OL:Int] - map from threads to objects they are waiting on
-        //waiting on those objects used by methods Object.wait(), Object.notify(), Object.notifyAll().
-        <waitingThreads color="LightGreen"> .Map </waitingThreads>
-
-        //Set[ThreadId:Int] The set of terminated threads.
-        <terminated color="LightGreen"> .Set </terminated>
-
-      </phExec>
-
-      <br/>
-
-      //Cells used for debugging. Not related to the semantics.
-      <groupDebug color="Yellow">
-
-        <dissolveEmptyK> true </dissolveEmptyK>
-        <dissolveClasses> true </dissolveClasses>
-
-        //When computation finishes, dissolve all cells except <out>,
-        //in order to avoid duplicate solutions during model checking.
-        <dissolveAllExceptOut> $ModelCheck:Bool </dissolveAllExceptOut>
-
-        <debug> .List </debug>
-
-      </groupDebug>
     </T>
 
 endmodule

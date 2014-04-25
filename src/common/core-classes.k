@@ -221,8 +221,6 @@ rule isCompoundAssignLabel('AssignURightShift) => true
 
 //@ \subsection{Computation terms produced during elaboration}
 
-//todo analize what of those could be eliminated
-
 /*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
 such as an anonymous class declaration. Is typed with the type of the expression.
 At runtime is rewritten into the statement, that should evaluate into .K, followed by the expression,
