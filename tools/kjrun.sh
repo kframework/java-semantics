@@ -7,7 +7,7 @@ if (( "$#" < 1 )) || (( "$#" > 2 )); then
     echo `basename $0` $@
     echo "Usage: `basename $0` <javaFile>"
     echo "Or:    `basename $0` <--full-pretty|--prep-ast|--prep-pretty|--prep-raw|--exec-pretty| \
-      --split|--split-keep-ekast|--full-kast|--raw|--none| \
+      --split|--split-cached|--full-kast|--raw|--none| \
       --search|--cached|--search-cached|--debug|--symbolic|--symbolic-cached> <javaFile>"
     echo "For more options use aux-kjrun.sh"
     exit 1
@@ -80,11 +80,13 @@ case "$OPTION" in
 
     rm -f ${PKAST_FILE}
     ;;
-"--split-keep-ekast")
+"--split-cached")
     echo "preprocess:"
 
-    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-prep-ast --output raw --input java \
-      ${JAVA_FILE} > ${PKAST_FILE}
+    if [ ! -e ${PKAST_FILE} ];
+      then aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-prep-ast --output raw --input java \
+        ${JAVA_FILE} > ${PKAST_FILE}
+    fi
 
     echo
     echo "execute:"
@@ -107,8 +109,10 @@ case "$OPTION" in
     aux-kjrun.sh --time true --timeout ${SEARCH_TIMEOUT} --mode search --output pretty --input java ${JAVA_FILE}
     ;;
 "--cached")
-    aux-kjrun.sh --time false --timeout 0 --mode run-prep-ast --output raw --input kast-cache ${JAVA_FILE} \
-      > ${PKAST_FILE}
+    if [ ! -e ${PKAST_FILE} ];
+      then aux-kjrun.sh --time false --timeout 0 --mode run-prep-ast --output raw --input kast-cache ${JAVA_FILE} \
+        > ${PKAST_FILE}
+    fi
 
     aux-kjrun.sh --time false --timeout 0 --mode run-exec --output none --input kast ${PKAST_FILE}
     ;;
@@ -129,7 +133,7 @@ case "$OPTION" in
     echo "Invalid option: $OPTION"
     echo "Usage: `basename $0` <javaFile>"
     echo "Or:    `basename $0` <--full-pretty|--prep-ast|--prep-pretty|--prep-raw|--exec-pretty| \
-      --split|--split-keep-ekast|--full-kast|--raw|--none| \
+      --split|--split-cached|--full-kast|--raw|--none| \
       --search|--cached|--search-cached|--debug|--symbolic|--symbolic-cached> <javaFile>"
     echo "For more options use aux-kjrun.sh"
     exit 1
