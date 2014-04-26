@@ -7,7 +7,7 @@ if (( "$#" < 1 )) || (( "$#" > 2 )); then
     echo `basename $0` $@
     echo "Usage: `basename $0` <javaFile>"
     echo "Or:    `basename $0` <--full-pretty|--prep-ast|--prep-pretty|--prep-raw|--exec-pretty| \
-      --split|--full-kast|--raw|--none| \
+      --split|--split-keep-ekast|--full-kast|--raw|--none| \
       --search|--cached|--search-cached|--debug|--symbolic|--symbolic-cached> <javaFile>"
     echo "For more options use aux-kjrun.sh"
     exit 1
@@ -80,6 +80,19 @@ case "$OPTION" in
 
     rm -f ${PKAST_FILE}
     ;;
+"--split-keep-ekast")
+    echo "preprocess:"
+
+    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-prep-ast --output raw --input java \
+      ${JAVA_FILE} > ${PKAST_FILE}
+
+    echo
+    echo "execute:"
+    echo
+
+    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-exec --output pretty --input kast \
+      ${PKAST_FILE}
+    ;;
 "--full-kast")
     aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-full --output pretty --input kast \
       ${JAVA_FILE}
@@ -116,7 +129,7 @@ case "$OPTION" in
     echo "Invalid option: $OPTION"
     echo "Usage: `basename $0` <javaFile>"
     echo "Or:    `basename $0` <--full-pretty|--prep-ast|--prep-pretty|--prep-raw|--exec-pretty| \
-      --split|--full-kast|--raw|--none| \
+      --split|--split-keep-ekast|--full-kast|--raw|--none| \
       --search|--cached|--search-cached|--debug|--symbolic|--symbolic-cached> <javaFile>"
     echo "For more options use aux-kjrun.sh"
     exit 1

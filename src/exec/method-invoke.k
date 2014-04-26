@@ -47,6 +47,9 @@ context 'Invoke('Method('MethodName(_:KResult,, Name:Id )),, [_,,HOLE,,_] )
     This intermediate construct is required because we cannot refer directly to the method signature from
     rules that initiate method implementation search. This is because method defining clas could be
     both target class or a different class. The two cases cannot be covered by one rule.
+
+    The construct methodInfo() holds just statically-computable information. It don't use at any point the actual type
+      or sort of the target value.
 */
 syntax K ::=  methodInfo(
                 Signature,  //method signature
@@ -69,12 +72,23 @@ rule [Invoke-Method-compute-Signature]:
 when
     isKResult(ParamVals)
 
+/*@ We cannot combine this rule with [Invoke-Method-On-array]
+  because after this rule one of the following might be matched:
+    - [Invoke-Method-On-array]
+    - [Invoke-Method-instance-On-Null]
+*/
+rule [Invoke-Method-load-MethodDefClass-arrays]:
+    'Invoke('Method('MethodName(
+      Qual:KResult,,
+      methodInfo(Sig:Signature, arrayOf T:Type => arrayImplClass , _,_,_)
+    )),, _)
+
 rule [Invoke-Method-load-MethodDefClass]:
     <k>
       'Invoke('Method('MethodName(
         Qual:KResult,,
         methodInfo(Sig:Signature, QualClass:ClassType, noValue => MetaType, noClass => MethodDefClass, noValue)
-        )),, _)
+      )),, _)
       ...
     </k>
     <classType> QualClass </classType>
@@ -89,25 +103,15 @@ rule [Invoke-Method-load-unmapped-method-ContextType]:
     <k>
       'Invoke('Method('MethodName(
         Qual:KResult,,
-        methodInfo(Sig:Signature, QualClass:ClassType, _,_, noValue => instanceCT)
+        methodInfo(Sig:Signature, QualClass:ClassType, noValue => MetaType, _, noValue => instanceCT)
         )),, _)
       ...
     </k>
     <classType> QualClass </classType>
+    <classMetaType> MetaType:ClassMetaType </classMetaType>
     <methods> Methods:Map </methods>
 when
     notBool Sig in keys(Methods)
-
-/*@ We cannot combine this rule with [Invoke-Method-On-array]
-  because after this rule one of the following might be matched:
-    - [Invoke-Method-On-array]
-    - [Invoke-Method-instance-On-Null]
-*/
-rule [Invoke-Method-load-MethodDefClass-arrays]:
-    'Invoke('Method('MethodName(
-      Qual:KResult,,
-      methodInfo(Sig:Signature, arrayOf T:Type, _,_, noValue => instanceCT)
-    )),, _)
 
 rule [Invoke-Method-load-ContextType]:
     <k>
@@ -174,21 +178,16 @@ rule [Invoke-Method-Instance-On-interface]:
     <classType> ActualClass </classType>
     <methods>... Sig |-> MethodDecClass:ClassType ...</methods>
 
-rule [Invoke-Method-On-array]:
-    <k>
-      'Invoke('Method('MethodName(
-          QualRV:RawVal::QualT:RefType,,
-          methodInfo(Sig:Signature, QualT, _,_,_)
-        )),,
-        [ParamVals:KList]
-      )
-      => invokeImpl( methodRef(Sig, MethodDecClass), QualRV::QualT, [ParamVals] ) //todo move getLookupTargetType to elab only
-      ...
-    </k>
-    <classType> ArrayImplClass:ClassType </classType>
-    <methods>... Sig |-> MethodDecClass:ClassType ...</methods>
+rule [Invoke-Method-On-array-or-string]:
+    'Invoke('Method('MethodName(
+        QualRV:RawVal::QualClass:ClassType,,
+        methodInfo(Sig:Signature, QualClass, classCMT, MethodDecClass:ClassType, instanceCT)
+      )),,
+      [ParamVals:KList]
+    )
+    => invokeImpl( methodRef(Sig, MethodDecClass), QualRV::QualClass, [ParamVals] ) //todo move getLookupTargetType to elab only
 when
-    getKLabel(QualRV) ==KLabel 'arrayRef andBool ArrayImplClass ==K arrayImplClass
+    (getKLabel(QualRV) ==KLabel 'arrayRef) orBool isString(QualRV) ==K true
 
 /*@ Qualifier type could be either object or array.
     We cannot move method invocation on null logic to invokeImpl, because
