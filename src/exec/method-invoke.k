@@ -119,7 +119,7 @@ rule [Invoke-Method-load-ContextType]:
       'Invoke('Method('MethodName(
         Qual:KResult,,
         methodInfo(Sig:Signature, QualClass:ClassType, _, MethodDefClass:ClassType, noValue => CT)
-        )),, _)
+      )),, _)
       ...
     </k>
     <classType> MethodDefClass </classType>
@@ -134,13 +134,10 @@ rule [Invoke-Method-Instance-On-Class]:
       methodInfo(Sig:Signature, QualClass:ClassType, classCMT, _, instanceCT)
       )),, [ParamVals:KList]
     )
-    => invokeImpl(
-      lookupOverloadedMethod(
-        Sig, getClassesBetween([MostDerivedClass], QualClass),
-        mapWrap(.Map), noMethodRef
-      ),
-      loc(OId)::QualClass, [ParamVals]
-    )
+    =>  invokeImpl(
+          methodLookupRuntime( Sig, getClassChain([MostDerivedClass], QualClass), noMethodRef ),
+          loc(OId)::QualClass, [ParamVals]
+        )
 
 rule [Invoke-Method-Instance-On-interface]:
     <k>
@@ -225,74 +222,78 @@ rule [superMethodImpl]:
     <extends> BaseClass:ClassType </extends>
 
 /*Returns the list of classes representing the layer of the given object (by OId),
-    located between LowestClass and UpperClass.
+    located between MostBaseClass and MostDerivedClass.
 */
-syntax K ::=  getClassesBetween(  KListWrap,  //[LowestClass] at beginning, gradually accumulates the list of classes
-                                  ClassType   //UpperClass
+syntax K ::=  getClassChain(  KListWrap,  //[MostDerivedClass] at beginning, gradually accumulates the list of classes
+                              ClassType   //MostBaseClass
               )
 
 rule [getClassesBetween-process]:
     <k>
-      getClassesBetween([_,, LowestClass:ClassType,, (.KList => BaseClass)], UpperClass:ClassType)
+      getClassChain([(.KList => BaseClass),, MostDerivedClass:ClassType,, _], MostBaseClass:ClassType)
       ...
     </k>
-    <classType> LowestClass </classType>
+    <classType> MostDerivedClass </classType>
     <extends> BaseClass:ClassType </extends>
 when
-    LowestClass =/=K UpperClass
+    MostDerivedClass =/=K MostBaseClass
 
 rule [getClassesBetween-end]:
-    getClassesBetween([LowerClasses:KList,, Class:ClassType], Class) => resultListWrap(LowerClasses,, Class)
+    getClassChain([Class:ClassType,, MostDerivedClass:KList], Class) => resultListWrap(Class,, MostDerivedClass)
 
 /*@ The right signature is already found.
 Search for the right implementation is performed from the compile-time type of the target
 to more derived types, up to the object type of the target.
 This is required in order to respect the rules of inheritance in the presence of access modes.
 Evaluates into typed method closure.*/
-syntax K ::=  lookupOverloadedMethod ( //todo maybe we can simplify this logic, too much overlapping with elaboration
+syntax K ::=  methodLookupRuntime ( //todo maybe we can simplify this logic, too much overlapping with elaboration
                 Signature,  //sig(Name, SigTL) - Method signature
                 K,          //computes into resultListWrap(Class list), elements of type ClassType,
-                              // from derived to base.
-                              // To be processed from base to derived when methods map will be exhausted.
-                              //todo refactor this list to be in the opposite order - from base to derived
-                K,          //mapWrap(Map) - methods map of the current LayerClass
-                              //todo replace with Map, also for lookupSignature
+                              // from base to derived.
+                              // To be processed from base to derived when methods map will be exhausted
                 MethodRef   //method closure of the most specific method found so far
                               // or noValue if no applicable method was found yet
               )
-              [strict(2,4)]
+              [strict(2,3)]
 
 rule [lookupOverloadedMethod-SigKnownFirstCandidate]:
-    lookupOverloadedMethod(
-      Sig:Signature,
-      _,
-      mapWrap( (Sig |-> DecClass:ClassType _:Map) => .Map ),
-      noMethodRef => methodRef(Sig, DecClass)
-    )
+    <k>
+      methodLookupRuntime(
+        Sig:Signature,
+        resultListWrap((NewLayerClass:ClassType => .KList),, _),
+        noMethodRef => methodRef(Sig, DecClass)
+      )
+      ...
+    </k>
+    <classType> NewLayerClass </classType>
+    <methods>... Sig |-> DecClass:ClassType ...</methods>
 
 rule [lookupOverloadedMethod-SigKnownOtherCandidates]:
-    lookupOverloadedMethod(
-      Sig:Signature,
-      _,
-      mapWrap( (Sig |-> NewDecClass:ClassType => .) _:Map ), //todo eliminate 3-rd argument by referring directly to <methods>
-      OldMethodRef:MethodRef
-      => 'If(
-            isAccessibleForOverwriting(
-              getMethConsClosureClass(OldMethodRef), //todo eliminate these aux constructs
-              getMethodAccessMode(OldMethodRef),
-              NewDecClass
-            ),,
-            methodRef(Sig, NewDecClass),,
-            OldMethodRef
-          )
-    )
+    <k>
+      methodLookupRuntime(
+        Sig:Signature,
+        resultListWrap((NewLayerClass:ClassType => .KList),, _),
+        OldMethodRef:MethodRef
+        => 'If(
+              isAccessibleForOverwriting(
+                getMethConsClosureClass(OldMethodRef), //todo eliminate these aux constructs
+                getMethodAccessMode(OldMethodRef),
+                NewDecClass
+              ),,
+              methodRef(Sig, NewDecClass),,
+              OldMethodRef
+            )
+      )
+      ...
+    </k>
+    <classType> NewLayerClass </classType>
+    <methods>... Sig |-> NewDecClass:ClassType ...</methods>
 
 rule [lookupOverloadedMethod-SigKnownLayerDiscard]:
     <k>
-      lookupOverloadedMethod(
+      methodLookupRuntime(
         Sig:Signature,
-        resultListWrap(_,, (NewLayerClass:ClassType => .KList)),
-        mapWrap( Methods:Map => NewMethods ),
+        resultListWrap((NewLayerClass:ClassType => .KList),, _),
         _
       )
       ...
@@ -300,15 +301,14 @@ rule [lookupOverloadedMethod-SigKnownLayerDiscard]:
     <classType> NewLayerClass </classType>
     <methods> NewMethods:Map </methods>
 when
-    notBool Sig in keys(Methods)
+    notBool Sig in keys(NewMethods)
 
 rule [lookupOverloadedMethod-SigKnownEnd]:
-    lookupOverloadedMethod(Sig:Signature, resultListWrap(.KList), mapWrap( Methods:Map ), MethodRef:MethodRef )
+    methodLookupRuntime(Sig:Signature, resultListWrap(.KList), MethodRef:MethodRef )
     => MethodRef
 when
-    notBool Sig in keys(Methods)
     //Condition for debug purposes only. If no suitable method impl was found so far, cumputation will stuck here
-    andBool MethodRef =/=K noMethodRef
+    MethodRef =/=K noMethodRef
 
 //@ Returns the defining class of the given method TypedVal.
 syntax K ::= getMethConsClosureClass ( MethodRef )                 [strict]
