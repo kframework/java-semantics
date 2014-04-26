@@ -79,8 +79,8 @@ when
 */
 rule [Invoke-Method-load-MethodDefClass-arrays]:
     'Invoke('Method('MethodName(
-      Qual:KResult,,
-      methodInfo(Sig:Signature, arrayOf T:Type => arrayImplClass , _,_,_)
+      QualRV:RawVal :: (arrayOf T:Type => arrayImplClass),,
+      methodInfo(Sig:Signature, arrayOf T => arrayImplClass , _,_,_)
     )),, _)
 
 rule [Invoke-Method-load-MethodDefClass]:
