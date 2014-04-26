@@ -307,7 +307,6 @@ rule [pickSecondIfAccessible-main-Rule]:
     <methodSignature> Sig1 </methodSignature>
     <methodAccessMode> AccMode1:AccessMode </methodAccessMode>
 
-//todo consider simplifying
 syntax K ::=  invokeImpl (
                 MethodRef,  //lookupOverloadedMethod statement, evaluates to methodRef()
                 K,          //KResult - method call target
@@ -322,60 +321,17 @@ syntax K ::=  invokeImpl (
 be checked against the return type of the method.  To do this correctly,
 we also need to stack the current status of the \textsf{return} cell
 and then pop it when the method returns. */
-rule [invokeImpl-Instance]:
+rule [invokeImpl]:
     <k>
       invokeImpl(
         methodRef(Sig:Signature, Class:ClassType),
-        loc(OL:Int)::_,
+        Qual:KResult,
         [ParamValues:KList]
-      ) ~> K:K
-       => bindTo([Params], [ParamValues]) ~> Body ~> 'Return('None(.KList))
-    </k>
-    <stack>
-      . =>  ListItem(sl(K,
-              (
-                <envGroup> OldEnvGroup </envGroup>
-                <return> OldT </return>
-                <crntObj> OldObj </crntObj>
-                RestMethContext
-              )
-            ))
-      ...
-    </stack>
-    <methodContext>
-      <envGroup>
-        OldEnvGroup:Bag
-        => <env> .Map </env>
-      </envGroup>
-      <return> OldT:Type => ReturnT </return>
-      <crntObj>
-        OldObj:Bag
-        => <crntClass> Class </crntClass>
-           <location> OId </location>
-      </crntObj>
-      RestMethContext:Bag
-    </methodContext>
-    <store>... OL |-> objectRef(OId:Int, _)::_ ...</store>
-
-    <classType> Class </classType>
-    <methodSignature> Sig </methodSignature>
-    <methodReturnType> ReturnT:Type </methodReturnType>
-    <methodParams> [Params:KList] </methodParams>
-    <methodBody> Body:K </methodBody>
-    <methodContextType> instanceCT </methodContextType>
-when getKLabel(Body) =/=KLabel 'NoMethodBody
-
-rule [invokeImpl-Static]:
-    <k>
-      invokeImpl(
-        methodRef(Sig:Signature, Class:ClassType),
-        noValue,
-        [ParamValues:KList]
-      ) ~> K:K
+      ) ~> RestK:K
        => staticInit(Class) ~> bindTo([Params], [ParamValues]) ~> Body ~> 'Return('None(.KList))
     </k>
     <stack>
-      . =>  ListItem(sl(K,
+      . =>  ListItem(sl(RestK,
               (
                 <envGroup> OldEnvGroup </envGroup>
                 <return> OldT </return>
@@ -386,15 +342,12 @@ rule [invokeImpl-Static]:
       ...
     </stack>
     <methodContext>
-      <envGroup>
-        OldEnvGroup:Bag
-        => <env> .Map </env>
-      </envGroup>
+      <envGroup> OldEnvGroup:Bag => <env> .Map </env> </envGroup>
       <return> OldT:Type => ReturnT </return>
       <crntObj>
         OldObj:Bag
         => <crntClass> Class </crntClass>
-           <location> noValue </location>
+           <location> getOId(Qual) </location>
       </crntObj>
       RestMethContext:Bag
     </methodContext>
@@ -404,7 +357,11 @@ rule [invokeImpl-Static]:
     <methodReturnType> ReturnT:Type </methodReturnType>
     <methodParams> [Params:KList] </methodParams>
     <methodBody> Body:K </methodBody>
-    <methodContextType> staticCT </methodContextType>
+when getKLabel(Body) =/=KLabel 'NoMethodBody
+
+syntax K ::= getOId( K )              [function]
+rule getOId( loc(OId:Int)::_ ) => OId
+rule getOId( noValue ) => noValue
 
 //@ 'Param(_:K,, T:Type,, X:Id)
 syntax KLabel ::= "'Param"
