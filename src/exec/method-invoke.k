@@ -246,7 +246,7 @@ Search for the right implementation is performed from the compile-time type of t
 to more derived types, up to the object type of the target.
 This is required in order to respect the rules of inheritance in the presence of access modes.
 Evaluates into typed method closure.*/
-syntax K ::=  methodLookupRuntime ( //todo maybe we can simplify this logic, too much overlapping with elaboration
+syntax K ::=  methodLookupRuntime (
                 Signature,  //sig(Name, SigTL) - Method signature
                 K,          //computes into resultListWrap(Class list), elements of type ClassType,
                               // from base to derived.
@@ -256,66 +256,58 @@ syntax K ::=  methodLookupRuntime ( //todo maybe we can simplify this logic, too
               )
               [strict(2,3)]
 
-rule [lookupOverloadedMethod-SigKnownFirstCandidate]:
+rule [methodLookupRuntime-process]:
     <k>
       methodLookupRuntime(
         Sig:Signature,
-        resultListWrap((NewLayerClass:ClassType => .KList),, _),
-        noMethodRef => methodRef(Sig, DecClass)
+        resultListWrap((Class:ClassType => .KList),, _),
+        OldMethod:MethodRef => pickSecondIfAccessible(OldMethod, findMethodRefForSig(Sig, Methods))
       )
       ...
     </k>
-    <classType> NewLayerClass </classType>
-    <methods>... Sig |-> DecClass:ClassType ...</methods>
+    <classType> Class </classType>
+    <methods> Methods:Map </methods>
 
-rule [lookupOverloadedMethod-SigKnownOtherCandidates]:
-    <k>
-      methodLookupRuntime(
-        Sig:Signature,
-        resultListWrap((NewLayerClass:ClassType => .KList),, _),
-        OldMethodRef:MethodRef
-        => 'If(
-              isAccessibleForOverwriting(
-                getMethConsClosureClass(OldMethodRef), //todo eliminate these aux constructs
-                getMethodAccessMode(OldMethodRef),
-                NewDecClass
-              ),,
-              methodRef(Sig, NewDecClass),,
-              OldMethodRef
-            )
-      )
-      ...
-    </k>
-    <classType> NewLayerClass </classType>
-    <methods>... Sig |-> NewDecClass:ClassType ...</methods>
-
-rule [lookupOverloadedMethod-SigKnownLayerDiscard]:
-    <k>
-      methodLookupRuntime(
-        Sig:Signature,
-        resultListWrap((NewLayerClass:ClassType => .KList),, _),
-        _
-      )
-      ...
-    </k>
-    <classType> NewLayerClass </classType>
-    <methods> NewMethods:Map </methods>
-when
-    notBool Sig in keys(NewMethods)
-
-rule [lookupOverloadedMethod-SigKnownEnd]:
-    methodLookupRuntime(Sig:Signature, resultListWrap(.KList), MethodRef:MethodRef )
-    => MethodRef
+rule [methodLookupRuntime-SigKnownEnd]:
+    methodLookupRuntime(_, resultListWrap(.KList), MethodRef:MethodRef ) => MethodRef
 when
     //Condition for debug purposes only. If no suitable method impl was found so far, cumputation will stuck here
     MethodRef =/=K noMethodRef
 
-//@ Returns the defining class of the given method TypedVal.
-syntax K ::= getMethConsClosureClass ( MethodRef )                 [strict]
-rule [getMethConsClosureClass]:
-    getMethConsClosureClass( methodRef(_, Class:ClassType) ) => Class
-        [structural]
+syntax K ::=  findMethodRefForSig(
+                Signature,  //The signature under search
+                Map         //The map of type Map[Sig -> ClassType] where the right method is searched
+              )
 
+rule findMethodRefForSig(Sig:Signature, Sig |-> Class:ClassType _:Map) => methodRef(Sig, Class)
+rule findMethodRefForSig(Sig:Signature, Methods:Map) => noMethodRef
+when
+    notBool Sig in keys(Methods)
+
+/*@ If the second argument evaluates to a valid method ref that is accessible from the first method ref
+  (look for the right terminology in JLS), pick the second argument. Otherwise pick the first one.
+*/
+syntax K ::= pickSecondIfAccessible ( MethodRef, MethodRef )  [strict(2)]
+
+rule pickSecondIfAccessible(noMethodRef, MRef:MethodRef) => MRef
+rule pickSecondIfAccessible(MRef:MethodRef, noMethodRef) => MRef
+
+rule [pickSecondIfAccessible-main-Rule]:
+    <k>
+      pickSecondIfAccessible(methodRef(Sig1:Signature, DecClass1:ClassType),
+                             methodRef(Sig2:Signature, DecClass2:ClassType)) =>
+        'If(
+          isAccessibleForOverwriting( DecClass1, AccMode1, DecClass2 ),,
+          methodRef(Sig2, DecClass2),,
+          methodRef(Sig1, DecClass1)
+        )
+      ...
+    </k>
+    <classType> DecClass1 </classType>
+    <methodSignature> Sig1 </methodSignature>
+    <methodAccessMode> AccMode1:AccessMode </methodAccessMode>
+
+//todo consider simplifying
 syntax K ::=  invokeImpl (
                 MethodRef,  //lookupOverloadedMethod statement, evaluates to methodRef()
                 K,          //KResult - method call target
