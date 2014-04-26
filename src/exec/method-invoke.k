@@ -23,6 +23,9 @@ General structure:
   ),,
   ['Param(),, ...] - arguments
 )
+
+The whole semantics for runtime evaluation of a method invocation have ~ 20 rules, including contexts.
+  That is a little bit too much.
 */
 syntax KLabel ::= "'Invoke"
 
@@ -72,10 +75,8 @@ rule [Invoke-Method-compute-Signature]:
 when
     isKResult(ParamVals)
 
-/*@ We cannot combine this rule with [Invoke-Method-On-array]
-  because after this rule one of the following might be matched:
-    - [Invoke-Method-On-array]
-    - [Invoke-Method-instance-On-Null]
+/*@ We could combine this rule with the previous one by using getLookupTargetType(), but we'll keep it this way
+    to keep the core part of method invocation separate from the non object-related part.
 */
 rule [Invoke-Method-load-MethodDefClass-arrays]:
     'Invoke('Method('MethodName(
@@ -141,26 +142,6 @@ rule [Invoke-Method-Instance-On-Class]:
       loc(OId)::QualClass, [ParamVals]
     )
 
-/*Returns the list of classes representing the layer of the given object (by OId),
-    located between LowestClass and UpperClass.
-*/
-syntax K ::=  getClassesBetween(  KListWrap,  //[LowestClass] at beginning, gradually accumulates the list of classes
-                                  ClassType   //UpperClass
-              )
-
-rule [getClassesBetween-process]:
-    <k>
-      getClassesBetween([_,, LowestClass:ClassType,, (.KList => BaseClass)], UpperClass:ClassType)
-      ...
-    </k>
-    <classType> LowestClass </classType>
-    <extends> BaseClass:ClassType </extends>
-when
-    LowestClass =/=K UpperClass
-
-rule [getClassesBetween-end]:
-    getClassesBetween([LowerClasses:KList,, Class:ClassType], Class) => resultListWrap(LowerClasses,, Class)
-
 rule [Invoke-Method-Instance-On-interface]:
     <k>
       'Invoke('Method('MethodName(
@@ -185,7 +166,7 @@ rule [Invoke-Method-On-array-or-string]:
       )),,
       [ParamVals:KList]
     )
-    => invokeImpl( methodRef(Sig, MethodDecClass), QualRV::QualClass, [ParamVals] ) //todo move getLookupTargetType to elab only
+    => invokeImpl( methodRef(Sig, MethodDecClass), QualRV::QualClass, [ParamVals] )
 when
     (getKLabel(QualRV) ==KLabel 'arrayRef) orBool isString(QualRV) ==K true
 
@@ -243,6 +224,26 @@ rule [superMethodImpl]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
+/*Returns the list of classes representing the layer of the given object (by OId),
+    located between LowestClass and UpperClass.
+*/
+syntax K ::=  getClassesBetween(  KListWrap,  //[LowestClass] at beginning, gradually accumulates the list of classes
+                                  ClassType   //UpperClass
+              )
+
+rule [getClassesBetween-process]:
+    <k>
+      getClassesBetween([_,, LowestClass:ClassType,, (.KList => BaseClass)], UpperClass:ClassType)
+      ...
+    </k>
+    <classType> LowestClass </classType>
+    <extends> BaseClass:ClassType </extends>
+when
+    LowestClass =/=K UpperClass
+
+rule [getClassesBetween-end]:
+    getClassesBetween([LowerClasses:KList,, Class:ClassType], Class) => resultListWrap(LowerClasses,, Class)
+
 /*@ The right signature is already found.
 Search for the right implementation is performed from the compile-time type of the target
 to more derived types, up to the object type of the target.
@@ -253,11 +254,13 @@ syntax K ::=  lookupOverloadedMethod ( //todo maybe we can simplify this logic, 
                 K,          //computes into resultListWrap(Class list), elements of type ClassType,
                               // from derived to base.
                               // To be processed from base to derived when methods map will be exhausted.
-                K,          //mapWrap(Map) - methods map of current LayerClass
+                              //todo refactor this list to be in the opposite order - from base to derived
+                K,          //mapWrap(Map) - methods map of the current LayerClass
+                              //todo replace with Map, also for lookupSignature
                 MethodRef   //method closure of the most specific method found so far
                               // or noValue if no applicable method was found yet
               )
-              [strict]
+              [strict(2,4)]
 
 rule [lookupOverloadedMethod-SigKnownFirstCandidate]:
     lookupOverloadedMethod(
@@ -271,11 +274,11 @@ rule [lookupOverloadedMethod-SigKnownOtherCandidates]:
     lookupOverloadedMethod(
       Sig:Signature,
       _,
-      mapWrap( (Sig |-> NewDecClass:ClassType => .) _:Map ),
+      mapWrap( (Sig |-> NewDecClass:ClassType => .) _:Map ), //todo eliminate 3-rd argument by referring directly to <methods>
       OldMethodRef:MethodRef
       => 'If(
             isAccessibleForOverwriting(
-              getMethConsClosureClass(OldMethodRef),
+              getMethConsClosureClass(OldMethodRef), //todo eliminate these aux constructs
               getMethodAccessMode(OldMethodRef),
               NewDecClass
             ),,
@@ -284,28 +287,28 @@ rule [lookupOverloadedMethod-SigKnownOtherCandidates]:
           )
     )
 
-rule [lookupOverloadedMethod-SigKnownEntryDiscard]: //todo combine this rule with the next one - LayerDiscard
-    lookupOverloadedMethod(
-      Sig:Signature,
-      _,
-      mapWrap( (OtherSig:Signature |-> _ => .) _:Map ),
-      _
-    )
-when
-    Sig =/=K OtherSig
-
 rule [lookupOverloadedMethod-SigKnownLayerDiscard]:
-    lookupOverloadedMethod(
-      _,
-      resultListWrap(_,, (NewLayerType:ClassType => .KList)),
-      mapWrap(.Map) => getMethods(NewLayerType),
-      _
-    )
+    <k>
+      lookupOverloadedMethod(
+        Sig:Signature,
+        resultListWrap(_,, (NewLayerClass:ClassType => .KList)),
+        mapWrap( Methods:Map => NewMethods ),
+        _
+      )
+      ...
+    </k>
+    <classType> NewLayerClass </classType>
+    <methods> NewMethods:Map </methods>
+when
+    notBool Sig in keys(Methods)
 
 rule [lookupOverloadedMethod-SigKnownEnd]:
-    lookupOverloadedMethod(_, resultListWrap(.KList), mapWrap(.Map), MethodRef:MethodRef ) => MethodRef
+    lookupOverloadedMethod(Sig:Signature, resultListWrap(.KList), mapWrap( Methods:Map ), MethodRef:MethodRef )
+    => MethodRef
 when
-    MethodRef =/=K noMethodRef  //for debug purposes only
+    notBool Sig in keys(Methods)
+    //Condition for debug purposes only. If no suitable method impl was found so far, cumputation will stuck here
+    andBool MethodRef =/=K noMethodRef
 
 //@ Returns the defining class of the given method TypedVal.
 syntax K ::= getMethConsClosureClass ( MethodRef )                 [strict]

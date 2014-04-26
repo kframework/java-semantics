@@ -114,6 +114,11 @@ rule [elabEnd-Invoke-to-lookupMethod]:
                         isCastOfQThis(Qual) ==K true, Name, resultListWrap(ParamExps)) )
     ~> elabEnd('Invoke( 'Method('MethodName(Qual:K,, Name:Id)),, [ParamExps:KList] ))
 
+//@ Returnts the same type for classes, arrayImplClass for arrays.
+syntax K ::= getLookupTargetType ( RefType )    [function]
+rule getLookupTargetType(Class:ClassType) => Class
+rule getLookupTargetType(arrayOf _) => arrayImplClass
+
 //@ True for cast(T,'QThis(\_)), false otherwise
 syntax K ::= isCastOfQThis ( K )                                      [function]
 rule isCastOfQThis(cast(_, 'QThis(_))) => true
@@ -154,15 +159,20 @@ syntax KResult ::= "tempKResult"
 
 //All cases
 rule [lookupMethod-to-lookupSignature]:
-    lookupMethod(
-      QualClass:ClassType,
-      QualIsThis:Bool,
-      MethodName:Id,
-      resultListWrap(ParamExps:KList),
-      noMethodRef => lookupSignature(MethodName, getTypes([ParamExps]), getMethods(QualClass),
-                                  notBool QualIsThis, noMethodRef, QualClass),
-      tempKResult
-    )
+    <k>
+      lookupMethod(
+        QualClass:ClassType,
+        QualIsThis:Bool,
+        MethodName:Id,
+        resultListWrap(ParamExps:KList),
+        noMethodRef => lookupSignature(MethodName, getTypes([ParamExps]), mapWrap(Methods),
+                                    notBool QualIsThis, noMethodRef, QualClass),
+        tempKResult
+      )
+      ...
+    </k>
+    <classType> QualClass </classType>
+    <methods> Methods:Map </methods>
 
 /*If resolved method is static, we cannot insert in the construct the actual method body,
 because this body might not be elaborated.*/
@@ -251,7 +261,7 @@ syntax K ::=  lookupSignature (
                               // or noValue if none found
                 ClassType // QualClass - target type.
               )
-              [strict(2,3,5)]
+              [strict(2,5)]
 
 rule [lookupSignature-Main]:
     <k>
@@ -261,17 +271,20 @@ rule [lookupSignature-Main]:
         mapWrap((sig(MethodName, SigTs:Types) |-> DecClass:ClassType => .) _:Map),
         IsQ:Bool,
         OldMethodRef:MethodRef
-        => ifAux(
+        => ifAux( //todo maybe extract the whole ifAux to a separate rule
             andAux(
               andAux(
                 subtypeList(CallTs, SigTs),
                 #if OldMethodRef ==K noMethodRef
                   #then true
+
+                  //An aux function here is required because OldMethodRef could be noMethodRef as well,
+                  //for which there are no arg types
                   #else subtypeList(SigTs, getMethodRefArgTypes(OldMethodRef))
                 #fi
               ),
               isAccessible(
-                getMethodAccessMode(methodRef(sig(MethodName, SigTs), DecClass)),
+                getMethodAccessMode(methodRef(sig(MethodName, SigTs), DecClass)), //todo eliminate these aux constructs
                 getMethodContextType(methodRef(sig(MethodName, SigTs), DecClass)),
                 DecClass, IsQ, QualClass
               )
@@ -286,6 +299,17 @@ rule [lookupSignature-Main]:
 
 syntax K ::= getMethodRefArgTypes ( MethodRef )   [function]
 rule getMethodRefArgTypes( methodRef(sig(_, Ts:Types), _) ) => Ts
+
+//@ Returns the context type of a method closure given as argument
+syntax K ::= getMethodContextType ( MethodRef )  [strict]
+rule [getMethodContextType]:
+    <k>
+      getMethodContextType( methodRef(Sig:Signature, Class:ClassType) ) => CT
+      ...
+    </k>
+    <classType> Class </classType>
+    <methodSignature> Sig </methodSignature>
+    <methodContextType> CT:ContextType </methodContextType>
 
 rule [lookupSignature-SigDiscard]:
     lookupSignature(

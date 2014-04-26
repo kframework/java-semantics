@@ -92,13 +92,6 @@ rule isAccessibleForOverwriting(BaseClass:ClassType, package, SubClass:ClassType
 
 rule isAccessibleForOverwriting(_, private, _) => false
 
-//@ Retrieve the content of <methods> for the given class
-syntax K ::=  getMethods ( ClassType )
-rule [getMethods-ClassType]:
-    <k> getMethods(Class:ClassType) => mapWrap(Methods) ...</k>
-    <classType> Class </classType>
-    <methods> Methods:Map </methods>
-
 syntax KLabel ::=   "'Public"
                   | "'Private"
                   | "'Protected"
@@ -148,21 +141,6 @@ rule [getMethodAccessMode]:
     <classType> Class </classType>
     <methodSignature> Sig </methodSignature>
     <methodAccessMode> Acc:AccessMode </methodAccessMode>
-
-//@ Returns the context type of a method closure given as argument
-syntax K ::= getMethodContextType ( MethodRef )  [strict]
-rule [getMethodContextType]:
-    <k>
-      getMethodContextType( methodRef(Sig:Signature, Class:ClassType) ) => CT
-      ...
-    </k>
-    <classType> Class </classType>
-    <methodSignature> Sig </methodSignature>
-    <methodContextType> CT:ContextType </methodContextType>
-
-syntax K ::= getLookupTargetType ( RefType )    [function]
-rule getLookupTargetType(Class:ClassType) => Class
-rule getLookupTargetType(arrayOf _) => arrayImplClass
 
 syntax K ::= "arrayImplClass"                   [function]
 rule arrayImplClass => class String2Id("java.lang.ArrayImpl")
