@@ -165,7 +165,7 @@ rule [lookupMethod-to-lookupSignature]:
         QualIsThis:Bool,
         MethodName:Id,
         resultListWrap(ParamExps:KList),
-        noMethodRef => lookupSignature(MethodName, getTypes([ParamExps]), mapWrap(Methods),
+        noMethodRef => lookupSignature(MethodName, getTypes([ParamExps]), Methods,
                                     notBool QualIsThis, noMethodRef, QualClass),
         tempKResult
       )
@@ -255,7 +255,7 @@ computes mapWrap(Sig -> MethodTV)*/
 syntax K ::=  lookupSignature (
                 Id,       // MethodName
                 K,        // Computes into Types - argument types
-                K,        // methods environment - mapWrap(Map[sig -> Class])
+                Map,        // methods environment - Map[sig -> Class]
                 Bool,     // IsQ - whether the original method call was qualified
                 MethodRef, // The best signature found so far
                               // or noValue if none found
@@ -268,10 +268,10 @@ rule [lookupSignature-Main]:
       lookupSignature(
         MethodName:Id,
         CallTs:Types,
-        mapWrap((sig(MethodName, SigTs:Types) |-> DecClass:ClassType => .) _:Map),
+        (sig(MethodName, SigTs:Types) |-> NewDecClass:ClassType => .) _:Map,
         IsQ:Bool,
         OldMethodRef:MethodRef
-        => ifAux( //todo maybe extract the whole ifAux to a separate rule
+        => ifAux(
             andAux(
               andAux(
                 subtypeList(CallTs, SigTs),
@@ -283,46 +283,35 @@ rule [lookupSignature-Main]:
                   #else subtypeList(SigTs, getMethodRefArgTypes(OldMethodRef))
                 #fi
               ),
-              isAccessible(
-                getMethodAccessMode(methodRef(sig(MethodName, SigTs), DecClass)), //todo eliminate these aux constructs
-                getMethodContextType(methodRef(sig(MethodName, SigTs), DecClass)),
-                DecClass, IsQ, QualClass
-              )
+              isAccessible( NewAccMode, NewCT, NewDecClass, IsQ, QualClass )
             ),
-            methodRef(sig(MethodName, SigTs), DecClass),
+            methodRef(sig(MethodName, SigTs), NewDecClass),
             OldMethodRef
           ),
         QualClass:ClassType
       )
       ...
     </k>
+    <classType> NewDecClass </classType>
+    <methodSignature> sig(MethodName, SigTs) </methodSignature>
+    <methodAccessMode> NewAccMode:AccessMode </methodAccessMode>
+    <methodContextType> NewCT:ContextType </methodContextType>
 
 syntax K ::= getMethodRefArgTypes ( MethodRef )   [function]
 rule getMethodRefArgTypes( methodRef(sig(_, Ts:Types), _) ) => Ts
-
-//@ Returns the context type of a method closure given as argument
-syntax K ::= getMethodContextType ( MethodRef )  [strict]
-rule [getMethodContextType]:
-    <k>
-      getMethodContextType( methodRef(Sig:Signature, Class:ClassType) ) => CT
-      ...
-    </k>
-    <classType> Class </classType>
-    <methodSignature> Sig </methodSignature>
-    <methodContextType> CT:ContextType </methodContextType>
 
 rule [lookupSignature-SigDiscard]:
     lookupSignature(
       MethodName:Id,
       _,
-      mapWrap((sig(Name:Id, _) |-> _ => .) _:Map),
+      (sig(Name:Id, _) |-> _ => .) _:Map,
       _,_,_
     )
 when
     Name =/=K MethodName
 
 rule [lookupSignature-End]:
-    lookupSignature(_,_,mapWrap(.Map),_, MethodRef:MethodRef, _) => MethodRef
+    lookupSignature(_,_, .Map,_, MethodRef:MethodRef, _) => MethodRef
 
 /*@ Tests whether a method from a given class with a given AccessMode and ContextType
 may be called from the current object environment*/
