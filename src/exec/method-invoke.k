@@ -256,56 +256,50 @@ syntax K ::=  methodLookupRuntime (
               )
               [strict(2,3)]
 
-rule [methodLookupRuntime-process]:
+rule [methodLookupRuntime-layer-first-dec-found]:
     <k>
       methodLookupRuntime(
         Sig:Signature,
         resultListWrap((Class:ClassType => .KList),, _),
-        OldMethod:MethodRef => pickSecondIfAccessible(OldMethod, findMethodRefForSig(Sig, Methods))
+        noMethodRef => methodRef(Sig, DecClass)
       )
       ...
     </k>
     <classType> Class </classType>
+    <methods>... Sig |-> DecClass:ClassType ...</methods>
+
+rule [methodLookupRuntime-layer-two-decs-choice]:
+    <k>
+      methodLookupRuntime(
+        Sig:Signature,
+        resultListWrap((Class:ClassType => .KList),, _),
+        methodRef(Sig:Signature, DecClass1:ClassType)
+        =>  'If(
+              isAccessibleForOverwriting( DecClass1, getMethodAccessMode(methodRef(Sig, DecClass1)), DecClass2 ),,
+              methodRef(Sig, DecClass2),,
+              methodRef(Sig, DecClass1)
+            )
+      )
+      ...
+    </k>
+    <classType> Class </classType>
+    <methods>... Sig |-> DecClass2:ClassType ...</methods>
+
+rule [methodLookupRuntime-layer-discard]:
+    <k>
+      methodLookupRuntime( Sig:Signature, resultListWrap((Class:ClassType => .KList),, _), _ )
+      ...
+    </k>
+    <classType> Class </classType>
     <methods> Methods:Map </methods>
+when
+    notBool Sig in keys(Methods)
 
 rule [methodLookupRuntime-SigKnownEnd]:
     methodLookupRuntime(_, resultListWrap(.KList), MethodRef:MethodRef ) => MethodRef
 when
     //Condition for debug purposes only. If no suitable method impl was found so far, cumputation will stuck here
     MethodRef =/=K noMethodRef
-
-syntax K ::=  findMethodRefForSig(
-                Signature,  //The signature under search
-                Map         //The map of type Map[Sig -> ClassType] where the right method is searched
-              )
-
-rule findMethodRefForSig(Sig:Signature, Sig |-> Class:ClassType _:Map) => methodRef(Sig, Class)
-rule findMethodRefForSig(Sig:Signature, Methods:Map) => noMethodRef
-when
-    notBool Sig in keys(Methods)
-
-/*@ If the second argument evaluates to a valid method ref that is accessible from the first method ref
-  (look for the right terminology in JLS), pick the second argument. Otherwise pick the first one.
-*/
-syntax K ::= pickSecondIfAccessible ( MethodRef, MethodRef )  [strict(2)]
-
-rule pickSecondIfAccessible(noMethodRef, MRef:MethodRef) => MRef
-rule pickSecondIfAccessible(MRef:MethodRef, noMethodRef) => MRef
-
-rule [pickSecondIfAccessible-main-Rule]:
-    <k>
-      pickSecondIfAccessible(methodRef(Sig1:Signature, DecClass1:ClassType),
-                             methodRef(Sig2:Signature, DecClass2:ClassType)) =>
-        'If(
-          isAccessibleForOverwriting( DecClass1, AccMode1, DecClass2 ),,
-          methodRef(Sig2, DecClass2),,
-          methodRef(Sig1, DecClass1)
-        )
-      ...
-    </k>
-    <classType> DecClass1 </classType>
-    <methodSignature> Sig1 </methodSignature>
-    <methodAccessMode> AccMode1:AccessMode </methodAccessMode>
 
 syntax K ::=  invokeImpl (
                 MethodRef,  //lookupOverloadedMethod statement, evaluates to methodRef()
@@ -316,11 +310,15 @@ syntax K ::=  invokeImpl (
               )
               [strict(1)]
 
-/*@ Closure application needs to also set a new return type in the
-\textsf{return} cell, in order for the values returned by its body to
-be checked against the return type of the method.  To do this correctly,
-we also need to stack the current status of the \textsf{return} cell
-and then pop it when the method returns. */
+/*@ (kool doc) Closure application needs to also set a new return type in the
+    \textsf{return} cell, in order for the values returned by its body to
+    be checked against the return type of the method.  To do this correctly,
+    we also need to stack the current status of the \textsf{return} cell
+    and then pop it when the method returns.
+
+  Calling staticInit() is required for static methods only. Calling it on instance methods have no effect,
+    since the qualifier class have been initialized at least when the qualifier object was first created.
+*/
 rule [invokeImpl]:
     <k>
       invokeImpl(
