@@ -33,9 +33,9 @@ case "$OPTION" in
     echo
     echo "Preprocessing semantics:"
     # "&> file" redirects both stdin and stderr to the given file
-    $KOMPILE_CMD exec/java-exec &> exec-out.txt \
-        & $KOMPILE_CMD full/java-full &> full-out.txt \
-        & $KOMPILE_CMD prep/java-prep
+    $KOMPILE_CMD -d exec exec/java-exec.k &> exec-out.txt \
+        & $KOMPILE_CMD -d full full/java-full.k &> full-out.txt \
+        & $KOMPILE_CMD -d prep prep/java-prep.k
     wait
 
     echo
@@ -57,19 +57,19 @@ case "$OPTION" in
     echo "Done"
     ;;
 "--strictness")
-    $KOMPILE_CMD -v -transition "transition-strictness" full/java-full
+    $KOMPILE_CMD -v -transition "transition-strictness" -d full full/java-full.k
     ;;
 "--threading")
-    $KOMPILE_CMD -v -transition "transition-threading" full/java-full
+    $KOMPILE_CMD -v -transition "transition-threading" -d full full/java-full.k
     ;;
 "--symbolic")
-    $KOMPILE_CMD -v --backend symbolic --symbolic-rules "symbolic-rule" full/java-full
+    $KOMPILE_CMD -v --backend symbolic --symbolic-rules "symbolic-rule" -d full full/java-full.k
     ;;
 "--latex")
-    $KOMPILE_CMD -v --backend latex --doc-style "style=math" full/java-full
+    $KOMPILE_CMD -v --backend latex --doc-style "style=math" -d full full/java-full.k
     ;;
 "--pdf")
-    $KOMPILE_CMD -v --backend pdf --doc-style "style=math" full/java-full
+    $KOMPILE_CMD -v --backend pdf --doc-style "style=math" -d full full/java-full.k
     ;;
 "--help")
     echo "Usage: `basename $0`"
