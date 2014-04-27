@@ -326,28 +326,18 @@ rule [invokeImpl]:
         Qual:KResult,
         [ParamValues:KList]
       ) ~> RestK:K
-       => staticInit(Class) ~> bindTo([Params], [ParamValues]) ~> Body ~> 'Return('None(.KList))
+       => staticInit(Class) ~> bindTo([Params], [ParamValues]) ~> Body ~> 'Return('None(.KList)) //todo move return to preprocessing
     </k>
     <stack>
-      . =>  ListItem(sl(RestK,
-              (
-                <envGroup> OldEnvGroup </envGroup>
-                <return> OldT </return>
-                <crntObj> OldObj </crntObj>
-                RestMethContext
-              )
-            ))
+      . => ListItem(sl(RestK, MethContext))
       ...
     </stack>
     <methodContext>
-      <envGroup> OldEnvGroup:Bag => <env> .Map </env> </envGroup>
-      <return> OldT:Type => ReturnT </return>
-      <crntObj>
-        OldObj:Bag
-        => <crntClass> Class </crntClass>
-           <location> getOId(Qual) </location>
-      </crntObj>
-      RestMethContext:Bag
+      MethContext:Bag
+      =>  <env> .Map </env>
+          <return> ReturnT </return>
+          <crntClass> Class </crntClass>
+          <location> getOId(Qual) </location>
     </methodContext>
 
     <classType> Class </classType>

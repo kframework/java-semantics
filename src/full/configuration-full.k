@@ -21,26 +21,20 @@ configuration
             context type and current object.*/
           <methodContext color="Orange">
 
-            <envGroup color="Yellow">
+            //The map from local vars to their location in the store. Also includes outer local vars, for local classes.
+            <env color="Crimson"> .Map </env>
 
-              //The map from local vars to their location in the store. Also includes outer local vars, for local classes.
-              <env color="Crimson"> .Map </env>
-            </envGroup>
-
-            <br/>
             <return color="DarkOrange"> void </return> // holds method return type
 
-            /*Current method/block context type - either staticCT or instanceCT
-            Used both during elaboration and execution*/
-            <contextType color="DarkOrange"> staticCT </contextType>
+            //current class during all phases, including early preprocessing
+            <crntClass color="DarkOrange"> noClass </crntClass>
+
+            <location color="DarkOrange" multiplicity="?"> .K </location>
 
             <br/>
-            <crntObj color="DarkOrange">
-              //current class during all phases, including early preprocessing
-              <crntClass color="DarkOrange"> noClass </crntClass>
-
-              <location color="DarkOrange" multiplicity="?"> .K </location>
-            </crntObj>
+            /*Current method/block context type - either staticCT or instanceCT
+              Used during elaboration only*/
+            <contextType color="DarkOrange"> staticCT </contextType>
           </methodContext>
 
           <br/>

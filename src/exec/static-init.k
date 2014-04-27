@@ -66,14 +66,10 @@ rule [staticInit]:
 
     <methodContext>
       MethContext:Bag
-      =>  <envGroup>
-            <env> .Map </env>
-          </envGroup>
-          <crntObj>
-            <crntClass> Class </crntClass>
-            <location> noValue </location>
-          </crntObj>
+      =>  <env> .Map </env>
           <return> void </return>
+          <crntClass> Class </crntClass>
+          <location> noValue </location>
     </methodContext>
 
     <tid> TId:Int </tid>

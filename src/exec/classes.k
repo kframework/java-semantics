@@ -68,22 +68,17 @@ rule [QNewInstance]:
       )
       => staticInit(Class)
         ~> create(Class)
-        ~> restoreMethContext(<envGroup> OldEnvGroup </envGroup> <crntObj> OldCrntObj </crntObj> RestMethContext)
+        ~> restoreMethContext(MethContext)
         ~> invokeConstr(L, Class, [Args], EnclosingObj)
         ~> typedLookup(L)
       ...
     </k>
     <methodContext>
-      <envGroup>
-        OldEnvGroup:Bag
-        => <env> .Map </env>
-      </envGroup>
-      <crntObj>
-        OldCrntObj:Bag
-        =>  <crntClass> .K </crntClass>
-            <location> L </location>
-      </crntObj>
-      RestMethContext:Bag
+      MethContext:Bag
+      =>  <env> .Map </env>
+          <return> void </return>
+          <crntClass> .K </crntClass>
+          <location> L </location>
     </methodContext>
     <store>
       ...
