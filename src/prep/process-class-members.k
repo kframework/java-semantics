@@ -228,7 +228,7 @@ rule [MethodDec]:
         'MethodDecHead(Modifiers:KListWrap,, _:K,, ReturnType:Type,, Name:Id,,
             [Params:KList],, _:K
         ),,
-        Body:K
+        Body:K //could be 'Block([...]) or 'NoMethodBody
       )
       => storeMethod([Params],
             getContextType(Modifiers), getAccessMode(Modifiers), isSynchronized(Modifiers), methodMMT, noValue, Body,
@@ -363,7 +363,7 @@ rule [ConstrDec]:
         'Some(FirstLine:K) ,,[BodyKs:KList]))
       => storeMethod([Params],
           instanceCT, getAccessMode(Modifiers), isSynchronized(Modifiers), constructorMMT, FirstLine,
-          [
+          'Block([
 
             //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
             //Invocation of instance initializer converted into a method.
@@ -372,7 +372,7 @@ rule [ConstrDec]:
               #else [.KList] //vacuous
             #fi,,
             BodyKs
-          ],
+          ]),
           sig(getConsName(Class), getTypes([Params])), void)
       ...
     </k>
@@ -493,13 +493,13 @@ syntax K ::= "convertInstanceInitIntoMethod"
 rule [convertInstanceInitIntoMethod]:
     <k>
       convertInstanceInitIntoMethod
-      => storeMethod([.KList], instanceCT, private, false::bool, methodMMT, noValue, 'Block(InstanceInit),
+      => storeMethod([.KList], instanceCT, private, false::bool, methodMMT, noValue, 'Block([InstanceInitKs]),
                       sig(String2Id("$instance_init"), types(.KList)), void)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    (<instanceInit> InstanceInit:K </instanceInit> => .Bag)
+    (<instanceInit> [InstanceInitKs:KList] </instanceInit> => .Bag)
 
 //@ \subsection{Auxiliary functions}
 

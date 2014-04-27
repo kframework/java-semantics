@@ -318,6 +318,10 @@ syntax K ::=  invokeImpl (
 
   Calling staticInit() is required for static methods only. Calling it on instance methods have no effect,
     since the qualifier class have been initialized at least when the qualifier object was first created.
+
+  The extra return statement is used to exit at the end of a constructor or a method with no arguments,
+    if no other return statements were encountered. We cannot append an extra return statement at the preprocessing
+    phase because this would make constructors invalid.
 */
 rule [invokeImpl]:
     <k>
@@ -326,7 +330,7 @@ rule [invokeImpl]:
         Qual:KResult,
         [ParamValues:KList]
       ) ~> RestK:K
-       => staticInit(Class) ~> bindTo([Params], [ParamValues]) ~> Body ~> 'Return('None(.KList)) //todo move return to preprocessing
+       => staticInit(Class) ~> bindTo([Params], [ParamValues]) ~> Body ~> 'Return('None(.KList))
     </k>
     <stack>
       . => ListItem(sl(RestK, MethContext))
