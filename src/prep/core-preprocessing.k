@@ -61,4 +61,65 @@ rule [getInnerClasses-no-inners]:
 when
     notBool toPackage(Class) in keys(TypeNamesMap)
 
+//@ Returns the access mode of a method closure given as argument
+syntax K ::= getMethodAccessMode ( MethodRef )   [strict]
+rule [getMethodAccessMode]:
+    <k>
+      getMethodAccessMode( methodRef(Sig:Signature, Class:ClassType) ) => Acc
+      ...
+    </k>
+    <classType> Class </classType>
+    <methodSignature> Sig </methodSignature>
+    <methodAccessMode> Acc:AccessMode </methodAccessMode>
+
+syntax K ::=  getContextType (
+                KListWrap       //[...] - the list of method attributes
+              )
+              [function]
+
+rule getContextType(['Static(_),,_]) => staticCT
+
+rule getContextType([(KL:KLabel(_) => .KList),, _])
+when        KL =/=KLabel 'Static
+
+rule getContextType([.KList])      => instanceCT
+
+/*@Extracts the access mode from the list of modifiers of some Java entity.*/
+syntax K ::=  getAccessMode (
+                KListWrap //[...] - the list of class/method attributes
+              )
+              [function]
+
+rule getAccessMode(['Public(_),,_])    => public
+rule getAccessMode(['Protected(_),,_]) => protected
+rule getAccessMode(['Private(_),,_])   => private
+
+rule getAccessMode([(KL:KLabel(_) => .KList),, _])
+when        (KL =/=KLabel 'Public)
+    andBool (KL =/=KLabel 'Protected)
+    andBool (KL =/=KLabel 'Private)
+
+rule getAccessMode([.KList]) => package
+
+/*@ Tests if a method within BaseClass with BaseAccessMode is overwritten by a method with the same signature
+    in SubClass with SubAccessMode.
+    It is also possible that BaseClass and SubClass are the same, since the same method is inherited by many classes,
+    and gets in their <methods> cell.
+*/
+syntax K ::=  isAccessibleForOverwriting (
+                ClassType,  //BaseClass
+                AccessMode, //BaseAccessMode
+                ClassType   //SubClass
+              )
+              [strict]
+
+rule isAccessibleForOverwriting(_, public,    _) => true
+rule isAccessibleForOverwriting(_, protected, _) => true
+
+//@ Object class cannot match this rule since it has public access mode
+rule isAccessibleForOverwriting(BaseClass:ClassType, package, SubClass:ClassType)
+    => eqAux(getPackage(getTopLevel(BaseClass)), getPackage(getTopLevel(SubClass)))
+
+rule isAccessibleForOverwriting(_, private, _) => false
+
 endmodule

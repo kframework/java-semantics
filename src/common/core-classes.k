@@ -19,6 +19,9 @@ rule objectClass => class String2Id("java.lang.Object")
 syntax K ::= "stringClass"                              [function]
 rule stringClass => class String2Id("java.lang.String")
 
+syntax K ::= "arrayImplClass"                   [function]
+rule arrayImplClass => class String2Id("java.lang.ArrayImpl")
+
 //@ \subsection{Packages}
 
 /*@A Java package.*/
@@ -71,27 +74,6 @@ rule [getTopLevel]:
     <classType> Class </classType>
     <enclosingClass> noClass </enclosingClass>
 
-/*@ Tests if a method within BaseClass with BaseAccessMode is overwritten by a method with the same signature
-    in SubClass with SubAccessMode.
-    It is also possible that BaseClass and SubClass are the same, since the same method is inherited by many classes,
-    and gets in their <methods> cell.
-*/
-syntax K ::=  isAccessibleForOverwriting (
-                ClassType,  //BaseClass
-                AccessMode, //BaseAccessMode
-                ClassType   //SubClass
-              )
-              [strict]
-
-rule isAccessibleForOverwriting(_, public,    _) => true
-rule isAccessibleForOverwriting(_, protected, _) => true
-
-//@ Object class cannot match this rule since it has public access mode
-rule isAccessibleForOverwriting(BaseClass:ClassType, package, SubClass:ClassType)
-    => eqAux(getPackage(getTopLevel(BaseClass)), getPackage(getTopLevel(SubClass)))
-
-rule isAccessibleForOverwriting(_, private, _) => false
-
 syntax KLabel ::=   "'Public"
                   | "'Private"
                   | "'Protected"
@@ -103,23 +85,6 @@ syntax KLabel ::=   "'Public"
                   | "'Volatile"
                   | "'StrictFP"
 
-/*@Extracts the access mode from the list of modifiers of some Java entity.*/
-syntax K ::=  getAccessMode (
-                KListWrap //[...] - the list of class/method attributes
-              )
-              [function]
-
-rule getAccessMode(['Public(_),,_])    => public
-rule getAccessMode(['Protected(_),,_]) => protected
-rule getAccessMode(['Private(_),,_])   => private
-
-rule getAccessMode([(KL:KLabel(_) => .KList),, _])
-when        (KL =/=KLabel 'Public)
-    andBool (KL =/=KLabel 'Protected)
-    andBool (KL =/=KLabel 'Private)
-
-rule getAccessMode([.KList]) => package
-
 //@ Restore the content of <crntClass> with the given class
 syntax K ::=  restoreCrntClass (
                 ClassType //old content of <crntClass>
@@ -128,36 +93,6 @@ syntax K ::=  restoreCrntClass (
 rule [restoreAfterProcessLocalClass]:
     <k> restoreCrntClass(Class:ClassType) => . ...</k>
     <crntClass> _ => Class </crntClass>
-
-//@ \subsection{Auxiliary constructs related to methods}
-
-//@ Returns the access mode of a method closure given as argument
-syntax K ::= getMethodAccessMode ( MethodRef )   [strict]
-rule [getMethodAccessMode]:
-    <k>
-      getMethodAccessMode( methodRef(Sig:Signature, Class:ClassType) ) => Acc
-      ...
-    </k>
-    <classType> Class </classType>
-    <methodSignature> Sig </methodSignature>
-    <methodAccessMode> Acc:AccessMode </methodAccessMode>
-
-syntax K ::= "arrayImplClass"                   [function]
-rule arrayImplClass => class String2Id("java.lang.ArrayImpl")
-
-//@ \subsection{Preprocessing auxiliary functions}
-
-syntax K ::=  getContextType (
-                KListWrap       //[...] - the list of method attributes
-              )
-              [function]
-
-rule getContextType(['Static(_),,_]) => staticCT
-
-rule getContextType([(KL:KLabel(_) => .KList),, _])
-when        KL =/=KLabel 'Static
-
-rule getContextType([.KList])      => instanceCT
 
 //@ Get the internal constructor name for a given class
 syntax K ::= getConsName ( ClassType )                               [function]

@@ -1,6 +1,7 @@
 require "../common/core-sorts.k"
 require "../common/core-classes.k"
 require "../common/aux-strings.k"
+require "core-preprocessing.k"
 
 /*@ \section{Module PROCESS-TYPE-NAMES}
 First pass - collecting globally accessible names in the program. This includes packages,
@@ -11,6 +12,7 @@ module PROCESS-TYPE-NAMES
     imports CORE-SORTS
     imports CORE-CLASSES
     imports AUX-STRINGS // for retainTail
+    imports CORE-PREPROCESSING
 
 /*@ \subsection{Start of the phase ProcTypeNamesPhase}*/
 

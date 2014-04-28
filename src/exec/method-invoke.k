@@ -134,14 +134,15 @@ All the information in methodInfo() should be computed, according to JLS at comp
   cells, before being consumed by the rules of step 4. This allows us to greatly simplify the step 4 rules.
 */
 syntax K ::=  methodInfo(
-                Signature,  //method signature
-                RefType,    //qualifier type, not necessarily class
-                ClassMetaType, //The either classCMT or interfaceCMT for the qualifier type
-                RefType,    //method definition class type - the class referred by the signature in <methods>
-                              // for arrays - it remains noClass
-                              // this argument is only used to compute the context type
-                ContextType //method context type - instance or static
-                              // for arrays - instanceCT
+                Signature,    //method signature
+                RefType,      //qualifier type, not necessarily class
+                ClassMetaType,//The either classCMT or interfaceCMT for the qualifier type
+                RefType,      //method definition class type - the class referred by the signature in <methods>
+                                // for arrays - it remains noClass
+                                // this argument is only used to compute the context type
+                ContextType,  //method context type - instance or static
+                                //for arrays - instanceCT
+                AccessMode    //The access mode of the method as seen by the qualifying type
               )
 
 /*@
@@ -157,7 +158,7 @@ This rule alos have a side condition that checks whether parameters were evaluat
 rule [Invoke-Method-compute-Signature]:
     'Invoke('Method('MethodName(
       Qual:KResult,,
-      (Name:Id => methodInfo(sig(Name, getTypes([ParamVals])), typeOf(Qual), noValue, noClass, noValue))
+      (Name:Id => methodInfo(sig(Name, getTypes([ParamVals])), typeOf(Qual), .K,.K,.K,.K))
       )),, [ParamVals:KList]
     )
 when
@@ -174,7 +175,7 @@ The next rule for method invocation is applied when the qualifier type is array.
 rule [Invoke-Method-load-MethodDefClass-arrays]:
     'Invoke('Method('MethodName(
       QualRV:RawVal :: (arrayOf T:Type => arrayImplClass),,
-      methodInfo(Sig:Signature, arrayOf T => arrayImplClass , _,_,_)
+      methodInfo(Sig:Signature, arrayOf T => arrayImplClass, _,_,_,_)
     )),, _)
 
 /*@
@@ -185,7 +186,7 @@ rule [Invoke-Method-load-MethodDefClass]:
     <k>
       'Invoke('Method('MethodName(
         Qual:KResult,,
-        methodInfo(Sig:Signature, QualClass:ClassType, noValue => MetaType, noClass => MethodDefClass, noValue)
+        methodInfo(Sig:Signature, QualClass:ClassType, .K => MetaType, .K => MethodDefClass, _,_)
       )),, _)
       ...
     </k>
@@ -201,13 +202,14 @@ There is one case that is not covered by the previous rule - the case when the c
     in this class nor in its base classes.
 
 In both cases the method is an abstract method in the class QualT. For this case DecT cannot be computed, but we know
-  for sure that ContextT for an abstract method is instance.
+  for sure that ContextT for an abstract method is instance. Also, because the method was declared in an interface,
+  it is certainly public.
 */
 rule [Invoke-Method-load-unmapped-method-ContextType]:
     <k>
       'Invoke('Method('MethodName(
         Qual:KResult,,
-        methodInfo(Sig:Signature, QualClass:ClassType, noValue => MetaType, _, noValue => instanceCT)
+        methodInfo(Sig:Signature, QualClass:ClassType, .K => MetaType, _, .K => instanceCT, public)
         )),, _)
       ...
     </k>
@@ -225,13 +227,14 @@ rule [Invoke-Method-load-ContextType]:
     <k>
       'Invoke('Method('MethodName(
         Qual:KResult,,
-        methodInfo(Sig:Signature, QualClass:ClassType, _, MethodDefClass:ClassType, noValue => CT)
+        methodInfo(Sig:Signature, QualClass:ClassType, _, MethodDefClass:ClassType, .K => CT, .K => Acc)
       )),, _)
       ...
     </k>
     <classType> MethodDefClass </classType>
     <methodSignature> Sig </methodSignature>
     <methodContextType> CT:ContextType </methodContextType>
+    <methodAccessMode> Acc:AccessMode </methodAccessMode>
 
 /*@
 Once the last field of methodInfo() is filled, the next step of method invocation begins - deciding the actual method
@@ -252,10 +255,10 @@ The method below is for the first case. If the method is static, then the declar
   The qualifier is discarded by rewritting it into noValue.
 */
 //todo replace invokeImpl with 'Invoke, for consistency with the documentation.
-rule [Invoke-Method-Static-On-Class]:
+rule [Invoke-Method-static]:
     'Invoke(
       'Method('MethodName(_,,
-        methodInfo(Sig:Signature, QualClass:ClassType, classCMT, MethodDecClass:ClassType, staticCT)
+        methodInfo(Sig:Signature, QualClass:ClassType, classCMT, MethodDecClass:ClassType, staticCT, _)
       )),,
       [ParamVals:KList]
     )
@@ -266,12 +269,12 @@ If the qualifier value is null and ContextT is instance, then NullPointerExcepti
   expression is discarded. It is only at this point that we should check the qualifier whether it is null or not.
   If ContextT is static, then the rule above will match, and no exception will be thrown.
 */
-rule [Invoke-Method-instance-On-Null]:
+rule [Invoke-Method-instance-on-null]:
 /*  [Impl] Qualifier type could be either object or array.
     We cannot move method invocation on null logic to invokeImpl, because
     invokeImpl needs an actual methodRef, and we cannot produce a methidRef if our qualifier object is null.
 */
-    'Invoke( 'Method('MethodName( null::_,, methodInfo(_,_,_,_, instanceCT) )),, [_] )
+    'Invoke( 'Method('MethodName( null::_,, methodInfo(_,_,_,_, instanceCT, _) )),, [_] )
     =>  'Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
@@ -279,19 +282,26 @@ rule [Invoke-Method-instance-On-Null]:
           'None(.KList)
         ))
 
+rule [Invoke-Method-instance-private]:
+    'Invoke(
+      'Method('MethodName(
+        objectRef( OL:Int, _ )::QualClass:ClassType,,
+        methodInfo(Sig:Signature, QualClass:ClassType, classCMT, MethodDecClass:ClassType, instanceCT, private)
+      )),,
+      [ParamVals:KList]
+    )
+    => invokeImpl( methodRef(Sig, MethodDecClass), loc(OL)::QualClass, [ParamVals] )
+
 /*@
 If MetaT is interface then the method is always instance and public. We can safely assume that the method was
   inherited by the actual runtime type of the qualifier object during unfolding phase. The class ImplT is the one
   referred by the <methods> map of the qualifier runtime type.
 */
-rule [Invoke-Method-Instance-On-interface]:
+rule [Invoke-Method-instance-protected-or-public]:
     <k>
       'Invoke('Method('MethodName(
-          objectRef(
-            OL:Int,
-            ActualClass:ClassType
-          )::QualClass:ClassType,,
-          methodInfo(Sig:Signature, QualClass:ClassType, interfaceCMT, _, instanceCT)
+          objectRef( OL:Int, ActualClass:ClassType )::QualClass:ClassType,,
+          methodInfo(Sig:Signature, QualClass:ClassType, _,_, instanceCT, Acc:AccessMode)
         )),,
         [ParamVals:KList]
       )
@@ -300,30 +310,33 @@ rule [Invoke-Method-Instance-On-interface]:
     </k>
     <classType> ActualClass </classType>
     <methods>... Sig |-> MethodDecClass:ClassType ...</methods>
+when
+    Acc ==K protected orBool Acc ==K public
 
 /*@
 Finally, if the qualifying type is a class, we have a more complex version of a method call. Here the method access
   mode in QualT is not necessarily public, and the lookup strategies for different access modes are different.
-
-  todo avoid using lookupOverloadedMethod() to be better in sync with JLS.
 */
-rule [Invoke-Method-Instance-On-Class]:
-    'Invoke('Method('MethodName(
-        objectRef(
-          OId:Int, MostDerivedClass:ClassType
-        )::QualClass:ClassType,,
-        methodInfo(Sig:Signature, QualClass:ClassType, classCMT, _, instanceCT)
-      )),, [ParamVals:KList]
-    )
-    =>  invokeImpl(
-          methodLookupRuntime( Sig, getClassChain([MostDerivedClass], QualClass), noMethodRef ),
-          loc(OId)::QualClass, [ParamVals]
-        )
+rule [Invoke-Method-instance-package]:
+    <k>
+      'Invoke('Method('MethodName(
+          objectRef( OId:Int, MostDerivedClass:ClassType )::QualClass:ClassType,,
+          methodInfo(Sig:Signature, QualClass:ClassType, classCMT, _, instanceCT, package)
+        )),, [ParamVals:KList]
+      )
+      =>  invokeImpl(
+            methodLookupRuntime(getClassChainExceptFirst(QualClass, [MostDerivedClass]), methodRef(Sig, MethodDecClass)),
+            loc(OId)::QualClass, [ParamVals]
+          )
+      ...
+    </k>
+    <classType> QualClass </classType>
+    <methods>... Sig |-> MethodDecClass:ClassType ...</methods>
 
 rule [Invoke-Method-On-array-or-string]:
     'Invoke('Method('MethodName(
         QualRV:RawVal::QualClass:ClassType,,
-        methodInfo(Sig:Signature, QualClass, classCMT, MethodDecClass:ClassType, instanceCT)
+        methodInfo(Sig:Signature, QualClass, classCMT, MethodDecClass:ClassType, instanceCT, _)
       )),,
       [ParamVals:KList]
     )
@@ -364,15 +377,16 @@ rule [superMethodImpl]:
     <extends> BaseClass:ClassType </extends>
 
 /*Returns the list of classes representing the layer of the given object (by OId),
-    located between MostBaseClass and MostDerivedClass.
+    located between MostBaseClass (exclusively) and MostDerivedClass (inclusively).
 */
-syntax K ::=  getClassChain(  KListWrap,  //[MostDerivedClass] at beginning, gradually accumulates the list of classes
-                              ClassType   //MostBaseClass
+syntax K ::=  getClassChainExceptFirst( ClassType,  //MostBaseClass
+                                        KListWrap   //[MostDerivedClass] at beginning, gradually accumulates
+                                                      //the list of classes
               )
 
 rule [getClassesBetween-process]:
     <k>
-      getClassChain([(.KList => BaseClass),, MostDerivedClass:ClassType,, _], MostBaseClass:ClassType)
+      getClassChainExceptFirst(MostBaseClass:ClassType, [(.KList => BaseClass),, MostDerivedClass:ClassType,, _])
       ...
     </k>
     <classType> MostDerivedClass </classType>
@@ -380,8 +394,9 @@ rule [getClassesBetween-process]:
 when
     MostDerivedClass =/=K MostBaseClass
 
+//@ Eliminate the most base class before returning the result, because it is exclusive.
 rule [getClassesBetween-end]:
-    getClassChain([Class:ClassType,, MostDerivedClass:KList], Class) => resultListWrap(Class,, MostDerivedClass)
+    getClassChainExceptFirst(Class, [Class:ClassType,, MoreDerivedClasses:KList]) => resultListWrap(MoreDerivedClasses)
 
 /*@ The right signature is already found.
 Search for the right implementation is performed from the compile-time type of the target
@@ -389,59 +404,57 @@ to more derived types, up to the object type of the target.
 This is required in order to respect the rules of inheritance in the presence of access modes.
 Evaluates into typed method closure.*/
 syntax K ::=  methodLookupRuntime (
-                Signature,  //sig(Name, SigTL) - Method signature
                 K,          //computes into resultListWrap(Class list), elements of type ClassType,
                               // from base to derived.
                               // To be processed from base to derived when methods map will be exhausted
                 MethodRef   //method closure of the most specific method found so far
                               // or noValue if no applicable method was found yet
               )
-              [strict(2,3)]
+              [strict(1,2)]
 
-rule [methodLookupRuntime-layer-first-dec-found]:
+rule [methodLookupRuntime-no-new-method]:
     <k>
       methodLookupRuntime(
-        Sig:Signature,
         resultListWrap((Class:ClassType => .KList),, _),
-        noMethodRef => methodRef(Sig, DecClass)
+        methodRef(Sig:Signature, _)
       )
       ...
     </k>
     <classType> Class </classType>
-    <methods>... Sig |-> DecClass:ClassType ...</methods>
+    <methods>... Sig |-> NewDecClass:ClassType ...</methods>
+when
+    NewDecClass =/=K Class
 
-rule [methodLookupRuntime-layer-two-decs-choice]:
+rule [methodLookupRuntime-new-method]:
     <k>
       methodLookupRuntime(
-        Sig:Signature,
-        resultListWrap((Class:ClassType => .KList),, _),
-        methodRef(Sig:Signature, DecClass1:ClassType)
+        resultListWrap((NewDecClass:ClassType => .KList),, _),
+        methodRef(Sig:Signature, OldDecClass:ClassType)
         =>  'If(
-              isAccessibleForOverwriting( DecClass1, getMethodAccessMode(methodRef(Sig, DecClass1)), DecClass2 ),,
-              methodRef(Sig, DecClass2),,
-              methodRef(Sig, DecClass1)
+              'Or(
+                Acc ==K protected orBool Acc ==K public,,
+                eqAux(getPackage(getTopLevel(OldDecClass)), getPackage(getTopLevel(NewDecClass)))
+              ),,
+              methodRef(Sig, NewDecClass),,
+              methodRef(Sig, OldDecClass)
             )
       )
       ...
     </k>
-    <classType> Class </classType>
-    <methods>... Sig |-> DecClass2:ClassType ...</methods>
-
-rule [methodLookupRuntime-layer-discard]:
-    <k>
-      methodLookupRuntime( Sig:Signature, resultListWrap((Class:ClassType => .KList),, _), _ )
+    <class>
+      <classType> OldDecClass </classType>
+      <methodSignature> Sig </methodSignature>
+      <methodAccessMode> Acc:AccessMode </methodAccessMode>
       ...
-    </k>
-    <classType> Class </classType>
-    <methods> Methods:Map </methods>
-when
-    notBool Sig in keys(Methods)
+    </class>
+    <class>
+      <classType> NewDecClass </classType>
+      <methods>... Sig |-> NewDecClass:ClassType ...</methods>
+      ...
+    </class>
 
-rule [methodLookupRuntime-SigKnownEnd]:
-    methodLookupRuntime(_, resultListWrap(.KList), MethodRef:MethodRef ) => MethodRef
-when
-    //Condition for debug purposes only. If no suitable method impl was found so far, cumputation will stuck here
-    MethodRef =/=K noMethodRef
+rule [methodLookupRuntime-default-end]:
+    methodLookupRuntime(resultListWrap(.KList), MethodRef:MethodRef ) => MethodRef
 
 syntax K ::=  invokeImpl (
                 MethodRef,  //lookupOverloadedMethod statement, evaluates to methodRef()
