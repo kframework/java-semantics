@@ -79,7 +79,7 @@ rule [SuperMethod-desugar]:
 
 rule [elabEnd-Invoke-QSuperMethod-to-lookupMethod]:
     <k>
-      ( . => lookupMethod(BaseClass, true, Name, resultListWrap(ParamExps)) )
+      ( . => lookupMethod(BaseClass, true, Name, [ParamExps]) )
       ~> elabEnd('Invoke( 'QSuperMethod(Class:ClassType,, _:K,, Name:Id),, [ParamExps:KList] ))
       ...
     </k>
@@ -111,7 +111,7 @@ rule [methodLookupResult-Invoke-QSuperMethod-instance-end]:
 
 rule [elabEnd-Invoke-to-lookupMethod]:
     ( . => lookupMethod(getLookupTargetType(typeOf(Qual)),
-                        isCastOfQThis(Qual) ==K true, Name, resultListWrap(ParamExps)) )
+                        isCastOfQThis(Qual) ==K true, Name, [ParamExps]) )
     ~> elabEnd('Invoke( 'Method('MethodName(Qual:K,, Name:Id)),, [ParamExps:KList] ))
 
 //@ Returnts the same type for classes, arrayImplClass for arrays.
@@ -132,24 +132,24 @@ syntax K ::=  lookupMethod (
                 ClassType,//target class, even for arrays.
                 Bool,     //QualIsThis - true if qualifier is cast(_, 'QThis(_)) or cast(_, superMethod(_))
                 Id,       //method name
-                K         //resultListWrap(ParamExps) - parameter expressions of type Cast
+                KListWrap //[ParamExps] - parameter expressions of type Cast
               )
 
 syntax K ::=  lookupMethod (
                 ClassType,//target class, even for arrays.
                 Bool,     //QualIsThis - true if qualifier is cast(_, 'QThis(_)) or cast(_, superMethod(_))
                 Id,       //method name
-                K,        //resultListWrap(ParamExps) - parameter expressions of type Cast
-                MethodRef,  //Evaluates to the signature to be called, or noMethodRef if no signature was found yet
+                KListWrap,//[ParamExps] - parameter expressions of type Cast
+                MethodRef,//Evaluates to the signature to be called, or noMethodRef if no signature was found yet
                             // Sig format: mapWrap(Sig |-> MethodTV)
                             // Initialized with noMethodRef
                 K         //Evaluates to the method arguments casted to expected argument types
                           // Initialized with tempKResult
               )
-              [strict(4, 5, 6)]
+              [strict(5, 6)]
 
-rule lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, ParamExpsWrap:K)
-     => lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, ParamExpsWrap:K, noMethodRef, tempKResult)
+rule lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, [ParamExps:KList])
+     => lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, [ParamExps], noMethodRef, tempKResult)
 
 /*@ A Temporary KResult that prevents this term to be heated before it is transformed by another rule int a proper
   term to be heated. This is not a final KResult in its surrounding context. Basically, this term is used to cheat
@@ -164,7 +164,7 @@ rule [lookupMethod-to-lookupSignature]:
         QualClass:ClassType,
         QualIsThis:Bool,
         MethodName:Id,
-        resultListWrap(ParamExps:KList),
+        [ParamExps:KList],
         noMethodRef => lookupSignature(MethodName, getTypes([ParamExps]), Methods,
                                     notBool QualIsThis, noMethodRef, QualClass),
         tempKResult
@@ -179,7 +179,7 @@ because this body might not be elaborated.*/
 rule [lookupMethod-SigFound]:
     lookupMethod(
       _,_,_,
-      resultListWrap(ParamExps:KList),
+      [ParamExps:KList],
       methodRef(sig( Name:Id, ArgTypes:Types ), _),
       tempKResult => methodCastArguments(ArgTypes, [ParamExps], [.KList])
     )
@@ -198,14 +198,14 @@ rule [methodCastArguments-process]:
     )
 
 rule [methodCastArguments-end]:
-    methodCastArguments(types(.KList), [.KList], [ExpectedParamExps:KList]) => resultListWrap(ExpectedParamExps)
+    methodCastArguments(types(.KList), [.KList], [ExpectedParamExps:KList]) => kr[ExpectedParamExps]
 
 rule [lookupMethod-end]:
     <k>
       lookupMethod(
         _,_,_,_,
          methodRef(Sig:Signature, Class:ClassType),
-        resultListWrap(ExpectedParamExps:KList)
+        kr[ExpectedParamExps:KList]
       )
       => methodLookupResult(RetT, [ExpectedParamExps], CT)
       ...

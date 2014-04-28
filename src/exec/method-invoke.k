@@ -398,7 +398,7 @@ when
 
 //@ Eliminate the most base class before returning the result, because it is exclusive.
 rule [getClassesBetween-end]:
-    getClassChain(Class:ClassType, [Class,, MoreDerivedClasses:KList]) => resultListWrap(Class,, MoreDerivedClasses)
+    getClassChain(Class:ClassType, [Class,, MoreDerivedClasses:KList]) => kr[Class,, MoreDerivedClasses]
 
 /*@ The right signature is already found.
 Search for the right implementation is performed from the compile-time type of the target
@@ -407,7 +407,7 @@ This is required in order to respect the rules of inheritance in the presence of
 Evaluates into typed method closure.*/
 syntax K ::=  lookupPackageMethod (
                 Signature,  //sig(Name, SigTL) - Method signature
-                K,          //computes into resultListWrap(Class list), elements of type ClassType,
+                KRListWrap, //computes into kr[Class list], elements of type ClassType,
                               // from base to derived.
                               // To be processed from base to derived when methods map will be exhausted
                 MethodRef   //method closure of the most specific method found so far
@@ -419,7 +419,7 @@ rule [lookupPackageMethod-layer-first-dec-found]:
     <k>
       lookupPackageMethod(
         Sig:Signature,
-        resultListWrap((Class:ClassType => .KList),, _),
+        kr[ (Class:ClassType => .KList),, _ ],
         noMethodRef => methodRef(Sig, DecClass)
       )
       ...
@@ -431,7 +431,7 @@ rule [lookupPackageMethod-no-new-method]:
     <k>
       lookupPackageMethod(
         Sig:Signature,
-        resultListWrap((Class:ClassType => .KList),, _),
+        kr[ (Class:ClassType => .KList),, _ ],
         methodRef(Sig, _)
       )
       ...
@@ -445,7 +445,7 @@ rule [lookupPackageMethod-new-method]:
     <k>
       lookupPackageMethod(
         Sig:Signature,
-        resultListWrap((NewDecClass:ClassType => .KList),, _),
+        kr[ (NewDecClass:ClassType => .KList),, _ ],
         methodRef(Sig, OldDecClass:ClassType)
         =>  'If(
               isAccessibleForOverwriting( OldDecClass, Acc, NewDecClass ),,
@@ -468,7 +468,7 @@ rule [lookupPackageMethod-new-method]:
     </class>
 
 rule [lookupPackageMethod-end]:
-    lookupPackageMethod(_, resultListWrap(.KList), MethodRef:MethodRef ) => MethodRef
+    lookupPackageMethod(_, kr[.KList], MethodRef:MethodRef ) => MethodRef
 
 /*@ (kool doc) Closure application needs to also set a new return type in the
     \textsf{return} cell, in order for the values returned by its body to

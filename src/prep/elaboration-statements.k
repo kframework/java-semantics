@@ -132,7 +132,7 @@ rule [elabEnd-QSuperConstrInv-local-augment-arguments]:
 rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
     <k>
       ( elabRes([ExtraArgs:KList])
-        => lookupMethod(BaseClass, true, getConsName(BaseClass), resultListWrap(Args,,ExtraArgs))
+        => lookupMethod(BaseClass, true, getConsName(BaseClass), [Args,,ExtraArgs])
       )
       ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, [ Args:KList ]))
       ...
@@ -160,7 +160,7 @@ rule [elabEnd-AltConstrInv-local-augment-arguments]:
 rule [elabEnd-AltConstrInv-to-lookupMethod]:
     <k>
       ( elabRes([ExtraArgs:KList])
-        => lookupMethod(Class, true, getConsName(Class), resultListWrap(Args,,ExtraArgs))
+        => lookupMethod(Class, true, getConsName(Class), [Args,,ExtraArgs])
       )
       ~> elabEnd('AltConstrInv(Arg1:K,, [ Args:KList ]))
       ...

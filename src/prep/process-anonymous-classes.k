@@ -25,8 +25,8 @@ rule [elab-NewInstance-anonymous-implements-interface]:
         Arg1,
         [ActualArgs],
         [AnonClassDecs],
-        resultListWrap(.KList),
-        resultListWrap(.KList)
+        kr[.KList],
+        kr[.KList]
       )
       ...
     </k>
@@ -63,8 +63,8 @@ syntax K ::=  processAnonymousClass (
                 K,         //'NewInstance Arg1
                 KListWrap, //ActualArgs
                 KListWrap, //Anonymous class block decs
-                K,         //To be processed into resultListWrap(constructor formal params)
-                K          //To be processed into resultListWrap(constructor first line arguments)
+                K,         //To be processed into kr[constructor formal params]
+                K          //To be processed into kr[constructor first line arguments]
               )
               [strict(7,8)]
 
@@ -84,8 +84,8 @@ rule [processAnonymousClass]:
       Arg1:K,
       [ActualArgs:KList],
       [AnonClassDecs:KList],
-      resultListWrap(ConstructorFormalParams:KList),
-      resultListWrap(ConstructorFirstLineArgs:KList)
+      kr[ConstructorFormalParams:KList],
+      kr[ConstructorFirstLineArgs:KList]
     )
     => elab(
       stmtAndExp(
@@ -137,7 +137,7 @@ rule buildConstructorFormalParams(
       Num:Int => Num +Int 1
     )
 
-rule buildConstructorFormalParams([.KList], [Ks:KList], _) => resultListWrap(Ks)
+rule buildConstructorFormalParams([.KList], [Ks:KList], _) => kr[Ks]
 
 rule buildConstructorFirstLineArgs(
       [(_:K => .KList),, _],
@@ -145,7 +145,7 @@ rule buildConstructorFirstLineArgs(
       Num:Int => Num +Int 1
     )
 
-rule buildConstructorFirstLineArgs([.KList], [Ks:KList], _) => resultListWrap(Ks)
+rule buildConstructorFirstLineArgs([.KList], [Ks:KList], _) => kr[Ks]
 
 rule [elab-QNewInstance-anonymous-extends-class]:
     <k>
@@ -177,8 +177,8 @@ syntax K ::=  processQAnonymousClass (
                 K,         //'NewInstance Arg2
                 KListWrap, //ActualArgs
                 KListWrap, //Anonymous class block decs
-                K,         //To be processed into resultListWrap(constructor formal params)
-                K          //To be processed into resultListWrap(constructor first line arguments)
+                K,         //To be processed into kr[constructor formal params]
+                K          //To be processed into kr[constructor first line arguments]
               )
               [strict(7,8)]
 
@@ -190,8 +190,8 @@ rule [processQAnonymousClass]:
       Arg2:K,
       [ActualArgs:KList],
       [AnonClassDecs:KList],
-      resultListWrap(ConstructorFormalParams:KList),
-      resultListWrap(ConstrQual:K,, ConstructorFirstLineArgs:KList)
+      kr[ConstructorFormalParams:KList],
+      kr[ConstrQual:K,, ConstructorFirstLineArgs:KList]
     )
     => elab(
       stmtAndExp(
