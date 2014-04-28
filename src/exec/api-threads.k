@@ -15,7 +15,7 @@ rule [thread-start]:
       <k>
         invokeImpl(
           methodRef(sig(MethodName:Id, _), Class:ClassType),
-          loc(OL:Int)::_,
+          objectRef(OL:Int,_)::_,
           [TId:Int :: _]
         ) => nothing::void
         ...
@@ -156,7 +156,7 @@ rule [object-wait]:
     <k>
       invokeImpl(
         methodRef(sig(MethodName:Id, _), Class:ClassType),
-        loc(OL:Int)::_, [.KList]
+        objectRef(OL:Int,_)::_, [.KList]
       ) => waitImpl(OL)
       ...
     </k>
@@ -174,7 +174,7 @@ rule [object-wait-notify-notifyAll-without-sync]:
     <k>
       invokeImpl(
         methodRef(sig(MethodName:Id, _), Class:ClassType),
-        loc(OL:Int)::_, [.KList]
+        objectRef(OL:Int,_)::_, [.KList]
       )
       =>  'Throw('NewInstance(
             'None(.KList),,
@@ -239,7 +239,7 @@ rule [object-notify]:
     <k>
       invokeImpl(
         methodRef(sig(MethodName:Id, _), Class:ClassType),
-        loc(OL:Int)::_, [.KList]
+        objectRef(OL:Int,_)::_, [.KList]
       ) => objectNotifyImpl(OL)
       ...
     </k>
@@ -276,7 +276,7 @@ rule [object-notifyAll]:
     <k>
       invokeImpl(
         methodRef(sig(MethodName:Id, _), Class:ClassType),
-        loc(OL:Int)::_, [.KList]
+        objectRef(OL:Int,_)::_, [.KList]
       ) => objectNotifyAllImpl(OL)
       ...
     </k>
@@ -316,7 +316,7 @@ rule [thread-interrupt]:
       <k>
         invokeImpl(
           methodRef(sig(MethodName:Id, _), Class:ClassType),
-          loc(OL:Int)::_,
+          objectRef(OL:Int,_)::_,
           [TId:Int :: _]
         ) => nothing::void
         ...
@@ -337,7 +337,7 @@ rule [thread-interrupt-ended-thread]:
     <k>
       invokeImpl(
         methodRef(sig(MethodName:Id, _), Class:ClassType),
-        loc(OL:Int)::_,
+        objectRef(OL:Int,_)::_,
         [TId:Int :: _]
       ) => nothing::void
       ...

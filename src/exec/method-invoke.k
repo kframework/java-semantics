@@ -209,7 +209,7 @@ rule [Invoke-Method-load-unmapped-method-ContextType]:
     <k>
       'Invoke('Method('MethodName(
         Qual:KResult,,
-        methodInfo(Sig:Signature, QualClass:ClassType, .K => MetaType, _, .K => instanceCT, public)
+        methodInfo(Sig:Signature, QualClass:ClassType, .K => MetaType, _, .K => instanceCT, .K => public)
         )),, _)
       ...
     </k>
@@ -254,15 +254,15 @@ The production methodRef() is a reference to a method declaration. It contains t
 The method below is for the first case. If the method is static, then the declaring type DecT is the qualifying type.
   The qualifier is discarded by rewritting it into noValue.
 */
-//todo replace invokeImpl with 'Invoke, for consistency with the documentation.
 rule [Invoke-Method-static]:
     'Invoke(
-      'Method('MethodName(_,,
-        methodInfo(Sig:Signature, QualClass:ClassType, classCMT, MethodDecClass:ClassType, staticCT, _)
+      'Method('MethodName(
+        (_:KResult => noValue),,
+        ( methodInfo(Sig:Signature, QualClass:ClassType, classCMT, MethodDecClass:ClassType, staticCT, _)
+          => methodRef(Sig, MethodDecClass) )
       )),,
       [ParamVals:KList]
     )
-    => invokeImpl( methodRef(Sig, MethodDecClass), noValue, [ParamVals] )
 
 /*@
 If the qualifier value is null and ContextT is instance, then NullPointerException is thrown and method invocation
@@ -285,12 +285,12 @@ rule [Invoke-Method-instance-on-null]:
 rule [Invoke-Method-instance-private]:
     'Invoke(
       'Method('MethodName(
-        objectRef( OL:Int, _ )::QualClass:ClassType,,
-        methodInfo(Sig:Signature, QualClass:ClassType, classCMT, MethodDecClass:ClassType, instanceCT, private)
+        _:ObjectRef::_,,
+        ( methodInfo(Sig:Signature, _, classCMT, MethodDecClass:ClassType, instanceCT, private)
+          => methodRef(Sig, MethodDecClass) )
       )),,
       [ParamVals:KList]
     )
-    => invokeImpl( methodRef(Sig, MethodDecClass), loc(OL)::QualClass, [ParamVals] )
 
 /*@
 If MetaT is interface then the method is always instance and public. We can safely assume that the method was
@@ -300,12 +300,12 @@ If MetaT is interface then the method is always instance and public. We can safe
 rule [Invoke-Method-instance-protected-or-public]:
     <k>
       'Invoke('Method('MethodName(
-          objectRef( OL:Int, ActualClass:ClassType )::QualClass:ClassType,,
-          methodInfo(Sig:Signature, QualClass:ClassType, _,_, instanceCT, Acc:AccessMode)
+          objectRef( _, ActualClass:ClassType )::_,,
+          ( methodInfo(Sig:Signature, _, _,_, instanceCT, Acc:AccessMode)
+            => methodRef(Sig, MethodDecClass) )
         )),,
         [ParamVals:KList]
       )
-      =>  invokeImpl( methodRef(Sig, MethodDecClass), loc(OL)::QualClass, [ParamVals] )
       ...
     </k>
     <classType> ActualClass </classType>
@@ -320,14 +320,13 @@ Finally, if the qualifying type is a class, we have a more complex version of a 
 rule [Invoke-Method-instance-package]:
     <k>
       'Invoke('Method('MethodName(
-          objectRef( OId:Int, MostDerivedClass:ClassType )::QualClass:ClassType,,
-          methodInfo(Sig:Signature, QualClass:ClassType, classCMT, _, instanceCT, package)
+          objectRef( _, MostDerivedClass:ClassType )::QualClass:ClassType,,
+          ( methodInfo(Sig:Signature, QualClass:ClassType, classCMT, _, instanceCT, package)
+            => methodLookupRuntime(
+                  getClassChainExceptFirst(QualClass, [MostDerivedClass]), methodRef(Sig, MethodDecClass))
+          )
         )),, [ParamVals:KList]
       )
-      =>  invokeImpl(
-            methodLookupRuntime(getClassChainExceptFirst(QualClass, [MostDerivedClass]), methodRef(Sig, MethodDecClass)),
-            loc(OId)::QualClass, [ParamVals]
-          )
       ...
     </k>
     <classType> QualClass </classType>
@@ -342,7 +341,7 @@ rule [Invoke-Method-On-array-or-string]:
     )
     => invokeImpl( methodRef(Sig, MethodDecClass), QualRV::QualClass, [ParamVals] )
 when
-    (getKLabel(QualRV) ==KLabel 'arrayRef) orBool isString(QualRV) ==K true
+    isArrayRef(QualRV) ==K true orBool isString(QualRV) ==K true
 
 //@ 'QSuperMethod(Class:ClassType,, _:K,, Name:Id)
 syntax KLabel ::= "'QSuperMethod"
@@ -453,17 +452,8 @@ rule [methodLookupRuntime-new-method]:
       ...
     </class>
 
-rule [methodLookupRuntime-default-end]:
+rule [methodLookupRuntime-end]:
     methodLookupRuntime(resultListWrap(.KList), MethodRef:MethodRef ) => MethodRef
-
-syntax K ::=  invokeImpl (
-                MethodRef,  //lookupOverloadedMethod statement, evaluates to methodRef()
-                K,          //KResult - method call target
-                              //loc(OL)::_ - object location, target type for methods on non-object refs,
-                              //typed string or array, or noValue for static methods
-                KListWrap   //[ParamValues:List{KResult}]
-              )
-              [strict(1)]
 
 /*@ (kool doc) Closure application needs to also set a new return type in the
     \textsf{return} cell, in order for the values returned by its body to
@@ -478,14 +468,15 @@ syntax K ::=  invokeImpl (
     if no other return statements were encountered. We cannot append an extra return statement at the preprocessing
     phase because this would make constructors invalid.
 */
-rule [invokeImpl]:
+rule [Invoke-actual-invocation]:
     <k>
-      invokeImpl(
-        methodRef(Sig:Signature, Class:ClassType),
-        Qual:KResult,
+      'Invoke('Method('MethodName(
+          Qual:KResult,,
+          methodRef(Sig:Signature, Class:ClassType)
+        )),,
         [ParamValues:KList]
       ) ~> RestK:K
-       => staticInit(Class) ~> bindTo([Params], [ParamValues]) ~> Body ~> 'Return('None(.KList))
+      => staticInit(Class) ~> bindTo([Params], [ParamValues]) ~> Body ~> 'Return('None(.KList))
     </k>
     <stack>
       . => ListItem(sl(RestK, MethContext))
@@ -507,8 +498,22 @@ rule [invokeImpl]:
 when getKLabel(Body) =/=KLabel 'NoMethodBody
 
 syntax K ::= getOId( K )              [function]
-rule getOId( loc(OId:Int)::_ ) => OId
+rule getOId( objectRef(OId:Int,_)::_ ) => OId
 rule getOId( noValue ) => noValue
+
+rule [Invoke-native]:
+    <k>
+      'Invoke('Method('MethodName(
+          Qual:KResult,,
+          methodRef(Sig:Signature, Class:ClassType)
+        )),,
+        [ParamValues:KList]
+      ) => invokeImpl(methodRef(Sig, Class), Qual, [ParamValues])
+      ...
+    </k>
+    <classType> Class </classType>
+    <methodSignature> Sig </methodSignature>
+    <methodBody> 'NoMethodBody(_) </methodBody>
 
 //@ 'Param(_:K,, T:Type,, X:Id)
 syntax KLabel ::= "'Param"
@@ -528,5 +533,17 @@ rule [bindTo]:
 rule [bindTo-empty]:
     bindTo([.KList], [.KList]) => .K
         [structural]
+
+/*@ Auxiliary function for methods that need implementation in the semantics. The implementation
+  of this production is given in api-core.k and api-threads.k.
+*/
+syntax K ::=  invokeImpl (
+                MethodRef,  //the method reference
+                K,          //KResult - method call target
+                              //either objectRef(OL:Int,_)::_ ,
+                              //typed string or array, or noValue for static methods
+                KListWrap   //[ParamValues:List{KResult}]
+              )
+              [strict(1)]
 
 endmodule

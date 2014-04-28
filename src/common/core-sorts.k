@@ -146,7 +146,7 @@ The object closure have the following structure:
 \end{verbatim}
 \end{itemize}
 */
-syntax RawRefVal ::=  objectRef (
+syntax ObjectRef ::=  objectRef (
                         Int,      //OL - object location
                         ClassType //LowestClass - the lowest class where we are allowed to search for method
                                   // implementation, or actual object class if there are no restrictions.
@@ -159,13 +159,13 @@ syntax RawRefVal ::=  objectRef (
 \item Int -- array length
 \end{itemize}
 */
-syntax RawRefVal ::=  arrayRef (
+syntax ArrayRef ::=   arrayRef (
                         Type,  // Type of the array
                         Int,   // Location of the first element
                         Int    // Length
                       )
 
-syntax RawRefVal ::= String | "null"
+syntax RawRefVal ::= ObjectRef | ArrayRef | String | "null"
 
 /*@ A typed value is a pair of of a raw value and a type. Anywhere during execution we will evaluated typed expressions
     into typed values, never into raw values alone.

@@ -87,7 +87,7 @@ syntax KLabel ::= "'Class"        // X.class : the class literal
 rule [object-getClass-on-object]:
     <k>
       invokeImpl(
-        methodRef(sig(MethodName:Id, _), Class:ClassType), loc(OL:Int)::_,
+        methodRef(sig(MethodName:Id, _), Class:ClassType), objectRef(OL:Int,_)::_,
         [.KList]
       ) => 'Lit('Class(BottomClass))
       ...
@@ -131,7 +131,7 @@ when
 rule [object-hashCode]:
     <k>
       invokeImpl(
-        methodRef(sig(MethodName:Id, _), Class:ClassType), loc(OL:Int)::_,
+        methodRef(sig(MethodName:Id, _), Class:ClassType), objectRef(OL:Int,_)::_,
         [.KList]
       ) => OId :: int
       ...
