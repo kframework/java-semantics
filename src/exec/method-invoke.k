@@ -332,6 +332,10 @@ rule [Invoke-Method-instance-package]:
     <classType> QualClass </classType>
     <methods>... Sig |-> MethodDecClass:ClassType ...</methods>
 
+context 'Invoke('Method( 'MethodName( _:K,, HOLE ) ),, _)
+when
+    getKLabel(HOLE) ==KLabel 'methodLookupRuntime
+
 rule [Invoke-Method-On-array-or-string]:
     'Invoke('Method('MethodName(
         QualRV:RawVal::QualClass:ClassType,,
@@ -395,7 +399,7 @@ when
 
 //@ Eliminate the most base class before returning the result, because it is exclusive.
 rule [getClassesBetween-end]:
-    getClassChainExceptFirst(Class, [Class:ClassType,, MoreDerivedClasses:KList]) => resultListWrap(MoreDerivedClasses)
+    getClassChainExceptFirst(Class:ClassType, [Class,, MoreDerivedClasses:KList]) => resultListWrap(MoreDerivedClasses)
 
 /*@ The right signature is already found.
 Search for the right implementation is performed from the compile-time type of the target
