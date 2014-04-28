@@ -101,25 +101,4 @@ when        (KL =/=KLabel 'Public)
 
 rule getAccessMode([.KList]) => package
 
-/*@ Tests if a method within BaseClass with BaseAccessMode is overwritten by a method with the same signature
-    in SubClass with SubAccessMode.
-    It is also possible that BaseClass and SubClass are the same, since the same method is inherited by many classes,
-    and gets in their <methods> cell.
-*/
-syntax K ::=  isAccessibleForOverwriting (
-                ClassType,  //BaseClass
-                AccessMode, //BaseAccessMode
-                ClassType   //SubClass
-              )
-              [strict]
-
-rule isAccessibleForOverwriting(_, public,    _) => true
-rule isAccessibleForOverwriting(_, protected, _) => true
-
-//@ Object class cannot match this rule since it has public access mode
-rule isAccessibleForOverwriting(BaseClass:ClassType, package, SubClass:ClassType)
-    => eqAux(getPackage(getTopLevel(BaseClass)), getPackage(getTopLevel(SubClass)))
-
-rule isAccessibleForOverwriting(_, private, _) => false
-
 endmodule

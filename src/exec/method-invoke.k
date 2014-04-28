@@ -322,8 +322,7 @@ rule [Invoke-Method-instance-package]:
       'Invoke('Method('MethodName(
           objectRef( _, MostDerivedClass:ClassType )::QualClass:ClassType,,
           ( methodInfo(Sig:Signature, QualClass:ClassType, classCMT, _, instanceCT, package)
-            => methodLookupRuntime(
-                  getClassChainExceptFirst(QualClass, [MostDerivedClass]), methodRef(Sig, MethodDecClass))
+            => lookupPackageMethod( Sig, getClassChain(QualClass, [MostDerivedClass]), noMethodRef)
           )
         )),, [ParamVals:KList]
       )
@@ -334,7 +333,7 @@ rule [Invoke-Method-instance-package]:
 
 context 'Invoke('Method( 'MethodName( _:K,, HOLE ) ),, _)
 when
-    getKLabel(HOLE) ==KLabel 'methodLookupRuntime
+    getKLabel(HOLE) ==KLabel 'lookupPackageMethod
 
 rule [Invoke-Method-On-array-or-string]:
     'Invoke('Method('MethodName(
@@ -382,14 +381,14 @@ rule [superMethodImpl]:
 /*Returns the list of classes representing the layer of the given object (by OId),
     located between MostBaseClass (exclusively) and MostDerivedClass (inclusively).
 */
-syntax K ::=  getClassChainExceptFirst( ClassType,  //MostBaseClass
+syntax K ::=  getClassChain( ClassType,  //MostBaseClass
                                         KListWrap   //[MostDerivedClass] at beginning, gradually accumulates
                                                       //the list of classes
               )
 
 rule [getClassesBetween-process]:
     <k>
-      getClassChainExceptFirst(MostBaseClass:ClassType, [(.KList => BaseClass),, MostDerivedClass:ClassType,, _])
+      getClassChain(MostBaseClass:ClassType, [(.KList => BaseClass),, MostDerivedClass:ClassType,, _])
       ...
     </k>
     <classType> MostDerivedClass </classType>
@@ -399,27 +398,41 @@ when
 
 //@ Eliminate the most base class before returning the result, because it is exclusive.
 rule [getClassesBetween-end]:
-    getClassChainExceptFirst(Class:ClassType, [Class,, MoreDerivedClasses:KList]) => resultListWrap(MoreDerivedClasses)
+    getClassChain(Class:ClassType, [Class,, MoreDerivedClasses:KList]) => resultListWrap(Class,, MoreDerivedClasses)
 
 /*@ The right signature is already found.
 Search for the right implementation is performed from the compile-time type of the target
 to more derived types, up to the object type of the target.
 This is required in order to respect the rules of inheritance in the presence of access modes.
 Evaluates into typed method closure.*/
-syntax K ::=  methodLookupRuntime (
+syntax K ::=  lookupPackageMethod (
+                Signature,  //sig(Name, SigTL) - Method signature
                 K,          //computes into resultListWrap(Class list), elements of type ClassType,
                               // from base to derived.
                               // To be processed from base to derived when methods map will be exhausted
                 MethodRef   //method closure of the most specific method found so far
                               // or noValue if no applicable method was found yet
               )
-              [strict(1,2)]
+              [strict(2,3)]
 
-rule [methodLookupRuntime-no-new-method]:
+rule [lookupPackageMethod-layer-first-dec-found]:
     <k>
-      methodLookupRuntime(
+      lookupPackageMethod(
+        Sig:Signature,
         resultListWrap((Class:ClassType => .KList),, _),
-        methodRef(Sig:Signature, _)
+        noMethodRef => methodRef(Sig, DecClass)
+      )
+      ...
+    </k>
+    <classType> Class </classType>
+    <methods>... Sig |-> DecClass:ClassType ...</methods>
+
+rule [lookupPackageMethod-no-new-method]:
+    <k>
+      lookupPackageMethod(
+        Sig:Signature,
+        resultListWrap((Class:ClassType => .KList),, _),
+        methodRef(Sig, _)
       )
       ...
     </k>
@@ -428,16 +441,14 @@ rule [methodLookupRuntime-no-new-method]:
 when
     NewDecClass =/=K Class
 
-rule [methodLookupRuntime-new-method]:
+rule [lookupPackageMethod-new-method]:
     <k>
-      methodLookupRuntime(
+      lookupPackageMethod(
+        Sig:Signature,
         resultListWrap((NewDecClass:ClassType => .KList),, _),
-        methodRef(Sig:Signature, OldDecClass:ClassType)
+        methodRef(Sig, OldDecClass:ClassType)
         =>  'If(
-              'Or(
-                Acc ==K protected orBool Acc ==K public,,
-                eqAux(getPackage(getTopLevel(OldDecClass)), getPackage(getTopLevel(NewDecClass)))
-              ),,
+              isAccessibleForOverwriting( OldDecClass, Acc, NewDecClass ),,
               methodRef(Sig, NewDecClass),,
               methodRef(Sig, OldDecClass)
             )
@@ -456,8 +467,8 @@ rule [methodLookupRuntime-new-method]:
       ...
     </class>
 
-rule [methodLookupRuntime-end]:
-    methodLookupRuntime(resultListWrap(.KList), MethodRef:MethodRef ) => MethodRef
+rule [lookupPackageMethod-end]:
+    lookupPackageMethod(_, resultListWrap(.KList), MethodRef:MethodRef ) => MethodRef
 
 /*@ (kool doc) Closure application needs to also set a new return type in the
     \textsf{return} cell, in order for the values returned by its body to
