@@ -15,13 +15,12 @@ An elaborated method invocation expresion may have one of the following forms:
     and those cases require special rules in the semantics.
 
 The evaluation of the method invocation expression consists from 5 steps outlined below. Those steps,
-unless otherwise specified, are common to all the method invocation forms enumerated above.
+  unless otherwise specified, are common to all the method call forms enumerated above.
   - Evaluation of the qualifier expression
   - Evaluation of method arguments
   - Computation of static method information
   - Locating the actual method declaration to be invoked
-  - Once we have produced the qualifier, the arguments and the actual method declaration,
-    the method execution itself is performed.
+  - Actual method invocation.
 
 In JLS runtime semantics of method invocation is described in $15.2.4. Althouhg there is some correspondence
   between the steps in our semantics and the steps in JLS, it is generally not one-to-one. JLS description of method
@@ -37,7 +36,7 @@ In JLS runtime semantics of method invocation is described in $15.2.4. Althouhg 
   - JLS semantics describes not only the execution of correct java programs, but also runtime checks that have to be
     performed to ensure the consistency of the bytecode, and errors that have to be thrown once this consistency is
     violated. This is the case for JLS $15.12.4.3, that don't need a correspondent in K-Java.
-  - Because K-Java operates directly over the source code of Java with no other preprocessing than the unfolding
+  - Because K-Java operates directly over the source code of Java, with no other preprocessing than the unfolding
     phase, it carries less static information than the bytecode. For this reason some static information needs to be
     computed in K-Java each time a method is invoked. This is why semantics step 3 is needed. As we will see below,
     rules for this step are straghtforward and consist of loading the right data from the right cells int an
@@ -72,9 +71,6 @@ General structure:
   ),,
   ['Param(),, ...] - arguments
 )
-
-The whole semantics for runtime evaluation of a method invocation have ~ 20 rules, including contexts.
-  That is a little bit too much.
 */
 syntax KLabel ::= "'Invoke"
 
@@ -127,22 +123,24 @@ During the third step of method invocation the second argument of the production
   - DecT - the class where the method was actually declared, as observed by QualT. E.g. the most derived class
     in QualT hierarchy where there is a declaration of a method with signature Sig.
   - ContextT - the context type of the method. Either static, for static methods, or instance for non-static methods.
+  - Acc - access modifier (private, package, protected or public). For the purpose of uniformiti we use the modifier
+    package when no access modifier is provided.
 
-All the information in methodInfo() should be computed, according to JLS at compile-time. In K-Java we actually have
-  this information already computed, but it is stored in various cells inside <class> and <classDec> instead of the
-  actual method invocation production. Thus we use methodInfo() as a buffer where information is first loaded from
-  cells, before being consumed by the rules of step 4. This allows us to greatly simplify the step 4 rules.
+All the information stored in methodInfo() is static. In K-Java we already have
+  this information computed, but it is stored in various cells inside <class> and <classDec>.
+  The rules from step 3 simply load the relevant informaton from configuration
+  cells to methodInfo() arguments.
 */
 syntax K ::=  methodInfo(
-                Signature,    //method signature
-                RefType,      //qualifier type, not necessarily class
-                ClassMetaType,//The either classCMT or interfaceCMT for the qualifier type
-                RefType,      //method definition class type - the class referred by the signature in <methods>
+                Signature,    //Sig - method signature
+                RefType,      //QualT - qualifier type, not necessarily class
+                ClassMetaType,//MetaT - The either classCMT or interfaceCMT for the qualifier type
+                RefType,      //DecT - method definition class type - the class referred by the signature in <methods>
                                 // for arrays - it remains noClass
                                 // this argument is only used to compute the context type
-                ContextType,  //method context type - instance or static
+                ContextType,  //ContextT - method context type - instance or static
                                 //for arrays - instanceCT
-                AccessMode    //The access mode of the method as seen by the qualifying type
+                AccessMode    //Acc - The access mode of the method as seen by the qualifying type
               )
 
 /*@
@@ -151,9 +149,10 @@ The first rule from step 3 rewrites the method name into a methodInfo() whose fi
   argument of methodInfo is also computed at this step - it is the type of the qualifier. The rest of the arguments
   are filled in with default values. They will be rewritten into actual values by the following rules.
 
-This rule alos have a side condition that checks whether parameters were evaluated to final values. this makes sure
-  that this rule is executed only when the first two steps of method invocation were completed. Because all the
-  following rules cannot match unless this rule have been matched, we only have to make this check once - in this rule.
+This rule also have a side condition that checks whether parameters were evaluated to final values. The side
+  condition ensures that this rule is executed only when the first two steps of method invocation were completed.
+  Because the following rules may match only after this rule was matched, we have to make this check only once - in
+  this rule.
 */
 rule [Invoke-Method-compute-Signature]:
     'Invoke('Method('MethodName(
@@ -179,8 +178,7 @@ rule [Invoke-Method-load-MethodDefClass-arrays]:
     )),, _)
 
 /*@
-The second rule for method invocation loads MetaT and DecT. It requires Sig and QualT computed by the previous
-  rule.
+The second rule for method invocation loads MetaT and DecT. It requires Sig and QualT computed by the previous rule.
 */
 rule [Invoke-Method-load-MethodDefClass]:
     <k>
@@ -220,7 +218,7 @@ when
     notBool Sig in keys(Methods)
 
 /*@
-The last rule of step 3 loads ContextT for the invoked method. It requires DecT, so this rule may only match after
+The last rule of step 3 loads ContextT and Acc. It requires DecT, so this rule may only match after
   the second rule for methodInfo().
 */
 rule [Invoke-Method-load-ContextType]:
@@ -237,18 +235,20 @@ rule [Invoke-Method-load-ContextType]:
     <methodAccessMode> Acc:AccessMode </methodAccessMode>
 
 /*@
-Once the last field of methodInfo() is filled, the next step of method invocation begins - deciding the actual method
-  declaration to be executed. The rules of this step rewrite methodInfo() into methodRef() - another auxiliary data
-  structure.
+In the fourth step of method invocation algorithm the actual method declaration is chosen. This step starts once all
+  the fields of methodInfo() were filled in (where possible). The rules of this step rewrite methodInfo() into
+  methodRef() - another auxiliary data structure.
 The production methodRef() is a reference to a method declaration. It contains two fields - Sig and ImplT - the
-  signature and the implementation class. The implementation class is the class that contains the actual method code
-  to be invoked. Since we already know the signature, this phase amounts to computing ImplT.
+  signature and the implementation class. The implementation class is the class that contains the actual method
+  declaration to be invoked. Since we already know the signature, this phase amounts to computing ImplT.
 
   This step contains different rules for the following cases:
   - Static method (JLS \$15.12.4.4 paragraph 2)
   - Instnace method with target being null (JLS \$15.12.4.4 paragraph 3)
-  - Instance method with non-null target, qualifying type is interface (JLS \$15.12.4.4 point 1.a)
-  - Instance method with non-null target, qualifying type is class (JLS \$15.12.4.4 point 1.b)
+  - Instance method with non-null target, private method (JLS \$15.12.4.4 paragraph 4)
+  - Instance method with non-null target, access mode is protected or public. This also includes qualifying type
+    being interface. (JLS \$15.12.4.4 paragraph 6 and point 1)
+  - Instance method with non-null target, access mode is package (no dedicated mention in JLS \$15.12.4.4)
   - [Skip] Target value is array or string.
 
 The method below is for the first case. If the method is static, then the declaring type DecT is the qualifying type.
@@ -267,7 +267,7 @@ rule [Invoke-Method-static]:
 /*@
 If the qualifier value is null and ContextT is instance, then NullPointerException is thrown and method invocation
   expression is discarded. It is only at this point that we should check the qualifier whether it is null or not.
-  If ContextT is static, then the rule above will match, and no exception will be thrown.
+  If ContextT is static, then the previous rule will match, and no exception will be thrown.
 */
 rule [Invoke-Method-instance-on-null]:
 /*  [Impl] Qualifier type could be either object or array.
@@ -282,6 +282,10 @@ rule [Invoke-Method-instance-on-null]:
           'None(.KList)
         ))
 
+/*@
+The logic for private instance methods is the same as for static methods, with the difference that the qualifier is
+  not discarded.
+*/
 rule [Invoke-Method-instance-private]:
     'Invoke(
       'Method('MethodName(
@@ -293,29 +297,51 @@ rule [Invoke-Method-instance-private]:
     )
 
 /*@
-If MetaT is interface then the method is always instance and public. We can safely assume that the method was
-  inherited by the actual runtime type of the qualifier object during unfolding phase. The class ImplT is the one
-  referred by the <methods> map of the qualifier runtime type.
+If the method is protected or public, then we should call the version of the method visible to the runtime type of
+  the qualifying object. This case also covers qualifying type interface, since interface methods are always public.
+  The right method will always be the one referred by the signature Sig in the cell <methods> associated with the
+  actual object class. This is because the unfolding phase populates <methods> with the union of methods inherited
+  from the base class and methods declared in the current class, the latter overriding the former.
+  The variable ImplT is the class where the right method version is declared.
 */
 rule [Invoke-Method-instance-protected-or-public]:
     <k>
       'Invoke('Method('MethodName(
           objectRef( _, ActualClass:ClassType )::_,,
           ( methodInfo(Sig:Signature, _, _,_, instanceCT, Acc:AccessMode)
-            => methodRef(Sig, MethodDecClass) )
+            => methodRef(Sig, ImplT) )
         )),,
         [ParamVals:KList]
       )
       ...
     </k>
     <classType> ActualClass </classType>
-    <methods>... Sig |-> MethodDecClass:ClassType ...</methods>
+    <methods>... Sig |-> ImplT:ClassType ...</methods>
 when
     Acc ==K protected orBool Acc ==K public
 
-/*@
-Finally, if the qualifying type is a class, we have a more complex version of a method call. Here the method access
-  mode in QualT is not necessarily public, and the lookup strategies for different access modes are different.
+/*@ todo here
+The most complex case is for instance methods with package access mode. The precise semantics of overriding for all
+access modes is defined in JLS \$8.4.6.1:
+
+An instance method derivedM declared in a class Derived overrides another method with the
+  same signature, baseM, declared in class Base iff both:
+  1. Derived is a subclass of Base.
+  2. Either
+    a. baseM is non-private and accessible from Derived, or
+    b. derivedM overrides a method middleM, middleM distinct from baseM and derivedM,
+      such that middleM overrides baseM
+
+In the case 2b the overriding relationship cannot be inferred based on the content of classes Base and Derived alone.
+  Instead, we have to analyze the content of each class in between in the inheritance chain. This case is specifically
+  needed for package access mode.
+
+The rule for package access mode delegates searching for the right method declaration to the auxiliary function
+  lookupPackageMethod. The function takes 3 arguments:
+  - method signature Sig
+  - the list of classes in the inheritance chain between the qualifying type and the actual object type. This list is
+    produced by getClassChain()
+  - the third argument represents the best method declaration found so far. It is initialized with .K.
 */
 rule [Invoke-Method-instance-package]:
     <k>
@@ -331,6 +357,12 @@ rule [Invoke-Method-instance-package]:
     <classType> QualClass </classType>
     <methods>... Sig |-> MethodDecClass:ClassType ...</methods>
 
+/*@
+Before the evaluation of lookupPackageMethod may begin, the term lookupPackageMethod(_) have to be heated to the top
+  of computation. The side condition in the context rule below ensured that the second argument of method call
+  expression is heated ony if it contains a term lookupPackageMethod(). If it have other forms,
+  such as the method name or methodInfo(), it won't be heated.
+*/
 context 'Invoke('Method( 'MethodName( _:K,, HOLE ) ),, _)
 when
     getKLabel(HOLE) ==KLabel 'lookupPackageMethod
