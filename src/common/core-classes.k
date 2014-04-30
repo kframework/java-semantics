@@ -132,26 +132,28 @@ rule isCompoundAssignLabel('AssignLeftShift) => true
 rule isCompoundAssignLabel('AssignRightShift) => true
 rule isCompoundAssignLabel('AssignURightShift) => true
 
-/*@ Tests if a method within BaseClass with BaseAccessMode is overwritten by a method with the same signature
-    in SubClass with SubAccessMode.
-    It is also possible that BaseClass and SubClass are the same, since the same method is inherited by many classes,
-    and gets in their <methods> cell.
+/*@ [skip] Tests if a method declared in class BaseC with access mode Acc is overridden by a method with the same
+  signature declared in a subclass SubC.
+
+The method is overridden if either:
+  - Acc is protected or public
+  - Acc is package and BaseC and SubC are declared in the same package (JLS \$6.6)
 */
-syntax K ::=  isAccessibleForOverwriting (
-                ClassType,  //BaseClass
-                AccessMode, //BaseAccessMode
-                ClassType   //SubClass
+syntax K ::=  isOverridden (
+                ClassType,  //BaseC
+                AccessMode, //BaseAcc
+                ClassType   //SubC
               )
               [strict]
 
-rule isAccessibleForOverwriting(_, public,    _) => true
-rule isAccessibleForOverwriting(_, protected, _) => true
+rule isOverridden(_, public,    _) => true
+rule isOverridden(_, protected, _) => true
 
 //@ Object class cannot match this rule since it has public access mode
-rule isAccessibleForOverwriting(BaseClass:ClassType, package, SubClass:ClassType)
+rule isOverridden(BaseClass:ClassType, package, SubClass:ClassType)
     => eqAux(getPackage(getTopLevel(BaseClass)), getPackage(getTopLevel(SubClass)))
 
-rule isAccessibleForOverwriting(_, private, _) => false
+rule isOverridden(_, private, _) => false
 
 //@ \subsection{Computation terms produced during elaboration}
 

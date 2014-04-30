@@ -176,7 +176,7 @@ syntax K ::= isInheritable ( AccessMode )                        [strict]
 rule [isInheritable]:
     <k>
       isInheritable(BaseAccessMode:AccessMode)
-      => isAccessibleForOverwriting(BaseClass, BaseAccessMode, Class)
+      => isOverridden(BaseClass, BaseAccessMode, Class)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>

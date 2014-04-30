@@ -9,7 +9,7 @@ module STATEMENTS
     imports CORE-SORTS
     imports SUBTYPING
     imports VAR-LOOKUP
-    imports METHOD-INVOKE // for bindTo
+    imports METHOD-INVOKE // for initParams
 
 //@ \subsection{Call of main method}
 
@@ -391,13 +391,9 @@ when
     andBool KL =/=KLabel 'finallyBlock
 
 rule [Return-MethodEnd]:
-    <k>
-      'Return('Some(V:RawVal :: T2:Type))
-      => subtype(T2, T1) ~> true? ~> V::T1 ~> K    </k>
+    <k> 'Return('Some(TV:TypedVal)) => TV ~> K </k>
     <stack> ListItem( sl(K:K, MethContext:Bag) ) => . ...</stack>
-    <methodContext>
-      <return> T1:Type </return> _:Bag => MethContext
-    </methodContext>
+    <methodContext> _:Bag => MethContext </methodContext>
 
 /*@ \subsection{Throw statement}
 Exceptions are propagated now until a catch that can bind them is
@@ -418,7 +414,7 @@ rule [Throw-checkCatch-True]:
     ~> 'Throw(TV:TypedVal)
     ~> catchBlocks([catchImpl(Param:ExtKResult, CatchS:K),, _])
     => 'Block([
-          bindTo([Param], [TV]),,
+          initParams([Param], [TV]),,
           CatchS
         ])
 

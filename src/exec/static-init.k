@@ -67,7 +67,6 @@ rule [staticInit]:
     <methodContext>
       MethContext:Bag
       =>  <env> .Map </env>
-          <return> void </return>
           <crntClass> Class </crntClass>
           <location> noValue </location>
     </methodContext>

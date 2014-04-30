@@ -151,7 +151,6 @@ rule [unfolding-MethodDec]:
     <methodDecs>
       (.Bag =>  <methodDec>
                   <methodSignature> sig(Name:Id, getTypes([Params])) </methodSignature>
-                  <methodReturnType> ReturnType:Type </methodReturnType>
                   <methodParams> [Params:KList] </methodParams>
                   <methodBody> MethodBody:K </methodBody>
                   <methodAccessMode> Acc:AccessMode </methodAccessMode>

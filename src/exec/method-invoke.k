@@ -154,7 +154,7 @@ This rule also have a side condition that checks whether parameters were evaluat
   Because the following rules may match only after this rule was matched, we have to make this check only once - in
   this rule.
 */
-rule [Invoke-Method-compute-Signature]:
+rule [Invoke-compute-methodInfo-Signature]:
     'Invoke('Method('MethodName(
       Qual:KResult,,
       (Name:Id => methodInfo(sig(Name, getTypes([ParamVals])), typeOf(Qual), .K,.K,.K,.K))
@@ -171,7 +171,7 @@ The next rule for method invocation is applied when the qualifier type is array.
   into the auxiliary class ArrayImpl, that is used in K-Java to simulate method invocations over array objects.
   This rule is required in order to minimize the number of particular cases involving arrays in the rules that follow.
 */
-rule [Invoke-Method-load-MethodDefClass-arrays]:
+rule [Invoke-compute-methodInfo-arrays]:
     'Invoke('Method('MethodName(
       QualRV:RawVal :: (arrayOf T:Type => arrayImplClass),,
       methodInfo(Sig:Signature, arrayOf T => arrayImplClass, _,_,_,_)
@@ -180,17 +180,17 @@ rule [Invoke-Method-load-MethodDefClass-arrays]:
 /*@
 The second rule for method invocation loads MetaT and DecT. It requires Sig and QualT computed by the previous rule.
 */
-rule [Invoke-Method-load-MethodDefClass]:
+rule [Invoke-compute-methodInfo-MethodDecClass]:
     <k>
       'Invoke('Method('MethodName(
         Qual:KResult,,
-        methodInfo(Sig:Signature, QualClass:ClassType, .K => MetaType, .K => MethodDefClass, _,_)
+        methodInfo(Sig:Signature, QualClass:ClassType, .K => MetaType, .K => MethodDecClass, _,_)
       )),, _)
       ...
     </k>
     <classType> QualClass </classType>
     <classMetaType> MetaType:ClassMetaType </classMetaType>
-    <methods>... Sig |-> MethodDefClass:ClassType ...</methods>
+    <methods>... Sig |-> MethodDecClass:ClassType ...</methods>
 
 /*@
 There is one case that is not covered by the previous rule - the case when the cell <methods> does not have a key
@@ -203,7 +203,7 @@ In both cases the method is an abstract method in the class QualT. For this case
   for sure that ContextT for an abstract method is instance. Also, because the method was declared in an interface,
   it is certainly public.
 */
-rule [Invoke-Method-load-unmapped-method-ContextType]:
+rule [Invoke-compute-methodInfo-unmapped-method-ContextType]:
     <k>
       'Invoke('Method('MethodName(
         Qual:KResult,,
@@ -221,7 +221,7 @@ when
 The last rule of step 3 loads ContextT and Acc. It requires DecT, so this rule may only match after
   the second rule for methodInfo().
 */
-rule [Invoke-Method-load-ContextType]:
+rule [Invoke-compute-methodInfo-ContextType]:
     <k>
       'Invoke('Method('MethodName(
         Qual:KResult,,
@@ -254,7 +254,7 @@ The production methodRef() is a reference to a method declaration. It contains t
 The method below is for the first case. If the method is static, then the declaring type DecT is the qualifying type.
   The qualifier is discarded by rewritting it into noValue.
 */
-rule [Invoke-Method-static]:
+rule [Invoke-methodInfo-static]:
     'Invoke(
       'Method('MethodName(
         (_:KResult => noValue),,
@@ -269,7 +269,7 @@ If the qualifier value is null and ContextT is instance, then NullPointerExcepti
   expression is discarded. It is only at this point that we should check the qualifier whether it is null or not.
   If ContextT is static, then the previous rule will match, and no exception will be thrown.
 */
-rule [Invoke-Method-instance-on-null]:
+rule [Invoke-methodInfo-instance-on-null]:
 /*  [Impl] Qualifier type could be either object or array.
     We cannot move method invocation on null logic to invokeImpl, because
     invokeImpl needs an actual methodRef, and we cannot produce a methidRef if our qualifier object is null.
@@ -286,7 +286,7 @@ rule [Invoke-Method-instance-on-null]:
 The logic for private instance methods is the same as for static methods, with the difference that the qualifier is
   not discarded.
 */
-rule [Invoke-Method-instance-private]:
+rule [Invoke-methodInfo-instance-private]:
     'Invoke(
       'Method('MethodName(
         _:ObjectRef::_,,
@@ -304,7 +304,7 @@ If the method is protected or public, then we should call the version of the met
   from the base class and methods declared in the current class, the latter overriding the former.
   The variable ImplT is the class where the right method version is declared.
 */
-rule [Invoke-Method-instance-protected-or-public]:
+rule [Invoke-methodInfo-instance-protected-or-public]:
     <k>
       'Invoke('Method('MethodName(
           objectRef( _, ActualClass:ClassType )::_,,
@@ -341,10 +341,10 @@ The rule for package access mode delegates searching for the right method declar
   - method signature Sig
   - the list of classes in the inheritance chain between the qualifying type and the actual object type. This list is
     produced by getClassChain()
-  - the third argument represents the class containing the best method declaration found so far.
+  - the third argument represents the declaring class of the best method found so far.
     It is initialized with .K.
 */
-rule [Invoke-Method-instance-package]:
+rule [Invoke-methodInfo-instance-package]:
     <k>
       'Invoke('Method('MethodName(
           objectRef( _, MostDerivedClass:ClassType )::QualClass:ClassType,,
@@ -368,7 +368,7 @@ context 'Invoke('Method( 'MethodName( _:K,, HOLE ) ),, _)
 when
     getKLabel(HOLE) ==KLabel 'lookupPackageMethod
 
-rule [Invoke-Method-On-array-or-string]:
+rule [Invoke-methodInfo-on-array-or-string]:
     'Invoke('Method('MethodName(
         QualRV:RawVal::QualClass:ClassType,,
         methodInfo(Sig:Signature, QualClass, classCMT, MethodDecClass:ClassType, instanceCT, _)
@@ -419,7 +419,7 @@ syntax K ::=  getClassChain( ClassType,  //MostBaseClass
                                                       //the list of classes
               )
 
-rule [getClassesBetween-process]:
+rule [getClassChain-process]:
     <k>
       getClassChain(MostBaseClass:ClassType, [(.KList => BaseClass),, MostDerivedClass:ClassType,, _])
       ...
@@ -430,7 +430,7 @@ when
     MostDerivedClass =/=K MostBaseClass
 
 //@ Eliminate the most base class before returning the result, because it is exclusive.
-rule [getClassesBetween-end]:
+rule [getClassChain-end]:
     getClassChain(Class:ClassType, [Class,, MoreDerivedClasses:KList]) => kr[Class,, MoreDerivedClasses]
 
 /*@ [Skip] The right signature is already found.
@@ -464,64 +464,84 @@ The first property is ensured by the unfolding algorithm. Because <methods> of a
 The search for the right package method declaration is performed from the base-most class in the chain (the left-most
   one) to the most derived one. Every rule matches and deletes the leftmost class in the class chain (the current
   class), and possibly rewrites the third argument into the current class.
-  //todo here
-The first rule
+The first rule matches when there is no declaring class yet (third argument is .K, the initial case).
 */
 rule [lookupPackageMethod-layer-first-dec-found]:
     <k>
       lookupPackageMethod(
         Sig:Signature,
-        kr[ (Class:ClassType => .KList),, _ ],
-        noClass => DecClass
+        kr[ (CurrentC:ClassType => .KList),, _ ],
+        noClass => DecC
       )
       ...
     </k>
-    <classType> Class </classType>
-    <methods>... Sig |-> DecClass:ClassType ...</methods>
+    <classType> CurrentC </classType>
+    <methods>... Sig |-> DecC:ClassType ...</methods>
 
-rule [lookupPackageMethod-no-new-method]:
-    <k>
-      lookupPackageMethod(
-        Sig:Signature,
-        kr[ (Class:ClassType => .KList),, _ ],
-        _
-      )
-      ...
-    </k>
-    <classType> Class </classType>
-    <methods>... Sig |-> NewDecClass:ClassType ...</methods>
-when
-    NewDecClass =/=K Class
-
+/*@
+The second rule matches when we already found a declaring class (OldDecT) and the current class NewDecT have another
+  method declaration with the right signature. The presence of a Sig declaration inside NewDecT is identified by the
+  match <class><classType> NewDecT </classType> <methods>... Sig |-> NewDecT ...</methods> </class>,
+  by the definition of <methods>.
+In this case the declaring class is updated to NewDecT if the method in NewDecT overrides the previously found method
+ from OldDecT. The rules for overriding depend on three arguments: The base class OldDecT,
+ the derived class CurrentC, both containing a method declaration with the same signature Sig,
+ and the access mode Acc of the method from OldDecC. access mode Acc of the method Sig declared in OldDecT. These rules
+ are implemented by function isOverridden().
+*/
 rule [lookupPackageMethod-new-method]:
     <k>
       lookupPackageMethod(
         Sig:Signature,
-        kr[ (NewDecClass:ClassType => .KList),, _ ],
-        OldDecClass:ClassType
+        kr[ (CurrentC:ClassType => .KList),, _ ],
+        OldDecC:ClassType
         =>  'If(
-              isAccessibleForOverwriting( OldDecClass, Acc, NewDecClass ),,
-              NewDecClass,,
-              OldDecClass
+              isOverridden( OldDecC, Acc, CurrentC ),,
+              CurrentC,,
+              OldDecC
             )
       )
       ...
     </k>
     <class>
-      <classType> OldDecClass </classType>
+      <classType> OldDecC </classType>
       <methodSignature> Sig </methodSignature>
       <methodAccessMode> Acc:AccessMode </methodAccessMode>
       ...
     </class>
     <class>
-      <classType> NewDecClass </classType>
-      <methods>... Sig |-> NewDecClass:ClassType ...</methods>
+      <classType> CurrentC </classType>
+      <methods>... Sig |-> CurrentC:ClassType ...</methods>
       ...
     </class>
 
-rule [lookupPackageMethod-end]:
-    lookupPackageMethod(Sig:Signature, kr[.KList], Class:ClassType ) => methodRef(Sig, Class)
+/*@
+The third rule represents the case when CurrnetC chain don't contain method declarations with signature
+  Sig. This case is identified by the side condition CurrentC =/=K DecC. Indeed, the two classes are different only
+  when the entry Sig |-> DecC in <methods> was inherited rather than produced by a method in CurrnetC.
+*/
+rule [lookupPackageMethod-no-new-method]:
+    <k>
+      lookupPackageMethod(
+        Sig:Signature,
+        kr[ (CurrentC:ClassType => .KList),, _ ],
+        _
+      )
+      ...
+    </k>
+    <classType> CurrentC </classType>
+    <methods>... Sig |-> DecC:ClassType ...</methods>
+when
+    CurrentC =/=K DecC
 
+/*@
+The last rule matches when the chain of classes stored in the first argument remains empty. It rewrites the whole
+  lookupPackageMethod() into a reference to the method that have to be invoked.
+*/
+rule [lookupPackageMethod-end]:
+    lookupPackageMethod(Sig:Signature, kr[.KList], DecC:ClassType ) => methodRef(Sig, DecC)
+
+//todo here
 /*@ (kool doc) Closure application needs to also set a new return type in the
     \textsf{return} cell, in order for the values returned by its body to
     be checked against the return type of the method.  To do this correctly,
@@ -535,7 +555,7 @@ rule [lookupPackageMethod-end]:
     if no other return statements were encountered. We cannot append an extra return statement at the preprocessing
     phase because this would make constructors invalid.
 */
-rule [Invoke-actual-invocation]:
+rule [Invoke-methodRef]:
     <k>
       'Invoke('Method('MethodName(
           Qual:KResult,,
@@ -543,7 +563,7 @@ rule [Invoke-actual-invocation]:
         )),,
         [ParamValues:KList]
       ) ~> RestK:K
-      => staticInit(Class) ~> bindTo([Params], [ParamValues]) ~> Body ~> 'Return('None(.KList))
+      => staticInit(Class) ~> initParams([Params], [ParamValues]) ~> Body ~> 'Return('None(.KList))
     </k>
     <stack>
       . => ListItem(sl(RestK, MethContext))
@@ -552,14 +572,12 @@ rule [Invoke-actual-invocation]:
     <methodContext>
       MethContext:Bag
       =>  <env> .Map </env>
-          <return> ReturnT </return>
           <crntClass> Class </crntClass>
           <location> getOId(Qual) </location>
     </methodContext>
 
     <classType> Class </classType>
     <methodSignature> Sig </methodSignature>
-    <methodReturnType> ReturnT:Type </methodReturnType>
     <methodParams> [Params:KList] </methodParams>
     <methodBody> Body:K </methodBody>
 when getKLabel(Body) =/=KLabel 'NoMethodBody
@@ -568,7 +586,26 @@ syntax K ::= getOId( K )              [function]
 rule getOId( objectRef(OId:Int,_)::_ ) => OId
 rule getOId( noValue ) => noValue
 
-rule [Invoke-native]:
+/*@ Binds a list of formal parameters to their values. Used by method calls and try-catch.
+*/
+syntax K ::= initParams ( KListWrap, // [...,, 'Param(...),, ...] - parameter declarations
+                          KListWrap  // [...,, KResult,, ...] - values
+                        )
+
+rule [initParams]:
+    initParams(['Param(_:K,, T:Type,, X:Id),, RestP:KList], [TV:TypedVal,, RestV:KList])
+    => 'LocalVarDec(.K,, T:Type,,['VarDec(X)])
+      ~> 'ExprStm('Assign('ExprName(X),, cast(T, TV:TypedVal)))
+      ~> initParams([RestP], [RestV])
+
+rule [initParams-end]:
+    initParams([.KList], [.KList]) => .K
+        [structural]
+
+//@ 'Param(_:K,, T:Type,, X:Id). Consumed by initParams().
+syntax KLabel ::= "'Param"
+
+rule [Invoke-methodRef-native]:
     <k>
       'Invoke('Method('MethodName(
           Qual:KResult,,
@@ -581,25 +618,6 @@ rule [Invoke-native]:
     <classType> Class </classType>
     <methodSignature> Sig </methodSignature>
     <methodBody> 'NoMethodBody(_) </methodBody>
-
-//@ 'Param(_:K,, T:Type,, X:Id)
-syntax KLabel ::= "'Param"
-
-/*@ Binds a list of formal parameters to their values. Used by method calls and try-catch.
-*/
-syntax K ::= bindTo ( KListWrap, // [...,, 'Param(...),, ...] - parameter declarations
-                      KListWrap  // [...,, KResult,, ...] - values
-                    )
-
-rule [bindTo]:
-    bindTo(['Param(_:K,, T:Type,, X:Id),, RestP:KList], [TV:TypedVal,, RestV:KList])
-    => 'LocalVarDec(.K,, T:Type,,['VarDec(X)])
-      ~> 'ExprStm('Assign('ExprName(X),, cast(T, TV:TypedVal)))
-      ~> bindTo([RestP], [RestV])
-
-rule [bindTo-empty]:
-    bindTo([.KList], [.KList]) => .K
-        [structural]
 
 /*@ Auxiliary function for methods that need implementation in the semantics. The implementation
   of this production is given in api-core.k and api-threads.k.

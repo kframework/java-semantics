@@ -24,8 +24,6 @@ configuration
             //The map from local vars to their location in the store. Also includes outer local vars, for local classes.
             <env color="Crimson"> .Map </env>
 
-            <return color="DarkOrange"> void </return> // holds method return type
-
             //current class during all phases, including early preprocessing
             <crntClass color="DarkOrange"> noClass </crntClass>
 

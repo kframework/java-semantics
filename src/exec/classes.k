@@ -76,7 +76,6 @@ rule [QNewInstance]:
     <methodContext>
       MethContext:Bag
       =>  <env> .Map </env>
-          <return> void </return>
           <crntClass> .K </crntClass>
           <location> L </location>
     </methodContext>
