@@ -150,8 +150,8 @@ rule isOverridden(_, public,    _) => true
 rule isOverridden(_, protected, _) => true
 
 //@ Object class cannot match this rule since it has public access mode
-rule isOverridden(BaseClass:ClassType, package, SubClass:ClassType)
-    => eqAux(getPackage(getTopLevel(BaseClass)), getPackage(getTopLevel(SubClass)))
+rule isOverridden(BaseC:ClassType, package, SubC:ClassType)
+    => eqAux(getPackage(getTopLevel(BaseC)), getPackage(getTopLevel(SubC)))
 
 rule isOverridden(_, private, _) => false
 
