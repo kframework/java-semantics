@@ -541,19 +541,34 @@ The last rule matches when the chain of classes stored in the first argument rem
 rule [lookupPackageMethod-end]:
     lookupPackageMethod(Sig:Signature, kr[.KList], DecC:ClassType ) => methodRef(Sig, DecC)
 
-//todo here
-/*@ (kool doc) Closure application needs to also set a new return type in the
-    \textsf{return} cell, in order for the values returned by its body to
-    be checked against the return type of the method.  To do this correctly,
-    we also need to stack the current status of the \textsf{return} cell
-    and then pop it when the method returns.
+/*@
+The central rule of method invocation is matched when the second argument of method call expression reaches the form
+  methodRef(). This rule performs the following operations:
+    - saves the rest of computation (RestK) and the content of <methodContext> as a new entry of the cell <stack>
+      This data is restored back by the rules for return statement.
+    - Initializes the new method context.
+      -- The local variable environment <env> is emptied
+      -- current class <crntClass> is initialized to the class defining the method
+      -- object location <location> is initialized to the location of the qualifier object for instance methods,
+        or .K for static methods. The extraction of the location from the qualifier value is performed by the
+        function getOId().
+    - rewrites the method call expression into a sequence of four terms:
+      -- static initialization of the qualifying class
+      -- initialization of parameters
+      -- actual method body
+      -- a return statement with no arguments after the method body.
 
-  Calling staticInit() is required for static methods only. Calling it on instance methods have no effect,
-    since the qualifier class have been initialized at least when the qualifier object was first created.
+The function staticInit() triggers static initialization of the qualifying class, if this class was not initialized yet.
+  Repeated calls of this function have no effect. Is required just for static methods and is described in JLS \$12.4.
+  For an instance method call, the qualifying class will always be initialized already,
+  so staticInit() will have no effect.
 
-  The extra return statement is used to exit at the end of a constructor or a method with no arguments,
-    if no other return statements were encountered. We cannot append an extra return statement at the preprocessing
-    phase because this would make constructors invalid.
+The function initParams() rewrites each parameter declaration into two statements. First is a local variable
+  declaration with that parameter name. The second is an assignment to that variable of the actual parameter value.
+
+The return statement at the end ensures that there is a return statement on every execution path of the method. The
+  statement will only be useful for methods with return type void, as methods returning a value are required by JLS
+  to have an appropriate return statement on every return path.
 */
 rule [Invoke-methodRef]:
     <k>
@@ -586,7 +601,7 @@ syntax K ::= getOId( K )              [function]
 rule getOId( objectRef(OId:Int,_)::_ ) => OId
 rule getOId( noValue ) => noValue
 
-/*@ Binds a list of formal parameters to their values. Used by method calls and try-catch.
+/*@ [Skip] Binds a list of formal parameters to their values. Used by method calls and try-catch.
 */
 syntax K ::= initParams ( KListWrap, // [...,, 'Param(...),, ...] - parameter declarations
                           KListWrap  // [...,, KResult,, ...] - values
@@ -619,7 +634,7 @@ rule [Invoke-methodRef-native]:
     <methodSignature> Sig </methodSignature>
     <methodBody> 'NoMethodBody(_) </methodBody>
 
-/*@ Auxiliary function for methods that need implementation in the semantics. The implementation
+/*@ [Skip] Auxiliary function for methods that need implementation in the semantics. The implementation
   of this production is given in api-core.k and api-threads.k.
 */
 syntax K ::=  invokeImpl (
