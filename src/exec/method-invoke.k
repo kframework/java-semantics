@@ -320,7 +320,7 @@ rule [Invoke-Method-instance-protected-or-public]:
 when
     Acc ==K protected orBool Acc ==K public
 
-/*@ todo here
+/*@
 The most complex case is for instance methods with package access mode. The precise semantics of overriding for all
 access modes is defined in JLS \$8.4.6.1:
 
@@ -341,14 +341,15 @@ The rule for package access mode delegates searching for the right method declar
   - method signature Sig
   - the list of classes in the inheritance chain between the qualifying type and the actual object type. This list is
     produced by getClassChain()
-  - the third argument represents the best method declaration found so far. It is initialized with .K.
+  - the third argument represents the class containing the best method declaration found so far.
+    It is initialized with .K.
 */
 rule [Invoke-Method-instance-package]:
     <k>
       'Invoke('Method('MethodName(
           objectRef( _, MostDerivedClass:ClassType )::QualClass:ClassType,,
           ( methodInfo(Sig:Signature, QualClass:ClassType, classCMT, _, instanceCT, package)
-            => lookupPackageMethod( Sig, getClassChain(QualClass, [MostDerivedClass]), noMethodRef)
+            => lookupPackageMethod( Sig, getClassChain(QualClass, [MostDerivedClass]), noClass)
           )
         )),, [ParamVals:KList]
       )
@@ -432,7 +433,7 @@ when
 rule [getClassesBetween-end]:
     getClassChain(Class:ClassType, [Class,, MoreDerivedClasses:KList]) => kr[Class,, MoreDerivedClasses]
 
-/*@ The right signature is already found.
+/*@ [Skip] The right signature is already found.
 Search for the right implementation is performed from the compile-time type of the target
 to more derived types, up to the object type of the target.
 This is required in order to respect the rules of inheritance in the presence of access modes.
@@ -441,18 +442,37 @@ syntax K ::=  lookupPackageMethod (
                 Signature,  //sig(Name, SigTL) - Method signature
                 KRListWrap, //computes into kr[Class list], elements of type ClassType,
                               // from base to derived.
-                              // To be processed from base to derived when methods map will be exhausted
-                MethodRef   //method closure of the most specific method found so far
-                              // or noValue if no applicable method was found yet
+                              // To be processed from base to derived until while the chain is not empty
+                ClassType   //The class with the best method declaration with signature Sig found so far,
+                              //initialized with noClass
               )
               [strict(2,3)]
 
+/*@
+The rules for lookupPackageMethod() are based on the following two properties of the configuration:
+    - if the cell <methods> for a particular class contains a key Sig, then <methods> for all classes derived from it
+      will contain the key Sig.
+    - if a particular class contain a method declaration with signature Sig acces mode Acc, then all declarations
+      of Sig in derived classes (that are not necessarily overriding!) will have the access mode either Acc or a value
+      wider than Acc.
+
+The first property is ensured by the unfolding algorithm. Because <methods> of a derived class inherit all the <methods>
+  of the direct base class, the map <methods> may only grow from base classes to derived. The second property is ensured
+  by restrictions on overriding specified in JLS \$8.4.8.3: "The access modifier ($6.6) of an overriding or hiding
+  method must provide at leastas much access as the overridden or hidden method".
+
+The search for the right package method declaration is performed from the base-most class in the chain (the left-most
+  one) to the most derived one. Every rule matches and deletes the leftmost class in the class chain (the current
+  class), and possibly rewrites the third argument into the current class.
+  //todo here
+The first rule
+*/
 rule [lookupPackageMethod-layer-first-dec-found]:
     <k>
       lookupPackageMethod(
         Sig:Signature,
         kr[ (Class:ClassType => .KList),, _ ],
-        noMethodRef => methodRef(Sig, DecClass)
+        noClass => DecClass
       )
       ...
     </k>
@@ -464,7 +484,7 @@ rule [lookupPackageMethod-no-new-method]:
       lookupPackageMethod(
         Sig:Signature,
         kr[ (Class:ClassType => .KList),, _ ],
-        methodRef(Sig, _)
+        _
       )
       ...
     </k>
@@ -478,11 +498,11 @@ rule [lookupPackageMethod-new-method]:
       lookupPackageMethod(
         Sig:Signature,
         kr[ (NewDecClass:ClassType => .KList),, _ ],
-        methodRef(Sig, OldDecClass:ClassType)
+        OldDecClass:ClassType
         =>  'If(
               isAccessibleForOverwriting( OldDecClass, Acc, NewDecClass ),,
-              methodRef(Sig, NewDecClass),,
-              methodRef(Sig, OldDecClass)
+              NewDecClass,,
+              OldDecClass
             )
       )
       ...
@@ -500,7 +520,7 @@ rule [lookupPackageMethod-new-method]:
     </class>
 
 rule [lookupPackageMethod-end]:
-    lookupPackageMethod(_, kr[.KList], MethodRef:MethodRef ) => MethodRef
+    lookupPackageMethod(Sig:Signature, kr[.KList], Class:ClassType ) => methodRef(Sig, Class)
 
 /*@ (kool doc) Closure application needs to also set a new return type in the
     \textsf{return} cell, in order for the values returned by its body to
