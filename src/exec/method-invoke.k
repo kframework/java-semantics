@@ -22,20 +22,20 @@ The evaluation of the method invocation expression consists from 5 steps outline
   - Locating the actual method declaration to be invoked
   - Actual method invocation.
 
-In JLS runtime semantics of method invocation is described in $15.2.4. Althouhg there is some correspondence
+In JLS runtime semantics of method invocation is described in \$15.2.4. Althouhg there is some correspondence
   between the steps in our semantics and the steps in JLS, it is generally not one-to-one. JLS description of method
   invocation consists of the following 5 steps. For each step we give the relevant chapter of the JLS and the step in
   our semantics.
-  - Compute the target reference ($15.12.4.1), semantics step 1
-  - Evaluate arguments ($15.12.4.2), semantics step 2
-  - Check the accessibility of the method to be invoked ($15.12.4.3), no semantics
-  - Locate the actual method code to invoke ($15.12.4.4), semantics step 4
+  - Compute the target reference (\$15.12.4.1), semantics step 1
+  - Evaluate arguments (\$15.12.4.2), semantics step 2
+  - Check the accessibility of the method to be invoked (\$15.12.4.3), no semantics
+  - Locate the actual method code to invoke (\$15.12.4.4), semantics step 4
   - Actual method invocation, semantics step 5.
 
   There are at least the following reasons why there is no close correspondence between JLS and K-Java:
   - JLS semantics describes not only the execution of correct java programs, but also runtime checks that have to be
     performed to ensure the consistency of the bytecode, and errors that have to be thrown once this consistency is
-    violated. This is the case for JLS $15.12.4.3, that don't need a correspondent in K-Java.
+    violated. This is the case for \$15.12.4.3, that don't need a correspondent in K-Java.
   - Because K-Java operates directly over the source code of Java, with no other preprocessing than the unfolding
     phase, it carries less static information than the bytecode. For this reason some static information needs to be
     computed in K-Java each time a method is invoked. This is why semantics step 3 is needed. As we will see below,
@@ -69,7 +69,7 @@ General structure:
       Name:Id
     )
   ),,
-  ['Param(),, ...] - arguments
+  [Args] - argument expressions
 )
 */
 syntax KLabel ::= "'Invoke"
@@ -118,10 +118,10 @@ During the third step of method invocation the second argument of the production
   strategy at the next step. The production methodInfo() contains the following arguments:
 
   - Method signature Sig
-  - Qualifying type QualT of the method invocation, e.g. the compile-time type of the qualifier.
-  - The meta type of QualT - MetaT. It may have one of the two values - class or interface.
-  - DecT - the class where the method was actually declared, as observed by QualT. E.g. the most derived class
-    in QualT hierarchy where there is a declaration of a method with signature Sig.
+  - Qualifying type QualC of the method invocation, e.g. the compile-time type of the qualifier.
+  - The meta type of QualC - MetaT. It may have one of the two values - class or interface.
+  - DecC - the class where the method was actually declared, as observed by QualT. E.g. the most derived class
+    in QualC hierarchy where there is a declaration of a method with signature Sig.
   - ContextT - the context type of the method. Either static, for static methods, or instance for non-static methods.
   - Acc - access modifier (private, package, protected or public). For the purpose of uniformiti we use the modifier
     package when no access modifier is provided.
@@ -133,9 +133,9 @@ All the information stored in methodInfo() is static. In K-Java we already have
 */
 syntax K ::=  methodInfo(
                 Signature,    //Sig - method signature
-                RefType,      //QualT - qualifier type, not necessarily class
+                RefType,      //QualC - qualifier type, not necessarily class
                 ClassMetaType,//MetaT - The either classCMT or interfaceCMT for the qualifier type
-                RefType,      //DecT - method definition class type - the class referred by the signature in <methods>
+                RefType,      //DecC - method definition class type - the class referred by the signature in <methods>
                                 // for arrays - it remains noClass
                                 // this argument is only used to compute the context type
                 ContextType,  //ContextT - method context type - instance or static
@@ -157,11 +157,11 @@ This rule also have a side condition that checks whether parameters were evaluat
 rule [Invoke-compute-methodInfo-Signature]:
     'Invoke('Method('MethodName(
       Qual:KResult,,
-      (Name:Id => methodInfo(sig(Name, getTypes([ParamVals])), typeOf(Qual), .K,.K,.K,.K))
-      )),, [ParamVals:KList]
+      (Name:Id => methodInfo(sig(Name, getTypes([Args])), typeOf(Qual), .K,.K,.K,.K))
+      )),, [Args:KList]
     )
 when
-    isKResult(ParamVals)
+    isKResult(Args)
 
 /* Impl: We could combine this rule with the previous one by using getLookupTargetType(), but we'll keep it this way
     to keep the core part of method invocation separate from the non object-related part. */
@@ -178,7 +178,7 @@ rule [Invoke-compute-methodInfo-arrays]:
     )),, _)
 
 /*@
-The second rule for method invocation loads MetaT and DecT. It requires Sig and QualT computed by the previous rule.
+The second rule for method invocation loads MetaT and DecT. It requires Sig and QualC computed by the previous rule.
 */
 rule [Invoke-compute-methodInfo-MethodDecClass]:
     <k>
@@ -199,7 +199,7 @@ There is one case that is not covered by the previous rule - the case when the c
   - Qualifying type is an abstract class. The called method is inherited from an interface but is not defined neither
     in this class nor in its base classes.
 
-In both cases the method is an abstract method in the class QualT. For this case DecT cannot be computed, but we know
+In both cases the method is an abstract method in the class QualT. For this case DecC cannot be computed, but we know
   for sure that ContextT for an abstract method is instance. Also, because the method was declared in an interface,
   it is certainly public.
 */
@@ -251,7 +251,7 @@ The production methodRef() is a reference to a method declaration. It contains t
   - Instance method with non-null target, access mode is package (no dedicated mention in JLS \$15.12.4.4)
   - [Skip] Target value is array or string.
 
-The method below is for the first case. If the method is static, then the declaring type DecT is the qualifying type.
+The method below is for the first case. If the method is static, then the declaring type DecC is the qualifying type.
   The qualifier is discarded by rewritting it into noValue.
 */
 rule [Invoke-methodInfo-static]:
@@ -261,7 +261,7 @@ rule [Invoke-methodInfo-static]:
         ( methodInfo(Sig:Signature, QualClass:ClassType, classCMT, MethodDecClass:ClassType, staticCT, _)
           => methodRef(Sig, MethodDecClass) )
       )),,
-      [ParamVals:KList]
+      [Args:KList]
     )
 
 /*@
@@ -293,7 +293,7 @@ rule [Invoke-methodInfo-instance-private]:
         ( methodInfo(Sig:Signature, _, classCMT, MethodDecClass:ClassType, instanceCT, private)
           => methodRef(Sig, MethodDecClass) )
       )),,
-      [ParamVals:KList]
+      [Args:KList]
     )
 
 /*@
@@ -311,7 +311,7 @@ rule [Invoke-methodInfo-instance-protected-or-public]:
           ( methodInfo(Sig:Signature, _, _,_, instanceCT, Acc:AccessMode)
             => methodRef(Sig, ImplT) )
         )),,
-        [ParamVals:KList]
+        [Args:KList]
       )
       ...
     </k>
@@ -351,7 +351,7 @@ rule [Invoke-methodInfo-instance-package]:
           ( methodInfo(Sig:Signature, QualClass:ClassType, classCMT, _, instanceCT, package)
             => lookupPackageMethod( Sig, getClassChain(QualClass, [MostDerivedClass]), noClass)
           )
-        )),, [ParamVals:KList]
+        )),, [Args:KList]
       )
       ...
     </k>
@@ -373,9 +373,9 @@ rule [Invoke-methodInfo-on-array-or-string]:
         QualRV:RawVal::QualClass:ClassType,,
         methodInfo(Sig:Signature, QualClass, classCMT, MethodDecClass:ClassType, instanceCT, _)
       )),,
-      [ParamVals:KList]
+      [Args:KList]
     )
-    => invokeImpl( methodRef(Sig, MethodDecClass), QualRV::QualClass, [ParamVals] )
+    => invokeImpl( methodRef(Sig, MethodDecClass), QualRV::QualClass, [Args] )
 when
     isArrayRef(QualRV) ==K true orBool isString(QualRV) ==K true
 
@@ -479,11 +479,11 @@ rule [lookupPackageMethod-layer-first-dec-found]:
     <methods>... Sig |-> DecC:ClassType ...</methods>
 
 /*@
-The second rule matches when we already found a declaring class (OldDecT) and the current class NewDecT have another
-  method declaration with the right signature. The presence of a Sig declaration inside NewDecT is identified by the
-  match <class><classType> NewDecT </classType> <methods>... Sig |-> NewDecT ...</methods> </class>,
+The second rule matches when we already found a declaring class (OldDecT) and the current class NewDecC have another
+  method declaration with the right signature. The presence of a Sig declaration inside NewDecC is identified by the
+  match <class><classType> NewDecC </classType> <methods>... Sig |-> NewDecC ...</methods> </class>,
   by the definition of <methods>.
-In this case the declaring class is updated to NewDecT if the method in NewDecT overrides the previously found method
+In this case the declaring class is updated to NewDecC if the method in NewDecC overrides the previously found method
  from OldDecT. The rules for overriding depend on three arguments: The base class OldDecT,
  the derived class CurrentC, both containing a method declaration with the same signature Sig,
  and the access mode Acc of the method from OldDecC. access mode Acc of the method Sig declared in OldDecT. These rules
@@ -576,9 +576,9 @@ rule [Invoke-methodRef]:
           Qual:KResult,,
           methodRef(Sig:Signature, Class:ClassType)
         )),,
-        [ParamValues:KList]
+        [Args:KList]
       ) ~> RestK:K
-      => staticInit(Class) ~> initParams([Params], [ParamValues]) ~> Body ~> 'Return('None(.KList))
+      => staticInit(Class) ~> initParams([Params], [Args]) ~> Body ~> 'Return('None(.KList))
     </k>
     <stack>
       . => ListItem(sl(RestK, MethContext))
@@ -626,8 +626,8 @@ rule [Invoke-methodRef-native]:
           Qual:KResult,,
           methodRef(Sig:Signature, Class:ClassType)
         )),,
-        [ParamValues:KList]
-      ) => invokeImpl(methodRef(Sig, Class), Qual, [ParamValues])
+        [Args:KList]
+      ) => invokeImpl(methodRef(Sig, Class), Qual, [Args])
       ...
     </k>
     <classType> Class </classType>
@@ -642,7 +642,7 @@ syntax K ::=  invokeImpl (
                 K,          //KResult - method call target
                               //either objectRef(OL:Int,_)::_ ,
                               //typed string or array, or noValue for static methods
-                KListWrap   //[ParamValues:List{KResult}]
+                KListWrap   //[Args:List{KResult}]
               )
               [strict(1)]
 

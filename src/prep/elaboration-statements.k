@@ -142,9 +142,9 @@ rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
     <extends> BaseClass:ClassType </extends>
 
 rule [elabEnd-QSuperConstrInv]:
-    methodLookupResult(_, [ExpectedParamExps:KList], instanceCT)
+    methodLookupResult(_, [ExpectedArgExps:KList], instanceCT)
     ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, [_]))
-    => elabRes('QSuperConstrInv(Qual,, Arg2,, [ ExpectedParamExps ]))
+    => elabRes('QSuperConstrInv(Qual,, Arg2,, [ ExpectedArgExps ]))
 
 rule customElabEnd('AltConstrInv) => true
 
@@ -168,8 +168,8 @@ rule [elabEnd-AltConstrInv-to-lookupMethod]:
     <crntClass> Class:ClassType </crntClass>
 
 rule [elab-AltConstrInv]:
-    methodLookupResult(_, [ExpectedParamExps:KList], instanceCT)
+    methodLookupResult(_, [ExpectedArgExps:KList], instanceCT)
     ~> elabEnd('AltConstrInv(Arg1:K,, [_]))
-    => elabRes('AltConstrInv(Arg1:K,, [ ExpectedParamExps ]))
+    => elabRes('AltConstrInv(Arg1:K,, [ ExpectedArgExps ]))
 
 endmodule
