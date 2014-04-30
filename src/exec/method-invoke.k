@@ -118,10 +118,10 @@ During the third step of method invocation the second argument of the production
   strategy at the next step. The production methodInfo() contains the following arguments:
 
   - Method signature Sig
-  - Qualifying type QualC of the method invocation, e.g. the compile-time type of the qualifier.
+  - Qualifying class QualC of the method invocation, e.g. the compile-time type of the qualifier.
   - The meta type of QualC - MetaT. It may have one of the two values - class or interface.
-  - DecC - the class where the method was actually declared, as observed by QualT. E.g. the most derived class
-    in QualC hierarchy where there is a declaration of a method with signature Sig.
+  - DecC - declaring class, the class where the method was actually declared, as observed by QualT.
+    E.g. the most derived class in QualC hierarchy where there is a declaration of a method with signature Sig.
   - ContextT - the context type of the method. Either static, for static methods, or instance for non-static methods.
   - Acc - access modifier (private, package, protected or public). For the purpose of uniformiti we use the modifier
     package when no access modifier is provided.
@@ -135,9 +135,9 @@ syntax K ::=  methodInfo(
                 Signature,    //Sig - method signature
                 RefType,      //QualC - qualifier type, not necessarily class
                 ClassMetaType,//MetaT - The either classCMT or interfaceCMT for the qualifier type
-                RefType,      //DecC - method definition class type - the class referred by the signature in <methods>
+                RefType,      //DecC - method declaration class - the class referred by the signature in <methods>
                                 // for arrays - it remains noClass
-                                // this argument is only used to compute the context type
+                                // this argument is mostly used to compute the context type
                 ContextType,  //ContextT - method context type - instance or static
                                 //for arrays - instanceCT
                 AccessMode    //Acc - The access mode of the method as seen by the qualifying type
@@ -178,25 +178,25 @@ rule [Invoke-compute-methodInfo-arrays]:
     )),, _)
 
 /*@
-The second rule for method invocation loads MetaT and DecT. It requires Sig and QualC computed by the previous rule.
+The second rule for method invocation loads MetaT and DecC. It requires Sig and QualC computed by the previous rule.
 */
-rule [Invoke-compute-methodInfo-MethodDecClass]:
+rule [Invoke-compute-methodInfo-DecC]:
     <k>
       'Invoke('Method('MethodName(
         Qual:KResult,,
-        methodInfo(Sig:Signature, QualClass:ClassType, .K => MetaType, .K => MethodDecClass, _,_)
+        methodInfo(Sig:Signature, QualC:ClassType, .K => MetaT, .K => DecC, _,_)
       )),, _)
       ...
     </k>
-    <classType> QualClass </classType>
-    <classMetaType> MetaType:ClassMetaType </classMetaType>
-    <methods>... Sig |-> MethodDecClass:ClassType ...</methods>
+    <classType> QualC </classType>
+    <classMetaType> MetaT:ClassMetaType </classMetaType>
+    <methods>... Sig |-> DecC:ClassType ...</methods>
 
 /*@
 There is one case that is not covered by the previous rule - the case when the cell <methods> does not have a key
   equal to Sig. This is possible in one of the following situations:
   - Qualifying type is an interface.
-  - Qualifying type is an abstract class. The called method is inherited from an interface but is not defined neither
+  - Qualifying type is an abstract class. The called method is inherited from an interface but is not declared neither
     in this class nor in its base classes.
 
 In both cases the method is an abstract method in the class QualT. For this case DecC cannot be computed, but we know
@@ -207,40 +207,40 @@ rule [Invoke-compute-methodInfo-unmapped-method-ContextType]:
     <k>
       'Invoke('Method('MethodName(
         Qual:KResult,,
-        methodInfo(Sig:Signature, QualClass:ClassType, .K => MetaType, _, .K => instanceCT, .K => public)
+        methodInfo(Sig:Signature, QualC:ClassType, .K => MetaT, _, .K => instanceCT, .K => public)
         )),, _)
       ...
     </k>
-    <classType> QualClass </classType>
-    <classMetaType> MetaType:ClassMetaType </classMetaType>
+    <classType> QualC </classType>
+    <classMetaType> MetaT:ClassMetaType </classMetaType>
     <methods> Methods:Map </methods>
 when
     notBool Sig in keys(Methods)
 
 /*@
-The last rule of step 3 loads ContextT and Acc. It requires DecT, so this rule may only match after
+The last rule of step 3 loads ContextT and Acc. It requires DecC, so this rule may only match after
   the second rule for methodInfo().
 */
 rule [Invoke-compute-methodInfo-ContextType]:
     <k>
       'Invoke('Method('MethodName(
         Qual:KResult,,
-        methodInfo(Sig:Signature, QualClass:ClassType, _, MethodDefClass:ClassType, .K => CT, .K => Acc)
+        methodInfo(Sig:Signature, QualC:ClassType, _, DecC:ClassType, .K => ContextT, .K => Acc)
       )),, _)
       ...
     </k>
-    <classType> MethodDefClass </classType>
+    <classType> DecC </classType>
     <methodSignature> Sig </methodSignature>
-    <methodContextType> CT:ContextType </methodContextType>
+    <methodContextType> ContextT:ContextType </methodContextType>
     <methodAccessMode> Acc:AccessMode </methodAccessMode>
 
 /*@
 In the fourth step of method invocation algorithm the actual method declaration is chosen. This step starts once all
   the fields of methodInfo() were filled in (where possible). The rules of this step rewrite methodInfo() into
   methodRef() - another auxiliary data structure.
-The production methodRef() is a reference to a method declaration. It contains two fields - Sig and ImplT - the
-  signature and the implementation class. The implementation class is the class that contains the actual method
-  declaration to be invoked. Since we already know the signature, this phase amounts to computing ImplT.
+The production methodRef() is a reference to a method declaration. It contains two fields - Sig and DecC - the
+  signature and the declaration class. The implementation class is the class that contains the actual method
+  declaration to be invoked. Since we already know the signature, this phase amounts to computing DecC.
 
   This step contains different rules for the following cases:
   - Static method (JLS \$15.12.4.4 paragraph 2)
@@ -258,8 +258,8 @@ rule [Invoke-methodInfo-static]:
     'Invoke(
       'Method('MethodName(
         (_:KResult => noValue),,
-        ( methodInfo(Sig:Signature, QualClass:ClassType, classCMT, MethodDecClass:ClassType, staticCT, _)
-          => methodRef(Sig, MethodDecClass) )
+        ( methodInfo(Sig:Signature, QualC:ClassType, classCMT, DecC:ClassType, staticCT, _)
+          => methodRef(Sig, DecC) )
       )),,
       [Args:KList]
     )
@@ -290,39 +290,40 @@ rule [Invoke-methodInfo-instance-private]:
     'Invoke(
       'Method('MethodName(
         _:ObjectRef::_,,
-        ( methodInfo(Sig:Signature, _, classCMT, MethodDecClass:ClassType, instanceCT, private)
-          => methodRef(Sig, MethodDecClass) )
+        ( methodInfo(Sig:Signature, _, classCMT, DecC:ClassType, instanceCT, private)
+          => methodRef(Sig, DecC) )
       )),,
       [Args:KList]
     )
 
 /*@
 If the method is protected or public, then we should call the version of the method visible to the runtime type of
-  the qualifying object. This case also covers qualifying type interface, since interface methods are always public.
+  the qualifying object (ObjC).
+  This case also covers qualifying type interface, since interface methods are always public.
   The right method will always be the one referred by the signature Sig in the cell <methods> associated with the
   actual object class. This is because the unfolding phase populates <methods> with the union of methods inherited
   from the base class and methods declared in the current class, the latter overriding the former.
-  The variable ImplT is the class where the right method version is declared.
+  The variable DecC is the class where the right method version is declared.
 */
 rule [Invoke-methodInfo-instance-protected-or-public]:
     <k>
       'Invoke('Method('MethodName(
-          objectRef( _, ActualClass:ClassType )::_,,
+          objectRef( _, ObjC:ClassType )::_,,
           ( methodInfo(Sig:Signature, _, _,_, instanceCT, Acc:AccessMode)
-            => methodRef(Sig, ImplT) )
+            => methodRef(Sig, DecC) )
         )),,
         [Args:KList]
       )
       ...
     </k>
-    <classType> ActualClass </classType>
-    <methods>... Sig |-> ImplT:ClassType ...</methods>
+    <classType> ObjC </classType>
+    <methods>... Sig |-> DecC:ClassType ...</methods>
 when
     Acc ==K protected orBool Acc ==K public
 
 /*@
 The most complex case is for instance methods with package access mode. The precise semantics of overriding for all
-access modes is defined in JLS \$8.4.6.1:
+  access modes is defined in JLS \$8.4.6.1:
 
 An instance method derivedM declared in a class Derived overrides another method with the
   same signature, baseM, declared in class Base iff both:
@@ -339,24 +340,24 @@ In the case 2b the overriding relationship cannot be inferred based on the conte
 The rule for package access mode delegates searching for the right method declaration to the auxiliary function
   lookupPackageMethod. The function takes 3 arguments:
   - method signature Sig
-  - the list of classes in the inheritance chain between the qualifying type and the actual object type. This list is
-    produced by getClassChain()
+  - the list of classes in the inheritance chain between the qualifying class QualC and the actual object class ObjC.
+  This list is produced by getClassChain()
   - the third argument represents the declaring class of the best method found so far.
     It is initialized with .K.
 */
 rule [Invoke-methodInfo-instance-package]:
     <k>
       'Invoke('Method('MethodName(
-          objectRef( _, MostDerivedClass:ClassType )::QualClass:ClassType,,
-          ( methodInfo(Sig:Signature, QualClass:ClassType, classCMT, _, instanceCT, package)
-            => lookupPackageMethod( Sig, getClassChain(QualClass, [MostDerivedClass]), noClass)
+          objectRef( _, ObjC:ClassType )::QualC:ClassType,,
+          ( methodInfo(Sig:Signature, QualC:ClassType, classCMT, _, instanceCT, package)
+            => lookupPackageMethod( Sig, getClassChain(QualC, [ObjC]), noClass)
           )
         )),, [Args:KList]
       )
       ...
     </k>
-    <classType> QualClass </classType>
-    <methods>... Sig |-> MethodDecClass:ClassType ...</methods>
+    <classType> QualC </classType>
+    <methods>... Sig |-> DecC:ClassType ...</methods>
 
 /*@
 Before the evaluation of lookupPackageMethod may begin, the term lookupPackageMethod(_) have to be heated to the top
@@ -370,12 +371,12 @@ when
 
 rule [Invoke-methodInfo-on-array-or-string]:
     'Invoke('Method('MethodName(
-        QualRV:RawVal::QualClass:ClassType,,
-        methodInfo(Sig:Signature, QualClass, classCMT, MethodDecClass:ClassType, instanceCT, _)
+        QualRV:RawVal::QualC:ClassType,,
+        methodInfo(Sig:Signature, QualC, classCMT, DecC:ClassType, instanceCT, _)
       )),,
       [Args:KList]
     )
-    => invokeImpl( methodRef(Sig, MethodDecClass), QualRV::QualClass, [Args] )
+    => invokeImpl( methodRef(Sig, DecC), QualRV::QualC, [Args] )
 when
     isArrayRef(QualRV) ==K true orBool isString(QualRV) ==K true
 
@@ -440,7 +441,7 @@ This is required in order to respect the rules of inheritance in the presence of
 Evaluates into typed method closure.*/
 syntax K ::=  lookupPackageMethod (
                 Signature,  //sig(Name, SigTL) - Method signature
-                KRListWrap, //computes into kr[Class list], elements of type ClassType,
+                KRListWrap, //computes into kr[...,, Class,, ...], elements of type ClassType,
                               // from base to derived.
                               // To be processed from base to derived until while the chain is not empty
                 ClassType   //The class with the best method declaration with signature Sig found so far,
@@ -462,8 +463,8 @@ The first property is ensured by the unfolding algorithm. Because <methods> of a
   method must provide at leastas much access as the overridden or hidden method".
 
 The search for the right package method declaration is performed from the base-most class in the chain (the left-most
-  one) to the most derived one. Every rule matches and deletes the leftmost class in the class chain (the current
-  class), and possibly rewrites the third argument into the current class.
+  one) to the most derived one. Every rule matches and deletes the leftmost class in the class chain (CurrentC),
+  and possibly rewrites the third argument into the current class.
 The first rule matches when there is no declaring class yet (third argument is .K, the initial case).
 */
 rule [lookupPackageMethod-layer-first-dec-found]:
@@ -479,15 +480,15 @@ rule [lookupPackageMethod-layer-first-dec-found]:
     <methods>... Sig |-> DecC:ClassType ...</methods>
 
 /*@
-The second rule matches when we already found a declaring class (OldDecT) and the current class NewDecC have another
-  method declaration with the right signature. The presence of a Sig declaration inside NewDecC is identified by the
-  match <class><classType> NewDecC </classType> <methods>... Sig |-> NewDecC ...</methods> </class>,
-  by the definition of <methods>.
-In this case the declaring class is updated to NewDecC if the method in NewDecC overrides the previously found method
- from OldDecT. The rules for overriding depend on three arguments: The base class OldDecT,
- the derived class CurrentC, both containing a method declaration with the same signature Sig,
- and the access mode Acc of the method from OldDecC. access mode Acc of the method Sig declared in OldDecT. These rules
- are implemented by function isOverridden().
+The second rule matches when we already found a declaring class (OldDecC) and the current class CurrentC have another
+  method declaration with the right signature. The presence of a Sig declaration inside CurrentC is identified by the
+  match <class><classType> CurrentC </classType> <methods>... Sig |-> CurrentC ...</methods> </class>,
+  according to the definition of <methods>.
+In this case the declaring class is updated to CurrentC only if the method in CurrentC overrides the previously found
+  method from OldDecC. The rules for overriding depend on three arguments: The base class OldDecC,
+  the derived class CurrentC, both containing a method declaration with the same signature Sig,
+  and the access mode Acc of the method from OldDecC. access mode Acc of the method Sig declared in OldDecC. These rules
+  are implemented by function isOverridden().
 */
 rule [lookupPackageMethod-new-method]:
     <k>
@@ -548,13 +549,13 @@ The central rule of method invocation is matched when the second argument of met
       This data is restored back by the rules for return statement.
     - Initializes the new method context.
       -- The local variable environment <env> is emptied
-      -- current class <crntClass> is initialized to the class defining the method
+      -- current class <crntClass> is initialized to the class declaring the method
       -- object location <location> is initialized to the location of the qualifier object for instance methods,
         or .K for static methods. The extraction of the location from the qualifier value is performed by the
         function getOId().
     - rewrites the method call expression into a sequence of four terms:
       -- static initialization of the qualifying class
-      -- initialization of parameters
+      -- parameters initialization
       -- actual method body
       -- a return statement with no arguments after the method body.
 
@@ -564,7 +565,7 @@ The function staticInit() triggers static initialization of the qualifying class
   so staticInit() will have no effect.
 
 The function initParams() rewrites each parameter declaration into two statements. First is a local variable
-  declaration with that parameter name. The second is an assignment to that variable of the actual parameter value.
+  declaration with that parameter name. The second is an assignment to that variable of the actual argument value.
 
 The return statement at the end ensures that there is a return statement on every execution path of the method. The
   statement will only be useful for methods with return type void, as methods returning a value are required by JLS
@@ -574,24 +575,24 @@ rule [Invoke-methodRef]:
     <k>
       'Invoke('Method('MethodName(
           Qual:KResult,,
-          methodRef(Sig:Signature, Class:ClassType)
+          methodRef(Sig:Signature, DecC:ClassType)
         )),,
         [Args:KList]
       ) ~> RestK:K
-      => staticInit(Class) ~> initParams([Params], [Args]) ~> Body ~> 'Return('None(.KList))
+      => staticInit(DecC) ~> initParams([Params], [Args]) ~> Body ~> 'Return('None(.KList))
     </k>
     <stack>
-      . => ListItem(sl(RestK, MethContext))
+      . => ListItem(sl(RestK, MethodContext))
       ...
     </stack>
     <methodContext>
-      MethContext:Bag
+      MethodContext:Bag
       =>  <env> .Map </env>
-          <crntClass> Class </crntClass>
+          <crntClass> DecC </crntClass>
           <location> getOId(Qual) </location>
     </methodContext>
 
-    <classType> Class </classType>
+    <classType> DecC </classType>
     <methodSignature> Sig </methodSignature>
     <methodParams> [Params:KList] </methodParams>
     <methodBody> Body:K </methodBody>
@@ -624,13 +625,13 @@ rule [Invoke-methodRef-native]:
     <k>
       'Invoke('Method('MethodName(
           Qual:KResult,,
-          methodRef(Sig:Signature, Class:ClassType)
+          methodRef(Sig:Signature, DecC:ClassType)
         )),,
         [Args:KList]
-      ) => invokeImpl(methodRef(Sig, Class), Qual, [Args])
+      ) => invokeImpl(methodRef(Sig, DecC), Qual, [Args])
       ...
     </k>
-    <classType> Class </classType>
+    <classType> DecC </classType>
     <methodSignature> Sig </methodSignature>
     <methodBody> 'NoMethodBody(_) </methodBody>
 
