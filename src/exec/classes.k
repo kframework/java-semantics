@@ -2,9 +2,7 @@ require "../common/core-sorts.k"
 require "../common/core-functions.k"
 require "../common/core-classes.k"
 require "../common/subtyping.k"
-require "expressions.k"
 require "statements.k"
-require "arrays.k"
 require "static-init.k"
 require "var-lookup.k"
 
@@ -17,11 +15,9 @@ module CLASSES
     imports CORE-FUNCTIONS
     imports CORE-CLASSES
     imports SUBTYPING
-    imports EXPRESSIONS
-    imports STATEMENTS
-    imports ARRAYS
-    imports STATIC-INIT
-    imports VAR-LOOKUP
+    imports STATEMENTS  //for sl()
+    imports STATIC-INIT // for staticInit()
+    imports VAR-LOOKUP  //for typedLookup()
 
 /*@ \subsection{New instance creation}*/
 
@@ -187,33 +183,6 @@ rule [restoreMethContext]:
     <k> restoreMethContext(MethContext:Bag) => . ...</k>
     <methodContext> _ => MethContext </methodContext>
 
-/*@ \subsection{Instance Of} */
-
-//@ 'InstanceOf(V::T,, T2)
-syntax KLabel ::= "'InstanceOf"
-
-context 'InstanceOf(HOLE,,_)
-
-rule [InstanceOf]:
-    'InstanceOf(V:RawVal::_,, RT2:RefType)
-    =>  'LazyAnd((V =/=K null),, subtype(typeOf(V), RT2))
-
-/*@ \subsection{Cast} */
-
-rule [cast-RefType]:
-    cast(RT1:RefType, V:RawVal :: RT2:RefType)
-    =>  ifAux(
-          subtype(typeOf(V), RT1),
-          (V::RT1),
-          'Throw('NewInstance(
-                  'None(.KList),,
-                  class String2Id("java.lang.ClassCastException"),,
-                  [ 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to "),,
-                      toString(RT1)) ],,
-                  'None(.KList)
-          ))
-        )
-
 //@\subsection{Execution of QSuperConstrInv, AltConstrInv}
 
 //@ 'QSuperConstrInv( Qual:K,, _:K,, [ Args:KList ] )
@@ -246,5 +215,32 @@ rule [AltConstrInv]:
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
+
+/*@ \subsection{Instance Of} */
+
+//@ 'InstanceOf(V::T,, T2)
+syntax KLabel ::= "'InstanceOf"
+
+context 'InstanceOf(HOLE,,_)
+
+rule [InstanceOf]:
+    'InstanceOf(V:RawVal::_,, RT2:RefType)
+    =>  'LazyAnd((V =/=K null),, subtype(typeOf(V), RT2))
+
+/*@ \subsection{Cast} */
+
+rule [cast-RefType]:
+    cast(RT1:RefType, V:RawVal :: RT2:RefType)
+    =>  ifAux(
+          subtype(typeOf(V), RT1),
+          (V::RT1),
+          'Throw('NewInstance(
+                  'None(.KList),,
+                  class String2Id("java.lang.ClassCastException"),,
+                  [ 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to "),,
+                      toString(RT1)) ],,
+                  'None(.KList)
+          ))
+        )
 
 endmodule

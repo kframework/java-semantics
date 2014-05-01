@@ -1,6 +1,7 @@
 require "../common/core-sorts.k"
 require "classes.k"
 require "method-invoke.k"
+require "arrays.k"
 
 //@ \section{Module API-CORE}
 /*@ All the methods defined in this module through invokeImpl are native, their body is 'NoMethodBody(_), thus
@@ -11,6 +12,7 @@ module API-CORE
     imports CORE-SORTS
     imports CLASSES
     imports METHOD-INVOKE //for invokeImpl, arrayImplClass, module EXPRESSIONS
+    imports ARRAYS  // for allocAndInitArray()
 
 /*@ This module contains the minimal part of java API required to perform console read/write operations, as well as a few other API functions mentioned in JLS.*/
 

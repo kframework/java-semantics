@@ -1,6 +1,6 @@
-require "java-full-doc.k"
 require "labels-full.k"
 require "configuration-full.k"
+require "../common/java-doc.k"
 require "../common/core-sorts.k"
 require "../common/aux-strings.k"
 require "../prep/process-type-names.k"

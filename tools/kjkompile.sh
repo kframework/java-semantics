@@ -66,10 +66,16 @@ case "$OPTION" in
     $KOMPILE_CMD -v --backend symbolic --symbolic-rules "symbolic-rule" -d full full/java-full.k
     ;;
 "--latex")
-    $KOMPILE_CMD -v --backend latex --doc-style "style=math" -d full full/java-full.k
+    $KOMPILE_CMD -v --backend latex --doc-style "style=math" full/java-full.k
+    ;;
+"--exec-latex")
+    $KOMPILE_CMD -v --backend latex --doc-style "style=math" exec/java-exec.k
     ;;
 "--pdf")
-    $KOMPILE_CMD -v --backend pdf --doc-style "style=math" -d full full/java-full.k
+    $KOMPILE_CMD -v --backend pdf --doc-style "style=math" full/java-full.k
+    ;;
+"--exec-pdf")
+    $KOMPILE_CMD -v --backend pdf --doc-style "style=math" exec/java-exec.k
     ;;
 "--help")
     echo "Usage: `basename $0`"

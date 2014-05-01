@@ -1,6 +1,5 @@
 require "../common/core-sorts.k"
-require "classes.k"
-require "statements.k"
+require "../common/core-functions.k"
 require "static-init.k"
 
 /*@ \section{Module METHOD-INVOKE}
@@ -55,9 +54,8 @@ In JLS runtime semantics of method invocation is described in \$15.2.4. Althouhg
 */
 module METHOD-INVOKE
     imports CORE-SORTS
-    imports CLASSES
-    imports STATEMENTS
-    imports STATIC-INIT
+    imports CORE-FUNCTIONS
+    imports STATIC-INIT //for staticInit()
 
 /*
 General structure:

@@ -1,5 +1,6 @@
 require "labels-exec.k"
 require "configuration-exec.k"
+require "../common/java-doc.k"
 require "../common/core-sorts.k"
 require "../common/aux-strings.k"
 require "../common/primitive-types.k"
