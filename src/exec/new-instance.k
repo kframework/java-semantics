@@ -6,11 +6,10 @@ require "statements.k"
 require "static-init.k"
 require "var-lookup.k"
 
-/*@ \section{Module CLASSES}
-Object closures. The only change to untyped KOOL's values is that closures are now typed
-(their last argument holds their type).
+/*@ \section{Module NEW-INSTANCE}
+  New instance creation and related language features.
 */
-module CLASSES
+module NEW-INSTANCE
     imports CORE-SORTS
     imports CORE-FUNCTIONS
     imports CORE-CLASSES
@@ -151,7 +150,7 @@ rule [invokeConstr]:
         ))
 
 /*@ Sets the enclosing object for a given object.
-    Invoked by invokeConstr and QSuperConstrInv. Defined in CLASSES.
+    Invoked by invokeConstr and QSuperConstrInv.
 */
 syntax K ::=  setEncloser (
                 K,          //Evaluates to source object

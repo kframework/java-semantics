@@ -1,5 +1,5 @@
 require "../common/core-sorts.k"
-require "classes.k"
+require "new-instance.k"
 require "method-invoke.k"
 require "arrays.k"
 
@@ -10,8 +10,8 @@ require "arrays.k"
 
 module API-CORE
     imports CORE-SORTS
-    imports CLASSES
-    imports METHOD-INVOKE //for invokeImpl, arrayImplClass, module EXPRESSIONS
+    imports NEW-INSTANCE //todo double-imported through METHOD-INVOKE. Break the circle and eliminate the reference
+    imports METHOD-INVOKE //for invokeImpl, module EXPRESSIONS
     imports ARRAYS  // for allocAndInitArray()
 
 /*@ This module contains the minimal part of java API required to perform console read/write operations, as well as a few other API functions mentioned in JLS.*/

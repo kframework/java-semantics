@@ -27,7 +27,7 @@ require "../exec/expressions.k"
 require "../exec/statements.k"
 require "../exec/arrays.k"
 require "../exec/static-init.k"
-require "../exec/classes.k"
+require "../exec/new-instance.k"
 require "../exec/var-lookup.k"
 require "../exec/method-invoke.k"
 require "../exec/api-core.k"
@@ -62,7 +62,7 @@ module JAVA-FULL
     imports STATEMENTS
     imports ARRAYS
     imports STATIC-INIT
-    imports CLASSES
+    imports NEW-INSTANCE
     imports VAR-LOOKUP
     imports METHOD-INVOKE
     imports API-CORE

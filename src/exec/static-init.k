@@ -5,7 +5,7 @@ require "var-lookup.k"
 
 module STATIC-INIT
     imports CORE-SORTS
-    imports CLASSES               //for restoreMethContext
+    imports NEW-INSTANCE          //for restoreMethContext
     imports VAR-LOOKUP            //for localVar
 
 /*@ Triggers static initialization of a class.
