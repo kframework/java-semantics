@@ -7,6 +7,7 @@ require "../common/primitive-types.k"
 require "../common/subtyping.k"
 require "unfolding.k"
 require "expressions.k"
+require "expressions-classes.k"
 require "statements.k"
 require "arrays.k"
 require "static-init.k"
@@ -25,6 +26,7 @@ module JAVA-EXEC
     imports PRIMITIVE-TYPES
     imports SUBTYPING
     imports EXPRESSIONS
+    imports EXPRESSIONS-CLASSES
     imports STATEMENTS
     imports ARRAYS
     imports STATIC-INIT

@@ -1,5 +1,6 @@
 require "../common/core-sorts.k"
 require "../common/subtyping.k"
+require "core-exec.k"
 require "var-lookup.k"
 require "method-invoke.k"
 
@@ -8,6 +9,7 @@ require "method-invoke.k"
 module STATEMENTS
     imports CORE-SORTS
     imports SUBTYPING
+    imports CORE-EXEC     //for sl
     imports VAR-LOOKUP
     imports METHOD-INVOKE // for initParams
 
@@ -29,14 +31,6 @@ rule [ExecutionPhase-Start]:
     <env> . </env>
     <mainClass> ListItem(MainClassS:String) </mainClass>
     <globalPhase> UnfoldingPhase => ExecutionPhase  </globalPhase>
-
-//@ \subsection{Program stack}
-
-//ListItem content as a stack layer
-syntax K ::=  sl (
-                K,  //K - rest of computation
-                Bag //MethContext - the content of <methodContext>
-              )
 
 syntax KLabel ::= "'Empty"
                 | "'Labeled"

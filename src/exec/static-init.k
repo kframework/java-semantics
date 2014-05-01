@@ -1,11 +1,12 @@
 require "../common/core-sorts.k"
+require "core-exec.k"
 require "var-lookup.k"
 
 //@ \section{Module STATIC-INIT}
 
 module STATIC-INIT
     imports CORE-SORTS
-    imports NEW-INSTANCE          //for restoreMethContext
+    imports CORE-EXEC             //for restoreMethContext
     imports VAR-LOOKUP            //for localVar
 
 /*@ Triggers static initialization of a class.

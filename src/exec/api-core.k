@@ -1,5 +1,4 @@
 require "../common/core-sorts.k"
-require "new-instance.k"
 require "method-invoke.k"
 require "arrays.k"
 
@@ -10,7 +9,6 @@ require "arrays.k"
 
 module API-CORE
     imports CORE-SORTS
-    imports NEW-INSTANCE //todo double-imported through METHOD-INVOKE. Break the circle and eliminate the reference
     imports METHOD-INVOKE //for invokeImpl, module EXPRESSIONS
     imports ARRAYS  // for allocAndInitArray()
 
