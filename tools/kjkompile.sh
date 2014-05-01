@@ -77,6 +77,12 @@ case "$OPTION" in
 "--exec-pdf")
     $KOMPILE_CMD -v --backend pdf --doc-style "style=math" exec/java-exec.k
     ;;
+"--methods-latex")
+    $KOMPILE_CMD -v --backend latex --doc-style "style=math" latex/method-invoke-latex.k
+    ;;
+"--methods-pdf")
+    $KOMPILE_CMD -v --backend pdf --doc-style "style=math" latex/method-invoke-latex.k
+    ;;
 "--help")
     echo "Usage: `basename $0`"
     echo "Or:    `basename $0` <--exec|--exec-v|--strictness|--threading|--symbolic|--latex|--pdf|--help>"

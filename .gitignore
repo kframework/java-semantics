@@ -10,7 +10,11 @@
 
 /src/test-results.xml
 /src/workspace.xml
-/src/java.pdf
+
+/src/*.pdf
+/src/*.synctex
+/src/*.tex
+/src/k.sty
 
 /class-lib/*.kast
 /test-runner/out
@@ -18,13 +22,7 @@
 /test-runner/test-results.xml
 /test-runner/.test
 
-/src/java.tex
-/src/k.sty
-
 /.idea/workspace.xml
 /.idea/dictionaries/*.*
 /scrapebook.txt
-/src/java-exec.pdf
-/src/java-exec.synctex
-/src/java-exec.tex
 /commands.txt

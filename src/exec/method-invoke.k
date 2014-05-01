@@ -72,7 +72,7 @@ General structure:
 */
 syntax KLabel ::= "'Invoke"
 
-/*@ 'Method(Qual:K,, _:K,, Name:Id)
+/*@ 'Method(Qual:K,, \_:K,, Name:Id)
     'Method('MethodName(Qual:K,, Name:Id))
 */
 syntax KLabel ::= "'Method"
@@ -358,7 +358,7 @@ rule [Invoke-methodInfo-instance-package]:
     <methods>... Sig |-> DecC:ClassType ...</methods>
 
 /*@
-Before the evaluation of lookupPackageMethod may begin, the term lookupPackageMethod(_) have to be heated to the top
+Before the evaluation of lookupPackageMethod may begin, the term lookupPackageMethod() have to be heated to the top
   of computation. The side condition in the context rule below ensured that the second argument of method call
   expression is heated ony if it contains a term lookupPackageMethod(). If it have other forms,
   such as the method name or methodInfo(), it won't be heated.
@@ -378,7 +378,7 @@ rule [Invoke-methodInfo-on-array-or-string]:
 when
     isArrayRef(QualRV) ==K true orBool isString(QualRV) ==K true
 
-//@ 'QSuperMethod(Class:ClassType,, _:K,, Name:Id)
+//@ 'QSuperMethod(Class:ClassType,, \_:K,, Name:Id)
 syntax KLabel ::= "'QSuperMethod"
 
 rule [Invoke-QSuperMethod]:
@@ -457,7 +457,7 @@ The rules for lookupPackageMethod() are based on the following two properties of
 
 The first property is ensured by the unfolding algorithm. Because <methods> of a derived class inherit all the <methods>
   of the direct base class, the map <methods> may only grow from base classes to derived. The second property is ensured
-  by restrictions on overriding specified in JLS \$8.4.8.3: "The access modifier ($6.6) of an overriding or hiding
+  by restrictions on overriding specified in JLS \$8.4.8.3: "The access modifier (\$6.6) of an overriding or hiding
   method must provide at leastas much access as the overridden or hidden method".
 
 The search for the right package method declaration is performed from the base-most class in the chain (the left-most
@@ -616,7 +616,7 @@ rule [initParams-end]:
     initParams([.KList], [.KList]) => .K
         [structural]
 
-//@ 'Param(_:K,, T:Type,, X:Id). Consumed by initParams().
+//@ 'Param(\_:K,, T:Type,, X:Id). Consumed by initParams().
 syntax KLabel ::= "'Param"
 
 rule [Invoke-methodRef-native]:

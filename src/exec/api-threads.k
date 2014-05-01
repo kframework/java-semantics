@@ -1,11 +1,13 @@
 require "../common/core-sorts.k"
 require "method-invoke.k"
+require "var-lookup.k"
 
 //@ \section{Module API-THREADS}
 
 module API-THREADS
     imports CORE-SORTS
     imports METHOD-INVOKE //for invokeImpl
+    imports VAR-LOOKUP    //for typedLookup
 
 /*@Java API related to threads and locks. Just the core part.*/
 
