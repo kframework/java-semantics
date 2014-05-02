@@ -398,7 +398,7 @@ context 'Throw(HOLE)
 rule [Throw]:
     (. => checkCatch(subtype(typeOf(TV), T)))
     ~> 'Throw(TV:TypedVal)
-    ~> catchBlocks([catchImpl('Param(_:K,, T:Type,, X:Id),_),, _])
+    ~> catchBlocks([catchImpl('ParamImpl(T:Type,, X:Id),_),, _])
 
 syntax K ::= checkCatch ( K )
 context checkCatch(HOLE)
@@ -476,7 +476,7 @@ syntax ExtKResult ::= "dummy"
 
 rule isExtKResult(KR:KResult) => true
 
-rule isExtKResult('Param(_:K,, T:Type,, _:Id)) => true
+rule isExtKResult('ParamImpl(T:Type,, _:Id)) => true
 
 //@ Internal representation of a preprocessed catch clause
 syntax KResult ::=  catchImpl (

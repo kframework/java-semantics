@@ -62,27 +62,6 @@ module METHOD-INVOKE
     imports CORE-FUNCTIONS
     imports STATIC-INIT //for staticInit()
 
-/*
-General structure:
-
-'Invoke(
-  'Method(
-    'MethodName(
-      QualifierExp:Expression,,
-      Name:Id
-    )
-  ),,
-  [Args] - argument expressions
-)
-*/
-syntax KLabel ::= "'Invoke"
-
-/*@ 'Method(Qual:K,, \_:K,, Name:Id)
-    'Method('MethodName(Qual:K,, Name:Id))
-*/
-syntax KLabel ::= "'Method"
-                | "'MethodName"
-
 /*@
 Evaluation of the method invocation qualifier (JLS \$15.12.4.1) requires just one context rule. The qualifier is
   the first argument of the method invocation production. It just needs to be heated,
@@ -90,7 +69,7 @@ Evaluation of the method invocation qualifier (JLS \$15.12.4.1) requires just on
   same place. If the qualifier is a class instead of an expression, then this rule will have no effect. A type in
   K-Java is subsorted to KResult, consequently it doesn't need to be heated.
 */
-context 'Invoke('Method( 'MethodName( HOLE,, Name:Id ) ),, _)
+context HOLE. Name:Id (_)
 
 //totest model check - expressions should be evaluated from left to right. A test for this exists, but is unable to
 //expose the problem. This rule have to be made "transition" somehow.
@@ -112,7 +91,7 @@ Arguments have to be evaluated even in the case when the qualifier is null. On t
   to cover those cases. The small number of rules related to throw statement ensure correct exception propagation
   from any context.
 \end{markdown} */
-context 'Invoke('Method('MethodName(_:KResult,, Name:Id )),, [Ks:KList,, HOLE,,_] )
+context _:KResult. Name:Id ([Ks:KList,, HOLE,,_])
 when
     isKResult(Ks)
 
@@ -159,37 +138,33 @@ This rule also have a side condition that checks whether parameters were evaluat
   this rule.
 */
 rule [Invoke-compute-methodInfo-Signature]:
-    'Invoke('Method('MethodName(
-      Qual:KResult,,
-      (Name:Id => methodInfo(sig(Name, getTypes([Args])), typeOf(Qual), .K,.K,.K,.K))
-      )),, [Args:KList]
-    )
+    Qual:KResult
+      .(Name:Id => methodInfo(sig(Name, getTypes([Args])), typeOf(Qual), .K,.K,.K,.K))
+      ([Args:KList])
 when
     isKResult(Args)
 
 /* Impl: We could combine this rule with the previous one by using getLookupTargetType(), but we'll keep it this way
     to keep the core part of method invocation separate from the non object-related part. */
 
-/*@ [Skip]
+/* [Skip]
 The next rule for method invocation is applied when the qualifier type is array. This array type is rewritten
   into the auxiliary class ArrayImpl, that is used in K-Java to simulate method invocations over array objects.
   This rule is required in order to minimize the number of particular cases involving arrays in the rules that follow.
 */
 rule [Invoke-compute-methodInfo-arrays]:
-    'Invoke('Method('MethodName(
-      QualRV:RawVal :: (arrayOf T:Type => arrayImplClass),,
-      methodInfo(Sig:Signature, arrayOf T => arrayImplClass, _,_,_,_)
-    )),, _)
+    QualRV:RawVal :: (arrayOf T:Type => arrayImplClass)
+      . methodInfo(Sig:Signature, arrayOf T => arrayImplClass, _,_,_,_)
+      ([Args:KList])
 
 /*@
 The second rule for method invocation loads MetaT and DecC. It requires Sig and QualC computed by the previous rule.
 */
 rule [Invoke-compute-methodInfo-DecC]:
     <k>
-      'Invoke('Method('MethodName(
-        Qual:KResult,,
-        methodInfo(Sig:Signature, QualC:ClassType, .K => MetaT, .K => DecC, _,_)
-      )),, _)
+      Qual:KResult
+        . methodInfo(Sig:Signature, QualC:ClassType, .K => MetaT, .K => DecC, _,_)
+        ([Args:KList])
       ...
     </k>
     <classType> QualC </classType>
@@ -210,10 +185,9 @@ In both cases the method is an abstract method in the class QualT. For this case
 \end{markdown} */
 rule [Invoke-compute-methodInfo-unmapped-method-ContextType]:
     <k>
-      'Invoke('Method('MethodName(
-        Qual:KResult,,
-        methodInfo(Sig:Signature, QualC:ClassType, .K => MetaT, _, .K => instanceCT, .K => public)
-        )),, _)
+      Qual:KResult
+        . methodInfo(Sig:Signature, QualC:ClassType, .K => MetaT, _, .K => instanceCT, .K => public)
+        ([Args:KList])
       ...
     </k>
     <classType> QualC </classType>
@@ -228,10 +202,9 @@ The last rule of step 3 loads ContextT and Acc. It requires DecC, so this rule m
 */
 rule [Invoke-compute-methodInfo-ContextType]:
     <k>
-      'Invoke('Method('MethodName(
-        Qual:KResult,,
-        methodInfo(Sig:Signature, QualC:ClassType, _, DecC:ClassType, .K => ContextT, .K => Acc)
-      )),, _)
+      Qual:KResult
+        . methodInfo(Sig:Signature, QualC:ClassType, _, DecC:ClassType, .K => ContextT, .K => Acc)
+        ([Args:KList])
       ...
     </k>
     <classType> DecC </classType>
@@ -255,20 +228,16 @@ The production methodRef() is a reference to a method declaration. It contains t
   - Instance method with non-null target, access mode is protected or public. This also includes qualifying type
     being interface. (JLS \$15.12.4.4 paragraph 6 and point 1)
   - Instance method with non-null target, access mode is package (no dedicated mention in JLS \$15.12.4.4)
-  - [Skip] Target value is array or string.
+
+<!--- - Target value is array or string. -->
 
 The method below is for the first case. If the method is static, then the declaring type DecC is the qualifying type.
   The qualifier is discarded by rewritting it into noValue.
 \end{markdown} */
 rule [Invoke-methodInfo-static]:
-    'Invoke(
-      'Method('MethodName(
-        (_:KResult => noValue),,
-        ( methodInfo(Sig:Signature, QualC:ClassType, classCMT, DecC:ClassType, staticCT, _)
-          => methodRef(Sig, DecC) )
-      )),,
-      [Args:KList]
-    )
+    (_:KResult => noValue)
+      . ( methodInfo(Sig:Signature, QualC:ClassType, classCMT, DecC:ClassType, staticCT, _) => methodRef(Sig, DecC) )
+      ([Args:KList])
 
 /*@
 If the qualifier value is null and ContextT is instance, then NullPointerException is thrown and method invocation
@@ -280,7 +249,7 @@ rule [Invoke-methodInfo-instance-on-null]:
     We cannot move method invocation on null logic to invokeImpl, because
     invokeImpl needs an actual methodRef, and we cannot produce a methidRef if our qualifier object is null.
 */
-    'Invoke( 'Method('MethodName( null::_,, methodInfo(_,_,_,_, instanceCT, _) )),, [_] )
+    null::_ . methodInfo(_,_,_,_, instanceCT, _) ([Args:KList])
     =>  'Throw('NewInstance(
           'None(.KList),,
           class String2Id("java.lang.NullPointerException"),,
@@ -293,14 +262,10 @@ The logic for private instance methods is the same as for static methods, with t
   not discarded.
 */
 rule [Invoke-methodInfo-instance-private]:
-    'Invoke(
-      'Method('MethodName(
-        _:ObjectRef::_,,
-        ( methodInfo(Sig:Signature, _, classCMT, DecC:ClassType, instanceCT, private)
-          => methodRef(Sig, DecC) )
-      )),,
-      [Args:KList]
-    )
+    _:ObjectRef::_
+      . ( methodInfo(Sig:Signature, _, classCMT, DecC:ClassType, instanceCT, private) => methodRef(Sig, DecC) )
+      ([Args:KList])
+
 
 /*@
 If the method is protected or public, then we should call the version of the method visible to the runtime type of
@@ -313,13 +278,9 @@ If the method is protected or public, then we should call the version of the met
 */
 rule [Invoke-methodInfo-instance-protected-or-public]:
     <k>
-      'Invoke('Method('MethodName(
-          objectRef( _, ObjC:ClassType )::_,,
-          ( methodInfo(Sig:Signature, _, _,_, instanceCT, Acc:AccessMode)
-            => methodRef(Sig, DecC) )
-        )),,
-        [Args:KList]
-      )
+      objectRef( _, ObjC:ClassType )::_
+        . ( methodInfo(Sig:Signature, _, _,_, instanceCT, Acc:AccessMode) => methodRef(Sig, DecC) )
+        ([Args:KList])
       ...
     </k>
     <classType> ObjC </classType>
@@ -355,13 +316,11 @@ The rule for package access mode delegates searching for the right method declar
 \end{markdown}*/
 rule [Invoke-methodInfo-instance-package]:
     <k>
-      'Invoke('Method('MethodName(
-          objectRef( _, ObjC:ClassType )::QualC:ClassType,,
-          ( methodInfo(Sig:Signature, QualC:ClassType, classCMT, _, instanceCT, package)
+      objectRef( _, ObjC:ClassType )::QualC:ClassType
+        . ( methodInfo(Sig:Signature, QualC:ClassType, classCMT, _, instanceCT, package)
             => lookupPackageMethod( Sig, getClassChain(QualC, [ObjC]), noClass)
           )
-        )),, [Args:KList]
-      )
+        ([Args:KList])
       ...
     </k>
     <classType> QualC </classType>
@@ -373,17 +332,14 @@ Before the evaluation of lookupPackageMethod may begin, the term lookupPackageMe
   expression is heated ony if it contains a term lookupPackageMethod(). If it have other forms,
   such as the method name or methodInfo(), it won't be heated.
 */
-context 'Invoke('Method( 'MethodName( _:K,, HOLE ) ),, _)
+context _:K . HOLE (_)
 when
     getKLabel(HOLE) ==KLabel 'lookupPackageMethod
 
 rule [Invoke-methodInfo-on-array-or-string]:
-    'Invoke('Method('MethodName(
-        QualRV:RawVal::QualC:ClassType,,
-        methodInfo(Sig:Signature, QualC, classCMT, DecC:ClassType, instanceCT, _)
-      )),,
-      [Args:KList]
-    )
+    QualRV:RawVal::QualC:ClassType
+       . methodInfo(Sig:Signature, QualC, classCMT, DecC:ClassType, instanceCT, _)
+      ([Args:KList])
     => invokeImpl( methodRef(Sig, DecC), QualRV::QualC, [Args] )
 when
     isArrayRef(QualRV) ==K true orBool isString(QualRV) ==K true
@@ -398,11 +354,10 @@ rule [Invoke-QSuperMethod]:
       ),, _
     )
 
-/*Elaboration result for super keyword in A.super.m() call.
-  Have to be a typed expression.
+/* Elaboration result for super keyword in A.super.m() call. Have to be a typed expression.
 */
-syntax K ::= superMethodImpl ( K ) // is always equal to A.this - used to lookup the right qualifier closure.
-        [strict]
+syntax MethodName ::= superMethodImpl ( K ) // is always equal to A.this - used to lookup the right qualifier closure.
+                                        [strict]
 
 rule [superMethodImpl]:
     <k>
@@ -420,12 +375,13 @@ rule [superMethodImpl]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
-/*Returns the list of classes representing the layer of the given object (by OId),
-    located between MostBaseClass (exclusively) and MostDerivedClass (inclusively).
+/*
+Returns the list of classes representing the layer of the given object (by OId),
+  located between MostBaseClass (exclusively) and MostDerivedClass (inclusively).
 */
-syntax K ::=  getClassChain( ClassType,  //MostBaseClass
-                                        KListWrap   //[MostDerivedClass] at beginning, gradually accumulates
-                                                      //the list of classes
+syntax K ::=  getClassChain( ClassType, //MostBaseClass
+                             KListWrap  //[MostDerivedClass] at beginning, gradually accumulates
+                                          //the list of classes
               )
 
 rule [getClassChain-process]:
@@ -438,11 +394,11 @@ rule [getClassChain-process]:
 when
     MostDerivedClass =/=K MostBaseClass
 
-//@ Eliminate the most base class before returning the result, because it is exclusive.
+// Eliminate the most base class before returning the result, because it is exclusive.
 rule [getClassChain-end]:
     getClassChain(Class:ClassType, [Class,, MoreDerivedClasses:KList]) => kr[Class,, MoreDerivedClasses]
 
-/*@ [Skip] The right signature is already found.
+/* [Skip] The right signature is already found.
 Search for the right implementation is performed from the compile-time type of the target
 to more derived types, up to the object type of the target.
 This is required in order to respect the rules of inheritance in the presence of access modes.
@@ -563,7 +519,7 @@ The central rule of method invocation is matched when the second argument of met
     - object location <location> is initialized to the location of the qualifier object for instance methods,
       or .K for static methods. The extraction of the location from the qualifier value is performed by the
       function getOId().
-  - rewrites the method call expression into a sequence of four terms:
+  - Rewrites the method call expression into a sequence of four terms:
     - static initialization of the qualifying class
     - parameters initialization
     - actual method body
@@ -583,12 +539,7 @@ The return statement at the end ensures that there is a return statement on ever
 \end{markdown} */
 rule [Invoke-methodRef]:
     <k>
-      'Invoke('Method('MethodName(
-          Qual:KResult,,
-          methodRef(Sig:Signature, DecC:ClassType)
-        )),,
-        [Args:KList]
-      ) ~> RestK:K
+      Qual:KResult . methodRef(Sig:Signature, DecC:ClassType) ([Args:KList]) ~> RestK:K
       => staticInit(DecC) ~> initParams([Params], [Args]) ~> Body ~> 'Return('None(.KList))
     </k>
     <stack>
@@ -612,14 +563,14 @@ syntax K ::= getOId( K )              [function]
 rule getOId( objectRef(OId:Int,_)::_ ) => OId
 rule getOId( noValue ) => noValue
 
-/*@ [Skip] Binds a list of formal parameters to their values. Used by method calls and try-catch.
+/* [Skip] Binds a list of formal parameters to their values. Used by method calls and try-catch.
 */
 syntax K ::= initParams ( KListWrap, // [...,, 'Param(...),, ...] - parameter declarations
                           KListWrap  // [...,, KResult,, ...] - values
                         )
 
 rule [initParams]:
-    initParams(['Param(_:K,, T:Type,, X:Id),, RestP:KList], [TV:TypedVal,, RestV:KList])
+    initParams([{T:Type X:Id},, RestP:KList], [TV:TypedVal,, RestV:KList])
     => 'LocalVarDec(.K,, T:Type,,['VarDec(X)])
       ~> 'ExprStm('Assign('ExprName(X),, cast(T, TV:TypedVal)))
       ~> initParams([RestP], [RestV])
@@ -628,24 +579,17 @@ rule [initParams-end]:
     initParams([.KList], [.KList]) => .K
         [structural]
 
-//@ 'Param(\_:K,, T:Type,, X:Id). Consumed by initParams().
-syntax KLabel ::= "'Param"
-
 rule [Invoke-methodRef-native]:
     <k>
-      'Invoke('Method('MethodName(
-          Qual:KResult,,
-          methodRef(Sig:Signature, DecC:ClassType)
-        )),,
-        [Args:KList]
-      ) => invokeImpl(methodRef(Sig, DecC), Qual, [Args])
+      Qual:KResult . methodRef(Sig:Signature, DecC:ClassType) ([Args:KList])
+      => invokeImpl(methodRef(Sig, DecC), Qual, [Args])
       ...
     </k>
     <classType> DecC </classType>
     <methodSignature> Sig </methodSignature>
     <methodBody> 'NoMethodBody(_) </methodBody>
 
-/*@ [Skip] Auxiliary function for methods that need implementation in the semantics. The implementation
+/* [Skip] Auxiliary function for methods that need implementation in the semantics. The implementation
   of this production is given in api-core.k and api-threads.k.
 */
 syntax K ::=  invokeImpl (

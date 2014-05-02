@@ -78,7 +78,7 @@ syntax K ::= andAux(K, K)                       [strict(1)]
 rule andAux(true::bool, E:K) => E
 rule andAux(false::bool, _) => false
 
-syntax K ::= orAux(K, K)                       [strict(1)]
+syntax K ::= orAux(K, K)                        [strict(1)]
 rule orAux(true::bool, _) => true
 rule orAux(false::bool, E:K) => E
 
@@ -189,5 +189,17 @@ syntax KLabel ::= "'Some"
 */
 syntax K ::= "true?"
 rule true::bool ~> true? => .  [structural]
+
+//@ \subsection{Definition-wide rules}
+
+/*@ Represent a parser form for a sequence of terms. Is desugared into the pretty form [...]*/
+syntax KLabel ::= "'ListWrap"
+rule 'ListWrap(Ks:KList) => [Ks]                  [structural, anywhere]
+
+//@ Sequence of terms and of any other statements. The first term is moved to the top of computation.
+syntax KListWrap ::= "[" KList "]" [klabel('KListWrap)]
+
+rule [S1:K,, Stmts:KList] => S1 ~> [Stmts]        [structural]
+rule [.KList] => .K                               [structural]
 
 endmodule

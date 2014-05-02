@@ -105,7 +105,7 @@ syntax KResult ::= Signature
 
 /*@ A fully qualified class name, or noClass where no valid class could be computed.*/
 syntax ClassType ::= "class" Id
-                   | "noClass"
+                   | "noClass"        [latex({\dotCt{K}})]
 
 /* A reference type is either a class type, an array type, the null type or a String type. The null type is specified
     by the JLS although inaccessible to the programmer. String objects and types are not threated as regular objects
@@ -116,7 +116,8 @@ syntax RefType ::= ClassType
                  | "nullType"
 
 /*@ The member accessibility context of the current method - either static or instance.*/
-syntax ContextType ::= "staticCT" | "instanceCT"
+syntax ContextType ::=  "staticCT"    [latex(\terminal{static})]
+                      | "instanceCT"  [latex(\terminal{instance})]
 syntax KResult ::= ContextType
 
 //@ \subsection{Values}
@@ -185,9 +186,10 @@ syntax KResult ::= AccessMode
 syntax MethodMetaType ::= "methodMMT" | "constructorMMT"
 
 /*@ The two possibilities for a type represented by an objectRef: class or interface.*/
-syntax ClassMetaType ::= "classCMT" | "interfaceCMT"
+syntax ClassMetaType ::=  "classCMT"      [latex(\terminal{class})]
+                        | "interfaceCMT"  [latex(\terminal{interface})]
 
-syntax KResult ::= "noValue"
+syntax KResult ::= "noValue"  [latex({\dotCt{K}})]
 
 /*@ Represents a reference to a method or constructor. */
 syntax MethodRef ::=   methodRef(
@@ -195,7 +197,7 @@ syntax MethodRef ::=   methodRef(
                             RefType     //Usually Class - class defining the method
                                         //  Could also be array type, because we may invoke methods over arrays.
                           )
-                        | "noMethodRef"
+                        | "noMethodRef"   [latex({\dotCt{K}})]
 syntax KResult ::= MethodRef
 
 /*@ A list of types. Elements are of sort Type. Used especially to denote argument types of a method.*/
@@ -203,17 +205,5 @@ syntax Types ::=  types (
                     KList // List of Type elements, when processed
                   )
 syntax KResult ::= Types
-
-//@ \subsection{Sequence of terms}
-
-/*@ Represent a parser form for a sequence of terms. Is desugared into the pretty form [...]*/
-syntax KLabel ::= "'ListWrap"
-rule 'ListWrap(Ks:KList) => [Ks]                  [structural, anywhere]
-
-//@ Sequence of terms and of any other statements. The first term is moved to the top of computation.
-syntax KListWrap ::= "[" KList "]" [klabel('KListWrap)]
-
-rule [S1:K,, Stmts:KList] => S1 ~> [Stmts]        [structural]
-rule [.KList] => .K                               [structural]
 
 endmodule

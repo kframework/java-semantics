@@ -1,9 +1,11 @@
 require "../common/core-sorts.k"
+require "syntax-conversions.k"
 
 //@ \section{Module CORE-EXEC}
 
 module CORE-EXEC
     imports CORE-SORTS
+    imports SYNTAX-CONVERSIONS
 
 //@ ListItem content as a stack layer
 syntax K ::=  sl (

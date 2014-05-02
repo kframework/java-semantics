@@ -204,7 +204,7 @@ All the information stored in methodInfo() is static. In K-Java we already have
   The rules from step 3 simply load the relevant informaton from configuration
   cells to methodInfo() arguments.
 \end{markdown} */
-syntax K ::=  methodInfo(
+syntax MethodName ::=  methodInfo(
                 Signature,    //Sig - method signature
                 RefType,      //QualC - qualifier type, not necessarily class
                 ClassMetaType,//MetaT - The either classCMT or interfaceCMT for the qualifier type
@@ -438,7 +438,7 @@ syntax K ::=  getClassChain( ClassType,  //MostBaseClass
                                                       //the list of classes
               )
 
-syntax K ::=  lookupPackageMethod (
+syntax MethodName ::=  lookupPackageMethod (
                 Signature,  //sig(Name, SigTL) - Method signature
                 KRListWrap, //computes into kr[...,, Class,, ...], elements of type ClassType,
                               // from base to derived.
@@ -446,7 +446,7 @@ syntax K ::=  lookupPackageMethod (
                 ClassType   //The class with the best method declaration with signature Sig found so far,
                               //initialized with noClass
               )
-              [strict(2,3)]
+              [strict(2,3), latex(lookupPackage)]
 
 /*@
 The rules for lookupPackageMethod() are based on the following two properties of the configuration:
@@ -645,7 +645,7 @@ syntax K ::= initParams ( KListWrap, // [...,, 'Param(...),, ...] - parameter de
                         )
 
 rule [initParams]:
-    initParams(['Param(_:K,, T:Type,, X:Id),, RestP:KList], [TV:TypedVal,, RestV:KList])
+    initParams(['ParamImpl(T:Type,, X:Id),, RestP:KList], [TV:TypedVal,, RestV:KList])
     => 'LocalVarDec(.K,, T:Type,,['VarDec(X)])
       ~> 'ExprStm('Assign('ExprName(X),, cast(T, TV:TypedVal)))
       ~> initParams([RestP], [RestV])
