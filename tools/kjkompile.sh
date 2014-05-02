@@ -11,7 +11,8 @@ if [ $# -gt 1 ]; then
     echo "Your command:"
     echo `basename $0` $@
     echo "Usage: `basename $0`"
-    echo "Or:    `basename $0` <--exec|--exec-v|--strictness|--threading|--symbolic|--latex|--pdf|--help>"
+    echo "Or:    `basename $0` <--exec|--exec-v|--strictness|--threading|--symbolic|--latex|--exec-latex| \
+      --methods-latex|--pdf|--help>"
     exit
 fi
 
@@ -85,12 +86,14 @@ case "$OPTION" in
     ;;
 "--help")
     echo "Usage: `basename $0`"
-    echo "Or:    `basename $0` <--exec|--exec-v|--strictness|--threading|--symbolic|--latex|--pdf|--help>"
+    echo "Or:    `basename $0` <--exec|--exec-v|--strictness|--threading|--symbolic|--latex|--exec-latex| \
+      --methods-latex|--pdf|--help>"
     ;;
 *)
     echo "Invalid option: $OPTION"
     echo "Usage: `basename $0`"
-    echo "Or:    `basename $0` <--exec|--exec-v|--strictness|--threading|--symbolic|--latex|--pdf|--help>"
+    echo "Or:    `basename $0` <--exec|--exec-v|--strictness|--threading|--symbolic|--latex|--exec-latex| \
+      --methods-latex|--pdf|--help>"
     exit 1
     ;;
 esac

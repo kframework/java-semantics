@@ -74,11 +74,7 @@ configuration
             //ClassType of the enclosing class otherwise
             <enclosingClass color="DarkGoldenrod"> noClass </enclosingClass>
 
-            <br/>
-
           </cphCreated>
-
-          <br/>
 
           <cphDecs color="Yellow">
 
@@ -98,6 +94,7 @@ configuration
               Map[Sig -> Class]
               Used in elaboration of method calls.*/
             <methods color="Blue"> .Map </methods>
+            <br/>
 
             /*All methods declared in this class.
               Used in elaboration of method calls.*/
@@ -106,18 +103,20 @@ configuration
               <methodDec multiplicity="*" color="Blue">
 
                 //Method signature, of type Signature
-                <methodSignature> .K </methodSignature>
+                <methodSignature color="Blue"> .K </methodSignature>
 
                 //Method params
-                <methodParams> [.KList] </methodParams>
+                <methodParams color="Blue"> [.KList] </methodParams>
+                <br/>
 
                 //Method body
-                <methodBody> .K </methodBody>
+                <methodBody color="Blue"> .K </methodBody>
 
-                <methodAccessMode> .K </methodAccessMode>
+                <methodAccessMode color="Blue"> .K </methodAccessMode>
+                <br/>
 
                 //Either staticCT or instanceCT
-                <methodContextType> .K </methodContextType>
+                <methodContextType color="Blue"> .K </methodContextType>
 
               </methodDec>
             </methodDecs>
@@ -126,8 +125,6 @@ configuration
 
             //[...,, 'LocalVarDec(_),, ...] - Instance field declarations. Used during object instantiation.
             <instanceFields color="Indigo"> [.KList] </instanceFields>
-
-            <br/>
 
             //[...,, 'FieldDec('Static(_),,T,,_),, ...] - Static field declarations. Used during class instantiation.
             <staticFields color="DarkSlateGray"> [.KList] </staticFields>
@@ -192,6 +189,8 @@ configuration
         //Execution memory. Map[Location:Int->Value:TypedVal]. Both local vars and heap vars are stored here.
         <store color="Cyan"> .Map </store>
 
+        <br/>
+
         //Represents the storage of objects. Since objects have a complex inner structure,
         //we need to hold them separately if we want to represent that structure as a cell tree.
         <objectStore color="Cyan">
@@ -202,6 +201,8 @@ configuration
 
             //The actual object class
             <objectType> .K </objectType>
+
+            <br/>
 
             //One layer for each class in the inheritance chain of this object
             <layer multiplicity="*">
@@ -217,6 +218,8 @@ configuration
             </layer>
           </object>
         </objectStore>
+
+        <br/>
 
         //Counter for next location to be used in the cell <store>.
         <nextLoc color="Cyan"> 0 </nextLoc>

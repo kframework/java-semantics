@@ -1,85 +1,158 @@
+require "../common/java-doc.k"
 require "../common/core-sorts.k"
-require "../common/core-functions.k"
-require "static-init.k"
 
-/*@ \section{Module METHOD-INVOKE}
-\begin{markdown}
-An elaborated method invocation expresion may have one of the following forms:
+//@ \section{Module METHOD-INVOKE-DEPENDENCIES}
 
-  - An invocation of a static method qualified by its class: Class.f(args)
-  - An invocation of a static method qialified by an expression producing an object: o.f(args). Even if the method is
-    static we cannot simply replace the qualifier with its compile-time type at elaboration phase, because the qualifier
-    expression still have to be evaluated and might produce side effects.
-  - An invocation of an instance method qualified by a class reference: o.f(args)
-  - An invocation of an instance method qualified by an interface reference: i.f(args)
-  - The qualifier of an instance method may also be a string or an array expression,
-    and those cases require special rules in the semantics.
-
-The evaluation of the method invocation expression consists from 5 steps outlined below. Those steps,
-  unless otherwise specified, are common to all the method call forms enumerated above.
-
-  - Evaluation of the qualifier expression
-  - Evaluation of method arguments
-  - Computation of static method information
-  - Locating the actual method declaration to be invoked
-  - Actual method invocation.
-
-In JLS runtime semantics of method invocation is described in \$15.2.4. Althouhg there is some correspondence
-  between the steps in our semantics and the steps in JLS, it is generally not one-to-one. JLS description of method
-  invocation consists of the following 5 steps. For each step we give the relevant chapter of the JLS and the step in
-  our semantics.
-
-  - Compute the target reference (\$15.12.4.1), semantics step 1
-  - Evaluate arguments (\$15.12.4.2), semantics step 2
-  - Check the accessibility of the method to be invoked (\$15.12.4.3), no semantics
-  - Locate the actual method code to invoke (\$15.12.4.4), semantics step 4
-  - Actual method invocation, semantics step 5.
-
-  There are at least the following reasons why there is no close correspondence between JLS and K-Java:
-
-  - JLS semantics describes not only the execution of correct java programs, but also runtime checks that have to be
-    performed to ensure the consistency of the bytecode, and errors that have to be thrown once this consistency is
-    violated. This is the case for \$15.12.4.3, that don't need a correspondent in K-Java.
-  - Because K-Java operates directly over the source code of Java, with no other preprocessing than the unfolding
-    phase, it carries less static information than the bytecode. For this reason some static information needs to be
-    computed in K-Java each time a method is invoked. This is why semantics step 3 is needed. As we will see below,
-    rules for this step are straghtforward and consist of loading the right data from the right cells int an
-    auxiliary data structure.
-  - Although JLS avoids references to bytecode as much as possible, sometimes it contains references to features
-    specific to bytecode. For a method call in JLS have an invocation mode, that might be static, nonvirtual,
-    virtual, interface or others. Since this invocation mode is computed at compile-time, JLS runtime semantics is
-    described separately for each invocation mode. In K, since we don't have such a classification by invocation modes,
-    we often have less cases.
-  - Lastly, K abstractions allow us to have much less particular cases in Java than in JLS. A comparison between the
-    number of particular cases for K-Java method invocation and JLS will be given at the end of this section. We will
-    also highlight the particular K abstractions that made possible the reduction of the number of cases.
-
-  The details related to each step of are described in the semantics below, above each rule and auxiliary construct.
-    For each rule we will also refer to the respective JLS page, if there is a correspondence.
-\end{markdown} */
-module METHOD-INVOKE
+module METHOD-INVOKE-DEPENDENCIES
     imports CORE-SORTS
-    imports CORE-FUNCTIONS
-    imports STATIC-INIT //for staticInit()
 
-/*
-General structure:
+syntax Cast ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
 
-'Invoke(
-  'Method(
-    'MethodName(
-      QualifierExp:Expression,,
-      Name:Id
-    )
-  ),,
-  [Args] - argument expressions
-)
-*/
+/*@Returns the top-level class enclosing this class*/
+syntax K ::= getTopLevel ( ClassType )
+
+syntax K ::=  staticInit (
+                ClassType // Class - the ClassType to be initialized,
+                          // or noClass if this term should be discarded.
+              )
+
+syntax K ::=  restoreMethContext (
+                Bag                 //The content of <methodContext>
+              )
+
+syntax K ::= "arrayImplClass"                   [function]
+
+syntax K ::=  getTypes (
+                KListWrap     //[...,, KResult,, ...] - a list of source expressions
+              )
+              [function]
+
+syntax K ::= typeOf ( K )                           [function]
+
+syntax K ::= "stringClass"                              [function]
+
+syntax K ::=  sl (
+                K,  //K - rest of computation
+                Bag //MethContext - the content of <methodContext>
+              )
+
+syntax K ::= eqAux ( K, K )                  [seqstrict]
+
+syntax KRListWrap ::= "kr" "[" KList "]"
+
+syntax K ::= getPackage ( K )               [strict]
+
+configuration
+    <T>
+      <threads color="GreenYellow">
+        <thread multiplicity="*" color="GreenYellow">
+          <k color="Green"> $COMMAND:K </k>
+
+          <stack color="Green"> .List </stack>
+
+          //! \smallskip
+          <br/>
+
+          /*The execution context of the current method - local names environment, return type,
+            context type and current object.*/
+          <methodContext color="Orange">
+
+            //The map from local vars to their location in the store. Also includes outer local vars, for local classes.
+            <env color="Crimson"> .Map </env>
+
+            //current class during all phases, including early preprocessing
+            <crntClass color="DarkOrange"> noClass </crntClass>
+
+            <location color="DarkOrange"> .K </location>
+          </methodContext>
+
+        </thread>
+      </threads>
+
+      <br/>
+      <br/>
+
+      <classes color="Red">
+        <class multiplicity="*" color="Red">
+
+          <cphDiscovered color="Yellow">
+            //sort ClassType. Contains the fully qualified class name.
+            <classType color="Red"> .K </classType>
+
+            //Either classMetaT or interfaceMetaT. Used in many semantics phases, including execution.
+            <classMetaType color="Maroon"> .K </classMetaType>
+
+            //The major phase of <class> lifecycle. See ClassPhase definition.
+            <classPhase color="Maroon"> .K </classPhase>
+
+          </cphDiscovered>
+
+          <br/>
+
+          //Used by object instantiation
+          //noClass if this is a top-level class,
+          //ClassType of the enclosing class otherwise
+          <enclosingClass color="DarkGoldenrod"> noClass </enclosingClass>
+
+          <cphDecs color="Yellow">
+
+            //The base class, or noClass for interfaces and Object.
+            <extends color="SpringGreen"> .K </extends>
+
+          </cphDecs>
+
+          <br/>
+
+          /*Signatures of methods accessible to this class (both declared and inherited)
+            Map[Sig -> Class]
+            Used in elaboration of method calls.*/
+          <methods color="Blue"> .Map </methods>
+
+          <br/>
+
+          /*All methods declared in this class.
+            Used in elaboration of method calls.*/
+          <methodDecs color="Blue">
+
+            <methodDec multiplicity="*" color="Blue">
+
+              //Method signature, of type Signature
+              <methodSignature color="Blue"> .K </methodSignature>
+
+              //Method params
+              <methodParams color="Blue"> [.KList] </methodParams>
+
+              //Method body
+              <methodBody color="Blue"> .K </methodBody>
+
+              <br/>
+              <methodAccessMode color="Blue"> .K </methodAccessMode>
+
+              //Either staticCT or instanceCT
+              <methodContextType color="Blue"> .K </methodContextType>
+
+            </methodDec>
+          </methodDecs>
+
+        </class>
+      </classes>
+    </T>
+
+endmodule
+
+module JAVA-SYNTAX
+// No syntax needed, we are using an external parser.
+endmodule
+
+//@ \section{Module METHOD-INVOKE-LATEX}
+
+module METHOD-INVOKE-LATEX
+    imports CORE-SORTS
+    imports METHOD-INVOKE-DEPENDENCIES
+    imports JAVA-SYNTAX
+
 syntax KLabel ::= "'Invoke"
 
-/*@ 'Method(Qual:K,, \_:K,, Name:Id)
-    'Method('MethodName(Qual:K,, Name:Id))
-*/
 syntax KLabel ::= "'Method"
                 | "'MethodName"
 
@@ -92,17 +165,13 @@ Evaluation of the method invocation qualifier (JLS \$15.12.4.1) requires just on
 */
 context 'Invoke('Method( 'MethodName( HOLE,, Name:Id ) ),, _)
 
-//totest model check - expressions should be evaluated from left to right. A test for this exists, but is unable to
-//expose the problem. This rule have to be made "transition" somehow.
-//totest - if qualifier evaluates to null, NullPoitnerException should be thrown after the evaluation of the arguments
-
 /*@ \begin{markdown}
 The next step is the evaluation of the arguments (JLS \$15.12.4.2). This also requires just one context rule. The
   whole list of arguments is the third argument of method invocation production, but in order to evaluate the arguments
   we need to heat them one by one. JLS enforces the following conditions on the timing of arguments evaluation:
 
   - Arguments have to be evaluated after the qualifier was evaluated. This is ensured by checking that the qualifier
-  is of sort KResult at the moment when arguments are heated.
+    is of sort KResult at the moment when arguments are heated.
   - Arguments are evaluated left to right. To ensure this we add a side condition that checks that all the arguments
     before the one being heated (if any) are already of the sort KResult.
 
@@ -166,20 +235,6 @@ rule [Invoke-compute-methodInfo-Signature]:
     )
 when
     isKResult(Args)
-
-/* Impl: We could combine this rule with the previous one by using getLookupTargetType(), but we'll keep it this way
-    to keep the core part of method invocation separate from the non object-related part. */
-
-/*@ [Skip]
-The next rule for method invocation is applied when the qualifier type is array. This array type is rewritten
-  into the auxiliary class ArrayImpl, that is used in K-Java to simulate method invocations over array objects.
-  This rule is required in order to minimize the number of particular cases involving arrays in the rules that follow.
-*/
-rule [Invoke-compute-methodInfo-arrays]:
-    'Invoke('Method('MethodName(
-      QualRV:RawVal :: (arrayOf T:Type => arrayImplClass),,
-      methodInfo(Sig:Signature, arrayOf T => arrayImplClass, _,_,_,_)
-    )),, _)
 
 /*@
 The second rule for method invocation loads MetaT and DecC. It requires Sig and QualC computed by the previous rule.
@@ -336,8 +391,8 @@ An instance method derivedM declared in a class Derived overrides another method
 
   1. Derived is a subclass of Base.
   2. Either
-    a. baseM is non-private and accessible from Derived, or
-    b. derivedM overrides a method middleM, middleM distinct from baseM and derivedM,
+     a. baseM is non-private and accessible from Derived, or
+     b. derivedM overrides a method middleM, middleM distinct from baseM and derivedM,
       such that middleM overrides baseM
 
 In the case 2b the overriding relationship cannot be inferred based on the content of classes Base and Derived alone.
@@ -352,7 +407,8 @@ The rule for package access mode delegates searching for the right method declar
     This list is produced by getClassChain()
   - the third argument represents the declaring class of the best method found so far.
     It is initialized with .K.
-\end{markdown}*/
+
+\end{markdown} */
 rule [Invoke-methodInfo-instance-package]:
     <k>
       'Invoke('Method('MethodName(
@@ -377,76 +433,11 @@ context 'Invoke('Method( 'MethodName( _:K,, HOLE ) ),, _)
 when
     getKLabel(HOLE) ==KLabel 'lookupPackageMethod
 
-rule [Invoke-methodInfo-on-array-or-string]:
-    'Invoke('Method('MethodName(
-        QualRV:RawVal::QualC:ClassType,,
-        methodInfo(Sig:Signature, QualC, classCMT, DecC:ClassType, instanceCT, _)
-      )),,
-      [Args:KList]
-    )
-    => invokeImpl( methodRef(Sig, DecC), QualRV::QualC, [Args] )
-when
-    isArrayRef(QualRV) ==K true orBool isString(QualRV) ==K true
-
-//@ 'QSuperMethod(Class:ClassType,, \_:K,, Name:Id)
-syntax KLabel ::= "'QSuperMethod"
-
-rule [Invoke-QSuperMethod]:
-    'Invoke(
-      ('QSuperMethod(Class:ClassType,, _:K,, Name:Id)
-       => 'Method('MethodName(superMethodImpl('QThis(Class)),, Name))
-      ),, _
-    )
-
-/*Elaboration result for super keyword in A.super.m() call.
-  Have to be a typed expression.
-*/
-syntax K ::= superMethodImpl ( K ) // is always equal to A.this - used to lookup the right qualifier closure.
-        [strict]
-
-rule [superMethodImpl]:
-    <k>
-      superMethodImpl(
-        objectRef(
-          OId:Int,
-          //The layers above the layer where method should be searched
-          // should be discarded in order to implement syper.m() functionality.
-          _
-        )::Class:ClassType  //due to the way term superMethod() is first constructed, this is the upper search layer
-      )
-      => objectRef( OId, BaseClass )::BaseClass
-      ...
-    </k>
-    <classType> Class </classType>
-    <extends> BaseClass:ClassType </extends>
-
-/*Returns the list of classes representing the layer of the given object (by OId),
-    located between MostBaseClass (exclusively) and MostDerivedClass (inclusively).
-*/
 syntax K ::=  getClassChain( ClassType,  //MostBaseClass
                                         KListWrap   //[MostDerivedClass] at beginning, gradually accumulates
                                                       //the list of classes
               )
 
-rule [getClassChain-process]:
-    <k>
-      getClassChain(MostBaseClass:ClassType, [(.KList => BaseClass),, MostDerivedClass:ClassType,, _])
-      ...
-    </k>
-    <classType> MostDerivedClass </classType>
-    <extends> BaseClass:ClassType </extends>
-when
-    MostDerivedClass =/=K MostBaseClass
-
-//@ Eliminate the most base class before returning the result, because it is exclusive.
-rule [getClassChain-end]:
-    getClassChain(Class:ClassType, [Class,, MoreDerivedClasses:KList]) => kr[Class,, MoreDerivedClasses]
-
-/*@ [Skip] The right signature is already found.
-Search for the right implementation is performed from the compile-time type of the target
-to more derived types, up to the object type of the target.
-This is required in order to respect the rules of inheritance in the presence of access modes.
-Evaluates into typed method closure.*/
 syntax K ::=  lookupPackageMethod (
                 Signature,  //sig(Name, SigTL) - Method signature
                 KRListWrap, //computes into kr[...,, Class,, ...], elements of type ClassType,
@@ -457,14 +448,16 @@ syntax K ::=  lookupPackageMethod (
               )
               [strict(2,3)]
 
-/*@ \begin{markdown}
+/*@
 The rules for lookupPackageMethod() are based on the following two properties of the configuration:
 
-  - if the cell <methods> for a particular class contains a key Sig, then <methods> for all classes derived from it
+\begin{itemize}
+  \item if the cell <methods> for a particular class contains a key Sig, then <methods> for all classes derived from it
     will contain the key Sig.
-  - if a particular class contain a method declaration with signature Sig acces mode Acc, then all declarations
+  \item if a particular class contain a method declaration with signature Sig acces mode Acc, then all declarations
     of Sig in derived classes (that are not necessarily overriding!) will have the access mode either Acc or a value
     wider than Acc.
+\end{itemize}
 
 The first property is ensured by the unfolding algorithm. Because <methods> of a derived class inherit all the <methods>
   of the direct base class, the map <methods> may only grow from base classes to derived. The second property is ensured
@@ -475,7 +468,7 @@ The search for the right package method declaration is performed from the base-m
   one) to the most derived one. Every rule matches and deletes the leftmost class in the class chain (CurrentC),
   and possibly rewrites the third argument into the current class.
 The first rule matches when there is no declaring class yet (third argument is .K, the initial case).
-\end{markdown} */
+*/
 rule [lookupPackageMethod-layer-first-dec-found]:
     <k>
       lookupPackageMethod(
@@ -551,23 +544,56 @@ The last rule matches when the chain of classes stored in the first argument rem
 rule [lookupPackageMethod-end]:
     lookupPackageMethod(Sig:Signature, kr[.KList], DecC:ClassType ) => methodRef(Sig, DecC)
 
-/*@ \begin{markdown}
+/*@
+The method is overridden if either:
+
+\begin{itemize}
+  \item Acc is protected or public
+  \item Acc is package and BaseC and SubC are declared in the same package (JLS \$6.6)
+\end{itemize}
+*/
+syntax K ::=  isOverridden (
+                ClassType,  //BaseC
+                AccessMode, //BaseAcc
+                ClassType   //SubC
+              )
+              [strict]
+
+rule isOverridden(_, public,    _) => true
+rule isOverridden(_, protected, _) => true
+
+rule isOverridden(BaseC:ClassType, package, SubC:ClassType)
+    => eqAux(getPackage(getTopLevel(BaseC)), getPackage(getTopLevel(SubC)))
+
+rule isOverridden(_, private, _) => false
+
+/*@
 The central rule of method invocation is matched when the second argument of method call expression reaches the form
   methodRef(). This rule performs the following operations:
 
-  - saves the rest of computation (RestK) and the content of <methodContext> as a new entry of the cell <stack>
+\begin{itemize}
+  \item saves the rest of computation (RestK) and the content of <methodContext> as a new entry of the cell <stack>
     This data is restored back by the rules for return statement.
-  - Initializes the new method context.
-    - The local variable environment <env> is emptied
-    - current class <crntClass> is initialized to the class declaring the method
-    - object location <location> is initialized to the location of the qualifier object for instance methods,
+  \item Initializes the new method context.
+
+  \begin{itemize}
+    \item The local variable environment <env> is emptied
+    \item current class <crntClass> is initialized to the class declaring the method
+    \item object location <location> is initialized to the location of the qualifier object for instance methods,
       or .K for static methods. The extraction of the location from the qualifier value is performed by the
       function getOId().
-  - rewrites the method call expression into a sequence of four terms:
-    - static initialization of the qualifying class
-    - parameters initialization
-    - actual method body
-    - a return statement with no arguments after the method body.
+  \end{itemize}
+
+  \item rewrites the method call expression into a sequence of four terms:
+
+  \begin{itemize}
+    \item static initialization of the qualifying class
+    \item parameters initialization
+    \item actual method body
+    \item a return statement with no arguments after the method body.
+  \end{itemize}
+
+\end{itemize}
 
 The function staticInit() triggers static initialization of the qualifying class, if this class was not initialized yet.
   Repeated calls of this function have no effect. Is required just for static methods and is described in JLS \$12.4.
@@ -580,7 +606,7 @@ The function initParams() rewrites each parameter declaration into two statement
 The return statement at the end ensures that there is a return statement on every execution path of the method. The
   statement will only be useful for methods with return type void, as methods returning a value are required by JLS
   to have an appropriate return statement on every return path.
-\end{markdown} */
+*/
 rule [Invoke-methodRef]:
     <k>
       'Invoke('Method('MethodName(
@@ -628,33 +654,6 @@ rule [initParams-end]:
     initParams([.KList], [.KList]) => .K
         [structural]
 
-//@ 'Param(\_:K,, T:Type,, X:Id). Consumed by initParams().
 syntax KLabel ::= "'Param"
-
-rule [Invoke-methodRef-native]:
-    <k>
-      'Invoke('Method('MethodName(
-          Qual:KResult,,
-          methodRef(Sig:Signature, DecC:ClassType)
-        )),,
-        [Args:KList]
-      ) => invokeImpl(methodRef(Sig, DecC), Qual, [Args])
-      ...
-    </k>
-    <classType> DecC </classType>
-    <methodSignature> Sig </methodSignature>
-    <methodBody> 'NoMethodBody(_) </methodBody>
-
-/*@ [Skip] Auxiliary function for methods that need implementation in the semantics. The implementation
-  of this production is given in api-core.k and api-threads.k.
-*/
-syntax K ::=  invokeImpl (
-                MethodRef,  //the method reference
-                K,          //KResult - method call target
-                              //either objectRef(OL:Int,_)::_ ,
-                              //typed string or array, or noValue for static methods
-                KListWrap   //[Args:List{KResult}]
-              )
-              [strict(1)]
 
 endmodule
