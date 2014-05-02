@@ -35,7 +35,6 @@ rule [ExecutionPhase-Start]:
 syntax KLabel ::= "'Empty"
                 | "'Labeled"
                 | "'ExprStm"
-                | "'If"
                 | "'AssertStm"
                 | "'Switch"
                 | "'SwitchBlock"
@@ -76,12 +75,8 @@ rule [env-double-Discard]:
 /*@ \subsection{Local Variable Declaration Statements} JLS \$14.4
     Not only local but fields also*/
 
-//@ 'LocalVarDec(_:K,, T:Type,, ['VarDec(X:Id)])
-syntax KLabel ::= "'LocalVarDec"
-                | "'VarDec"
-
 rule [LocalVarDec]:
-    <k> 'LocalVarDec(_:K,, T:Type,,['VarDec(X:Id)]) => . ...</k>
+    <k> T:Type X:Id; => . ...</k>
     <env> Env:Map => Env[L/X] </env>
     <store>... . => L |-> default(T) ...</store>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
@@ -110,18 +105,13 @@ rule 'ExprStm(_:TypedVal) => .K
 
 //@ \subsection{If statement}
 
-context 'If(HOLE,,_,,_)
-
 rule [If-True]:
-    'If(true::bool,, S:K,, _) => S
+    if (true::bool) {S:K} else {_} => S
         [symbolic-rule]
 
 rule [If-False]:
-    'If(false::bool,, _,, S:K) => S
+    if (false::bool) {_} else {S:K} => S
         [symbolic-rule]
-
-rule [If-Then-Desugar]:
-    'If(E:K,,S1:K) => 'If(E:K,, S1:K,, .K)
 
 //@ \subsection{Assert statement}
 

@@ -408,7 +408,7 @@ syntax K ::=  lookupPackageMethod (
                 KRListWrap, //computes into kr[...,, Class,, ...], elements of type ClassType,
                               // from base to derived.
                               // To be processed from base to derived until while the chain is not empty
-                ClassType   //The class with the best method declaration with signature Sig found so far,
+                K           //ClassType - The class with the best method declaration with signature Sig found so far,
                               //initialized with noClass
               )
               [strict(2,3)]
@@ -460,12 +460,7 @@ rule [lookupPackageMethod-new-method]:
       lookupPackageMethod(
         Sig:Signature,
         kr[ (CurrentC:ClassType => .KList),, _ ],
-        OldDecC:ClassType
-        =>  'If(
-              isOverridden( OldDecC, Acc, CurrentC ),,
-              CurrentC,,
-              OldDecC
-            )
+        OldDecC:ClassType => if (isOverridden( OldDecC, Acc, CurrentC )) { CurrentC } else { OldDecC }
       )
       ...
     </k>
@@ -571,8 +566,8 @@ syntax K ::= initParams ( KListWrap, // [...,, 'Param(...),, ...] - parameter de
 
 rule [initParams]:
     initParams([{T:Type X:Id},, RestP:KList], [TV:TypedVal,, RestV:KList])
-    => 'LocalVarDec(.K,, T:Type,,['VarDec(X)])
-      ~> 'ExprStm('Assign('ExprName(X),, cast(T, TV:TypedVal)))
+    =>   T X;
+      ~> (X = ((T) TV:TypedVal));
       ~> initParams([RestP], [RestV])
 
 rule [initParams-end]:

@@ -173,10 +173,10 @@ syntax RawRefVal ::= ObjectRef | ArrayRef | String | "null"
 */
 syntax TypedVal ::= RawVal "::" Type
 
-/*@ The three most common forms of computation result are Typed value, Type or Id. Those are most common results
+/*@ The three most common forms of computation result are Typed value or Type. Those are most common results
     we will encounter during elaboration. Other result types are more context-specific.
 */
-syntax KResult ::= TypedVal | Type | Id
+syntax KResult ::= TypedVal | Type
 
 /*@ Member access modes*/
 syntax AccessMode ::= "public" | "protected" | "package" | "private"

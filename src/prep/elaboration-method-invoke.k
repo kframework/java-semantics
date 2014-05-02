@@ -39,7 +39,6 @@ syntax K ::=  findQualifierForName (
                 ClassType,  //The context class in which qualifier is searched for.
                 Id          //Qualifier should contain a method with this name
               )
-              [strict(2)]
 
 rule isElabNaked(findQualifierForName(_,_)) => true
 

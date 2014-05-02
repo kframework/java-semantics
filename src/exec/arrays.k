@@ -206,9 +206,6 @@ rule initArray(_, 0, _) => .K       [structural]
 
 //@ \subsection{Array element assignment}
 
-rule [Assign-array-location-exact-type]:
-    'Assign(loc(L:Int)::T:Type,, V:RawVal::T) => store(L, V::T) ~> V::T
-
 rule [store-array-elem]:
     <k> store(L:Int, V:RawVal :: T:Type) => . ...</k>
     <store>... L |-> (_ => V) :: elem T:Type ...</store>

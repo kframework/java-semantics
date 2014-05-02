@@ -239,13 +239,10 @@ rule 'Cond(CondExp:K,, TrueExp:K,, FalseExp:K) => 'If(CondExp,, TrueExp,, FalseE
 /*@ \subsubsection{Assignment operators}
 Both basic assignment and compound assignments like +=, -=, etc. */
 
-//@ 'Assign(loc(L)::T,, V::T)
-syntax KLabel ::= "'Assign"
-
-context 'Assign(_:KResult,,HOLE)
+context _:KResult = HOLE
 
 rule [Assign]:
-    'Assign(loc(L:Int) :: ResT:Type,, V:RawVal :: ResT) => store(L, V::ResT) ~> V::ResT
+    loc(L:Int) :: ResT:Type = V:RawVal :: ResT => store(L, V::ResT) ~> V::ResT
 
 /*@ Desugars compound assign into the underlying operator + assign.
 
@@ -260,7 +257,7 @@ rule [Assign]:
 */
 rule [Compound-Assign]:
     KL:KLabel(loc(L:Int) :: T:Type,, Exp2:K)
-    => 'Assign(loc(L)::T,, cast(T, getOperatorLabel(KL)(lookup(L, T),, Exp2)))
+    => loc(L)::T = cast(T, getOperatorLabel(KL)(lookup(L, T),, Exp2))
 when isCompoundAssignLabel(KL)
 
 /*@ Returns the KLabel corresponding to the underlying operator of the given compound assignment KLabel.
@@ -292,9 +289,7 @@ rule [cast-void]: cast(void, RV:RawVal::void) => RV::void
 //Happens for the qualifier of a static method call
 rule [cast-noValue]: cast(_, noValue) => noValue
 
-/*@ \subsection{lvalue and loc syntax} */
-
-syntax K ::= lvalue ( K )
+/*@ \subsection{lvalue semantics} */
 
 /* We cannot use context rules here because of wrapper-related limitations. If a term is wrapped into lvalue
   during heating by a context rule, it will be cooled also from lvalue by the cooling rule. This is unacceptable
@@ -303,7 +298,7 @@ syntax K ::= lvalue ( K )
 rule [exp-lvalue-Heat]:
     (. => lvalue(K)) ~> KL:KLabel((K:K => HOLE),, _)
 when
-    (      KL ==KLabel 'Assign
+    (      KL ==KLabel 'AssignImpl
     orBool isPrefixPostfixExpLabel(KL) ==K true
     orBool isCompoundAssignLabel(KL) ==K true
     )
@@ -317,8 +312,6 @@ rule [exp-lvalue-Cool]:
 rule [lvalue-Throw-desugar]:
     lvalue('Throw(K:K)) => 'Throw(K)
         [structural]
-
-syntax RawVal ::= loc ( Int )
 
 syntax K ::=  store (
                 Int,  //OL - the store location

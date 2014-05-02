@@ -24,4 +24,9 @@ rule [restoreMethContext]:
     <k> restoreMethContext(MethContext:Bag) => . ...</k>
     <methodContext> _ => MethContext </methodContext>
 
+/*@ \subsection{lvalue and loc syntax} */
+
+syntax K ::= lvalue ( K )
+syntax RawVal ::= loc ( Int )
+
 endmodule

@@ -207,7 +207,7 @@ rule [String-compareTo]:
       Str:String::Class,
       [ParamStr:String::_]
     )
-    => 'If(Str <String ParamStr,, -1,, 'If(Str ==String ParamStr,, 0,, 1))
+    => if (Str <String ParamStr) {-1} else { if (Str ==String ParamStr) {0} else {1}}
 when
     Class ==K stringClass andBool Id2String(MethodName) ==String "compareTo"
 
