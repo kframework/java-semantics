@@ -33,10 +33,10 @@ rule toPackage(class Class:Id) => packageId(Class)
 /*@Returns the package of the given class*/
 syntax K ::= getPackage ( K )               [strict]
 rule getPackage(class ClassId:Id)
-    => String2Id(retainHead(
+    => packageId( String2Id(retainHead(
       Id2String(ClassId),
       rfindString(Id2String(ClassId), ".", lengthString(Id2String(ClassId)))
-    ))
+    )) )
 
 //@ \subsection{Classes}
 

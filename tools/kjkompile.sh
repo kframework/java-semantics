@@ -35,6 +35,26 @@ case "$OPTION" in
     echo "Preprocessing semantics:"
     # "&> file" redirects both stdin and stderr to the given file
     $KOMPILE_CMD -d exec exec/java-exec.k &> exec-out.txt \
+        & $KOMPILE_CMD -d prep prep/java-prep.k
+    wait
+
+    echo
+    echo
+    echo "Execution semantics:"
+
+    cat exec-out.txt
+    rm -rf exec-out.txt
+
+    echo
+    echo
+    echo "Done"
+    ;;
+"--full-v")
+    echo
+    echo
+    echo "Preprocessing semantics:"
+    # "&> file" redirects both stdin and stderr to the given file
+    $KOMPILE_CMD -d exec exec/java-exec.k &> exec-out.txt \
         & $KOMPILE_CMD -d full full/java-full.k &> full-out.txt \
         & $KOMPILE_CMD -d prep prep/java-prep.k
     wait
