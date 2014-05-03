@@ -1,7 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/core-classes.k"
-require "core-exec.k"
-
 //@ \section{Module STATIC-INIT}
 
 module STATIC-INIT

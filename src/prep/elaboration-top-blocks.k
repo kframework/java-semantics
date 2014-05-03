@@ -1,7 +1,3 @@
-require "../common/core-sorts.k"
-require "core-preprocessing.k"
-require "elaboration-core.k"
-
 /*@ This module initialtes the elaboration phase. It is responsible for elaborating all top-level code blocks
   in the program: methods, constructors, static and instance initializers.
 */

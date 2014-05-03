@@ -1,8 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/core-classes.k"
-require "../common/subtyping.k"
-require "to-string.k"
-
 /*@ \section{Module EXPRESSIONS-CLASSES}
   Class-related expressions.
 */

@@ -1,6 +1,3 @@
-require "../common/core-sorts.k"
-require "elaboration-core.k"
-
 //@ \section{Module ELABORATION-ARRAYS}
 
 module ELABORATION-ARRAYS

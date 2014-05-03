@@ -1,7 +1,3 @@
-require "../common/core-sorts.k"
-require "core-preprocessing.k"
-require "process-type-names.k"
-
 //@ \section{Module PROCESS-CLASS-DECS}
 
 module PROCESS-CLASS-DECS

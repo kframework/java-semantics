@@ -1,7 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/core-functions.k"
-require "configuration-full-doc.k"
-
 module CONFIGURATION-FULL
     imports CORE-SORTS
     imports CORE-FUNCTIONS

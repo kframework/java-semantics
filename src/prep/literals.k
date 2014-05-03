@@ -1,7 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/aux-strings.k"
-require "../common/primitive-types.k"
-
 //@ \section{Module LITERALS}
 
 module LITERALS

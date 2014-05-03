@@ -79,10 +79,10 @@ case "$OPTION" in
     $KOMPILE_CMD -v --backend pdf --doc-style "style=math" exec/java-exec.k
     ;;
 "--methods-latex")
-    $KOMPILE_CMD -v --backend latex --doc-style "style=math" latex/method-invoke-latex.k
+    $KOMPILE_CMD -v --backend latex --doc-style "style=math" latex/doc-methods-main.k
     ;;
 "--methods-pdf")
-    $KOMPILE_CMD -v --backend pdf --doc-style "style=math" latex/method-invoke-latex.k
+    $KOMPILE_CMD -v --backend pdf --doc-style "style=math" latex/doc-methods-main.k
     ;;
 "--help")
     echo "Usage: `basename $0`"

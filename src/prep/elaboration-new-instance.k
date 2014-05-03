@@ -1,11 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/core-classes.k"
-require "../common/subtyping.k"
-require "process-type-names.k"
-require "elaboration-core.k"
-require "elaboration-method-invoke.k"
-require "process-local-classes.k"
-
 module ELABORATION-NEW-INSTANCE
     imports CORE-SORTS
     imports CORE-CLASSES

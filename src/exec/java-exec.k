@@ -1,10 +1,15 @@
 require "labels-exec.k"
 require "configuration-exec.k"
 require "../common/java-doc.k"
-require "../common/core-sorts.k"
 require "../common/aux-strings.k"
+require "../common/core-sorts.k"
+require "../common/core-classes.k"
+require "../common/core-functions.k"
 require "../common/primitive-types.k"
 require "../common/subtyping.k"
+require "core-exec.k"
+require "syntax-conversions.k"
+require "to-string.k"
 require "unfolding.k"
 require "expressions.k"
 require "expressions-classes.k"
@@ -33,6 +38,7 @@ module JAVA-EXEC
     imports NEW-INSTANCE
     imports VAR-LOOKUP
     imports METHOD-INVOKE
+    imports METHOD-INVOKE-REST
     imports API-CORE
     imports API-THREADS
     imports JAVA-SYNTAX

@@ -1,7 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/core-classes.k"
-require "elaboration-core.k"
-
 //@ \section{Module PROCESS-ANONYMOUS-CLASSES}
 
 module PROCESS-ANONYMOUS-CLASSES

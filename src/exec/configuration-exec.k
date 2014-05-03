@@ -1,6 +1,4 @@
-require "../common/core-sorts.k"
-require "../common/core-functions.k"
-
+/*@ \section{Module CONFIGURATION-EXEC} */
 module CONFIGURATION-EXEC
     imports CORE-SORTS
     imports CORE-FUNCTIONS

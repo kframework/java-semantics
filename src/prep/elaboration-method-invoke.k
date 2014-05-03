@@ -1,8 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/core-classes.k"
-require "../common/subtyping.k"
-require "elaboration-core.k"
-
 //@ \section{Module ELABORATION-METHOD-INVOKE}
 
 module ELABORATION-METHOD-INVOKE

@@ -1,6 +1,3 @@
-require "core-sorts.k"
-require "subtyping.k"
-
 //@ \section{Module PRIMITIVE-TYPES}
 
 module PRIMITIVE-TYPES

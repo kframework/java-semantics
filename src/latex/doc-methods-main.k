@@ -1,9 +1,12 @@
 require "../common/java-doc.k"
+require "mock-dependencies.k"
 require "../exec/configuration-exec.k"
+require "../exec/syntax-conversions.k"
 require "../exec/method-invoke.k"
 
-module METHOD-INVOKE-LATEX
+module DOC-METHODS-MAIN
     imports CONFIGURATION-EXEC
+    imports SYNTAX-CONVERSIONS
     imports METHOD-INVOKE
     imports JAVA-SYNTAX
 

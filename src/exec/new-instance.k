@@ -1,9 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/core-functions.k"
-require "core-exec.k"
-require "static-init.k"
-require "var-lookup.k"
-
 /*@ \section{Module NEW-INSTANCE}
   New instance creation and related language features.
 */

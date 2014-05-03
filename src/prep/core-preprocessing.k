@@ -1,8 +1,5 @@
-require "../common/core-sorts.k"
-require "../common/core-functions.k"
-
-//@ \section{Module CORE-PREPROCESSING}
-/*@ Auxiliary functions related to preprocessing phases only.
+/*@ \section{Module CORE-PREPROCESSING}
+    Auxiliary functions related to preprocessing phases only.
 */
 
 module CORE-PREPROCESSING

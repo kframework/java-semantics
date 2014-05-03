@@ -1,8 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/core-classes.k"
-require "process-type-names.k"
-require "process-imports.k"
-
 /*@ \section{Module PROCESS-COMP-UNITS}
 ProcCompUnitsPhase:
   For each CompUnit separately:

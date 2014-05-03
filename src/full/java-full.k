@@ -1,13 +1,21 @@
 require "labels-full.k"
 require "configuration-full.k"
 require "../common/java-doc.k"
-require "../common/core-sorts.k"
 require "../common/aux-strings.k"
+require "../common/core-sorts.k"
+require "../common/core-classes.k"
+require "../common/core-functions.k"
+require "../common/primitive-types.k"
+require "../common/subtyping.k"
+
+require "../prep/core-preprocessing.k"
 require "../prep/process-type-names.k"
 require "../prep/process-comp-units.k"
 require "../prep/process-imports.k"
 require "../prep/process-class-decs.k"
 require "../prep/process-class-members.k"
+require "../prep/elaboration-categories.k"
+require "../prep/elaboration-core.k"
 require "../prep/elaboration-top-blocks.k"
 require "../prep/elaboration-statements.k"
 require "../prep/elaboration-expressions.k"
@@ -20,10 +28,13 @@ require "../prep/literals.k"
 require "../prep/process-local-classes.k"
 require "../prep/process-anonymous-classes.k"
 require "../prep/folding.k"
+
+require "../exec/core-exec.k"
+require "../exec/syntax-conversions.k"
+require "../exec/to-string.k"
 require "../exec/unfolding.k"
-require "../common/primitive-types.k"
-require "../common/subtyping.k"
 require "../exec/expressions.k"
+require "../exec/expressions-classes.k"
 require "../exec/statements.k"
 require "../exec/arrays.k"
 require "../exec/static-init.k"
@@ -65,6 +76,7 @@ module JAVA-FULL
     imports NEW-INSTANCE
     imports VAR-LOOKUP
     imports METHOD-INVOKE
+    imports METHOD-INVOKE-REST
     imports API-CORE
     imports API-THREADS
     imports JAVA-SYNTAX

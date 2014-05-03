@@ -1,6 +1,3 @@
-require "../common/core-sorts.k"
-require "elaboration-core.k"
-
 module ELABORATION-VARS
     imports CORE-SORTS
     imports ELABORATION-CORE

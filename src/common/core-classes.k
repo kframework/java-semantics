@@ -1,9 +1,5 @@
-require "core-sorts.k"
-require "core-functions.k"
-require "aux-strings.k"
-
-//@ \section{Module CORE-CLASSES}
-/*@ Auxiliary functions related to classes and packages.
+/*@ \section{Module CORE-CLASSES}
+    Auxiliary functions related to classes and packages.
 */
 
 module CORE-CLASSES

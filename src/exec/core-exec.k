@@ -1,6 +1,3 @@
-require "../common/core-sorts.k"
-require "syntax-conversions.k"
-
 //@ \section{Module CORE-EXEC}
 
 module CORE-EXEC

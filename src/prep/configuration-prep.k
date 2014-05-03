@@ -1,6 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/core-functions.k"
-
 module CONFIGURATION-PREP
     imports CORE-SORTS
     imports CORE-FUNCTIONS

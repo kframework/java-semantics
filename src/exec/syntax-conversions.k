@@ -1,7 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/core-functions.k"
-require "core-exec.k"
-
 /*@ \section{Module SYNTAX-CONVERSIONS}
   Defining the syntax for key portions of the semantics, and converting AST terms back int otheir syntactiv form.
 */
@@ -9,6 +5,7 @@ require "core-exec.k"
 module SYNTAX-CONVERSIONS
     imports CORE-SORTS
     imports CORE-FUNCTIONS
+    imports CORE-CLASSES    //for cast
     imports CORE-EXEC
 
 // 'Param(\_:K,, T:Type,, X:Id). Consumed by initParams().

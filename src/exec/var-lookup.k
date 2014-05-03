@@ -1,8 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/subtyping.k"
-require "static-init.k"
-require "expressions.k"
-
 //@ \section{Module VAR-LOOKUP}
 
 module VAR-LOOKUP

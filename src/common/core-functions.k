@@ -1,6 +1,4 @@
-require "core-sorts.k"
-require "core-classes.k"
-
+/*@ \section{Module CORE-FUNCTIONS} */
 module CORE-FUNCTIONS
     imports CORE-SORTS
     imports CORE-CLASSES
@@ -140,10 +138,6 @@ rule setUnion(setWrap(S1:Set), setWrap(.Set)) => setWrap(S1)
 syntax Set ::= getSet ( K )           [function]
 rule getSet(setWrap(S1:Set)) => S1
 
-//@ A wrapper over an arbitrary KList, wrapper being of type KResult.
-syntax KRListWrap ::= "kr" "[" KList "]"
-syntax KResult ::= KRListWrap
-
 /*@ the concatenation of two kr[KList] items */
 syntax K ::= klistConcat ( KRListWrap, KRListWrap ) [strict]
 rule klistConcat(kr[KL1:KList], kr[KL2:KList]) => kr[KL1,,KL2]
@@ -201,5 +195,9 @@ syntax KListWrap ::= "[" KList "]" [klabel('KListWrap)]
 
 rule [S1:K,, Stmts:KList] => S1 ~> [Stmts]        [structural]
 rule [.KList] => .K                               [structural]
+
+//@ A wrapper over an arbitrary KList, wrapper being of type KResult.
+syntax KRListWrap ::= "kr" "[" KList "]"
+syntax KResult ::= KRListWrap
 
 endmodule

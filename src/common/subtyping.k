@@ -1,7 +1,3 @@
-require "core-sorts.k"
-require "core-functions.k"
-require "core-classes.k"
-
 //@ \section{Module SUBTYPING}
 
 module SUBTYPING

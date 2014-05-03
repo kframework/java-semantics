@@ -1,10 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/core-classes.k"
-require "process-comp-units.k"
-require "process-class-decs.k"
-require "process-class-members.k"
-require "elaboration-vars.k"
-
 //@ \section{Module PROCESS-LOCAL-CLASSES}
 
 module PROCESS-LOCAL-CLASSES

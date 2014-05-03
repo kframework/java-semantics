@@ -1,7 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/subtyping.k"
-require "elaboration-categories.k"
-
 /*@ \section{Module ELABORATION-CORE}
 Elaborate the composition of code blocks of a class - the last step of preprocessing.
 During this phase we inspect the contents of method bodies, instance initializers and

@@ -1,9 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/subtyping.k"
-require "core-exec.k"
-require "var-lookup.k"
-require "method-invoke.k"
-
 //@ \section{Module STATEMENTS}
 
 module STATEMENTS

@@ -1,7 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/core-functions.k"
-require "static-init.k"
-
 /*@ \section{Module METHOD-INVOKE}
 \begin{markdown}
 An elaborated method invocation expresion may have one of the following forms:
@@ -60,6 +56,7 @@ In JLS runtime semantics of method invocation is described in \$15.2.4. Althouhg
 module METHOD-INVOKE
     imports CORE-SORTS
     imports CORE-FUNCTIONS
+    imports SYNTAX-CONVERSIONS
     imports STATIC-INIT //for staticInit()
 
 /*@
@@ -146,16 +143,6 @@ when
 
 /* Impl: We could combine this rule with the previous one by using getLookupTargetType(), but we'll keep it this way
     to keep the core part of method invocation separate from the non object-related part. */
-
-/* [Skip]
-The next rule for method invocation is applied when the qualifier type is array. This array type is rewritten
-  into the auxiliary class ArrayImpl, that is used in K-Java to simulate method invocations over array objects.
-  This rule is required in order to minimize the number of particular cases involving arrays in the rules that follow.
-*/
-rule [Invoke-compute-methodInfo-arrays]:
-    QualRV:RawVal :: (arrayOf T:Type => arrayImplClass)
-      . methodInfo(Sig:Signature, arrayOf T => arrayImplClass, _,_,_,_)
-      ([Args:KList])
 
 /*@
 The second rule for method invocation loads MetaT and DecC. It requires Sig and QualC computed by the previous rule.
@@ -336,45 +323,6 @@ context _:K . HOLE (_)
 when
     getKLabel(HOLE) ==KLabel 'lookupPackageMethod
 
-rule [Invoke-methodInfo-on-array-or-string]:
-    QualRV:RawVal::QualC:ClassType
-       . methodInfo(Sig:Signature, QualC, classCMT, DecC:ClassType, instanceCT, _)
-      ([Args:KList])
-    => invokeImpl( methodRef(Sig, DecC), QualRV::QualC, [Args] )
-when
-    isArrayRef(QualRV) ==K true orBool isString(QualRV) ==K true
-
-//@ 'QSuperMethod(Class:ClassType,, \_:K,, Name:Id)
-syntax KLabel ::= "'QSuperMethod"
-
-rule [Invoke-QSuperMethod]:
-    'Invoke(
-      ('QSuperMethod(Class:ClassType,, _:K,, Name:Id)
-       => 'Method('MethodName(superMethodImpl('QThis(Class)),, Name))
-      ),, _
-    )
-
-/* Elaboration result for super keyword in A.super.m() call. Have to be a typed expression.
-*/
-syntax MethodName ::= superMethodImpl ( K ) // is always equal to A.this - used to lookup the right qualifier closure.
-                                        [strict]
-
-rule [superMethodImpl]:
-    <k>
-      superMethodImpl(
-        objectRef(
-          OId:Int,
-          //The layers above the layer where method should be searched
-          // should be discarded in order to implement syper.m() functionality.
-          _
-        )::Class:ClassType  //due to the way term superMethod() is first constructed, this is the upper search layer
-      )
-      => objectRef( OId, BaseClass )::BaseClass
-      ...
-    </k>
-    <classType> Class </classType>
-    <extends> BaseClass:ClassType </extends>
-
 /*
 Returns the list of classes representing the layer of the given object (by OId),
   located between MostBaseClass (exclusively) and MostDerivedClass (inclusively).
@@ -383,20 +331,6 @@ syntax K ::=  getClassChain( ClassType, //MostBaseClass
                              KListWrap  //[MostDerivedClass] at beginning, gradually accumulates
                                           //the list of classes
               )
-
-rule [getClassChain-process]:
-    <k>
-      getClassChain(MostBaseClass:ClassType, [(.KList => BaseClass),, MostDerivedClass:ClassType,, _])
-      ...
-    </k>
-    <classType> MostDerivedClass </classType>
-    <extends> BaseClass:ClassType </extends>
-when
-    MostDerivedClass =/=K MostBaseClass
-
-// Eliminate the most base class before returning the result, because it is exclusive.
-rule [getClassChain-end]:
-    getClassChain(Class:ClassType, [Class,, MoreDerivedClasses:KList]) => kr[Class,, MoreDerivedClasses]
 
 /* [Skip] The right signature is already found.
 Search for the right implementation is performed from the compile-time type of the target
@@ -573,6 +507,77 @@ rule [initParams]:
 rule [initParams-end]:
     initParams([.KList], [.KList]) => .K
         [structural]
+
+endmodule
+
+module METHOD-INVOKE-REST
+    imports CORE-SORTS
+    imports CORE-FUNCTIONS
+    imports SYNTAX-CONVERSIONS
+    imports METHOD-INVOKE
+
+/* [Skip]
+The next rule for method invocation is applied when the qualifier type is array. This array type is rewritten
+  into the auxiliary class ArrayImpl, that is used in K-Java to simulate method invocations over array objects.
+  This rule is required in order to minimize the number of particular cases involving arrays in the rules that follow.
+*/
+rule [Invoke-compute-methodInfo-arrays]:
+    QualRV:RawVal :: (arrayOf T:Type => arrayImplClass)
+      . methodInfo(Sig:Signature, arrayOf T => arrayImplClass, _,_,_,_)
+      ([Args:KList])
+
+rule [Invoke-methodInfo-on-array-or-string]:
+    QualRV:RawVal::QualC:ClassType
+       . methodInfo(Sig:Signature, QualC, classCMT, DecC:ClassType, instanceCT, _)
+      ([Args:KList])
+    => invokeImpl( methodRef(Sig, DecC), QualRV::QualC, [Args] )
+when
+    isArrayRef(QualRV) ==K true orBool isString(QualRV) ==K true
+
+//@ 'QSuperMethod(Class:ClassType,, \_:K,, Name:Id)
+syntax KLabel ::= "'QSuperMethod"
+
+rule [Invoke-QSuperMethod]:
+    'Invoke(
+      ('QSuperMethod(Class:ClassType,, _:K,, Name:Id)
+       => 'Method('MethodName(superMethodImpl('QThis(Class)),, Name))
+      ),, _
+    )
+
+/* Elaboration result for super keyword in A.super.m() call. Have to be a typed expression.
+*/
+syntax MethodName ::= superMethodImpl ( K ) // is always equal to A.this - used to lookup the right qualifier closure.
+                                        [strict]
+
+rule [superMethodImpl]:
+    <k>
+      superMethodImpl(
+        objectRef(
+          OId:Int,
+          //The layers above the layer where method should be searched
+          // should be discarded in order to implement syper.m() functionality.
+          _
+        )::Class:ClassType  //due to the way term superMethod() is first constructed, this is the upper search layer
+      )
+      => objectRef( OId, BaseClass )::BaseClass
+      ...
+    </k>
+    <classType> Class </classType>
+    <extends> BaseClass:ClassType </extends>
+
+rule [getClassChain-process]:
+    <k>
+      getClassChain(MostBaseClass:ClassType, [(.KList => BaseClass),, MostDerivedClass:ClassType,, _])
+      ...
+    </k>
+    <classType> MostDerivedClass </classType>
+    <extends> BaseClass:ClassType </extends>
+when
+    MostDerivedClass =/=K MostBaseClass
+
+// Eliminate the most base class before returning the result, because it is exclusive.
+rule [getClassChain-end]:
+    getClassChain(Class:ClassType, [Class,, MoreDerivedClasses:KList]) => kr[Class,, MoreDerivedClasses]
 
 rule [Invoke-methodRef-native]:
     <k>

@@ -1,6 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/core-functions.k"
-
 module UNFOLDING
     imports CORE-SORTS
     imports CORE-FUNCTIONS

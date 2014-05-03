@@ -1,6 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/core-classes.k"
-
 module FOLDING
     imports CORE-SORTS
     imports CORE-CLASSES

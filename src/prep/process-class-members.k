@@ -1,7 +1,3 @@
-require "../common/core-sorts.k"
-require "../common/core-classes.k"
-require "core-preprocessing.k"
-
 //@ \section{Module PROCESS-CLASS-MEMBERS}
 
 module PROCESS-CLASS-MEMBERS
