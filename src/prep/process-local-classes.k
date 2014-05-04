@@ -279,7 +279,6 @@ syntax K ::=  localClassAugmentConsParams (
                 Id,         // ConsName - constructor name
                 ClassType   // LocalEnvClass
               )
-              [strict(2)]
 
 rule [localClassAugmentConsParams-augment]:
     <k> localClassAugmentConsParams(LocalClass:ClassType, ConsName:Id, LocalEnvClass:ClassType) ...</k>
