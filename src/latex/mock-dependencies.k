@@ -138,6 +138,7 @@ syntax K ::=  staticInit (
 endmodule
 
 module CORE-CLASSES
+    imports CORE-SORTS
 
 syntax K ::=  isOverridden (
                 ClassType,  //BaseC
@@ -146,9 +147,36 @@ syntax K ::=  isOverridden (
               )
               [strict]
 
+rule isOverridden(_, public,    _) => true
+rule isOverridden(_, protected, _) => true
+
+rule isOverridden(BaseC:ClassType, package, SubC:ClassType)
+    => getPackage(getTopLevel(BaseC)) == getPackage(getTopLevel(SubC))
+
+rule isOverridden(_, private, _) => false
+
+// Just for the sake of the rule above
+syntax K ::= K "==" K
+
+syntax K ::= getPackage ( K )               [strict]
+
+syntax K ::= getTopLevel ( ClassType )
+
 syntax Cast ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
 
 syntax K ::= "stringClass"                              [function]
+
+//Just for the sake of rendering
+syntax KResult ::= ClassType
+                 | KListWrap
+
+syntax Blah ::= "objectRef" "("
+                            Int ","      //OL - object location
+                            ClassType //LowestClass - the lowest class where we are allowed to search for method
+                                      // implementation, or actual object class if there are no restrictions.
+                          ")" ":::" ClassType
+                | "null" ":::" ClassType
+
 
 endmodule
 

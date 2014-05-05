@@ -249,7 +249,7 @@ The logic for private instance methods is the same as for static methods, with t
   not discarded.
 */
 rule [Invoke-methodInfo-instance-private]:
-    _:ObjectRef::_
+    objectRef(_,_)::_
       . ( methodInfo(Sig:Signature, _, classCMT, DecC:ClassType, instanceCT, private) => methodRef(Sig, DecC) )
       ([Args:KList])
 
