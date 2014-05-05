@@ -4,8 +4,6 @@
 
 package a;
 
-import a.*;
-
 public class B extends A {
 
   protected void f(int a) {
