@@ -1,4 +1,5 @@
-/*@ \section{Module CONFIGURATION-EXEC} */
+require "../common/configuration-full-doc.k"
+
 module CONFIGURATION-EXEC
     imports CORE-SORTS
     imports CORE-FUNCTIONS

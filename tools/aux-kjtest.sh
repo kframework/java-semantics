@@ -37,7 +37,7 @@ GEN_CMD="$(cross-sh.sh ${TOOLS_DIR}/jdk-run.sh) --keep-temp"
 
 case "$MODE" in
 "run")
-    RUN_CMD="$(cross-sh.sh ${TOOLS_DIR}/kjrun.sh) --cached"
+    RUN_CMD="$(cross-sh.sh ${TOOLS_DIR}/kjrun.sh) --split-cached"
     EXPECTED_OUT_EXT=out
     ;;
 "search")

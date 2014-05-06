@@ -1,3 +1,7 @@
-Tests that need to be model-checked instead of executed. If model checking leads to more than one solution - we have an error. Usually tests in this directory are related to heating-cooling and seqstrict.
+Tests that need to be model-checked instead of executed. If model checking leads to more than one solution
+  - we have an error. Usually tests in this directory are related to heating-cooling and seqstrict.
 
-1. The rule [elabHeatDefault] in elaboration phase needs to heat expression terms from left to right only. Otherwise we will have problems with local variable declarations. Test: a simple main, declares a var on first line, writes a value to that variable on the second.
+Should be discarded as we no longer model-check the elaboration semantics.
+1. The rule [elabHeatDefault] in elaboration phase needs to heat expression terms from left to right only.
+  Otherwise we will have problems with local variable declarations. Test: a simple main, declares a var on first line,
+  writes a value to that variable on the second.

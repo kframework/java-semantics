@@ -11,7 +11,7 @@ if (( "$#" != 11 )); then
     echo "Your command:"
     echo `basename $0` $@
     echo "Usage: `basename $0` --time <true|false> --timeout <timeout in s> \
-      --mode <run-full|run-prep-config|run-prep-ast|run-exec|search|search-count|symbolic|symbolic-count|debug> \
+      --mode <run-prep-config|run-prep-ast|run-exec|search|search-count|symbolic|symbolic-count|debug> \
       --output <none|raw|pretty> \
       --input <java|kast-cache> \
       <javaFile>"
@@ -35,15 +35,11 @@ TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 WORK_DIR="$(pwd)"
 
 case "$MODE" in
-"run-full" | "search"|"search-count" | "symbolic"|"symbolic-count" | "debug")
-    SEMANTICS_DIR=$(cross-path-native.sh ${TOOLS_DIR}/../src/exec)
-    MAIN_MODULE=JAVA-EXEC
-    ;;
 "run-prep-config" | "run-prep-ast")
     SEMANTICS_DIR=$(cross-path-native.sh ${TOOLS_DIR}/../src/prep)
     MAIN_MODULE=JAVA-PREP
     ;;
-"run-exec")
+"run-exec" | "search" |"search-count" | "symbolic" | "symbolic-count" | "debug")
     SEMANTICS_DIR=$(cross-path-native.sh ${TOOLS_DIR}/../src/exec)
     MAIN_MODULE=JAVA-EXEC
     ;;
@@ -73,12 +69,6 @@ KRUN_CMD="$KRUN_CMD \
                       -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
 
 case "$MODE" in
-"run-full")
-    KRUN_CMD="$KRUN_CMD -cModelCheck=\"true\" \
-                        -cCOMMAND=\"'procTypeNames(.KList)\" \
-                        -cSTARTPHASE=\"'ProcTypeNamesPhase(.KList)\" \
-                        -cENDPHASE=\"'ExecutionPhase(.KList)\""
-    ;;
 "run-prep-config" | "run-prep-ast")
     KRUN_CMD="$KRUN_CMD -cModelCheck=\"true\" \
                         -cCOMMAND=\"'procTypeNames(.KList)\" \

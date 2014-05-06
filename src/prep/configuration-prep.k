@@ -1,3 +1,5 @@
+require "../common/configuration-full-doc.k"
+
 module CONFIGURATION-PREP
     imports CORE-SORTS
     imports CORE-FUNCTIONS
