@@ -49,13 +49,17 @@ case "$OPTION" in
     echo
     echo "Done"
     ;;
-"--full-v")
+"--strictness")
+    $KOMPILE_CMD -v --transition "transition-strictness" -d full full/java-full.k
+    ;;
+"--threading")
+    $KOMPILE_CMD -v --transition "transition-threading" -d full full/java-full.k
+
     echo
     echo
     echo "Preprocessing semantics:"
     # "&> file" redirects both stdin and stderr to the given file
-    $KOMPILE_CMD -d exec exec/java-exec.k &> exec-out.txt \
-        & $KOMPILE_CMD -d full full/java-full.k &> full-out.txt \
+    $KOMPILE_CMD --transition "transition-threading" -d exec exec/java-exec.k &> exec-out.txt \
         & $KOMPILE_CMD -d prep prep/java-prep.k
     wait
 
@@ -68,20 +72,7 @@ case "$OPTION" in
 
     echo
     echo
-    echo "Full semantics:"
-
-    cat full-out.txt
-    rm -rf full-out.txt
-
-    echo
-    echo
     echo "Done"
-    ;;
-"--strictness")
-    $KOMPILE_CMD -v -transition "transition-strictness" -d full full/java-full.k
-    ;;
-"--threading")
-    $KOMPILE_CMD -v -transition "transition-threading" -d full full/java-full.k
     ;;
 "--symbolic")
     $KOMPILE_CMD -v --backend symbolic --symbolic-rules "symbolic-rule" -d full full/java-full.k

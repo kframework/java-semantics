@@ -36,8 +36,8 @@ WORK_DIR="$(pwd)"
 
 case "$MODE" in
 "run-full" | "search"|"search-count" | "symbolic"|"symbolic-count" | "debug")
-    SEMANTICS_DIR=$(cross-path-native.sh ${TOOLS_DIR}/../src/full)
-    MAIN_MODULE=JAVA-FULL
+    SEMANTICS_DIR=$(cross-path-native.sh ${TOOLS_DIR}/../src/exec)
+    MAIN_MODULE=JAVA-EXEC
     ;;
 "run-prep-config" | "run-prep-ast")
     SEMANTICS_DIR=$(cross-path-native.sh ${TOOLS_DIR}/../src/prep)
@@ -93,22 +93,22 @@ case "$MODE" in
     ;;
 "search"|"search-count")
     KRUN_CMD="$KRUN_CMD --search-final -cModelCheck=\"true\" \
-                        -cCOMMAND=\"'procTypeNames(.KList)\" \
-                        -cSTARTPHASE=\"'ProcTypeNamesPhase(.KList)\" \
+                        -cCOMMAND=\"'unfoldingPhase(.KList)\" \
+                        -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
     ;;
 "symbolic"|"symbolic-count")
     IN_FILE=${JAVA_FILE%.java}.cIN.in
     IN_VALUE=$(<${IN_FILE})
     KRUN_CMD="$KRUN_CMD --search -cModelCheck=\"true\" -cPC=true -cIN=\"$IN_VALUE\" \
-                        -cCOMMAND=\"'procTypeNames(.KList)\" \
-                        -cSTARTPHASE=\"'ProcTypeNamesPhase(.KList)\" \
+                        -cCOMMAND=\"'unfoldingPhase(.KList)\" \
+                        -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
     ;;
 "debug")
     KRUN_CMD="$KRUN_CMD --debug -cModelCheck=\"false\" \
-                        -cCOMMAND=\"'procTypeNames(.KList)\" \
-                        -cSTARTPHASE=\"'ProcTypeNamesPhase(.KList)\" \
+                        -cCOMMAND=\"'unfoldingPhase(.KList)\" \
+                        -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
     ;;
 *)

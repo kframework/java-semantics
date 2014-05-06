@@ -47,13 +47,21 @@ require "../exec/api-threads.k"
 module JAVA-FULL
     imports LABELS-FULL
     imports CONFIGURATION-FULL
-    imports CORE-SORTS
     imports AUX-STRINGS
+    imports CORE-SORTS
+    imports CORE-CLASSES
+    imports CORE-FUNCTIONS
+    imports PRIMITIVE-TYPES
+    imports SUBTYPING
+
+    imports CORE-PREPROCESSING
     imports PROCESS-TYPE-NAMES
     imports PROCESS-COMP-UNITS
     imports PROCESS-IMPORTS
     imports PROCESS-CLASS-DECS
     imports PROCESS-CLASS-MEMBERS
+    imports ELABORATION-CATEGORIES
+    imports ELABORATION-CORE
     imports ELABORATION-TOP-BLOCKS
     imports ELABORATION-STATEMENTS
     imports ELABORATION-EXPRESSIONS
@@ -62,14 +70,17 @@ module JAVA-FULL
     imports ELABORATION-NEW-INSTANCE
     imports ELABORATION-ARRAYS
     imports ELABORATION-TYPES
+    imports LITERALS
     imports PROCESS-LOCAL-CLASSES
     imports PROCESS-ANONYMOUS-CLASSES
     imports FOLDING
+
+    imports CORE-EXEC
+    imports SYNTAX-CONVERSIONS
+    imports TO-STRING
     imports UNFOLDING
-    imports PRIMITIVE-TYPES
-    imports LITERALS
-    imports SUBTYPING
     imports EXPRESSIONS
+    imports EXPRESSIONS-CLASSES
     imports STATEMENTS
     imports ARRAYS
     imports STATIC-INIT

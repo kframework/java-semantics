@@ -106,8 +106,19 @@ case "$OPTION" in
     aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-full --output none --input java ${JAVA_FILE}
     ;;
 "--search")
-    aux-kjrun.sh --time true --timeout ${SEARCH_TIMEOUT} --mode search --output pretty --input java ${JAVA_FILE}
+    echo "preprocess:"
+    if [ ! -e ${PKAST_FILE} ];
+      then aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-prep-ast --output raw --input java \
+        ${JAVA_FILE} > ${PKAST_FILE}
+    fi
+
+    echo
+    echo "execute:"
+    echo
+    aux-kjrun.sh --time true --timeout ${SEARCH_TIMEOUT} --mode search --output pretty --input kast \
+      ${PKAST_FILE}
     ;;
+
 "--cached")
     if [ ! -e ${PKAST_FILE} ];
       then aux-kjrun.sh --time false --timeout 0 --mode run-prep-ast --output raw --input kast-cache ${JAVA_FILE} \
@@ -117,8 +128,13 @@ case "$OPTION" in
     aux-kjrun.sh --time false --timeout 0 --mode run-exec --output none --input kast ${PKAST_FILE}
     ;;
 "--search-cached")
-    aux-kjrun.sh --time false --timeout 0 --mode search-count --output raw --input kast-cache ${JAVA_FILE}
+    if [ ! -e ${PKAST_FILE} ];
+      then aux-kjrun.sh --time false --timeout 0 --mode run-prep-ast --output raw --input kast-cache ${JAVA_FILE} \
+        > ${PKAST_FILE}
+    fi
+    aux-kjrun.sh --time false --timeout 0 --mode search-count --output raw --input kast ${PKAST_FILE}
     ;;
+
 "--debug")
     aux-kjrun.sh --time false --timeout 0 --mode debug --output pretty --input java ${JAVA_FILE}
     ;;
