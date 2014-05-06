@@ -30,8 +30,8 @@ fi
 
 # OS-dependent choice of timeout
 if [[ $(uname) == *Linux* ]]
-  then SEARCH_TIMEOUT=60
-  else SEARCH_TIMEOUT=120
+  then SEARCH_TIMEOUT=120
+  else SEARCH_TIMEOUT=240
 fi
 
 # OS-dependent choice of timeout
