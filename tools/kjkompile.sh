@@ -53,8 +53,6 @@ case "$OPTION" in
     $KOMPILE_CMD -v --transition "transition-strictness" -d full full/java-full.k
     ;;
 "--threading")
-    $KOMPILE_CMD -v --transition "transition-threading" -d full full/java-full.k
-
     echo
     echo
     echo "Preprocessing semantics:"
