@@ -78,7 +78,7 @@ case "$OPTION" in
     ;;
 "--split-cached")
     if [ ! -e ${PKAST_FILE} ];
-      then aux-kjrun.sh --time false --timeout 0 --mode run-prep-ast --output none --input kast-cache ${JAVA_FILE} \
+      then aux-kjrun.sh --time false --timeout 0 --mode run-prep-ast --output raw --input kast-cache ${JAVA_FILE} \
         > ${PKAST_FILE}
     fi
 
