@@ -7,13 +7,14 @@
 #   OUTPUT: same as --output option of krun.
 # Used by kjrun.sh
 
-if (( "$#" != 11 )); then
+if (( "$#" != 13 )); then
     echo "Your command:"
     echo `basename $0` $@
     echo "Usage: `basename $0` --time <true|false> --timeout <timeout in s> \
-      --mode <run-prep-config|run-prep-ast|run-exec|search|search-count|symbolic|symbolic-count|debug> \
+      --mode <run-prep-config|run-prep-ast|run-exec|search|search-pattern|search-count|symbolic|symbolic-count|debug> \
       --output <none|raw|pretty> \
       --input <java|kast-cache> \
+      --pattern <pattern> \
       <javaFile>"
     exit 1
 fi
@@ -26,7 +27,8 @@ TIMEOUT=$4
 MODE=$6
 OUTPUT=$8
 INPUT=${10}
-JAVA_FILE=${11}
+PATTERN=${12}
+JAVA_FILE=${13}
 
 BASE_JAVA_FILE=`basename ${JAVA_FILE}`  #simple file/dir name
 MAIN_CLASS=`echo "$BASE_JAVA_FILE" | cut -d'.' -f1` #simple file minus extension
@@ -39,9 +41,14 @@ case "$MODE" in
     SEMANTICS_DIR=$(cross-path-native.sh ${TOOLS_DIR}/../src/prep)
     MAIN_MODULE=JAVA-PREP
     ;;
-"run-exec" | "search" |"search-count" | "symbolic" | "symbolic-count" | "debug")
+"run-exec" | "search" |"search-count" |"search-pattern" | "symbolic" | "symbolic-count" | "debug")
     SEMANTICS_DIR=$(cross-path-native.sh ${TOOLS_DIR}/../src/exec)
     MAIN_MODULE=JAVA-EXEC
+    ;;
+
+*)
+    echo "Invalid INPUT: ${INPUT}"
+    exit 1
     ;;
 esac
 
@@ -83,6 +90,14 @@ case "$MODE" in
     ;;
 "search"|"search-count")
     KRUN_CMD="$KRUN_CMD --search-final -cModelCheck=\"true\" \
+                        -cCOMMAND=\"'unfoldingPhase(.KList)\" \
+                        -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
+                        -cENDPHASE=\"'ExecutionPhase(.KList)\""
+    ;;
+"search-pattern")
+    KRUN_CMD="$KRUN_CMD --search --bound 1 \
+                        --pattern \"$PATTERN\" \
+                        -cModelCheck=\"true\" \
                         -cCOMMAND=\"'unfoldingPhase(.KList)\" \
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
@@ -147,6 +162,11 @@ if [ ${MODE} == "run-prep-ast" ];
   then KRUN_CMD="$KRUN_CMD  | grep -Po '< program > \K.*(?=</ program > )'"
 fi
 
-# echo KRUN_CMD
-# echo ${KRUN_CMD}
+case "$MODE" in
+"run-exec" | "search" |"search-count" |"search-pattern" | "symbolic" | "symbolic-count" | "debug")
+#    echo KRUN_CMD
+#    echo ${KRUN_CMD}
+    ;;
+esac
+
 eval ${KRUN_CMD}
