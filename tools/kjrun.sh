@@ -110,8 +110,8 @@ case "$OPTION" in
     ;;
 "--search-cached")
     if [ ! -e ${PKAST_FILE} ];
-      then aux-kjrun.sh --time false --timeout 0 --mode run-prep-ast --output raw --input kast-cache ${JAVA_FILE} \
-        --pattern 0 > ${PKAST_FILE}
+      then aux-kjrun.sh --time false --timeout 0 --mode run-prep-ast --output raw --input kast-cache --pattern 0 \
+        ${JAVA_FILE} > ${PKAST_FILE}
     fi
     aux-kjrun.sh --time false --timeout 0 --mode search-count --output raw --input kast --pattern 0 ${PKAST_FILE}
     ;;
