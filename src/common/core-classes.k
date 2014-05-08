@@ -12,8 +12,13 @@ module CORE-CLASSES
 syntax K ::= "objectClass"                              [function]
 rule objectClass => class String2Id("java.lang.Object")
 
-syntax K ::= "stringClass"                              [function]
+syntax K ::= "stringClass"
+    [function, latex(\terminal{String})]
 rule stringClass => class String2Id("java.lang.String")
+
+syntax K ::= "nullPEClass"
+    [function, latex(\terminal{NullPointerException})]
+rule nullPEClass => class String2Id("java.lang.NullPointerException")
 
 syntax K ::= "arrayImplClass"                   [function]
 rule arrayImplClass => class String2Id("java.lang.ArrayImpl")
@@ -127,29 +132,6 @@ rule isCompoundAssignLabel('AssignRemain) => true
 rule isCompoundAssignLabel('AssignLeftShift) => true
 rule isCompoundAssignLabel('AssignRightShift) => true
 rule isCompoundAssignLabel('AssignURightShift) => true
-
-/*@ [skip] Tests if a method declared in class BaseC with access mode Acc is overridden by a method with the same
-  signature declared in a subclass SubC.
-
-The method is overridden if either:
-  - Acc is protected or public
-  - Acc is package and BaseC and SubC are declared in the same package (JLS \$6.6)
-*/
-syntax K ::=  isOverridden (
-                ClassType,  //BaseC
-                AccessMode, //BaseAcc
-                ClassType   //SubC
-              )
-              [strict]
-
-rule isOverridden(_, public,    _) => true
-rule isOverridden(_, protected, _) => true
-
-// Object class cannot match this rule since it has public access mode
-rule isOverridden(BaseC:ClassType, package, SubC:ClassType)
-    => eqAux(getPackage(getTopLevel(BaseC)), getPackage(getTopLevel(SubC)))
-
-rule isOverridden(_, private, _) => false
 
 //@ \subsection{Computation terms produced during elaboration}
 

@@ -55,7 +55,7 @@ rule [ArrayAccess-null-to-NullPointerException]:
     'ArrayAccess(null::_,, _)
     => 'Throw('NewInstance(
       'None(.KList),,
-      class String2Id("java.lang.NullPointerException"),,
+      nullPEClass,,
       [ null::stringClass ],,
       'None(.KList)
     ))

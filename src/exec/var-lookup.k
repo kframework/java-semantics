@@ -107,7 +107,7 @@ rule [Field-instance-OfNull]:
     'Field(null::_,, _)
     =>  'Throw('NewInstance(
           'None(.KList),,
-          class String2Id("java.lang.NullPointerException"),,
+          nullPEClass,,
           [ null::stringClass],,
           'None(.KList)
         ))

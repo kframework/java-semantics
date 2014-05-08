@@ -83,7 +83,7 @@ rule [Synchronized-on-null]:
     'Synchronized(null::_,,_)
     =>  'Throw('NewInstance(
           'None(.KList),,
-          class String2Id("java.lang.NullPointerException"),,
+          nullPEClass,,
           [ null::stringClass ],,
           'None(.KList)
         ))

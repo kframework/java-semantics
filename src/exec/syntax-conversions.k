@@ -76,4 +76,15 @@ rule ((T:Type) K:K) => cast(T, K)
 rule X:Id => 'ExprName(X)
 rule lvalue(X:Id) => lvalue('ExprName(X))
 
+// Just for the sake of the rule isOverridden
+syntax K ::= K "==" K
+rule K1:K == K2:K => eqAux(K1, K2)
+
+syntax Stmt ::= "throw" K ";"
+rule throw K:K; => 'Throw(K)
+
+syntax Exp ::= "new" ClassType "(" KListWrap ")"
+rule new Class:ClassType([Args:KList])
+     => 'NewInstance( 'None(.KList),, Class,, [ Args ],, 'None(.KList) )
+
 endmodule

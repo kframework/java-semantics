@@ -126,6 +126,8 @@ syntax K ::=  getTypes (
               )
               [function]
 
+syntax K ::= eqAux ( K, K )                  [seqstrict]
+
 endmodule
 
 module STATIC-INIT
@@ -140,31 +142,19 @@ endmodule
 module CORE-CLASSES
     imports CORE-SORTS
 
-syntax K ::=  isOverridden (
-                ClassType,  //BaseC
-                AccessMode, //BaseAcc
-                ClassType   //SubC
-              )
-              [strict]
-
-rule isOverridden(_, public,    _) => true
-rule isOverridden(_, protected, _) => true
-
-rule isOverridden(BaseC:ClassType, package, SubC:ClassType)
-    => getPackage(getTopLevel(BaseC)) == getPackage(getTopLevel(SubC))
-
-rule isOverridden(_, private, _) => false
-
-// Just for the sake of the rule above
-syntax K ::= K "==" K
-
 syntax K ::= getPackage ( K )               [strict]
 
 syntax K ::= getTopLevel ( ClassType )
 
 syntax Cast ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
 
-syntax K ::= "stringClass"                              [function]
+syntax K ::= "stringClass"
+    [function, latex(\terminal{String})]
+rule stringClass => class String2Id("java.lang.String")
+
+syntax K ::= "nullPEClass"
+    [function, latex(\terminal{NullPointerException})]
+rule nullPEClass => class String2Id("java.lang.NullPointerException")
 
 //Just for the sake of rendering
 syntax KResult ::= ClassType

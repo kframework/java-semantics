@@ -1,3 +1,9 @@
+module METHOD-INVOKE
+    imports CORE-SORTS
+    imports CORE-FUNCTIONS
+    imports SYNTAX-CONVERSIONS
+    imports STATIC-INIT //for staticInit()
+
 /*@
 \newpage
 \section{Module METHOD-INVOKE}
@@ -181,11 +187,6 @@ The details related to each step of are described in the semantics below, above 
   JLS page, if there is a correspondence.
 \end{markdown}
 */
-module METHOD-INVOKE
-    imports CORE-SORTS
-    imports CORE-FUNCTIONS
-    imports SYNTAX-CONVERSIONS
-    imports STATIC-INIT //for staticInit()
 
 /*@
 \subsection{Evaluation of the qualifier}
@@ -202,7 +203,7 @@ context HOLE. Name:Id (_)
 //totest model check - expressions should be evaluated from left to right. A test for this
 //exists, but is unable to expose the problem. This rule have to be made "transition"
 //somehow.
-//totest - if qualifier evaluates to null, NullPoitnerException should be thrown after
+//totest - if qualifier evaluates to null, NullPointerException should be thrown after
 //the evaluation of the arguments
 
 /*@
@@ -391,12 +392,7 @@ rule [Invoke-methodInfo-instance-on-null]:
     invokeImpl needs an actual methodRef, and we cannot produce a methidRef if our qualifier object is null.
 */
     null::_ . methodInfo(_,_,_,_, instanceCT, _) ([Args:KList])
-    =>  'Throw('NewInstance(
-          'None(.KList),,
-          class String2Id("java.lang.NullPointerException"),,
-          [ null::stringClass ],,
-          'None(.KList)
-        ))
+    => throw new nullPEClass([ null::stringClass ]);
 
 /*@
 The logic for private instance methods is the same as for static methods, with the difference that the qualifier is not discarded.
@@ -594,6 +590,30 @@ rule [lookupPackageMethod-new-method]:
       ...
     </class>
 
+/*
+Tests if a method declared in class BaseC with access mode Acc is overridden by a method
+  with the same signature declared in a subclass SubC.
+
+The method is overridden if either:
+  - Acc is protected or public
+  - Acc is package and BaseC and SubC are declared in the same package (JLS \$6.6)
+*/
+syntax K ::=  isOverridden (
+                ClassType,  //BaseC
+                AccessMode, //BaseAcc
+                ClassType   //SubC
+              )
+              [strict]
+
+rule isOverridden(_, public,    _) => true
+rule isOverridden(_, protected, _) => true
+
+// Object class cannot match this rule since it has public access mode
+rule isOverridden(BaseC:ClassType, package, SubC:ClassType)
+    => getPackage(getTopLevel(BaseC)) == getPackage(getTopLevel(SubC))
+
+rule isOverridden(_, private, _) => false
+
 /*@
 The third rule represents the case when CurrentC chain don't contain method declarations with signature
   Sig. This case is identified by the side condition CurrentC =/=K DecC. Indeed, the two classes are different only
@@ -695,6 +715,9 @@ rule [initParams-end]:
     initParams([.KList], [.KList]) => .K
         [structural]
 
+/*@
+\newpage
+*/
 endmodule
 
 module METHOD-INVOKE-REST
