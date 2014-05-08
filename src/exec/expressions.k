@@ -251,7 +251,7 @@ rule [Assign]:
 rule [Compound-Assign]:
     KL:KLabel(loc(L:Int) :: T:Type,, Exp2:K)
     => loc(L)::T = cast(T, getOperatorLabel(KL)(lookup(L, T),, Exp2))
-when isCompoundAssignLabel(KL)
+when isCompoundAssignExp(KL(.KList))
 
 /*@ Returns the KLabel corresponding to the underlying operator of the given compound assignment KLabel.
 */
@@ -292,8 +292,8 @@ rule [exp-lvalue-Heat]:
     (. => lvalue(K)) ~> KL:KLabel((K:K => HOLE),, _)
 when
     (      KL ==KLabel 'AssignImpl
-    orBool isPrefixPostfixExpLabel(KL) ==K true
-    orBool isCompoundAssignLabel(KL) ==K true
+    orBool isPrefixPostfixExp(KL(.KList)) ==K true
+    orBool isCompoundAssignExp(KL(.KList)) ==K true
     )
     andBool notBool (isKResult(K) ==K true)
 

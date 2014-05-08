@@ -235,7 +235,7 @@ rule [elabEnd-findQualifierOfType-static]:
 rule [elabEnd-default-all-except-expressions]:
     elabEnd(KL:KLabel(Ks:KList)) => elabRes(KL(Ks))
 when
-    notBool (isExpressionLabel(KL) ==K true orBool customElabEnd(KL) ==K true)
+    notBool (isExp(KL(Ks)) ==K true orBool customElabEnd(KL) ==K true)
 
 //@ The implementation is scattered across elaboration-related modules
 syntax K ::= customElabEnd ( KLabel )                       [function]

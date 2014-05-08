@@ -4,79 +4,12 @@ module ELABORATION-EXPRESSIONS
     imports ELABORATION-CORE
     imports PRIMITIVE-TYPES
 
-/*@ \subsection{Elaboration of numeric expressions} */
+/*@ \subsection{Elaboration of numeric expressions}
 
-/*@ Expression labels are not converted by the default rule in the phase elabDispose() => elabRes(...)
-    Each expression needs a specialized rule for disposing, that will compute, among others,
-    the type of the expression.
+Expression labels are not converted by the default rule in the phase elabDispose() => elabRes(...)
+  Each expression needs a specialized rule for disposing, that will compute, among others,
+  the type of the expression.
 */
-syntax K ::= isExpressionLabel ( KLabel )     [function]
-
-    //Infix operators
-rule isExpressionLabel('LazyOr) => true       /* ||  */
-rule isExpressionLabel('LazyAnd) => true      /* &&  */
-rule isExpressionLabel('Or) => true           /* |   */
-rule isExpressionLabel('ExcOr) => true        /* ^   */
-rule isExpressionLabel('And) => true          /* &   */
-rule isExpressionLabel('Eq) => true           /* ==  */
-rule isExpressionLabel('NotEq) => true        /* !=  */
-rule isExpressionLabel('Lt) => true           /* <   */
-rule isExpressionLabel('Gt) => true           /* >   */
-rule isExpressionLabel('LtEq) => true         /* <=  */
-rule isExpressionLabel('GtEq) => true         /* >=  */
-rule isExpressionLabel('LeftShift) => true    /* <<  */
-rule isExpressionLabel('RightShift) => true   /* >>  */
-rule isExpressionLabel('URightShift) => true  /* >>> */
-rule isExpressionLabel('Plus) => true         /* +   */
-rule isExpressionLabel('Minus) => true        /* -   */
-rule isExpressionLabel('Mul) => true          /* *   */
-rule isExpressionLabel('Div) => true          /* /   */
-rule isExpressionLabel('Remain) => true       /* %   */
-
-    //Prefix operators
-rule isExpressionLabel('PreIncr) => true      /* ++  */
-rule isExpressionLabel('PreDecr) => true      /* --  */
-rule isExpressionLabel('Not) => true          /* !   */
-rule isExpressionLabel('Complement) => true   /* ~   */
-    /* +   */ //'Plus   - defined earlier
-    /* -   */ //'Minus  - defined earlier
-
-    //Postfix operators
-rule isExpressionLabel('PostIncr) => true     /* ++  */
-rule isExpressionLabel('PostDecr) => true     /* --  */
-
-    //Ternary operators
-rule isExpressionLabel('Cond) => true         /* ? : */
-rule isExpressionLabel('Assign) => true       /* =   */
-
-rule isExpressionLabel(KL:KLabel) => true
-when
-           isCompoundAssignLabel(KL) ==K true
-    orBool isNonNumericExp(KL) ==K true
-    orBool isAuxFuncExpressionLabel(KL) ==K true
-
-syntax K ::= isNonNumericExp ( KLabel )       [function]
-rule isNonNumericExp('ArrayAccess) => true
-rule isNonNumericExp('NewInstance) => true    // also in customElabChildren
-rule isNonNumericExp('QNewInstance) => true   // also in customElabChildren
-rule isNonNumericExp('InstanceOf) => true
-rule isNonNumericExp('Invoke) => true
-rule isNonNumericExp('This) => true
-rule isNonNumericExp('QThis) => true
-rule isNonNumericExp('AmbName) => true
-rule isNonNumericExp('ExprName) => true
-rule isNonNumericExp('Field) => true
-rule isNonNumericExp('SuperField) => true
-rule isNonNumericExp('QSuperField) => true
-rule isNonNumericExp('NewArray) => true
-rule isNonNumericExp('CastPrim) => true
-rule isNonNumericExp('CastRef) => true
-
-/*@ Auxiliary functions that should be threated as expressions in the elaboration phase.
-*/
-syntax K ::= isAuxFuncExpressionLabel ( KLabel )    [function]
-rule isAuxFuncExpressionLabel('cast) => true
-rule isAuxFuncExpressionLabel('stmtAndExp) => true
 
 syntax K ::= isBoolResultBinaryExpLabel ( KLabel )  [function]
 rule isBoolResultBinaryExpLabel('LazyOr) => true
@@ -127,7 +60,7 @@ when
 rule [elabEnd-PrefixPostfix]:
     elabEnd(KL:KLabel(cast(T1:Type, Exp1:K))) => elabRes(cast(T1, KL(Exp1)))
 when
-    isPrefixPostfixExpLabel(KL) ==K true
+    isPrefixPostfixExp(KL(.KList)) ==K true
 
 rule [elabEnd-StringPlusAny]:
     elabEnd('Plus(TE1:K,, TE2:K)) => elabRes(cast(stringClass,'Plus(TE1,, TE2)))
@@ -176,7 +109,7 @@ when
 rule [elabEnd-CompoundAssign]:
     elabEnd(KL:KLabel(cast(T1:Type, Exp1:K),, TE2:K)) => elabRes(cast(T1, KL(Exp1,, TE2)))
 when
-    isCompoundAssignLabel(KL) ==K true
+    isCompoundAssignExp(KL(.KList)) ==K true
 
 /*@ \subsection{Elaboration of non-numeric expressions} */
 

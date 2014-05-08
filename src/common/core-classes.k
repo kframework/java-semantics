@@ -99,13 +99,69 @@ rule [restoreAfterProcessLocalClass]:
 syntax K ::= getConsName ( ClassType )                               [function]
 rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(ClassId))
 
-//@ \subsection{Elaboration auxiliary functions}
+//@ \subsection{Expressions and their subsorts}
 
-syntax K ::= isPrefixPostfixExpLabel ( KLabel )  [function]
-rule isPrefixPostfixExpLabel('PreIncr) => true
-rule isPrefixPostfixExpLabel('PreDecr) => true
-rule isPrefixPostfixExpLabel('PostIncr) => true
-rule isPrefixPostfixExpLabel('PostDecr) => true
+syntax Exp ::= "dummyExp"
+
+    //Infix operators
+rule isExp('LazyOr(_)) => true       /* ||  */
+rule isExp('LazyAnd(_)) => true      /* &&  */
+rule isExp('Or(_)) => true           /* |   */
+rule isExp('ExcOr(_)) => true        /* ^   */
+rule isExp('And(_)) => true          /* &   */
+rule isExp('Eq(_)) => true           /* ==  */
+rule isExp('NotEq(_)) => true        /* !=  */
+rule isExp('Lt(_)) => true           /* <   */
+rule isExp('Gt(_)) => true           /* >   */
+rule isExp('LtEq(_)) => true         /* <=  */
+rule isExp('GtEq(_)) => true         /* >=  */
+rule isExp('LeftShift(_)) => true    /* <<  */
+rule isExp('RightShift(_)) => true   /* >>  */
+rule isExp('URightShift(_)) => true  /* >>> */
+rule isExp('Plus(_)) => true         /* +   */
+rule isExp('Minus(_)) => true        /* -   */
+rule isExp('Mul(_)) => true          /* *   */
+rule isExp('Div(_)) => true          /* /   */
+rule isExp('Remain(_)) => true       /* %   */
+
+    //Prefix operators
+rule isExp('Not(_)) => true          /* !   */
+rule isExp('Complement(_)) => true   /* ~   */
+    /* +   */ //'Plus   - defined earlier
+    /* -   */ //'Minus  - defined earlier
+
+    //Ternary operators
+rule isExp('Cond(_)) => true         /* ? : */
+
+rule isExp('Assign(_)) => true       /* =   */
+
+syntax Exp ::= NonNumericExp
+syntax NonNumericExp ::= "dummyNonNumericExp"
+
+rule isNonNumericExp('ArrayAccess(_)) => true
+rule isNonNumericExp('NewInstance(_)) => true    // also in customElabChildren
+rule isNonNumericExp('QNewInstance(_)) => true   // also in customElabChildren
+rule isNonNumericExp('InstanceOf(_)) => true
+rule isNonNumericExp('Invoke(_)) => true
+rule isNonNumericExp('This(_)) => true
+rule isNonNumericExp('QThis(_)) => true
+rule isNonNumericExp('AmbName(_)) => true
+rule isNonNumericExp('ExprName(_)) => true
+rule isNonNumericExp('Field(_)) => true
+rule isNonNumericExp('SuperField(_)) => true
+rule isNonNumericExp('QSuperField(_)) => true
+rule isNonNumericExp('NewArray(_)) => true
+rule isNonNumericExp('CastPrim(_)) => true
+rule isNonNumericExp('CastRef(_)) => true
+
+//@ Operators with side effects - prefix, postfix ++/--
+syntax Exp ::= PrefixPostfixExp
+syntax PrefixPostfixExp ::= "dummyPrefixPostfixExp"
+
+rule isPrefixPostfixExp('PreIncr(_)) => true    /* ++  */
+rule isPrefixPostfixExp('PreDecr(_)) => true    /* --  */
+rule isPrefixPostfixExp('PostIncr(_)) => true   /* ++  */
+rule isPrefixPostfixExp('PostDecr(_)) => true   /* --  */
 
 //@ Assign***:KLabel(LHS,, RHS)
 syntax KLabel ::= "'AssignMul"
@@ -120,27 +176,33 @@ syntax KLabel ::= "'AssignMul"
                 | "'AssignExcOr"
                 | "'AssignOr"
 
-syntax K ::= isCompoundAssignLabel ( KLabel )    [function]
-rule isCompoundAssignLabel('AssignPlus) => true
-rule isCompoundAssignLabel('AssignMinus) => true
-rule isCompoundAssignLabel('AssignMul) => true
-rule isCompoundAssignLabel('AssignDiv) => true
-rule isCompoundAssignLabel('AssignAnd) => true
-rule isCompoundAssignLabel('AssignOr) => true
-rule isCompoundAssignLabel('AssignExcOr) => true
-rule isCompoundAssignLabel('AssignRemain) => true
-rule isCompoundAssignLabel('AssignLeftShift) => true
-rule isCompoundAssignLabel('AssignRightShift) => true
-rule isCompoundAssignLabel('AssignURightShift) => true
+syntax Exp ::= CompoundAssignExp
+syntax CompoundAssignExp ::= "dummyCompoundAssignExp"
 
-//@ \subsection{Computation terms produced during elaboration}
+rule isCompoundAssignExp('AssignPlus(_)) => true
+rule isCompoundAssignExp('AssignMinus(_)) => true
+rule isCompoundAssignExp('AssignMul(_)) => true
+rule isCompoundAssignExp('AssignDiv(_)) => true
+rule isCompoundAssignExp('AssignAnd(_)) => true
+rule isCompoundAssignExp('AssignOr(_)) => true
+rule isCompoundAssignExp('AssignExcOr(_)) => true
+rule isCompoundAssignExp('AssignRemain(_)) => true
+rule isCompoundAssignExp('AssignLeftShift(_)) => true
+rule isCompoundAssignExp('AssignRightShift(_)) => true
+rule isCompoundAssignExp('AssignURightShift(_)) => true
+
+//@ \subsubsection{Computation terms produced during elaboration}
+
+/*@ These auxiliary terms functions that should be threated as expressions in the elaboration phase.
+*/
+syntax Exp ::= AuxTermExp
 
 /*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
 such as an anonymous class declaration. Is typed with the type of the expression.
 At runtime is rewritten into the statement, that should evaluate into .K, followed by the expression,
 that should evaluate to value.*/
-syntax K ::= stmtAndExp ( K, K )
+syntax AuxTermExp ::= stmtAndExp ( K, K )
 
-syntax Cast ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
+syntax AuxTermExp ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
 
 endmodule

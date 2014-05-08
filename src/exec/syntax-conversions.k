@@ -57,13 +57,14 @@ syntax KLabel ::= "'LocalVarDec"
 rule 'LocalVarDec(_:K,, T:Type,,['VarDec(X:Id)]) => T X;  [structural]
 
 syntax VarDec ::= Type Id ";"   [klabel('VarDecImpl)]
+syntax Stmt ::= VarDec
 
 //@ 'Assign(loc(L)::T,, V::T)
 syntax KLabel ::= "'Assign"
 
 rule 'Assign(K1:K,, K2:K) => K1 = K2
 
-syntax Assign ::= K "=" K       [klabel('AssignImpl)]
+syntax Exp ::= K "=" K       [klabel('AssignImpl)]
 
 syntax Stmt ::= K ";"           [klabel('ExprStmImpl)]
 
@@ -73,11 +74,12 @@ syntax Exp ::= "(" "(" Type ")" K ")" [klabel('CastImpl)]
 rule ((T:Type) K:K) => cast(T, K)
 
 //Naked identifier on top of computation
+syntax Exp ::= Id
 rule X:Id => 'ExprName(X)
 rule lvalue(X:Id) => lvalue('ExprName(X))
 
 // Just for the sake of the rule isOverridden
-syntax K ::= K "==" K
+syntax Exp ::= K "==" K
 rule K1:K == K2:K => eqAux(K1, K2)
 
 syntax Stmt ::= "throw" K ";"

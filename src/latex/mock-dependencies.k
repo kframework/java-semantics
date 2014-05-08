@@ -146,7 +146,7 @@ syntax K ::= getPackage ( K )               [strict]
 
 syntax K ::= getTopLevel ( ClassType )
 
-syntax Cast ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
+syntax Exp ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
 
 syntax K ::= "stringClass"
     [function, latex(\terminal{String})]
