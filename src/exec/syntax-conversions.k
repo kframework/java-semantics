@@ -11,17 +11,18 @@ module SYNTAX-CONVERSIONS
 // 'Param(\_:K,, T:Type,, X:Id). Consumed by initParams().
 syntax KLabel ::= "'Param"
 
-rule 'Param(_,, K:K,, X:Id) => {K X} [structural, anywhere]
+//Required for catch
+rule 'Param(_,, K:K,, X:Id) => {K X} [structural]
 
 syntax Param ::= "{" K Id "}"        [klabel('ParamImpl)]
 
-syntax Params ::= List{Param, ","} //todo stopped here
+syntax Params ::= List{Param, ","}
 
 syntax K ::= toParams( KListWrap )          [function]
            | toParams( KListWrap , Params ) [function]
 
 rule toParams([KLParams:KList]) => toParams([KLParams], .Params)
-rule toParams([KLParams:KList,, Param:Param], Params:Params) => toExps([KLParams], (Param,Params))
+rule toParams([KLParams:KList,, 'Param(_,, K:K,, X:Id)], Params:Params) => toParams([KLParams], ({K X},Params))
 rule toParams([.KList], Params:Params) => Params
 
 // Required for getTypes()
@@ -140,5 +141,9 @@ rule getTypes(types(Ts:KList), .TypedVals) => types(Ts)
 
 syntax KResult ::= Classes
 syntax Classes ::= List{ClassType, ","}
+
+rule 'Return('None(_)) => return;
+
+syntax StackConsumerStmt ::= "return" ";"
 
 endmodule

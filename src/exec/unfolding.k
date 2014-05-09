@@ -1,6 +1,7 @@
 module UNFOLDING
     imports CORE-SORTS
     imports CORE-FUNCTIONS
+    imports SYNTAX-CONVERSIONS
 
 rule [UnfoldingPhase-start]:
     <k> . => unfoldingPhase </k>
@@ -148,7 +149,7 @@ rule [unfolding-MethodDec]:
     <methodDecs>
       (.Bag =>  <methodDec>
                   <methodSignature> sig(Name:Id, getTypes([Params])) </methodSignature>
-                  <methodParams> [Params:KList] </methodParams>
+                  <methodParams> toParams([Params:KList]) </methodParams>
                   <methodBody> MethodBody:K </methodBody>
                   <methodAccessMode> Acc:AccessMode </methodAccessMode>
                   <methodContextType> CT:ContextType </methodContextType>

@@ -655,7 +655,7 @@ The return statement at the end ensures that there is a return statement on ever
 rule [Invoke-methodRef]:
     <k>
       Qual:KResult . methodRef(Sig:Signature, DecC:ClassType) (Args:TypedVals) ~> RestK:K
-      => staticInit(DecC) ~> initParams([Params], Args) ~> Body ~> 'Return('None(.KList))
+      => staticInit(DecC) ~> initParams(Params, Args) ~> Body ~> return;
     </k>
     <stack>
       . => ListItem(sl(RestK, MethodContext))
@@ -670,7 +670,7 @@ rule [Invoke-methodRef]:
 
     <classType> DecC </classType>
     <methodSignature> Sig </methodSignature>
-    <methodParams> [Params:KList] </methodParams>
+    <methodParams> Params:Params </methodParams>
     <methodBody> Body:K </methodBody>
 when getKLabel(Body) =/=KLabel 'NoMethodBody
 
@@ -680,18 +680,18 @@ rule getOId( noValue ) => noValue
 
 /* [Skip] Binds a list of formal parameters to their values. Used by method calls and try-catch.
 */
-syntax K ::= initParams ( KListWrap, // [...,, 'Param(...),, ...] - parameter declarations
-                          TypedVals  // values
+syntax K ::= initParams ( Params,   // {T:Type X:Id},... - parameter declarations
+                          TypedVals // values
                         )
 
 rule [initParams]:
-    initParams([{T:Type X:Id},, RestP:KList], (TV:TypedVal, RestV:TypedVals))
+    initParams({T:Type X:Id}, RestP:Params, (TV:TypedVal, RestV:TypedVals))
     =>   T X;
       ~> (X = ((T) TV:TypedVal));
-      ~> initParams([RestP], RestV)
+      ~> initParams(RestP, RestV)
 
 rule [initParams-end]:
-    initParams([.KList], .TypedVals) => .K
+    initParams(.Params, .TypedVals) => .K
         [structural]
 
 /*@

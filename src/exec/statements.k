@@ -266,19 +266,20 @@ rule [For]:
 //totest model check - the argument of 'return and 'Throw must be evaluated. Otherwise some side effects during
 // evaluation might be evaluated too late
 /*@ Stack consumer stm - Return, Throw, Break or Continue reaches tryFinallySL layer*/
-rule [StackConsumer-in-TryFinally]:
-    StackCons:StackConsumer ~> finallyBlock(FinallyS:K)
+rule [StackConsumerStmt-in-TryFinally]:
+    StackCons:StackConsumerStmt ~> finallyBlock(FinallyS:K)
     => FinallyS ~> StackCons
 
-rule [StackConsumer-RestoreEnv]:
-    StackCons:StackConsumer ~> env(Env:Map)
+rule [StackConsumerStmt-RestoreEnv]:
+    StackCons:StackConsumerStmt ~> env(Env:Map)
     => env(Env:Map) ~> StackCons
 
-syntax StackConsumer ::= "dummyStackConsumer"
-rule isStackConsumer('Return(_)) => true
-rule isStackConsumer('Throw(_)) => true
-rule isStackConsumer('Break(_)) => true
-rule isStackConsumer('Continue(_)) => true
+syntax Stmt ::= StackConsumerStmt
+syntax StackConsumerStmt ::= "dummyStackConsumerStmt"
+rule isStackConsumerStmt('Return(_)) => true
+rule isStackConsumerStmt('Throw(_)) => true
+rule isStackConsumerStmt('Break(_)) => true
+rule isStackConsumerStmt('Continue(_)) => true
 
 //@ \subsection{Break statement}
 
@@ -359,7 +360,7 @@ expected type. */
 context 'Return('Some(HOLE))
 
 rule [Return-None-Desugar]:
-    'Return('None(.KList) => 'Some(nothing :: void))
+    return; => 'Return('Some(nothing :: void))
         [structural]
 
 rule [Return-Propagate]:
@@ -390,9 +391,9 @@ context checkCatch(HOLE)
 rule [Throw-checkCatch-True]:
     checkCatch(true::bool)
     ~> 'Throw(TV:TypedVal)
-    ~> catchBlocks([catchImpl(Param:ExtKResult, CatchS:K),, _])
+    ~> catchBlocks([catchImpl(Param:Param, CatchS:K),, _])
     => 'Block([
-          initParams([Param], TV),,
+          initParams(Param, TV),,
           CatchS
         ])
 
