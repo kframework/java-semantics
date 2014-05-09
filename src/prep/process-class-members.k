@@ -185,7 +185,6 @@ syntax K ::=  isOverridden (
                 AccessMode, //BaseAcc
                 ClassType   //SubC
               )
-              [strict]
 
 rule isOverridden(_, public,    _) => true
 rule isOverridden(_, protected, _) => true

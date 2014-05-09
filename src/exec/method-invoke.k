@@ -197,16 +197,7 @@ Evaluation of the method invocation qualifier (JLS \$15.12.4.1) requires just on
   will be cooled back in the same place. If the qualifier is a class instead of an
   expression, then this rule will have no effect. A type in K-Java is subsorted to
   KResult, consequently it doesn't need to be heated.
-*/
-context HOLE. Name:Id (_)
 
-//totest model check - expressions should be evaluated from left to right. A test for this
-//exists, but is unable to expose the problem. This rule have to be made "transition"
-//somehow.
-//totest - if qualifier evaluates to null, NullPointerException should be thrown after
-//the evaluation of the arguments
-
-/*@
 \subsection{Evaluation of the arguments}
 
 \begin{markdown}
@@ -228,9 +219,8 @@ Arguments have to be evaluated even in the case when the qualifier is null. On t
   same reason. K-Java don't need any special rules to cover those cases. The small number
   of rules related to throw statement ensure correct exception propagation from any
   context.
-\end{markdown} todo correct the docs
+\end{markdown} todo correct the docs, now there is just the strictness rule for this purpose
 */
-context _:KResult. Name:Id (HOLE:Exps)
 
 /*@
 \subsection{Loading method information}
@@ -292,9 +282,7 @@ The second rule for method invocation loads MetaT and DecC. It requires Sig and 
 */
 rule [Invoke-compute-methodInfo-DecC]:
     <k>
-      Qual:KResult
-        . methodInfo(Sig:Signature, QualC:ClassType, .K => MetaT, .K => DecC, _,_)
-        (Args:TypedVals)
+      _. methodInfo(Sig:Signature, QualC:ClassType, .K => MetaT, .K => DecC, _,_) (_)
       ...
     </k>
     <classType> QualC </classType>
@@ -315,9 +303,7 @@ In both cases the method is an abstract method in the class QualT. For this case
 \end{markdown} */
 rule [Invoke-compute-methodInfo-unmapped-method-ContextType]:
     <k>
-      Qual:KResult
-        . methodInfo(Sig:Signature, QualC:ClassType, .K => MetaT, _, .K => instanceCT, .K => public)
-        (Args:TypedVals)
+      _. methodInfo(Sig:Signature, QualC:ClassType, .K => MetaT, _, .K => instanceCT, .K => public) (_)
       ...
     </k>
     <classType> QualC </classType>
@@ -331,9 +317,7 @@ The last rule of step 3 loads ContextT and Acc. It requires DecC, so this rule m
 */
 rule [Invoke-compute-methodInfo-ContextType]:
     <k>
-      Qual:KResult
-        . methodInfo(Sig:Signature, QualC:ClassType, _, DecC:ClassType, .K => ContextT, .K => Acc)
-        (Args:TypedVals)
+      _. methodInfo(Sig:Signature, QualC:ClassType, _, DecC:ClassType, .K => ContextT, .K => Acc) (_)
       ...
     </k>
     <classType> DecC </classType>
@@ -373,9 +357,9 @@ The method below is for the first case. If the method is static, then the declar
 \end{markdown}
 */
 rule [Invoke-methodInfo-static]:
-    (_:KResult => noValue)
+    (_ => noValue)
       . ( methodInfo(Sig:Signature, QualC:ClassType, classCMT, DecC:ClassType, staticCT, _) => methodRef(Sig, DecC) )
-      (Args:TypedVals)
+      (_)
 
 /*@
 If the qualifier value is null and ContextT is instance, then NullPointerException is thrown and method invocation
@@ -385,9 +369,9 @@ If the qualifier value is null and ContextT is instance, then NullPointerExcepti
 rule [Invoke-methodInfo-instance-on-null]:
 /*  [Impl] Qualifier type could be either object or array.
     We cannot move method invocation on null logic to invokeImpl, because
-    invokeImpl needs an actual methodRef, and we cannot produce a methidRef if our qualifier object is null.
+    invokeImpl needs an actual methodRef, and we cannot produce a methodRef if our qualifier object is null.
 */
-    null::_ . methodInfo(_,_,_,_, instanceCT, _) (Args:TypedVals)
+    null::_ . methodInfo(_,_,_,_, instanceCT, _) (_)
     => throw new nullPEClass([ null::stringClass ]);
 
 /*@
@@ -396,8 +380,7 @@ The logic for private instance methods is the same as for static methods, with t
 rule [Invoke-methodInfo-instance-private]:
     objectRef(_,_)::_
       . ( methodInfo(Sig:Signature, _, classCMT, DecC:ClassType, instanceCT, private) => methodRef(Sig, DecC) )
-      (Args:TypedVals)
-
+      (_)
 
 /*@
 If the method is protected or public, then we should call the version of the method visible to the runtime type of
@@ -407,12 +390,12 @@ If the method is protected or public, then we should call the version of the met
   actual object class. This is because the unfolding phase populates <methods> with the union of methods inherited
   from the base class and methods declared in the current class, the latter overriding the former.
   The variable DecC is the class where the right method version is declared.
-*/
+*/ //todo explain why we have to match ObjC instgead of QualC.
 rule [Invoke-methodInfo-instance-protected-or-public]:
     <k>
       objectRef( _, ObjC:ClassType )::_
         . ( methodInfo(Sig:Signature, _, _,_, instanceCT, Acc:AccessMode) => methodRef(Sig, DecC) )
-        (Args:TypedVals)
+        (_)
       ...
     </k>
     <classType> ObjC </classType>
@@ -477,9 +460,9 @@ rule [Invoke-methodInfo-instance-package]:
     <k>
       objectRef( _, ObjC:ClassType )::QualC:ClassType
         . ( methodInfo(Sig:Signature, QualC:ClassType, classCMT, _, instanceCT, package)
-            => lookupPackageMethod( Sig, getClassChain(QualC, [ObjC]), noClass)
+            => lookupPackageMethod( Sig, getClassChain(QualC, ObjC), noClass)
           )
-        (Args:TypedVals)
+        (_)
       ...
     </k>
     <classType> QualC </classType>
@@ -500,7 +483,7 @@ Returns the list of classes representing the layer of the given object (by OId),
   located between MostBaseClass (exclusively) and MostDerivedClass (inclusively).
 */
 syntax K ::=  getClassChain( ClassType, //MostBaseClass
-                             KListWrap  //[MostDerivedClass] at beginning, gradually accumulates
+                             Classes    //MostDerivedClass at beginning, gradually accumulates
                                           //the list of classes
               )
 
@@ -511,11 +494,12 @@ This is required in order to respect the rules of inheritance in the presence of
 Evaluates into typed method closure.*/
 syntax K ::=  lookupPackageMethod (
                 Signature,  //sig(Name, SigTL) - Method signature
-                KRListWrap, //computes into kr[...,, Class,, ...], elements of type ClassType,
+                Classes,    //computes Class,... , list of elements of type ClassType,
                               // from base to derived.
                               // To be processed from base to derived until while the chain is not empty
                 K           //ClassType - The class with the best method declaration with signature Sig found so far,
                               //initialized with noClass
+                              //The sort is K because it is rewritten into "if" during computation.
               )
               [strict(2,3)]
 
@@ -544,7 +528,7 @@ rule [lookupPackageMethod-layer-first-dec-found]:
     <k>
       lookupPackageMethod(
         Sig:Signature,
-        kr[ (CurrentC:ClassType => .KList),, _ ],
+        (CurrentC:ClassType, Cs:Classes => Cs),
         noClass => DecC
       )
       ...
@@ -569,7 +553,7 @@ rule [lookupPackageMethod-new-method]:
     <k>
       lookupPackageMethod(
         Sig:Signature,
-        kr[ (CurrentC:ClassType => .KList),, _ ],
+        (CurrentC:ClassType, Cs:Classes => Cs),
         OldDecC:ClassType => if (isOverridden( OldDecC, Acc, CurrentC )) { CurrentC } else { OldDecC }
       )
       ...
@@ -599,7 +583,6 @@ syntax K ::=  isOverridden (
                 AccessMode, //BaseAcc
                 ClassType   //SubC
               )
-              [strict]
 
 rule isOverridden(_, public,    _) => true
 rule isOverridden(_, protected, _) => true
@@ -619,7 +602,7 @@ rule [lookupPackageMethod-no-new-method]:
     <k>
       lookupPackageMethod(
         Sig:Signature,
-        kr[ (CurrentC:ClassType => .KList),, _ ],
+        (CurrentC:ClassType, Cs:Classes => Cs),
         _
       )
       ...
@@ -633,7 +616,7 @@ when
 The last rule matches when the chain of classes stored in the first argument remains empty. It rewrites the whole lookupPackageM() into a reference to the method that have to be invoked.
 */
 rule [lookupPackageMethod-end]:
-    lookupPackageMethod(Sig:Signature, kr[.KList], DecC:ClassType ) => methodRef(Sig, DecC)
+    lookupPackageMethod(Sig:Signature, .Classes, DecC:ClassType ) => methodRef(Sig, DecC)
 
 /*@
 \subsection{Actual method invocation}
@@ -773,7 +756,8 @@ rule [superMethodImpl]:
 
 rule [getClassChain-process]:
     <k>
-      getClassChain(MostBaseClass:ClassType, [(.KList => BaseClass),, MostDerivedClass:ClassType,, _])
+      getClassChain(MostBaseClass:ClassType,
+                    (MostDerivedClass:ClassType, Cs:Classes => BaseClass, MostDerivedClass, Cs))
       ...
     </k>
     <classType> MostDerivedClass </classType>
@@ -783,7 +767,7 @@ when
 
 // Eliminate the most base class before returning the result, because it is exclusive.
 rule [getClassChain-end]:
-    getClassChain(Class:ClassType, [Class,, MoreDerivedClasses:KList]) => kr[Class,, MoreDerivedClasses]
+    getClassChain(Class:ClassType, (Class, MoreDerivedClasses:Classes)) => (Class, MoreDerivedClasses)
 
 rule [Invoke-methodRef-native]:
     <k>

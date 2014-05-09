@@ -15,6 +15,15 @@ rule 'Param(_,, K:K,, X:Id) => {K X} [structural, anywhere]
 
 syntax Param ::= "{" K Id "}"        [klabel('ParamImpl)]
 
+syntax Params ::= List{Param, ","} //todo stopped here
+
+syntax K ::= toParams( KListWrap )          [function]
+           | toParams( KListWrap , Params ) [function]
+
+rule toParams([KLParams:KList]) => toParams([KLParams], .Params)
+rule toParams([KLParams:KList,, Param:Param], Params:Params) => toExps([KLParams], (Param,Params))
+rule toParams([.KList], Params:Params) => Params
+
 // Required for getTypes()
 rule typeOf('ParamImpl(T:Type,, _:Id)) => T
 
@@ -41,7 +50,14 @@ syntax KLabel ::= "'Method"
 
 rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:KListWrap) => Qual.Name(toExps(ArgList)) [structural]
 
-syntax Method ::= K "." MethodName "(" Exps ")"       [klabel('MethodImpl)]
+//totest model check - expressions should be evaluated from left to right. A test for this
+//exists, but is unable to expose the problem. This rule have to be made "transition"
+//somehow.
+//totest - if qualifier evaluates to null, NullPointerException should be thrown after
+//the evaluation of the arguments
+/*@ Method invocation expression
+*/
+syntax Method ::= K "." MethodName "(" Exps ")"       [seqstrict(1,3), klabel('MethodImpl)]
 syntax MethodName ::= Id | MethodRef
 
 syntax KLabel ::= "'If"
@@ -121,5 +137,8 @@ syntax K ::=  getTypes (
 rule getTypes(TVs:TypedVals) => getTypes(types(.KList), TVs)
 rule getTypes( types(Ts:KList), (_ :: T:Type, TVs:TypedVals) ) => getTypes( types(Ts,,T), TVs )
 rule getTypes(types(Ts:KList), .TypedVals) => types(Ts)
+
+syntax KResult ::= Classes
+syntax Classes ::= List{ClassType, ","}
 
 endmodule
