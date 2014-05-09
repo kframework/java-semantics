@@ -392,7 +392,7 @@ rule [Throw-checkCatch-True]:
     ~> 'Throw(TV:TypedVal)
     ~> catchBlocks([catchImpl(Param:ExtKResult, CatchS:K),, _])
     => 'Block([
-          initParams([Param], [TV]),,
+          initParams([Param], TV),,
           CatchS
         ])
 

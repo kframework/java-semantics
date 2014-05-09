@@ -228,11 +228,9 @@ Arguments have to be evaluated even in the case when the qualifier is null. On t
   same reason. K-Java don't need any special rules to cover those cases. The small number
   of rules related to throw statement ensure correct exception propagation from any
   context.
-\end{markdown}
+\end{markdown} todo correct the docs
 */
-context _:KResult. Name:Id ([Ks:KList,, HOLE,,_])
-when
-    isKResult(Ks)
+context _:KResult. Name:Id (HOLE:Exps)
 
 /*@
 \subsection{Loading method information}
@@ -282,10 +280,8 @@ This rule also have a side condition that checks whether parameters were evaluat
 */
 rule [Invoke-compute-methodInfo-Signature]:
     Qual:KResult
-      .(Name:Id => methodInfo(sig(Name, getTypes([Args])), typeOf(Qual), .K,.K,.K,.K))
-      ([Args:KList])
-when
-    isKResult(Args)
+      .(Name:Id => methodInfo(sig(Name, getTypes(Args)), typeOf(Qual), .K,.K,.K,.K))
+      (Args:TypedVals)
 
 /* Impl: We could combine this rule with the previous one by using getLookupTargetType(), but we'll keep it this way
     to keep the core part of method invocation separate from the non object-related part. */
@@ -298,7 +294,7 @@ rule [Invoke-compute-methodInfo-DecC]:
     <k>
       Qual:KResult
         . methodInfo(Sig:Signature, QualC:ClassType, .K => MetaT, .K => DecC, _,_)
-        ([Args:KList])
+        (Args:TypedVals)
       ...
     </k>
     <classType> QualC </classType>
@@ -321,7 +317,7 @@ rule [Invoke-compute-methodInfo-unmapped-method-ContextType]:
     <k>
       Qual:KResult
         . methodInfo(Sig:Signature, QualC:ClassType, .K => MetaT, _, .K => instanceCT, .K => public)
-        ([Args:KList])
+        (Args:TypedVals)
       ...
     </k>
     <classType> QualC </classType>
@@ -337,7 +333,7 @@ rule [Invoke-compute-methodInfo-ContextType]:
     <k>
       Qual:KResult
         . methodInfo(Sig:Signature, QualC:ClassType, _, DecC:ClassType, .K => ContextT, .K => Acc)
-        ([Args:KList])
+        (Args:TypedVals)
       ...
     </k>
     <classType> DecC </classType>
@@ -379,7 +375,7 @@ The method below is for the first case. If the method is static, then the declar
 rule [Invoke-methodInfo-static]:
     (_:KResult => noValue)
       . ( methodInfo(Sig:Signature, QualC:ClassType, classCMT, DecC:ClassType, staticCT, _) => methodRef(Sig, DecC) )
-      ([Args:KList])
+      (Args:TypedVals)
 
 /*@
 If the qualifier value is null and ContextT is instance, then NullPointerException is thrown and method invocation
@@ -391,7 +387,7 @@ rule [Invoke-methodInfo-instance-on-null]:
     We cannot move method invocation on null logic to invokeImpl, because
     invokeImpl needs an actual methodRef, and we cannot produce a methidRef if our qualifier object is null.
 */
-    null::_ . methodInfo(_,_,_,_, instanceCT, _) ([Args:KList])
+    null::_ . methodInfo(_,_,_,_, instanceCT, _) (Args:TypedVals)
     => throw new nullPEClass([ null::stringClass ]);
 
 /*@
@@ -400,7 +396,7 @@ The logic for private instance methods is the same as for static methods, with t
 rule [Invoke-methodInfo-instance-private]:
     objectRef(_,_)::_
       . ( methodInfo(Sig:Signature, _, classCMT, DecC:ClassType, instanceCT, private) => methodRef(Sig, DecC) )
-      ([Args:KList])
+      (Args:TypedVals)
 
 
 /*@
@@ -416,7 +412,7 @@ rule [Invoke-methodInfo-instance-protected-or-public]:
     <k>
       objectRef( _, ObjC:ClassType )::_
         . ( methodInfo(Sig:Signature, _, _,_, instanceCT, Acc:AccessMode) => methodRef(Sig, DecC) )
-        ([Args:KList])
+        (Args:TypedVals)
       ...
     </k>
     <classType> ObjC </classType>
@@ -483,7 +479,7 @@ rule [Invoke-methodInfo-instance-package]:
         . ( methodInfo(Sig:Signature, QualC:ClassType, classCMT, _, instanceCT, package)
             => lookupPackageMethod( Sig, getClassChain(QualC, [ObjC]), noClass)
           )
-        ([Args:KList])
+        (Args:TypedVals)
       ...
     </k>
     <classType> QualC </classType>
@@ -675,8 +671,8 @@ The return statement at the end ensures that there is a return statement on ever
 */
 rule [Invoke-methodRef]:
     <k>
-      Qual:KResult . methodRef(Sig:Signature, DecC:ClassType) ([Args:KList]) ~> RestK:K
-      => staticInit(DecC) ~> initParams([Params], [Args]) ~> Body ~> 'Return('None(.KList))
+      Qual:KResult . methodRef(Sig:Signature, DecC:ClassType) (Args:TypedVals) ~> RestK:K
+      => staticInit(DecC) ~> initParams([Params], Args) ~> Body ~> 'Return('None(.KList))
     </k>
     <stack>
       . => ListItem(sl(RestK, MethodContext))
@@ -702,17 +698,17 @@ rule getOId( noValue ) => noValue
 /* [Skip] Binds a list of formal parameters to their values. Used by method calls and try-catch.
 */
 syntax K ::= initParams ( KListWrap, // [...,, 'Param(...),, ...] - parameter declarations
-                          KListWrap  // [...,, KResult,, ...] - values
+                          TypedVals  // values
                         )
 
 rule [initParams]:
-    initParams([{T:Type X:Id},, RestP:KList], [TV:TypedVal,, RestV:KList])
+    initParams([{T:Type X:Id},, RestP:KList], (TV:TypedVal, RestV:TypedVals))
     =>   T X;
       ~> (X = ((T) TV:TypedVal));
-      ~> initParams([RestP], [RestV])
+      ~> initParams([RestP], RestV)
 
 rule [initParams-end]:
-    initParams([.KList], [.KList]) => .K
+    initParams([.KList], .TypedVals) => .K
         [structural]
 
 /*@
@@ -734,13 +730,13 @@ The next rule for method invocation is applied when the qualifier type is array.
 rule [Invoke-compute-methodInfo-arrays]:
     QualRV:RawVal :: (arrayOf T:Type => arrayImplClass)
       . methodInfo(Sig:Signature, arrayOf T => arrayImplClass, _,_,_,_)
-      ([Args:KList])
+      (_)
 
 rule [Invoke-methodInfo-on-array-or-string]:
     QualRV:RawVal::QualC:ClassType
        . methodInfo(Sig:Signature, QualC, classCMT, DecC:ClassType, instanceCT, _)
-      ([Args:KList])
-    => invokeImpl( methodRef(Sig, DecC), QualRV::QualC, [Args] )
+      (Args:TypedVals)
+    => invokeImpl( methodRef(Sig, DecC), QualRV::QualC, toKListWrap(Args) )
 when
     isArrayRef(QualRV) ==K true orBool isString(QualRV) ==K true
 
@@ -791,8 +787,8 @@ rule [getClassChain-end]:
 
 rule [Invoke-methodRef-native]:
     <k>
-      Qual:KResult . methodRef(Sig:Signature, DecC:ClassType) ([Args:KList])
-      => invokeImpl(methodRef(Sig, DecC), Qual, [Args])
+      Qual:KResult . methodRef(Sig:Signature, DecC:ClassType) (Args:TypedVals)
+      => invokeImpl(methodRef(Sig, DecC), Qual, toKListWrap(Args))
       ...
     </k>
     <classType> DecC </classType>

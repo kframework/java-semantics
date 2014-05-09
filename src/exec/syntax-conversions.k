@@ -39,9 +39,9 @@ syntax KLabel ::= "'Invoke"
 syntax KLabel ::= "'Method"
                 | "'MethodName"
 
-rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, Params:KListWrap) => Qual.Name(Params) [structural]
+rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:KListWrap) => Qual.Name(toExps(ArgList)) [structural]
 
-syntax Method ::= K "." MethodName "(" KListWrap ")"  [klabel('MethodImpl)]
+syntax Method ::= K "." MethodName "(" Exps ")"       [klabel('MethodImpl)]
 syntax MethodName ::= Id | MethodRef
 
 syntax KLabel ::= "'If"
@@ -88,5 +88,38 @@ rule throw K:K; => 'Throw(K)
 syntax Exp ::= "new" ClassType "(" KListWrap ")"
 rule new Class:ClassType([Args:KList])
      => 'NewInstance( 'None(.KList),, Class,, [ Args ],, 'None(.KList) )
+
+/*@
+  A list of expressions, usually a list of arguments of a method or constructor.
+*/
+syntax Exps ::= List{Exp, ","} [seqstrict]
+
+syntax Exps ::= TypedVals
+syntax TypedVals ::= List{TypedVal, ","}
+
+syntax K ::= toExps( KListWrap )        [function]
+           | toExps( KListWrap , Exps ) [function]
+
+rule toExps([Args:KList]) => toExps([Args], .Exps)
+rule toExps([Args:KList,, Arg:Exp], Es:Exps) => toExps([Args], (Arg,Es))
+rule toExps([.KList], Es:Exps) => Es
+
+syntax K ::= toKListWrap( Exps )              [function]
+           | toKListWrap( KListWrap , Exps )  [function]
+
+rule toKListWrap(Args:Exps) => toKListWrap([.KList], Args)
+rule toKListWrap([Args:KList], (Arg:Exp, Es:Exps)) => toKListWrap([Args,, Arg], (Es))
+rule toKListWrap([Args:KList], .Exps) => [Args]
+
+//@ Converts a TypedVals term to Types. Uses typeOf underneath.
+syntax K ::=  getTypes (
+                TypedVals     // a list of source values
+              )
+              [function]
+            | getTypes(Types, TypedVals)  [function]
+
+rule getTypes(TVs:TypedVals) => getTypes(types(.KList), TVs)
+rule getTypes( types(Ts:KList), (_ :: T:Type, TVs:TypedVals) ) => getTypes( types(Ts,,T), TVs )
+rule getTypes(types(Ts:KList), .TypedVals) => types(Ts)
 
 endmodule

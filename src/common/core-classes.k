@@ -191,6 +191,8 @@ rule isCompoundAssignExp('AssignLeftShift(_)) => true
 rule isCompoundAssignExp('AssignRightShift(_)) => true
 rule isCompoundAssignExp('AssignURightShift(_)) => true
 
+syntax Exp ::= TypedVal
+
 //@ \subsubsection{Computation terms produced during elaboration}
 
 /*@ These auxiliary terms functions that should be threated as expressions in the elaboration phase.
