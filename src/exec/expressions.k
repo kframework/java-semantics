@@ -291,7 +291,7 @@ rule [exp-lvalue-Cool]:
 /*@ Required when a JVM-related exception (e.g. produced by the semantics at runtime) is thrown inside a lvalue.
 */
 rule [lvalue-Throw-desugar]:
-    lvalue('Throw(K:K)) => 'Throw(K)
+    lvalue( throw E:Exp; ) => throw E;
         [structural]
 
 syntax K ::=  store (
