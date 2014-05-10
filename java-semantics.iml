@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/java-stmt" />
       <excludeFolder url="file://$MODULE_DIR$/src/.k" />
+      <excludeFolder url="file://$MODULE_DIR$/src/.latex" />
       <excludeFolder url="file://$MODULE_DIR$/src/.test" />
       <excludeFolder url="file://$MODULE_DIR$/src/exec/.k" />
       <excludeFolder url="file://$MODULE_DIR$/src/exec/java-exec-kompiled" />

@@ -141,7 +141,7 @@ rule 'NewInstance( 'None(.KList),, Class:ClassType,, [ Args:KList ],, 'None(.KLi
 
 syntax Exp ::= "new" ClassType "(" Exps ")"
 
-/*@ \subsection{Syntactic lists - Exps, TypedVals, Classes}*/
+/*@ \subsection{Syntactic lists - Exps, TypedVals, ClassTypes}*/
 
 /*@
   A list of expressions, usually a list of arguments of a method or constructor.
@@ -176,7 +176,7 @@ rule getTypes(TVs:TypedVals) => getTypes(types(.KList), TVs)
 rule getTypes( types(Ts:KList), (_ :: T:Type, TVs:TypedVals) ) => getTypes( types(Ts,,T), TVs )
 rule getTypes(types(Ts:KList), .TypedVals) => types(Ts)
 
-syntax KResult ::= Classes
-syntax Classes ::= List{ClassType, ","}
+syntax KResult ::= ClassTypes
+syntax ClassTypes ::= List{ClassType, ","}
 
 endmodule

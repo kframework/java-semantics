@@ -476,7 +476,7 @@ Returns the list of classes representing the layer of the given object (by OId),
   located between MostBaseClass (exclusively) and MostDerivedClass (inclusively).
 */
 syntax K ::=  getClassChain( ClassType, //MostBaseClass
-                             Classes    //MostDerivedClass at beginning, gradually accumulates
+                             ClassTypes    //MostDerivedClass at beginning, gradually accumulates
                                           //the list of classes
               )
 
@@ -487,7 +487,7 @@ This is required in order to respect the rules of inheritance in the presence of
 Evaluates into typed method closure.*/
 syntax K ::=  lookupPackageMethod (
                 Signature,  //sig(Name, SigTL) - Method signature
-                Classes,    //computes Class,... , list of elements of type ClassType,
+                ClassTypes,    //computes Class,... , list of elements of type ClassType,
                               // from base to derived.
                               // To be processed from base to derived until while the chain is not empty
                 K           //ClassType - The class with the best method declaration with signature Sig found so far,
@@ -521,7 +521,7 @@ rule [lookupPackageMethod-layer-first-dec-found]:
     <k>
       lookupPackageMethod(
         Sig:Signature,
-        (CurrentC:ClassType, Cs:Classes => Cs),
+        (CurrentC:ClassType, Cs:ClassTypes => Cs),
         noClass => DecC
       )
       ...
@@ -546,7 +546,7 @@ rule [lookupPackageMethod-new-method]:
     <k>
       lookupPackageMethod(
         Sig:Signature,
-        (CurrentC:ClassType, Cs:Classes => Cs),
+        (CurrentC:ClassType, Cs:ClassTypes => Cs),
         OldDecC:ClassType => if (isOverridden( OldDecC, Acc, CurrentC )) { CurrentC } else { OldDecC }
       )
       ...
@@ -595,7 +595,7 @@ rule [lookupPackageMethod-no-new-method]:
     <k>
       lookupPackageMethod(
         Sig:Signature,
-        (CurrentC:ClassType, Cs:Classes => Cs),
+        (CurrentC:ClassType, Cs:ClassTypes => Cs),
         _
       )
       ...
@@ -609,7 +609,7 @@ when
 The last rule matches when the chain of classes stored in the first argument remains empty. It rewrites the whole lookupPackageM() into a reference to the method that have to be invoked.
 */
 rule [lookupPackageMethod-end]:
-    lookupPackageMethod(Sig:Signature, .Classes, DecC:ClassType ) => methodRef(Sig, DecC)
+    lookupPackageMethod(Sig:Signature, .ClassTypes, DecC:ClassType ) => methodRef(Sig, DecC)
 
 /*@
 \subsection{Actual method invocation}
@@ -794,7 +794,7 @@ rule [superMethodImpl]:
 rule [getClassChain-process]:
     <k>
       getClassChain(MostBaseClass:ClassType,
-                    (MostDerivedClass:ClassType, Cs:Classes => BaseClass, MostDerivedClass, Cs))
+                    (MostDerivedClass:ClassType, Cs:ClassTypes => BaseClass, MostDerivedClass, Cs))
       ...
     </k>
     <classType> MostDerivedClass </classType>
@@ -804,7 +804,7 @@ when
 
 // Eliminate the most base class before returning the result, because it is exclusive.
 rule [getClassChain-end]:
-    getClassChain(Class:ClassType, (Class, MoreDerivedClasses:Classes)) => (Class, MoreDerivedClasses)
+    getClassChain(Class:ClassType, (Class, MoreDerivedClasses:ClassTypes)) => (Class, MoreDerivedClasses)
 
 rule [Invoke-methodRef-native]:
     <k>
