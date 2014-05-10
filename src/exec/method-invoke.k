@@ -11,7 +11,7 @@ module METHOD-INVOKE
 \subsection{Background}
 
 In this section we present the fragment of configuration used by runtime method
-  invocation. The figure below contains the cells and their sort.
+  invocation. The figure below contains the cells and their sorts.
 
 \vspace{3ex}
 
@@ -61,7 +61,7 @@ $
 
 The cell <k> stores the current computation. The cell <stack> is a list of pairs of the
   form (K, Bag), and represents the standard method call stack. The first element
-  represents the remaining computation an the moment the method was called. The second
+  represents the remaining computation at the moment the method was called. The second
   element of sort Bag represents the content of cell <methodContext> at the moment
   of method call.
 
@@ -76,7 +76,7 @@ The cell <class> contains various sub-cells holding the content of that class. T
   base interfaces. By "inherited" here we mean all the methods contained in the cell
   <methods> of the base class that were not overridden by a method declaration with
   the same signature in the current class. This definition is different from the
-  inheritance rules in JLS \$8.4.6, although the difference is only relevant at the
+  inheritance rules in JLS \S8.4.6, although the difference is only relevant at the
   elaboration time.
 
 The cell <methodDec> represents a method declared inside the current class. The subcell
@@ -95,7 +95,7 @@ In order for strictness and context rules to work we have to define some K produ
 \end{syntaxBlock}
 
 The first represents a class. Second is a typed value, the result of evaluation of any
-  expression. The forms of typed value relevant for method invocation are object reference and null:
+  expression. The forms of typed values relevant for method invocation are object reference and null:
 
 \vspace{3ex}
 
@@ -122,37 +122,39 @@ An elaborated method invocation expression may have one of the following forms:
     o.f(args). Even if the method is
     static we cannot simply replace the qualifier with its compile-time type at
     elaboration phase, because the qualifier
-    expression still have to be evaluated and might produce side effects.
+    expression still has to be evaluated and might produce side effects. We cannot replace it with
+    o; class.f(args); either, because o; might be invalid. Not all expressions
+    valid as qualifiers ar valid as expression statements (JLS \S14.8). We wanted the elaboration
+    result to be a valid Java program, thus we could not afford such a transformation.
+
   - An invocation of an instance method qualified by a class reference: o.f(args)
   - An invocation of an instance method qualified by an interface reference: i.f(args)
-  - The qualifier of an instance method may also be a string or an array expression,
-    and those cases require special rules in the semantics.
 
 The evaluation of the method invocation expression consists from 5 steps outlined below.
   Those steps, unless otherwise specified, are common to all the method call forms
   enumerated above.
 
-  - Evaluation of the qualifier expression
-  - Evaluation of method arguments
-  - Computation of static method information
-  - Locating the actual method declaration to be invoked
-  - Actual method invocation.
+  1. Evaluation of the qualifier expression
+  2. Evaluation of method arguments
+  3. Computation of static method information
+  4. Locating the actual method declaration to be invoked
+  5. Actual method invocation.
 
-In JLS runtime semantics of method invocation is described in \$15.2.4. Although there
+In JLS runtime semantics of method invocation is described in \S15.2.4. Although there
   is some correspondence between the steps in our semantics and the steps in JLS, it is
   generally not one-to-one. JLS description of method invocation consists of the
   following 5 steps. For each step we give the relevant chapter of the JLS and the step
   in our semantics.
 
-  - Compute the target reference (\$15.12.4.1), semantics step 1
-  - Evaluate arguments (\$15.12.4.2), semantics step 1
-  - Check the accessibility of the method to be invoked (\$15.12.4.3), no semantics
-  - Locate the actual method code to invoke (\$15.12.4.4), semantics step 3
-  - Actual method invocation, semantics step 4.
+  1. Compute the target reference (\S15.12.4.1), semantics step 1
+  2. Evaluate arguments (\S15.12.4.2), semantics step 1
+  3. Check the accessibility of the method to be invoked (\S15.12.4.3), no semantics
+  4. Locate the actual method code to invoke (\S15.12.4.4), semantics step 3
+  5. Actual method invocation, semantics step 4.
 
 Generally the rules of K-Java do not follow directly the wording of JLS. The reasons
   for this will choice will be given at the end of the section.
-  The details related to each step of are described in the semantics below, above each
+  The details related to each step are described in the semantics below, above each
   rule and auxiliary construct. For each rule we will also refer to the respective
   JLS page, if there is a correspondence.
 \end{markdown}
@@ -170,7 +172,7 @@ The first two parts of method invocation logic are evaluation of the qualifier e
      checks that all the arguments before the one being heated (if any) are already of the
      sort KResult.
 
-While there are two sections dedicated to this logic (\$15.12.4.1, \$15.12.4.2), we don't need any K rules
+While there are two sections dedicated to this logic (\S15.12.4.1, \S15.12.4.2), we don't need any K rules
   for it. Instead, subexpressions evaluation ensured by strictness annotations
   that accompany the following syntax definitions:
 
@@ -196,7 +198,7 @@ The attrubule {\kattribute{seqstrict}(1,3)} on the first definition ensures that
 Note that arguments have to be evaluated even in the case when the qualifier evaluated to null. At the same time
   that if evaluation of the qualifier or any of the arguments
   completes abruptly, the whole method invocation expression completes abruptly for the
-  same reason. K-Java don't need any special rules to cover those cases. The semantics have a fixed number of rules
+  same reason. K-Java does not need any special rules to cover those cases. The semantics has a fixed number of rules
   for throw statement that ensure the correct propagation of exceptions from any context.
 */
 
@@ -204,7 +206,8 @@ Note that arguments have to be evaluated even in the case when the qualifier eva
 \subsection{Loading method information}
 
 \begin{markdown}
-During the second step of method invocation the second argument of the production is replaced with the auxiliary data
+During the second step of the method invocation the second argument of the production is replaced with the
+  auxiliary data
   structure methodInfo(). This data structure contains the information required to choose the right method lookup
   strategy at the next step. The production methodInfo() contains the following arguments:
 
@@ -238,7 +241,7 @@ syntax MethodName ::= methodInfo(
 The first rule from this step rewrites the method name into a methodInfo() term whose first argument is the method
 signature.
   The auxiliary function getTypes() computes the list of types from the list of parameter declarations. The second
-  argument of methodInfo is also computed at this step - it is the type of the qualifier. The rest of the arguments
+  argument of methodInfo() is also computed at this step - it is the type of the qualifier. The rest of the arguments
   are filled in with default values. They will be rewritten into actual values by the following rules.
 */
 rule [Invoke-compute-methodInfo-Signature]:
@@ -308,7 +311,7 @@ The last rule of step 3 loads ContextT and Acc. It requires DecC, so this rule m
 */
 rule [Invoke-compute-methodInfo-ContextType]:
     <k>
-      _. methodInfo(Sig:Signature, QualC:ClassType, _, DecC:ClassType, .K => ContextT, .K => Acc) (_)
+      _. methodInfo(Sig:Signature, _,_, DecC:ClassType, .K => ContextT, .K => Acc) (_)
       ...
     </k>
     <classType> DecC </classType>
@@ -319,7 +322,7 @@ rule [Invoke-compute-methodInfo-ContextType]:
 /*@
 \subsection{Lookup method declaration}
 
-In the third step of method invocation algorithm the actual method declaration is chosen. This step starts once all
+In the third step of the method invocation algorithm, the actual method declaration is chosen. This step starts once all
   the fields of methodInfo() were filled in (where possible). The rules of this step rewrite methodInfo() into
   methodRef() - another auxiliary data structure.
 The production methodRef() is a reference to a method declaration. It contains two fields - Sig and DecC - the
@@ -335,12 +338,12 @@ The production methodRef() is a reference to a method declaration. It contains t
 \begin{markdown}
 Since we already know the signature, this phase amounts to computing DecC. This step contains different rules for the following cases:
 
-  - Static method (JLS \$15.12.4.4 paragraph 2)
-  - Instnace method with target being null (JLS \$15.12.4.4 paragraph 3)
-  - Instance method with non-null target, private method (JLS \$15.12.4.4 paragraph 4)
+  - Static method (JLS \S15.12.4.4 paragraph 2)
+  - Instnace method with target being null (JLS \S15.12.4.4 paragraph 3)
+  - Instance method with non-null target, private method (JLS \S15.12.4.4 paragraph 4)
   - Instance method with non-null target, access mode is protected or public. This also includes qualifying type
-    being interface. (JLS \$15.12.4.4 paragraph 6 and point 1)
-  - Instance method with non-null target, access mode is package (no dedicated mention in JLS \$15.12.4.4)
+    being interface. (JLS \S15.12.4.4 paragraph 6 and point 1)
+  - Instance method with non-null target, access mode is package (no dedicated mention in JLS \S15.12.4.4)
 
 <!--- - Target value is array or string. -->
 
@@ -350,7 +353,7 @@ The method below is for the first case. If the method is static, then the declar
 */
 rule [Invoke-methodInfo-static]:
     (_ => noValue)
-      . ( methodInfo(Sig:Signature, QualC:ClassType, classCMT, DecC:ClassType, staticCT, _) => methodRef(Sig, DecC) )
+      . ( methodInfo(Sig:Signature, _, classCMT, DecC:ClassType, staticCT, _) => methodRef(Sig, DecC) )
       (_)
 
 /*@
@@ -399,7 +402,7 @@ when
 /*@
 \begin{markdown}
 The most complex case is for instance methods with package access mode. The precise semantics of overriding for all
-  access modes is defined in JLS \$8.4.6.1:
+  access modes is defined in JLS \S8.4.6.1:
 
 An instance method derivedM declared in a class Derived overrides another method with the
   same signature, baseM, declared in class Base iff both:
@@ -435,7 +438,10 @@ public class C extends B {
 
 \medskip
 
-The method in class C overrides the method in class A transitively through the method in B. There is no direct overriding between A and C, because the method is declared with default (package) access mode in A, and class C is in a different package. Note that if the access mode in B would have been package instead of protected, there would be no overriding.
+The method in class C overrides the method in class A transitively through the method in B. There is no direct
+  overriding between A and C, because the method is declared with default (package) access mode in A, and class C is
+  in a different package. Note that if the access mode in B would have been package instead of protected,
+  there would be no overriding.
 
 \begin{markdown}
 In order to correctly handle such cases we have to analyze all the classes in the inheritance chain between the qualifying type and the qualifier runtime type.
@@ -452,19 +458,19 @@ The rule for package access mode delegates searching for the right method declar
 rule [Invoke-methodInfo-instance-package]:
     <k>
       objectRef( _, ObjC:ClassType )::QualC:ClassType
-        . ( methodInfo(Sig:Signature, QualC:ClassType, classCMT, _, instanceCT, package)
+        . ( methodInfo(Sig:Signature, QualC, classCMT, _, instanceCT, package)
             => lookupPackageMethod( Sig, getClassChain(QualC, ObjC), noClass)
           )
         (_)
       ...
     </k>
     <classType> QualC </classType>
-    <methods>... Sig |-> DecC:ClassType ...</methods>
+    <methods>... Sig |-> _ ...</methods>
 
 /*@
-Before the evaluation of lookupPackageM() may begin, the term lookupPackageM() have to be heated to the top
+Before the evaluation of lookupPackageM() may begin, the term lookupPackageM() has to be heated to the top
   of computation. The side condition in the context rule below ensured that the second argument of method call
-  expression is heated only if it contains a term lookupPackageM(). If it have other forms,
+  expression is heated only if it contains a term lookupPackageM(). If it has other forms,
   such as the method name or methodInfo(), it won't be heated.
 */
 context _:K . HOLE (_)
@@ -503,12 +509,12 @@ The rules for lookupPackageM() are based on the following two properties of the 
   - if the cell <methods> for a particular class contains a key Sig, then <methods> for all classes derived from it
     will contain the key Sig.
   - if a particular class contain a method declaration with signature Sig access mode Acc, then all declarations
-    of Sig in derived classes (that are not necessarily overriding!) will have the access mode either Acc or a value
-    wider than Acc.
+    of Sig in derived classes (that are not necessarily overriding!) will have the access mode equal to either Acc or a
+    value wider than Acc.
 
 The first property is ensured by the unfolding algorithm. Because <methods> of a derived class inherit all the <methods>
   of the direct base class, the map <methods> may only grow from base classes to derived. The second property is ensured
-  by restrictions on overriding specified in JLS \$8.4.8.3: "The access modifier (\$6.6) of an overriding or hiding
+  by restrictions on overriding specified in JLS \S8.4.8.3: "The access modifier (\S6.6) of an overriding or hiding
   method must provide at least as much access as the overridden or hidden method".
 
 The search for the right package method declaration is performed from the base-most class in the chain (the left-most
@@ -530,7 +536,7 @@ rule [lookupPackageMethod-layer-first-dec-found]:
     <methods>... Sig |-> DecC:ClassType ...</methods>
 
 /*@
-The second rule matches when we already found a declaring class (OldDecC) and the current class CurrentC have another
+The second rule matches when we already found a declaring class (OldDecC) and the current class CurrentC has another
   method declaration with the right signature. The presence of a declaration with signature  Sig inside CurrentC is identified by the
   match <class><classType> CurrentC </classType> <methods>... Sig |-> CurrentC ...</methods> </class>,
   according to the definition of <methods>.
@@ -569,7 +575,7 @@ Tests if a method declared in class BaseC with access mode Acc is overridden by 
 
 The method is overridden if either:
   - Acc is protected or public
-  - Acc is package and BaseC and SubC are declared in the same package (JLS \$6.6)
+  - Acc is package and BaseC and SubC are declared in the same package (JLS \S6.6)
 */
 syntax K ::=  isOverridden (
                 ClassType,  //BaseC
@@ -587,7 +593,7 @@ rule isOverridden(BaseC:ClassType, package, SubC:ClassType)
 rule isOverridden(_, private, _) => false
 
 /*@
-The third rule represents the case when CurrentC chain don't contain method declarations with signature
+The third rule represents the case when CurrentC chain does not contain method declarations with signature
   Sig. This case is identified by the side condition CurrentC =/=K DecC. Indeed, the two classes are different only
   when the entry Sig |-> DecC in <methods> was inherited rather than produced by a method in CurrentC.
 */
@@ -606,7 +612,8 @@ when
     CurrentC =/=K DecC
 
 /*@
-The last rule matches when the chain of classes stored in the first argument remains empty. It rewrites the whole lookupPackageM() into a reference to the method that have to be invoked.
+The last rule matches when the chain of classes stored in the first argument remains empty. It rewrites the whole
+  lookupPackageM() into a reference to the method that has to be invoked.
 */
 rule [lookupPackageMethod-end]:
     lookupPackageMethod(Sig:Signature, .ClassTypes, DecC:ClassType ) => methodRef(Sig, DecC)
@@ -633,7 +640,7 @@ The central rule of method invocation is matched when the second argument of met
     - a return statement with no arguments after the method body.
 
 The function staticInit() triggers static initialization of the qualifying class, if this class was not initialized yet.
-  Repeated calls of this function have no effect. Is required just for static methods and is described in JLS \$12.4.
+  Repeated calls of this function have no effect. Is required just for static methods and is described in JLS \S12.4.
   For an instance method call, the qualifying class will always be initialized already,
   so staticInit() will have no effect.
 
@@ -694,29 +701,32 @@ While maintaining a close correspondence between JLS and K-Java would be an inte
   quest on its own, there are a number of reasons why such a goal would not be practical.
   Some of the reasons are:
 
-  - JLS semantics describes not only the execution of correct java programs, but also
+  - JLS specification describes not only the execution of correct java programs, but also
     runtime checks that have to be performed to ensure the consistency of the bytecode,
-    and errors that have to be thrown once this consistency is violated. This is the case
-    for \$15.12.4.3, that don't need a correspondent in K-Java.
+    and errors that have to be thrown once this consistency is violated. Such bytecode
+    inconsistencies may arise when someone compiles a program with one version of a library
+    and tries to execute it with another version. Since in K-Java we perform the logic
+    corresponding to compilation and execution at the same time, we cannot encounter such
+    inconsistencies. This is why sections like \S15.12.4.3, does not have a correspondent in K-Java.
   - Because K-Java operates directly over the source code of Java, with no other
     preprocessing than the unfolding phase, it carries less static information than
     the bytecode. For this reason some static information needs to be computed in K-Java
     each time a method is invoked. This is why semantics step 3 is needed. As we will
     see below, rules for this step are straightforward and consist of loading the right
-    data from the right cells int an auxiliary data structure.
+    data from the right cells into an auxiliary data structure.
   - Although JLS avoids references to bytecode as much as possible, sometimes it contains
-    references to features specific to bytecode. For a method call in JLS have an
-    invocation mode, that might be static, nonvirtual, virtual, interface or others.
+    references to features specific to bytecode. For example a method call in JLS has an
+    invocation mode associated with it, that might be static, nonvirtual, virtual, interface or others.
     Since this invocation mode is computed at compile-time, JLS runtime semantics is
-    described separately for each invocation mode. In K, since we don't have such a
-    classification by invocation modes, we often have less cases.
+    described separately for each such invocation mode. In K, since we don't have such a
+    classification by invocation modes, we often have fewer cases.
   - The logic of exception propagation is repeated in JLS in every context an where an exception
     might interrupt the usual execution flow. At the same time K abstractions allow us to cover
     all those cases by a fixed set of rules.
   - Most complex parts of JLS prose have the form if ... otherwise if .. otherwise.
     While matching the condition under an if can be done by a single rule in K, matching the
     negation of a condition is more complex and may involve many rules. This difficulty arises
-    from the fact that K don't offer builtin support to express lack of a match of a particular
+    from the fact that K does not offer builtin support to express lack of a match of a particular
     rule as a side condition of another rule.
   - The powerful mechanism of strictness in K allows us to seamlessly define many language
     features that have many corresponding lines of text of JLS. This is especially true
