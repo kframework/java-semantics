@@ -25,23 +25,14 @@ rule [thread-start]:
       <thread>
         <k>
           //typedLookup(OL).runnable.run()
-          'ExprStm(
-            'Invoke(
-              'Method(
-                'MethodName(
-                  'Field(
-                    cast(
-                      class String2Id("java.lang.Thread"),
-                      typedLookup(OL)
-                    ),,
-                    String2Id("runnable")
-                  ),,
-                  String2Id("run")
-                )
-              ),,
-              [.KList]
-            )
+          'Field(
+            cast(
+              class String2Id("java.lang.Thread"),
+              typedLookup(OL)
+            ),,
+            String2Id("runnable")
           )
+          .String2Id("run") (.TypedVals) ;  //method invoke, ExprStm
         </k>
         <tid> TId </tid>
         ...
@@ -80,13 +71,7 @@ rule [Synchronized-nested]:
         [transition-threading]
 
 rule [Synchronized-on-null]:
-    'Synchronized(null::_,,_)
-    =>  'Throw('NewInstance(
-          'None(.KList),,
-          nullPEClass,,
-          [ null::stringClass ],,
-          'None(.KList)
-        ))
+    'Synchronized(null::_,,_) => throw new classNullPointerException(null::classString);
 
 /*@Release one level of lock for the given object.*/
 syntax K ::=  releaseLock ( Int )
@@ -134,12 +119,7 @@ rule [thread-join-interrupted]:
         methodRef(sig(MethodName:Id, _), Class:ClassType), _,
         [TId:Int :: _]
       )
-      =>  'Throw('NewInstance(
-            'None(.KList),,
-            class String2Id("java.lang.InterruptedException"),,
-            [ null::stringClass ],,
-            'None(.KList)
-          ))
+      => throw new class String2Id("java.lang.InterruptedException") (null::classString);
       ...
     </k>
     <interrupted> true => false </interrupted>
@@ -163,7 +143,7 @@ rule [object-wait]:
     <busy>... (SetItem(OL) => .) ...</busy>
     <waitingThreads>... (. => TId |-> OL ) ...</waitingThreads>
 when
-            Class ==K objectClass
+            Class ==K classObject
     andBool Id2String(MethodName) ==String "wait"
     andBool HoldLevel >=Int 1
         [transition-threading]
@@ -174,17 +154,12 @@ rule [object-wait-notify-notifyAll-without-sync]:
         methodRef(sig(MethodName:Id, _), Class:ClassType),
         objectRef(OL:Int,_)::_, [.KList]
       )
-      =>  'Throw('NewInstance(
-            'None(.KList),,
-            class String2Id("java.lang.IllegalMonitorStateException"),,
-            [ null::stringClass ],,
-            'None(.KList)
-          ))
+      => throw new class String2Id("java.lang.IllegalMonitorStateException") (null::classString);
       ...
     </k>
     <holds> Holds:Map </holds>
 when
-            Class ==K objectClass
+            Class ==K classObject
     andBool (
              Id2String(MethodName) ==String "wait"
       orBool Id2String(MethodName) ==String "notify"
@@ -215,13 +190,7 @@ when
 
 rule [waitImpl-interrupted]:
     <k>
-      waitImpl(OL:Int)
-      =>  'Throw('NewInstance(
-            'None(.KList),,
-            class String2Id("java.lang.InterruptedException"),,
-            [ null::stringClass ],,
-            'None(.KList)
-          ))
+      waitImpl(OL:Int) => throw new class String2Id("java.lang.InterruptedException") (null::classString);
       ...
     </k>
     <tid> TId:Int </tid>
@@ -243,7 +212,7 @@ rule [object-notify]:
     </k>
     <holds>... OL |-> HoldLevel:Int ...</holds>
 when
-            Class ==K objectClass
+            Class ==K classObject
     andBool Id2String(MethodName) ==String "notify"
     andBool HoldLevel >=Int 1
 
@@ -280,7 +249,7 @@ rule [object-notifyAll]:
     </k>
     <holds>... OL |-> HoldLevel:Int ...</holds>
 when
-            Class ==K objectClass
+            Class ==K classObject
     andBool Id2String(MethodName) ==String "notifyAll"
     andBool HoldLevel >=Int 1
 

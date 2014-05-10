@@ -39,15 +39,10 @@ rule [staticInit]:
             //catch clause of 'Try
             [
               'Catch(
-                'Param( [.KList],, objectClass,, String2Id("e") ),,
-                'Throw(
-                  'NewInstance(
-                    'None(.KList),,
-                    class String2Id("java.lang.ExceptionInInitializerError"),,
-                    [cast(objectClass, 'ExprName(String2Id("e")))],,
-                    'None(.KList)
-                  )
-                )
+                'Param( [.KList],, classObject,, String2Id("e") ),,
+                throw new class String2Id("java.lang.ExceptionInInitializerError") (
+                  ((classObject) String2Id("e"))
+                );
               )
             ],,
 

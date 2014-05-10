@@ -104,13 +104,7 @@ rule [lvalue-Field-instance]:
     <layerEnv>... X |-> L:Int ...</layerEnv>
 
 rule [Field-instance-OfNull]:
-    'Field(null::_,, _)
-    =>  'Throw('NewInstance(
-          'None(.KList),,
-          nullPEClass,,
-          [ null::stringClass],,
-          'None(.KList)
-        ))
+    'Field(null::_,, _) => throw new classNullPointerException(null::classString);
         [anywhere]
 
 /*@ \subsection{Static field access} */

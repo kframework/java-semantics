@@ -80,7 +80,7 @@ rule [subtype-AnyOfNoClassFalse]:
     subtype( _, noClass ) => true
 
 rule [subtype-IInterfaceOfClass]:
-    <k> subtype( Class1:ClassType, Class:ClassType ) => Class ==K objectClass ...</k>
+    <k> subtype( Class1:ClassType, Class:ClassType ) => Class ==K classObject ...</k>
     <class>
       <classType> Class1 </classType>
       <classMetaType> interfaceCMT </classMetaType>
@@ -118,7 +118,7 @@ when
     notBool (isClassType(T) ==K true)
 
 rule [subtype-ArrayOfClass]:
-    subtype( arrayOf _, Class:ClassType ) => Class ==K objectClass
+    subtype( arrayOf _, Class:ClassType ) => Class ==K classObject
 
 rule [subtype-ArrayOfOtherFalse]:
     subtype( arrayOf _, T:Type ) => false

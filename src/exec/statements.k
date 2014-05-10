@@ -13,14 +13,11 @@ module STATEMENTS
 rule [ExecutionPhase-Start]:
     <k>
       //K-AST for new <MainClass>().main(new String[0]);
-      . =>  'ExprStm(
-              'Invoke(
-                'Method('MethodName(getClassType(packageId(String2Id("")), String2Id(MainClassS)),,
-                    String2Id("main"))
-                ),,
-                [ 'NewArray(stringClass,, ['Dim(0 :: int)],, [.KList]) ]
-              )
-            )
+      . =>  getClassType(packageId(String2Id("")), String2Id(MainClassS))
+              .String2Id("main")
+
+              //workaround: we have to use toExps because 'NewArray is not a native expression but a hacked one
+              ( toExps(['NewArray(classString,, ['Dim(0 :: int)],, [.KList])]) );
     </k>
     <env> . </env>
     <mainClass> ListItem(MainClassS:String) </mainClass>
@@ -93,9 +90,7 @@ rule [labeledImpl-Discard]:
 
 //@ \subsection{Expression statements} JLS \$14.8
 
-context 'ExprStm(HOLE)
-
-rule 'ExprStm(_:TypedVal) => .K
+rule _:TypedVal; => .K
 
 //@ \subsection{If statement}
 
@@ -115,24 +110,12 @@ rule [AssertStm-True-Discard]:
     'AssertStm(true::bool,, _:KList) => .
 
 rule [AssertStm-OneArg]:
-    'AssertStm(false::bool)
-    =>  'Throw('NewInstance(
-          'None(.KList),,
-          (class String2Id("java.lang.AssertionError")),,
-          [null::stringClass],,
-          'None(.KList)
-        ))
+    'AssertStm(false::bool) => throw new class String2Id("java.lang.AssertionError") (null::classString);
 
 context 'AssertStm(false::bool,, HOLE)
 
 rule [AssertStm-TwoArgs]:
-    'AssertStm(false::bool,, TV:TypedVal)
-    =>  'Throw('NewInstance(
-          'None(.KList),,
-          (class String2Id("java.lang.AssertionError")),,
-          [ toString(TV) ],,
-          'None(.KList)
-        ))
+    'AssertStm(false::bool,, TV:TypedVal) => throw new class String2Id("java.lang.AssertionError") (toString(TV));
 
 //@ \subsection{Switch statement}
 
@@ -223,7 +206,7 @@ rule [stm-KListWrap-empty]:
         [structural]
 
 rule [stm-KListWrap-exp]:
-    stm([E:K,, Es:KList]) => 'ExprStm(E) ~> stm([Es])
+    stm([E:Exp,, Es:KList]) => E; ~> stm([Es])
 when
     getKLabel(E) ==KLabel 'cast                                           [structural]
 
@@ -422,17 +405,9 @@ rule [Throw-MethodEnd]:
 rule [Throw-CausesThreadTermination]:
     <k>
       'Throw(TV:TypedVal)
-      =>  'ExprStm(
-            'Invoke(
-              'Method(
-                'MethodName(
-                  'Field( class String2Id("java.lang.System"),, String2Id("out") ),,
-                  String2Id("println")
-                )
-              ),,
-              [ cast(objectClass, 'Plus( "Thread terminated with exception: ",, TV )) ]
-            )
-          )
+      =>  'Field( class String2Id("java.lang.System"),, String2Id("out") )
+            .String2Id("println")
+            (cast(classObject, 'Plus( "Thread terminated with exception: ",, TV )));
     </k>
     <stack> .List </stack>
 

@@ -2,11 +2,12 @@ module TO-STRING
     imports CORE-SORTS
     imports CORE-FUNCTIONS
     imports AUX-STRINGS
+    imports SYNTAX-CONVERSIONS
 
 /*@ Converts all possible Java values into String. Used mostly for printing and String + operator.
     Conversion for other value forms is defined in other modules.
 */
-syntax K ::= toString ( K )   [strict]
+syntax Exp ::= toString ( K )   [strict]
 
 rule toString(Str:String :: _) => Str
 rule toString(I:Int :: char) => chrChar(I)
@@ -65,11 +66,7 @@ rule [toString-ClassType-Inner]:
 //@ \texttt{toString for objectRef}
 
 rule toString(objectRef(OId:Int, LowestClass:ClassType) :: T:Type)
-    =>  'Invoke(
-          'Method('MethodName(objectRef(OId, LowestClass) :: T,, String2Id("toString"))),,
-          [.KList]
-        )
-        [anywhere]
+    =>  objectRef(OId, LowestClass) :: T .String2Id("toString") (.TypedVals)
 
 //@ \subsection{Debug helper functions}
 

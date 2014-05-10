@@ -125,14 +125,14 @@ rule normalizeType(FT:FloatType, T:Type) => ifAux(subtype(T, FT), FT, T)
 
 //not technically primitive types, but here is the most appropriate place to put the rules
 rule normalizeType(Class:ClassType, _) => Class
-when (Class ==K stringClass)
+when (Class ==K classString)
 
 rule normalizeType(_, Class:ClassType) => Class
-when (Class ==K stringClass)
+when (Class ==K classString)
 
 //Other cases. Required by the rule CompoundAssign
 rule normalizeType(T1:Type, T2:Type) => T1
-when notBool (isNumericType(T1) ==K true) andBool (T2 =/=K stringClass)
+when notBool (isNumericType(T1) ==K true) andBool (T2 =/=K classString)
 
 rule normalizeType(bool, bool) => bool
 

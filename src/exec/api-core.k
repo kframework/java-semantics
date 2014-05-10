@@ -75,7 +75,7 @@ rule [readInt]:
     <in> ListItem(I:Int) => . ...</in>
 
 rule [readString]:
-    <k> readString => Str :: stringClass ...</k>
+    <k> readString => Str :: classString ...</k>
     <in> ListItem(Str:String) => . ...</in>
 
 syntax KLabel ::= "'Class"        // X.class : the class literal
@@ -97,15 +97,15 @@ rule [object-getClass-on-object]:
     <objectId> OId </objectId>
     <objectType> BottomClass:ClassType </objectType>
 when
-    Class ==K objectClass andBool Id2String(MethodName) ==String "getClass"
+    Class ==K classObject andBool Id2String(MethodName) ==String "getClass"
 
 rule [object-getClass-on-String]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType), Str:String::_,
       [.KList]
-    ) => 'Lit('Class(stringClass))
+    ) => 'Lit('Class(classString))
 when
-    Class ==K objectClass andBool Id2String(MethodName) ==String "getClass"
+    Class ==K classObject andBool Id2String(MethodName) ==String "getClass"
 
 rule [object-getClass-on-array]:
     invokeImpl(
@@ -113,16 +113,16 @@ rule [object-getClass-on-array]:
       [.KList]
     ) => 'Lit('Class(ArrT))
 when
-    Class ==K objectClass andBool Id2String(MethodName) ==String "getClass"
+    Class ==K classObject andBool Id2String(MethodName) ==String "getClass"
 
 /*@ String.toString(). For Object.toString() the implementation is in the library java code.*/
 rule [object-toString-on-String]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType), Str:String::_,
       [.KList]
-    ) => Str::stringClass
+    ) => Str::classString
 when
-    Class ==K objectClass andBool Id2String(MethodName) ==String "toString"
+    Class ==K classObject andBool Id2String(MethodName) ==String "toString"
 
 /*@Object.hashCode(). Returns the canonical memory location of the objectRef. */
 rule [object-hashCode]:
@@ -139,7 +139,7 @@ rule [object-hashCode]:
       ...
     </store>
 when
-    Class ==K objectClass andBool Id2String(MethodName) ==String "hashCode"
+    Class ==K classObject andBool Id2String(MethodName) ==String "hashCode"
 
 //@\subsection{String methods}
 
@@ -152,7 +152,7 @@ rule [String-length]:
     )
     => lengthString(Str)
 when
-    Class ==K stringClass andBool Id2String(MethodName) ==String "length"
+    Class ==K classString andBool Id2String(MethodName) ==String "length"
 
 rule [String-charAt]:
     invokeImpl(
@@ -162,7 +162,7 @@ rule [String-charAt]:
     )
     => ordChar(substrString(Str, I, I +Int 1)) :: char
 when
-    Class ==K stringClass andBool Id2String(MethodName) ==String "charAt"
+    Class ==K classString andBool Id2String(MethodName) ==String "charAt"
 
 //@static native String String.valueOf(int i);
 rule [String-valueOf]:
@@ -173,7 +173,7 @@ rule [String-valueOf]:
     )
     => Int2String(I)
 when
-    Class ==K stringClass andBool Id2String(MethodName) ==String "valueOf"
+    Class ==K classString andBool Id2String(MethodName) ==String "valueOf"
 
 //@boolean String.equals(Object)
 rule [String-equals]:
@@ -184,7 +184,7 @@ rule [String-equals]:
     )
     => 'Eq(Str,, ParamStr)
 when
-    Class ==K stringClass andBool Id2String(MethodName) ==String "equals"
+    Class ==K classString andBool Id2String(MethodName) ==String "equals"
 
 //@String.toString()
 rule [String-toString]:
@@ -195,7 +195,7 @@ rule [String-toString]:
     )
     => Str
 when
-    Class ==K stringClass andBool Id2String(MethodName) ==String "toString"
+    Class ==K classString andBool Id2String(MethodName) ==String "toString"
 
 //@ int String.compareTo(Object another)
 rule [String-compareTo]:
@@ -206,7 +206,7 @@ rule [String-compareTo]:
     )
     => if (Str <String ParamStr) {-1} else { if (Str ==String ParamStr) {0} else {1}}
 when
-    Class ==K stringClass andBool Id2String(MethodName) ==String "compareTo"
+    Class ==K classString andBool Id2String(MethodName) ==String "compareTo"
 
 //@\subsection{Array clone}
 
@@ -221,7 +221,7 @@ rule [array-clone]:
         allocAndInitArray(ElemT, [Len::int], undefined :: ElemT)
       )
 when
-    Class ==K arrayImplClass andBool Id2String(MethodName) ==String "clone"
+    Class ==K classArrayImpl andBool Id2String(MethodName) ==String "clone"
 
 //@ Construct to copy content of an array to another after copy, the term is rewritten into the destination array.
 syntax K ::=  arrayCopy (
@@ -266,14 +266,7 @@ rule [storeCopy-discard]:
 */
 rule [Lit-Class-Instantiate]:
     <k>
-        (. => saveClassLiteral(T,
-          'NewInstance(
-                'None(.KList),,
-                class String2Id("java.lang.Class"),,
-                [toString(T)],,
-                'None(.KList)
-          ))
-        )
+        (. => saveClassLiteral(T, new class String2Id("java.lang.Class") (toString(T)) ) )
         ~> 'Lit('Class(T:Type))
       ...
     </k>

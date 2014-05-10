@@ -372,7 +372,7 @@ rule [Invoke-methodInfo-instance-on-null]:
     invokeImpl needs an actual methodRef, and we cannot produce a methodRef if our qualifier object is null.
 */
     null::_ . methodInfo(_,_,_,_, instanceCT, _) (_)
-    => throw new nullPEClass([ null::stringClass ]);
+    => throw new classNullPointerException(null::classString);
 
 /*@
 The logic for private instance methods is the same as for static methods, with the difference that the qualifier is not discarded.
@@ -711,8 +711,8 @@ The next rule for method invocation is applied when the qualifier type is array.
   This rule is required in order to minimize the number of particular cases involving arrays in the rules that follow.
 */
 rule [Invoke-compute-methodInfo-arrays]:
-    QualRV:RawVal :: (arrayOf T:Type => arrayImplClass)
-      . methodInfo(Sig:Signature, arrayOf T => arrayImplClass, _,_,_,_)
+    QualRV:RawVal :: (arrayOf T:Type => classArrayImpl)
+      . methodInfo(Sig:Signature, arrayOf T => classArrayImpl, _,_,_,_)
       (_)
 
 rule [Invoke-methodInfo-on-array-or-string]:

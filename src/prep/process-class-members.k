@@ -10,7 +10,7 @@ module PROCESS-CLASS-MEMBERS
 /*@ We need to process Object first. Thus when we will process any interfaces,
     Object class will already be processed.*/
 rule [Start-ProcClassMembersPhase]:
-    <k> . => processTypeWithDepends(objectClass) ~> processClasses(getTopLevelClasses) </k>
+    <k> . => processTypeWithDepends(classObject) ~> processClasses(getTopLevelClasses) </k>
     <globalPhase> ProcClassDecsPhase => ProcClassMembersPhase  </globalPhase>
 
 syntax K ::=  processClasses (
@@ -74,7 +74,7 @@ rule [processType]:
 
           //interfaces should also contain the members of Object.
           //In fact we could add object methods to classes as well
-          ~> ifAux((MetaT ==K interfaceCMT), tryInherit(objectClass), .K)
+          ~> ifAux((MetaT ==K interfaceCMT), tryInherit(classObject), .K)
 
           ~> tryInherit(BaseClass) //Method implementation from the base class could potentially
                                    //overwrite methods inherited from interfaces
@@ -346,7 +346,7 @@ rule [ConstrDec-SuperCall-Desugar]:
     </k>
     <crntClass> Class:ClassType </crntClass>
 when
-    Class =/=K objectClass
+    Class =/=K classObject
 
 rule [ConstrDec-Object-Desugar]:
     <k>
@@ -363,7 +363,7 @@ rule [ConstrDec-Object-Desugar]:
     </k>
     <crntClass> Class:ClassType </crntClass>
 when
-    Class ==K objectClass
+    Class ==K classObject
 
 //Resolve parameter types
 context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, [_,, 'Param(_:K,, HOLE,,_:K),, _],, _),, _:K)

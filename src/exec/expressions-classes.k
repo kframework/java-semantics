@@ -23,16 +23,12 @@ rule [InstanceOf]:
 
 rule [cast-RefType]:
     cast(RT1:RefType, V:RawVal :: RT2:RefType)
-    =>  ifAux(
-          subtype(typeOf(V), RT1),
-          (V::RT1),
-          'Throw('NewInstance(
-                  'None(.KList),,
-                  class String2Id("java.lang.ClassCastException"),,
-                  [ 'Plus('Plus(toString(typeOf(V)),, " cannot be cast to "),,
-                      toString(RT1)) ],,
-                  'None(.KList)
-          ))
-        )
+    =>  if ( subtype(typeOf(V), RT1) )
+        {V::RT1}
+        else {
+          throw new class String2Id("java.lang.ClassCastException") (
+            'Plus('Plus(toString(typeOf(V)),, " cannot be cast to "),, toString(RT1))
+          );
+        }
 
 endmodule

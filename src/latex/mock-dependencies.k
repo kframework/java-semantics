@@ -148,13 +148,13 @@ syntax K ::= getTopLevel ( ClassType )
 
 syntax Exp ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
 
-syntax K ::= "stringClass"
+syntax K ::= "classString"
     [function, latex(\terminal{String})]
-rule stringClass => class String2Id("java.lang.String")
+rule classString => class String2Id("java.lang.String")
 
-syntax K ::= "nullPEClass"
+syntax K ::= "classNullPointerException"
     [function, latex(\terminal{NullPointerException})]
-rule nullPEClass => class String2Id("java.lang.NullPointerException")
+rule classNullPointerException => class String2Id("java.lang.NullPointerException")
 
 //Just for the sake of rendering
 syntax KResult ::= ClassType

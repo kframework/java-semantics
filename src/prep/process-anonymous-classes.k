@@ -16,7 +16,7 @@ rule [elab-NewInstance-anonymous-implements-interface]:
       ))
       => processAnonymousClass(
         String2Id("Anonymous_$" +String Int2String(LocalId)),
-        objectClass,
+        classObject,
         [Class],
         Arg1,
         [ActualArgs],

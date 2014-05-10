@@ -9,19 +9,20 @@ module CORE-CLASSES
 
 //@ \subsection{Shortcuts for the most frequently used classes within the semantics}
 
-syntax K ::= "objectClass"                              [function]
-rule objectClass => class String2Id("java.lang.Object")
+syntax K ::= "classObject"
+    [function, latex(\terminal{Object})]
+rule classObject => class String2Id("java.lang.Object")
 
-syntax K ::= "stringClass"
+syntax K ::= "classString"
     [function, latex(\terminal{String})]
-rule stringClass => class String2Id("java.lang.String")
+rule classString => class String2Id("java.lang.String")
 
-syntax K ::= "nullPEClass"
+syntax K ::= "classNullPointerException"
     [function, latex(\terminal{NullPointerException})]
-rule nullPEClass => class String2Id("java.lang.NullPointerException")
+rule classNullPointerException => class String2Id("java.lang.NullPointerException")
 
-syntax K ::= "arrayImplClass"                   [function]
-rule arrayImplClass => class String2Id("java.lang.ArrayImpl")
+syntax K ::= "classArrayImpl"                   [function]
+rule classArrayImpl => class String2Id("java.lang.ArrayImpl")
 
 //@ \subsection{Packages}
 
@@ -46,11 +47,11 @@ rule getPackage(class ClassId:Id)
 //@ \subsection{Classes}
 
 //@ Converts a pair of PackagId, Id into a fully qualified class name
-syntax K ::=  getClassType (
-                PackageId, // the Package Id
-                Id        // Simple class name
-              )
-              [function]
+syntax ClassType ::= getClassType (
+                      PackageId,  // the Package Id
+                      Id          // Simple class name
+                     )
+                     [function]
 
 rule getClassType(packageId(PackKId:Id), SimpleClass:Id)
      => class String2Id(Id2String(PackKId) +String "." +String Id2String(SimpleClass))
@@ -191,7 +192,8 @@ rule isCompoundAssignExp('AssignLeftShift(_)) => true
 rule isCompoundAssignExp('AssignRightShift(_)) => true
 rule isCompoundAssignExp('AssignURightShift(_)) => true
 
-syntax Exp ::= TypedVal
+//@ Since RawVal terms can easily be converted into TypedVal, they are also of sort Exp.
+syntax Exp ::= TypedVal | RawVal
 
 //@ \subsubsection{Computation terms produced during elaboration}
 

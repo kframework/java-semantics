@@ -63,9 +63,9 @@ when
     isPrefixPostfixExp(KL(.KList)) ==K true
 
 rule [elabEnd-StringPlusAny]:
-    elabEnd('Plus(TE1:K,, TE2:K)) => elabRes(cast(stringClass,'Plus(TE1,, TE2)))
+    elabEnd('Plus(TE1:K,, TE2:K)) => elabRes(cast(classString,'Plus(TE1,, TE2)))
 when
-    typeOf(TE1) ==K stringClass orBool typeOf(TE2) ==K stringClass
+    typeOf(TE1) ==K classString orBool typeOf(TE2) ==K classString
 
 rule [elabEnd-Cond]:
     elabEnd('Cond(CondTE:K,, TE1:K,, TE2:K))

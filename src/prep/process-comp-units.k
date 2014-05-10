@@ -92,8 +92,8 @@ rule [ClassDec-NoExtendsDesugar]:
       ['ClassDec('ClassDecHead(_:KListWrap,, Class:ClassType,, _:K,,
         ( 'None(_)
           => 'Some('SuperDec(
-                #if (Class =/=K objectClass)
-                  #then 'ClassType(objectClass,, 'None(.KList))
+                #if (Class =/=K classObject)
+                  #then 'ClassType(classObject,, 'None(.KList))
                   #else noClass
                 #fi
               ))

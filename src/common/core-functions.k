@@ -10,7 +10,7 @@ module CORE-FUNCTIONS
 syntax K ::= typeOf ( K )                           [function]
 rule typeOf(T:Type) => T
 rule typeOf(_ :: T:Type) => T
-rule typeOf(Str:String) => stringClass
+rule typeOf(Str:String) => classString
 rule typeOf(null) => nullType
 rule typeOf(objectRef(_, Class:ClassType)) => Class
 rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T
@@ -37,7 +37,7 @@ rule Val:RawVal => toTypedVal(Val)                                              
 syntax K ::= toTypedVal ( RawVal )
 rule toTypedVal(I:Int) => I :: int                                                  [structural]
 rule toTypedVal(B:Bool) => B :: bool                                                [structural]
-rule toTypedVal(Str:String) => Str :: stringClass                                   [structural]
+rule toTypedVal(Str:String) => Str :: classString                                   [structural]
 rule toTypedVal(null) => null :: nullType                                           [structural]
 rule toTypedVal( objectRef(OL:Int, Class:ClassType) )
     => objectRef(OL:Int, Class:ClassType) :: Class                                  [structural]
@@ -82,7 +82,7 @@ rule orAux(false::bool, E:K) => E
 
 //@ Replaces 'Plus in preprocessing phases
 syntax K ::= plusAux( K, K )                    [strict]
-rule plusAux(Str1:String :: _, Str2:String :: _) => (Str1 +String Str2) :: stringClass
+rule plusAux(Str1:String :: _, Str2:String :: _) => (Str1 +String Str2) :: classString
 
 /*@ A wrapper for maps. Allows holding maps inside an arbitrary expression where a K term is required.
     Also used as part of mapUnion operation in PROCESS-CLASS-MEMBERS

@@ -111,7 +111,7 @@ rule [elabEnd-Invoke-to-lookupMethod]:
 //@ Returnts the same type for classes, arrayImplClass for arrays.
 syntax K ::= getLookupTargetType ( RefType )    [function]
 rule getLookupTargetType(Class:ClassType) => Class
-rule getLookupTargetType(arrayOf _) => arrayImplClass
+rule getLookupTargetType(arrayOf _) => classArrayImpl
 
 //@ True for cast(T,'QThis(\_)), false otherwise
 syntax K ::= isCastOfQThis ( K )                                      [function]

@@ -4,6 +4,7 @@ module ARRAYS
     imports CORE-SORTS
     imports SUBTYPING
     imports EXPRESSIONS
+    imports SYNTAX-CONVERSIONS
 
 /*@ The value in store that corresponds to an array element. The consturction "elem" Type is meant to
   distinguish between regular memory locations and array elements. Array elements need to be represented separately
@@ -42,23 +43,12 @@ rule [lookup-array-location]:
 
 rule [ArrayAccess-to-ArrayIndexOutOfBoundsException]:
     'ArrayAccess(arrayRef(_,_,M:Int) :: _,, N:Int::_)
-    => 'Throw('NewInstance(
-      'None(.KList),,
-      (class String2Id("java.lang.ArrayIndexOutOfBoundsException")),,
-      [ Int2String(N) ],,
-      'None(.KList)
-    ))
+    => throw new class String2Id("java.lang.ArrayIndexOutOfBoundsException") ( Int2String(N) );
 when notBool ((N >=Int 0) andBool (N <Int M))
         [anywhere]
 
 rule [ArrayAccess-null-to-NullPointerException]:
-    'ArrayAccess(null::_,, _)
-    => 'Throw('NewInstance(
-      'None(.KList),,
-      nullPEClass,,
-      [ null::stringClass ],,
-      'None(.KList)
-    ))
+    'ArrayAccess(null::_,, _) => throw new classNullPointerException(null::classString);
         [anywhere]
 
 //@ Array length, as defined in JDK
@@ -114,12 +104,7 @@ when NI >=Int 0
 
 rule [checkNonNegative-to-NegativeArraySizeException]:
     checkNonNegative([NI:Int::_,, _])
-    => 'Throw('NewInstance(
-      'None(.KList),,
-      class String2Id("java.lang.NegativeArraySizeException"),,
-      [ null::stringClass ],,
-      'None(.KList)
-    ))
+    => throw new class String2Id("java.lang.NegativeArraySizeException") (null::classString);
 when
     NI <Int 0
 
@@ -214,23 +199,10 @@ rule [store-array-location-check-type]:
             subtype(typeOf(V), StoreType),,
             store(L, V::StoreType),,
 
-            'Throw('NewInstance(
-              'None(.KList),,
-              (class String2Id("java.lang.ArrayStoreException")),,
-              [
+            throw new class String2Id("java.lang.ArrayStoreException") (
                 //the ArrayStoreException argument is the assigned object type
-                'Invoke(
-                  'Method('MethodName(
-                    'Invoke(
-                      'Method('MethodName(V::T,, String2Id("getClass"))),,
-                      [.KList]
-                    ),,
-                    String2Id("getName"))),,
-                  [.KList]
-                )
-              ],,
-              'None(.KList)
-            ))
+                (V::T .String2Id("getClass") (.TypedVals)) .String2Id("getName") (.TypedVals)
+            );
           )
       ...
     </k>

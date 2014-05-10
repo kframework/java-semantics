@@ -10,20 +10,13 @@ module NEW-INSTANCE
 
 /*@ \subsection{New instance creation}*/
 
-/*@ 'NewInstance( _:K,, Class:ClassType,, [Args],, 'None(.KList) )
-
-    Although we could have just 'QNewInstance at runtime, having runtime semantics for 'NewInstance is preferred
-    because we have a lot of 'Throw('NewInstance()) through our runtime semantics.
-*/
-syntax KLabel ::= "'NewInstance"
-
 /*@Unpack 'NewInstance back into 'QNewInstance.
   The difference between desugaring and unpacking is that unpacking is an artificial procedure required to separate
   elaboration from execution. In the elaboration phase there is a opposite packing rule tht creates this construct.
 */
 rule [NewInstance-to-QNewInstance-unpack]:
-    'NewInstance(Arg1:K,, Class:ClassType,, ActualArgsList:KListWrap,, 'None(.KList))
-    => 'QNewInstance(noValue,, Arg1,, Class,, 'None(.KList),, ActualArgsList,, 'None(.KList))
+    new Class:ClassType(ArgExps:Exps)
+    => 'QNewInstance(noValue,, 'None(.KList),, Class,, 'None(.KList),, toKListWrap(ArgExps),, 'None(.KList))
 
 //@ 'QNewInstance( Qual,, _:K,, Class,, _:K,, [Args],, 'None(.KList) )
 syntax KLabel ::= "'QNewInstance"
@@ -134,10 +127,7 @@ syntax K ::=  invokeConstr (
 rule [invokeConstr]:
     invokeConstr(OL:Int, Class:ClassType, [Args:KList], EnclosingObj:KResult)
     => setEncloser(lookup(OL, Class), Class, EnclosingObj)
-    ~> 'ExprStm('Invoke(
-          'Method('MethodName( typedLookup(OL),, getConsName(Class) )),,
-          [ Args ]
-        ))
+    ~> typedLookup(OL) .getConsName(Class) (toExps([Args]));
 
 /*@ Sets the enclosing object for a given object.
     Invoked by invokeConstr and QSuperConstrInv.
@@ -172,10 +162,10 @@ rule [QSuperConstrInv]:
     <k>
       'QSuperConstrInv(Qual:K,, _,, [ Args:KList ])
       => setEncloser('QThis(Class), BaseClass, Qual)
-         ~> 'ExprStm('Invoke(
+         ~> 'Invoke(
               'QSuperMethod(Class,, .K,, getConsName(BaseClass)),,
               [Args]
-            ))
+            );
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -188,10 +178,7 @@ syntax KLabel ::= "'AltConstrInv"
 rule [AltConstrInv]:
     <k>
       'AltConstrInv(_,, [ Args:KList ])
-      => 'ExprStm('Invoke(
-                'Method('MethodName( 'QThis(Class),, getConsName(Class) )),,
-                [Args]
-          ))
+      => 'QThis(Class) .getConsName(Class) (toExps([Args]));
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>

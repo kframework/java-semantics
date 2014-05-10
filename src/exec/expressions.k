@@ -130,15 +130,15 @@ rule /* I1 >>> I2 */ 'URightShift(I1:Int :: NT1:Type,, I2:Int :: NT2:NumericType
 rule /* I1 + I2     */ 'Plus(I1:Int :: _,, I2:Int :: _) => (I1 +Int I2) :: tempType
 rule                   'Plus(F1:Float :: _,, F2:Float :: _) => (F1 +Float F2) :: tempType
 rule /* Str1 + Str2 */ 'Plus(Str1:String :: _,, Str2:String :: _)
-    => (Str1 +String Str2) :: stringClass
+    => (Str1 +String Str2) :: classString
 rule /* Str + KR    */ 'Plus(Str:String :: Class:ClassType,, ( KR:KResult => toString(KR) ))
-when       ((typeOf(KR) =/=K stringClass)
-           andBool Class ==K stringClass)
-    orBool (KR ==K (null::stringClass))
+when       ((typeOf(KR) =/=K classString)
+           andBool Class ==K classString)
+    orBool (KR ==K (null::classString))
 rule /* KR + Str    */ 'Plus(( KR:KResult => toString(KR) ),, Str:String :: Class:ClassType)
-when       ((typeOf(KR) =/=K stringClass)
-           andBool Class ==K stringClass)
-    orBool (KR ==K (null::stringClass))
+when       ((typeOf(KR) =/=K classString)
+           andBool Class ==K classString)
+    orBool (KR ==K (null::classString))
 
 rule /* I1 - I2    */ 'Minus(I1:Int :: _,, I2:Int :: _) => (I1 -Int I2) :: tempType
 rule                  'Minus(F1:Float :: _,, F2:Float :: _) => (F1 -Float F2) :: tempType
@@ -149,26 +149,14 @@ rule /* I1 / I2    */ 'Div(I1:Int :: _,, I2:Int :: _) => (I1 /Int I2) :: tempTyp
 rule                  'Div(F1:Float :: _,, F2:Float :: _) => (F1 /Float F2) :: tempType
 
 //totest that the first argument is fully evaluated, right now it may be not evaluated
-rule                  'Div(_:TypedVal,, 0::_)
-   => 'Throw('NewInstance(
-        'None(.KList),,
-        (class String2Id("java.lang.ArithmeticException")),,
-        [ "/ by zero" ],,
-        'None(.KList)
-      ))
+rule 'Div(_:TypedVal,, 0::_) => throw new class String2Id("java.lang.ArithmeticException") ("/ by zero");
 
 rule /* I1 % I2    */ 'Remain(I1:Int :: _,, I2:Int :: _) => (I1 %Int I2) :: tempType
     when I2 =/=Int 0
 rule                  'Remain(F1:Float :: _,, F2:Float :: _) => (F1 %Float F2) :: tempType
 
 //totest that the first argument is fully evaluated, right now it may be not evaluated
-rule                  'Remain(_:TypedVal,, 0::_)
-   => 'Throw('NewInstance(
-        'None(.KList),,
-        (class String2Id("java.lang.ArithmeticException")),,
-        [ "/ by zero" ],,
-        'None(.KList)
-      ))
+rule 'Remain(_:TypedVal,, 0::_) => throw new class String2Id("java.lang.ArithmeticException") ("/ by zero");
 
 rule [NormalizeLeftOperandToFloat]:
     KL:KLabel((I:Int::_:IntType => Int2Float(I)::float),, _:Float :: _:FloatType)

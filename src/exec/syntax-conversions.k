@@ -58,7 +58,7 @@ rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:KListWrap) => 
 //the evaluation of the arguments
 /*@ Method invocation expression
 */
-syntax Method ::= K "." MethodName "(" Exps ")"       [seqstrict(1,3), klabel('MethodImpl)]
+syntax Exp ::= K "." MethodName "(" Exps ")"       [seqstrict(1,3), klabel('MethodImpl)]
 syntax MethodName ::= Id | MethodRef
 
 syntax KLabel ::= "'If"
@@ -83,9 +83,12 @@ rule 'Assign(K1:K,, K2:K) => K1 = K2
 
 syntax Exp ::= K "=" K       [klabel('AssignImpl)]
 
-syntax Stmt ::= K ";"           [klabel('ExprStmImpl)]
+/*@ \subsection{Expression statement}*/
 
-rule K:K; => 'ExprStm(K)
+rule 'ExprStm(E:Exp) => E;
+syntax Stmt ::= Exp ";"      [strict, klabel('ExprStmImpl)]
+
+/*@ \subsection{Cast}*/
 
 syntax Exp ::= "(" "(" Type ")" K ")" [klabel('CastImpl)]
 rule ((T:Type) K:K) => cast(T, K)
@@ -99,12 +102,24 @@ rule lvalue(X:Id) => lvalue('ExprName(X))
 syntax Exp ::= K "==" K
 rule K1:K == K2:K => eqAux(K1, K2)
 
-syntax Stmt ::= "throw" K ";"
-rule throw K:K; => 'Throw(K)
+syntax StackConsumerStmt ::= "throw" Exp ";"
+rule throw E:Exp; => 'Throw(E)
 
-syntax Exp ::= "new" ClassType "(" KListWrap ")"
-rule new Class:ClassType([Args:KList])
-     => 'NewInstance( 'None(.KList),, Class,, [ Args ],, 'None(.KList) )
+/*@ \subsection{New instance creation}*/
+
+/*@ 'NewInstance( _:K,, Class:ClassType,, [Args],, 'None(.KList) )
+
+    Although we could have just 'QNewInstance at runtime, having runtime semantics for 'NewInstance is preferred
+    because we have a lot of 'Throw('NewInstance()) through our runtime semantics.
+*/
+syntax KLabel ::= "'NewInstance"
+
+rule 'NewInstance( 'None(.KList),, Class:ClassType,, [ Args:KList ],, 'None(.KList) )
+     => new Class( toExps([Args]) )
+
+syntax Exp ::= "new" ClassType "(" Exps ")"
+
+/*@ \subsection{Exps and TypedVals}*/
 
 /*@
   A list of expressions, usually a list of arguments of a method or constructor.
