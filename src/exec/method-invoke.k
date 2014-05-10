@@ -145,39 +145,14 @@ In JLS runtime semantics of method invocation is described in \$15.2.4. Although
   in our semantics.
 
   - Compute the target reference (\$15.12.4.1), semantics step 1
-  - Evaluate arguments (\$15.12.4.2), semantics step 2
+  - Evaluate arguments (\$15.12.4.2), semantics step 1
   - Check the accessibility of the method to be invoked (\$15.12.4.3), no semantics
-  - Locate the actual method code to invoke (\$15.12.4.4), semantics step 4
-  - Actual method invocation, semantics step 5.
+  - Locate the actual method code to invoke (\$15.12.4.4), semantics step 3
+  - Actual method invocation, semantics step 4.
 
-There are at least the following reasons why there is no close correspondence between
-  JLS and K-Java:
-
-  - JLS semantics describes not only the execution of correct java programs, but also
-    runtime checks that have to be performed to ensure the consistency of the bytecode,
-    and errors that have to be thrown once this consistency is violated. This is the case
-    for \$15.12.4.3, that don't need a correspondent in K-Java.
-  - Because K-Java operates directly over the source code of Java, with no other
-    preprocessing than the unfolding phase, it carries less static information than
-    the bytecode. For this reason some static information needs to be computed in K-Java
-    each time a method is invoked. This is why semantics step 3 is needed. As we will
-    see below, rules for this step are straightforward and consist of loading the right
-    data from the right cells int an auxiliary data structure.
-  - Although JLS avoids references to bytecode as much as possible, sometimes it contains
-    references to features specific to bytecode. For a method call in JLS have an
-    invocation mode, that might be static, nonvirtual, virtual, interface or others.
-    Since this invocation mode is computed at compile-time, JLS runtime semantics is
-    described separately for each invocation mode. In K, since we don't have such a
-    classification by invocation modes, we often have less cases.
-  - K abstractions allow us to have much less particular cases in Java than in
-    JLS. A comparison between the number of particular cases for K-Java method invocation
-    and JLS will be given at the end of this section. We will also highlight the
-    particular K abstractions that made possible the reduction of the number of cases.
-  - The logic of exception propagation is repeated in JLS in every context an where an exception
-    might interrupt the usual execution flow. At the same time K abstractions allow us to cover
-    all those cases by a fixed set of rules.
-
-The details related to each step of are described in the semantics below, above each
+Generally the rules of K-Java do not follow directly the wording of JLS. The reasons
+  for this will choice will be given at the end of the section.
+  The details related to each step of are described in the semantics below, above each
   rule and auxiliary construct. For each rule we will also refer to the respective
   JLS page, if there is a correspondence.
 \end{markdown}
@@ -696,7 +671,7 @@ syntax K ::= getOId( K )              [function]
 rule getOId( objectRef(OId:Int,_)::_ ) => OId
 rule getOId( noValue ) => noValue
 
-/* [Skip] Binds a list of formal parameters to their values. Used by method calls and try-catch.
+/* Binds a list of formal parameters to their values. Used by method calls and try-catch.
 */
 syntax K ::= initParams ( Params,   // {T:Type X:Id},... - parameter declarations
                           TypedVals // values
@@ -711,6 +686,50 @@ rule [initParams]:
 rule [initParams-end]:
     initParams(.Params, .TypedVals) => .K
         [structural]
+
+/*@
+\subsection{Conclusion}
+\begin{markdown}
+While maintaining a close correspondence between JLS and K-Java would be an interesting
+  quest on its own, there are a number of reasons why such a goal would not be practical.
+  Some of the reasons are:
+
+  - JLS semantics describes not only the execution of correct java programs, but also
+    runtime checks that have to be performed to ensure the consistency of the bytecode,
+    and errors that have to be thrown once this consistency is violated. This is the case
+    for \$15.12.4.3, that don't need a correspondent in K-Java.
+  - Because K-Java operates directly over the source code of Java, with no other
+    preprocessing than the unfolding phase, it carries less static information than
+    the bytecode. For this reason some static information needs to be computed in K-Java
+    each time a method is invoked. This is why semantics step 3 is needed. As we will
+    see below, rules for this step are straightforward and consist of loading the right
+    data from the right cells int an auxiliary data structure.
+  - Although JLS avoids references to bytecode as much as possible, sometimes it contains
+    references to features specific to bytecode. For a method call in JLS have an
+    invocation mode, that might be static, nonvirtual, virtual, interface or others.
+    Since this invocation mode is computed at compile-time, JLS runtime semantics is
+    described separately for each invocation mode. In K, since we don't have such a
+    classification by invocation modes, we often have less cases.
+  - The logic of exception propagation is repeated in JLS in every context an where an exception
+    might interrupt the usual execution flow. At the same time K abstractions allow us to cover
+    all those cases by a fixed set of rules.
+  - Most complex parts of JLS prose have the form if ... otherwise if .. otherwise.
+    While matching the condition under an if can be done by a single rule in K, matching the
+    negation of a condition is more complex and may involve many rules. This difficulty arises
+    from the fact that K don't offer builtin support to express lack of a match of a particular
+    rule as a side condition of another rule.
+  - The powerful mechanism of strictness in K allows us to seamlessly define many language
+    features that have many corresponding lines of text of JLS. This is especially true
+    for order of evaluation and exception propagation.
+
+On overall, we believe that the lack of direct correspondence between JLS and K rules is not a
+  disadvantage. By relaxing this correspondence we were able to produce a semantics that is
+  more concise than JLS. While K-Java cannot achieve the same level of ease of reading as JLS,
+  it might serve as a complementary reference. A formal semantics definition might be useful
+  to clarify the most ambiguous and technically complex parts of the semantics, such as
+  rules of package method overriding that were presented above.
+\end{markdown}
+*/
 
 /*@
 \newpage
