@@ -8,6 +8,8 @@ module SYNTAX-CONVERSIONS
     imports CORE-CLASSES    //for cast
     imports CORE-EXEC
 
+/*@ \subsection{Method parameter}*/
+
 // 'Param(\_:K,, T:Type,, X:Id). Consumed by initParams().
 syntax KLabel ::= "'Param"
 
@@ -27,6 +29,8 @@ rule toParams([.KList], Params:Params) => Params
 
 // Required for getTypes()
 rule typeOf('ParamImpl(T:Type,, _:Id)) => T
+
+/*@ \subsection{Method invocation}*/
 
 /*
 General structure:
@@ -61,11 +65,15 @@ rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:KListWrap) => 
 syntax Exp ::= K "." MethodName "(" Exps ")"       [seqstrict(1,3), klabel('MethodImpl)]
 syntax MethodName ::= Id | MethodRef
 
+/*@ \subsection{if statement}*/
+
 syntax KLabel ::= "'If"
 rule 'If(K1:K,,K2:K) => if (K1) {K2} else {.K}        [structural]
 rule 'If(K1:K,,K2:K,,K3:K) => if (K1) {K2} else {K3}  [structural]
 
 syntax Stmt ::= "if" "(" K ")" "{" K "}" "else" "{" K "}" [strict(1)]
+
+/*@ \subsection{Local variable declaration}*/
 
 //@ 'LocalVarDec(\_:K,, T:Type,, ['VarDec(X:Id)])
 syntax KLabel ::= "'LocalVarDec"
@@ -75,6 +83,8 @@ rule 'LocalVarDec(_:K,, T:Type,,['VarDec(X:Id)]) => T X;  [structural]
 
 syntax VarDec ::= Type Id ";"   [klabel('VarDecImpl)]
 syntax Stmt ::= VarDec
+
+/*@ \subsection{Assignment expression}*/
 
 //@ 'Assign(loc(L)::T,, V::T)
 syntax KLabel ::= "'Assign"
@@ -93,21 +103,33 @@ syntax Stmt ::= Exp ";"      [strict, klabel('ExprStmImpl)]
 syntax Exp ::= "(" "(" Type ")" K ")" [klabel('CastImpl)]
 rule ((T:Type) K:K) => cast(T, K)
 
+/*@ \subsection{Identifier (name) expression}*/
+
 //Naked identifier on top of computation
 syntax Exp ::= Id
 rule X:Id => 'ExprName(X)
 rule lvalue(X:Id) => lvalue('ExprName(X))
 
+/*@ \subsection{== expression}*/
+
 // Just for the sake of the rule isOverridden
 syntax Exp ::= K "==" K
 rule K1:K == K2:K => eqAux(K1, K2)
 
+/*@ \subsection{Throw statement}*/
+
 syntax StackConsumerStmt ::= "throw" Exp ";"
 rule throw E:Exp; => 'Throw(E)
 
+/*@ \subsection{Return statement}*/
+
+rule 'Return('None(_)) => return;
+
+syntax StackConsumerStmt ::= "return" ";"
+
 /*@ \subsection{New instance creation}*/
 
-/*@ 'NewInstance( _:K,, Class:ClassType,, [Args],, 'None(.KList) )
+/* 'NewInstance( _:K,, Class:ClassType,, [Args],, 'None(.KList) )
 
     Although we could have just 'QNewInstance at runtime, having runtime semantics for 'NewInstance is preferred
     because we have a lot of 'Throw('NewInstance()) through our runtime semantics.
@@ -119,15 +141,12 @@ rule 'NewInstance( 'None(.KList),, Class:ClassType,, [ Args:KList ],, 'None(.KLi
 
 syntax Exp ::= "new" ClassType "(" Exps ")"
 
-/*@ \subsection{Exps and TypedVals}*/
+/*@ \subsection{Syntactic lists - Exps, TypedVals, Classes}*/
 
 /*@
   A list of expressions, usually a list of arguments of a method or constructor.
 */
 syntax Exps ::= List{Exp, ","} [seqstrict]
-
-syntax Exps ::= TypedVals
-syntax TypedVals ::= List{TypedVal, ","}
 
 syntax K ::= toExps( KListWrap )        [function]
            | toExps( KListWrap , Exps ) [function]
@@ -143,6 +162,9 @@ rule toKListWrap(Args:Exps) => toKListWrap([.KList], Args)
 rule toKListWrap([Args:KList], (Arg:Exp, Es:Exps)) => toKListWrap([Args,, Arg], (Es))
 rule toKListWrap([Args:KList], .Exps) => [Args]
 
+syntax Exps ::= TypedVals
+syntax TypedVals ::= List{TypedVal, ","}
+
 //@ Converts a TypedVals term to Types. Uses typeOf underneath.
 syntax K ::=  getTypes (
                 TypedVals     // a list of source values
@@ -156,9 +178,5 @@ rule getTypes(types(Ts:KList), .TypedVals) => types(Ts)
 
 syntax KResult ::= Classes
 syntax Classes ::= List{ClassType, ","}
-
-rule 'Return('None(_)) => return;
-
-syntax StackConsumerStmt ::= "return" ";"
 
 endmodule

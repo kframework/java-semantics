@@ -85,19 +85,17 @@ The cell <methodDec> represents a method declared inside the current class. The 
   context type (either instance or static).
 
 In order for strictness and context rules to work we have to define some K productions
-  as KResult. The most common form of KResult in Java are the following:
+  as KResult. The most common forms of KResult in Java are the following:
 
 \vspace{3ex}
 
 \begin{syntaxBlock}{\nonTerminal{\sort{KResult}}}
 \syntax{{\nonTerminal{\sort{ClassType}}}}{}
 \syntaxCont{{\nonTerminal{\sort{TypedVal}}}}{}
-\syntaxCont{{\nonTerminal{\sort{KListWrap}}}}{}
 \end{syntaxBlock}
 
 The first represents a class. Second is a typed value, the result of evaluation of any
-  expression. Typed values that relevant for method invocation may have one of the
-  following forms:
+  expression. The forms of typed value relevant for method invocation are object reference and null:
 
 \vspace{3ex}
 
@@ -107,16 +105,10 @@ The first represents a class. Second is a typed value, the result of evaluation 
   {}\terminal{::}{{\nonTerminal{\sort{ClassType}}}}}{}
 \end{syntaxBlock}
 
-Another form of KResult is a list of K elements wrapped into square brackets:
+The type after four dots (::) separator is the static type associated with that value. The values inside
+  objectRef() are the address inside the store and the runtime type of the object.
 
-\vspace{3ex}
-
-\begin{syntaxBlock}{\nonTerminal{\sort{KListWrap}}}
-  \syntax{[{{\nonTerminal{\sort{KList}}}}]}{}
-\end{syntaxBlock}
-
-This production is required whenever we have to store a list of unknown size, for example
-  the list of arguments of a method. For the sake of simplicity we we will also
+For the sake of simplicity we we will also
   consider \dotCt{K} - the unit element of K to be KResult. The value \dotCt{K} is often
   used in auxiliary functions as a placeholder until some actual value is computed.
 
@@ -177,10 +169,13 @@ There are at least the following reasons why there is no close correspondence be
     Since this invocation mode is computed at compile-time, JLS runtime semantics is
     described separately for each invocation mode. In K, since we don't have such a
     classification by invocation modes, we often have less cases.
-  - Lastly, K abstractions allow us to have much less particular cases in Java than in
+  - K abstractions allow us to have much less particular cases in Java than in
     JLS. A comparison between the number of particular cases for K-Java method invocation
     and JLS will be given at the end of this section. We will also highlight the
     particular K abstractions that made possible the reduction of the number of cases.
+  - The logic of exception propagation is repeated in JLS in every context an where an exception
+    might interrupt the usual execution flow. At the same time K abstractions allow us to cover
+    all those cases by a fixed set of rules.
 
 The details related to each step of are described in the semantics below, above each
   rule and auxiliary construct. For each rule we will also refer to the respective
@@ -189,44 +184,52 @@ The details related to each step of are described in the semantics below, above 
 */
 
 /*@
-\subsection{Evaluation of the qualifier}
+\subsection{Evaluation of the qualifier and the arguments}
 
-Evaluation of the method invocation qualifier (JLS \$15.12.4.1) requires just one
-  context rule. The qualifier is the first argument of the method invocation
-  production. It just needs to be heated, and after evaluation the actual value
-  will be cooled back in the same place. If the qualifier is a class instead of an
-  expression, then this rule will have no effect. A type in K-Java is subsorted to
-  KResult, consequently it doesn't need to be heated.
+The first two parts of method invocation logic are evaluation of the qualifier expression and evaluation of the
+  arguments. JLS enforces the following conditions on the order of subexpressions evaluation:
+   - Arguments have to be evaluated after the qualifier was evaluated. This is ensured
+     by checking that the qualifier is of sort KResult at the moment when arguments are
+     heated.
+   - Arguments are evaluated left to right. To ensure this we add a side condition that
+     checks that all the arguments before the one being heated (if any) are already of the
+     sort KResult.
 
-\subsection{Evaluation of the arguments}
+While there are two sections dedicated to this logic (\$15.12.4.1, \$15.12.4.2), we don't need any K rules
+  for it. Instead, subexpressions evaluation ensured by strictness annotations
+  that accompany the following syntax definitions:
 
-\begin{markdown}
-The next step is the evaluation of the arguments (JLS \$15.12.4.2). This also requires
-  just one context rule. The whole list of arguments is the third argument of method
-  invocation production, but in order to evaluate the arguments we need to heat them
-  one by one. JLS enforces the following conditions on the timing of arguments evaluation:
+\vspace{3ex}
 
-  - Arguments have to be evaluated after the qualifier was evaluated. This is ensured
-    by checking that the qualifier is of sort KResult at the moment when arguments are
-    heated.
-  - Arguments are evaluated left to right. To ensure this we add a side condition that
-    checks that all the arguments before the one being heated (if any) are already of the
-    sort KResult.
+\begin{syntaxBlock}{
+  \nonTerminal{\sort{Exp}}}\syntax{{{\nonTerminal{\sort{K}}}}\terminal{.}{{\nonTerminal{\sort{MethodName}}}}
+  ({{\nonTerminal{\sort{Exps}}}})}{\kattribute{seqstrict}(1,3)}
+\end{syntaxBlock}
 
-Arguments have to be evaluated even in the case when the qualifier is null. On the other
-  hand, JLS states that once the evaluation of the qualifier or any of the arguments
+\begin{syntaxBlock}{
+	\nonTerminal{\sort{MethodName}}}\syntax{{\nonTerminal{\sort{Id}}}}{}
+\end{syntaxBlock}
+
+\begin{syntaxBlock}{
+  \nonTerminal{\sort{Exps}}}\syntax{List\{{\nonTerminal{\sort{Exp}}}, \mbox{``},\mbox{''}\}}{\kattribute{seqstrict}}
+\end{syntaxBlock}
+
+The attrubule {\kattribute{seqstrict}(1,3)} on the first definition ensures that arguments are evaluated after the
+  qualifier is evaluated. The qualifier term might be either an expression or a Class. If it is expression,
+  it will be heated and evaluated. If it is a class (for certain static methods), then it is already a KResult
+  strictness rule will have no effect on it.
+Note that arguments have to be evaluated even in the case when the qualifier evaluated to null. At the same time
+  that if evaluation of the qualifier or any of the arguments
   completes abruptly, the whole method invocation expression completes abruptly for the
-  same reason. K-Java don't need any special rules to cover those cases. The small number
-  of rules related to throw statement ensure correct exception propagation from any
-  context.
-\end{markdown} todo correct the docs, now there is just the strictness rule for this purpose
+  same reason. K-Java don't need any special rules to cover those cases. The semantics have a fixed number of rules
+  for throw statement that ensure the correct propagation of exceptions from any context.
 */
 
 /*@
 \subsection{Loading method information}
 
 \begin{markdown}
-During the third step of method invocation the second argument of the production is replaced with the auxiliary data
+During the second step of method invocation the second argument of the production is replaced with the auxiliary data
   structure methodInfo(). This data structure contains the information required to choose the right method lookup
   strategy at the next step. The production methodInfo() contains the following arguments:
 
@@ -244,34 +247,47 @@ All the information stored in methodInfo() is static. In K-Java we already have
   The rules from step 3 simply load the relevant information from configuration
   cells to methodInfo() arguments.
 \end{markdown} */
-syntax K ::=  methodInfo(
-                Signature,    //Sig - method signature
-                RefType,      //QualC - qualifier type, not necessarily class
-                ClassMetaType,//MetaT - The either classCMT or interfaceCMT for the qualifier type
-                RefType,      //DecC - method declaration class - the class referred by the signature in <methods>
-                                // for arrays - it remains noClass
-                                // this argument is mostly used to compute the context type
-                ContextType,  //ContextT - method context type - instance or static
-                                //for arrays - instanceCT
-                AccessMode    //Acc - The access mode of the method as seen by the qualifying type
-              )
+syntax MethodName ::= methodInfo(
+                        Signature,    //Sig - method signature
+                        RefType,      //QualC - qualifier type, not necessarily class
+                        ClassMetaType,//MetaT - The either classCMT or interfaceCMT for the qualifier type
+                        RefType,      //DecC - method declaration class - the class referred by the signature
+                                        // in <methods>. For arrays - it remains noClass.
+                                        // this argument is mostly used to compute the context type
+                        ContextType,  //ContextT - method context type - instance or static
+                                        //for arrays - instanceCT
+                        AccessMode    //Acc - The access mode of the method as seen by the qualifying type
+                      )
 
 /*@
-The first rule from step 3 rewrites the method name into a methodInfo() whose first argument is the method signature.
+The first rule from this step rewrites the method name into a methodInfo() term whose first argument is the method
+signature.
   The auxiliary function getTypes() computes the list of types from the list of parameter declarations. The second
   argument of methodInfo is also computed at this step - it is the type of the qualifier. The rest of the arguments
   are filled in with default values. They will be rewritten into actual values by the following rules.
-
-This rule also have a side condition that checks whether parameters were evaluated to final values. The side
-  condition ensures that this rule is executed only when the first two steps of method invocation were completed.
-  Because the following rules may match only after this rule was matched, we have to make this check only once - in
-  this rule.
-
 */
 rule [Invoke-compute-methodInfo-Signature]:
     Qual:KResult
       .(Name:Id => methodInfo(sig(Name, getTypes(Args)), typeOf(Qual), .K,.K,.K,.K))
       (Args:TypedVals)
+
+/*@
+Note that in this rule variable Args is defined of type TypedVals instead of Exps. This restriction ensures that
+  arguments (and consequently the qualifier) are already evaluated at the moment when this rule is invoked.
+  The sort TypedVals represents a list of typed values, the evaluation result of Exps. It is defined as following:
+
+\vspace{3ex}
+
+\begin{syntaxBlock}{
+	\nonTerminal{\sort{TypedVals}}}\syntax{List\{{\nonTerminal{\sort{TypedVal}}}, \mbox{``},\mbox{''}\}}{}
+\end{syntaxBlock}
+
+\begin{syntaxBlock}{
+  \nonTerminal{\sort{Exps}}}\syntax{{\nonTerminal{\sort{TypedVals}}}}{}
+\end{syntaxBlock}
+
+Because TypedVal is subsorted to KResult, TypedVals being a list of KResult is implicitly subsorted to KResult.
+*/
 
 /* Impl: We could combine this rule with the previous one by using getLookupTargetType(), but we'll keep it this way
     to keep the core part of method invocation separate from the non object-related part. */
@@ -328,7 +344,7 @@ rule [Invoke-compute-methodInfo-ContextType]:
 /*@
 \subsection{Lookup method declaration}
 
-In the fourth step of method invocation algorithm the actual method declaration is chosen. This step starts once all
+In the third step of method invocation algorithm the actual method declaration is chosen. This step starts once all
   the fields of methodInfo() were filled in (where possible). The rules of this step rewrite methodInfo() into
   methodRef() - another auxiliary data structure.
 The production methodRef() is a reference to a method declaration. It contains two fields - Sig and DecC - the
@@ -337,7 +353,8 @@ The production methodRef() is a reference to a method declaration. It contains t
 
 \vspace{3ex}
 
-\begin{syntaxBlock}{\nonTerminal{\sort{KResult}}}\syntax{{}\terminal{methodRef}({{\nonTerminal{\sort{Signature}}}},{{\nonTerminal{\sort{RefType}}}})}{}
+\begin{syntaxBlock}{
+  \nonTerminal{\sort{MethodName}}}\syntax{{}\terminal{methodRef}({{\nonTerminal{\sort{Signature}}}},{{\nonTerminal{\sort{RefType}}}})}{}
 \end{syntaxBlock}
 
 \begin{markdown}
@@ -384,13 +401,14 @@ rule [Invoke-methodInfo-instance-private]:
 
 /*@
 If the method is protected or public, then we should call the version of the method visible to the runtime type of
-  the qualifying object (ObjC).
+  the qualifying object (ObjC). Recall that the runtime type of an object is stored in the second argument of
+  objectRef().
   This case also covers qualifying type interface, since interface methods are always public.
   The right method will always be the one referred by the signature Sig in the cell <methods> associated with the
   actual object class. This is because the unfolding phase populates <methods> with the union of methods inherited
   from the base class and methods declared in the current class, the latter overriding the former.
   The variable DecC is the class where the right method version is declared.
-*/ //todo explain why we have to match ObjC instgead of QualC.
+*/
 rule [Invoke-methodInfo-instance-protected-or-public]:
     <k>
       objectRef( _, ObjC:ClassType )::_
