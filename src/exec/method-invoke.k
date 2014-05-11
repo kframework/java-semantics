@@ -433,6 +433,8 @@ import a.*;
 public class C extends B {
   protected void f(int a) { ... }
 }
+
+((A) new C()).f();
 \end{lstlisting}
 \end{minipage}
 
@@ -444,9 +446,22 @@ The method in class C overrides the method in class A transitively through the m
   there would be no overriding.
 
 \begin{markdown}
-In order to correctly handle such cases we have to analyze all the classes in the inheritance chain between the qualifying type and the qualifier runtime type.
+In order to correctly handle such cases we have to analyze all the classes in the inheritance chain between the
+  qualifying type and the qualifier runtime type.
 
-The rule for package access mode delegates searching for the right method declaration to the auxiliary function lookupPackageM(). The function takes 3 arguments:
+The algorithm employed in K-Java is significantly different from the one in JLS, but it is much simpler to implement.
+  Yet it yields the correct behaviour and was extensively tested by our test suite. The JLS algorithm involves starting
+  the search from the runtime type of the qualifier and moving upwards in the inheritance tree until we find the FIRST
+  method that overrides the originally called method (or is the originally called method itself). This apparently
+  simple algorithm leads to multiple particular cases when we consider the transitive rule (2b above) for overriding.
+
+In contrast, the K-Java algorithm starts the search with the qualifying type (e.g. static type of the qualifier
+  expression) and moves downwards in the inheritance chain until it reaches the runtime type ofthe qualifier.
+  When all classes in the chain were traversed the algorithm returns the LAST found method (e.g. defined in the most
+  derived class) that overrides the original one.
+
+The rule for package access mode delegates searching for the right method declaration to the auxiliary function
+  lookupPackageMethod(). The function takes 3 arguments:
 
   - method signature Sig
   - the list of classes in the inheritance chain between the qualifying class QualC and the actual object class ObjC.
@@ -468,9 +483,9 @@ rule [Invoke-methodInfo-instance-package]:
     <methods>... Sig |-> _ ...</methods>
 
 /*@
-Before the evaluation of lookupPackageM() may begin, the term lookupPackageM() has to be heated to the top
+Before the evaluation of lookupPackageMethod() may begin, the term lookupPackageMethod() has to be heated to the top
   of computation. The side condition in the context rule below ensured that the second argument of method call
-  expression is heated only if it contains a term lookupPackageM(). If it has other forms,
+  expression is heated only if it contains a term lookupPackageMethod(). If it has other forms,
   such as the method name or methodInfo(), it won't be heated.
 */
 context _:K . HOLE (_)
@@ -504,7 +519,7 @@ syntax K ::=  lookupPackageMethod (
 
 /*@
 \begin{markdown}
-The rules for lookupPackageM() are based on the following two properties of the configuration:
+The rules for lookupPackageMethod() are based on the following two properties of the configuration:
 
   - if the cell <methods> for a particular class contains a key Sig, then <methods> for all classes derived from it
     will contain the key Sig.
@@ -613,10 +628,70 @@ when
 
 /*@
 The last rule matches when the chain of classes stored in the first argument remains empty. It rewrites the whole
-  lookupPackageM() into a reference to the method that has to be invoked.
+  lookupPackageMethod() into a reference to the method that has to be invoked.
 */
 rule [lookupPackageMethod-end]:
-    lookupPackageMethod(Sig:Signature, .ClassTypes, DecC:ClassType ) => methodRef(Sig, DecC)
+    lookupPackageMethod( Sig:Signature, .ClassTypes, DecC:ClassType ) => methodRef(Sig, DecC)
+
+/*@
+For the code example above, the term lookupPackageMethod() will pass through the following forms during evaluation:
+
+\begin{tabular}{ | l | l | }
+  \hline
+  <k> lookupPackageMethod(f(), (a.A, a.B, b.C), .K) ...</k> &\\
+  <classType> A </classType> &\\
+  <methods>... f() |-> A ...</methods>
+  & rule 1\\
+
+  \hline
+  <k> lookupPackageMethod(f(), (a.B, b.C), a.A) ...</k> & \\
+  <class>
+    <classType> a.A </classType>
+    <methodSignature> f() </methodSignature>
+    <methodAccessMode> package </methodAccessMode>
+    ...
+  </class> & \\
+  <class>
+    <classType> a.B </classType>
+    <methods>... f() |-> a.B ...</methods>
+    ...
+  </class>
+  & rule 2, if returns true\\
+
+  \hline
+  <k> lookupPackageMethod(f(), (b.C), a.B) ...</k> & \\
+  <class>
+    <classType> a.B </classType>
+    <methodSignature> f() </methodSignature>
+    <methodAccessMode> protected </methodAccessMode>
+    ...
+  </class> & \\
+  <class>
+    <classType> b.C </classType>
+    <methods>... f() |-> b.C ...</methods>
+    ...
+  </class>
+  & rule 2, if returns true\\
+
+  \hline
+  <k> lookupPackageMethod(f(), .ClassTypes, b.C) ...</k> & rule 3\\
+  \hline
+  <k> methodRef(f(), b.C) ...</k> & \\
+  \hline
+\end{tabular}
+
+\vspace{3ex}
+
+When the term lookupPackageMethod() is first produced it takes as arguments the method signature (rendered here as f()
+ for convenience), the chain of classes from the qualifying class A to the runtime class C,
+ and .K as the third argument. Since the third argument is .K only the third rule can match. This rule deletes A
+ from the class chain and updates the third argument to the class that defines the version of f() accessible to A.
+ That class is A. For classes B and C the second rule for lookupMethodM() matches. In both cases the method f()
+ defined in B and C overrides the previously found one. In the first case classes the method B.f() overrides A.f()
+ because the access mode is package and both A and B are in the same package. In the second case C.f()
+ overrides B.f() because B.f() have protected access mode, and is thus always overridden. The final result of
+ method lookup procedure is the version of method f() declared in the class C.
+*/
 
 /*@
 \subsection{Actual method invocation}
