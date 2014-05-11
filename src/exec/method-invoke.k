@@ -59,28 +59,28 @@ $
 
 \vspace{3ex}
 
-The cell <k> stores the current computation. The cell <stack> is a list of pairs of the
+The cell $\kall{k}{}$ stores the current computation. The cell $\kall{stack}{}$ is a list of pairs of the
   form (K, Bag), and represents the standard method call stack. The first element
   represents the remaining computation at the moment the method was called. The second
-  element of sort Bag represents the content of cell <methodContext> at the moment
+  element of sort Bag represents the content of cell $\kall{methodContext}{}$ at the moment
   of method call.
 
-The cell <class> contains various sub-cells holding the content of that class. The
-  first cell in <classType> of sort ClassType that holds the fully qualified class name.
-  This cell serves as a key in all rules that match a fragment of a <class>. The value
-  in the cell <classMetaType> is either "class" or "interface". From now on we will
+The cell $\kall{class}{}$ contains various sub-cells holding the content of that class. The
+  first cell in $\kall{classType}{}$ of sort ClassType that holds the fully qualified class name.
+  This cell serves as a key in all rules that match a fragment of a $\kall{class}{}$. The value
+  in the cell $\kall{classMetaType}{}$ is either "class" or "interface". From now on we will
   refer to both meta types as classes, referring to metatype value when distinction
-  is necessary. The next cell is <methods>. This is a map from method signatures to
+  is necessary. The next cell is $\kall{methods}{}$. This is a map from method signatures to
   classes where the respective signatures are declared. It contains not only the methods
   declared in this class, but also those inherited from the base class, but not from the
   base interfaces. By "inherited" here we mean all the methods contained in the cell
-  <methods> of the base class that were not overridden by a method declaration with
+  $\kall{methods}{}$ of the base class that were not overridden by a method declaration with
   the same signature in the current class. This definition is different from the
   inheritance rules in JLS \S8.4.6, although the difference is only relevant at the
   elaboration time.
 
-The cell <methodDec> represents a method declared inside the current class. The subcell
-  <methodSignature> is the key for accessing other cells for this declaration. The other
+The cell $\kall{methodDec}{}$ represents a method declared inside the current class. The subcell
+  $\kall{methodSignature}{}$ is the key for accessing other cells for this declaration. The other
   cells are the parameters, the body, the access mode (private, public etc.) and the
   context type (either instance or static).
 
@@ -221,7 +221,7 @@ During the second step of the method invocation the second argument of the produ
     package when no access modifier is provided.
 
 All the information stored in methodInfo() is static. In K-Java we already have
-  this information computed, but it is stored in various cells inside <class> and <classDec>.
+  this information computed, but it is stored in various cells inside $\kall{class}{}$ and $\kall{classDec}{}$.
   The rules from step 3 simply load the relevant information from configuration
   cells to methodInfo() arguments.
 \end{markdown} */
@@ -284,7 +284,7 @@ rule [Invoke-compute-methodInfo-DecC]:
     <methods>... Sig |-> DecC:ClassType ...</methods>
 
 /*@ \begin{markdown}
-There is one case that is not covered by the previous rule - the case when the cell <methods> does not have a key
+There is one case that is not covered by the previous rule - the case when the cell $\kall{methods}{}$ does not have a key
   equal to Sig. This is possible in one of the following situations:
 
   - Qualifying type is an interface.
@@ -348,7 +348,7 @@ Since we already know the signature, this phase amounts to computing DecC. This 
 <!--- - Target value is array or string. -->
 
 The method below is for the first case. If the method is static, then the declaring type DecC is the qualifying type.
-  The qualifier is discarded by rewriting it into .K .
+  The qualifier is discarded by rewriting it into \dotCt{K} .
 \end{markdown}
 */
 rule [Invoke-methodInfo-static]:
@@ -382,8 +382,8 @@ If the method is protected or public, then we should call the version of the met
   the qualifying object (ObjC). Recall that the runtime type of an object is stored in the second argument of
   objectRef().
   This case also covers qualifying type interface, since interface methods are always public.
-  The right method will always be the one referred by the signature Sig in the cell <methods> associated with the
-  actual object class. This is because the unfolding phase populates <methods> with the union of methods inherited
+  The right method will always be the one referred by the signature Sig in the cell $\kall{methods}{}$ associated with the
+  actual object class. This is because the unfolding phase populates $\kall{methods}{}$ with the union of methods inherited
   from the base class and methods declared in the current class, the latter overriding the former.
   The variable DecC is the class where the right method version is declared.
 */
@@ -467,7 +467,7 @@ The rule for package access mode delegates searching for the right method declar
   - the list of classes in the inheritance chain between the qualifying class QualC and the actual object class ObjC.
     This list is produced by classChain()
   - the third argument represents the declaring class of the best method found so far.
-    It is initialized with .K.
+    It is initialized with \dotCt{K}.
 \end{markdown}
 */
 rule [Invoke-methodInfo-instance-package]:
@@ -521,21 +521,21 @@ syntax K ::=  lookupPackageMethod (
 \begin{markdown}
 The rules for lookupPackageMethod() are based on the following two properties of the configuration:
 
-  - if the cell <methods> for a particular class contains a key Sig, then <methods> for all classes derived from it
+  - if the cell $\kall{methods}{}$ for a particular class contains a key Sig, then $\kall{methods}{}$ for all classes derived from it
     will contain the key Sig.
   - if a particular class contain a method declaration with signature Sig access mode Acc, then all declarations
     of Sig in derived classes (that are not necessarily overriding!) will have the access mode equal to either Acc or a
     value wider than Acc.
 
-The first property is ensured by the unfolding algorithm. Because <methods> of a derived class inherit all the <methods>
-  of the direct base class, the map <methods> may only grow from base classes to derived. The second property is ensured
+The first property is ensured by the unfolding algorithm. Because $\kall{methods}{}$ of a derived class inherit all the $\kall{methods}{}$
+  of the direct base class, the map $\kall{methods}{}$ may only grow from base classes to derived. The second property is ensured
   by restrictions on overriding specified in JLS \S8.4.8.3: "The access modifier (\S6.6) of an overriding or hiding
   method must provide at least as much access as the overridden or hidden method".
 
 The search for the right package method declaration is performed from the base-most class in the chain (the left-most
   one) to the most derived one. Every rule matches and deletes the leftmost class in the class chain (CurrentC),
   and possibly rewrites the third argument into the current class.
-The first rule matches when there is no declaring class yet (third argument is .K, the initial case).
+The first rule matches when there is no declaring class yet (third argument is \dotCt{K}, the initial case).
 \end{markdown}
 */
 rule [lookupPackageMethod-layer-first-dec-found]:
@@ -553,8 +553,8 @@ rule [lookupPackageMethod-layer-first-dec-found]:
 /*@
 The second rule matches when we already found a declaring class (OldDecC) and the current class CurrentC has another
   method declaration with the right signature. The presence of a declaration with signature  Sig inside CurrentC is identified by the
-  match <class><classType> CurrentC </classType> <methods>... Sig |-> CurrentC ...</methods> </class>,
-  according to the definition of <methods>.
+  match $\mathrel{}\kall{class}{\kall{classType}{ CurrentC } \mathrel{}\kall{methods}{... Sig \mapsto CurrentC ...} }$,
+  according to the definition of $\kall{methods}{}$.
 
 If the method in CurrentC directly overrides the method in OldDecC, the declaring class is updated to CurrentC. Otherwise the declaring class stays unchanged. The rules for direct overriding (case 1a above) are defined in the auxiliary function isOverridden(). The function takes three arguments:
 \begin{markdown}
@@ -610,7 +610,7 @@ rule isOverridden(_, private, _) => false
 /*@
 The third rule represents the case when CurrentC chain does not contain method declarations with signature
   Sig. This case is identified by the side condition CurrentC =/=K DecC. Indeed, the two classes are different only
-  when the entry Sig |-> DecC in <methods> was inherited rather than produced by a method in CurrentC.
+  when the entry Sig $\mapsto$ DecC in $\kall{methods}{}$ was inherited rather than produced by a method in CurrentC.
 */
 rule [lookupPackageMethod-no-new-method]:
     <k>
@@ -638,45 +638,45 @@ For the code example above, the term lookupPackageMethod() will pass through the
 
 \begin{tabular}{ | l | l | }
   \hline
-  <k> lookupPackageMethod(f(), (a.A, a.B, b.C), .K) ...</k> &\\
-  <classType> A </classType> &\\
-  <methods>... f() |-> A ...</methods>
+  $\mathrel{}\kall{k}{ lookupPackageMethod(f(), (a.A, a.B, b.C), \dotCt{K}) ...}$ &\\
+  $\mathrel{}\kall{classType}{ A }$ &\\
+  $\mathrel{}\kall{methods}{... f() \mapsto A ...}$
   & rule 1\\
 
   \hline
-  <k> lookupPackageMethod(f(), (a.B, b.C), a.A) ...</k> & \\
-  <class>
-    <classType> a.A </classType>
-    <methodSignature> f() </methodSignature>
-    <methodAccessMode> package </methodAccessMode>
+  $\mathrel{}\kall{k}{ lookupPackageMethod(f(), (a.B, b.C), a.A) ...}$ & \\
+  $\mathrel{}\kall{class}{
+    \mathrel{}\kall{classType}{ a.A }
+    \mathrel{}\kall{methodSignature}{ f() }
+    \mathrel{}\kall{methodAccessMode}{ package }
     ...
-  </class> & \\
-  <class>
-    <classType> a.B </classType>
-    <methods>... f() |-> a.B ...</methods>
+  }$ & \\
+  $\mathrel{}\kall{class}{
+    \mathrel{}\kall{classType}{ a.B }
+    \mathrel{}\kall{methods}{... f() \mapsto a.B ...}
     ...
-  </class>
+  }$
   & rule 2, if returns true\\
 
   \hline
-  <k> lookupPackageMethod(f(), (b.C), a.B) ...</k> & \\
-  <class>
-    <classType> a.B </classType>
-    <methodSignature> f() </methodSignature>
-    <methodAccessMode> protected </methodAccessMode>
+  $\mathrel{}\kall{k}{ lookupPackageMethod(f(), (b.C), a.B) ...}$ & \\
+  $\mathrel{}\kall{class}{
+    \mathrel{}\kall{classType}{ a.B }
+    \mathrel{}\kall{methodSignature}{ f() }
+    \mathrel{}\kall{methodAccessMode}{ protected }
     ...
-  </class> & \\
-  <class>
-    <classType> b.C </classType>
-    <methods>... f() |-> b.C ...</methods>
+  }$ & \\
+  $\mathrel{}\kall{class}{
+    \mathrel{}\kall{classType}{ b.C }
+    \mathrel{}\kall{methods}{... f() \mapsto b.C ...}
     ...
-  </class>
+  }$
   & rule 2, if returns true\\
 
   \hline
-  <k> lookupPackageMethod(f(), .ClassTypes, b.C) ...</k> & rule 3\\
+  $\mathrel{}\kall{k}{ lookupPackageMethod(f(), \dotCt{ClassTypes}, b.C) ...}$ & rule 3\\
   \hline
-  <k> methodRef(f(), b.C) ...</k> & \\
+  $\mathrel{}\kall{k}{ methodRef(f(), b.C) ...}$ & \\
   \hline
 \end{tabular}
 
@@ -684,7 +684,7 @@ For the code example above, the term lookupPackageMethod() will pass through the
 
 When the term lookupPackageMethod() is first produced it takes as arguments the method signature (rendered here as f()
  for convenience), the chain of classes from the qualifying class A to the runtime class C,
- and .K as the third argument. Since the third argument is .K only the third rule can match. This rule deletes A
+ and \dotCt{K} as the third argument. Since the third argument is \dotCt{K} only the third rule can match. This rule deletes A
  from the class chain and updates the third argument to the class that defines the version of f() accessible to A.
  That class is A. For classes B and C the second rule for lookupMethodM() matches. In both cases the method f()
  defined in B and C overrides the previously found one. In the first case classes the method B.f() overrides A.f()
@@ -700,13 +700,13 @@ When the term lookupPackageMethod() is first produced it takes as arguments the 
 The central rule of method invocation is matched when the second argument of method call expression reaches the form
   methodRef(). This rule performs the following operations:
 
-  - saves the rest of computation (RestK) and the content of <methodContext> as a new entry of the cell <stack>
+  - saves the rest of computation (RestK) and the content of $\kall{methodContext}{}$ as a new entry of the cell $\kall{stack}{}$
     This data is restored back by the rules for return statement.
   - Initializes the new method context.
-    - The local variable environment <env> is emptied
-    - current class <crntClass> is initialized to the class declaring the method
-    - object location <location> is initialized to the location of the qualifier object for instance methods,
-      or .K for static methods. The extraction of the location from the qualifier value is performed by the
+    - The local variable environment $\kall{env}{}$ is emptied
+    - current class $\kall{crntClass}{}$ is initialized to the class declaring the method
+    - object location $\kall{location}{}$ is initialized to the location of the qualifier object for instance methods,
+      or \dotCt{K} for static methods. The extraction of the location from the qualifier value is performed by the
       function getOId().
   - Rewrites the method call expression into a sequence of four terms:
     - static initialization of the qualifying class
