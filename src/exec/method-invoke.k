@@ -124,7 +124,7 @@ An elaborated method invocation expression may have one of the following forms:
     elaboration phase, because the qualifier
     expression still has to be evaluated and might produce side effects. We cannot replace it with
     o; class.f(args); either, because o; might be invalid. Not all expressions
-    valid as qualifiers ar valid as expression statements (JLS \S14.8). We wanted the elaboration
+    valid as qualifiers are valid as expression statements (JLS \S14.8). We wanted the elaboration
     result to be a valid Java program, thus we could not afford such a transformation.
 
   - An invocation of an instance method qualified by a class reference: o.f(args)
@@ -191,7 +191,7 @@ While there are two sections dedicated to this logic (\S15.12.4.1, \S15.12.4.2),
   \nonTerminal{\sort{Exps}}}\syntax{List\{{\nonTerminal{\sort{Exp}}}, \mbox{``},\mbox{''}\}}{\kattribute{seqstrict}}
 \end{syntaxBlock}
 
-The attrubule {\kattribute{seqstrict}(1,3)} on the first definition ensures that arguments are evaluated after the
+The annotation {\kattribute{seqstrict}(1,3)} on the first definition ensures that arguments are evaluated after the
   qualifier is evaluated. The qualifier term might be either an expression or a Class. If it is expression,
   it will be heated and evaluated. If it is a class (for certain static methods), then it is already a KResult
   strictness rule will have no effect on it.
@@ -339,7 +339,7 @@ The production methodRef() is a reference to a method declaration. It contains t
 Since we already know the signature, this phase amounts to computing DecC. This step contains different rules for the following cases:
 
   - Static method (JLS \S15.12.4.4 paragraph 2)
-  - Instnace method with target being null (JLS \S15.12.4.4 paragraph 3)
+  - Instance method with target being null (JLS \S15.12.4.4 paragraph 3)
   - Instance method with non-null target, private method (JLS \S15.12.4.4 paragraph 4)
   - Instance method with non-null target, access mode is protected or public. This also includes qualifying type
     being interface. (JLS \S15.12.4.4 paragraph 6 and point 1)
@@ -446,7 +446,7 @@ The method in class C overrides the method in class A transitively through the m
   there would be no overriding.
 
 \begin{markdown}
-In order to correctly handle such cases we have to analyze all the classes in the inheritance chain between the
+In order to correctly handle such cases we have to analyse all the classes in the inheritance chain between the
   qualifying type and the qualifier runtime type.
 
 The algorithm employed in K-Java is significantly different from the one in JLS, but it is much simpler to implement.
@@ -456,7 +456,7 @@ The algorithm employed in K-Java is significantly different from the one in JLS,
   simple algorithm leads to multiple particular cases when we consider the transitive rule (2b above) for overriding.
 
 In contrast, the K-Java algorithm starts the search with the qualifying type (e.g. static type of the qualifier
-  expression) and moves downwards in the inheritance chain until it reaches the runtime type ofthe qualifier.
+  expression) and moves downwards in the inheritance chain until it reaches the runtime type of the qualifier.
   When all classes in the chain were traversed the algorithm returns the LAST found method (e.g. defined in the most
   derived class) that overrides the original one.
 
@@ -776,7 +776,7 @@ While maintaining a close correspondence between JLS and K-Java would be an inte
   quest on its own, there are a number of reasons why such a goal would not be practical.
   Some of the reasons are:
 
-  - JLS specification describes not only the execution of correct java programs, but also
+  - JLS specification describes not only the execution of correct Java programs, but also
     runtime checks that have to be performed to ensure the consistency of the bytecode,
     and errors that have to be thrown once this consistency is violated. Such bytecode
     inconsistencies may arise when someone compiles a program with one version of a library
@@ -801,7 +801,7 @@ While maintaining a close correspondence between JLS and K-Java would be an inte
   - Most complex parts of JLS prose have the form if ... otherwise if .. otherwise.
     While matching the condition under an if can be done by a single rule in K, matching the
     negation of a condition is more complex and may involve many rules. This difficulty arises
-    from the fact that K does not offer builtin support to express lack of a match of a particular
+    from the fact that K does not offer built-in support to express lack of a match of a particular
     rule as a side condition of another rule.
   - The powerful mechanism of strictness in K allows us to seamlessly define many language
     features that have many corresponding lines of text of JLS. This is especially true
@@ -866,7 +866,7 @@ rule [superMethodImpl]:
         objectRef(
           OId:Int,
           //The layers above the layer where method should be searched
-          // should be discarded in order to implement syper.m() functionality.
+          // should be discarded in order to implement super.m() functionality.
           _
         )::Class:ClassType  //due to the way term superMethod() is first constructed, this is the upper search layer
       )
