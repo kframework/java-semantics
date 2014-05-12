@@ -5,7 +5,6 @@ module METHOD-INVOKE
     imports STATIC-INIT //for staticInit()
 
 /*@
-\newpage
 \section{Module METHOD-INVOKE}
 
 \subsection{Background}
@@ -816,9 +815,6 @@ On overall, we believe that the lack of direct correspondence between JLS and K 
 \end{markdown}
 */
 
-/*@
-\newpage
-*/
 endmodule
 
 module METHOD-INVOKE-REST

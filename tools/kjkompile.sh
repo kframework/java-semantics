@@ -128,9 +128,23 @@ case "$OPTION" in
     ;;
 "--methods-latex")
     $KOMPILE_CMD -v --backend latex --doc-style "style=math" latex/doc-methods-main.k
+    extract-module.sh -m METHOD-INVOKE -o method-invoke.tex doc-methods-main.tex
     ;;
 "--methods-pdf")
-    $KOMPILE_CMD -v --backend pdf --doc-style "style=math" latex/doc-methods-main.k
+    kjkompile.sh --methods-latex
+    mkdir -p .latex
+    pdflatex -synctex=-1 -max-print-line=120 -interaction=nonstopmode -shell-escape \
+      --aux-directory=.latex method-invoke.tex
+    ;;
+"--new-latex")
+    $KOMPILE_CMD -v --backend latex --doc-style "style=math" exec/java-exec.k
+    extract-module.sh -m NEW-INSTANCE -o new-instance.tex java-exec.tex
+    ;;
+"--new-pdf")
+    kjkompile.sh --new-latex
+    mkdir -p .latex
+    pdflatex -synctex=-1 -max-print-line=120 -interaction=nonstopmode -shell-escape \
+      --aux-directory=.latex new-instance.tex
     ;;
 "--help")
     echo "Usage: `basename $0`"

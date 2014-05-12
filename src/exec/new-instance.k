@@ -1,12 +1,13 @@
-/*@ \section{Module NEW-INSTANCE}
-  New instance creation and related language features.
-*/
 module NEW-INSTANCE
     imports CORE-SORTS
     imports CORE-FUNCTIONS
     imports CORE-EXEC   //for sl, restoreMethContext
     imports STATIC-INIT // for staticInit
     imports VAR-LOOKUP  //for typedLookup()
+
+/*@ \section{Module NEW-INSTANCE}
+  New instance creation and related language features.
+*/
 
 /*@ \subsection{New instance creation}*/
 
