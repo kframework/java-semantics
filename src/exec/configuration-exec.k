@@ -12,7 +12,7 @@ configuration
 
           <stack color="Green"> .List </stack>
 
-          //! \smallskip
+          // \smallskip
           <br/>
 
           /*The execution context of the current method - local names environment, return type,

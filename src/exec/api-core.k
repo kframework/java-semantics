@@ -1,5 +1,5 @@
 /*@ \section{Module API-CORE}
-All the methods defined in this module through invokeImpl are native, their body is 'NoMethodBody(_), thus
+All the methods defined in this module through invokeImpl are native, their body is 'NoMethodBody(\_), thus
   they cannot be matched by rules in METHOD-INVOKE.
 */
 

@@ -124,7 +124,7 @@ syntax K ::= getClassMetaType ( KLabel )      [function]
 rule getClassMetaType('ClassDec) => classCMT
 rule getClassMetaType('InterfaceDec) => interfaceCMT
 
-//@ True if given KListWrap contains a 'MethodDec(_) term
+//@ True if given KListWrap contains a 'MethodDec(\_) term
 syntax K ::= containsMethodDecs(  KListWrap )  [function]
 rule containsMethodDecs([_,, 'MethodDec(_),, _]) => true
 

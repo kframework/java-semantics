@@ -18,7 +18,7 @@ rule [NewInstance-to-QNewInstance-unpack]:
     new Class:ClassType(ArgExps:Exps)
     => 'QNewInstance(noValue,, 'None(.KList),, Class,, 'None(.KList),, toKListWrap(ArgExps),, 'None(.KList))
 
-//@ 'QNewInstance( Qual,, _:K,, Class,, _:K,, [Args],, 'None(.KList) )
+// 'QNewInstance( Qual,, _:K,, Class,, _:K,, [Args],, 'None(.KList) )
 syntax KLabel ::= "'QNewInstance"
 
 //@Resolve new instance qualifier
@@ -155,7 +155,7 @@ rule [setEncloser-noValue]:
 
 //@\subsection{Execution of QSuperConstrInv, AltConstrInv}
 
-//@ 'QSuperConstrInv( Qual:K,, _:K,, [ Args:KList ] )
+// 'QSuperConstrInv( Qual:K,, _:K,, [ Args:KList ] )
 syntax KLabel ::=  "'QSuperConstrInv"
 
 rule [QSuperConstrInv]:
@@ -172,7 +172,7 @@ rule [QSuperConstrInv]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
-//@ 'AltConstrInv( _:K,, [ Args:KList ] )
+// 'AltConstrInv( _:K,, [ Args:KList ] )
 syntax KLabel ::= "'AltConstrInv"
 
 rule [AltConstrInv]:

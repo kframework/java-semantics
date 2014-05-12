@@ -15,7 +15,7 @@ syntax K ::=  RawVal "::" "elem" Type
 /*@ \subsection{Array access}
 Check array bounds, as part of the dynamic typing policy. */
 
-//@ 'ArrayAccess(arrayRef(_)::arrayOf T:Type,, N:Int::_)
+// 'ArrayAccess(arrayRef(_)::arrayOf T:Type,, N:Int::_)
 syntax KLabel ::= "'ArrayAccess"
 
 /* ArrayAccess arguments are heated left-to-right, because if the evaluation of the first argument
@@ -63,7 +63,7 @@ similar to that in untyped SIMPLE, but we have to enforce that the
 type of an array declaration be of the form \texttt{arrayOf $T$}
 and assign the right type ($T$) to the allocated array locations. */
 
-/*@ Either 'NewArray( T:ElemType,, ['Dim(N1),,'Dim('N2),, ...],, [...,, 'Dim(.KList),, ...] )
+/*  Either 'NewArray( T:ElemType,, ['Dim(N1),,'Dim('N2),, ...],, [...,, 'Dim(.KList),, ...] )
     Or     'NewArray( T:ElemType,, [...,, 'Dim(.KList),, ...],, 'ArrayInit(_) )
 */
 syntax KLabel ::= "'NewArray"

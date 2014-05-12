@@ -52,5 +52,6 @@
 
 % Required in order to make \kall cells inside comments black.
 \renewcommand{\kall}[3][black]{\mall{#1}{#2}{#3}}
+
 */
 
