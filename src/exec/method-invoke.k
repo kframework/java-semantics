@@ -277,7 +277,7 @@ rule [Invoke-compute-methodInfo-DecC]:
     <k>
       _. methodInfo(Sig:Signature, QualC:ClassType, .K => MetaT, .K => DecC, _,_) (_)
       ...
-    </k>
+    </k>  <br/>
     <classType> QualC </classType>
     <classMetaType> MetaT:ClassMetaType </classMetaType>
     <methods>... Sig |-> DecC:ClassType ...</methods>
@@ -298,7 +298,7 @@ rule [Invoke-compute-methodInfo-unmapped-method-ContextType]:
     <k>
       _. methodInfo(Sig:Signature, QualC:ClassType, .K => MetaT, _, .K => instanceCT, .K => public) (_)
       ...
-    </k>
+    </k>  <br/>
     <classType> QualC </classType>
     <classMetaType> MetaT:ClassMetaType </classMetaType>
     <methods> Methods:Map </methods>
@@ -312,7 +312,7 @@ rule [Invoke-compute-methodInfo-ContextType]:
     <k>
       _. methodInfo(Sig:Signature, _,_, DecC:ClassType, .K => ContextT, .K => Acc) (_)
       ...
-    </k>
+    </k>  <br/>
     <classType> DecC </classType>
     <methodSignature> Sig </methodSignature>
     <methodContextType> ContextT:ContextType </methodContextType>
@@ -392,7 +392,7 @@ rule [Invoke-methodInfo-instance-protected-or-public]:
         . ( methodInfo(Sig:Signature, _, _,_, instanceCT, Acc:AccessMode) => methodRef(Sig, DecC) )
         (_)
       ...
-    </k>
+    </k>  <br/>
     <classType> ObjC </classType>
     <methods>... Sig |-> DecC:ClassType ...</methods>
 when
@@ -477,7 +477,7 @@ rule [Invoke-methodInfo-instance-package]:
           )
         (_)
       ...
-    </k>
+    </k>  <br/>
     <classType> QualC </classType>
     <methods>... Sig |-> _ ...</methods>
 
@@ -545,7 +545,7 @@ rule [lookupPackageMethod-layer-first-dec-found]:
         noClass => DecC
       )
       ...
-    </k>
+    </k>  <br/>
     <classType> CurrentC </classType>
     <methods>... Sig |-> DecC:ClassType ...</methods>
 
@@ -570,13 +570,13 @@ rule [lookupPackageMethod-new-method]:
         OldDecC:ClassType => if (isOverridden( OldDecC, Acc, CurrentC )) { CurrentC } else { OldDecC }
       )
       ...
-    </k>
+    </k>  <br/>
     <class>
       <classType> OldDecC </classType>
       <methodSignature> Sig </methodSignature>
       <methodAccessMode> Acc:AccessMode </methodAccessMode>
       ...
-    </class>
+    </class>  <br/>
     <class>
       <classType> CurrentC </classType>
       <methods>... Sig |-> CurrentC:ClassType ...</methods>
@@ -619,7 +619,7 @@ rule [lookupPackageMethod-no-new-method]:
         _
       )
       ...
-    </k>
+    </k>  <br/>
     <classType> CurrentC </classType>
     <methods>... Sig |-> DecC:ClassType ...</methods>
 when
@@ -740,7 +740,7 @@ rule [Invoke-methodRef]:
       =>  <env> .Map </env>
           <crntClass> DecC </crntClass>
           <location> getOId(Qual) </location>
-    </methodContext>
+    </methodContext>  <br/>
 
     <classType> DecC </classType>
     <methodSignature> Sig </methodSignature>
