@@ -2,7 +2,7 @@
 kompile -v java --symbolic-rules "symbolic-rule" --backend symbolic
 
 time timeout 300 krun --debug-info --color extended --directory="." --main-module=JAVA \
-  -cMainClass="ListItem(\"symbolic_03_BasicList\")" -cModelCheck="false" --output=pretty --parser="kj-parse-aggreg.sh" \
+  -cMainClass="ListItem(\"symbolic_03_BasicList\")" -cDissolveAllExceptOut="false" --output=pretty --parser="kj-parse-aggreg.sh" \
   ../symbolic/symbolic_03_BasicList.java \
   -cIN="ListItem(#symInt(e1)) ListItem(#symInt(e2)) ListItem(#symInt(x))" -cPC="true" --search
 

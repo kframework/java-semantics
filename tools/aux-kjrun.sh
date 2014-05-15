@@ -77,19 +77,19 @@ KRUN_CMD="$KRUN_CMD \
 
 case "$MODE" in
 "run-prep-config" | "run-prep-ast")
-    KRUN_CMD="$KRUN_CMD -cModelCheck=\"true\" \
+    KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\" \
                         -cCOMMAND=\"'procTypeNames(.KList)\" \
                         -cSTARTPHASE=\"'ProcTypeNamesPhase(.KList)\" \
                         -cENDPHASE=\"'FoldingPhase(.KList)\""
     ;;
 "run-exec")
-    KRUN_CMD="$KRUN_CMD -cModelCheck=\"true\" \
+    KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\" \
                         -cCOMMAND=\"'unfoldingPhase(.KList)\" \
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
     ;;
 "search"|"search-count")
-    KRUN_CMD="$KRUN_CMD --search-final -cModelCheck=\"true\" \
+    KRUN_CMD="$KRUN_CMD --search-final -cDissolveAllExceptOut=\"true\" \
                         -cCOMMAND=\"'unfoldingPhase(.KList)\" \
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
@@ -97,7 +97,7 @@ case "$MODE" in
 "search-pattern")
     KRUN_CMD="$KRUN_CMD --search --bound 1 \
                         --pattern \"$PATTERN\" \
-                        -cModelCheck=\"true\" \
+                        -cDissolveAllExceptOut=\"true\" \
                         -cCOMMAND=\"'unfoldingPhase(.KList)\" \
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
@@ -105,13 +105,13 @@ case "$MODE" in
 "symbolic"|"symbolic-count")
     IN_FILE=${JAVA_FILE%.java}.cIN.in
     IN_VALUE=$(<${IN_FILE})
-    KRUN_CMD="$KRUN_CMD --search -cModelCheck=\"true\" -cPC=true -cIN=\"$IN_VALUE\" \
+    KRUN_CMD="$KRUN_CMD --search -cDissolveAllExceptOut=\"true\" -cPC=true -cIN=\"$IN_VALUE\" \
                         -cCOMMAND=\"'unfoldingPhase(.KList)\" \
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
     ;;
 "debug")
-    KRUN_CMD="$KRUN_CMD --debug -cModelCheck=\"false\" \
+    KRUN_CMD="$KRUN_CMD --debug -cDissolveAllExceptOut=\"false\" \
                         -cCOMMAND=\"'unfoldingPhase(.KList)\" \
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
