@@ -2,183 +2,200 @@
 
 # Run a java program with krun.
 
-if (( "$#" < 1 )) || (( "$#" > 2 )); then
+ORIGINAL_ARGS=$@
+
+function usage()
+{
+cat <<-EOF
+Usage: `basename $0` [OPTION] <javaFile>
+For more options use aux-kjrun.sh
+
+  OPTION
+
+  --prep-ast
+  --prep-pretty
+  --prep-raw
+  --exec-pretty
+  --split
+  --split-cached
+  --split-none
+  --search
+  --search-cached
+  --search-pattern
+  --debug
+  --symbolic
+  --symbolic-cached
+EOF
+}
+
+function errorMsg() {
     echo "Your command:"
-    echo `basename $0` $@
-    echo "Usage: `basename $0` <javaFile>"
-    echo "Or:    `basename $0` <--prep-ast|--prep-pretty|--prep-raw|--exec-pretty| \
-      --split|--split-cached|--split-none| \
-      --search|--search-cached|--search-pattern|--debug|--symbolic|--symbolic-cached> <javaFile>"
-    echo "For more options use aux-kjrun.sh"
+    echo `basename $0` ${ORIGINAL_ARGS}
+    echo
+    usage
     exit 1
-fi
+}
 
-if (( "$#" == 1 ));
-  then
-    OPTION=--split
-    JAVA_FILE=$1
-  else
-    OPTION=$1
-    JAVA_FILE=$2
-fi
+#If true then we have to run preprocessing semantics first
+PREP_FIRST=true
+
+TIME=true
 
 # OS-dependent choice of timeout
 if [[ $(uname) == *Linux* ]]
-  then DEFAULT_TIMEOUT=30
-  else DEFAULT_TIMEOUT=120
+  then TIMEOUT_FACTOR=3
+  else TIMEOUT_FACTOR=1
 fi
+TIMEOUT=$((30 * $TIMEOUT_FACTOR))
+SEARCH_TIMEOUT_FACTOR=2
 
-# OS-dependent choice of timeout
-if [[ $(uname) == *Linux* ]]
-  then SEARCH_TIMEOUT=120
-  else SEARCH_TIMEOUT=240
-fi
+MODE=run-exec
+PREP_OUTPUT=raw
+OUTPUT=pretty
+PREP_INPUT=java
+INPUT=kast
+PATTERN=0
 
-# OS-dependent choice of timeout
-if [[ $(uname) == *Linux* ]]
-  then SYMBOLIC_TIMEOUT=120
-  else SYMBOLIC_TIMEOUT=240
-fi
+#Remove all *.kast and *.pkast files
+CLEAN=false
 
+#If true then we display the built command in kjrun and aux-kjrun
+VERBOSE=false
+
+while [[ ${1:0:1} == - ]]; do
+  PARAM=`echo $1 | awk -F= '{print $1}'`
+  VALUE=`echo $1 | awk -F= '{print $2}'`
+  case ${PARAM} in
+    "-h" | "--help")
+      usage
+      exit
+      ;;
+    "--prep-ast")
+      PREP_FIRST=false
+      MODE=run-prep-ast
+      OUTPUT=raw
+      INPUT=java
+      ;;
+    "--prep-pretty")
+      PREP_FIRST=false
+      MODE=run-prep-config
+      INPUT=java
+      ;;
+    "--prep-raw")
+      PREP_FIRST=false
+      MODE=run-prep-config
+      OUTPUT=raw
+      INPUT=java
+      ;;
+    "--exec-pretty")
+      PREP_FIRST=false
+      MODE=run-exec
+      ;;
+    "--split") #everything default
+      ;;
+    "--split-cached")
+      TIME=false
+      TIMEOUT=0
+      PREP_INPUT=kast-cache
+      OUTPUT=none
+      ;;
+    "--split-none")
+      PREP_INPUT=kast-cache
+      OUTPUT=none
+      ;;
+    "--search")
+      TIMEOUT=$(($TIMEOUT * $SEARCH_TIMEOUT_FACTOR))
+      MODE=search
+      ;;
+    "--search-cached")
+      TIME=false
+      TIMEOUT=0
+      PREP_INPUT=kast-cache
+      MODE=search-count
+      OUTPUT=raw
+      ;;
+    "--search-pattern")
+      TIMEOUT=$(($TIMEOUT * $SEARCH_TIMEOUT_FACTOR))
+      MODE=search
+      PATTERN="\"<T> <out> OUT:List </out> _</T>\""
+#        --pattern "<T> <threads> <thread> <methodContext> \
+#                          <env>... _ ...</env> ...</methodContext> ...</thread> </threads>  \
+#                          <store>... _ ...</store> ...</T>" \
+      ;;
+    "--debug")
+      TIME=false
+      TIMEOUT=0
+      MODE=debug
+      ;;
+    "--symbolic")
+      TIMEOUT=$(($TIMEOUT * $SEARCH_TIMEOUT_FACTOR))
+      MODE=symbolic
+      ;;
+    "--symbolic-cached")
+      TIME=false
+      TIMEOUT=0
+      PREP_INPUT=kast-cache
+      MODE=symbolic-count
+      OUTPUT=raw
+      ;;
+
+# Extra options
+    "-v" | "--verbose")
+      VERBOSE=true
+      ;;
+    "-c" | "--clean")
+      CLEAN=true
+      ;;
+    *)
+      echo "Invalid option: $PARAM"
+      errorMsg
+      ;;
+  esac
+  shift
+done
+
+JAVA_FILE=$1
 BASE_JAVA_FILE=`basename ${JAVA_FILE}`  #simple file/dir name
 PKAST_FILE=`echo "$BASE_JAVA_FILE" | sed 's#/*$##'` # remove trailing slashes, important if JAVA_FILE is dir
 PKAST_FILE=${PKAST_FILE}.pkast
 
-case "$OPTION" in
-"--prep-ast")
-    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-prep-ast --output raw --input java \
-      --pattern 0 ${JAVA_FILE}
-    ;;
-"--prep-pretty")
-    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-prep-config --output pretty --input java \
-      --pattern 0 ${JAVA_FILE}
-    ;;
-"--prep-raw")
-    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-prep-config --output raw --input java \
-      --pattern 0 ${JAVA_FILE}
-    ;;
-"--exec-pretty")
-    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-exec --output pretty --input kast \
-      --pattern 0 ${JAVA_FILE}
-    ;;
-"--split")
-    echo "preprocess:"
 
-    if [ ! -e ${PKAST_FILE} ];
-      then aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-prep-ast --output raw --input java \
-        --pattern 0 ${JAVA_FILE} > ${PKAST_FILE}
+#Actual execution
+if [[ ${OUTPUT} == pretty ]]; then
+  echo "preprocess:"
+fi
+
+if [[ ${PREP_FIRST} == true ]]; then
+  if [ ! -e ${PKAST_FILE} ]; then
+    CMD="aux-kjrun.sh --time ${TIME} --timeout ${TIMEOUT} --mode run-prep-ast --output ${PREP_OUTPUT} \
+      --input ${PREP_INPUT} --pattern 0 ${JAVA_FILE} > ${PKAST_FILE}"
+    if [[ ${VERBOSE} == true ]]; then
+      echo "PREP cmd:"
+      echo ${CMD}
+      echo
     fi
+    eval ${CMD}
+  fi
+else
+  PKAST_FILE=${JAVA_FILE}
+fi
 
-    echo
-    echo "execute:"
-    echo
+if [[ ${OUTPUT} == pretty ]]; then
+  echo
+  echo "execute:"
+  echo
+fi
 
-    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-exec --output pretty --input kast \
-      --pattern 0 ${PKAST_FILE}
-    ;;
-"--split-cached")
-    if [ ! -e ${PKAST_FILE} ];
-      then aux-kjrun.sh --time false --timeout 0 --mode run-prep-ast --output raw --input kast-cache --pattern 0 \
-        ${JAVA_FILE} > ${PKAST_FILE}
-    fi
+CMD="aux-kjrun.sh --time ${TIME} --timeout ${TIMEOUT} --mode ${MODE} --output ${OUTPUT} --input ${INPUT} \
+  --pattern ${PATTERN} ${PKAST_FILE}"
+if [[ ${VERBOSE} == true ]]; then
+  echo "EXEC cmd:"
+  echo ${CMD}
+  echo
+fi
+eval ${CMD}
 
-    aux-kjrun.sh --time false --timeout 0 --mode run-exec --output none --input kast --pattern 0 ${PKAST_FILE}
-    ;;
-"--none")
-    if [ ! -e ${PKAST_FILE} ];
-      then aux-kjrun.sh --time false --timeout 0 --mode run-prep-ast --output raw --input kast-cache --pattern 0 \
-        ${JAVA_FILE} > ${PKAST_FILE}
-    fi
-    aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-exec --output none --input kast \
-      --pattern 0 ${PKAST_FILE}
-
-    rm -rf ${PKAST_FILE}
-    ;;
-
-"--search")
-    echo "preprocess:"
-    if [ ! -e ${PKAST_FILE} ];
-      then aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-prep-ast --output raw --input java \
-        --pattern 0 ${JAVA_FILE} > ${PKAST_FILE}
-    fi
-
-    echo
-    echo "execute:"
-    echo
-    aux-kjrun.sh --time true --timeout ${SEARCH_TIMEOUT} --mode search --output pretty --input kast \
-      --pattern 0 ${PKAST_FILE}
-    ;;
-"--search-cached")
-    if [ ! -e ${PKAST_FILE} ];
-      then aux-kjrun.sh --time false --timeout 0 --mode run-prep-ast --output raw --input kast-cache --pattern 0 \
-        ${JAVA_FILE} > ${PKAST_FILE}
-    fi
-    aux-kjrun.sh --time false --timeout 0 --mode search-count --output raw --input kast --pattern 0 ${PKAST_FILE}
-    ;;
-
-"--search-pattern")
-    echo "preprocess:"
-    if [ ! -e ${PKAST_FILE} ];
-      then aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-prep-ast --output raw --input java \
-        --pattern 0 ${JAVA_FILE} > ${PKAST_FILE}
-    fi
-
-    echo
-    echo "execute:"
-    echo
-    aux-kjrun.sh --time true --timeout ${SEARCH_TIMEOUT} --mode search-pattern --output pretty --input kast \
-        --pattern "<T> <out> _ </out> ...</T>" \
-        ${PKAST_FILE}
-    ;;
-#        --pattern "<T> <threads> <thread> <methodContext> \
-#                          <env>... _ ...</env> ...</methodContext> ...</thread> </threads>  \
-#                          <store>... _ ...</store> ...</T>" \
-
-"--debug")
-    echo "preprocess:"
-
-    if [ ! -e ${PKAST_FILE} ];
-      then aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-prep-ast --output raw --input java \
-        --pattern 0 ${JAVA_FILE} > ${PKAST_FILE}
-    fi
-
-    echo
-    echo "execute:"
-    echo
-
-    aux-kjrun.sh --time false --timeout 0 --mode debug --output pretty --input kast \
-      --pattern 0 ${PKAST_FILE}
-    ;;
-
-"--symbolic")
-    echo "preprocess:"
-
-    if [ ! -e ${PKAST_FILE} ];
-      then aux-kjrun.sh --time true --timeout ${DEFAULT_TIMEOUT} --mode run-prep-ast --output raw --input java \
-        --pattern 0 ${JAVA_FILE} > ${PKAST_FILE}
-    fi
-
-    echo
-    echo "execute:"
-    echo
-
-    aux-kjrun.sh --time true --timeout ${SYMBOLIC_TIMEOUT} --mode symbolic --output pretty --input kast \
-      --pattern 0 ${PKAST_FILE}
-    ;;
-
-"--symbolic-cached")
-    if [ ! -e ${PKAST_FILE} ];
-      then aux-kjrun.sh --time false --timeout 0 --mode run-prep-ast --output raw --input kast-cache --pattern 0 \
-        ${JAVA_FILE} > ${PKAST_FILE}
-    fi
-    aux-kjrun.sh --time false --timeout 0 --mode symbolic-count --output raw --input kast --pattern 0 ${PKAST_FILE}
-    ;;
-
-*)
-    echo "Invalid option: $OPTION"
-    echo "General help:"
-    echo
-    kjrun.sh
-    exit 1
-    ;;
-esac
+if [[ ${CLEAN} == true ]]; then
+  rm -rf *.kast
+  rm -rf *.pkast
+fi
