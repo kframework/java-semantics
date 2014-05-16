@@ -262,7 +262,7 @@ rule [storeCopy-discard]:
 
 /*@ We need to synchronize access to class literals to avoid instantiation of the came .class by multiple threads.
   This is done by the term temp in <classLiteralsMap>. We cannot use 'Synchronized because it required an
-  objectClousre as argument, and we might not have any objects instantiated at the moment.
+  objectRef as argument, and we might not have any objects instantiated at the moment.
 */
 rule [Lit-Class-Instantiate]:
     <k>

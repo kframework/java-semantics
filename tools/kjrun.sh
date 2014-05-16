@@ -30,6 +30,7 @@ For more options use aux-kjrun.sh
   --pattern=<PATTERN>  Search pattern. May be used in combination with any option
   -v | --verbose  Print produced commands for aux-kjrun and krun
   -c | --clean    Delete cache files after execution
+  -t | --timeout=<timeout in s> - overwrites default timeout
 EOF
 }
 
@@ -48,8 +49,8 @@ TIME=true
 
 # OS-dependent choice of timeout
 if [[ $(uname) == *Linux* ]]
-  then TIMEOUT_FACTOR=3
-  else TIMEOUT_FACTOR=1
+  then TIMEOUT_FACTOR=1
+  else TIMEOUT_FACTOR=3
 fi
 TIMEOUT=$((30 * $TIMEOUT_FACTOR))
 SEARCH_TIMEOUT_FACTOR=2
@@ -69,9 +70,16 @@ CLEAN=false
 #If true then we display the built command in kjrun and aux-kjrun
 VERBOSE=false
 
+CMD_SUFFIX=""
+COUNT_CMD_SUFFIX="| grep \"Solution\" | wc -l"
+PREP_AST_CMD_SUFFIX="| grep -Po '< program > \K.*(?=</ program > )'"
+
 while [[ ${1:0:1} == - ]]; do
   PARAM=`echo $1 | awk -F= '{print $1}'`
-  VALUE=`echo $1 | awk -F= '{print $2}'`
+  ARG=$1
+  CUT_AMOUNT=$((${#PARAM} + 1))
+  VALUE=${ARG:${CUT_AMOUNT}}
+
   case ${PARAM} in
     "-h" | "--help")
       usage
@@ -80,6 +88,7 @@ while [[ ${1:0:1} == - ]]; do
     "--prep-ast")
       PREP_FIRST=false
       MODE=run-prep-ast
+      CMD_SUFFIX=${PREP_AST_CMD_SUFFIX}
       OUTPUT=raw
       INPUT=java
       ;;
@@ -118,7 +127,8 @@ while [[ ${1:0:1} == - ]]; do
       TIME=false
       TIMEOUT=0
       PREP_INPUT=kast-cache
-      MODE=search-count
+      MODE=search
+      CMD_SUFFIX=${COUNT_CMD_SUFFIX}
       OUTPUT=raw
       ;;
     "--debug")
@@ -134,7 +144,8 @@ while [[ ${1:0:1} == - ]]; do
       TIME=false
       TIMEOUT=0
       PREP_INPUT=kast-cache
-      MODE=symbolic-count
+      MODE=symbolic
+      CMD_SUFFIX=${COUNT_CMD_SUFFIX}
       OUTPUT=raw
       ;;
 
@@ -147,6 +158,10 @@ while [[ ${1:0:1} == - ]]; do
       ;;
     "-c" | "--clean")
       CLEAN=true
+      ;;
+    "-t" | "--timeout")
+      TIMEOUT=${VALUE}
+      SEARCH_TIMEOUT_FACTOR=1
       ;;
     *)
       echo "Invalid option: $PARAM"
@@ -175,7 +190,8 @@ fi
 if [[ ${PREP_FIRST} == true ]]; then
   if [ ! -e ${PKAST_FILE} ]; then
     CMD="aux-kjrun.sh --time=${TIME} --timeout=${TIMEOUT} --mode=run-prep-ast --output=${PREP_OUTPUT} \
-      --input=${PREP_INPUT} --verbose=${VERBOSE} ${JAVA_FILE} > ${PKAST_FILE}"
+      --cmd-suffix=\"${PREP_AST_CMD_SUFFIX}\" \
+      --input=${PREP_INPUT} --verbose=false ${JAVA_FILE} > ${PKAST_FILE}"
     if [[ ${VERBOSE} == true ]]; then
       echo "PREP cmd:"
       echo ${CMD}
@@ -194,7 +210,7 @@ if [[ ${OUTPUT} == pretty ]]; then
 fi
 
 CMD="aux-kjrun.sh --time=${TIME} --timeout=${TIMEOUT} --mode=${MODE} --output=${OUTPUT} --input=${INPUT} \
-  --pattern=${PATTERN} --verbose=${VERBOSE} ${PKAST_FILE}"
+  --pattern=${PATTERN} --verbose=${VERBOSE} --cmd-suffix=\"${CMD_SUFFIX}\" ${PKAST_FILE}"
 if [[ ${VERBOSE} == true ]]; then
   echo "EXEC cmd:"
   echo ${CMD}

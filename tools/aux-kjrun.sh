@@ -22,10 +22,7 @@ Usage: `basename $0` [OPTIONS] <javaFile>
          | run-prep-ast
          | run-exec
          | search
-         | search-pattern
-         | search-count
          | symbolic
-         | symbolic-count
          | debug
          >
   --output=<none|raw|pretty>
@@ -33,6 +30,7 @@ Usage: `basename $0` [OPTIONS] <javaFile>
   --pattern=<pattern>
   -v
   --verbose=<true|false>            If true print produced commands for krun
+  --cmd-suffix=<suffix to the krun command>
 EOF
 }
 
@@ -57,7 +55,10 @@ PATTERN=0
 
 while [[ ${1:0:1} == - ]]; do
   PARAM=`echo $1 | awk -F= '{print $1}'`
-  VALUE=`echo $1 | awk -F= '{print $2}'`
+  ARG=$1
+  CUT_AMOUNT=$((${#PARAM} + 1))
+  VALUE=${ARG:${CUT_AMOUNT}}
+
   case ${PARAM} in
     "-h" | "--help")
       usage
@@ -87,6 +88,9 @@ while [[ ${1:0:1} == - ]]; do
     "--verbose")
       VERBOSE=${VALUE}
       ;;
+    "--cmd-suffix")
+      CMD_SUFFIX=${VALUE}
+      ;;
     *)
       echo "Invalid option: $PARAM"
       errorMsg
@@ -114,7 +118,7 @@ case "$MODE" in
     SEMANTICS_DIR=$(cross-path-native.sh ${TOOLS_DIR}/../src/prep)
     MAIN_MODULE=JAVA-PREP
     ;;
-"run-exec" | "search" |"search-count" |"search-pattern" | "symbolic" | "symbolic-count" | "debug")
+"run-exec" | "search" | "symbolic" | "debug")
     SEMANTICS_DIR=$(cross-path-native.sh ${TOOLS_DIR}/../src/exec)
     MAIN_MODULE=JAVA-EXEC
     ;;
@@ -161,16 +165,16 @@ case "$MODE" in
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
     ;;
-"search"|"search-count")
-    KRUN_CMD="$KRUN_CMD --search-final -cDissolveAllExceptOut=\"true\" \
+"search")
+    KRUN_CMD="$KRUN_CMD --search-final -cDissolveAllExceptOut=\"false\" \
                         -cCOMMAND=\"'unfoldingPhase(.KList)\" \
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
     ;;
-"symbolic"|"symbolic-count")
+"symbolic")
     IN_FILE=${JAVA_FILE%.java}.cIN.in
     IN_VALUE=$(<${IN_FILE})
-    KRUN_CMD="$KRUN_CMD --search -cDissolveAllExceptOut=\"true\" -cPC=true -cIN=\"$IN_VALUE\" \
+    KRUN_CMD="$KRUN_CMD --search -cDissolveAllExceptOut=\"false\" -cPC=true -cIN=\"$IN_VALUE\" \
                         -cCOMMAND=\"'unfoldingPhase(.KList)\" \
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
@@ -227,12 +231,8 @@ case "$INPUT" in
     ;;
 esac
 
-if [ ${MODE} == "search-count" ] || [ ${MODE} == "symbolic-count" ];
-  then KRUN_CMD="$KRUN_CMD  | grep \"Solution\" | wc -l"
-fi
-
-if [ ${MODE} == "run-prep-ast" ];
-  then KRUN_CMD="$KRUN_CMD  | grep -Po '< program > \K.*(?=</ program > )'"
+if [[ ${CMD_SUFFIX} != "" ]]; then
+  KRUN_CMD="$KRUN_CMD  $CMD_SUFFIX"
 fi
 
 if [[ ${VERBOSE} == true ]]; then
