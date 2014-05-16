@@ -21,10 +21,15 @@ For more options use aux-kjrun.sh
   --split-none
   --search
   --search-cached
-  --search-pattern
   --debug
   --symbolic
   --symbolic-cached
+
+  ADDITIONAL OPTIONS:
+
+  --pattern=<PATTERN>  Search pattern. May be used in combination with any option
+  -v | --verbose  Print produced commands for aux-kjrun and krun
+  -c | --clean    Delete cache files after execution
 EOF
 }
 
@@ -54,6 +59,8 @@ PREP_OUTPUT=raw
 OUTPUT=pretty
 PREP_INPUT=java
 INPUT=kast
+
+# Pattern example: "<T> <out> OUT:List </out> _</T>"
 PATTERN=0
 
 #Remove all *.kast and *.pkast files
@@ -114,14 +121,6 @@ while [[ ${1:0:1} == - ]]; do
       MODE=search-count
       OUTPUT=raw
       ;;
-    "--search-pattern")
-      TIMEOUT=$(($TIMEOUT * $SEARCH_TIMEOUT_FACTOR))
-      MODE=search
-      PATTERN="\"<T> <out> OUT:List </out> _</T>\""
-#        --pattern "<T> <threads> <thread> <methodContext> \
-#                          <env>... _ ...</env> ...</methodContext> ...</thread> </threads>  \
-#                          <store>... _ ...</store> ...</T>" \
-      ;;
     "--debug")
       TIME=false
       TIMEOUT=0
@@ -140,6 +139,9 @@ while [[ ${1:0:1} == - ]]; do
       ;;
 
 # Extra options
+    "--pattern")
+      PATTERN=\"${VALUE}\"
+      ;;
     "-v" | "--verbose")
       VERBOSE=true
       ;;
@@ -154,7 +156,12 @@ while [[ ${1:0:1} == - ]]; do
   shift
 done
 
-JAVA_FILE=$1
+JAVA_FILE=${1}
+if [[ ${JAVA_FILE} == "" ]]; then
+  echo "Target file missing"
+  errorMsg
+fi
+
 BASE_JAVA_FILE=`basename ${JAVA_FILE}`  #simple file/dir name
 PKAST_FILE=`echo "$BASE_JAVA_FILE" | sed 's#/*$##'` # remove trailing slashes, important if JAVA_FILE is dir
 PKAST_FILE=${PKAST_FILE}.pkast
@@ -167,8 +174,8 @@ fi
 
 if [[ ${PREP_FIRST} == true ]]; then
   if [ ! -e ${PKAST_FILE} ]; then
-    CMD="aux-kjrun.sh --time ${TIME} --timeout ${TIMEOUT} --mode run-prep-ast --output ${PREP_OUTPUT} \
-      --input ${PREP_INPUT} --pattern 0 ${JAVA_FILE} > ${PKAST_FILE}"
+    CMD="aux-kjrun.sh --time=${TIME} --timeout=${TIMEOUT} --mode=run-prep-ast --output=${PREP_OUTPUT} \
+      --input=${PREP_INPUT} --verbose=${VERBOSE} ${JAVA_FILE} > ${PKAST_FILE}"
     if [[ ${VERBOSE} == true ]]; then
       echo "PREP cmd:"
       echo ${CMD}
@@ -186,13 +193,15 @@ if [[ ${OUTPUT} == pretty ]]; then
   echo
 fi
 
-CMD="aux-kjrun.sh --time ${TIME} --timeout ${TIMEOUT} --mode ${MODE} --output ${OUTPUT} --input ${INPUT} \
-  --pattern ${PATTERN} ${PKAST_FILE}"
+CMD="aux-kjrun.sh --time=${TIME} --timeout=${TIMEOUT} --mode=${MODE} --output=${OUTPUT} --input=${INPUT} \
+  --pattern=${PATTERN} --verbose=${VERBOSE} ${PKAST_FILE}"
 if [[ ${VERBOSE} == true ]]; then
   echo "EXEC cmd:"
   echo ${CMD}
   echo
 fi
+
+# Actual command evaluation
 eval ${CMD}
 
 if [[ ${CLEAN} == true ]]; then

@@ -7,34 +7,107 @@
 #   OUTPUT: same as --output option of krun.
 # Used by kjrun.sh
 
-if (( "$#" != 13 )); then
+ORIGINAL_ARGS=$@
+
+function usage()
+{
+cat <<-EOF
+Usage: `basename $0` [OPTIONS] <javaFile>
+
+  OPTIONS
+
+  --time=<true|false>
+  --timeout=<timeout in s>
+  --mode=< run-prep-config
+         | run-prep-ast
+         | run-exec
+         | search
+         | search-pattern
+         | search-count
+         | symbolic
+         | symbolic-count
+         | debug
+         >
+  --output=<none|raw|pretty>
+  --input=<java|kast|kast-cache>
+  --pattern=<pattern>
+  -v
+  --verbose=<true|false>            If true print produced commands for krun
+EOF
+}
+
+function errorMsg() {
     echo "Your command:"
-    echo `basename $0` $@
-    echo "Usage: `basename $0` --time <true|false> --timeout <timeout in s> \
-      --mode <run-prep-config|run-prep-ast|run-exec|search|search-pattern|search-count|symbolic|symbolic-count|debug> \
-      --output <none|raw|pretty> \
-      --input <java|kast-cache> \
-      --pattern <pattern> \
-      <javaFile>"
+    echo `basename $0` ${ORIGINAL_ARGS}
+    echo
+    usage
     exit 1
+}
+
+# Default var values
+
+SHOW_TIME=true #param time
+TIMEOUT=0
+MODE=run-exec
+OUTPUT=pretty
+INPUT=kast
+PATTERN=0
+
+# Arguments parsing
+
+while [[ ${1:0:1} == - ]]; do
+  PARAM=`echo $1 | awk -F= '{print $1}'`
+  VALUE=`echo $1 | awk -F= '{print $2}'`
+  case ${PARAM} in
+    "-h" | "--help")
+      usage
+      exit
+      ;;
+    "--time")
+      SHOW_TIME=${VALUE}
+      ;;
+    "--timeout")
+      TIMEOUT=${VALUE}
+      ;;
+    "--mode")
+      MODE=${VALUE}
+      ;;
+    "--output")
+      OUTPUT=${VALUE}
+      ;;
+    "--input")
+      INPUT=${VALUE}
+      ;;
+    "--pattern")
+      PATTERN=${VALUE}
+      ;;
+    "-v")
+      VERBOSE=true
+      ;;
+    "--verbose")
+      VERBOSE=${VALUE}
+      ;;
+    *)
+      echo "Invalid option: $PARAM"
+      errorMsg
+      ;;
+  esac
+  shift
+done
+
+# Building the krun command
+
+JAVA_FILE=${1}
+if [[ ${JAVA_FILE} == "" ]]; then
+  echo "Target file missing"
+  errorMsg
 fi
-
-# echo "Your command:"
-# echo `basename $0` $@
-
-SHOW_TIME=$2
-TIMEOUT=$4
-MODE=$6
-OUTPUT=$8
-INPUT=${10}
-PATTERN=${12}
-JAVA_FILE=${13}
 
 BASE_JAVA_FILE=`basename ${JAVA_FILE}`  #simple file/dir name
 MAIN_CLASS=`echo "$BASE_JAVA_FILE" | cut -d'.' -f1` #simple file minus extension
-
 TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 WORK_DIR="$(pwd)"
+
 
 case "$MODE" in
 "run-prep-config" | "run-prep-ast")
@@ -94,14 +167,6 @@ case "$MODE" in
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
     ;;
-"search-pattern")
-    KRUN_CMD="$KRUN_CMD --search --bound 1 \
-                        --pattern \"$PATTERN\" \
-                        -cDissolveAllExceptOut=\"true\" \
-                        -cCOMMAND=\"'unfoldingPhase(.KList)\" \
-                        -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
-                        -cENDPHASE=\"'ExecutionPhase(.KList)\""
-    ;;
 "symbolic"|"symbolic-count")
     IN_FILE=${JAVA_FILE%.java}.cIN.in
     IN_VALUE=$(<${IN_FILE})
@@ -124,6 +189,10 @@ esac
 
 KRUN_CMD="$KRUN_CMD --output=$OUTPUT"
 
+if [[ ${PATTERN} != "0" ]]; then
+  KRUN_CMD="$KRUN_CMD --pattern \"$PATTERN\""
+fi
+
 case "$INPUT" in
 "java")
     # OS-dependent selection of the parser.
@@ -144,8 +213,12 @@ case "$INPUT" in
     KRUN_CMD="$KRUN_CMD --parser=cat"
     KRUN_CMD="$KRUN_CMD $KAST_FILE"
 
-    # echo "PARSER_CMD"
-    # echo ${PARSER_CMD}
+    if [[ ${VERBOSE} == true ]]; then
+      echo "PARSER cmd:"
+      echo ${PARSER_CMD}
+      echo
+    fi
+
     eval ${PARSER_CMD}
     ;;
 *)
@@ -162,11 +235,11 @@ if [ ${MODE} == "run-prep-ast" ];
   then KRUN_CMD="$KRUN_CMD  | grep -Po '< program > \K.*(?=</ program > )'"
 fi
 
-case "$MODE" in
-"run-exec" | "search" |"search-count" |"search-pattern" | "symbolic" | "symbolic-count" | "debug")
-#    echo KRUN_CMD
-#    echo ${KRUN_CMD}
-    ;;
-esac
+if [[ ${VERBOSE} == true ]]; then
+  echo "KRUN cmd:"
+  echo ${KRUN_CMD}
+  echo
+fi
 
+# Actual command evaluation
 eval ${KRUN_CMD}
