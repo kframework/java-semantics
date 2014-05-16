@@ -47,7 +47,7 @@ case "$MODE" in
     ;;
 
 *)
-    echo "Invalid INPUT: ${INPUT}"
+    echo "Invalid MODE: ${MODE}"
     exit 1
     ;;
 esac
