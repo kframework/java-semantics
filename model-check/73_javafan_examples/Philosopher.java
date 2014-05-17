@@ -6,11 +6,12 @@ No way to distinguish the order in which philosophers dined: 6 minutes run on wi
 v2. No dined variable, instead each philosopher prints a message when he eats.
   We have to synchronize printing as well, otherwise th variable assignment that happens inside printing will
   lead to state space explosion.
+  Result: nicely shows 7 solutions (3! good solutions + 1 deadlock), in 1m50s on windows.
 
 kjrun.sh --search -v --timeout=0 ../model-check/73_javafan_examples/Philosopher.java
 
 In the current setup the rules tagged with [transition-threading] are:
-  - Variable access/assignment
+  - Field access/assignment (not local variables)
   - Printing to <out>, just the final rule
   - A lot of rules in api-threads.k
 */
