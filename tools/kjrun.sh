@@ -43,7 +43,7 @@ function errorMsg() {
 }
 
 function setSearchPattern() {
-  if [[ ${PATTERN} == "" ]]; then
+  if [[ ${PATTERN} == "0" ]]; then
     PATTERN="<T> <threads> Threads:Bag </threads> <phExec> <out> Out:List </out> _</phExec> _</T>"
   fi
 }
