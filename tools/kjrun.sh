@@ -161,7 +161,7 @@ while [[ ${1:0:1} == - ]]; do
 
 # Extra options
     "--pattern")
-      PATTERN=\"${VALUE}\"
+      PATTERN=${VALUE}
       ;;
     "-v" | "--verbose")
       VERBOSE=true
@@ -220,7 +220,7 @@ if [[ ${OUTPUT} == pretty ]]; then
 fi
 
 CMD="aux-kjrun.sh --time=${TIME} --timeout=${TIMEOUT} --mode=${MODE} --output=${OUTPUT} --input=${INPUT} \
-  --pattern=${PATTERN} --verbose=${VERBOSE} --cmd-suffix=\"${CMD_SUFFIX}\" ${PKAST_FILE}"
+  --pattern=\"${PATTERN}\" --verbose=${VERBOSE} --cmd-suffix=\"${CMD_SUFFIX}\" ${PKAST_FILE}"
 if [[ ${VERBOSE} == true ]]; then
   echo "EXEC cmd:"
   echo ${CMD}
