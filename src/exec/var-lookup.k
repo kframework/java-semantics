@@ -181,13 +181,25 @@ syntax Lookup ::= lookup (
 
 rule [lookup-Location]:
     <k>
-      lookup(L:Int, T1:Type) => subtype(T2, T1) ~> true? ~> (V::T1)
+      lookup(L:Int, T1:Type)
+      => fieldAccessCheckpoint(L) ~> subtype(T2, T1) ~> true? ~> (V::T1)
       ...
     </k>
     <store>... L |-> V:RawVal :: T2:Type ...</store>
-        [transition-threading]
 
 rule lvalue(lookup(L:Int, T:Type)) => loc(L)::T
         [structural]
+
+// Auxiliary structure designed to make field access rules transitions, but local variables not
+syntax K ::= fieldAccessCheckpoint ( Int )
+
+rule [fieldAccessCheckpoint-Local]:
+    <k> fieldAccessCheckpoint(L:Int) => . ...</k>
+    <storeMetadata>... L |-> LocalLocMetadata ...</storeMetadata>
+
+rule [fieldAccessCheckpoint-Field]:
+    <k> fieldAccessCheckpoint(L:Int) => . ...</k>
+    <storeMetadata>... L |-> FieldLocMetadata ...</storeMetadata>
+         [transition-threading]
 
 endmodule

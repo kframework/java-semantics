@@ -206,4 +206,7 @@ syntax Types ::=  types (
                   )
 syntax KResult ::= Types
 
+//Location type of each store location - either local variable or field
+syntax LocMetadata ::= "LocalLocMetadata" | "FieldLocMetadata"
+
 endmodule

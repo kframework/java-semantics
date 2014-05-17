@@ -409,11 +409,11 @@ when
     andBool (getContextType(Modifiers) ==K instanceCT)
         [structural]
 
-rule [FieldDec-to-LocalVarDec]:
+rule [FieldDec-Instance]:
     <k> 'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <instanceFields> [_,, ( .KList => 'LocalVarDec(.K,, T,, ['VarDec(X)]) )] </instanceFields>
+    <instanceFields> [_,, ( .KList => 'FieldDec([.KList],, T,, ['VarDec(X:Id)]) )] </instanceFields>
 when
     getContextType(Modifiers) ==K instanceCT
         [structural]
@@ -446,7 +446,7 @@ rule [FieldDec-Static]:
     <k> 'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <staticFields> [_,, ( .KList => 'FieldDec('Static(.KList),, T,, ['VarDec(X)]) )] </staticFields>
+    <staticFields> [_,, ( .KList => 'FieldDec(['Static(.KList)],, T,, ['VarDec(X)]) )] </staticFields>
 when
     getContextType(Modifiers) ==K staticCT
         [structural]

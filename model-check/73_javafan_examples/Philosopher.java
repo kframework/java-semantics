@@ -7,8 +7,7 @@ v2. No dined variable, instead each philosopher prints a message when he eats.
   We have to synchronize printing as well, otherwise th variable assignment that happens inside printing will
   lead to state space explosion.
 
-kjrun.sh --search --pattern="<T> <threads> Threads:Bag </threads> <phExec> <out> Out:List </out> _</phExec> _</T>" \
-  -v --timeout=0 ../model-check/73_javafan_examples/Philosopher.java
+kjrun.sh --search -v --timeout=0 ../model-check/73_javafan_examples/Philosopher.java
 
 In the current setup the rules tagged with [transition-threading] are:
   - Variable access/assignment
@@ -23,9 +22,7 @@ class Philosopher extends Thread {
   public void run() {
     synchronized (F1) {
       synchronized (F2) {
-        synchronized(Philosopher.class) {
-          System.out.println("Philosopher " + id + " dined.");
-        }
+        System.out.println("Philosopher " + id + " dined.");
       }
     }
     return;
@@ -34,9 +31,11 @@ class Philosopher extends Thread {
     int count = 3;
     Fork[] forks = new Fork[count] ;
     for (int i = 0; i < count; i++){ forks[i] = new Fork() ; }
+    Philosopher[] philosophers = new Philosopher[3];
     for (int i = 0; i < count; i++){
-      (new Philosopher(i, forks[i], forks[(i + 1) % count])).start() ;
+      philosophers[i] = new Philosopher(i, forks[i], forks[(i + 1) % count]);
     }
+    for (int i = 0; i < count; i++) { philosophers[i].start(); }
     return;
   }
 }

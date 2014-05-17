@@ -70,6 +70,7 @@ rule [LocalVarDec]:
     <k> T:Type X:Id; => . ...</k>
     <env> Env:Map => Env[L/X] </env>
     <store>... . => L |-> default(T) ...</store>
+    <storeMetadata>... . => L |-> LocalLocMetadata ...</storeMetadata>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 
 //@ \subsection{Empty statement} JLS \$14.6

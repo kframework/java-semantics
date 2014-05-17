@@ -35,11 +35,10 @@ when (N >=Int 0) andBool (N <Int M)
 rule [lookup-array-location]:
     <k>
       lookup(L:Int, T1:Type)
-      => subtype(T2, T1) ~> true? ~> (V::T1)
+      => fieldAccessCheckpoint(L) ~> subtype(T2, T1) ~> true? ~> (V::T1)
       ...
     </k>
     <store>... L |-> V:RawVal ::elem T2:Type ...</store>
-        [transition-threading]
 
 rule [ArrayAccess-to-ArrayIndexOutOfBoundsException]:
     'ArrayAccess(arrayRef(_,_,M:Int) :: _,, N:Int::_)
@@ -158,6 +157,7 @@ syntax K ::=  allocArray (
 rule [allocArray]:
     <k> allocArray(N:Int => N -Int 1, T:Type) ...</k>
     <store>... . => LI |-> (undefined :: elem T) ...</store>
+    <storeMetadata>... . => LI |-> FieldLocMetadata ...</storeMetadata>
     <nextLoc> LI:Int => LI +Int 1 </nextLoc>
 when
     N >Int 0
@@ -188,9 +188,8 @@ rule initArray(_, 0, _) => .K       [structural]
 //@ \subsection{Array element assignment}
 
 rule [store-array-elem]:
-    <k> store(L:Int, V:RawVal :: T:Type) => . ...</k>
+    <k> store(L:Int, V:RawVal :: T:Type) => fieldAccessCheckpoint(L) ...</k>
     <store>... L |-> (_ => V) :: elem T:Type ...</store>
-        [transition-threading]
 
 rule [store-array-location-check-type]:
     <k>

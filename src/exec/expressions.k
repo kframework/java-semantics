@@ -300,9 +300,8 @@ syntax K ::=  store (
               ) [strict(2)]
 
 rule [store]:
-    <k> store(L:Int, V:RawVal :: T:Type) => . ...</k>
+    <k> store(L:Int, V:RawVal :: T:Type) => fieldAccessCheckpoint(L) ...</k>
     <store>... L |-> (_ => V) :: T ...</store>
-        [transition-threading]
 
 /*@ \subsection{auxiliary terms produced during elaboration} */
 

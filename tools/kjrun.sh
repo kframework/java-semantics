@@ -42,6 +42,12 @@ function errorMsg() {
     exit 1
 }
 
+function setSearchPattern() {
+  if [[ ${PATTERN} == "" ]]; then
+    PATTERN="<T> <threads> Threads:Bag </threads> <phExec> <out> Out:List </out> _</phExec> _</T>"
+  fi
+}
+
 #If true then we have to run preprocessing semantics first
 PREP_FIRST=true
 
@@ -122,6 +128,7 @@ while [[ ${1:0:1} == - ]]; do
     "--search")
       TIMEOUT=$(($TIMEOUT * $SEARCH_TIMEOUT_FACTOR))
       MODE=search
+      setSearchPattern
       ;;
     "--search-cached")
       TIME=false
@@ -130,6 +137,7 @@ while [[ ${1:0:1} == - ]]; do
       MODE=search
       CMD_SUFFIX=${COUNT_CMD_SUFFIX}
       OUTPUT=raw
+      setSearchPattern
       ;;
     "--debug")
       TIME=false
@@ -139,6 +147,7 @@ while [[ ${1:0:1} == - ]]; do
     "--symbolic")
       TIMEOUT=$(($TIMEOUT * $SEARCH_TIMEOUT_FACTOR))
       MODE=symbolic
+      setSearchPattern
       ;;
     "--symbolic-cached")
       TIME=false
@@ -147,6 +156,7 @@ while [[ ${1:0:1} == - ]]; do
       MODE=symbolic
       CMD_SUFFIX=${COUNT_CMD_SUFFIX}
       OUTPUT=raw
+      setSearchPattern
       ;;
 
 # Extra options

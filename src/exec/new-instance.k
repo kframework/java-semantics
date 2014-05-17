@@ -58,11 +58,8 @@ rule [QNewInstance]:
           <crntClass> .K </crntClass>
           <location> L </location>
     </methodContext>
-    <store>
-      ...
-      . => L |-> objectRef(L, Class) :: Class
-      ...
-    </store>
+    <store>... . => L |-> objectRef(L, Class) :: Class ...</store>
+    <storeMetadata>... . => L |-> LocalLocMetadata ...</storeMetadata>
     (.Bag =>  <object>
                 <objectId> L </objectId>
                 <objectType> Class </objectType>
@@ -153,6 +150,15 @@ rule [setEncloser-value]:
 
 rule [setEncloser-noValue]:
     setEncloser(_,_, noValue) => .
+
+//@\subsection{Instance field declarations}
+
+rule [FieldDec-instance]:
+    <k> 'FieldDec([.KList],, T:Type,,['VarDec(X:Id)]) => . ...</k>
+    <env> Env:Map => Env[L/X] </env>
+    <store>... . => L |-> default(T) ...</store>
+    <storeMetadata>... . => L |-> FieldLocMetadata ...</storeMetadata>
+    <nextLoc> L:Int => L +Int 1 </nextLoc>
 
 //@\subsection{Execution of QSuperConstrInv, AltConstrInv}
 

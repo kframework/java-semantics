@@ -101,12 +101,12 @@ syntax K ::=  elabLookup (
 rule [elabLookup-Found-instance]:
     <k> elabLookup(X:Id, Class:ClassType) => fieldEntry(Class, X, T, instanceCT) ...</k>
     <classType> Class </classType>
-    <instanceFields> [_,, 'LocalVarDec(.K,, T:Type,, ['VarDec(X)]),, _] </instanceFields>
+    <instanceFields> [_,, 'FieldDec(_:K,, T:Type,, ['VarDec(X)]),, _] </instanceFields>
 
 rule [elabLookup-Found-static]:
     <k> elabLookup(X:Id, Class:ClassType) => fieldEntry(Class, X, T, staticCT) ...</k>
     <classType> Class </classType>
-    <staticFields> [_,, 'FieldDec('Static(_),, T:Type,, ['VarDec(X)]),, _] </staticFields>
+    <staticFields> [_,, 'FieldDec(['Static(_)],, T:Type,, ['VarDec(X)]),, _] </staticFields>
 
 rule [elabLookup-Found-constant]:
     <k> elabLookup(X:Id, Class:ClassType) => TV ...</k>

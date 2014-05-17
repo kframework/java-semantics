@@ -107,11 +107,12 @@ rule [staticInitDone]:
     <staticInitStatus> StaticInitializing(TId) => StaticInitialized </staticInitStatus>
 
 rule [FieldDec-static]:
-    <k> 'FieldDec('Static(_),, T:Type,,['VarDec(X:Id)]) => . ...</k>
+    <k> 'FieldDec(['Static(_)],, T:Type,,['VarDec(X:Id)]) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticEnv> Env:Map => Env[L/X] </staticEnv>
     <store>... . => L |-> default(T) ...</store>
+    <storeMetadata>... . => L |-> FieldLocMetadata ...</storeMetadata>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 
 endmodule

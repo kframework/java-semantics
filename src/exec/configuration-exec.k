@@ -188,6 +188,11 @@ configuration
         //Execution memory. Map[Location:Int->Value:TypedVal]. Both local vars and heap vars are stored here.
         <store color="Cyan"> .Map </store>
 
+        //The type of each location - whether it is LocalAttr or FieldAttr. Relevant only for multi-threading
+        //model checking
+        //Map[Location:Int -> LocMetadata].
+        <storeMetadata color="Cyan"> .Map </storeMetadata>
+
         <br/>
 
         //Represents the storage of objects. Since objects have a complex inner structure,
