@@ -19,10 +19,10 @@ public class threads_43_2t_waiting_notify {
 
   public static void main(String[] args) {
     Thread thread2 = new Thread(new NotifyRunnable(2));
-    thread2.start();
     Thread waitThread4 = new Thread(new WaitRunnable(4));
-    waitThread4.start();
     Thread waitThread5 = new Thread(new WaitRunnable(5));
+    thread2.start();
+    waitThread4.start();
     waitThread5.start();
     try {
       thread2.join();
