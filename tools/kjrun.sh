@@ -136,7 +136,6 @@ while [[ ${1:0:1} == - ]]; do
       PREP_INPUT=kast-cache
       MODE=search
       CMD_SUFFIX=${COUNT_CMD_SUFFIX}
-      OUTPUT=raw
       setSearchPattern
       ;;
     "--debug")
@@ -155,7 +154,6 @@ while [[ ${1:0:1} == - ]]; do
       PREP_INPUT=kast-cache
       MODE=symbolic
       CMD_SUFFIX=${COUNT_CMD_SUFFIX}
-      OUTPUT=raw
       setSearchPattern
       ;;
 
