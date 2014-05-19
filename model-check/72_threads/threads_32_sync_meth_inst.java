@@ -15,12 +15,12 @@ public class threads_32_sync_meth_inst {
         test.sync(1);
       }
     });
-    thread2.start();
     Thread thread3 = new Thread(new Runnable() {
       public void run() {
         test.sync(2);
       }
     });
+    thread2.start();
     thread3.start();
     try {
       thread2.join();
