@@ -92,11 +92,11 @@ For testing threads we will use model checking for most cases.
   Thread 2: assign b, notify.
   Thread 3: while a == 0 or b == 0, print a, b, wait.
 
-43. notify is not notifyAll. Same as 42, but use two threads waiting.
-  Notifying threads call notify().
+43. Function notify() is not notifyAll(). Same as 42, but use two threads for waiting, one thread for notifying.
+      Notifying thread calls notify() twice.
 
-44. notify is not notifyAll. Same as 42 but use two threads waiting.
-  Notifying threads call notifyAll().
+44. Function notify() is not notifyAll(). Same as 42, but use two threads for waiting, one thread for notifying.
+      Notifying thread calls notifyAll() twice.
 
 45. Test that synchronization status is preserved among method calls.
   Same as 41, but do synchronize() in one method, and wait() in a method called by the first one.
