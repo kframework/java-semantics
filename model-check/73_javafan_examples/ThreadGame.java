@@ -10,7 +10,7 @@ class ThreadGame {
     } catch (InterruptedException e) {
       System.out.println(e);
     }
-    System.out.print(c + " ");
+    System.out.print(Process.c + " ");
   }
 }
 class Process extends Thread {
