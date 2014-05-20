@@ -62,7 +62,6 @@ class NotifyRunnable implements Runnable {
       monitor.notifyAll();
     }
     synchronized(monitor) {
-      System.out.println("Thread" + id + " notifying all...");
       monitor.notifyAll();
     }
   }
