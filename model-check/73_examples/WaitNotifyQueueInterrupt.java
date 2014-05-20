@@ -1,14 +1,13 @@
 /*
   Same as WaitNotifyQueue, but the consumer thread is itnerrupted at the end of main().
-  10 solutions expected:
+  7 solutions expected:
   - 4 non-interruption solutions:
       put put get put get get
       put put get get put get
       put get put put get get
       put get put get put get
-  + 6 solutions when consumer is interrupted:
-    - 1 solution for each case with 1 get at the end
-    - 2 solutions for each case with 1 get at the end
+  + 3 solutions involving interruption. Not every get at the end of a sequence above may lead to an interruption.
+    Only those get-s that could block on an empty queue.
 */
 public class WaitNotifyQueueInterrupt {
   public static void main(String[] args) throws Exception {

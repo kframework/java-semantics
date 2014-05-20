@@ -25,7 +25,7 @@ public class WaitNotifyQueue {
     for(int i=0; i<3; i++) {
       queue.put(i);
     }
-    t2.interrupt();
+    t2.join();
   }
 
   static class BlockingQueue {
