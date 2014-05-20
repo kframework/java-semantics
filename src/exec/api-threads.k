@@ -59,7 +59,7 @@ rule [Synchronized-first-time]:
     <busy> Busy:Set (. => SetItem(OId)) </busy>
 when
     notBool (OId in Busy)
-        [transition-threading]
+        [transition-threading, transition-sync]
 
 rule [Synchronized-nested]:
     <k>
@@ -68,7 +68,7 @@ rule [Synchronized-nested]:
       ...
     </k>
     <holds>... OId |-> (Level:Int => Level +Int 1) ...</holds>
-        [transition-threading]
+        [transition-threading, transition-sync]
 
 rule [Synchronized-on-null]:
     'Synchronized(null::_,,_) => throw new classNullPointerException(null::classString);
@@ -82,7 +82,7 @@ rule [releaseLock]:
       ...
     </k>
     <holds>... OL |-> (Level:Int => Level -Int 1) ...</holds>
-        [transition-threading]
+        [transition-threading, transition-sync]
 
 /*
 K performance evaluation with the rule below active and commented:
@@ -111,7 +111,7 @@ rule [thread-join]:
     <terminated>... SetItem(TId) ...</terminated>
 when
     Class ==K class String2Id("java.lang.Thread") andBool Id2String(MethodName) ==String "joinImpl"
-        [transition-threading]
+        [transition-threading, transition-sync]
 
 rule [thread-join-interrupted]:
     <k>
@@ -125,7 +125,7 @@ rule [thread-join-interrupted]:
     <interrupted> true => false </interrupted>
 when
     Class ==K class String2Id("java.lang.Thread") andBool Id2String(MethodName) ==String "joinImpl"
-        [transition-threading]
+        [transition-threading, transition-sync]
 
 //@ \subsection{Object.wait()}
 
@@ -146,7 +146,7 @@ when
             Class ==K classObject
     andBool Id2String(MethodName) ==String "wait"
     andBool HoldLevel >=Int 1
-        [transition-threading]
+        [transition-threading, transition-sync]
 
 rule [object-wait-notify-notifyAll-without-sync]:
     <k>
@@ -186,7 +186,7 @@ rule [waitImpl-end]:
 when
             (notBool OL in Busy)
     andBool (notBool TId in keys(WT))
-        [transition-threading]
+        [transition-threading, transition-sync]
 
 rule [waitImpl-interrupted]:
     <k>
@@ -198,7 +198,7 @@ rule [waitImpl-interrupted]:
     <interrupted> true => false </interrupted>
 when
       notBool OL in Busy
-        [transition-threading]
+        [transition-threading, transition-sync]
 
 //@ \subsection{Object.notify(), Object.notifyAll()}
 
@@ -298,7 +298,7 @@ rule [thread-interrupt]:
     </thread>
 when
     Class ==K class String2Id("java.lang.Thread") andBool Id2String(MethodName) ==String "interruptImpl"
-        [transition-threading]
+        [transition-threading, transition-sync]
 
 rule [thread-interrupt-ended-thread]:
     <k>
@@ -312,6 +312,7 @@ rule [thread-interrupt-ended-thread]:
     <terminated>... SetItem(TId) ...</terminated>
 when
     Class ==K class String2Id("java.lang.Thread") andBool Id2String(MethodName) ==String "interruptImpl"
+        [transition-threading, transition-sync]
 
 //@ \subsection{Thread termination}
 
@@ -337,7 +338,8 @@ rule [DissolveClasses]:
     <globalPhase> ExecutionPhase </globalPhase>
     <dissolveClasses> true </dissolveClasses>
 
-/*@Dissolve all cells except <out> for the purpose of model checking. We will avoid duplicates caused by the same <out> but different order of content in other cells.*/
+/*@ Dissolve all cells except <out> for the purpose of model checking. We will avoid duplicates caused by the same
+    <out> but different order of content in other cells.*/
 rule [DissolveAllExceptOut]:
     <T>
       <out> Out:List </out>

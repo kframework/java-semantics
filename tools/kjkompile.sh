@@ -12,29 +12,81 @@
 # latex - compile into latex
 # pdf - compile into pdf
 
-if [ $# -gt 1 ]; then
+ORIGINAL_ARGS=$@
+
+function usage()
+{
+cat <<-EOF
+Usage: `basename $0` [OPTION] <javaFile>
+For more options use aux-kjrun.sh
+
+  OPTION
+
+  --exec, the default option
+  --strictness
+  --threading
+  --threading-sync
+  --symbolic
+  --prep-latex
+  --prep-pdf
+  --exec-latex
+  --methods-latex
+  --methods-pdf
+  --new-latex
+  --new-pdf
+  --help
+
+  ADDITIONAL OPTIONS:
+  -v | --verbose  Passes -v to kompile
+EOF
+}
+
+function errorMsg() {
     echo "Your command:"
-    echo `basename $0` $@
-    echo "Usage: `basename $0`"
-    echo "Or:    `basename $0` <--exec|--exec-v|--strictness|--threading|--symbolic| \
-      --prep-latex|--prep-pdf|--exec-latex|--exec-pdf|--methods-latex|--methods-pdf|--help>"
-    exit
-fi
+    echo `basename $0` ${ORIGINAL_ARGS}
+    echo
+    usage
+    exit 1
+}
+
+OPTION=--exec
+VERBOSE=false
+
+while [[ ${1:0:1} == - ]]; do
+  PARAM=`echo $1 | awk -F= '{print $1}'`
+  ARG=$1
+  CUT_AMOUNT=$((${#PARAM} + 1))
+  VALUE=${ARG:${CUT_AMOUNT}}
+
+  case ${PARAM} in
+    "-h" | "--help")
+      usage
+      exit
+      ;;
+    "--exec"|"--strictness"|"--threading"|"--threading-sync"|"--symbolic"|"--prep-latex"|"--prep-pdf" \
+      |"--exec-latex"|"--methods-latex"|"--methods-pdf"|"--new-latex"|"--new-pdf")
+      OPTION=${PARAM}
+      ;;
+    "-v" | "--verbose")
+      VERBOSE=true
+      ;;
+    *)
+      echo "Invalid option: $PARAM"
+      errorMsg
+      ;;
+  esac
+  shift
+done
 
 TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 KOMPILE_CMD=$(cross-k.sh kompile)
 
-if [ $# -eq 1 ];
-  then OPTION=$1
-  else OPTION=--exec
-fi
-
-if [ $OPTION == "--exec-v" ];
+if [ ${VERBOSE} == true ];
   then KOMPILE_CMD="$KOMPILE_CMD -v"
 fi
 
 case "$OPTION" in
-"--exec" | "--exec-v")
+"--exec")
     echo
     echo
     echo "Preprocessing semantics:"
@@ -80,6 +132,26 @@ case "$OPTION" in
     echo "Preprocessing semantics:"
     # "&> file" redirects both stdin and stderr to the given file
     $KOMPILE_CMD --transition "transition-threading" -d exec exec/java-exec.k &> exec-out.txt \
+        & $KOMPILE_CMD -d prep prep/java-prep.k
+    wait
+
+    echo
+    echo
+    echo "Execution semantics:"
+
+    cat exec-out.txt
+    rm -rf exec-out.txt
+
+    echo
+    echo
+    echo "Done"
+    ;;
+"--threading-sync")
+    echo
+    echo
+    echo "Preprocessing semantics:"
+    # "&> file" redirects both stdin and stderr to the given file
+    $KOMPILE_CMD --transition "transition-sync" -d exec exec/java-exec.k &> exec-out.txt \
         & $KOMPILE_CMD -d prep prep/java-prep.k
     wait
 
@@ -145,17 +217,5 @@ case "$OPTION" in
     mkdir -p .latex
     pdflatex -synctex=-1 -max-print-line=120 -interaction=nonstopmode -shell-escape \
       --aux-directory=.latex new-instance.tex
-    ;;
-"--help")
-    echo "Usage: `basename $0`"
-    echo "Or:    `basename $0` <--exec|--exec-v|--strictness|--threading|--symbolic| \
-      --prep-latex|--prep-pdf|--exec-latex|--exec-pdf|--methods-latex|--methods-pdf|--help>"
-    ;;
-*)
-    echo "Invalid option: $OPTION"
-    echo "Usage: `basename $0`"
-    echo "Or:    `basename $0` <--exec|--exec-v|--strictness|--threading|--symbolic| \
-      --prep-latex|--prep-pdf|--exec-latex|--exec-pdf|--methods-latex|--methods-pdf|--help>"
-    exit 1
     ;;
 esac

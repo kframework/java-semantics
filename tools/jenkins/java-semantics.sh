@@ -13,7 +13,7 @@ echo "Using K Framework version:"
 kompile --version
 
 cd $WORKSPACE/src
-kjkompile.sh --exec-v
+kjkompile.sh --exec -v
 
 export TOOLS_DIR=$WORKSPACE/tools
 export PATH=/home/denis.bogdanas/k-framework-stable/bin:\

@@ -32,21 +32,22 @@ public class WaitNotifyQueueInterrupt {
   }
 
   static class BlockingQueue {
-    int[] array = new int[2];
-    int size=0;
+    int capacity = 2;
+    int[] array = new int[capacity];
+    int head=0, tail=0;
     synchronized void put(int element) throws InterruptedException {
-      while(size == array.length) {
+      while((tail-head) == capacity) {
         wait();
       }
-      array[size++]=element;
+      array[tail++ % capacity]=element;
       System.out.print("put-" + element + " ");
       notify();
     }
     synchronized int get() throws InterruptedException {
-      while(size == 0) {
+      while((tail-head) == 0) {
         wait();
       }
-      int element = array[--size];
+      int element = array[head++ % capacity];
       System.out.print("get-" + element + " ");
       notify();
       return element;
