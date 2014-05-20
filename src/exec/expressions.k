@@ -299,8 +299,17 @@ syntax K ::=  store (
                 K     //evaluates to TypedVal - the value to be stored
               ) [strict(2)]
 
+//@ Synchronization checkpoint have to be before the actual assignment, like for lookup.
 rule [store]:
-    <k> store(L:Int, V:RawVal :: T:Type) => fieldAccessCheckpoint(L) ...</k>
+    store(L:Int, V:RawVal :: T:Type) => fieldAccessCheckpoint(L) ~> storeImpl(L, V::T)
+
+syntax K ::=  storeImpl (
+                Int,  //OL - the store location
+                K     //TypedVal - the value to be stored
+              )
+
+rule [storeImpl]:
+    <k> storeImpl(L:Int, V:RawVal :: T:Type) => . ...</k>
     <store>... L |-> (_ => V) :: T ...</store>
 
 /*@ \subsection{auxiliary terms produced during elaboration} */
