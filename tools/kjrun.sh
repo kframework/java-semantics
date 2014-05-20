@@ -76,6 +76,9 @@ CLEAN=false
 #If true then we display the built command in kjrun and aux-kjrun
 VERBOSE=false
 
+#If true then don't show any messages besides the actual output
+SILENT=false
+
 CMD_SUFFIX=""
 COUNT_CMD_SUFFIX="| grep \"Solution\" | wc -l"
 PREP_AST_CMD_SUFFIX="| grep -Po '< program > \K.*(?=</ program > )'"
@@ -120,6 +123,7 @@ while [[ ${1:0:1} == - ]]; do
       TIMEOUT=0
       PREP_INPUT=kast-cache
       OUTPUT=none
+      SILENT=true
       ;;
     "--split-none")
       PREP_INPUT=kast-cache
@@ -136,6 +140,7 @@ while [[ ${1:0:1} == - ]]; do
       PREP_INPUT=kast-cache
       MODE=search
       CMD_SUFFIX=${COUNT_CMD_SUFFIX}
+      SILENT=true
       setSearchPattern
       ;;
     "--debug")
@@ -154,6 +159,7 @@ while [[ ${1:0:1} == - ]]; do
       PREP_INPUT=kast-cache
       MODE=symbolic
       CMD_SUFFIX=${COUNT_CMD_SUFFIX}
+      SILENT=true
       setSearchPattern
       ;;
 
@@ -191,7 +197,7 @@ PKAST_FILE=${PKAST_FILE}.pkast
 
 
 #Actual execution
-if [[ ${OUTPUT} == pretty ]]; then
+if [[ ${SILENT} == false ]]; then
   echo "preprocess:"
 fi
 
@@ -211,7 +217,7 @@ else
   PKAST_FILE=${JAVA_FILE}
 fi
 
-if [[ ${OUTPUT} == pretty ]]; then
+if [[ ${SILENT} == false ]]; then
   echo
   echo "execute:"
   echo
