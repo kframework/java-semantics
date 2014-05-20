@@ -3,12 +3,19 @@
   occurred at all. Same as 31, use synchronized blocks on different newly created instances of Object.
   7 outputs. Message interleaving possibilities:
 
-    1122 2v
-    1212 1
-    1221 1v
-    2112 1v
-    2121 1v
-    2211 1v
+    T1-0 T1-1 T2-0 T2-2
+    T1-0 T1-2 T2-0 T2-2
+    T1-0 T1-1 T2-0 T2-1
+
+    T1-0 T1-1 T2-1 T2-2
+
+    T1 T2 T1 T2 1
+    T1 T2 T2 T1 1v
+    T2 T1 T1 T2 1v
+    T2 T1 T2 T1 1v
+    T2 T2 T1 T1 1v
+
+    And many other possibilities. Total: 24.
 */
 
 public class threads_35_false_sync_diff_obj {

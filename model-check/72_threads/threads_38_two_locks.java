@@ -10,6 +10,8 @@ Two threads, two locks on different objects, but not nested. No deadlocks.
   - 2 1 1 2
   - 2 1 2 1
   - 2 2 1 1
+
+  Since for each thread run the actual output may be very different, there are 38 solutions.
 */
 
 public class threads_38_two_locks {
