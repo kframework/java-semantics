@@ -187,16 +187,16 @@ rule initArray(_, 0, _) => .K       [structural]
 
 //@ \subsection{Array element assignment}
 
-rule [store-array-elem]:
-    <k> store(L:Int, V:RawVal :: T:Type) => fieldAccessCheckpoint(L) ...</k>
+rule [storeImpl-array-elem]:
+    <k> storeImpl(L:Int, V:RawVal :: T:Type) => . ...</k>
     <store>... L |-> (_ => V) :: elem T:Type ...</store>
 
-rule [store-array-location-check-type]:
+rule [storeImpl-array-location-check-type]:
     <k>
-      store(L:Int, V:RawVal::T:Type)
+      storeImpl(L:Int, V:RawVal::T:Type)
       =>  'If(
             subtype(typeOf(V), StoreType),,
-            store(L, V::StoreType),,
+            storeImpl(L, V::StoreType),,
 
             throw new class String2Id("java.lang.ArrayStoreException") (
                 //the ArrayStoreException argument is the assigned object type
