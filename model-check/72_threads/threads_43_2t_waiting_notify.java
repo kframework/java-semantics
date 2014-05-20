@@ -3,22 +3,23 @@ Function notify() is not notifyAll(). Same as 42, but use two threads for waitin
   Notifying thread calls notify() twice.
 
     Thread interleaving:
-  2 4 5
-  2 5 4
-  4 2 4 5
-  4 2 5 4
-  5 2 4 5
-  5 2 5 4
-  4 5 2 4 2 5
-  4 5 2 5 2 4
-  5 4 2 4 2 5
-  5 4 2 5 2 4
+  2 2 4 5
+  2 2 5 4
+  (*3)
+
+  4 2 2 4 5
+  4 2 2 5 4
+  5 2 2 4 5
+  5 2 2 5 4
+  (*3)
+
   4 5 2 2 4 5
   4 5 2 2 5 4
   5 4 2 2 4 5
   5 4 2 2 5 4
+  (*2)
 
-  Total: 14 solutions.
+  Total: 2*3 + 4*3 + 4*2 = 26 solutions.
 */
 
 public class threads_43_2t_waiting_notify {
@@ -58,6 +59,7 @@ class NotifyRunnable implements Runnable {
       monitor.notify();
     }
     synchronized(monitor) {
+      System.out.println("Thread" + id + " notifying...");
       monitor.notify();
     }
   }

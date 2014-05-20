@@ -1,6 +1,6 @@
 /*
 Function notify() is not notifyAll(). Same as 42, but use two threads for waiting, one thread for notifying.
-  Notifying thread calls notifyAll() twice.
+  Notifying thread calls notifyAll() once.
 
     Thread interleaving:
   2 4 5
@@ -9,20 +9,12 @@ Function notify() is not notifyAll(). Same as 42, but use two threads for waitin
   4 2 5 4
   5 2 4 5
   5 2 5 4
-  4 5 2 2 4 5
-  4 5 2 2 5 4
-  5 4 2 2 4 5
-  5 4 2 2 5 4
-  4 5 2 4 2 5
-  4 5 2 5 2 4
-  5 4 2 4 2 5
-  5 4 2 5 2 4
-  4 5 2 4 5 2
-  4 5 2 5 4 2
-  5 4 2 4 5 2
-  5 4 2 5 4 2
+  4 5 2 4 5
+  4 5 2 5 4
+  5 4 2 4 5
+  5 4 2 5 4
 
-  Total: 18 solutions.
+  Total: 10 solutions.
 */
 
 public class threads_44_2t_waiting_notifyAll {
@@ -59,9 +51,6 @@ class NotifyRunnable implements Runnable {
     synchronized(monitor) {
       v[id] = id;
       System.out.println("Thread" + id + " notifying all...");
-      monitor.notifyAll();
-    }
-    synchronized(monitor) {
       monitor.notifyAll();
     }
   }

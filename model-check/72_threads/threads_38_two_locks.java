@@ -16,8 +16,8 @@ public class threads_38_two_locks {
 
   public static void main(String[] args) {
     Thread thread2 = new Thread(new MyRunnable2(2));
-    thread2.start();
     Thread thread3 = new Thread(new MyRunnable3(3));
+    thread2.start();
     thread3.start();
     try {
       thread2.join();

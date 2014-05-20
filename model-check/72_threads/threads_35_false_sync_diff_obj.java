@@ -15,8 +15,8 @@ public class threads_35_false_sync_diff_obj {
 
   public static void main(String[] args) {
     Thread thread2 = new MyThread(2);
-    thread2.start();
     Thread thread3 = new MyThread(3);
+    thread2.start();
     thread3.start();
     try {
       thread2.join();
