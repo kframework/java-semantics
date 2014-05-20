@@ -1,12 +1,16 @@
 /*
-  4 solutions expected:
-  put put get put get get
-  put put get get put get
-  put get put put get get
-  put get put get put get
-
+  Same as WaitNotifyQueue, but the consumer thread is itnerrupted at the end of main().
+  10 solutions expected:
+  - 4 non-interruption solutions:
+      put put get put get get
+      put put get get put get
+      put get put put get get
+      put get put get put get
+  + 6 solutions when consumer is interrupted:
+    - 1 solution for each case with 1 get at the end
+    - 2 solutions for each case with 1 get at the end
 */
-public class WaitNotifyQueue {
+public class WaitNotifyQueueInterrupt {
   public static void main(String[] args) throws Exception {
     final BlockingQueue queue = new BlockingQueue();
     Thread t2 = new Thread() {
