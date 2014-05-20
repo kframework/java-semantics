@@ -1,5 +1,5 @@
 /*
-Two threads assign different value to a static field and print it.
+Two threads assign different values to a static field and print it.
   How many states?
   - th1 - v1, th2 - v1
   - th1 - v1, th2 - v2
