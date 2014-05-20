@@ -185,7 +185,7 @@ while [[ ${1:0:1} == - ]]; do
   shift
 done
 
-JAVA_FILE=${1}
+JAVA_FILE=$(cross-path-unix.sh ${1})
 if [[ ${JAVA_FILE} == "" ]]; then
   echo "Target file missing"
   errorMsg
