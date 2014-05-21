@@ -1,5 +1,5 @@
 //With the restrictions below produces 10 solutions: 5,6,7,8,9,10,11,12,14,16
-class ThreadGame {
+class threads_61_ThreadGame {
   public static void main(String[] args) {
     Process p1 = new Process();
     Process p2 = new Process();
