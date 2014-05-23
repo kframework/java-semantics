@@ -21,6 +21,7 @@ require "var-lookup.k"
 require "method-invoke.k"
 require "api-core.k"
 require "api-threads.k"
+require "ltl-support.k"
 
 module JAVA-EXEC
     imports LABELS-EXEC
@@ -41,7 +42,11 @@ module JAVA-EXEC
     imports METHOD-INVOKE-REST
     imports API-CORE
     imports API-THREADS
-    imports JAVA-SYNTAX
+    imports LTL-SUPPORT-SYNTAX
+    imports LTL-SUPPORT
+
+  //Since we added LTL support, we cannot have an empty syntax module. LTL formulas are parsed by the program parser.
+  //imports JAVA-SYNTAX
 
 endmodule
 

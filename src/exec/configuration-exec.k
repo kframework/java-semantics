@@ -137,17 +137,17 @@ configuration
           <br/>
 
           //Cells used during folding phase
-          <clsFolding color="Yellow">
+          <cphFolding color="Yellow">
 
             //The whole class folded back into a 'ClassDec(...) node
             <folded color="Teal"> .K </folded>
 
-          </clsFolding>
+          </cphFolding>
 
           <br/>
 
           //Cells used during execution phase
-          <clsExec color="Yellow">
+          <cphExec color="Yellow">
 
             //Initialization status of this class. See static-init.k for more details.
             //Only used during execution phase.
@@ -157,7 +157,7 @@ configuration
               Map[Id -> Location] Used during static variable lookup.*/
             <staticEnv color="DarkSlateGray"> .Map </staticEnv>
 
-          </clsExec>
+          </cphExec>
 
         </class>
       </classes>
@@ -259,7 +259,6 @@ configuration
       <groupDebug color="Yellow">
 
         <dissolveEmptyK> true </dissolveEmptyK>
-        <dissolveClasses> true </dissolveClasses>
 
         //When computation finishes, dissolve all cells except <out>,
         //in order to avoid duplicate solutions during model checking.

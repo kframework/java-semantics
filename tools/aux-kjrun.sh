@@ -28,6 +28,8 @@ Usage: `basename $0` [OPTIONS] <javaFile>
   --output=<none|raw|pretty>
   --input=<java|kast|kast-cache>
   --pattern=<pattern>
+  --ltlmc=<LTL formula>
+  --config=<true|false>  - Display full config or not
   -v
   --verbose=<true|false>            If true print produced commands for krun
   --cmd-suffix=<suffix to the krun command>
@@ -49,7 +51,9 @@ TIMEOUT=0
 MODE=run-exec
 OUTPUT=pretty
 INPUT=kast
-PATTERN=0
+PATTERN=""
+LTLMC=""
+CONFIG=false
 
 # Arguments parsing
 
@@ -81,6 +85,12 @@ while [[ ${1:0:1} == - ]]; do
       ;;
     "--pattern")
       PATTERN=${VALUE}
+      ;;
+    "--ltlmc")
+      LTLMC=${VALUE}
+      ;;
+    "--config")
+      CONFIG=${VALUE}
       ;;
     "-v")
       VERBOSE=true
@@ -154,19 +164,17 @@ KRUN_CMD="$KRUN_CMD \
 
 case "$MODE" in
 "run-prep-config" | "run-prep-ast")
-    KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\" \
-                        -cCOMMAND=\"'procTypeNames(.KList)\" \
+    KRUN_CMD="$KRUN_CMD -cCOMMAND=\"'procTypeNames(.KList)\" \
                         -cSTARTPHASE=\"'ProcTypeNamesPhase(.KList)\" \
                         -cENDPHASE=\"'FoldingPhase(.KList)\""
     ;;
 "run-exec")
-    KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\" \
-                        -cCOMMAND=\"'unfoldingPhase(.KList)\" \
+    KRUN_CMD="$KRUN_CMD -cCOMMAND=\"'unfoldingPhase(.KList)\" \
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
     ;;
 "search")
-    KRUN_CMD="$KRUN_CMD --search-final -cDissolveAllExceptOut=\"false\" \
+    KRUN_CMD="$KRUN_CMD --search-final \
                         -cCOMMAND=\"'unfoldingPhase(.KList)\" \
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
@@ -174,13 +182,13 @@ case "$MODE" in
 "symbolic")
     IN_FILE=${JAVA_FILE%.java}.cIN.in
     IN_VALUE=$(<${IN_FILE})
-    KRUN_CMD="$KRUN_CMD --search -cDissolveAllExceptOut=\"false\" -cPC=true -cIN=\"$IN_VALUE\" \
+    KRUN_CMD="$KRUN_CMD --search -cPC=true -cIN=\"$IN_VALUE\" \
                         -cCOMMAND=\"'unfoldingPhase(.KList)\" \
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
     ;;
 "debug")
-    KRUN_CMD="$KRUN_CMD --debug -cDissolveAllExceptOut=\"false\" \
+    KRUN_CMD="$KRUN_CMD --debug \
                         -cCOMMAND=\"'unfoldingPhase(.KList)\" \
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
                         -cENDPHASE=\"'ExecutionPhase(.KList)\""
@@ -191,10 +199,19 @@ case "$MODE" in
     ;;
 esac
 
+if [[ ${PATTERN} != "" || ${LTLMC} != "" || ${CONFIG} == "true" ]];
+  then KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"false\""
+  else KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\""
+fi
+
 KRUN_CMD="$KRUN_CMD --output=$OUTPUT"
 
-if [[ ${PATTERN} != "0" ]]; then
+if [[ ${PATTERN} != "" ]]; then
   KRUN_CMD="$KRUN_CMD --pattern \"$PATTERN\""
+fi
+
+if [[ ${LTLMC} != "" ]]; then
+  KRUN_CMD="$KRUN_CMD --ltlmc \"$LTLMC\""
 fi
 
 case "$INPUT" in

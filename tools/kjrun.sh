@@ -28,6 +28,8 @@ For more options use aux-kjrun.sh
   ADDITIONAL OPTIONS:
 
   --pattern=<PATTERN>  Search pattern. May be used in combination with any option
+  --ltlmc=<LTL Formula> LTL formula to model-check. If specified, --pattern option is reset.
+  --config - Display the full configuration.
   -v | --verbose  Print produced commands for aux-kjrun and krun
   -c | --clean    Delete cache files after execution
   -t | --timeout=<timeout in s> - overwrites default timeout
@@ -43,7 +45,7 @@ function errorMsg() {
 }
 
 function setSearchPattern() {
-  if [[ ${PATTERN} == "0" ]]; then
+  if [[ ${PATTERN} == "" ]]; then
     PATTERN="<T> <threads> Threads:Bag </threads> <phExec> <out> Out:List </out> _</phExec> _</T>"
   fi
 }
@@ -68,7 +70,12 @@ PREP_INPUT=java
 INPUT=kast
 
 # Pattern example: "<T> <out> OUT:List </out> _</T>"
-PATTERN=0
+PATTERN=""
+
+LTLMC=""
+
+# false = show only <out>, true = don't dissolve any cells at the end
+CONFIG=false
 
 #Remove all *.kast and *.pkast files
 CLEAN=false
@@ -167,6 +174,13 @@ while [[ ${1:0:1} == - ]]; do
     "--pattern")
       PATTERN=${VALUE}
       ;;
+    "--ltlmc")
+      LTLMC=${VALUE}
+      PATTERN=""
+      ;;
+    "--config")
+      CONFIG=true
+      ;;
     "-v" | "--verbose")
       VERBOSE=true
       ;;
@@ -224,7 +238,8 @@ if [[ ${SILENT} == false ]]; then
 fi
 
 CMD="aux-kjrun.sh --time=${TIME} --timeout=${TIMEOUT} --mode=${MODE} --output=${OUTPUT} --input=${INPUT} \
-  --pattern=\"${PATTERN}\" --verbose=${VERBOSE} --cmd-suffix=\"${CMD_SUFFIX}\" ${PKAST_FILE}"
+  --pattern=\"${PATTERN}\" --ltlmc=\"${LTLMC}\" --config=\"${CONFIG}\" \
+  --verbose=${VERBOSE} --cmd-suffix=\"${CMD_SUFFIX}\" ${PKAST_FILE}"
 if [[ ${VERBOSE} == true ]]; then
   echo "EXEC cmd:"
   echo ${CMD}

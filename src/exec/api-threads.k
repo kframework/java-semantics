@@ -331,13 +331,6 @@ rule [ThreadTermination]:
 
 //@ \subsection{Debug aids}
 
-/*@Dissolves classes cell so that configuration is not over-bloated, at the end of the execution.*/
-rule [DissolveClasses]:
-    (<classes> _:Bag </classes> => .)
-    <threads> .Bag </threads>
-    <globalPhase> ExecutionPhase </globalPhase>
-    <dissolveClasses> true </dissolveClasses>
-
 /*@ Dissolve all cells except <out> for the purpose of model checking. We will avoid duplicates caused by the same
     <out> but different order of content in other cells.*/
 rule [DissolveAllExceptOut]:
@@ -345,7 +338,6 @@ rule [DissolveAllExceptOut]:
       <out> Out:List </out>
       <threads> .Bag </threads>
       <globalPhase> ExecutionPhase </globalPhase>
-      <dissolveClasses> true </dissolveClasses>
       <dissolveAllExceptOut> true </dissolveAllExceptOut>
       ...
     </T>

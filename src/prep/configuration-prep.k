@@ -167,7 +167,7 @@ configuration
           <br/>
 
           //Cells used during elaboration phase
-          <clsElab color="Yellow">
+          <cphElab color="Yellow">
 
             //For local classes only. Map[Id -> Type] of vars accessible from the DIRECT enclosing local env.
             //If we have more levels of Local classes nesting, more external local environments
@@ -175,17 +175,17 @@ configuration
             //Used during elaboration phase only.
             <enclosingLocalEnv color="Teal"> .Map </enclosingLocalEnv>
 
-          </clsElab>
+          </cphElab>
 
           <br/>
 
           //Cells used during folding phase
-          <clsFolding color="Yellow">
+          <cphFolding color="Yellow">
 
             //The whole class folded back into a 'ClassDec(...) node
             <folded color="Teal"> .K </folded>
 
-          </clsFolding>
+          </cphFolding>
 
         </class>
       </classes>

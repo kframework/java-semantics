@@ -14,6 +14,10 @@
   01010101
 
   Execution time: 50s on windows.
+
+  Attempts to execute on a bigger data set:
+    - Linux, transition-thrading, n=10, capacity=5 => OOME after 5 hours, 1GB heap.
+    - Linux, transition-sync, n=10, capacity=4 => OOME after 2 hours.
 */
 public class queue_1_threads_2_correct {
   public static void main(String[] args) throws Exception {
