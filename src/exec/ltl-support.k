@@ -81,7 +81,9 @@ rule [ltlEval-RawVal]:
     ltlEval(_, RV:RawVal ) => toTypedVal(RV)
 
 rule [ltlEval-qualifier-heat]:
-    ltlEval( B:Bag, (QualX:Id => ltlEval(B, QualX)) . _ )
+    ltlEval( B:Bag, (E:Exp => ltlEval(B, E)) . _ )
+when
+    notBool isKResult(E) ==K true
 
 rule [ltlEval-class]:
     ltlEval(
@@ -122,8 +124,11 @@ rule [ltlEval-instance-field]:
         <phExec>
           <objectStore> <object>
             <objectId> OId </objectId>
-            <layerClass> QualClass </layerClass>
-            <layerEnv>... X |-> L:Int ...</layerEnv>
+            <layer>
+              <layerClass> QualClass </layerClass>
+              <layerEnv>... X |-> L:Int ...</layerEnv>
+              ...
+            </layer>
             ...
           </object> ...</objectStore>
           ...
