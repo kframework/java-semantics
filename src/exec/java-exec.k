@@ -42,14 +42,12 @@ module JAVA-EXEC
     imports METHOD-INVOKE-REST
     imports API-CORE
     imports API-THREADS
-    imports LTL-SUPPORT-SYNTAX
     imports LTL-SUPPORT
-
-  //Since we added LTL support, we cannot have an empty syntax module. LTL formulas are parsed by the program parser.
-  //imports JAVA-SYNTAX
+    imports JAVA-SYNTAX
 
 endmodule
 
 module JAVA-SYNTAX
+    imports LTL-SUPPORT-SYNTAX
 // No syntax needed, we are using an external parser.
 endmodule

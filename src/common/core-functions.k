@@ -33,8 +33,10 @@ rule Val:RawVal => toTypedVal(Val)                                              
 
 /*@ Converts a RawVal into a TypedVal, by adding a default type for the given value.
     Greatly simplifies many rules, because now we can use raw values in the RHS, instead of typed values.
+
+    Have to be [function] for LTL
 */
-syntax K ::= toTypedVal ( RawVal )
+syntax K ::= toTypedVal ( RawVal )                                                  [function]
 rule toTypedVal(I:Int) => I :: int                                                  [structural]
 rule toTypedVal(B:Bool) => B :: bool                                                [structural]
 rule toTypedVal(Str:String) => Str :: classString                                   [structural]
