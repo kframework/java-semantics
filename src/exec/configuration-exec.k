@@ -25,6 +25,7 @@ configuration
             //current class during all phases, including early preprocessing
             <crntClass color="DarkOrange"> noClass </crntClass>
 
+            // OL - location of "this" in store, or noValue in static context
             <location color="DarkOrange"> .K </location>
           </methodContext>
 

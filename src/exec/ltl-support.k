@@ -5,14 +5,21 @@ module LTL-SUPPORT-SYNTAX
 
 syntax Prop ::= Exp
 
+//For the sake of second argument of instanceof
+syntax Exp ::= ClassType
+
 //@ Access to static field
 syntax Exp ::= ClassType "." Id
 
-//@ Access to an instance field
-syntax Exp ::= Exp "." Id
+//@ Access to an instance (or static) field
+             | Exp "." Id
 
 //@ <= operator, for LTL formulas
-syntax Exp ::= Exp "<=" Exp
+             > Exp "<=" Exp
+
+             | Exp "!=" Exp
+             | "this"
+             | Exp "instanceof" Exp
 
 endmodule
 
@@ -28,14 +35,18 @@ module LTL-SUPPORT
 
 rule B:Bag |=Ltl KL:KLabel((E:Exp => ltlEval(B, E)),, _:K)
 when
-    (KL ==KLabel '_==_ orBool KL ==KLabel '_<=_) andBool notBool isKResult(E) ==K true             [anywhere]
+    (KL ==KLabel '_==_ orBool KL ==KLabel '_<=_ orBool KL ==KLabel '_!=_ orBool KL ==KLabel '_instanceof_)
+    andBool notBool isKResult(E) ==K true                                                           [anywhere]
 
 rule B:Bag |=Ltl KL:KLabel(_:K,, (E:Exp => ltlEval(B, E)))
 when
-    (KL ==KLabel '_==_ orBool KL ==KLabel '_<=_) andBool notBool isKResult(E) ==K true             [anywhere]
+    (KL ==KLabel '_==_ orBool KL ==KLabel '_<=_ orBool KL ==KLabel '_!=_ orBool KL ==KLabel '_instanceof_)
+    andBool notBool isKResult(E) ==K true                                                           [anywhere]
 
 rule B:Bag |=Ltl ((RV1:RawVal::_) == (RV2:RawVal::_)) => RV1 ==K RV2      [anywhere]
+rule B:Bag |=Ltl ((RV1:RawVal::_) != (RV2:RawVal::_)) => RV1 =/=K RV2     [anywhere]
 rule B:Bag |=Ltl ((I1:Int::_)     <= (I2:Int::_))     => I1 <=Int I2      [anywhere]
+rule B:Bag |=Ltl ((objectRef(_, Class:ClassType)::_) instanceof Class) => true  [anywhere]
 
 syntax K ::= ltlEval ( Bag , Exp ) [function]
 
@@ -121,5 +132,35 @@ rule [ltlEval-instance-field]:
       </T> </generatedTop>,
       objectRef(OId:Int, _)::QualClass:ClassType . X:Id => typedLookup(L)
     )
+
+rule [ltlEval-this-instance]:
+    ltlEval(
+      <generatedTop><T>
+        <threads>
+          <thread>
+            <methodContext> <location> OL:Int </location> ...</methodContext>
+            ...
+          </thread>
+          ...
+        </threads>
+        ...
+      </T> </generatedTop>,
+      this => typedLookup(OL)
+    )
+
+rule [ltlEval-this-static]:
+    ltlEval(
+      <generatedTop><T>
+        <threads>
+          <thread>
+            <methodContext> <location> noValue </location> ...</methodContext>
+            ...
+          </thread>
+          ...
+        </threads>
+        ...
+      </T> </generatedTop>,
+      this
+    ) => null
 
 endmodule
