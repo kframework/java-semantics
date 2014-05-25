@@ -16,6 +16,15 @@ The problematic execution path won't lead to any deadlocks, and the final config
   solutions than the previous program.
 
 Running the same program with JDK don't expose the wrong behaviour.
+
+LTL verification. In every state where "this" is of type BlockingQueue we have head <= tail:
+
+  kjrun.sh --timeout=0 --ltlmc="[]Ltl (this instanceof BlockingQueue ->Ltl this.head <= this.tail)" \
+    ../model-check/73_examples/queue_4_threads_3_wrong.java > ltl.out
+
+Result: false, 1m5s win, 30s linux. The counter-example path is displayed.
+  In this case, with one producer and two consumer threads the incorrect algorithm generates a path that
+    doesn't satisfy the formula.
 */
 public class queue_4_threads_3_wrong {
   public static void main(String[] args) throws Exception {

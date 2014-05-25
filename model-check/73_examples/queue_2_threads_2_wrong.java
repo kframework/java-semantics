@@ -3,6 +3,16 @@
     Still works correctly for 2 threads.
 
   8 solutions expected.
+
+LTL verification.
+
+In every state where "this" is of type BlockingQueue we have head <= tail:
+
+  kjrun.sh --ltlmc="[]Ltl (this instanceof BlockingQueue ->Ltl this.head <= this.tail)" \
+    ../model-check/73_examples/queue_2_threads_2_wrong.java
+
+Result: true, 50s win, 16s linux. Although this is not the correct producer-consumer algorithm,
+  it works correctly in the scenario with just one producer thread and one consumer thread.
 */
 public class queue_2_threads_2_wrong {
   public static void main(String[] args) throws Exception {

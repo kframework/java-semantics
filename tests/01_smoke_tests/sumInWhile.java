@@ -1,3 +1,9 @@
+/*
+Example LTL verification. Eventually local variable n will be equal to 4.
+
+  kjkompile.sh --threading
+  kjrun.sh --ltlmc="<>Ltl(n == 4)" ../tests/01_smoke_tests/sumInWhile.java
+*/
 public class sumInWhile {
 
 	public static void main(String[] args) {

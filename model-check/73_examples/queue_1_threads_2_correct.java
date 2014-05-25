@@ -1,6 +1,6 @@
 /*
-  A blocking queue with capacity 2. One producer thread puts 4 elements into queue, two consumer threads
-    takes 2 elements from the queue each. Search should produce all the permitted interleavings, with no deadlocks.
+  A blocking queue with capacity 2. One producer thread puts 4 elements into queue, one consumer thread
+    takes 4 elements from the queue. Search should produce all the permitted interleavings, with no deadlocks.
     Since we don't display the thread id, search should produce the same solutions as queue_1.
 
   8 solutions expected (0 = put, 1 = get):
@@ -18,6 +18,17 @@
   Attempts to execute on a bigger data set:
     - Linux, transition-thrading, n=10, capacity=5 => OOME after 5 hours, 1GB heap.
     - Linux, transition-sync, n=10, capacity=4 => OOME after 2 hours.
+
+LTL verification.
+
+In every state where "this" is of type BlockingQueue we have head <= tail:
+  The set of parentheses after []Ltl is necessary,
+    otherwise formula will be grouped as ( ([]LTL ...) ->LTL ... ) .
+
+  kjrun.sh --ltlmc="[]Ltl (this instanceof BlockingQueue ->Ltl this.head <= this.tail)" \
+    ../model-check/73_examples/queue_1_threads_2_correct.java
+
+Result: true, 50s win, 16s linux.
 */
 public class queue_1_threads_2_correct {
   public static void main(String[] args) throws Exception {

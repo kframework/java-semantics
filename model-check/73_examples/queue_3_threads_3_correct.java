@@ -17,6 +17,13 @@
   Execution time: 4m15s on windows. Same output, but internally there are x times more cases.
   Among consumer threads there are 6 times more cases. The following interleavings are possible among threads 2 and 3:
     2233, 2323, 2332, 3223, 3232, 3322.
+
+LTL verification. In every state where "this" is of type BlockingQueue we have head <= tail:
+
+  kjrun.sh --timeout=0 --ltlmc="[]Ltl (this instanceof BlockingQueue ->Ltl this.head <= this.tail)" \
+    ../model-check/73_examples/queue_3_threads_3_correct.java
+
+Result: true, 4m20s win, 1m linux.
 */
 public class queue_3_threads_3_correct {
   public static void main(String[] args) throws Exception {
