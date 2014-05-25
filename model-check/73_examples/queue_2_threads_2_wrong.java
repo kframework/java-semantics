@@ -8,6 +8,7 @@ LTL verification.
 
 In every state where "this" is of type BlockingQueue we have head <= tail:
 
+  kjkompile.sh --threading-sync
   kjrun.sh --ltlmc="[]Ltl (this instanceof BlockingQueue ->Ltl this.head <= this.tail)" \
     ../model-check/73_examples/queue_2_threads_2_wrong.java
 

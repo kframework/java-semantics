@@ -25,6 +25,7 @@ In every state where "this" is of type BlockingQueue we have head <= tail:
   The set of parentheses after []Ltl is necessary,
     otherwise formula will be grouped as ( ([]LTL ...) ->LTL ... ) .
 
+  kjkompile.sh --threading-sync
   kjrun.sh --ltlmc="[]Ltl (this instanceof BlockingQueue ->Ltl this.head <= this.tail)" \
     ../model-check/73_examples/queue_1_threads_2_correct.java
 
