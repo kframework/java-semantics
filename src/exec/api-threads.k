@@ -82,7 +82,7 @@ rule [releaseLock]:
       ...
     </k>
     <holds>... OL |-> (Level:Int => Level -Int 1) ...</holds>
-        [transition-threading, transition-sync]
+        [transition-threading]
 
 /*
 K performance evaluation with the rule below active and commented:
@@ -146,7 +146,7 @@ when
             Class ==K classObject
     andBool Id2String(MethodName) ==String "wait"
     andBool HoldLevel >=Int 1
-        [transition-threading, transition-sync]
+        [transition-threading]
 
 rule [object-wait-notify-notifyAll-without-sync]:
     <k>
