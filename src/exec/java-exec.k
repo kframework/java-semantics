@@ -37,6 +37,7 @@ module JAVA-EXEC
     imports ARRAYS
     imports STATIC-INIT
     imports NEW-INSTANCE
+    imports NEW-INSTANCE-REST
     imports VAR-LOOKUP
     imports METHOD-INVOKE
     imports METHOD-INVOKE-REST

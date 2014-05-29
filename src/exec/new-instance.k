@@ -11,49 +11,24 @@ module NEW-INSTANCE
 
 /*@ \subsection{New instance creation}*/
 
-/*@Unpack 'NewInstance back into 'QNewInstance.
-  The difference between desugaring and unpacking is that unpacking is an artificial procedure required to separate
-  elaboration from execution. In the elaboration phase there is a opposite packing rule tht creates this construct.
-*/
-rule [NewInstance-to-QNewInstance-unpack]:
-    new Class:ClassType(ArgExps:Exps)
-    => 'QNewInstance(noValue,, 'None(.KList),, Class,, 'None(.KList),, toKListWrap(ArgExps),, 'None(.KList))
-
-// 'QNewInstance( Qual,, _:K,, Class,, _:K,, [Args],, 'None(.KList) )
-syntax KLabel ::= "'QNewInstance"
-
-//@Resolve new instance qualifier
-context 'QNewInstance(HOLE,, _:KList)
-
-//totest model check - test the arguments evaluation order
-/*@ Resolve new instance expression parameter values
-*/
-context 'QNewInstance(_:KResult,,_:K,,_:K,,_:K,, [_,,HOLE,,_],, _)
-
 rule [QNewInstance-resolve-class]:
-    'QNewInstance(_::QualT:ClassType,,_:K,, (Name:Id => getClassType(toPackage(QualT), Name)),,_:K,, _:KListWrap,, _)
+    Qual . new (Name:Id => getClassType(toPackage(typeOf(Qual)), Name)) (_)
 
 /*@ Qualified new instance creation expression. Unqualified new expressions are rewritten into qualified ones by other
 rules and also reach this point.*/
 rule [QNewInstance]:
     <k>
-      'QNewInstance(
-        EnclosingObj:KResult,,
-        _:K,,
-        Class:ClassType,,
-        _:K,,
-        [Args:KList],,
-        _:K
-      )
+      Qual:KResult . new Class:ClassType( Args:TypedVals )
       => staticInit(Class)
         ~> create(Class)
         ~> restoreMethContext(MethContext)
-        ~> invokeConstr(L, Class, [Args], EnclosingObj)
+        ~> setEncloser(typedLookup(L), Class, Qual)
+        ~> typedLookup(L) .getConsName(Class) (Args);
         ~> typedLookup(L)
       ...
     </k>
     <methodContext>
-      MethContext:Bag
+      MethContext
       =>  <env> .Map </env>
           <crntClass> .K </crntClass>
           <location> L </location>
@@ -66,19 +41,18 @@ rule [QNewInstance]:
               </object>
     )
     <nextLoc> L:Int => L +Int 1 </nextLoc>
-when isKResult(Args)
 
 syntax K ::=  create ( ClassType )
 
 rule [create]:
     <k>
-      create(Class:ClassType)
+      create(Class)
       => create(BaseClass) ~> setCrntClass(Class) ~> FieldDecs ~> addEnvLayer
       ...
     </k>
     <classType> Class </classType>
-    <extends> BaseClass:ClassType </extends>
-    <instanceFields> FieldDecs:K </instanceFields>
+    <extends> BaseClass </extends>
+    <instanceFields> FieldDecs </instanceFields>
         [structural]
 
 rule [create-empty-discard]:
@@ -88,7 +62,7 @@ rule [create-empty-discard]:
 syntax K ::=  setCrntClass ( ClassType )
 
 rule [setCrntClass]:
-    <k> setCrntClass(Class:ClassType) => . ...</k>
+    <k> setCrntClass(Class) => . ...</k>
     <crntClass> _ => Class </crntClass>
         [structural]
 
@@ -96,9 +70,9 @@ syntax K ::=  "addEnvLayer"
 
 rule [addEnvLayer]:
     <k> addEnvLayer => . ...</k>
-    <env> Env:Map => . </env>
-    <crntClass> Class:ClassType </crntClass>
-    <location> OId:Int </location>
+    <env> Env => . </env>
+    <crntClass> Class </crntClass>
+    <location> OId </location>
     <object>
       <objectId> OId </objectId>
       (.Bag =>  <layer>
@@ -110,22 +84,6 @@ rule [addEnvLayer]:
       ...
     </object>
         [structural]
-
-syntax K ::=  invokeConstr (
-                Int,        //OL - object location
-                ClassType,  //The target class
-                KListWrap,  //Arguments, evaluated
-                K           //EnclosingObj - the typed enclosing object, if any. Otherwise - noValue
-              )
-
-/*@ This rule cannot be simplified - we have to alter the newly created object from the store.
-    The context inside <methodContext> is the context that called "new Obj()" expression.
-    Constructor calls are elaborated during execution phase.
-*/
-rule [invokeConstr]:
-    invokeConstr(OL:Int, Class:ClassType, [Args:KList], EnclosingObj:KResult)
-    => setEncloser(lookup(OL, Class), Class, EnclosingObj)
-    ~> typedLookup(OL) .getConsName(Class) (toExps([Args]));
 
 /*@ Sets the enclosing object for a given object.
     Invoked by invokeConstr and QSuperConstrInv.
@@ -139,17 +97,27 @@ syntax K ::=  setEncloser (
 
 rule [setEncloser-value]:
     <k>
-      setEncloser(objectRef(OId:Int, _)::_, Class:ClassType, EncloserRV:RawVal::_) => .
+      setEncloser(objectRef(OId, _)::_, Class, EncloserVal::_) => .
       ...
     </k>
     <objectId> OId </objectId>
     <layerClass> Class </layerClass>
-    <layerEnclosingObject> _ => EncloserRV::EncloserClass </layerEnclosingObject>
+    <layerEnclosingObject> _ => EncloserVal::EncloserClass </layerEnclosingObject>
     <classType> Class </classType>
-    <enclosingClass> EncloserClass:ClassType </enclosingClass>
+    <enclosingClass> EncloserClass </enclosingClass>
 
 rule [setEncloser-noValue]:
     setEncloser(_,_, noValue) => .
+
+endmodule
+
+module NEW-INSTANCE-REST
+    imports CORE-SORTS
+    imports CORE-FUNCTIONS
+    imports CORE-EXEC   //for sl, restoreMethContext
+    imports STATIC-INIT // for staticInit
+    imports VAR-LOOKUP  //for typedLookup()
+    imports NEW-INSTANCE
 
 //@\subsection{Instance field declarations}
 
