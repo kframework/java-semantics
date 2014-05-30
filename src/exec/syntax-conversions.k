@@ -144,13 +144,13 @@ syntax Exp ::= "new" ClassType "(" Exps ")"
 // 'QNewInstance( Qual,, _:K,, Class,, _:K,, [Args],, 'None(.KList) )
 syntax KLabel ::= "'QNewInstance"
 
-rule 'QNewInstance( EnclosingObj:KResult,, _:K,, Class:ClassType,, _:K,, [Args:KList],, _:K )
-     => EnclosingObj . new Class( toExps([Args]) )
+rule 'QNewInstance( Qual:Exp,, _:K,, ClassOrName:ClassOrName,, _:K,, [Args:KList],, _:K )
+     => Qual . new ClassOrName( toExps([Args]) )
 
-syntax ProtoClassType ::= Id | ClassType
+syntax ClassOrName ::= Id | ClassType
 
 //totest model check - test the arguments evaluation order
-syntax Exp ::= Exp "." "new" ProtoClassType "(" Exps ")"     [seqstrict(1,3)]
+syntax Exp ::= Exp "." "new" ClassOrName "(" Exps ")"     [seqstrict(1,3)]
 
 /*@Unpack 'NewInstance back into 'QNewInstance.
   The difference between desugaring and unpacking is that unpacking is an artificial procedure required to separate
