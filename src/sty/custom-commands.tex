@@ -1,0 +1,90 @@
+% Reduces page borders, now we can put more characters in one line
+\usepackage{fullpage}
+
+% Supports big angular brackets. Default amsmath brackets are limited to 3 lines.
+\usepackage{yhmath}
+
+% Required for integration with markdown
+\usepackage{fancyvrb}
+
+% For listing example programs
+\usepackage{listings}
+
+\newenvironment{markdown}%
+    {\VerbatimEnvironment\begin{VerbatimOut}{tmp.markdown}}%
+    {\end{VerbatimOut}%
+        \immediate\write18{pandoc .latex\string\\tmp.markdown -t latex -o .latex\string\\tmp.tex}%
+        \input{.latex\string\\tmp.tex}}
+
+\renewcommand{\reduce}[2]{\hbox{%
+  \begin{tikzpicture}[baseline=(top.south), %(top.base), - default, less compact
+                      inner xsep=0pt,
+                      inner ysep=.3333ex,
+                      minimum width=2em]
+    \path node (top) [inner ysep=1ex]{$#1$ \mathstrut}
+          (top.south)
+          node (bottom) [anchor=north, inner ysep=.5ex] {$#2$};
+    \path[draw,thin,solid] let \p1 = (current bounding box.west),
+                               \p2 = (current bounding box.east),
+                               \p3 = (top.south)
+                           in (\x1,\y3) -- (\x2,\y3);
+    % Solid arrow (augmenting the solid line).
+    \path[fill] (top.south) ++(2pt,0) -- ++(-4pt,0) -- ++(2pt,-1.5pt) -- cycle;
+  \end{tikzpicture}%
+}}
+
+% Renders a reduction term on three lines. The first line is above the ruler
+% Lines 2 and 3 are below the ruler. Useful to break long terms into multiple lines.
+\newcommand{\reduceTBB}[3]{\hbox{%
+  \begin{tikzpicture}[baseline=(bottom), %(top.south),
+                      inner xsep=0pt,
+                      inner ysep=.3333ex,
+                      minimum width=2em,
+											align=center]
+    \path node (top.north) [inner ysep=1ex]{$#1$ \mathstrut}
+          (top.south)
+          node (bottom) [anchor=north, inner ysep=.5ex] {$#2$ \\ $#3$};
+
+    % Draw the horizontal line:
+    \path[draw,thin,solid] let \p1 = (current bounding box.west),
+                               \p2 = (current bounding box.east),
+                               \p3 = (top.south)
+                           in (\x1,\y3) -- (\x2,\y3);
+
+    % Solid arrow (augmenting the solid line).
+    \path[fill] (top.south) ++(2pt,0) -- ++(-4pt,0) -- ++(2pt,-1.5pt) -- cycle;
+  \end{tikzpicture}%
+}}
+
+% Renders a reduction term on 4 lines. The first line is above the ruler.
+% Lines 2-4 are below the ruler. Useful to break long terms into multiple lines.
+% Don't look good if there are non-rewritten terms alligned with rewrite.
+% consider baseline (top.south) for that
+\newcommand{\reduceTBBB}[4]{\hbox{%
+  \begin{tikzpicture}[baseline=(bottom), %(top.south),
+                      inner xsep=0pt,
+                      inner ysep=.3333ex,
+                      minimum width=2em,
+											align=center]
+    \path node (top.north) [inner ysep=1ex]{$#1$ \mathstrut}
+          (top.south)
+          node (bottom) [anchor=north, inner ysep=.5ex] {$#2$ \\ $#3$ \\ $#4$};
+
+    % Draw the horizontal line:
+    \path[draw,thin,solid] let \p1 = (current bounding box.west),
+                               \p2 = (current bounding box.east),
+                               \p3 = (top.south)
+                           in (\x1,\y3) -- (\x2,\y3);
+
+    % Solid arrow (augmenting the solid line).
+    \path[fill] (top.south) ++(2pt,0) -- ++(-4pt,0) -- ++(2pt,-1.5pt) -- cycle;
+  \end{tikzpicture}%
+}}
+
+\lstset{language=Java,captionpos=t,tabsize=3,frame=no,keywordstyle=\color{blue},
+        commentstyle=\color{gray},stringstyle=\color{red},
+        breaklines=true,showstringspaces=false,emph={label},
+        basicstyle=\ttfamily}
+
+% Required in order to make \kall cells inside comments black.
+\renewcommand{\kall}[3][black]{\mall{#1}{#2}{#3}}

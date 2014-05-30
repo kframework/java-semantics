@@ -1,5 +1,8 @@
 require "builtins/model-checker.k"
 
+/*@ \section{Module LTL-SUPPORT-SYNTAX}
+*/
+
 module LTL-SUPPORT-SYNTAX
     imports SYNTAX-CONVERSIONS
 
@@ -22,6 +25,9 @@ syntax Exp ::= ClassType "." Id
              | Exp "instanceof" Exp
 
 endmodule
+
+/*@ \section{Module LTL-SUPPORT}
+*/
 
 module LTL-SUPPORT
     imports LTL-SUPPORT-SYNTAX
