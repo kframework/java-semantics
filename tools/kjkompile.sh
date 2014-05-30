@@ -50,7 +50,7 @@ function errorMsg() {
 }
 
 OPTION=--exec
-VERBOSE=false
+EXTRA_OPTS=""
 
 while [[ ${1:0:1} == - ]]; do
   PARAM=`echo $1 | awk -F= '{print $1}'`
@@ -68,7 +68,7 @@ while [[ ${1:0:1} == - ]]; do
       OPTION=${PARAM}
       ;;
     "-v" | "--verbose")
-      VERBOSE=true
+      EXTRA_OPTS="$EXTRA_OPTS -v"
       ;;
     *)
       echo "Invalid option: $PARAM"
@@ -81,9 +81,7 @@ done
 TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 KOMPILE_CMD=$(cross-k.sh kompile)
 
-if [ ${VERBOSE} == true ];
-  then KOMPILE_CMD="$KOMPILE_CMD -v"
-fi
+KOMPILE_CMD="$KOMPILE_CMD $EXTRA_OPTS"
 
 case "$OPTION" in
 "--exec")
@@ -187,33 +185,33 @@ case "$OPTION" in
     echo "Done"
     ;;
 "--prep-latex")
-    $KOMPILE_CMD -v --backend latex --doc-style "style=math" exec/java-exec.k
+    $KOMPILE_CMD --backend latex --doc-style "style=math" exec/java-exec.k
     ;;
 "--prep-pdf")
-    $KOMPILE_CMD -v --backend pdf --doc-style "style=math" exec/java-exec.k
+    $KOMPILE_CMD --backend pdf --doc-style "style=math" exec/java-exec.k
     ;;
 "--exec-latex")
-    $KOMPILE_CMD -v --backend latex --doc-style "style=math" exec/java-exec.k
+    $KOMPILE_CMD --backend latex --doc-style "style=math" exec/java-exec.k
     ;;
 "--exec-pdf")
-    $KOMPILE_CMD -v --backend pdf --doc-style "style=math" exec/java-exec.k
+    $KOMPILE_CMD --backend pdf --doc-style "style=math" exec/java-exec.k
     ;;
 "--methods-latex")
-    $KOMPILE_CMD -v --backend latex --doc-style "style=math" latex/doc-methods-main.k
+    $KOMPILE_CMD --backend latex --doc-style "style=math" latex/doc-methods-main.k
     extract-module.sh -m METHOD-INVOKE -o method-invoke.tex doc-methods-main.tex
     ;;
 "--methods-pdf")
-    kjkompile.sh --methods-latex
+    kjkompile.sh $EXTRA_OPTS --methods-latex
     mkdir -p .latex
     pdflatex -synctex=-1 -max-print-line=120 -interaction=nonstopmode -shell-escape \
       --aux-directory=.latex method-invoke.tex
     ;;
 "--new-latex")
-    $KOMPILE_CMD -v --backend latex --doc-style "style=math" exec/java-exec.k
+    $KOMPILE_CMD --backend latex --doc-style "style=math" exec/java-exec.k
     extract-module.sh -m NEW-INSTANCE -o new-instance.tex java-exec.tex
     ;;
 "--new-pdf")
-    kjkompile.sh --new-latex
+    kjkompile.sh $EXTRA_OPTS --new-latex
     mkdir -p .latex
     pdflatex -synctex=-1 -max-print-line=120 -interaction=nonstopmode -shell-escape \
       --aux-directory=.latex new-instance.tex

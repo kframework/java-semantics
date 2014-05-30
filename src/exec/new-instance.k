@@ -97,7 +97,14 @@ The remaining big group of cells -- $\kall{objectStore}{}$ contains the inner st
 
 /*@ \subsection{New instance creation}*/
 
-rule [QNewInstance-resolve-class]:
+/*@
+When a new instance creation expression reaches the top of computation, first it is normalized to a standard form.
+If it is an unqualified expression, an empty qualifier is added. Second, if the class to be instantiated is a simple
+name, it have to be converted to a fully qualified class name. At this stage this could only happen for true inner
+classes, and the fully qualified name is computed by concatenating the type of the qualifier and the class simple name,
+by the rule below.
+*/
+rule [qualified-new-instance-resolve-class]:
     Qual . new (Name:Id => getClassType(toPackage(typeOf(Qual)), Name)) (_)
 
 /*@ Qualified new instance creation expression. Unqualified new expressions are rewritten into qualified ones by other
