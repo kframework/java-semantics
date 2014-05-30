@@ -5,8 +5,12 @@ module NEW-INSTANCE
     imports STATIC-INIT // for staticInit
     imports VAR-LOOKUP  //for typedLookup()
 
-/*@ \section{Module NEW-INSTANCE}
-  New instance creation and related language features.
+/*@
+\section{Module NEW-INSTANCE}
+
+\subsection{Background}
+todo
+
 */
 
 /*@ \subsection{New instance creation}*/

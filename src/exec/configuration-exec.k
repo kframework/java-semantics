@@ -187,12 +187,15 @@ configuration
       <phExec color="Yellow">
 
         //Execution memory. Map[Location:Int->Value:TypedVal]. Both local vars and heap vars are stored here.
-        <store color="Cyan"> .Map </store>
+        <store color="DarkCyan"> .Map </store>
 
         //The type of each location - whether it is LocalAttr or FieldAttr. Relevant only for multi-threading
         //model checking
         //Map[Location:Int -> LocMetadata].
-        <storeMetadata color="Cyan"> .Map </storeMetadata>
+        <storeMetadata color="DarkCyan"> .Map </storeMetadata>
+
+        //Counter for next location to be used in the cell <store>.
+        <nextLoc color="DarkCyan"> 0 </nextLoc>
 
         <br/>
 
@@ -202,32 +205,29 @@ configuration
           <object color="Cyan" multiplicity="*">
 
             //The id of this object. Same as store location for the newly created object reference.
-            <objectId> .K </objectId>
+            <objectId color="Cyan"> .K </objectId>
 
             //The actual object class
-            <objectType> .K </objectType>
-
-            <br/>
+            <objectType color="Cyan"> .K </objectType>
 
             //One layer for each class in the inheritance chain of this object
-            <layer multiplicity="*">
+            <layer color="Cyan" multiplicity="*">
 
               //The class corresponding to the given chain
-              <layerClass> .K </layerClass>
+              <layerClass color="Cyan"> .K </layerClass>
 
               //Map[Id |-> Loc] -> fields defined in this layer
-              <layerEnv> .Map </layerEnv>
+              <layerEnv color="Cyan"> .Map </layerEnv>
+
+              <br/>
 
               //objectRef() ::_ - a reference to the directly enclosing object, or noValue if none.
-              <layerEnclosingObject> noValue </layerEnclosingObject>
+              <layerEnclosingObject color="Cyan"> noValue </layerEnclosingObject>
             </layer>
           </object>
         </objectStore>
 
         <br/>
-
-        //Counter for next location to be used in the cell <store>.
-        <nextLoc color="Cyan"> 0 </nextLoc>
 
         //Standard input. Each token is a ListItem.
         <in color="LightPink" stream="stdin"> .List </in>
