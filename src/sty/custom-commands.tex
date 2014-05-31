@@ -75,8 +75,25 @@
                                \p2 = (current bounding box.east),
                                \p3 = (top.south)
                            in (\x1,\y3) -- (\x2,\y3);
+    \path[fill] (top.south) ++(2pt,0) -- ++(-4pt,0) -- ++(2pt,-1.5pt) -- cycle;
+  \end{tikzpicture}%
+}}
 
-    % Solid arrow (augmenting the solid line).
+\newcommand{\reduceTBBBB}[5]{\hbox{%
+  \begin{tikzpicture}[baseline=(bottom), %(top.south),
+                      inner xsep=0pt,
+                      inner ysep=.3333ex,
+                      minimum width=2em,
+											align=center]
+    \path node (top.north) [inner ysep=1ex]{$#1$ \mathstrut}
+          (top.south)
+          node (bottom) [anchor=north, inner ysep=.5ex] {$#2$ \\ $#3$ \\ $#4$ \\ $#5$};
+
+    % Draw the horizontal line:
+    \path[draw,thin,solid] let \p1 = (current bounding box.west),
+                               \p2 = (current bounding box.east),
+                               \p3 = (top.south)
+                           in (\x1,\y3) -- (\x2,\y3);
     \path[fill] (top.south) ++(2pt,0) -- ++(-4pt,0) -- ++(2pt,-1.5pt) -- cycle;
   \end{tikzpicture}%
 }}
