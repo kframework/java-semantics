@@ -114,9 +114,9 @@ rule [qualified-new-instance]:
       Qual:KResult . new Class:ClassType( Args:TypedVals )
       => staticInit(Class)
         ~> create(Class)
-        ~> restoreMethContext(MethContext)
         ~> setEncloser(typedLookup(L), Class, Qual)
         ~> typedLookup(L) .getConsName(Class) (Args);
+        ~> restoreMethContext(MethContext)
         ~> typedLookup(L)
       ...
     </k>
