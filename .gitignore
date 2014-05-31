@@ -15,6 +15,7 @@
 /src/*.synctex
 /src/*.tex
 /src/k.sty
+/src/*.pkast
 
 /class-lib/*.kast
 /test-runner/out

@@ -87,10 +87,10 @@ The next two cells are related to the store. The cell $\kall{store}{}$ have a ce
 The remaining big group of cells -- $\kall{objectStore}{}$ contains the inner structure of objects.
   The $\kall{objectId}{}$ is an unique identifier of the object. Every reference to this object in the store is
   a reference to this id. Inside $\kall{objectType}{}$ is the actual runtime type of the object. Next we have a list
-  of $\kall{layer}{}$ cells, each of them representing an inheritance layer of the object. starting from class
-  Object and finishing twith the actual object type. Inside each layer $\kall{layerClass}{}$ stores its
+  of $\kall{layer}{}$ cells, each of them representing an inheritance layer of the object. Starting from class
+  Object and ending with the actual object type. Inside each layer $\kall{layerClass}{}$ stores its
   associated class, $\kall{layerEnv}{}$ -- the fields and $\kall{layerEnclosingObject}{}$ -- the enclosing object,
-  in the case when $\kall{layerClass}{}$ is a non-static inner class. The complex rules for java inner classes
+  in the case when $\kall{layerClass}{}$ is a non-static inner class. The complex rules for Java inner classes
   allow each layer to have its distinctive enclosing object, and we have tests that specifically target this
   requirement.
 */
@@ -107,8 +107,44 @@ by the rule below.
 rule [qualified-new-instance-resolve-class]:
     Qual . new (Name:Id => getClassType(toPackage(typeOf(Qual)), Name)) (_)
 
-/*@ Qualified new instance creation expression. Unqualified new expressions are rewritten into qualified ones by other
-rules and also reach this point.*/
+/*@
+After the new instance expression have been normalized, the qualifier and the arguments are brought to the top of
+  computation by the strictness rules and evaluated. Qualifier is evaluated first, and arguments are evaluated
+  left-to-right according to JLS.
+
+When all the subexpressions of new have been evaluated, the main rule for new could apply. This rule touches a large
+  number of cells, that will be explained next.
+  First the current value of the counter inside $\kall{nextLoc}{}$ is used as the location of the newly created object.
+  The counter is incremented for the next use.
+  Inside $\kall{objectStore}{}$ a new cell $\kall{object}{}$ is created for the new object. For now it have just two
+  sub-cells specified -- $\kall{objectId}{}$ and $\kall{objectType}{}$, and no layers. Curiously we don't have
+  to specify neither $\kall{object}{}$ nor $\kall{objectStore}{}$ cells explicitly here, we have to specify just
+  the cells inside them that are modified. The capability to ignore surrounding cells when they can be automatically
+  inferred is called configuration abstraction, another K feature\cite{k-jlap}. In the cell $\kall{store}{}$
+  a new entry is created with key being L and value - a reference to the newly created object in $\kall{object}{}$.
+  The content of $\kall{methodContext}{}$ is reset to a default state. This default state is required
+  by rules that are applied next.
+
+Inside $\kall{k}{}$ the new instance expression is rewritten into a sequence of computations that will be executed
+  by the following rules. The auxiliary function staticInit() triggers static initialization of the instantiated class,
+  in case it was not triggered earlier. Next, the function create() populates the layers of the object inside
+  $\kall{object}{}$ This also includes allocation of all instance fields, and their initialization to the default value.
+  Field initializers are not executed yet. The function setEncloser() sets the enclosing object for the current class,
+  if the current class is an inner class. If some of the base classes are also inner classes, the encloser for their
+  respective $\kall{layer}{}$ will be set as part of constructor invocation.
+
+The next term in the computation (the one starting with typedLookup(L)) might look a bit weird, but it is in fact
+  the invocation of the constructor. This term represents a mix of Java syntax for method invocation and auxiliary
+  functions defined inside K-Java. It illustrates, among others, the power of K parser. Now, after all memory
+  allocation procedures have been completed, it is the right time for it to be invoked. Preprocessing semantics
+  transforms all constructors into plain methods. The function typedLookup(L) is evaluated into the object stored
+  at the location L, that will serve as a qualifier for constructor invocation. The function getConsName() converts
+  the class name into the name of the constructor method. What remains is plain Java syntax for method invocation.
+
+The last two terms bring computation to the state required to continue execution. Function restoreMethoContext()
+  restores $\kall{methodContext}{}$ to the the state before object creation. The last term is the result value of
+  the object instantiation expression.
+*/
 rule [qualified-new-instance]:
     <k>
       Qual:KResult . new Class:ClassType( Args:TypedVals )
@@ -120,20 +156,20 @@ rule [qualified-new-instance]:
         ~> typedLookup(L)
       ...
     </k>
+    <store>... . => L |-> objectRef(L, Class) :: Class ...</store>
+    <nextLoc> L:Int => L +Int 1 </nextLoc>
+    (.Bag =>  <object>
+                <objectId> L </objectId>
+                <objectType> Class </objectType>
+              </object>
+    )
     <methodContext>
       MethContext
       =>  <env> .Map </env>
           <crntClass> .K </crntClass>
           <location> L </location>
     </methodContext>
-    <store>... . => L |-> objectRef(L, Class) :: Class ...</store>
     <storeMetadata>... . => L |-> LocalLocMetadata ...</storeMetadata>
-    (.Bag =>  <object>
-                <objectId> L </objectId>
-                <objectType> Class </objectType>
-              </object>
-    )
-    <nextLoc> L:Int => L +Int 1 </nextLoc>
 
 syntax K ::=  create ( ClassType )
 
@@ -178,8 +214,8 @@ rule [addEnvLayer]:
     </object>
         [structural]
 
-/*@ Sets the enclosing object for a given object.
-    Invoked by invokeConstr and QSuperConstrInv.
+/*@
+Sets the enclosing object for a given object.
 */
 syntax K ::=  setEncloser (
                 K,          //Evaluates to source object
