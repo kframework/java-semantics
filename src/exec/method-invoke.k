@@ -889,13 +889,16 @@ rule [getClassChain-end]:
 
 rule [Invoke-methodRef-native]:
     <k>
-      Qual:KResult . methodRef(Sig:Signature, DecC:ClassType) (Args:TypedVals)
-      => invokeImpl(methodRef(Sig, DecC), Qual, toKListWrap(Args))
+      Qual:KResult . methodRef(sig(Name:Id, Ts:Types), DecC:ClassType) (Args:TypedVals)
+      => invokeImpl(methodRef(sig(Name, Ts), DecC), Qual, toKListWrap(Args))
       ...
     </k>
     <classType> DecC </classType>
-    <methodSignature> Sig </methodSignature>
+    <methodSignature> sig(Name, Ts) </methodSignature>
     <methodBody> 'NoMethodBody(_) </methodBody>
+when
+    notBool ((DecC ==K classObject) andBool
+             (Name ==K String2Id("wait") orBool Name ==K String2Id("notify") orBool Name ==K String2Id("notifyAll")))
 
 /* [Skip] Auxiliary function for methods that need implementation in the semantics. The implementation
   of this production is given in api-core.k and api-threads.k.

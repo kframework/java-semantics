@@ -4,6 +4,7 @@ module API-THREADS
     imports CORE-SORTS
     imports METHOD-INVOKE-REST  //for invokeImpl
     imports VAR-LOOKUP          //for typedLookup
+    imports API-THREADS-SELECTION
 
 /*@Java API related to threads and locks. Just the core part.*/
 
@@ -129,31 +130,9 @@ when
 
 //@ \subsection{Object.wait()}
 
-/*@When waiting, we release the lock on the OL in the cell <busy>, but don't delete this cell from <holds>.*/
-rule [object-wait]:
-    <k>
-      invokeImpl(
-        methodRef(sig(MethodName:Id, _), Class:ClassType),
-        objectRef(OL:Int,_)::_, [.KList]
-      ) => waitImpl(OL)
-      ...
-    </k>
-    <tid> TId:Int </tid>
-    <holds>... OL |-> HoldLevel:Int ...</holds>
-    <busy>... (SetItem(OL) => .) ...</busy>
-    <waitingThreads>... (. => TId |-> OL ) ...</waitingThreads>
-when
-            Class ==K classObject
-    andBool Id2String(MethodName) ==String "wait"
-    andBool HoldLevel >=Int 1
-        [transition-threading]
-
 rule [object-wait-notify-notifyAll-without-sync]:
     <k>
-      invokeImpl(
-        methodRef(sig(MethodName:Id, _), Class:ClassType),
-        objectRef(OL:Int,_)::_, [.KList]
-      )
+      objectRef(OL:Int,_)::_ . methodRef(sig(MethodName:Id, _), Class:ClassType) (.TypedVals)
       => throw new class String2Id("java.lang.IllegalMonitorStateException") (null::classString);
       ...
     </k>
@@ -174,20 +153,6 @@ syntax K ::=  waitImpl (
                 Int //Monitor object location
               )
 
-rule [waitImpl-end]:
-    <k>
-      waitImpl(OL:Int) => nothing::void
-      ...
-    </k>
-    <tid> TId:Int </tid>
-    <busy> Busy:Set (. => SetItem(OL)) </busy>
-    <interrupted> false </interrupted>
-    <waitingThreads> WT:Map </waitingThreads>
-when
-            (notBool OL in Busy)
-    andBool (notBool TId in keys(WT))
-        [transition-threading, transition-sync]
-
 rule [waitImpl-interrupted]:
     <k>
       waitImpl(OL:Int) => throw new class String2Id("java.lang.InterruptedException") (null::classString);
@@ -202,36 +167,22 @@ when
 
 //@ \subsection{Object.notify(), Object.notifyAll()}
 
-rule [object-notify]:
-    <k>
-      invokeImpl(
-        methodRef(sig(MethodName:Id, _), Class:ClassType),
-        objectRef(OL:Int,_)::_, [.KList]
-      ) => objectNotifyImpl(OL)
-      ...
-    </k>
-    <holds>... OL |-> HoldLevel:Int ...</holds>
-when
-            Class ==K classObject
-    andBool Id2String(MethodName) ==String "notify"
-    andBool HoldLevel >=Int 1
-
 /*@Implementation of Object.notify(), extracted here to avoid rule superfluousness*/
-syntax K ::=  objectNotifyImpl (
+syntax K ::=  notifyImpl (
                 Int //store key of the monitor object
               )
 
-rule [objectNotifyImpl-someone-waiting]:
+rule [notifyImpl-someone-waiting]:
     <k>
-      objectNotifyImpl(OL:Int) => nothing::void
+      notifyImpl(OL:Int) => nothing::void
       ...
     </k>
     <waitingThreads>... (_ |-> OL => .Map) ...</waitingThreads>
         [transition-threading]
 
-rule [objectNotifyImpl-no-one-waiting]:
+rule [notifyImpl-no-one-waiting]:
     <k>
-      objectNotifyImpl(OL:Int) => nothing::void
+      notifyImpl(OL:Int) => nothing::void
       ...
     </k>
     <waitingThreads> WT:Map </waitingThreads>
@@ -241,10 +192,8 @@ when
 
 rule [object-notifyAll]:
     <k>
-      invokeImpl(
-        methodRef(sig(MethodName:Id, _), Class:ClassType),
-        objectRef(OL:Int,_)::_, [.KList]
-      ) => objectNotifyAllImpl(OL)
+      objectRef(OL:Int,_)::_ . methodRef(sig(MethodName:Id, _), Class:ClassType) (.TypedVals)
+      => objectNotifyAllImpl(OL)
       ...
     </k>
     <holds>... OL |-> HoldLevel:Int ...</holds>
@@ -342,5 +291,60 @@ rule [DissolveAllExceptOut]:
       ...
     </T>
     => <T> <out> Out </out> </T>
+
+endmodule
+
+module API-THREADS-SELECTION
+    imports API-THREADS
+
+//@ \section{wait() and notify()}
+
+/*@When waiting, we release the lock on the OL in the cell <busy>, but don't delete this cell from <holds>.*/
+rule [object-wait]:
+    <thread> //added just for clarity, to illustrate the distinctive context of <holds> and <busy>
+      <k>
+        objectRef(OL:Int, _)::_ . methodRef(sig(Method:Id, _), Class:ClassType) (.TypedVals)
+        => waitImpl(OL)
+        ...
+      </k> <br/>
+      <tid> TId:Int </tid>
+      <holds>... OL |-> HoldLevel:Int ...</holds>
+      ...
+    </thread>
+    <busy>... (SetItem(OL) => .) ...</busy>
+    <waitingThreads>... (. => TId |-> OL ) ...</waitingThreads>
+when
+            Class ==K classObject
+    andBool Id2String(Method) ==String "wait"
+    andBool HoldLevel >=Int 1
+        [transition-threading]
+        
+rule [waitImpl-main]:
+    <k> waitImpl(OL:Int) => nothing::void ...</k>
+    <tid> TId:Int </tid>
+    <busy> Busy:Set (. => SetItem(OL)) </busy>
+    <interrupted> false </interrupted>
+    <waitingThreads> WT:Map </waitingThreads>
+when
+            (notBool OL in Busy)
+    andBool (notBool TId in keys(WT))
+        [transition-threading, transition-sync]
+
+rule [object-notify]:
+    <k>
+      objectRef(OL:Int, _)::_ . methodRef(sig(Method:Id, _), Class:ClassType) (.TypedVals)
+      => notifyImpl(OL)
+      ...
+    </k>
+    <holds>... OL |-> HoldLevel:Int ...</holds>
+when
+            Class ==K classObject
+    andBool Id2String(Method) ==String "notify"
+    andBool HoldLevel >=Int 1
+    
+rule [notifyImpl-someone-waiting]:
+    <k> notifyImpl(OL:Int) => nothing::void ...</k>
+    <waitingThreads>... (_ |-> OL => .Map) ...</waitingThreads>
+        [transition-threading]
 
 endmodule
