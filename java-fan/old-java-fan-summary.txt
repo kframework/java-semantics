@@ -1,15 +1,14 @@
 Running tests for
-../tests/
+../programs/
 
-../tests/01_smoke_tests:
+../programs/01_smoke_tests:
     array.java...  ok
     helloWorld.java...  ok
-    max3.java...  failed
     read.java...  failed
     sumArrayInFor.java...  ok
     sumInWhile.java...  ok
 
-../tests/02_literals:
+../programs/02_literals:
     literals_011_long_decimal.java...  test error
     literals_01_integer_decimal.java...  failed
     literals_02_integer_hexa.java...  test error
@@ -21,14 +20,14 @@ Running tests for
     literals_08_string_escapes_adv.java...  test error
     literals_09_null.java...  failed
 
-../tests/03_syntax_samples:
+../programs/03_syntax_samples:
     DotOperator1.java...  test error
     DotOperator2.java...  test error
     DotOperator3.java...  test error
     Operators_JBook.java...  ok
     Operators_non_JBook.java...  test error
 
-../tests/04_prim_operators:
+../programs/04_prim_operators:
     op_011_int_to_int_prefix.java...  ok
     op_012_int_to_int_pre_inc_dec.java...  ok
     op_013_int_to_int_postfix.java...  ok
@@ -51,7 +50,7 @@ Running tests for
     op_12_bool_compound_assign.java...  failed
     op_13_compound_assign_jls.java...  test error
 
-../tests/05_prim_conversions:
+../programs/05_prim_conversions:
     exp_conv_01_primitive_cast.java...  test error
     exp_conv_02_primitive_var_init_cast.java...  test error
     imp_conv_01_assing_widening.java...  test error
@@ -67,7 +66,7 @@ Running tests for
     imp_conv_11_compound_assign.java...  failed
     imp_conv_12_compound_assign_sel.java...  failed
 
-../tests/06_string_plus:
+../programs/06_string_plus:
     str_conv_011_String_plus_str.java...  ok
     str_conv_012_String_plus_int.java...  failed
     str_conv_013_String_plus_bool.java...  failed
@@ -77,7 +76,7 @@ Running tests for
     str_conv_02_String_assign_plus.java...  failed
     str_conv_03_Object_assign_plus.java...  failed
 
-../tests/07_ref_operators:
+../programs/07_ref_operators:
     ref_op_01_assign_to_object.java...  failed
     ref_op_02_assign_from_null.java...  failed
     ref_op_03_assign_f_null_t_obj.java...  failed
@@ -99,14 +98,14 @@ Running tests for
     ref_op_18_instanceof_false.java...  test error
     ref_op_19_conditional_simple.java...  ok
 
-../tests/08_op_cond_type:
+../programs/08_op_cond_type:
     op_cond_type_01_eq.java...  test error
     op_cond_type_02_numeric.java...  failed
     op_cond_type_03_null_ref.java...  test error
     op_cond_type_04_null_null.java...  test error
     op_cond_type_05_ref_ref.java...  test error
 
-../tests/09_exp_type:
+../programs/09_exp_type:
     exp_type_01_null.java...  test error
     exp_type_02_new_class.java...  failed
     exp_type_03_new_array.java...  test error
@@ -137,11 +136,11 @@ Running tests for
     exp_type_28_assign_comp.java...  failed
     exp_type_29_composite_exp.java...  test error
 
-../tests/11_stmt_other:
+../programs/11_stmt_basic:
     assert_statement.java...  failed
     emptyStatement.java...  ok
 
-../tests/12_stmt_loop:
+../programs/12_stmt_loop:
     doWhile_1.java...  ok
     doWhile_2_field_shadowing.java...  ok
     for_decl.java...  ok
@@ -149,7 +148,7 @@ Running tests for
     for_simple.java...  ok
     for_two_decls.java...  ok
 
-../tests/13_stmt_switch:
+../programs/13_stmt_switch:
     switch_01_simple.java...  failed
     switch_02_multicase.java...  failed
     switch_03_default.java...  failed
@@ -159,7 +158,7 @@ Running tests for
     switch_07_break_label.java...  failed
     switch_08_default_break.java...  failed
 
-../tests/14_stmt_return:
+../programs/14_stmt_return:
     return_01_no_return.java...  ok
     return_02_ret_nothing.java...  ok
     return_03_ret_number.java...  ok
@@ -181,7 +180,7 @@ Running tests for
     return_19_ret_ref_derived.java...  test error
     return_20_block_env_restore.java...  failed
 
-../tests/15_stmt_throw:
+../programs/15_stmt_throw:
     throw_01_try_catch.java...  failed
     throw_02_try_catch_finally.java...  failed
     throw_03_tryCF_tryC.java...  test error
@@ -199,12 +198,12 @@ Running tests for
     throw_15_catch_env_restore.java...  failed
     throw_16_followed_by_try.java...  failed
 
-../tests/16_stmt_throw_thread_term:
+../programs/16_stmt_throw_thread_term:
     thread_term_01_throw.java...  failed
     thread_term_02_tryCF.java...  test error
     thread_term_03_mcall.java...  failed
 
-../tests/17_stmt_break:
+../programs/17_stmt_break:
     break_01_while.java...  ok
     break_02_do.java...  ok
     break_03_for.java...  ok
@@ -227,7 +226,7 @@ Running tests for
     label_propagation_02_while.java...  failed
     label_propagation_03_for.java...  failed
 
-../tests/18_stmt_continue:
+../programs/18_stmt_continue:
     continue_01_while.java...  timeout
     continue_02_do_1.java...  timeout
     continue_03_do_2.java...  timeout
@@ -252,7 +251,7 @@ Running tests for
     continue_label_11_L_block_L_w.java...  failed
     graph_continue.java...  failed
 
-../tests/21_arrays:
+../programs/21_arrays:
     array_01_overview.java...  failed
     array_02_assign_type_preserv.java...  ok
     array_03_ref_assign_type_preserv.java...  failed
@@ -297,18 +296,14 @@ Running tests for
     array_42_default_val_primitive.java...  failed
     array_43_default_val_ref.java...  failed
     array_44_side_effect_exp.java...  ok
-    array_51_assign_type_diff_CompT_RHS.java...  failed
-    array_52_assign_type_diff_RunT_RHS.java...  failed
-    array_53_CompT_type_poly_arr_assign_1.java...  failed
-    array_54_CompT_type_poly_arr_assign_2.java...  failed
 
-../tests/22_arrays_separated:
+../programs/22_arrays_separated:
     array_sep_01_overview.java...  ok
     array_sep_03_ref_assign_type_preserv.java...  failed
     array_sep_041_alloc_multidim_w_strict.java...  ok
     array_sep_04_alloc_multidim.java...  ok
     array_sep_05_alloc_boundary.java...  failed
-    array_sep_06_alloc_NASException.java...  timeout
+    array_sep_06_alloc_NASException.java...  generator error
     array_sep_08_alloc_order_of_dims.java...  failed
     array_sep_09_decl_C_style.java...  ok
     array_sep_11_access_AOOBException.java...  failed
@@ -346,35 +341,13 @@ Running tests for
     array_sep_43_default_val_ref.java...  failed
     array_sep_44_side_effect_exp.java...  ok
 
-../tests/23_basic_jvm_exc:
+../programs/23_basic_jvm_exc:
     jvm_exc_01_arith_exc.java...  test error
     jvm_exc_02_NPE.java...  failed
     jvm_exc_03_cast_exc_hierarchy.java...  test error
     jvm_exc_04_cast_exc_types.java...  test error
 
-../tests/24_floats:
-    float_11_literals_simple.java...  failed
-    float_12_literals_with_letter.java...  test error
-    float_21_plus.java...  ok
-    float_22_numeric_ops.java...  failed
-    float_23_comparison_ops.java...  ok
-    float_24_cond.java...  failed
-    float_25_string_plus.java...  failed
-    float_31_cast_float_double.java...  test error
-    float_32_cast_to_int.java...  test error
-    float_33_double_to_types.java...  test error
-    float_34_types_to_double.java...  test error
-    float_41_promotions_with_float.java...  test error
-    float_42_promotions_with_double.java...  failed
-    float_43_assign_conv.java...  failed
-    float_44_compound_assign.java...  failed
-    float_45_comparison_diff_types.java...  failed
-    float_51_float_sub_of_types.java...  test error
-    float_52_double_sub_of_types.java...  test error
-    float_61_print.java...  ok
-    float_62_init.java...  failed
-
-../tests/31_diverse:
+../programs/31_diverse:
     all_sorting.java...  failed
     bubble.java...  failed
     collatz.java...  failed
@@ -387,13 +360,11 @@ Running tests for
     point.java...  test error
     tree_sum.java...  ok
 
-../tests/32_java_api_core:
+../programs/32_java_api_core:
     Object_equals.java...  failed
-    String_charAt.java...  failed
-    String_compareTo.java...  test error
     exception_toString.java...  failed
 
-../tests/32_java_api_core/obj_getClass_getName:
+../programs/32_java_api_core/obj_getClass_getName:
     className_01.java...  failed
     className_02.java...  test error
     className_03_user_classes.java...  failed
@@ -402,30 +373,26 @@ Running tests for
     className_06_array_ref.java...  failed
     className_07_array_multidim.java...  failed
 
-../tests/32_java_api_core:
+../programs/32_java_api_core:
     obj_method_03_toString.java...  test error
 
-../tests/41_method_basic:
-    method_11_return_void.java...  ok
-    method_12_return_types.java...  failed
-    method_13_arg_types.java...  failed
-    method_14_multi.java...  failed
-    method_15_arg_conv.java...  failed
-    method_21_inheritance.java...  ok
-    method_31_overriding.java...  ok
-    method_32_overriding_2.java...  ok
-    method_33_throws.java...  ok
-    method_34_final.java...  ok
-    method_35_this_explicit.java...  ok
-    method_36_return_object.java...  ok
-    method_37_c_like_arr_args.java...  failed
-    method_38_c_like_arr_poly.java...  test error
-    method_41_qualifier_order.java...  ok
-    method_42_qual_exception_order.java...  failed
-    method_43_np_exception_order.java...  failed
-    method_44_arg_order.java...  ok
+../programs/41_method_basic:
+    method_01_return_void.java...  ok
+    method_02_return_types.java...  failed
+    method_03_arg_types.java...  failed
+    method_04_multi.java...  failed
+    method_05_arg_conv.java...  failed
+    method_06_inheritance.java...  ok
+    method_071_overriding_2.java...  ok
+    method_07_overriding.java...  ok
+    method_08_throws.java...  ok
+    method_09_final.java...  ok
+    method_10_this_explicit.java...  ok
+    method_11_return_object.java...  ok
+    method_12_c_like_arr_args.java...  failed
+    method_13_c_like_arr_poly.java...  test error
 
-../tests/42_method_overloading:
+../programs/42_method_overloading:
     overload_11_diff_arg_num.java...  test error
     overload_12_two_methods.java...  ok
     overload_13_arg_conv.java...  test error
@@ -449,7 +416,7 @@ Running tests for
     overload_38_null_subtyping.java...  test error
     overload_39_base_more_specific.java...  test error
 
-../tests/43_method_access_mode:
+../programs/43_method_access_mode:
     m_access_01_override_1.java...  generator error
     m_access_02_override_2.java...  generator error
     m_access_03_overload.java...  generator error
@@ -463,7 +430,7 @@ Running tests for
     overl_overw_interplay_04.java...  generator error
     overl_overw_interplay_05.java...  generator error
 
-../tests/44_fields:
+../programs/44_fields:
     fields_101_local_access.java...  ok
     fields_102_of_type_ref.java...  ok
     fields_11_one_class.java...  ok
@@ -473,18 +440,14 @@ Running tests for
     fields_132_hiding_super_access.java...  failed
     fields_133_hiding_super_2.java...  failed
     fields_134_hiding_acc_modes.java...  failed
-    fields_14_shadowing_by_local_var.java...  ok
+    fields_14_hiding_by_local_var.java...  ok
     fields_15_hiding_by_param.java...  ok
     fields_16_default_value.java...  failed
     fields_17_multifield.java...  ok
     fields_18_final.java...  ok
     fields_19_hiding_acc_modes.java...  failed
-    fields_21_super_chain.java...  failed
-    fields_22_super_overl.java...  test error
-    fields_23_super_chain_overl.java...  test error
-    fields_24_super_assign.java...  failed
 
-../tests/45_class_init:
+../programs/45_class_init:
     field_init_201_const.java...  test error
     field_init_202_backward_ref.java...  timeout
     field_init_203_forward_ref.java...  timeout
@@ -504,7 +467,7 @@ Running tests for
     inst_init_35_hiding.java...  failed
     inst_init_41_hier_order.java...  ok
 
-../tests/46_constructors:
+../programs/46_constructors:
     constr_50_basic.java...  ok
     constr_51_implicit_noarg.java...  ok
     constr_52_explicit_noarg.java...  test error
@@ -513,24 +476,21 @@ Running tests for
     constr_55_init_tracing.java...  test error
     constr_56_init_hiding_tracing.java...  test error
     constr_57_init_exc.java...  test error
-    constr_58_super.java...  test error
     constr_61_this_chain.java...  test error
     constr_62_this_chain_w_i_init.java...  test error
     constr_71_default_constr.java...  test error
-    constr_72_constr_iinit_var_collide.java...  ok
-    constr_73_constr_iinit_var_col_2.java...  ok
     constr_81_overload_simple.java...  test error
     constr_82_overload_multicontext.java...  test error
     constr_83_acc_modes_super.java...  generator error
     constr_84_acc_modes_new.java...  generator error
     constr_91_name_collision.java...  test error
 
-../tests/47_abstract:
+../programs/47_abstract:
     abstract_01_simple.java...  test error
     abstract_02_overload.java...  test error
     abstract_03_acc_modes.java...  generator error
 
-../tests/48_interfaces:
+../programs/48_interfaces:
     interface_11_instof.java...  test error
     interface_12_instof_chain.java...  test error
     interface_13_instof_multi_impl.java...  test error
@@ -554,9 +514,8 @@ Running tests for
     interface_62_intf_subtype_of_other.java...  test error
     interface_63_any_subtype_of_intf.java...  test error
     interface_64_null_subtype_of_intf.java...  test error
-    interface_71_array_of_intf_shapes.java...  test error
 
-../tests/49_super_method:
+../programs/49_super_method:
     super_m_01_simple.java...  test error
     super_m_02_poly.java...  test error
     super_m_03_overload.java...  test error
@@ -569,7 +528,7 @@ Running tests for
     super_m_10_acc_m_double_overriding.java...  generator error
     super_m_11_hier_navigating_calls.java...  test error
 
-../tests/51_static_methods:
+../programs/51_static_methods:
     static_m_101_qualified.java...  ok
     static_m_102_nested.java...  ok
     static_m_103_unqualified.java...  ok
@@ -588,11 +547,8 @@ Running tests for
     static_m_116_overl_static_inst_3.java...  test error
     static_m_117_overl_vs_hiding.java...  failed
     static_m_118_call_in_inst_init.java...  test error
-    static_m_119_qual_null.java...  failed
-    static_m_120_qual_traced.java...  ok
-    static_m_121_hiding_qual_traced.java...  failed
 
-../tests/52_static_fields:
+../programs/52_static_fields:
     static_f_101_qualified.java...  ok
     static_f_102_unqualified.java...  timeout
     static_f_103_multi_fields.java...  timeout
@@ -605,7 +561,7 @@ Running tests for
     static_f_110_default_value.java...  failed
     static_f_111_class_qual_composite.java...  failed
 
-../tests/53_static_init:
+../programs/53_static_init:
     static_f_init_101_const.java...  test error
     static_f_init_102_backward_ref.java...  timeout
     static_f_init_103_forward_ref.java...  timeout
@@ -620,12 +576,10 @@ Running tests for
     static_init_23_init_interleaved.java...  failed
     static_init_24_exc.java...  failed
     static_init_25_shadowing.java...  timeout
-    static_init_26_this_after_exc_m_call.java...  failed
-    static_init_27_this_after_exc_f_acc.java...  failed
     static_init_31_inheritance.java...  failed
     static_init_32_hier_order.java...  failed
 
-../tests/54_interface_fields:
+../programs/54_interface_fields:
     interface_f_11_interface_target.java...  test error
     interface_f_12_sub_interface_target.java...  test error
     interface_f_13_class_target.java...  test error
@@ -657,10 +611,8 @@ Running tests for
     interface_f_82_hier_multi_inheritance.java...  test error
     interface_f_83_hier_class_impl_interf.java...  test error
     interface_f_91_array_init.java...  test error
-    interface_f_92_field_double_inh.java...  test error
-    interface_f_93_field_private_hiding.java...  test error
 
-../tests/55_static_init_trigger:
+../programs/55_static_init_trigger:
     static_i_trig_101_class_init_simple.java...  ok
     static_i_trig_102_two_classes.java...  failed
     static_i_trig_103_instantiation.java...  ok
@@ -693,7 +645,7 @@ Running tests for
     static_i_trig_214_trigger_by_unq_exp.java...  test error
     static_i_trig_215_trigger_by_oth_exp.java...  test error
 
-../tests/56_main_method:
+../programs/56_main_method:
     main_01_is_static.java...  ok
     main_02_arg_type.java...  generator error
     main_03_return_type.java...  generator error
@@ -701,21 +653,14 @@ Running tests for
     main_05_modifiers_order.java...  ok
     main_06_c_like_arg.java...  ok
 
-../tests/57_field_access_mode:
+../programs/57_field_access_mode:
     f_access_01_instance_all_pairs.java...  generator error
     f_access_02_static_all_pairs.java...  generator error
     f_access_03_multi_inh_priv_pub_1.java...  test error
     f_access_04_multi_inh_priv_pub_2.java...  test error
     f_access_05_interf_fields_public.java...  generator error
 
-../tests/58_comp_time_constants:
-    const_01_in_class.java...  failed
-    const_02_in_interface.java...  test error
-    const_03_priority_1.java...  failed
-    const_04_priority_2.java...  failed
-    const_05_inheritance.java...  failed
-
-../tests/61_packages:
+../programs/61_packages:
     packages_11_fullyqual_simple.java...  generator error
     packages_12_two_packs.java...  generator error
     packages_13_class_name_amb.java...  generator error
@@ -751,14 +696,14 @@ Running tests for
     packages_71_class_access_modes.java...  generator error
     packages_72_acc_modes_vs_local.java...  generator error
 
-../tests/62_class_literals:
+../programs/62_class_literals:
     class_lit_01_no_packages.java...  failed
     class_lit_02_packages.java...  generator error
     class_lit_03_interface.java...  test error
     class_lit_04_arrays.java...  failed
     class_lit_05_ref_equality.java...  generator error
 
-../tests/63_inner_cl_static:
+../programs/63_inner_cl_static:
     inner_st_101_simple.java...  failed
     inner_st_102_decl_order.java...  failed
     inner_st_103_members.java...  failed
@@ -809,142 +754,11 @@ Running tests for
     inner_st_812_inherit_in_unq_in_intf.java...  test error
     inner_st_813_inherit_in_unq_in_intf_ext.java...  test error
 
-../tests/64_inner_cl_instance:
-    inner_in_11_acc_from_outer.java...  failed
-    inner_in_12_acc_from_inner.java...  failed
-    inner_in_13_acc_static_outer.java...  failed
-    inner_in_14_acc_instance_outer.java...  failed
-    inner_in_15_many_inner_classes.java...  failed
-    inner_in_16_qual_constr.java...  failed
-    inner_in_17_diff_constr_quals.java...  failed
-    inner_in_21_acc_outer_base.java...  failed
-    inner_in_22_from_der_in_base_in.java...  failed
-    inner_in_301_inner_is_derived.java...  failed
-    inner_in_302_polymorph.java...  test error
-    inner_in_303_in_deriv_from_in.java...  failed
-    inner_in_304_top_cl_deriv_inner.java...  test error
-    inner_in_305_in_and_deriv_same.java...  test error
-    inner_in_306_triangle_hier.java...  test error
-    inner_in_307_square_hier.java...  test error
-    inner_in_308_multi_outer_in_hier.java...  test error
-    inner_in_309_twisted_square_hier.java...  test error
-    inner_in_310_3_lvl_nest_inher.java...  test error
-    inner_in_311_3_lvl_nest_inher_amb.java...  test error
-    inner_in_41_hiding.java...  failed
-    inner_in_42_hiding_hier.java...  test error
-    inner_in_43_qualified_super.java...  test error
-    inner_in_44_qual_this_for_inst.java...  failed
-    inner_in_51_access_modes_hier.java...  generator error
-    inner_in_52_three_levels.java...  generator error
-    inner_in_61_inst_init.java...  failed
-    inner_in_62_qual_constr_order.java...  failed
-    inner_in_63_inner_alt_constr_call.java...  test error
-    inner_in_71_three_lvl_stat_and_inst.java...  failed
-    inner_in_72_three_lvl_interf.java...  test error
-    inner_in_81_inner_overl_outer.java...  failed
+failed:  233
+generator error:  79
+ok    :  108
+test error:  220
+timeout:  27
+total :  667
 
-../tests/65_local_cl:
-    local_cl_11_simple.java...  test error
-    local_cl_12_polymorph.java...  test error
-    local_cl_13_own_members.java...  test error
-    local_cl_14_impl_intf.java...  test error
-    local_cl_15_outer_members_acc.java...  test error
-    local_cl_16_superclass_constr.java...  test error
-    local_cl_17_hiding.java...  test error
-    local_cl_21_base_inner_static.java...  test error
-    local_cl_22_base_local_static.java...  test error
-    local_cl_23_base_local_static_init.java...  test error
-    local_cl_31_base_inner_inst.java...  test error
-    local_cl_32_base_in_inst_3_arg.java...  test error
-    local_cl_33_base_local_inst.java...  test error
-    local_cl_34_base_loc_cl_and_intf.java...  test error
-    local_cl_41_encl_vars.java...  test error
-    local_cl_42_encl_vars_nested.java...  test error
-    local_cl_43_encl_vars_shadow.java...  test error
-    local_cl_44_encl_vars_shad_after.java...  test error
-    local_cl_45_encl_vars_shad_before.java...  test error
-    local_cl_51_three_lvl.java...  test error
-    local_cl_52_three_lvl_hiding.java...  test error
-    local_cl_53_three_lvl_local.java...  test error
-    local_cl_54_three_lvl_local_hiding.java...  test error
-    local_cl_55_three_lvl_hiding_static.java...  test error
-    local_cl_56_three_lvl_hiding_inner.java...  test error
-    local_cl_57_three_lvl_hiding_local.java...  test error
-    local_cl_61_intf_impl_twice.java...  test error
-    local_cl_711_inst_encl_cl.java...  test error
-    local_cl_712_inst_encl_cl_nested.java...  test error
-    local_cl_713_inst_encl_cl_shadow.java...  test error
-    local_cl_714_inst_encl_cl_shad_bef.java...  test error
-    local_cl_715_inst_own_shadow.java...  test error
-    local_cl_716_two_local_diff_scope.java...  test error
-    local_cl_717_inst_nesting_uncle.java...  test error
-    local_cl_721_extends_local_shadow.java...  test error
-    local_cl_81_extends_local_uncle.java...  test error
-    local_cl_82_inner_of_local.java...  test error
-    local_cl_83_inherit_static_fields.java...  test error
-    local_cl_84_name_coll_with_fields.java...  test error
-    local_cl_901_own_fiel_vs_encl_prior.java...  test error
-    local_cl_902_super_fiel_vs_encl.java...  test error
-    local_cl_903_super_stat_fiel_vs_encl.java...  test error
-    local_cl_904_super_intf_fiel_vs_encl.java...  test error
-    local_cl_905_inner_of_local_encl.java...  test error
-    local_cl_906_in_of_loc_fiel_vs_encl.java...  test error
-    local_cl_907_in_of_loc_inh_fiel_vs_encl.java...  test error
-    local_cl_908_in_of_loc_st_fiel_vs_encl.java...  test error
-    local_cl_909_in_of_loc_intf_fiel_vs_encl.java...  test error
-    local_cl_910_encl_vs_constr_args.java...  test error
-    local_cl_911_decl_vs_inst_env_diff.java...  test error
-    local_cl_912_base_deriv_diff_encl_env.java...  test error
-    local_cl_913_multi_meth_locals.java...  test error
-    local_cl_914_fields_vs_locals_3_lvl.java...  test error
-    local_cl_915_cl_name_shadow_block.java...  test error
-    local_cl_916_recursion_l_env_restore.java...  test error
-    local_cl_917_local_decl_env_in_for.java...  test error
-    local_cl_918_new_local_in_inst_init.java...  test error
-    local_cl_951_cons_this.java...  test error
-    local_cl_952_cons_super_base_local.java...  test error
-    local_cl_953_encl_vars_in_this.java...  test error
-    local_cl_954_encl_vars_in_super.java...  test error
-    local_cl_955_encl_vars_in_inst_init.java...  test error
-    local_cl_956_instantiate_itself.java...  test error
-    local_cl_957_inst_enclosing_local.java...  test error
-    local_cl_958_base_is_enclosing_local.java...  test error
-
-../tests/66_anonymous_cl:
-    anonym_cl_11_impl_intf.java...  test error
-    anonym_cl_12_outer_members.java...  test error
-    anonym_cl_13_super_constr.java...  test error
-    anonym_cl_21_base_static_in.java...  test error
-    anonym_cl_22_base_local_in_st.java...  test error
-    anonym_cl_31_base_inner_inst.java...  test error
-    anonym_cl_32_base_in_with_args.java...  test error
-    anonym_cl_33_base_in_w_args_2.java...  test error
-    anonym_cl_34_base_local_with_args.java...  test error
-    anonym_cl_35_base_constr_overl.java...  test error
-    anonym_cl_41_outer_local_vars.java...  test error
-    anonym_cl_51_three_lvl_anon_in_anon.java...  test error
-    anonym_cl_52_three_lvl_inner_in_anon.java...  test error
-    anonym_cl_61_two_anon_cl.java...  test error
-    anonym_cl_71_inside_static_f_init.java...  test error
-    anonym_cl_72_inside_inst_f_init.java...  test error
-    anonym_cl_73_inside_super_cons_inv.java...  test error
-    anonym_cl_74_inside_for_exp.java...  test error
-    anonym_cl_75_inside_for_stm.java...  test error
-
-../tests/72_threads_run:
-    threads_11_thread_start.java...  ok
-    threads_31_sync_meth_static.java...  failed
-    threads_32_sync_meth_inst.java...  test error
-    threads_33_sync_class_obj.java...  failed
-    threads_34_sync_obj.java...  failed
-    threads_61_sync_on_null.java...  failed
-    threads_62_IMStateException.java...  failed
-
-failed:  282
-generator error:  80
-ok    :  117
-test error:  334
-timeout:  28
-total :  841
-
-It took 368 seconds
+It took 294 seconds
