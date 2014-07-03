@@ -12,4 +12,4 @@ Tools:
 3. Test script with more options:
     java-fan-aux-test.sh
 4. To see what preprocessings were made, read the comments in:
-    toosl/java-fan-preprocess.sh
+    tools/java-fan-preprocess.sh
