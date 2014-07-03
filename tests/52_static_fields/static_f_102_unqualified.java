@@ -12,7 +12,7 @@ public class static_f_102_unqualified {
 }
 
 class A {
-  private static int v;
+  static int v;
 
   static int getV() {
     return v;

@@ -11,9 +11,9 @@ public class static_f_103_multi_fields {
 }
 
 class A {
-  private int q;
-  private static int p,r;
-  private int s;
+  int q;
+  static int p,r;
+  int s;
 
   A(int p, int q, int r, int s) {
     A.p = p;
