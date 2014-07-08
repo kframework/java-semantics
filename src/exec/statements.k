@@ -6,6 +6,7 @@ module STATEMENTS
     imports CORE-EXEC     //for sl
     imports VAR-LOOKUP
     imports METHOD-INVOKE // for initParams
+    imports TRY-AND-THROW
 
 //@ \subsection{Call of main method}
 
@@ -473,3 +474,42 @@ rule [finallyBlock-NormalEnd]:
     finallyBlock(FinallyS:K) => FinallyS
 
 endmodule
+
+//Not used in the semantics. Used to typechect the rules in the paper only.
+//The equivalent of these rules in the semantics are in the AST form.
+module TRY-AND-THROW
+    imports SYNTAX-CONVERSIONS
+    imports STATEMENTS
+
+//We won't convert 'try into try now, we just want to typeset the rules.
+syntax Stmt ::= "try" Stmt CatchList
+syntax CatchList ::= List{Catch, ""}
+syntax Catch ::= "catch" "(" Param ")" Stmt
+syntax K ::= catchBlocks ( CatchList )
+syntax K ::= interactsWithThrow( K ) [function]
+
+rule [try]:
+    try S:Stmt CatchList:CatchList => S ~> catchBlocks(CatchList)
+
+rule [catchBlocks-dissolve]:
+    catchBlocks(_:CatchList) => .K
+
+rule [throw-match]:
+    throw V::ThrowT:Type;
+    ~> catchBlocks((catch({CatchT:Type X:Id}) CatchS:Stmt) _:CatchList)
+    => { CatchT X; ~> (X = (V::CatchT)); ~> CatchS }
+when subtype(ThrowT, CatchT)
+
+rule [throw-not-match]:
+    throw V::ThrowT:Type;
+    ~> catchBlocks((catch({CatchT:Type X:Id}) CatchS:Stmt => .) _:CatchList)
+when notBool subtype(ThrowT, CatchT)
+
+/*@ Could also be empty catch block
+*/
+rule [throw-propagate]:
+    throw TV:TypedVal; ~> (KI:KItem => .)
+when notBool interactsWithThrow(KI)
+
+endmodule
+

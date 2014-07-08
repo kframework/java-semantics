@@ -23,6 +23,7 @@ For more options use aux-kjrun.sh
   OPTION
 
   --exec, the default option
+  --exec-only
   --strictness
   --threading
   --threading-sync
@@ -63,7 +64,8 @@ while [[ ${1:0:1} == - ]]; do
       usage
       exit
       ;;
-    "--exec"|"--strictness"|"--threading"|"--threading-sync"|"--symbolic"|"--prep-latex"|"--prep-pdf" \
+    "--exec"|"--exec-only" \
+      |"--strictness"|"--threading"|"--threading-sync"|"--symbolic"|"--prep-latex"|"--prep-pdf" \
       |"--exec-latex"|"--methods-latex"|"--methods-pdf"|"--new-latex"|"--new-pdf")
       OPTION=${PARAM}
       ;;
@@ -103,6 +105,12 @@ case "$OPTION" in
     echo
     echo
     echo "Done"
+    ;;
+"--exec-only")
+    echo
+    echo
+    echo "Execution semantics:"
+    $KOMPILE_CMD -d exec exec/java-exec.k
     ;;
 "--strictness")
     echo
