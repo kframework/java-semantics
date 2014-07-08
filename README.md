@@ -25,10 +25,16 @@ $ kjrun.sh ../programs/01_smoke_tests/helloWorld.java
 ```
 
 Now you can test the execution of multiple programs at once using bundled tool kjtest.
-(Make sure you run a program with kjrun.sh first, it needs to perform some initializations.)
+(Make sure you run some program with kjrun.sh first, it needs to perform some initializations.)
 
 ```
 $ kjtest.sh --t1 ../programs/01_smoke_tests/
 ```
 
 This tool executes each program in the given directory with both Java Semantics and JDK and compares the results. Testing result is summarized in test-results.xml.
+
+## Other docs
+Directory docs contains two technical reports: the complete documented semantics of module METHOD_INVOKE and the documentation of the main rule for new instance creation with all prerequisites.
+
+URL:
+https://github.com/kframework/java-semantics
