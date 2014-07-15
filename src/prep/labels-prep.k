@@ -68,7 +68,7 @@ syntax KLabel ::=
                 | "'Mul"
                 | "'Div"
                 | "'Remain"
-                | "'Plus"
+//                | "'Plus"
                 | "'Minus"
                 | "'LeftShift"
                 | "'RightShift"

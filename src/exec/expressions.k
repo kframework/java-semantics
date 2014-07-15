@@ -11,7 +11,7 @@ module EXPRESSIONS
 syntax KLabel ::= "'Mul"
                 | "'Div"
                 | "'Remain"
-                | "'Plus"
+//                | "'Plus"
                 | "'Minus"
                 | "'LeftShift"
                 | "'RightShift"
@@ -68,8 +68,8 @@ context /* >>  */ 'RightShift(HOLE,,_)
 context           'RightShift(_:KResult,,HOLE)
 context /* >>> */ 'URightShift(HOLE,,_)
 context           'URightShift(_:KResult,,HOLE)
-context /* +   */ 'Plus(HOLE,,_)
-context           'Plus(_:KResult,,HOLE)
+//context /* +   */ 'Plus(HOLE,,_)
+//context           'Plus(_:KResult,,HOLE)
 context /* -   */ 'Minus(HOLE,,_)
 context           'Minus(_:KResult,,HOLE)
 context /* *   */ 'Mul(HOLE,,_)
@@ -127,7 +127,12 @@ rule /* I1 >>> I2 */ 'URightShift(I1:Int :: NT1:Type,, I2:Int :: NT2:NumericType
     'Plus('RightShift(I1::NT1,, I2::NT2),, 'LeftShift(2::NT1,, 'Complement(I2::NT2)))
   )
 
-rule /* I1 + I2     */ 'Plus(I1:Int :: _,, I2:Int :: _) => (I1 +Int I2) :: tempType
+//AST-based rule for 'Plus
+//rule /* I1 + I2     */ 'Plus(I1:Int :: _,, I2:Int :: _) => (I1 +Int I2) :: tempType
+
+//the same rule, syntax-based
+rule /* I1 + I2     */ I1:Int::_ + I2:Int::_ => (I1 +Int I2) :: tempType
+
 rule                   'Plus(F1:Float :: _,, F2:Float :: _) => (F1 +Float F2) :: tempType
 rule /* Str1 + Str2 */ 'Plus(Str1:String :: _,, Str2:String :: _)
     => (Str1 +String Str2) :: classString

@@ -6,6 +6,7 @@ module CORE-CLASSES
     imports CORE-SORTS
     imports CORE-FUNCTIONS
     imports AUX-STRINGS // for retainHead
+    imports EXP-SYNTAX //for definitions of sort Exp
 
 //@ \subsection{Shortcuts for the most frequently used classes within the semantics}
 
@@ -119,7 +120,7 @@ rule isExp('GtEq(_)) => true         /* >=  */
 rule isExp('LeftShift(_)) => true    /* <<  */
 rule isExp('RightShift(_)) => true   /* >>  */
 rule isExp('URightShift(_)) => true  /* >>> */
-rule isExp('Plus(_)) => true         /* +   */
+//rule isExp('Plus(_)) => true         /* +   */
 rule isExp('Minus(_)) => true        /* -   */
 rule isExp('Mul(_)) => true          /* *   */
 rule isExp('Div(_)) => true          /* /   */
