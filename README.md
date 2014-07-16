@@ -3,7 +3,7 @@
 In order to use Java Semantics you need the following prerequisites:
 
 - A computer with at least 1GB of memory
-- Linux or OSX
+- Linux, OSX or Windows + Cygwin. Installation instructions below are written for Linux.
 - Java 7 or later, added to PATH.
 - K Framework (See <http://kframework.org>). The directory k-framework/dist/bin should be added to $PATH.
 
