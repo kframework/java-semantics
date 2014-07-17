@@ -68,6 +68,10 @@ context /* >>  */ 'RightShift(HOLE,,_)
 context           'RightShift(_:KResult,,HOLE)
 context /* >>> */ 'URightShift(HOLE,,_)
 context           'URightShift(_:KResult,,HOLE)
+
+//For unary 'Plus
+context /* +   */ 'Plus(HOLE)
+
 //context /* +   */ 'Plus(HOLE,,_)
 //context           'Plus(_:KResult,,HOLE)
 context /* -   */ 'Minus(HOLE,,_)
