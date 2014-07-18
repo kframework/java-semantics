@@ -16,33 +16,33 @@ if [[ $1 == --* ]];
     OPTION=$1
     shift
   else
-    OPTION="--run"
+    OPTION="--t1"
 fi
 
 case "$OPTION" in
-"--run")
-    aux-kjtest.sh -mode run      -threads 12 -timeout 120 -encodeXML false -clean false ${@}
-    ;;
 "--search")
-    aux-kjtest.sh -mode search   -threads  6 -timeout 600 -encodeXML false -clean false ${@}
+    aux-kjtest.sh -mode search   -threads  6 -timeout 600 -encodeXML false -clean true ${@}
     ;;
 "--symbolic")
-    aux-kjtest.sh -mode symbolic -threads  6 -timeout 600 -encodeXML false -clean false ${@}
+    aux-kjtest.sh -mode symbolic -threads  6 -timeout 600 -encodeXML false -clean true ${@}
     ;;
 "--jdk")
-    aux-kjtest.sh -mode jdk      -threads 12 -timeout  10 -encodeXML false -clean true  ${@}
+    aux-kjtest.sh -mode jdk      -threads 12 -timeout  10 -encodeXML false -clean true ${@}
     ;;
 "--t1")
-    aux-kjtest.sh -mode run      -threads  1 -timeout 120 -encodeXML false -clean false ${@}
+    aux-kjtest.sh -mode run      -threads  1 -timeout 120 -encodeXML false -clean true ${@}
     ;;
 "--t2")
-    aux-kjtest.sh -mode run      -threads  2 -timeout 120 -encodeXML false -clean false ${@}
+    aux-kjtest.sh -mode run      -threads  2 -timeout 120 -encodeXML false -clean true ${@}
     ;;
 "--t4")
-    aux-kjtest.sh -mode run      -threads  4 -timeout 120 -encodeXML false -clean true  ${@}
+    aux-kjtest.sh -mode run      -threads  4 -timeout 120 -encodeXML false -clean true ${@}
     ;;
 "--t8")
-    aux-kjtest.sh -mode run      -threads  8 -timeout 120 -encodeXML false -clean true  ${@}
+    aux-kjtest.sh -mode run      -threads  8 -timeout 120 -encodeXML false -clean true ${@}
+    ;;
+"--t12")
+    aux-kjtest.sh -mode run      -threads 12 -timeout 120 -encodeXML false -clean true ${@}
     ;;
 *)
     echo "Invalid OPTION: ${OPTION}"
