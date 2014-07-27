@@ -266,14 +266,14 @@ rule [Assign]:
       from one occurence to two occuences.
   - if operator LHS expression have side effects, we would end up with the side effect twice.
   - Example: v[i++] += 1
-*/
-rule [Compound-Assign]:
+
+rule [Compound-Assign]:*/
     KL:KLabel(loc(L:Int) :: T:Type,, Exp2:K)
     => loc(L)::T = cast(T, getOperatorLabel(KL)(lookup(L, T),, Exp2))
 when isCompoundAssignExp(KL(.KList))
-//loc(L:Int) :: T:Type += Exp2:K => loc(L)::T = cast(T, (lookup(L, T) + Exp2))
-/*@ Returns the KLabel corresponding to the underlying operator of the given compound assignment KLabel.
-*/
+
+/*@ Returns the KLabel corresponding to the underlying operator of the given compound assignment KLabel.*/
+
 syntax KLabel ::= getOperatorLabel ( KLabel )         [function]
 rule getOperatorLabel('AssignPlus)        => 'Plus
 rule getOperatorLabel('AssignMinus)       => 'Minus
@@ -286,6 +286,18 @@ rule getOperatorLabel('AssignRemain)      => 'Remain
 rule getOperatorLabel('AssignLeftShift)   => 'LeftShift
 rule getOperatorLabel('AssignRightShift)  => 'RightShift
 rule getOperatorLabel('AssignURightShift) => 'URightShift
+
+//rule loc(L:Int) :: T:Type *= Exp2:K => loc(L)::T = cast(T, lookup(L, T) * Exp2)
+//rule loc(L:Int) :: T:Type /= Exp2:K => loc(L)::T = cast(T, lookup(L, T) / Exp2)
+//rule loc(L:Int) :: T:Type %= Exp2:K => loc(L)::T = cast(T, lookup(L, T) % Exp2)
+//rule loc(L:Int) :: T:Type += Exp2:K => loc(L)::T = cast(T, lookup(L, T) + Exp2)
+//rule loc(L:Int) :: T:Type -= Exp2:K => loc(L)::T = cast(T, lookup(L, T) - Exp2)
+//rule loc(L:Int) :: T:Type <<= Exp2:K => loc(L)::T = cast(T, lookup(L, T) << Exp2)
+//rule loc(L:Int) :: T:Type >>= Exp2:K => loc(L)::T = cast(T, lookup(L, T) >> Exp2)
+//rule loc(L:Int) :: T:Type >>>= Exp2:K => loc(L)::T = cast(T, lookup(L, T) >>> Exp2)
+//rule loc(L:Int) :: T:Type &= Exp2:K => loc(L)::T = cast(T, lookup(L, T) & Exp2)
+//rule loc(L:Int) :: T:Type ^= Exp2:K => loc(L)::T = cast(T, lookup(L, T) ^ Exp2)
+//rule loc(L:Int) :: T:Type |= Exp2:K => loc(L)::T = cast(T, lookup(L, T) | Exp2)
 
 /*@ \subsection{primitive types cast} */
 
@@ -305,7 +317,7 @@ rule [cast-noValue]: cast(_, noValue) => noValue
 
 /* We cannot use context rules here because of wrapper-related limitations. If a term is wrapped into lvalue
   during heating by a context rule, it will be cooled also from lvalue by the cooling rule. This is unacceptable
-  in Java semantics.*/
+  in Java semantics.
 
 rule [exp-lvalue-Heat]:
     (. => lvalue(K)) ~> KL:KLabel((K:K => HOLE),, _)
@@ -317,41 +329,41 @@ when
     andBool notBool (isKResult(K) ==K true)
 
 rule [exp-lvalue-Cool]:
-    (KR:KResult => .) ~> KL:KLabel((HOLE => KR),, _)
+    (KR:KResult => .) ~> KL:KLabel((HOLE => KR),, _)*/
 
-//rule     (. => lvalue(K)) ~> ((K:K => HOLE) =  _)
-//rule     (. => lvalue(K)) ~> ((K:K => HOLE) *=  _)
-//rule     (. => lvalue(K)) ~> ((K:K => HOLE) /=  _)
-//rule     (. => lvalue(K)) ~> ((K:K => HOLE) %=  _)
-//rule     (. => lvalue(K)) ~> ((K:K => HOLE) +=  _)
-//rule     (. => lvalue(K)) ~> ((K:K => HOLE) -=  _)
-//rule     (. => lvalue(K)) ~> ((K:K => HOLE) <<=  _)
-//rule     (. => lvalue(K)) ~> ((K:K => HOLE) >>=  _)
-//rule     (. => lvalue(K)) ~> ((K:K => HOLE) >>>=  _)
-//rule     (. => lvalue(K)) ~> ((K:K => HOLE) &=  _)
-//rule     (. => lvalue(K)) ~> ((K:K => HOLE) ^=  _)
-//rule     (. => lvalue(K)) ~> ((K:K => HOLE) |=  _)
-//rule     (. => lvalue(K)) ~> ++(K:K => HOLE)
-//rule     (. => lvalue(K)) ~> --(K:K => HOLE)
-//rule     (. => lvalue(K)) ~> (K:K => HOLE)++
-//rule     (. => lvalue(K)) ~> (K:K => HOLE)--
-//
-//rule     (KR:KResult => .) ~> ((HOLE => KR) =  _)
-//rule     (KR:KResult => .) ~> ((HOLE => KR) *=  _)
-//rule     (KR:KResult => .) ~> ((HOLE => KR) /=  _)
-//rule     (KR:KResult => .) ~> ((HOLE => KR) %=  _)
-//rule     (KR:KResult => .) ~> ((HOLE => KR) +=  _)
-//rule     (KR:KResult => .) ~> ((HOLE => KR) -=  _)
-//rule     (KR:KResult => .) ~> ((HOLE => KR) <<=  _)
-//rule     (KR:KResult => .) ~> ((HOLE => KR) >>=  _)
-//rule     (KR:KResult => .) ~> ((HOLE => KR) >>>=  _)
-//rule     (KR:KResult => .) ~> ((HOLE => KR) &=  _)
-//rule     (KR:KResult => .) ~> ((HOLE => KR) ^=  _)
-//rule     (KR:KResult => .) ~> ((HOLE => KR) |=  _)
-//rule     (KR:KResult => .) ~> ++(HOLE => KR)
-//rule     (KR:KResult => .) ~> --(HOLE => KR)
-//rule     (KR:KResult => .) ~> (HOLE => KR)++
-//rule     (KR:KResult => .) ~> (HOLE => KR)--
+rule     (. => lvalue(K)) ~> ((K:K => HOLE) =  _) when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> ((K:K => HOLE) *=  _) when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> ((K:K => HOLE) /=  _) when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> ((K:K => HOLE) %=  _) when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> ((K:K => HOLE) +=  _) when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> ((K:K => HOLE) -=  _) when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> ((K:K => HOLE) <<=  _) when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> ((K:K => HOLE) >>=  _) when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> ((K:K => HOLE) >>>=  _) when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> ((K:K => HOLE) &=  _) when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> ((K:K => HOLE) ^=  _) when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> ((K:K => HOLE) |=  _) when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> ++(K:K => HOLE) when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> --(K:K => HOLE) when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> (K:K => HOLE)++ when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> (K:K => HOLE)-- when notBool (isKResult(K) ==K true)
+
+rule     (KR:KResult => .) ~> ((HOLE => KR) =  _)
+rule     (KR:KResult => .) ~> ((HOLE => KR) *=  _)
+rule     (KR:KResult => .) ~> ((HOLE => KR) /=  _)
+rule     (KR:KResult => .) ~> ((HOLE => KR) %=  _)
+rule     (KR:KResult => .) ~> ((HOLE => KR) +=  _)
+rule     (KR:KResult => .) ~> ((HOLE => KR) -=  _)
+rule     (KR:KResult => .) ~> ((HOLE => KR) <<=  _)
+rule     (KR:KResult => .) ~> ((HOLE => KR) >>=  _)
+rule     (KR:KResult => .) ~> ((HOLE => KR) >>>=  _)
+rule     (KR:KResult => .) ~> ((HOLE => KR) &=  _)
+rule     (KR:KResult => .) ~> ((HOLE => KR) ^=  _)
+rule     (KR:KResult => .) ~> ((HOLE => KR) |=  _)
+rule     (KR:KResult => .) ~> ++(HOLE => KR)
+rule     (KR:KResult => .) ~> --(HOLE => KR)
+rule     (KR:KResult => .) ~> (HOLE => KR)++
+rule     (KR:KResult => .) ~> (HOLE => KR)--
 
 /*@ Required when a JVM-related exception (e.g. produced by the semantics at runtime) is thrown inside a lvalue.
 */
