@@ -265,9 +265,9 @@ rule [Assign]:
   - at elaboration phase we would have to rewrite the original expresion that produces L
       from one occurence to two occuences.
   - if operator LHS expression have side effects, we would end up with the side effect twice.
-  - Example: v[i++] += 1
+  - Example: v[i++] += 1*/
 
-rule [Compound-Assign]:*/
+rule [Compound-Assign]:
     KL:KLabel(loc(L:Int) :: T:Type,, Exp2:K)
     => loc(L)::T = cast(T, getOperatorLabel(KL)(lookup(L, T),, Exp2))
 when isCompoundAssignExp(KL(.KList))

@@ -165,7 +165,7 @@ rule isPrefixPostfixExp('PreDecr(_)) => true    /* --  */
 rule isPrefixPostfixExp('PostIncr(_)) => true   /* ++  */
 rule isPrefixPostfixExp('PostDecr(_)) => true   /* --  */
 
-/*@ Assign***:KLabel(LHS,, RHS)*/
+/*@ Assign***:KLabel(LHS,, RHS)
 syntax KLabel ::= "'AssignMul"
                 | "'AssignDiv"
                 | "'AssignRemain"
@@ -177,7 +177,7 @@ syntax KLabel ::= "'AssignMul"
                 | "'AssignAnd"
                 | "'AssignExcOr"
                 | "'AssignOr"
-
+*/
 syntax Exp ::= CompoundAssignExp
 syntax CompoundAssignExp ::= "dummyCompoundAssignExp"
 
