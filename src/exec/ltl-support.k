@@ -1,10 +1,11 @@
 require "builtins/model-checker.k"
-
+require "../common/shared-syntax.k"
 /*@ \section{Module LTL-SUPPORT-SYNTAX}
 */
 
 module LTL-SUPPORT-SYNTAX
     imports SYNTAX-CONVERSIONS
+    imports SHARED-SYNTAX
 
 syntax Prop ::= Exp
 
@@ -17,10 +18,10 @@ syntax Exp ::= ClassType "." Id
 //@ Access to an instance (or static) field
              | Exp "." Id
 
-//@ <= operator, for LTL formulas
-             > Exp "<=" Exp
+//@ <= operator, for LTL formulas, moved to shared syntax
+         //   > Exp "<=" Exp
 
-             | Exp "!=" Exp
+          //| Exp "!=" Exp
              | "this"
              | Exp "instanceof" Exp
 
@@ -41,12 +42,14 @@ module LTL-SUPPORT
 
 rule B:Bag |=Ltl KL:KLabel((E:Exp => ltlEval(B, E)),, _:K)
 when
-    (KL ==KLabel '_==_ orBool KL ==KLabel '_<=_ orBool KL ==KLabel '_!=_ orBool KL ==KLabel '_instanceof_)
+    //(KL ==KLabel '_==_ orBool KL ==KLabel '_<=_ orBool KL ==KLabel '_!=_ orBool KL ==KLabel '_instanceof_)
+    (KL ==KLabel 'Eq orBool KL ==KLabel 'LtEq orBool KL ==KLabel 'NotEq orBool KL ==KLabel '_instanceof_)
     andBool notBool isKResult(E) ==K true                                                           [anywhere]
 
 rule B:Bag |=Ltl KL:KLabel(_:K,, (E:Exp => ltlEval(B, E)))
 when
-    (KL ==KLabel '_==_ orBool KL ==KLabel '_<=_ orBool KL ==KLabel '_!=_ orBool KL ==KLabel '_instanceof_)
+    //(KL ==KLabel '_==_ orBool KL ==KLabel '_<=_ orBool KL ==KLabel '_!=_ orBool KL ==KLabel '_instanceof_)
+    (KL ==KLabel 'Eq orBool KL ==KLabel 'LtEq orBool KL ==KLabel 'NotEq orBool KL ==KLabel '_instanceof_)
     andBool notBool isKResult(E) ==K true                                                           [anywhere]
 
 rule B:Bag |=Ltl ((RV1:RawVal::_) == (RV2:RawVal::_)) => RV1 ==K RV2      [anywhere]

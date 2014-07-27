@@ -106,36 +106,36 @@ rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(Class
 syntax Exp ::= "dummyExp"
 
     //Infix operators
-rule isExp('LazyOr(_)) => true       /* ||  */
-rule isExp('LazyAnd(_)) => true      /* &&  */
-rule isExp('Or(_)) => true           /* |   */
-rule isExp('ExcOr(_)) => true        /* ^   */
-rule isExp('And(_)) => true          /* &   */
-rule isExp('Eq(_)) => true           /* ==  */
-rule isExp('NotEq(_)) => true        /* !=  */
-rule isExp('Lt(_)) => true           /* <   */
-rule isExp('Gt(_)) => true           /* >   */
-rule isExp('LtEq(_)) => true         /* <=  */
-rule isExp('GtEq(_)) => true         /* >=  */
-rule isExp('LeftShift(_)) => true    /* <<  */
-rule isExp('RightShift(_)) => true   /* >>  */
-rule isExp('URightShift(_)) => true  /* >>> */
+//rule isExp('LazyOr(_)) => true       /* ||  */
+//rule isExp('LazyAnd(_)) => true      /* &&  */
+//rule isExp('Or(_)) => true           /* |   */
+//rule isExp('ExcOr(_)) => true        /* ^   */
+//rule isExp('And(_)) => true          /* &   */
+//rule isExp('Eq(_)) => true           /* ==  */
+//rule isExp('NotEq(_)) => true        /* !=  */
+//rule isExp('Lt(_)) => true           /* <   */
+//rule isExp('Gt(_)) => true           /* >   */
+//rule isExp('LtEq(_)) => true         /* <=  */
+//rule isExp('GtEq(_)) => true         /* >=  */
+//rule isExp('LeftShift(_)) => true    /* <<  */
+//rule isExp('RightShift(_)) => true   /* >>  */
+//rule isExp('URightShift(_)) => true  /* >>> */
 //rule isExp('Plus(_)) => true         /* +   */
-rule isExp('Minus(_)) => true        /* -   */
-rule isExp('Mul(_)) => true          /* *   */
-rule isExp('Div(_)) => true          /* /   */
-rule isExp('Remain(_)) => true       /* %   */
+//rule isExp('Minus(_)) => true        /* -   */
+//rule isExp('Mul(_)) => true          /* *   */
+//rule isExp('Div(_)) => true          /* /   */
+//rule isExp('Remain(_)) => true       /* %   */
 
     //Prefix operators
-rule isExp('Not(_)) => true          /* !   */
-rule isExp('Complement(_)) => true   /* ~   */
+//rule isExp('Not(_)) => true          /* !   */
+//rule isExp('Complement(_)) => true   /* ~   */
     /* +   */ //'Plus   - defined earlier
     /* -   */ //'Minus  - defined earlier
 
     //Ternary operators
-rule isExp('Cond(_)) => true         /* ? : */
+//rule isExp('Cond(_)) => true         /* ? : */
 
-rule isExp('Assign(_)) => true       /* =   */
+//rule isExp('Assign(_)) => true       /* =   */
 
 syntax Exp ::= NonNumericExp
 syntax NonNumericExp ::= "dummyNonNumericExp"
@@ -165,7 +165,7 @@ rule isPrefixPostfixExp('PreDecr(_)) => true    /* --  */
 rule isPrefixPostfixExp('PostIncr(_)) => true   /* ++  */
 rule isPrefixPostfixExp('PostDecr(_)) => true   /* --  */
 
-//@ Assign***:KLabel(LHS,, RHS)
+/*@ Assign***:KLabel(LHS,, RHS)
 syntax KLabel ::= "'AssignMul"
                 | "'AssignDiv"
                 | "'AssignRemain"
@@ -176,7 +176,7 @@ syntax KLabel ::= "'AssignMul"
                 | "'AssignURightShift"
                 | "'AssignAnd"
                 | "'AssignExcOr"
-                | "'AssignOr"
+                | "'AssignOr"*/
 
 syntax Exp ::= CompoundAssignExp
 syntax CompoundAssignExp ::= "dummyCompoundAssignExp"

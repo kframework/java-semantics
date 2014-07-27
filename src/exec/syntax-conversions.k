@@ -84,14 +84,14 @@ rule 'LocalVarDec(_:K,, T:Type,,['VarDec(X:Id)]) => T X;  [structural]
 syntax VarDec ::= Type Id ";"   [klabel('VarDecImpl)]
 syntax Stmt ::= VarDec
 
-/*@ \subsection{Assignment expression}*/
+/*@ \subsection{Assignment expression}
 
-//@ 'Assign(loc(L)::T,, V::T)
+@ 'Assign(loc(L)::T,, V::T)
 syntax KLabel ::= "'Assign"
 
 rule 'Assign(K1:K,, K2:K) => K1 = K2
 
-syntax Exp ::= K "=" K       [klabel('AssignImpl)]
+syntax Exp ::= K "=" K       [klabel('AssignImpl)]*/
 
 /*@ \subsection{Expression statement}*/
 
@@ -110,11 +110,11 @@ syntax Exp ::= Id
 rule X:Id => 'ExprName(X)
 rule lvalue(X:Id) => lvalue('ExprName(X))
 
-/*@ \subsection{== expression}*/
+/*@ \subsection{== expression}
 
-// Just for the sake of the rule isOverridden
+Just for the sake of the rule isOverridden
 syntax Exp ::= K "==" K
-rule K1:K == K2:K => eqAux(K1, K2)
+rule K1:K == K2:K => eqAux(K1, K2)*/
 
 /*@ \subsection{Throw statement}*/
 

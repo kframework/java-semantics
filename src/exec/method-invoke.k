@@ -602,7 +602,7 @@ rule isOverridden(_, protected, _) => true
 
 // Object class cannot match this rule since it has public access mode
 rule isOverridden(BaseC:ClassType, package, SubC:ClassType)
-    => getPackage(getTopLevel(BaseC)) == getPackage(getTopLevel(SubC))
+    => eqAux(getPackage(getTopLevel(BaseC)) , getPackage(getTopLevel(SubC)))
 
 rule isOverridden(_, private, _) => false
 
