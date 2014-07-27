@@ -267,37 +267,37 @@ rule [Assign]:
   - if operator LHS expression have side effects, we would end up with the side effect twice.
   - Example: v[i++] += 1*/
 
-rule [Compound-Assign]:
-    KL:KLabel(loc(L:Int) :: T:Type,, Exp2:K)
-    => loc(L)::T = cast(T, getOperatorLabel(KL)(lookup(L, T),, Exp2))
-when isCompoundAssignExp(KL(.KList))
+//rule [Compound-Assign]:
+//    KL:KLabel(loc(L:Int) :: T:Type,, Exp2:K)
+//    => loc(L)::T = cast(T, getOperatorLabel(KL)(lookup(L, T),, Exp2))
+//when isCompoundAssignExp(KL(.KList))
+//
+///*@ Returns the KLabel corresponding to the underlying operator of the given compound assignment KLabel.*/
+//
+//syntax KLabel ::= getOperatorLabel ( KLabel )         [function]
+//rule getOperatorLabel('AssignPlus)        => 'Plus
+//rule getOperatorLabel('AssignMinus)       => 'Minus
+//rule getOperatorLabel('AssignMul)         => 'Mul
+//rule getOperatorLabel('AssignDiv)         => 'Div
+//rule getOperatorLabel('AssignAnd)         => 'And
+//rule getOperatorLabel('AssignOr)          => 'Or
+//rule getOperatorLabel('AssignExcOr)       => 'ExcOr
+//rule getOperatorLabel('AssignRemain)      => 'Remain
+//rule getOperatorLabel('AssignLeftShift)   => 'LeftShift
+//rule getOperatorLabel('AssignRightShift)  => 'RightShift
+//rule getOperatorLabel('AssignURightShift) => 'URightShift
 
-/*@ Returns the KLabel corresponding to the underlying operator of the given compound assignment KLabel.*/
-
-syntax KLabel ::= getOperatorLabel ( KLabel )         [function]
-rule getOperatorLabel('AssignPlus)        => 'Plus
-rule getOperatorLabel('AssignMinus)       => 'Minus
-rule getOperatorLabel('AssignMul)         => 'Mul
-rule getOperatorLabel('AssignDiv)         => 'Div
-rule getOperatorLabel('AssignAnd)         => 'And
-rule getOperatorLabel('AssignOr)          => 'Or
-rule getOperatorLabel('AssignExcOr)       => 'ExcOr
-rule getOperatorLabel('AssignRemain)      => 'Remain
-rule getOperatorLabel('AssignLeftShift)   => 'LeftShift
-rule getOperatorLabel('AssignRightShift)  => 'RightShift
-rule getOperatorLabel('AssignURightShift) => 'URightShift
-
-//rule loc(L:Int) :: T:Type *= Exp2:K => loc(L)::T = cast(T, lookup(L, T) * Exp2)
-//rule loc(L:Int) :: T:Type /= Exp2:K => loc(L)::T = cast(T, lookup(L, T) / Exp2)
-//rule loc(L:Int) :: T:Type %= Exp2:K => loc(L)::T = cast(T, lookup(L, T) % Exp2)
-//rule loc(L:Int) :: T:Type += Exp2:K => loc(L)::T = cast(T, lookup(L, T) + Exp2)
-//rule loc(L:Int) :: T:Type -= Exp2:K => loc(L)::T = cast(T, lookup(L, T) - Exp2)
-//rule loc(L:Int) :: T:Type <<= Exp2:K => loc(L)::T = cast(T, lookup(L, T) << Exp2)
-//rule loc(L:Int) :: T:Type >>= Exp2:K => loc(L)::T = cast(T, lookup(L, T) >> Exp2)
-//rule loc(L:Int) :: T:Type >>>= Exp2:K => loc(L)::T = cast(T, lookup(L, T) >>> Exp2)
-//rule loc(L:Int) :: T:Type &= Exp2:K => loc(L)::T = cast(T, lookup(L, T) & Exp2)
-//rule loc(L:Int) :: T:Type ^= Exp2:K => loc(L)::T = cast(T, lookup(L, T) ^ Exp2)
-//rule loc(L:Int) :: T:Type |= Exp2:K => loc(L)::T = cast(T, lookup(L, T) | Exp2)
+rule loc(L:Int) :: T:Type *= Exp2:K => loc(L)::T = cast(T, lookup(L, T) * Exp2)
+rule loc(L:Int) :: T:Type /= Exp2:K => loc(L)::T = cast(T, lookup(L, T) / Exp2)
+rule loc(L:Int) :: T:Type %= Exp2:K => loc(L)::T = cast(T, lookup(L, T) % Exp2)
+rule loc(L:Int) :: T:Type += Exp2:K => loc(L)::T = cast(T, lookup(L, T) + Exp2)
+rule loc(L:Int) :: T:Type -= Exp2:K => loc(L)::T = cast(T, lookup(L, T) - Exp2)
+rule loc(L:Int) :: T:Type <<= Exp2:K => loc(L)::T = cast(T, lookup(L, T) << Exp2)
+rule loc(L:Int) :: T:Type >>= Exp2:K => loc(L)::T = cast(T, lookup(L, T) >> Exp2)
+rule loc(L:Int) :: T:Type >>>= Exp2:K => loc(L)::T = cast(T, lookup(L, T) >>> Exp2)
+rule loc(L:Int) :: T:Type &= Exp2:K => loc(L)::T = cast(T, lookup(L, T) & Exp2)
+rule loc(L:Int) :: T:Type ^= Exp2:K => loc(L)::T = cast(T, lookup(L, T) ^ Exp2)
+rule loc(L:Int) :: T:Type |= Exp2:K => loc(L)::T = cast(T, lookup(L, T) | Exp2)
 
 /*@ \subsection{primitive types cast} */
 

@@ -160,10 +160,10 @@ rule isNonNumericExp('CastRef(_)) => true
 syntax Exp ::= PrefixPostfixExp
 syntax PrefixPostfixExp ::= "dummyPrefixPostfixExp"
 
-rule isPrefixPostfixExp('PreIncr(_)) => true    /* ++  */
-rule isPrefixPostfixExp('PreDecr(_)) => true    /* --  */
-rule isPrefixPostfixExp('PostIncr(_)) => true   /* ++  */
-rule isPrefixPostfixExp('PostDecr(_)) => true   /* --  */
+//rule isPrefixPostfixExp('PreIncr(_)) => true    /* ++  */
+//rule isPrefixPostfixExp('PreDecr(_)) => true    /* --  */
+//rule isPrefixPostfixExp('PostIncr(_)) => true   /* ++  */
+//rule isPrefixPostfixExp('PostDecr(_)) => true   /* --  */
 
 /*@ Assign***:KLabel(LHS,, RHS)
 syntax KLabel ::= "'AssignMul"
@@ -181,17 +181,17 @@ syntax KLabel ::= "'AssignMul"
 syntax Exp ::= CompoundAssignExp
 syntax CompoundAssignExp ::= "dummyCompoundAssignExp"
 
-rule isCompoundAssignExp('AssignPlus(_)) => true
-rule isCompoundAssignExp('AssignMinus(_)) => true
-rule isCompoundAssignExp('AssignMul(_)) => true
-rule isCompoundAssignExp('AssignDiv(_)) => true
-rule isCompoundAssignExp('AssignAnd(_)) => true
-rule isCompoundAssignExp('AssignOr(_)) => true
-rule isCompoundAssignExp('AssignExcOr(_)) => true
-rule isCompoundAssignExp('AssignRemain(_)) => true
-rule isCompoundAssignExp('AssignLeftShift(_)) => true
-rule isCompoundAssignExp('AssignRightShift(_)) => true
-rule isCompoundAssignExp('AssignURightShift(_)) => true
+//rule isCompoundAssignExp('AssignPlus(_)) => true
+//rule isCompoundAssignExp('AssignMinus(_)) => true
+//rule isCompoundAssignExp('AssignMul(_)) => true
+//rule isCompoundAssignExp('AssignDiv(_)) => true
+//rule isCompoundAssignExp('AssignAnd(_)) => true
+//rule isCompoundAssignExp('AssignOr(_)) => true
+//rule isCompoundAssignExp('AssignExcOr(_)) => true
+//rule isCompoundAssignExp('AssignRemain(_)) => true
+//rule isCompoundAssignExp('AssignLeftShift(_)) => true
+//rule isCompoundAssignExp('AssignRightShift(_)) => true
+//rule isCompoundAssignExp('AssignURightShift(_)) => true
 
 //@ Since RawVal terms can easily be converted into TypedVal, they are also of sort Exp.
 syntax Exp ::= TypedVal | RawVal
