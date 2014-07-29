@@ -1,0 +1,48 @@
+Running tests for
+../tests
+
+../tests/01_smoke_tests:
+    array.java...  ok
+    helloWorld.java...  ok
+    max3.java...  failed
+    read.java...  failed
+    sumArrayInFor.java...  ok
+    sumInWhile.java...  ok
+
+../tests/02_literals:
+    literals_011_long_decimal.java...  ok
+    literals_01_integer_decimal.java...  ok
+    literals_02_integer_hexa.java...  ok
+    literals_03_integer_octa.java...  ok
+    literals_04_boolean.java...  ok
+    literals_05_char.java...  ok
+    literals_06_char_escape.java...  ok
+    literals_07_string.java...  ok
+    literals_08_string_escapes_adv.java...  ok
+    literals_09_null.java...  ok
+
+../tests/03_syntax_samples:
+    DotOperator1.java...  ok
+    DotOperator2.java...  ok
+    DotOperator3.java...  ok
+    Operators_JBook.java...  ok
+    Operators_non_JBook.java...  failed
+
+../tests/04_prim_operators:
+    op_011_int_to_int_prefix.java...  ok
+    op_012_int_to_int_pre_inc_dec.java...  ok
+    op_013_int_to_int_postfix.java...  ok
+    op_014_int_to_int_bin_arith.java...  ok
+    op_015_int_to_int_bitwise.java...  ok
+    op_016_int_to_int_cond.java...  ok
+    op_02_int_to_bool.java...  ok
+    op_03_int_bit_shift.java...  ok
+    op_041_int_assign_plus.java...  failed
+    op_042_int_assign_all.java...  failed
+interrupted...  
+
+failed:  5
+ok    :  26
+total :  31
+
+It took 923 seconds

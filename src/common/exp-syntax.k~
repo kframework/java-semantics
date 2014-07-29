@@ -1,0 +1,38 @@
+require "core-sorts.k"
+require "core-classes.k"
+require "shared-syntax.k"
+
+module EXP-SYNTAX
+    imports CORE-SORTS
+    imports CORE-CLASSES
+    //imports SHARED-SYNTAX
+
+syntax PrefixPostfixExp ::= "++" Exp [klabel('PreIncr)] 
+		| "--" Exp [klabel('PreDecr)]
+		| Exp "++" [klabel('PostIncr)]
+		| Exp "--" [klabel('PostDecr)]
+ 
+syntax Exp ::= Exp "*" Exp [seqstrict, klabel('Mul)]
+		| Exp "/" Exp [seqstrict, klabel('Div)]
+		| Exp "%" Exp [seqstrict, klabel('Remain)]
+		| "+" Exp [strict, klabel('Plus)]
+		| "-" Exp [strict, klabel('Minus)]
+		> Exp "+" Exp [seqstrict, klabel('Plus)]
+ 		| Exp "-" Exp [seqstrict, klabel('Minus)]
+
+syntax Exp ::= Exp "<<" Exp [seqstrict, klabel('LeftShift)]
+syntax Exp ::= Exp ">>" Exp [seqstrict, klabel('RightShift)]
+syntax Exp ::= Exp ">>>" Exp [seqstrict, klabel('URightShift)]
+syntax Exp ::= Exp ">" Exp [seqstrict, klabel('Gt)]
+syntax Exp ::= Exp "<" Exp [seqstrict, klabel('Lt)]
+syntax Exp ::= Exp ">=" Exp [seqstrict, klabel('GtEq)]
+
+syntax Exp ::= Exp "||" Exp [strict(1), klabel('LazyOr)]
+syntax Exp ::= Exp "&&" Exp [strict(1), klabel('LazyAnd)]
+syntax Exp ::= Exp "|" Exp [seqstrict, klabel('Or)]
+syntax Exp ::= Exp "^" Exp [seqstrict, klabel('ExcOr)]
+syntax Exp ::= Exp "&" Exp [seqstrict, klabel('And)]
+syntax Exp ::= "!" Exp [strict, klabel('Not)]
+syntax Exp ::= "~" Exp [strict, klabel('Complement)]
+syntax Exp ::= K "?" K ":" K [klabel('Cond)]
+endmodule

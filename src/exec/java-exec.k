@@ -8,6 +8,7 @@ require "../common/core-functions.k"
 require "../common/primitive-types.k"
 require "../common/subtyping.k"
 require "../common/exp-syntax.k"
+require "../common/stmt-syntax.k"
 require "core-exec.k"
 require "syntax-conversions.k"
 require "to-string.k"
@@ -52,5 +53,5 @@ endmodule
 module JAVA-SYNTAX
     imports LTL-SUPPORT-SYNTAX
     imports EXP-SYNTAX
-// Syntax above is just for LTL formulas. We are using an external parser for the rest.
+    imports STMT-SYNTAX
 endmodule

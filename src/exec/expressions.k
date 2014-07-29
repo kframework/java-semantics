@@ -7,6 +7,7 @@ module EXPRESSIONS
     imports PRIMITIVE-TYPES // for normalizeType
     imports TO-STRING
     imports VAR-LOOKUP  // for lookup
+    imports STMT-SYNTAX //for if
 
 /*syntax KLabel ::= "'Mul"
                 | "'Div"
@@ -120,11 +121,9 @@ rule /* I1 <<  I2 */ I1:Int :: NT1:Type << I2:Int :: _
 rule /* I1 >>  I2 */ I1:Int :: NT1:Type >> I2:Int :: _
     => (I1 >>Int (I2 &Int (bitCount(normalizeType(NT1)) -Int 1))) :: tempType
 rule /* I1 >>> I2 */ I1:Int :: NT1:Type >>> I2:Int :: NT2:NumericType
-  => 'If(
-    (I1 >=Int 0)::bool,,
-    I1 :: NT1 >> I2 :: NT2,,
-    (I1::NT1 >> I2::NT2) + ( 2::NT1 << (~ I2::NT2))
-  )
+  => if((I1 >=Int 0)::bool)
+    {I1 :: NT1 >> I2 :: NT2}
+    else {(I1::NT1 >> I2::NT2) + ( 2::NT1 << (~ I2::NT2))}
 
 //AST-based rule for 'Plus
 //rule /* I1 + I2     */ 'Plus(I1:Int :: _,, I2:Int :: _) => (I1 +Int I2) :: tempType
@@ -247,7 +246,7 @@ The biggest difficulty is computing the expression type, according to JLS1 \$15.
 The whole expression should always come wrapped into a cast, from elaboration.
 Thus we don't have to worry about proper type conversion here.*/
 //rule 'Cond(CondExp:K,, TrueExp:K,, FalseExp:K) => 'If(CondExp,, TrueExp,, FalseExp)
-rule CondExp:K ? TrueExp:K : FalseExp:K => 'If(CondExp,, TrueExp,, FalseExp)
+rule CondExp:K ? TrueExp:K : FalseExp:K => if(CondExp) {TrueExp} else {FalseExp}
 /*@ \subsubsection{Assignment operators}
 Both basic assignment and compound assignments like +=, -=, etc. */
 

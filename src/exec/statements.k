@@ -1,3 +1,4 @@
+
 //@ \section{Module STATEMENTS}
 
 module STATEMENTS
@@ -7,6 +8,7 @@ module STATEMENTS
     imports VAR-LOOKUP
     imports METHOD-INVOKE // for initParams
     imports TRY-AND-THROW
+    imports STMT-SYNTAX
 
 //@ \subsection{Call of main method}
 
@@ -95,6 +97,7 @@ rule [labeledImpl-Discard]:
 rule _:TypedVal; => .K
 
 //@ \subsection{If statement}
+rule if (K1) {K2} => if (K1) {K2} else {.K} 
 
 rule [If-True]:
     if (true::bool) {S:K} else {_} => S
