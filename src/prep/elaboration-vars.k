@@ -21,7 +21,7 @@ rule [elabEnd-localVar-to-noValue]:
 when notBool (X in keys(ElabEnv))
 
 //@ This could be either a field, or a local var of some enclosing block.
-syntax K ::=  externalVar (
+syntax KItem ::=  externalVar (
                 Id,       //X - var name
                 ClassType //Class - innermost class where the name should be searched
               )
@@ -42,7 +42,7 @@ rule [externalVar-noClass]:
 /*@ Attempts to resolve this expression into a local var from the enclosing local environment
     of type being precisely the given class.
 */
-syntax K ::=  elabOuterLocalVar (
+syntax KItem ::=  elabOuterLocalVar (
                 Id,       //X - var name
                 ClassType //Class - the possibly local class whose local env should be searched
               )
@@ -89,7 +89,7 @@ rule [elabEnd-Field-of-noValue]:
 Important!!! The name is searched in this type and base types only. It is not searched in outer classes.
   That is the job of externalVar().
 */
-syntax K ::=  elabLookup (
+syntax KItem ::=  elabLookup (
                 Id,       //The field to search
                 ClassType //The current class under search
               )
@@ -144,7 +144,7 @@ rule [elabLookup-Set]:
 rule [elabLookup-Set-NotFound]:
     elabLookup(_, .Set) => noValue
 
-syntax K ::=  nameInVarDecs(
+syntax KItem ::=  nameInVarDecs(
                 Id,       //Target name
                 KListWrap //The list of variable declarations, each of the form
                           //  'LocalVarDec(.K,, T:Type,, ['VarDec(X)])
@@ -198,7 +198,7 @@ rule [elabEnd-QSuperField]:
     <extends> BaseClass:ClassType </extends>
 
 //@Computed the Cast expression for a given expression and its type
-syntax K ::=  elabFieldImpl (
+syntax KItem ::=  elabFieldImpl (
                 K,  // Field qualifier exp (noValue for fields qualified by a class)
                 K   //elabLookup(...), computes into fieldEntry(...) or noValue
               )

@@ -13,7 +13,7 @@ rule [Start-ProcClassMembersPhase]:
     <k> . => processTypeWithDepends(classObject) ~> processClasses(getTopLevelClasses) </k>
     <globalPhase> ProcClassDecsPhase => ProcClassMembersPhase  </globalPhase>
 
-syntax K ::=  processClasses (
+syntax KItem ::=  processClasses (
                 K //setWrap(Set) - the set of all classes
               )
               [strict]
@@ -25,7 +25,7 @@ rule [processClasses]:
 rule [processClasses-Discard]:
     processClasses(setWrap(.)) => .
 
-syntax K ::=  processTypeWithDepends (
+syntax KItem ::=  processTypeWithDepends (
                 ClassType  //the class to be processed,
                            //or noClass if no processing is required
               )
@@ -50,7 +50,7 @@ rule [processTypeWithDepends-Discard]:
 rule [processTypeWithDepends-Discard2]:
     processTypeWithDepends(noClass) => .K
 
-syntax K ::=  processType (
+syntax KItem ::=  processType (
                 ClassType  //the class to be processed
               )
 
@@ -105,7 +105,7 @@ rule [processType-discard]:
     <classPhase> MembersProcessedCPhase </classPhase>
 
 //@ Compute <implTrans> cell - interfaces transitively implemented
-syntax K ::= computeImplTrans ( Set )
+syntax KItem ::= computeImplTrans ( Set )
 
 rule [computeImplTrans]:
     <k>
@@ -123,7 +123,7 @@ rule [computeImplTrans-Elem-Discard]: computeImplTrans( (SetItem(noClass) => .) 
 
 rule [computeImplTrans-Discard]: computeImplTrans(.) => .
 
-syntax K ::=  saveImplTrans (
+syntax KItem ::=  saveImplTrans (
                 K //setWrap(ISet) - transitive set of inherited interfaces
               )
               [strict]
@@ -134,7 +134,7 @@ rule <k> saveImplTrans(setWrap(S1:Set)) => . ...</k>
      <implTrans> _ => S1 </implTrans>
 
 //@ Inherits the methods of the base class, based on rules in JLS \$8.4.8 paragraph 1
-syntax K ::= tryInheritSet ( Set )
+syntax KItem ::= tryInheritSet ( Set )
            | tryInherit ( ClassType )
            | tryInheritImpl ( Map )
 
@@ -167,7 +167,7 @@ rule [tryInheritImpl]:
 
 rule [tryInheritImpl-empty-Discard]: tryInheritImpl(.Map) => .
 
-syntax K ::= isInheritable ( AccessMode )                        [strict]
+syntax KItem ::= isInheritable ( AccessMode )                        [strict]
 
 rule [isInheritable]:
     <k>
@@ -180,7 +180,7 @@ rule [isInheritable]:
     <extends> BaseClass:ClassType </extends>
 
 //A copy of isOverridden from METHOD-INVOKE
-syntax K ::=  isOverridden (
+syntax KItem ::=  isOverridden (
                 ClassType,  //BaseC
                 AccessMode, //BaseAcc
                 ClassType   //SubC
@@ -198,7 +198,7 @@ rule isOverridden(_, private, _) => false
 /*@ Inherit a method by the current class. The inherited method overwrites previous methods
   with the same signature in <methods>
 */
-syntax K ::=  inherit ( MethodRef )
+syntax KItem ::=  inherit ( MethodRef )
 
 rule [inherit]:
     <k> inherit(methodRef(Sig:Signature, DecClass:ClassType)) => . ...</k>
@@ -251,7 +251,7 @@ rule [MethodDec]:
 when
     paramTypesResolved([Params])                            [structural]
 
-syntax K ::= paramTypesResolved( KListWrap )              [function]
+syntax KItem ::= paramTypesResolved( KListWrap )              [function]
 rule paramTypesResolved([('Param(_:K,, T:Type,, _:Id) => .KList),, _])
 rule paramTypesResolved([.KList]) => true
 
@@ -265,7 +265,7 @@ rule [AbstractMethodDec]:
           'NoMethodBody(.KList)
         )
 
-syntax K ::=  storeMethod (
+syntax KItem ::=  storeMethod (
                 KListWrap,   //[Params]
                 ContextType, //will evaluate to ContextType - staticCT or instanceCT
                 AccessMode,  //will evaluate to AccessMode
@@ -500,7 +500,7 @@ when
 rule [ClassDec-discard]: 'ClassDec(_) => .
 rule [InterfaceDec-discard]: 'InterfaceDec(_) => .
 
-syntax K ::= "convertInstanceInitIntoMethod"
+syntax KItem ::= "convertInstanceInitIntoMethod"
 
 rule [convertInstanceInitIntoMethod]:
     <k>
@@ -516,7 +516,7 @@ rule [convertInstanceInitIntoMethod]:
 //@ \subsection{Auxiliary functions}
 
 //@ Evaluates to true::bool if synchronized is among modifiers, false otherwise
-syntax K ::=  isSynchronized (
+syntax KItem ::=  isSynchronized (
                 KListWrap       //[...] - the list of method attributes
               )
               [function]
@@ -529,7 +529,7 @@ when        KL =/=KLabel 'Synchronized
 rule isSynchronized([.KList]) => false::bool
 
 //@ Used to provide an approximate implementation of the distinction between static constant and non-constant fields.
-syntax K ::=  isFinal (
+syntax KItem ::=  isFinal (
                 KListWrap   //[...] - the list of method attributes
               )
               [function]

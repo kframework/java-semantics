@@ -7,10 +7,10 @@ module LITERALS
 
 //@ \subsection{Auxiliary constructs}
 
-syntax K ::= hexToInt ( String )                                  [function]
+syntax KItem ::= hexToInt ( String )                                  [function]
 rule hexToInt(Str:String) => hexToInt(0, Str)
 
-syntax K ::= hexToInt ( Int, String )                             [function]
+syntax KItem ::= hexToInt ( Int, String )                             [function]
 
 rule hexToInt(I:Int, Str:String) => hexToInt( I, retainHead(Str, 1), trimHead(Str, 1) )
 when
@@ -18,7 +18,7 @@ when
 
 rule hexToInt(I:Int, "") => I
 
-syntax K ::=  hexToInt (
+syntax KItem ::=  hexToInt (
                 Int,    //upper digits already converted
                 String, //one char - current digit
                 String  //next digits
@@ -28,7 +28,7 @@ syntax K ::=  hexToInt (
 rule hexToInt(I:Int, Digit:String, Str:String)
      => hexToInt( (I *Int 16) +Int hexDigitToInt(Digit), Str )
 
-syntax K ::= hexDigitToInt ( String )                             [function]
+syntax KItem ::= hexDigitToInt ( String )                             [function]
 
 rule hexDigitToInt(Digit:String) => ordChar(Digit) -Int ordChar("0")
 when        (ordChar(Digit) >=Int ordChar("0"))
@@ -42,10 +42,10 @@ rule hexDigitToInt(Digit:String) => ordChar(Digit) -Int ordChar("a") +Int 10
 when        (ordChar(Digit) >=Int ordChar("a"))
     andBool (ordChar(Digit) <=Int ordChar("f"))
 
-syntax K ::= octaToInt ( String )                                 [function]
+syntax KItem ::= octaToInt ( String )                                 [function]
 rule octaToInt(Str:String) => octaToInt(0, Str)
 
-syntax K ::= octaToInt ( Int, String )                         [function]
+syntax KItem ::= octaToInt ( Int, String )                         [function]
 
 rule octaToInt(I:Int, Str:String) => octaToInt( I, retainHead(Str, 1), trimHead(Str, 1) )
 when
@@ -53,7 +53,7 @@ when
 
 rule octaToInt(I:Int, "") => I
 
-syntax K ::=  octaToInt (
+syntax KItem ::=  octaToInt (
                 Int,    //upper digits already converted
                 String, //one char - current digit
                 String  //next digits
@@ -63,14 +63,14 @@ syntax K ::=  octaToInt (
 rule octaToInt(I:Int, Digit:String, Str:String) =>
     octaToInt( (I *Int 8) +Int octaDigitToInt(Digit), Str )
 
-syntax K ::= octaDigitToInt ( String )                            [function]
+syntax KItem ::= octaDigitToInt ( String )                            [function]
 
 rule octaDigitToInt(Digit:String) => hexDigitToInt(Digit)
 
-syntax K ::= octaAsciiToInt ( Int )                               [function]
+syntax KItem ::= octaAsciiToInt ( Int )                               [function]
 rule octaAsciiToInt(I:Int) => octaDigitToInt(chrChar(I))
 
-syntax K ::= hexAsciiToInt ( Int )                                [function]
+syntax KItem ::= hexAsciiToInt ( Int )                                [function]
 rule hexAsciiToInt(I:Int) => hexDigitToInt(chrChar(I))
 
 //@ \subsection{Integer literals}
@@ -193,7 +193,7 @@ when getKLabel(K) =/=KLabel 'Chars
 
 rule 'Lit('String([.KList])) => ""
 
-syntax K ::= charToString ( K ) [strict]
+syntax KItem ::= charToString ( K ) [strict]
 rule charToString(I:Int :: char) => chrChar(I)
 
 //@ \subsection{Null literal}

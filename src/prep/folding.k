@@ -9,7 +9,7 @@ rule [FoldingPhase-start]:
 
 /*@ The sole content of <k> cell during FoldingPhase
 */
-syntax K ::= "foldingPhase"
+syntax KItem ::= "foldingPhase"
 
 /*So far top-level classes only.*/
 rule [folding-start]:

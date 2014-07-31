@@ -21,7 +21,7 @@ Initialization status of a class may have 3 states: StaticUninitialized, StaticI
   by another thread. Do not match this case.
 4. status = StaticInitialized => the class have been already initialized. Discard the term.
 */
-syntax K ::=  staticInit (
+syntax KItem ::=  staticInit (
                 ClassType // Class - the ClassType to be initialized,
                           // or noClass if this term should be discarded.
               )
@@ -93,7 +93,7 @@ rule [staticInit-empty]:
 /*@ Triggers the last step of static initialization:
 static init status transitions from StaticInitializing to StaticInitialized.
 */
-syntax K ::=  staticInitDone (
+syntax KItem ::=  staticInitDone (
                 ClassType // The class whose initialization just finished
               )
 

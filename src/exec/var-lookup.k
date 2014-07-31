@@ -42,7 +42,7 @@ rule [QThis]:
     </store>
 
 //@ Search for the right value representing QThis(Class) - an expression of type Class.this
-syntax K ::=  lookupQThis (
+syntax KItem ::=  lookupQThis (
                 ClassType,  //the type of this to look for,
                 TypedVal    //the objectRef where the type should be found
               )
@@ -121,7 +121,7 @@ rule [lvalue-Field-static]:
     'Field(Class, X) term is that at the moment when this function is called the target clas is
     surely initialized.
 */
-syntax K ::= staticFieldLookup ( ClassType , Id )
+syntax KItem ::= staticFieldLookup ( ClassType , Id )
 
 rule [staticFieldLookup]:
     <k>
@@ -150,7 +150,7 @@ rule [lvalue-Field-static]:
 /*@ \subsection{lvalue and loc} */
 
 //@ Typed version of lookup and loc
-syntax K ::= typedLookup ( Int )
+syntax KItem ::= typedLookup ( Int )
 
 rule [typedLookup]:
     <k> typedLookup(L:Int) => lookup(L, T) ...</k>
@@ -159,7 +159,7 @@ rule [typedLookup]:
 rule [lvalue-typedLookup]:
     lvalue( typedLookup(L:Int) ) => typedLoc(L)
 
-syntax K ::= typedLoc ( Int )
+syntax KItem ::= typedLoc ( Int )
 
 rule [typedLoc]:
     <k> typedLoc(L:Int) => loc(L)::T ...</k>
@@ -191,7 +191,7 @@ rule lvalue(lookup(L:Int, T:Type)) => loc(L)::T
         [structural]
 
 // Auxiliary structure designed to make field access rules transitions, but local variables not
-syntax K ::= fieldAccessCheckpoint ( Int )
+syntax KItem ::= fieldAccessCheckpoint ( Int )
 
 rule [fieldAccessCheckpoint-Local]:
     <k> fieldAccessCheckpoint(L:Int) => . ...</k>

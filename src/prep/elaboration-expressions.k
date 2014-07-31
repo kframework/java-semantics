@@ -11,7 +11,7 @@ Expression labels are not converted by the default rule in the phase elabDispose
   the type of the expression.
 */
 
-syntax K ::= isBoolResultBinaryExpLabel ( KLabel )  [function]
+syntax KItem ::= isBoolResultBinaryExpLabel ( KLabel )  [function]
 rule isBoolResultBinaryExpLabel('LazyOr) => true
 rule isBoolResultBinaryExpLabel('LazyAnd) => true
 rule isBoolResultBinaryExpLabel('Eq) => true
@@ -78,7 +78,7 @@ rule [elabEnd-Cond]:
 /*@ Computes the type of a conditional expression.
     Operands evaluate into types.
 */
-syntax K ::= condType ( Type, Type ) [strict]
+syntax KItem ::= condType ( Type, Type ) [strict]
 
 rule [condType-NoChar]:
     condType(T1:Type,T2:Type) => ifAux(subtype(T1,T2), T2, T1)
@@ -97,7 +97,7 @@ rule [condType-FirstChar]:
     The whole expression is then rewritten into elabRes(cast(SecondArgAsType, FirstArg))
     We cannot eliminate this wrapper because the second argument in all usage places is not a function.
 */
-syntax K ::= elabExpAndType ( K, K )  [strict(2)]
+syntax KItem ::= elabExpAndType ( K, K )  [strict(2)]
 rule elabExpAndType(K:K, T:Type) => elabRes(cast(T, K))
 
 rule [elabEnd-Assign-SameType]:

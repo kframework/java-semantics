@@ -495,7 +495,7 @@ when
 Returns the list of classes representing the layer of the given object (by OId),
   located between MostBaseClass (exclusively) and MostDerivedClass (inclusively).
 */
-syntax K ::=  getClassChain( ClassType, //MostBaseClass
+syntax KItem ::=  getClassChain( ClassType, //MostBaseClass
                              ClassTypes    //MostDerivedClass at beginning, gradually accumulates
                                           //the list of classes
               )
@@ -505,7 +505,7 @@ Search for the right implementation is performed from the compile-time type of t
 to more derived types, up to the object type of the target.
 This is required in order to respect the rules of inheritance in the presence of access modes.
 Evaluates into typed method closure.*/
-syntax K ::=  lookupPackageMethod (
+syntax KItem ::=  lookupPackageMethod (
                 Signature,  //sig(Name, SigTL) - Method signature
                 ClassTypes,    //computes Class,... , list of elements of type ClassType,
                               // from base to derived.
@@ -591,7 +591,7 @@ The method is overridden if either:
   - Acc is protected or public
   - Acc is package and BaseC and SubC are declared in the same package (JLS \S6.6)
 */
-syntax K ::=  isOverridden (
+syntax KItem ::=  isOverridden (
                 ClassType,  //BaseC
                 AccessMode, //BaseAcc
                 ClassType   //SubC
@@ -748,13 +748,13 @@ rule [Invoke-methodRef]:
     <methodBody> Body:K </methodBody>
 when getKLabel(Body) =/=KLabel 'NoMethodBody
 
-syntax K ::= getOId( K )              [function]
+syntax KItem ::= getOId( K )              [function]
 rule getOId( objectRef(OId:Int,_)::_ ) => OId
 rule getOId( noValue ) => noValue
 
 /* Binds a list of formal parameters to their values. Used by method calls and try-catch.
 */
-syntax K ::= initParams ( Params,   // {T:Type X:Id},... - parameter declarations
+syntax KItem ::= initParams ( Params,   // {T:Type X:Id},... - parameter declarations
                           TypedVals // values
                         )
 
@@ -903,7 +903,7 @@ when
 /* [Skip] Auxiliary function for methods that need implementation in the semantics. The implementation
   of this production is given in api-core.k and api-threads.k.
 */
-syntax K ::=  invokeImpl (
+syntax KItem ::=  invokeImpl (
                 MethodRef,  //the method reference
                 K,          //KResult - method call target
                               //either objectRef(OL:Int,_)::_ ,

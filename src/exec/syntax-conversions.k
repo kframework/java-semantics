@@ -20,7 +20,7 @@ syntax Param ::= "{" K Id "}"        [klabel('ParamImpl)]
 
 syntax Params ::= List{Param, ","}
 
-syntax K ::= toParams( KListWrap )          [function]
+syntax KItem ::= toParams( KListWrap )          [function]
            | toParams( KListWrap , Params ) [function]
 
 rule toParams([KLParams:KList]) => toParams([KLParams], .Params)
@@ -167,14 +167,14 @@ rule [NewInstance-to-QNewInstance-unpack]:
 */
 syntax Exps ::= List{Exp, ","} [seqstrict]
 
-syntax K ::= toExps( KListWrap )        [function]
+syntax KItem ::= toExps( KListWrap )        [function]
            | toExps( KListWrap , Exps ) [function]
 
 rule toExps([Args:KList]) => toExps([Args], .Exps)
 rule toExps([Args:KList,, Arg:Exp], Es:Exps) => toExps([Args], (Arg,Es))
 rule toExps([.KList], Es:Exps) => Es
 
-syntax K ::= toKListWrap( Exps )              [function]
+syntax KItem ::= toKListWrap( Exps )              [function]
            | toKListWrap( KListWrap , Exps )  [function]
 
 rule toKListWrap(Args:Exps) => toKListWrap([.KList], Args)
@@ -185,7 +185,7 @@ syntax Exps ::= TypedVals
 syntax TypedVals ::= List{TypedVal, ","}
 
 //@ Converts a TypedVals term to Types. Uses typeOf underneath.
-syntax K ::=  getTypes (
+syntax KItem ::=  getTypes (
                 TypedVals     // a list of source values
               )
               [function]

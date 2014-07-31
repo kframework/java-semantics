@@ -5,7 +5,7 @@ module CORE-EXEC
     imports SYNTAX-CONVERSIONS
 
 //@ ListItem content as a stack layer
-syntax K ::=  sl (
+syntax KItem ::=  sl (
                 K,  //K - rest of computation
                 Bag //MethContext - the content of <methodContext>
               )
@@ -13,7 +13,7 @@ syntax K ::=  sl (
 //@ \subsection{Auxiliary methods}
 
 //@ Restore the content of the cell <methodContext>
-syntax K ::=  restoreMethContext (
+syntax KItem ::=  restoreMethContext (
                 Bag                 //The content of <methodContext>
               )
 
@@ -23,7 +23,7 @@ rule [restoreMethContext]:
 
 /*@ \subsection{lvalue and loc syntax} */
 
-syntax K ::= lvalue ( K )
+syntax KItem ::= lvalue ( K )
 syntax RawVal ::= loc ( Int )
 
 endmodule

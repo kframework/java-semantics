@@ -60,10 +60,10 @@ module ELABORATION-CORE
     imports ELABORATION-EXPRESSIONS // for isExpressionLabel
 
 /*@Custom hole used for custom heating/cooling rules in the elaboration phase.*/
-syntax K ::= "CHOLE"
+syntax KItem ::= "CHOLE"
 
 //@Elaborates the given statement/expression. The first step of elaboration.
-syntax K ::= elab ( K )
+syntax KItem ::= elab ( K )
 
 //@ Wraps the elaboration result. Since elaboration may happen at both ElaborationPhase and ExecutionPhase, it cannot be KResult. Actually it is not KResult for HOLE, but is for CHOLE.
 syntax ElabKResult ::= elabRes ( K )
@@ -76,7 +76,7 @@ Evaluate the first argument. if it is KResult (except noValue) or elabRes(), the
 the result of the first argument. Otherwise, if the first argument evaluates to noValue, the result of the
 ?? expression is the result of the second argument.
 */
-syntax K ::= K "??" K [right]
+syntax KItem ::= K "??" K [right]
 
 rule [chainOfResponsibility-Heat]:
     (. => Arg1) ~> (Arg1:K => CHOLE) ?? _
@@ -98,7 +98,7 @@ rule [chainOfResponsibility-Result2]:
   It is notably NOT a cast() expression. This, together with the fact that cast() have no elaboration heatig rules,
   makes the whole elaboration phase non-reentrant.
 */
-syntax K ::= isElabKList ( KListWrap )                 [function]
+syntax KItem ::= isElabKList ( KListWrap )                 [function]
 rule isElabKList([ElabKR:ElabKResult,, Ks:KList]) => isElabKList([Ks])
 rule isElabKList([.KList]) => true
 
@@ -112,7 +112,7 @@ rule [elab-Param]:
     <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv>
 
 //@Removes the last layer from <elabEnv>
-syntax K ::= "removeLastElabEnv"
+syntax KItem ::= "removeLastElabEnv"
 rule [removeLastElabEnv]:
     <k> removeLastElabEnv => . ...</k>
     <elabEnv> ListItem(_) => . ...</elabEnv>
@@ -152,7 +152,7 @@ of their children. The KLabels that heat all their children using default rules 
 defaultElabHeating.
 
 The predicate definition is scattered across modules related to elaboration.*/
-syntax K ::= customElabHeating ( KLabel, KListWrap )          [function]
+syntax KItem ::= customElabHeating ( KLabel, KListWrap )          [function]
 
 /*@ The default algorithm of transforming the term from elab to elabRes, when the children were completely elaborated.
   Deletes elabRes wrappers from children. This algorithm is activated when the following conditions apply:
@@ -161,7 +161,7 @@ syntax K ::= customElabHeating ( KLabel, KListWrap )          [function]
     - term is not naked. This case should never be true, but there is some weird case that requires it.
   When the default algorithm is not appropriate, the respective term should be in the cathegory customElabChildren
 */
-syntax K ::= elabDispose ( K )
+syntax KItem ::= elabDispose ( K )
 
 /*@ This rule is universal for all forms of terms, both instructions and statements.
 */
@@ -179,7 +179,7 @@ when
     notBool haveElabRes([Ks]) ==K true
 
 //@ True if given KList have no terms of the form elabRes(...), false otherwise.
-syntax K ::= haveElabRes ( KListWrap )          [function]
+syntax KItem ::= haveElabRes ( KListWrap )          [function]
 rule haveElabRes([_,, elabRes(_),, _]) => true
 
 //K bug additional rule required since we introduced KListWrap
@@ -189,7 +189,7 @@ rule haveElabRes([_,, KList2KLabel _,, elabRes(_),, _ (_),, _]) => true
 unwrapped from elabRes(), but root node might not be elaborated yet. The implementation is scattered across all modules
 that deal with the elaboration phase.
 */
-syntax K ::= elabEnd ( K )
+syntax KItem ::= elabEnd ( K )
 
 //@ \subsection{Auxiliary functions for elaboration phase}
 
@@ -198,7 +198,7 @@ where QualClass is searched in the enclosing context of the first argument,
 being a subclass of the second one.
 Or noValue if no suitable result is found
 */
-syntax K ::=  findQualifierOfType (
+syntax KItem ::=  findQualifierOfType (
                 ClassType,  //The context class in which qualifier is searched for.
                 ClassType   //Qualifier should be subclass of this class
               )
@@ -238,7 +238,7 @@ when
     notBool (isExp(KL(Ks)) ==K true orBool customElabEnd(KL) ==K true)
 
 //@ The implementation is scattered across elaboration-related modules
-syntax K ::= customElabEnd ( KLabel )                       [function]
+syntax KItem ::= customElabEnd ( KLabel )                       [function]
 
 //@ Eliminate stmtAndExp if the first argument is empty, otherwise keep it for execution phase.
 rule elabEnd( stmtAndExp(Stmt:K, cast(T:Type, Exp:K)) )

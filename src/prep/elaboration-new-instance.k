@@ -51,7 +51,7 @@ rule [elab-QNewInstance-resolve-class]:
 /*@ Resolve the simple name of an inner class to a fully qualified class name in
     a qualified new like: o.new A(...);
 */
-syntax K ::=  resolveInnerClass (
+syntax KItem ::=  resolveInnerClass (
                 ClassType,  //QualClass - the type of the qualifier
                 Id          //Name - instantiated class simple name
               )
@@ -68,7 +68,7 @@ rule [resolveInnerClass]:
     <extends> BaseQualClass:ClassType </extends>
 
 //@ If with the fiven package and name exists, return this class. Otherwise return noValue
-syntax K ::= getClassIfExists ( PackageId, Id )
+syntax KItem ::= getClassIfExists ( PackageId, Id )
 
 rule [getClassIfExists]:
     <k>

@@ -29,7 +29,7 @@ rule 'Void(.KList) => void      [structural, anywhere]
 
 //@ \subsection{Integer types normalization}
 
-syntax K ::= bitCount ( Type ) [function]
+syntax KItem ::= bitCount ( Type ) [function]
 rule bitCount(byte) => 8
 rule bitCount(short) => 16
 rule bitCount(int) => 32
@@ -39,7 +39,7 @@ rule bitCount(char) => 16
 /*@ Symbolic execution limitation: this construct cannot be [function]
     When conditionals are needed, implementation have to use 'If - the symbolically processed version of if.
 */
-syntax K ::= normalize ( TypedVal )
+syntax KItem ::= normalize ( TypedVal )
 
 rule normalize(I:Int :: IntT:IntType)
     =>  ifAux(isInRange(I::IntT),
@@ -61,7 +61,7 @@ rule normalize(F:Float :: IntT:IntType) => normalize(Float2Int(F) :: IntT:IntTyp
 rule normalize(F:Float :: FloatT:FloatType) => F::FloatT
 
 //@ Symbolic execution limitation: this construct cannot be [function]
-syntax K ::= isInRange ( TypedVal )
+syntax KItem ::= isInRange ( TypedVal )
 rule isInRange(I:Int::byte) => ((I >=Int -128) andBool (I <=Int 127))
 rule isInRange(I:Int::short) => ((I >=Int -32768) andBool (I <=Int 32767))
 rule isInRange(I:Int::int) => ((I >=Int -2147483648) andBool (I <=Int 2147483647))
@@ -74,7 +74,7 @@ when notBool (isInt(RV) ==K true)
 
 /*@ Symbolic execution limitation: this construct cannot be [function]
 */
-syntax K ::= normalizeImpl ( TypedVal )
+syntax KItem ::= normalizeImpl ( TypedVal )
 
 rule normalizeImpl(I:Int :: T:Type)
     => normalizeSign((((I &Int ((1 <<Int bitCount(T)) -Int 1))
@@ -84,7 +84,7 @@ rule normalizeImpl(I:Int :: T:Type)
 /*@ Symbolic execution limitation: this construct cannot be [function]
     When conditionals are needed, implementation have to use 'If - the symbolically processed version of if.
 */
-syntax K ::= normalizeSign ( TypedVal )       [strict]
+syntax KItem ::= normalizeSign ( TypedVal )       [strict]
 
 rule normalizeSign(I:Int :: T:Type)
     =>  ifAux(I <=Int ((1 <<Int (bitCount(T) -Int 1)) -Int 1),
@@ -95,14 +95,14 @@ rule normalizeSign(I:Int :: T:Type)
 /*@ Symbolic execution limitation: this construct cannot be [function]
     When conditionals are needed, implementation have to use 'If - the symbolically processed version of if.
 */
-syntax K ::= toUnsigned ( TypedVal )          [strict]
+syntax KItem ::= toUnsigned ( TypedVal )          [strict]
 rule toUnsigned(I:Int :: T:Type)
     =>  ifAux(I >=Int 0,
           I :: T,
           I +Int (1 <<Int bitCount(T)) :: T
         )
 
-syntax K ::= normalizeType ( Type )           [function]
+syntax KItem ::= normalizeType ( Type )           [function]
 rule normalizeType(ILT:IntOrLongType) => ILT
 
 rule normalizeType(FT:FloatType) => FT
@@ -112,7 +112,7 @@ when (IT =/=K int) andBool (IT =/=K long)
 
 /*@ Important! Binary normalizeType cannot be function because it uses sybtype in implementation.
 */
-syntax K ::= normalizeType ( Type, Type )
+syntax KItem ::= normalizeType ( Type, Type )
 
 rule normalizeType(NT1:IntType, NT2:IntType) => int
 when (NT1 =/=K long) andBool (NT2 =/=K long)

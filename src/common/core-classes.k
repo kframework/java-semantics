@@ -11,19 +11,19 @@ module CORE-CLASSES
 
 //@ \subsection{Shortcuts for the most frequently used classes within the semantics}
 
-syntax K ::= "classObject"
+syntax KItem ::= "classObject"
     [function, latex(\terminal{Object})]
 rule classObject => class String2Id("java.lang.Object")
 
-syntax K ::= "classString"
+syntax KItem ::= "classString"
     [function, latex(\terminal{String})]
 rule classString => class String2Id("java.lang.String")
 
-syntax K ::= "classNullPointerException"
+syntax KItem ::= "classNullPointerException"
     [function, latex(\terminal{NullPointerException})]
 rule classNullPointerException => class String2Id("java.lang.NullPointerException")
 
-syntax K ::= "classArrayImpl"                   [function]
+syntax KItem ::= "classArrayImpl"                   [function]
 rule classArrayImpl => class String2Id("java.lang.ArrayImpl")
 
 //@ \subsection{Packages}
@@ -35,11 +35,11 @@ syntax KResult ::= PackageId
 /*@ Converts a term of type ClassType into a term of type PackageId representing this class.
     This is the package for this class' inner classes.
 */
-syntax K ::= toPackage  ( ClassType )       [function]
+syntax KItem ::= toPackage  ( ClassType )       [function]
 rule toPackage(class Class:Id) => packageId(Class)
 
 /*@Returns the package of the given class*/
-syntax K ::= getPackage ( K )               [strict]
+syntax KItem ::= getPackage ( K )               [strict]
 rule getPackage(class ClassId:Id)
     => packageId( String2Id(retainHead(
       Id2String(ClassId),
@@ -59,7 +59,7 @@ rule getClassType(packageId(PackKId:Id), SimpleClass:Id)
      => class String2Id(Id2String(PackKId) +String "." +String Id2String(SimpleClass))
 
 /*@Returns the top-level class enclosing this class*/
-syntax K ::= getTopLevel ( ClassType )
+syntax KItem ::= getTopLevel ( ClassType )
 
 rule [getTopLevel-move-up]:
     <k>
@@ -90,7 +90,7 @@ syntax KLabel ::=   "'Public"
                   | "'StrictFP"
 
 //@ Restore the content of <crntClass> with the given class
-syntax K ::=  restoreCrntClass (
+syntax KItem ::=  restoreCrntClass (
                 ClassType //old content of <crntClass>
               )
 
@@ -99,7 +99,7 @@ rule [restoreAfterProcessLocalClass]:
     <crntClass> _ => Class </crntClass>
 
 //@ Get the internal constructor name for a given class
-syntax K ::= getConsName ( ClassType )                               [function]
+syntax KItem ::= getConsName ( ClassType )                               [function]
 rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(ClassId))
 
 //@ \subsection{Expressions and their subsorts}

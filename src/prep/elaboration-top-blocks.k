@@ -13,7 +13,7 @@ rule [ElaborationPhase-start]:
 /*@ Elaborate the blocks inside all classes.
 Argument K = setWrap(Set) - the set of all classes.
 */
-syntax K ::= elaborateBlocks ( K ) [strict]
+syntax KItem ::= elaborateBlocks ( K ) [strict]
 
 /*@ It is important to elaborate the instance initializers before the methods.
     This way, when 'SuperConstrEnv is encountered, it inserts the already elaborated instance
@@ -40,7 +40,7 @@ rule [elaborateBlocks-discard]:
 When a class elaboration starts, the map is initialized with the contet of <methods> - all the methods accessible in
 the current class. Only methods declared in the current class are elaborated. The rest are discarded from the map.
 */
-syntax K ::= elabMethods ( Map )
+syntax KItem ::= elabMethods ( Map )
 
 rule [elabMethods-Heat-MethodParams]:
     <k>
@@ -112,7 +112,7 @@ when
 rule [elabMethods-End]:
     elabMethods( .Map ) => .
 
-syntax K ::= "elabStaticInit"
+syntax KItem ::= "elabStaticInit"
 
 rule [elabStaticInit-Heat]:
     <k> (. => addElabEnv ~> elab(K)) ~> elabStaticInit ...</k>
@@ -129,7 +129,7 @@ rule [elabStaticInit-End]:
     <staticInit> CHOLE => K </staticInit>
 
 //@Adds a new empty layer to <elabEnv>
-syntax K ::= "addElabEnv"
+syntax KItem ::= "addElabEnv"
 rule [addElabEnv]:
     <k> addElabEnv => . ...</k>
     <elabEnv> . => ListItem(mapWrap(.Map)) ...</elabEnv>
