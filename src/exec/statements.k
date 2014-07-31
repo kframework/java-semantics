@@ -35,8 +35,8 @@ syntax KLabel ::= "'Empty"
                 | "'SwitchGroup"
                 | "'Case"
                 | "'Default"
-                | "'While"
-                | "'DoWhile"
+//                | "'While"
+//                | "'DoWhile"
                 | "'For"
                 | "'Break"
                 | "'Continue"
@@ -188,7 +188,7 @@ rule [switchEnd-Discard]:
 
 //@ \subsection{While statement} and loop infrastructure.
 
-rule 'While(E:K,,S:K) => whileImpl(E, S)         [structural]
+rule while(E:K){S:K} => whileImpl(E, S)         [structural]
 
 syntax K ::=  whileImpl (
                 K,  // E - test expression. In For loop, it is UpdClause ~> testExp
@@ -196,10 +196,10 @@ syntax K ::=  whileImpl (
               )
 
 rule [whileImpl]:
-    whileImpl(E:K, S:K) => 'If(E,, 'Block(S ~> whileImpl(E, S)),, .K)     [structural]
+    whileImpl(E:K, S:K) => if(E){S ~> whileImpl(E, S)}    [structural]
 
 //@ \subsection{Do statement}
-rule 'DoWhile(S:K,,E:K) => S ~> whileImpl(E, S)  [structural]
+rule do{S:K}while(E:K) => S ~> whileImpl(E, S)  [structural]
 
 //@ \subsection{For statement}
 
