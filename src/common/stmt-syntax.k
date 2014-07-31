@@ -6,7 +6,10 @@ module STMT-SYNTAX
     imports CORE-CLASSES
 
 syntax Stmt ::= "if" "(" K ")" "{" K "}" "else" "{" K "}" [strict(1),klabel('If)]
-		| "if" "(" K ")" "{" K "}" [strict(1),klabel('If)]
+		|"if" "(" K ")" "{" K "}" [strict(1),klabel('If)]
 		|"while" "(" K ")" "{" K "}" [strict(1),klabel('While)]
-		|"do""{" K "}""while" "(" K ")"[strict(2),klabel('DoWhile)]
+		|"do" "{" K "}" "while" "(" K ")"[strict(2),klabel('DoWhile)]
+		|"for" "(" K ";" K ";" K ")" "{" K "}" [klabel('For)]
+		//|"break" [klabel('Break)]
+		|"break" Exp [klabel('Break)]
 endmodule

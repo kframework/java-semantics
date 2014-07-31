@@ -37,8 +37,8 @@ syntax KLabel ::= "'Empty"
                 | "'Default"
 //                | "'While"
 //                | "'DoWhile"
-                | "'For"
-                | "'Break"
+//                | "'For"
+//                | "'Break"
                 | "'Continue"
                 | "'Return"
                 | "'Throw"
@@ -221,35 +221,36 @@ when
     notBool ( getKLabel(K) ==KLabel 'cast )                               [structural]
 
 rule [For-FirstArgV1Red]:
-    'For((
+    for((
       [InitExps:KList] => stm([InitExps])
-    ),,_:KList)
+    );_:K;_:K) {_:K}
         [structural]
 
 //Works also in elaboration phase
 rule [For-FirstArgV2Red]:
-    'For((
+    for((
       'LocalVarDec(Ks:KList) => stm(['LocalVarDec(Ks)])
-    ),,_:KList)
+    );_:K;_:K) {_:K}
         [structural]
 
 rule [For-SecondArgRed]:
-    'For(_:K,,(
+    for(_:K;(
       'None(.KList) => 'Some(true)
-    ),,_:KList)
+    );_:K) {_:K}
         [structural]
 
 rule [For-ThirdArgRed]:
-    'For(_:K,,_:K,,(
+    for(_:K;_:K;(
       [UpdExps:KList] => stm([UpdExps])
-    ),,_:K)
+    )) {_:K}
         [structural]
 
 //this form of resulting while is required for compatibility with continue statement
 rule [For]:
-    'For(stm(InitClause:KListWrap),, 'Some(TestExp:K),, stm(UpdClause:KListWrap),, S:K)
+    for(stm(InitClause:KListWrap); 'Some(TestExp:K); stm(UpdClause:KListWrap)) {S:K}
      => 'Block(stm(InitClause)
-        ~> 'If(TestExp,, 'Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S),, .K))  [structural]
+        //~> 'If(TestExp,, 'Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S),, .K))  [structural]
+        ~> if(TestExp) {'Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S)})  [structural]
 
 //totest model check - the argument of 'return and 'Throw must be evaluated. Otherwise some side effects during
 // evaluation might be evaluated too late
@@ -272,7 +273,8 @@ rule isStackConsumerStmt('Continue(_)) => true
 //@ \subsection{Break statement}
 
 rule [Break-UnlabeledPropagate]:
-    'Break('None(_)) ~> (KL:KLabel(_) => .)
+   // 'Break('None(_)) ~> (KL:KLabel(_) => .)
+    break 'None(_) ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
@@ -280,25 +282,29 @@ when
     andBool KL =/=KLabel 'switchEnd
 
 rule [Break-Unlabeled]:
-    'Break('None(_)) ~> KL:KLabel(_) => .
+    //'Break('None(_)) ~> KL:KLabel(_) => .
+    break 'None(_) ~> KL:KLabel(_) => .
 when
            KL ==KLabel 'whileImpl
     orBool KL ==KLabel 'switchEnd
 
 rule [Break-LabeledPropagate]:
-    'Break('Some(X:Id)) ~> (KL:KLabel(_) => .)
+   // 'Break('Some(X:Id)) ~> (KL:KLabel(_) => .)
+    break 'Some(X:Id) ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
     andBool KL =/=KLabel 'labeledImpl
 
 rule [BreakLabeledNotMatch]:
-    'Break('Some(X1:Id)) ~> (labeledImpl(X2:Id) => .)
+    //'Break('Some(X1:Id)) ~> (labeledImpl(X2:Id) => .)
+    break 'Some(X1:Id) ~> (labeledImpl(X2:Id) => .)
 when
     X1 =/=K X2
 
 rule [Break-LabeledMatch]:
-    'Break('Some(X:Id)) ~> labeledImpl(X:Id) => .
+    //'Break('Some(X:Id)) ~> labeledImpl(X:Id) => .
+    break 'Some(X:Id) ~> labeledImpl(X:Id) => .
 
 //@ \subsection{Continue statement}
 
