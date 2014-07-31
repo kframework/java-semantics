@@ -39,7 +39,7 @@ syntax KLabel ::= "'Empty"
 //                | "'DoWhile"
 //                | "'For"
 //                | "'Break"
-                | "'Continue"
+//                | "'Continue"
                 | "'Return"
                 | "'Throw"
                 | "'Try"
@@ -309,27 +309,32 @@ rule [Break-LabeledMatch]:
 //@ \subsection{Continue statement}
 
 rule [Continue-Propagate]:
-    'Continue(_) ~> (KL:KLabel(_) => .)
+//    'Continue(_) ~> (KL:KLabel(_) => .)
+    continue _ ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
     andBool KL =/=KLabel 'whileImpl
 
 rule [Continue-Unlabeled]:
-    ('Continue('None(_)) => .) ~> whileImpl(_,_)
+//    ('Continue('None(_)) => .) ~> whileImpl(_,_)
+   (continue 'None(_) => .) ~> whileImpl(_,_)
 
 rule [Continue-LabeledMeetsWhile]:
     <k>
-      (. => getWhileLabel(Rest)) ~> 'Continue('Some(X:Id)) ~> whileImpl(_,_) ~> Rest:K
+//      (. => getWhileLabel(Rest)) ~> 'Continue('Some(X:Id)) ~> whileImpl(_,_) ~> Rest:K
+      (. => getWhileLabel(Rest)) ~> continue 'Some(X:Id) ~> whileImpl(_,_) ~> Rest:K
     </k>
 
 rule [Continue-LabeledNotMatch]:
-    (whileLabel(LabelK:K) => .) ~> 'Continue('Some(X:Id)) ~> (whileImpl(_,_) => .)
+//    (whileLabel(LabelK:K) => .) ~> 'Continue('Some(X:Id)) ~> (whileImpl(_,_) => .)
+    (whileLabel(LabelK:K) => .) ~> continue 'Some(X:Id) ~> (whileImpl(_,_) => .)
 when
     LabelK =/=K X
 
 rule [Continue-LabeledMatch]:
-    whileLabel(X) ~> 'Continue('Some(X:Id)) => .
+//    whileLabel(X) ~> 'Continue('Some(X:Id)) => .
+    whileLabel(X) ~> continue 'Some(X:Id) => .
 
 /*@ Auxiliary constructs used in the semantics of continue.
 Search for the label associated with the last encountered while statement*/
