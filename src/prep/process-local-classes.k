@@ -16,7 +16,7 @@ rule [elab-ClassDecStm]:
     elab('ClassDecStm(ClassDec:K)) => processLocalClassDec( ClassDec, generateLocalClassType(ClassDec), false )
 
 //@ generates a ClassType for the given 'ClassDec term representign a local class
-syntax K ::=  generateLocalClassType(
+syntax KItem ::=  generateLocalClassType(
                 K //ClassDec
               )
 
@@ -30,7 +30,7 @@ rule [generateLocalClassType]:
     <nextLocalId> LocalId:Int => LocalId +Int 1 </nextLocalId>
 
 //@ Register a local class in the given generated package and fully process it.
-syntax K ::=  processLocalClassDec (
+syntax KItem ::=  processLocalClassDec (
                 K,          //the 'ClassDec term
                 ClassType,  //GeneratedClass:ClassType at substep 1, .K when generated name have been registered.
                 Bool        //ClassRegistered - false for substep 1, true for substep 2.
@@ -75,7 +75,7 @@ rule [processLocalClassDec-process]:
 /*@ Passes the freshly discovered/constructed class declaration through all the preprocessing steps
   except elaboration. Only usable for individual classes, when the rest of the classpath is already preprocessed.
 */
-syntax K ::=  registerClass(
+syntax KItem ::=  registerClass(
                 K,          // ClassDec:K,
                 PackageId,  // Pack:PackageId,
                 ClassType,  // Class:ClassType,
@@ -95,7 +95,7 @@ rule [registerClass]:
   {Accessible outer env} = (the whole outer env} - {all names X that could be resolved by elabLookup(Class, X)}
   elabLookup don't search the var in otuer classes. Just in this class and base classes.
 */
-syntax K ::=  localClassGetAccessibleOuterEnv( ClassType )
+syntax KItem ::=  localClassGetAccessibleOuterEnv( ClassType )
             | localClassGetAccessibleOuterEnv(
                 ClassType,  //the local class
                 Map,        //The full outer local environment
@@ -140,7 +140,7 @@ rule [localClassGetAccessibleOuterEnv-end]:
   - Add a field to the class for each outer local variable
   - For each constructor add an argument for each outer local variable
 */
-syntax K ::=  localClassTransformIntoInner (
+syntax KItem ::=  localClassTransformIntoInner (
                 ClassType,  //the local class
                 K           // computes into mapWrap(Map[Id |-> Type]) - the accessible outer local var environment
               )
@@ -162,7 +162,7 @@ rule [localClassTransformIntoInner]:
     - the field LocaClass@LocalEnv_obj that will be created later, a self reference required when a local class
     instantiates either itself or an enclosing local class. See tests 957, 958.
 */
-syntax K ::=  localClassTransformIntoInnerImpl (
+syntax KItem ::=  localClassTransformIntoInnerImpl (
                 ClassType,  //the local class
                 K           // computes into mapWrap(Map[Id |-> Type]) - the accessible outer local var environment
               )
@@ -178,11 +178,11 @@ rule [localClassTransformIntoInnerImpl]:
     <classType> Class </classType>
     <enclosingLocalEnv> _ => AccessibleLocalEnv </enclosingLocalEnv>
 
-syntax K ::= generateLocalEnvClassType( ClassType )                              [function]
+syntax KItem ::= generateLocalEnvClassType( ClassType )                              [function]
 rule generateLocalEnvClassType(class X:Id) => class String2Id(Id2String(X) +String "$LocalEnv")
 
 /*@ Add the given fields definitions to the given class. The class is in MembersProcessedCPhase*/
-syntax K ::=  localEnvObjectBuild (
+syntax KItem ::=  localEnvObjectBuild (
                 K,          // LocalEnvClass - The name of the local env class
                 Map         // Map[Name |-> Type] - the fields
               )
@@ -219,7 +219,7 @@ rule [localEnvObjectBuild]:
     </k>
     <contextType> CT:ContextType </contextType>
 
-syntax K ::=  localEnvClassAddFieldsAndRegister(
+syntax KItem ::=  localEnvClassAddFieldsAndRegister(
                 K,          // 'ClassDec
                 ClassType,  // LocalEnvClass
                 Map         // AccessibleLocalEnv
@@ -243,10 +243,10 @@ rule [localEnvClassAddFieldsAndRegister-register]:
     <crntClass> CrntClass:ClassType </crntClass>
 
 //@ should be function because Id is not a KResult
-syntax K ::= generateLocalEnvVarName( ClassType )   [function]
+syntax KItem ::= generateLocalEnvVarName( ClassType )   [function]
 rule generateLocalEnvVarName(class X:Id) => String2Id(Id2String(X) +String "_obj")
 
-syntax K ::=  localEnvObjectSetFields(
+syntax KItem ::=  localEnvObjectSetFields(
                 Id,    // LocalEnvVar
                 Map    // AccessibleLocalEnv
               )
@@ -262,7 +262,7 @@ rule [localEnvObjectSetFields-discard]:
     localEnvObjectSetFields(_, .Map) => .K
 
 /*@ Add the given fields definitions to the given class. The class is in MembersProcessedCPhase*/
-syntax K ::=  localClassAugmentFields (
+syntax KItem ::=  localClassAugmentFields (
                 ClassType,  // LocalClass
                 ClassType   // LocalEnvClass
               )
@@ -274,7 +274,7 @@ rule [localClassAugmentFields]:
       [_,, ( .KList => 'FieldDec([ .KList ],, LocalEnvClass,, ['VarDec(String2Id("$local_env"))]) ) ]
     </instanceFields>
 
-syntax K ::=  localClassAugmentConsParams (
+syntax KItem ::=  localClassAugmentConsParams (
                 ClassType,  // LocalClass
                 Id,         // ConsName - constructor name
                 ClassType   // LocalEnvClass
@@ -305,21 +305,21 @@ rule [localClassAugmentConsParams-end]:
 when
     notBool haveUnaugmentedConstructors(ConsName, LocalEnvClass, Methods) ==K true
 
-syntax K ::= haveUnaugmentedConstructors( Id, ClassType, Map )                [function]
+syntax KItem ::= haveUnaugmentedConstructors( Id, ClassType, Map )                [function]
 rule haveUnaugmentedConstructors(ConsName:Id, LocalEnvClass:ClassType,
                                  (sig(ConsName:Id, types(TList:KList)) |-> _) _:Map) => true
 when
     notBool getLastKListElement([TList]) ==K LocalEnvClass
 
 //@ Elaborates the given node and saves it to <elabBuffer>
-syntax K ::= appendToElabBuffer ( K ) //[strict, context(result(ElabKResult))] //K bug generalized strictness
+syntax KItem ::= appendToElabBuffer ( K ) //[strict, context(result(ElabKResult))] //K bug generalized strictness
 context appendToElabBuffer ( HOLE )              [result(ElabKResult)]
 
 rule [appendToElabBuffer]:
     <k> appendToElabBuffer(elabRes(K:K)) => . ...</k>
     <elabBuffer> [_,, (.KList => K)] </elabBuffer>
 
-syntax K ::= "loadElabBuffer"
+syntax KItem ::= "loadElabBuffer"
 
 rule [loadElabBuffer]:
     <k> loadElabBuffer => elabRes(ElabBuffer) ...</k>
@@ -327,7 +327,7 @@ rule [loadElabBuffer]:
 
 //@\section{Utility functions for other modules}
 
-syntax K ::= localClassGetExtraArgs( ClassType )
+syntax KItem ::= localClassGetExtraArgs( ClassType )
 
 /*@ When <enclosingLocalEnv> is not empty (only possible for certain local classes),
   we add one more argument to the consturctor call - the local environment object. */

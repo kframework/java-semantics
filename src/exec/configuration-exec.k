@@ -178,7 +178,7 @@ configuration
         <program color="LightSteelBlue"> $PGM:K </program>
 
         //Main class, passed as krun argument. We need it from the outside, just like JDK Java.
-        <mainClass color="LightSteelBlue"> $MainClass:ListItem </mainClass>
+        <mainClass color="LightSteelBlue"> $MainClass:List </mainClass>
 
       </phStart>
 

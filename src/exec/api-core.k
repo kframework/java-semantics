@@ -67,7 +67,7 @@ when
     Class ==K class String2Id("java.util.Scanner") andBool Id2String(MethodName) ==String "nextLine"
 
 //@An intermediate construct for reading from console, meant mostly to simplify debugging.
-syntax K ::=  "readInt"
+syntax KItem ::=  "readInt"
             | "readString"
 
 rule [readInt]:
@@ -224,7 +224,7 @@ when
     Class ==K classArrayImpl andBool Id2String(MethodName) ==String "clone"
 
 //@ Construct to copy content of an array to another after copy, the term is rewritten into the destination array.
-syntax K ::=  arrayCopy (
+syntax KItem ::=  arrayCopy (
                 TypedVal, // source array
                 K         // destination array, computes to TypedVal
               )
@@ -234,7 +234,7 @@ rule arrayCopy(arrayRef(T:Type, L1:Int, Len:Int)::_, arrayRef(T, L2:Int, Len)::_
     => storeCopy(L1, L2, Len) ~> arrayRef(T,L2:Int,Len)
 
 //@Copy a sequence of store values from one place to another.
-syntax K ::=  storeCopy (
+syntax KItem ::=  storeCopy (
                 Int, //source address in store
                 Int, //destination address in store
                 Int  //amount of elements to copy
@@ -275,7 +275,7 @@ when notBool T in keys(CLMap)
         [transition-threading]
 
 //@ Wraps a newly created java.lang.Class object
-syntax K ::=  saveClassLiteral (
+syntax KItem ::=  saveClassLiteral (
                 Type, // The type for this class literal is being instantiated
                 K     // The class literal instantiation expression
               )
@@ -290,6 +290,6 @@ rule [Lit-Class]:
     <classLiteralsMap>... T |-> TV:TypedVal ...</classLiteralsMap>
 
 //@Used inside <classLiteralsMap> only for synchronization purposes
-syntax K ::=  "temp"
+syntax KItem ::=  "temp"
 
 endmodule

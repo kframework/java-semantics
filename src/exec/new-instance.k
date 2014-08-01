@@ -171,7 +171,7 @@ rule [qualified-new-instance]:
     </methodContext>
     <storeMetadata>... . => L |-> LocalLocMetadata ...</storeMetadata>
 
-syntax K ::=  create ( ClassType )
+syntax KItem ::=  create ( ClassType )
 
 rule [create]:
     <k>
@@ -188,14 +188,14 @@ rule [create-empty-discard]:
     create( noClass ) => .K
         [structural]
 
-syntax K ::=  setCrntClass ( ClassType )
+syntax KItem ::=  setCrntClass ( ClassType )
 
 rule [setCrntClass]:
     <k> setCrntClass(Class) => . ...</k>
     <crntClass> _ => Class </crntClass>
         [structural]
 
-syntax K ::=  "addEnvLayer"
+syntax KItem ::=  "addEnvLayer"
 
 rule [addEnvLayer]:
     <k> addEnvLayer => . ...</k>
@@ -217,7 +217,7 @@ rule [addEnvLayer]:
 /*@
 Sets the enclosing object for a given object.
 */
-syntax K ::=  setEncloser (
+syntax KItem ::=  setEncloser (
                 K,          //Evaluates to source object
                 ClassType,  //Class layer in the source object for which to set the enclosing object.
                 K           //The enclosing object

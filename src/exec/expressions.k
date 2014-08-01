@@ -198,7 +198,7 @@ rule [NormalizeRightOperandToFloat]:
 when
     isFloatBinaryOp(KL)
 
-syntax K ::= isFloatBinaryOp ( KLabel )       [function]
+syntax KItem ::= isFloatBinaryOp ( KLabel )       [function]
 rule isFloatBinaryOp(KL:KLabel)
     =>     KL ==KLabel 'Plus
     orBool KL ==KLabel 'Minus
@@ -237,7 +237,7 @@ rule /* loc(L)-- => (loc(L) = lookup(L) - 1) + 1 */
 
 /*@ Computes a TypedVal where value representation is of correct numeric type:
 Int when NT is IntType, Float when NT is FloatType*/
-syntax K ::= rightTypedNumber ( Int, NumericType )             [function]
+syntax KItem ::= rightTypedNumber ( Int, NumericType )             [function]
 rule rightTypedNumber(I:Int, IntT:IntType) => I::IntT
 rule rightTypedNumber(I:Int, FloatT:FloatType) => Int2Float(I)::FloatT
 
@@ -370,7 +370,7 @@ rule [lvalue-Throw-desugar]:
     lvalue( throw E:Exp; ) => throw E;
         [structural]
 
-syntax K ::=  store (
+syntax KItem ::=  store (
                 Int,  //OL - the store location
                 K     //evaluates to TypedVal - the value to be stored
               ) [strict(2)]
@@ -379,7 +379,7 @@ syntax K ::=  store (
 rule [store]:
     store(L:Int, V:RawVal :: T:Type) => fieldAccessCheckpoint(L) ~> storeImpl(L, V::T)
 
-syntax K ::=  storeImpl (
+syntax KItem ::=  storeImpl (
                 Int,  //OL - the store location
                 K     //TypedVal - the value to be stored
               )

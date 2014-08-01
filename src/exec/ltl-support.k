@@ -57,7 +57,7 @@ rule B:Bag |=Ltl ((RV1:RawVal::_) != (RV2:RawVal::_)) => RV1 =/=K RV2     [anywh
 rule B:Bag |=Ltl ((I1:Int::_)     <= (I2:Int::_))     => I1 <=Int I2      [anywhere]
 rule B:Bag |=Ltl ((objectRef(_, Class:ClassType)::_) instanceof Class) => true  [anywhere]
 
-syntax K ::= ltlEval ( Bag , Exp ) [function]
+syntax KItem ::= ltlEval ( Bag , Exp ) [function]
 
 rule [ltlEval-local-var]:
     ltlEval(

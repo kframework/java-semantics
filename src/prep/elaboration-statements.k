@@ -13,7 +13,7 @@ declarations.
 */
 //rule customElabHeating('KListWrap, HeadKs:KList,, K:K) => isElabKList(HeadKs)
 
-syntax K ::= isVarDecHolderLabel ( KLabel )                 [function]
+syntax KItem ::= isVarDecHolderLabel ( KLabel )                 [function]
 rule isVarDecHolderLabel('Block) => true
 rule isVarDecHolderLabel('For) => true
 rule isVarDecHolderLabel('Catch) => true

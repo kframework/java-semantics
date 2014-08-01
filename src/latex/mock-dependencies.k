@@ -119,20 +119,20 @@ syntax KListWrap ::= "[" KList "]" [klabel('KListWrap)]
 //@ A wrapper over an arbitrary KList, wrapper being of type KResult.
 syntax KRListWrap ::= "kr" "[" KList "]"
 
-syntax K ::= typeOf ( K )                           [function]
+syntax KItem ::= typeOf ( K )                           [function]
 
-syntax K ::=  getTypes (
+syntax KItem ::=  getTypes (
                 KListWrap     //[...,, KResult,, ...] - a list of source expressions
               )
               [function]
 
-syntax K ::= eqAux ( K, K )                  [seqstrict]
+syntax KItem ::= eqAux ( K, K )                  [seqstrict]
 
 endmodule
 
 module STATIC-INIT
 
-syntax K ::=  staticInit (
+syntax KItem ::=  staticInit (
                 ClassType // Class - the ClassType to be initialized,
                           // or noClass if this term should be discarded.
               )
@@ -142,17 +142,17 @@ endmodule
 module CORE-CLASSES
     imports CORE-SORTS
 
-syntax K ::= getPackage ( K )               [strict]
+syntax KItem ::= getPackage ( K )               [strict]
 
-syntax K ::= getTopLevel ( ClassType )
+syntax KItem ::= getTopLevel ( ClassType )
 
 syntax Exp ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
 
-syntax K ::= "classString"
+syntax KItem ::= "classString"
     [function, latex(\terminal{String})]
 rule classString => class String2Id("java.lang.String")
 
-syntax K ::= "classNullPointerException"
+syntax KItem ::= "classNullPointerException"
     [function, latex(\terminal{NullPointerException})]
 rule classNullPointerException => class String2Id("java.lang.NullPointerException")
 
@@ -173,11 +173,11 @@ endmodule
 module CORE-EXEC
 
 //@ ListItem content as a stack layer
-syntax K ::=  sl (
+syntax KItem ::=  sl (
                 K,  //K - rest of computation
                 Bag //MethContext - the content of <methodContext>
               )
 
-syntax K ::= lvalue ( K )
+syntax KItem ::= lvalue ( K )
 
 endmodule

@@ -6,7 +6,7 @@ module PROCESS-IMPORTS
     imports CORE-SORTS
     imports CORE-CLASSES
 
-syntax K ::=  compUnitImportsStart (
+syntax KItem ::=  compUnitImportsStart (
                 PackageId // The package of the current compilation unit
               )
 
@@ -41,7 +41,7 @@ rule [TypeImportOnDemandDec]:
     <compUnitImports> Imp:Map </compUnitImports>
 
 //@ Imports to <compUnitImports> cell public classes from the given map. Classes with package access are ignored.
-syntax K ::=  importOnDemandImpl (
+syntax KItem ::=  importOnDemandImpl (
                 Map //Map[X |-> Class] - classes to consider for importing.
               )
 

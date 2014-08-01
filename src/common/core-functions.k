@@ -7,7 +7,7 @@ module CORE-FUNCTIONS
   For a type - the type itself. For a typed expression - the type component. For some raw values - their most common
     type.
 */
-syntax K ::= typeOf ( K )                           [function]
+syntax KItem ::= typeOf ( K )                           [function]
 rule typeOf(T:Type) => T
 rule typeOf(_ :: T:Type) => T
 rule typeOf(Str:String) => classString
@@ -22,7 +22,7 @@ rule typeOf(cast(T:Type, _)) => T
 rule typeOf('Param(_:K,, T:Type,, _:Id)) => T
 
 /*@The default value for all types. Used for field initializers.*/
-syntax K ::= default ( Type )                       [function]
+syntax KItem ::= default ( Type )                       [function]
 rule default(IntT:IntType) => 0 :: IntT
 rule default(FloatT:FloatType) => 0.0 :: FloatT
 rule default(bool) => false :: bool
@@ -36,7 +36,7 @@ rule Val:RawVal => toTypedVal(Val)                                              
 
     Have to be [function] for LTL
 */
-syntax K ::= toTypedVal ( RawVal )                                                  [function]
+syntax KItem ::= toTypedVal ( RawVal )                                                  [function]
 rule toTypedVal(I:Int) => I :: int                                                  [structural]
 rule toTypedVal(B:Bool) => B :: bool                                                [structural]
 rule toTypedVal(Str:String) => Str :: classString                                   [structural]
@@ -47,7 +47,7 @@ rule toTypedVal( objectRef(OL:Int, Class:ClassType) )
 rule toTypedVal(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T           [structural]
 
 //@ Converts a KList of terms to Types. Uses typeOf underneath.
-syntax K ::=  getTypes (
+syntax KItem ::=  getTypes (
                 KListWrap     //[...,, KResult,, ...] - a list of source expressions
               )
               [function]
@@ -65,25 +65,25 @@ when
 
 /*@ Generalized equality with strictness, suitable to compare not only TypedVal-s but any K terms.
 */
-syntax K ::= eqAux ( K, K )                  [seqstrict]
+syntax KItem ::= eqAux ( K, K )                  [seqstrict]
 rule eqAux(KR1:KResult, KR2:KResult) => KR1 ==K KR2
 
 /*@ Alternative version of if, to be used whenever semantics needs an if logic.
   The original 'If will only be used in the source programs.*/
-syntax K ::= ifAux ( K, K, K )                  [strict(1)]
+syntax KItem ::= ifAux ( K, K, K )                  [strict(1)]
 rule ifAux(true::bool, S:K, _) => S
 rule ifAux(false::bool, _, S:K) => S
 
-syntax K ::= andAux(K, K)                       [strict(1)]
+syntax KItem ::= andAux(K, K)                       [strict(1)]
 rule andAux(true::bool, E:K) => E
 rule andAux(false::bool, _) => false
 
-syntax K ::= orAux(K, K)                        [strict(1)]
+syntax KItem ::= orAux(K, K)                        [strict(1)]
 rule orAux(true::bool, _) => true
 rule orAux(false::bool, E:K) => E
 
 //@ Replaces 'Plus in preprocessing phases
-syntax K ::= plusAux( K, K )                    [strict]
+syntax KItem ::= plusAux( K, K )                    [strict]
 rule plusAux(Str1:String :: _, Str2:String :: _) => (Str1 +String Str2) :: classString
 
 /*@ A wrapper for maps. Allows holding maps inside an arbitrary expression where a K term is required.
@@ -94,7 +94,7 @@ syntax KResult ::= mapWrap ( Map )
 /*@ The union of two maps. Arguments are of the form mapWrap(Map). In this operation, elements of the second map
     overwrite elements of the first map if they collide.
 */
-syntax K ::=  mapUnion (
+syntax KItem ::=  mapUnion (
                 K,  //mapWrap(Map)
                 K   //mapWrap(Map)
               )
@@ -104,7 +104,7 @@ rule mapUnion(mapWrap( M1:Map => M1[K2/K1] ), mapWrap( _:Map (K1:K |-> K2:K => .
 rule mapUnion(mapWrap(M1:Map), mapWrap(.Map)) => mapWrap(M1)
 
 //@ Substracts fron the given map the keys found in the given set
-syntax K ::=  mapDiff(
+syntax KItem ::=  mapDiff(
                 K,  //mapWrap(Map)
                 K   //setWrap(Set)
               )
@@ -118,14 +118,14 @@ when
 
 rule mapDiff(mapWrap( MyMap:Map ), setWrap(.Set)) => mapWrap(MyMap)
 
-syntax K ::= isEmpty( Map )   [function]
+syntax KItem ::= isEmpty( Map )   [function]
 rule isEmpty(.Map) => true
 
 /*@A wrapper for sets, similar to the one for maps.*/
 syntax KResult ::= setWrap ( Set )
 
 /*The union of two sets. Arguments are of the form setWrap(Set).*/
-syntax K ::=  setUnion (
+syntax KItem ::=  setUnion (
                 K,  //setWrap(Set)
                 K   //setWrap(Set)
               )
@@ -141,14 +141,14 @@ syntax Set ::= getSet ( K )           [function]
 rule getSet(setWrap(S1:Set)) => S1
 
 /*@ the concatenation of two kr[KList] items */
-syntax K ::= klistConcat ( KRListWrap, KRListWrap ) [strict]
+syntax KItem ::= klistConcat ( KRListWrap, KRListWrap ) [strict]
 rule klistConcat(kr[KL1:KList], kr[KL2:KList]) => kr[KL1,,KL2]
 
 //@ Counts the number of elements in the KList list. Evaluates to an Int.
-syntax K ::= length ( KListWrap )                                   [function]
+syntax KItem ::= length ( KListWrap )                                   [function]
            | length ( Int, KListWrap )                              [function]
 
-syntax K ::= getLastKListElement( KListWrap )                       [function]
+syntax KItem ::= getLastKListElement( KListWrap )                       [function]
 rule getLastKListElement([_,, K:K]) => K
 
 rule length([Ks:KList]) => length(0, [Ks])
@@ -158,7 +158,7 @@ rule length(I:Int, [.KList]) => I
 /*@ \subsection{ClassType functions} */
 
 //@ Converts a fully qualified class type into a simple name (Id)
-syntax K ::= getSimpleName ( ClassType )                  [function]
+syntax KItem ::= getSimpleName ( ClassType )                  [function]
 rule getSimpleName(class ClassId:Id)
     => String2Id(trimHead(
       Id2String(ClassId),
@@ -183,7 +183,7 @@ syntax KLabel ::= "'Some"
     A generic computational guard (should be builtin): it allows the computation to continue only if a prefix
     guard evaluates to true.
 */
-syntax K ::= "true?"
+syntax KItem ::= "true?"
 rule true::bool ~> true? => .  [structural]
 
 //@ \subsection{Definition-wide rules}

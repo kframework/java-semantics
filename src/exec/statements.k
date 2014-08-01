@@ -55,7 +55,7 @@ rule [Block]:
         [structural]
 
 //@ \texttt{env} Restore the env cell content from env(...) statement argument
-syntax K ::= env ( Map )
+syntax KItem ::= env ( Map )
 
 rule [env]:
     <k> env(Env:Map) => . ...</k>
@@ -87,7 +87,7 @@ rule [Labeled]:
     'Labeled(X:Id,, S:K) => S ~> labeledImpl(X)
 
 //@ Processed version of the labeled statement
-syntax K ::= labeledImpl ( Id )
+syntax KItem ::= labeledImpl ( Id )
 
 rule [labeledImpl-Discard]:
     labeledImpl(_) => .K
@@ -124,7 +124,7 @@ rule [AssertStm-TwoArgs]:
 
 //@ \subsection{Switch statement}
 
-syntax K ::=  switchImpl (
+syntax KItem ::=  switchImpl (
                 TypedVal,   // TV - switch argument
                 KListWrap,  // switch body - list of 'SwitchGroup labels
                 K           // DefaultStm - default block, if any
@@ -181,7 +181,7 @@ rule [switchImpl-Default-Exec]:
 rule [SwitchGroup-Exec]:
     'SwitchGroup(_:K,, S:K) => S
 
-syntax K ::=  "switchEnd"
+syntax KItem ::=  "switchEnd"
 
 rule [switchEnd-Discard]:
     switchEnd => .K
@@ -190,7 +190,7 @@ rule [switchEnd-Discard]:
 
 rule while(E:K){S:K} => whileImpl(E, S)         [structural]
 
-syntax K ::=  whileImpl (
+syntax KItem ::=  whileImpl (
                 K,  // E - test expression. In For loop, it is UpdClause ~> testExp
                 K   // S - while body
               )
@@ -204,7 +204,7 @@ rule do{S:K}while(E:K) => S ~> whileImpl(E, S)  [structural]
 //@ \subsection{For statement}
 
 //wrapper of certain clauses of for statement
-syntax K ::= stm ( KListWrap )
+syntax KItem ::= stm ( KListWrap )
 
 rule [stm-KListWrap-empty]:
     stm([.KList]) => .
@@ -338,7 +338,7 @@ rule [Continue-LabeledMatch]:
 
 /*@ Auxiliary constructs used in the semantics of continue.
 Search for the label associated with the last encountered while statement*/
-syntax K ::= getWhileLabel ( K )
+syntax KItem ::= getWhileLabel ( K )
            | whileLabel ( K )
 
 rule getWhileLabel((env(_) => .) ~> _)
@@ -384,7 +384,7 @@ rule [Throw]:
     ~> 'Throw(TV:TypedVal)
     ~> catchBlocks([catchImpl('ParamImpl(T:Type,, X:Id),_),, _])
 
-syntax K ::= checkCatch ( K )
+syntax KItem ::= checkCatch ( K )
 context checkCatch(HOLE)
 
 rule [Throw-checkCatch-True]:
@@ -466,7 +466,7 @@ when isKResult(KRs)
 
 /*@ The auxiliary construct that holds catch clauses
 after try clause has been moved to the top of computation*/
-syntax K ::= catchBlocks ( KListWrap ) //arg - list of catchImpl
+syntax KItem ::= catchBlocks ( KListWrap ) //arg - list of catchImpl
 
 /*@ If try clause executed without raising an exception, this construct will reach the top of computation.
     In this case it should be discarded.
@@ -482,7 +482,7 @@ rule [Try-Finally]:
 
 /*@ The auxiliary construct that holds finally clause
 after try clause has been moved to the top of computation*/
-syntax K ::= finallyBlock ( K )      //arg - finally block
+syntax KItem ::= finallyBlock ( K )      //arg - finally block
 
 rule [finallyBlock-NormalEnd]:
     finallyBlock(FinallyS:K) => FinallyS
@@ -499,8 +499,8 @@ module TRY-AND-THROW
 syntax Stmt ::= "try" Stmt CatchList
 syntax CatchList ::= List{Catch, ""}
 syntax Catch ::= "catch" "(" Param ")" Stmt
-syntax K ::= catchBlocks ( CatchList )
-syntax K ::= interactsWithThrow( K ) [function]
+syntax KItem ::= catchBlocks ( CatchList )
+syntax KItem ::= interactsWithThrow( K ) [function]
 
 rule [try]:
     try S:Stmt CatchList:CatchList => S ~> catchBlocks(CatchList)

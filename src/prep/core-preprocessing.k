@@ -11,7 +11,7 @@ module CORE-PREPROCESSING
 /*@ Returns a setWrap(Set[ClassType]), containing all top level classes in the program.
     Uses <namesToClasses> to compute the result. Used by the starting rule of several preprocessing phases.
 */
-syntax K ::= "getTopLevelClasses"
+syntax KItem ::= "getTopLevelClasses"
            | getTopLevelClasses ( Map, Set )
 
 rule [getTopLevelClasses-start]:
@@ -40,7 +40,7 @@ rule getTopLevelClasses(.Map, ClassesSet:Set) => setWrap(ClassesSet)
 /*@ Returns a setWrap(Set[ClassType]), containing all direct inner classes of the given class.
     Uses <namesToClasses> to compute the result.
 */
-syntax K ::= getInnerClasses ( ClassType )
+syntax KItem ::= getInnerClasses ( ClassType )
            | getInnerClasses ( Map, Set )
 
 rule [getInnerClasses-start-have-inner]:
@@ -59,7 +59,7 @@ when
     notBool toPackage(Class) in keys(TypeNamesMap)
 
 //@ Returns the access mode of a method closure given as argument
-syntax K ::= getMethodAccessMode ( MethodRef )   [strict]
+syntax KItem ::= getMethodAccessMode ( MethodRef )   [strict]
 rule [getMethodAccessMode]:
     <k>
       getMethodAccessMode( methodRef(Sig:Signature, Class:ClassType) ) => Acc
@@ -69,7 +69,7 @@ rule [getMethodAccessMode]:
     <methodSignature> Sig </methodSignature>
     <methodAccessMode> Acc:AccessMode </methodAccessMode>
 
-syntax K ::=  getContextType (
+syntax KItem ::=  getContextType (
                 KListWrap       //[...] - the list of method attributes
               )
               [function]
@@ -82,7 +82,7 @@ when        KL =/=KLabel 'Static
 rule getContextType([.KList])      => instanceCT
 
 /*@Extracts the access mode from the list of modifiers of some Java entity.*/
-syntax K ::=  getAccessMode (
+syntax KItem ::=  getAccessMode (
                 KListWrap //[...] - the list of class/method attributes
               )
               [function]

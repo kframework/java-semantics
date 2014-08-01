@@ -107,7 +107,7 @@ rule [elabEnd-NewArray]:
         [structural]
 
 //@ Computes the array type based on allocated elem type and number of allocated dimensions.
-syntax K ::= getArrayType ( Type, KListWrap )                          [function]
+syntax KItem ::= getArrayType ( Type, KListWrap )                          [function]
 rule getArrayType(T:Type, [K:K,,Dims:KList]) => getArrayType(arrayOf T, [Dims])
 rule getArrayType(T:Type, [.KList]) => T
 

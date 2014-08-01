@@ -6,7 +6,7 @@ except those members of customElabChildren or isElabNaked groups.
 
 This predicate should be disjoint with customElabChildren (no longer used) and isElabNaked
 */
-syntax K ::= defaultElabHeating ( KLabel )                [function]
+syntax KItem ::= defaultElabHeating ( KLabel )                [function]
 
            /*(KL ==KLabel 'KListWrap)*/
 rule defaultElabHeating('Some) => true
@@ -215,7 +215,7 @@ rule defaultElabHeating('stmtAndExp) => true
 
   Some auxiliary functions are also included in this cathegory in order to reduce the usage of elaboration wrappers.
 */
-syntax K ::= isElabNaked ( K )                            [function]
+syntax KItem ::= isElabNaked ( K )                            [function]
 rule isElabNaked(RV:RawVal) => true
 rule isElabNaked('TypeName(_)) => true
 rule isElabNaked('ClassOrInterfaceType(_)) => true
@@ -234,7 +234,7 @@ rule isElabNaked('Lit(InnerKL:KLabel(_))) => InnerKL =/=KLabel 'Class
   Since all the automatic elaboration-related rules are an incredible mess, we have to put all the AST terms into this
     cathegory one by one, and eliminate automatic elaboration heating/cooling rules altogether.
 */
-syntax K ::= customElabChildren ( KLabel )                [function]
+syntax KItem ::= customElabChildren ( KLabel )                [function]
 rule customElabChildren(KL:KLabel) =>
            (KL ==KLabel 'KListWrap)       //Elaboration left-to-right if children contain variable declarations
     orBool (KL ==KLabel 'Block)           //Allocation of new <elabEnv>

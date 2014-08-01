@@ -6,7 +6,7 @@ module SUBTYPING
     imports CORE-FUNCTIONS
 
 //@ Checks whether first type is a subtype of the second
-syntax K ::=  subtype (
+syntax KItem ::=  subtype (
                 Type,
                 Type
               )
@@ -17,7 +17,7 @@ of the type at the same position in the second list.
 If lists have different size, the function will evaluate to false.
 Used in method call overloading resolution.
 */
-syntax K ::=  subtypeList ( Types, Types )
+syntax KItem ::=  subtypeList ( Types, Types )
 
 rule [subtype-same-type-True]:
     subtype( T:Type, T ) => true
