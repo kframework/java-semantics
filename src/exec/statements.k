@@ -40,17 +40,18 @@ syntax KLabel ::= "'Empty"
 //                | "'For"
 //                | "'Break"
 //                | "'Continue"
-                | "'Return"
+//                | "'Return"
                 | "'Throw"
                 | "'Try"
                 | "'Catch"
-                | "'Block"
+//                | "'Block"
 
 
 //@ \subsection{Blocks} JLS \$14.2
 
 rule [Block]:
-    <k> 'Block(S:K) => S ~> env(Env:Map) ...</k>
+//    <k> 'Block(S:K) => S ~> env(Env:Map) ...</k>
+    <k> {S:K} => S ~> env(Env:Map) ...</k>
     <env> Env </env>
         [structural]
 
@@ -274,7 +275,7 @@ rule isStackConsumerStmt('Continue(_)) => true
 
 rule [Break-UnlabeledPropagate]:
    // 'Break('None(_)) ~> (KL:KLabel(_) => .)
-    break 'None(_) ~> (KL:KLabel(_) => .)
+    break 'None(_) ; ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
@@ -283,14 +284,14 @@ when
 
 rule [Break-Unlabeled]:
     //'Break('None(_)) ~> KL:KLabel(_) => .
-    break 'None(_) ~> KL:KLabel(_) => .
+    break 'None(_) ; ~> KL:KLabel(_) => .
 when
            KL ==KLabel 'whileImpl
     orBool KL ==KLabel 'switchEnd
 
 rule [Break-LabeledPropagate]:
    // 'Break('Some(X:Id)) ~> (KL:KLabel(_) => .)
-    break 'Some(X:Id) ~> (KL:KLabel(_) => .)
+    break 'Some(X:Id) ; ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
@@ -298,19 +299,19 @@ when
 
 rule [BreakLabeledNotMatch]:
     //'Break('Some(X1:Id)) ~> (labeledImpl(X2:Id) => .)
-    break 'Some(X1:Id) ~> (labeledImpl(X2:Id) => .)
+    break 'Some(X1:Id) ; ~> (labeledImpl(X2:Id) => .)
 when
     X1 =/=K X2
 
 rule [Break-LabeledMatch]:
     //'Break('Some(X:Id)) ~> labeledImpl(X:Id) => .
-    break 'Some(X:Id) ~> labeledImpl(X:Id) => .
+    break 'Some(X:Id) ; ~> labeledImpl(X:Id) => .
 
 //@ \subsection{Continue statement}
 
 rule [Continue-Propagate]:
 //    'Continue(_) ~> (KL:KLabel(_) => .)
-    continue _ ~> (KL:KLabel(_) => .)
+    continue _ ; ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
@@ -318,23 +319,23 @@ when
 
 rule [Continue-Unlabeled]:
 //    ('Continue('None(_)) => .) ~> whileImpl(_,_)
-   (continue 'None(_) => .) ~> whileImpl(_,_)
+   (continue 'None(_) ; => .) ~> whileImpl(_,_)
 
 rule [Continue-LabeledMeetsWhile]:
     <k>
 //      (. => getWhileLabel(Rest)) ~> 'Continue('Some(X:Id)) ~> whileImpl(_,_) ~> Rest:K
-      (. => getWhileLabel(Rest)) ~> continue 'Some(X:Id) ~> whileImpl(_,_) ~> Rest:K
+      (. => getWhileLabel(Rest)) ~> continue 'Some(X:Id) ; ~> whileImpl(_,_) ~> Rest:K
     </k>
 
 rule [Continue-LabeledNotMatch]:
 //    (whileLabel(LabelK:K) => .) ~> 'Continue('Some(X:Id)) ~> (whileImpl(_,_) => .)
-    (whileLabel(LabelK:K) => .) ~> continue 'Some(X:Id) ~> (whileImpl(_,_) => .)
+    (whileLabel(LabelK:K) => .) ~> continue 'Some(X:Id) ; ~> (whileImpl(_,_) => .)
 when
     LabelK =/=K X
 
 rule [Continue-LabeledMatch]:
 //    whileLabel(X) ~> 'Continue('Some(X:Id)) => .
-    whileLabel(X) ~> continue 'Some(X:Id) => .
+    whileLabel(X) ~> continue 'Some(X:Id) ; => .
 
 /*@ Auxiliary constructs used in the semantics of continue.
 Search for the label associated with the last encountered while statement*/
@@ -356,20 +357,24 @@ value is a subtype of the expected return type.  Moreover, if that is
 the case, then we also up-cast the returned value to one of the
 expected type. */
 
-context 'Return('Some(HOLE))
+//context 'Return('Some(HOLE))
+context return ('Some(HOLE));
 
 rule [Return-None-Desugar]:
-    return; => 'Return('Some(nothing :: void))
+//    'Return('None(_)) => 'Return('Some(nothing :: void))
+    return ('None(_)); => return ('Some(nothing :: void));
         [structural]
 
 rule [Return-Propagate]:
-    'Return('Some(TV:TypedVal)) ~> (KL:KLabel(Ks:KList) => .K)
+//    'Return('Some(TV:TypedVal)) ~> (KL:KLabel(Ks:KList) => .K)
+    return ('Some(TV:TypedVal)); ~> (KL:KLabel(Ks:KList) => .K)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
 
 rule [Return-MethodEnd]:
-    <k> 'Return('Some(TV:TypedVal)) => TV ~> K </k>
+//    <k> 'Return('Some(TV:TypedVal)) => TV ~> K </k>
+    <k> return ('Some(TV:TypedVal)); => TV ~> K </k>
     <stack> ListItem( sl(K:K, MethContext:Bag) ) => . ...</stack>
     <methodContext> _:Bag => MethContext </methodContext>
 
@@ -377,7 +382,7 @@ rule [Return-MethodEnd]:
 Exceptions are propagated now until a catch that can bind them is
 encountered. */
 
-context 'Throw(HOLE)
+//context 'Throw(HOLE)
 
 rule [Throw]:
     (. => checkCatch(subtype(typeOf(TV), T)))

@@ -729,7 +729,7 @@ The return statement at the end ensures that there is a return statement on ever
 rule [Invoke-methodRef]:
     <k>
       Qual:KResult . methodRef(Sig:Signature, DecC:ClassType) (Args:TypedVals) ~> RestK:K
-      => staticInit(DecC) ~> initParams(Params, Args) ~> Body ~> return;
+      => staticInit(DecC) ~> initParams(Params, Args) ~> Body ~> return('Some(nothing :: void));
     </k>
     <stack>
       . => ListItem(sl(RestK, MethodContext))

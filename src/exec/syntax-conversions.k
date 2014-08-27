@@ -95,8 +95,8 @@ syntax Exp ::= K "=" K       [klabel('AssignImpl)]*/
 
 /*@ \subsection{Expression statement}*/
 
-rule 'ExprStm(E:Exp) => E;
-syntax Stmt ::= Exp ";"      [strict, klabel('ExprStmImpl)]
+//rule 'ExprStm(E:Exp) => E;
+//syntax Stmt ::= Exp ";"      [strict, klabel('ExprStmImpl)]
 
 /*@ \subsection{Cast}*/
 
@@ -118,14 +118,14 @@ rule K1:K == K2:K => eqAux(K1, K2)*/
 
 /*@ \subsection{Throw statement}*/
 
-syntax StackConsumerStmt ::= "throw" Exp ";"
-rule throw E:Exp; => 'Throw(E)
+//syntax StackConsumerStmt ::= "throw" Exp ";"
+//rule throw E:Exp; => 'Throw(E)
 
 /*@ \subsection{Return statement}*/
 
-rule 'Return('None(_)) => return;
-
-syntax StackConsumerStmt ::= "return" ";"
+//rule 'Return('None(_)) => return;
+//
+//syntax StackConsumerStmt ::= "return" ";"
 
 /*@ \subsection{New instance creation}*/
 
