@@ -259,7 +259,7 @@ configuration
       //Cells used for debugging. Not related to the semantics.
       <groupDebug color="Yellow">
 
-        <dissolveEmptyK> true </dissolveEmptyK>
+        <dissolveEmptyK> false </dissolveEmptyK>
 
         //When computation finishes, dissolve all cells except <out>,
         //in order to avoid duplicate solutions during model checking.

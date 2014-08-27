@@ -276,7 +276,7 @@ rule [ThreadTermination]:
     <busy> Busy:Set => Busy -Set keys(H) </busy>
     <terminated>... . => SetItem(TId) ...</terminated>
     <globalPhase> ExecutionPhase </globalPhase>
-    <dissolveEmptyK> true </dissolveEmptyK>
+    <dissolveEmptyK> false </dissolveEmptyK>
 
 //@ \subsection{Debug aids}
 

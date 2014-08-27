@@ -14,10 +14,12 @@ syntax Stmt ::= "if" "(" K ")" "{" K "}" "else" "{" K "}" [strict(1),klabel('If)
 		| "{" K "}" [klabel('Block)]
 		| Exp ";"  [strict, klabel('ExprStm)]
 
-syntax StackConsumerStmt ::= "throw" Exp ";" [strict, klabel('Throw)]
+
+syntax Stmt ::= StackConsumerStmt
+syntax StackConsumerStmt ::= "dummyStackConsumerStmt"
+        |"throw" Exp ";" [strict, klabel('Throw)]
         |"continue" Exp ";" [klabel('Continue)]
 		|"break" Exp ";" [klabel('Break)]
 		|"return" Exp ";" [klabel('Return)]
-
 
 endmodule
