@@ -29,8 +29,8 @@ rule [ExecutionPhase-Start]:
 syntax KLabel ::= "'Empty"
                 | "'Labeled"
 //                | "'ExprStm"
-                | "'AssertStm"
-                | "'Switch"
+//                | "'AssertStm"
+//                | "'Switch"
                 | "'SwitchBlock"
                 | "'SwitchGroup"
                 | "'Case"
@@ -109,19 +109,20 @@ rule [If-False]:
         [symbolic-rule]
 
 //@ \subsection{Assert statement}
+//short version:    assert exp1;
+rule [AssertStm-True-OneArg]:
+        assert true::bool; => .
 
-context 'AssertStm(HOLE,,_:KList)
+rule [AssertStm-False-OneArg]:
+        assert false::bool; => throw new class String2Id("java.lang.AssertionError") (null::classString);
 
-rule [AssertStm-True-Discard]:
-    'AssertStm(true::bool,, _:KList) => .
+//full version:    assert exp1:exp2;
+rule [AssertStm-FirstTrue-SecondDiscarded]:
+        assert true::bool : _ ; => .
 
-rule [AssertStm-OneArg]:
-    'AssertStm(false::bool) => throw new class String2Id("java.lang.AssertionError") (null::classString);
-
-context 'AssertStm(false::bool,, HOLE)
-
-rule [AssertStm-TwoArgs]:
-    'AssertStm(false::bool,, TV:TypedVal) => throw new class String2Id("java.lang.AssertionError") (toString(TV));
+context assert false::bool : HOLE;
+rule [AssertStm-FirstFalse]:
+    assert (false::bool) : (TV:TypedVal); => throw new class String2Id("java.lang.AssertionError") (toString(TV));
 
 //@ \subsection{Switch statement}
 
@@ -131,11 +132,12 @@ syntax KItem ::=  switchImpl (
                 K           // DefaultStm - default block, if any
               )
 
-context 'Switch(HOLE,,_)
+//context 'Switch(HOLE,,_)
 
 //@ The switchEnd in the right-hand side of => is required to properly interact with break.
 rule [Switch]:
-    'Switch(TV:TypedVal,, 'SwitchBlock([Ks:KList],, TrailingLabels:K))
+//    'Switch(TV:TypedVal,, 'SwitchBlock([Ks:KList],, TrailingLabels:K))
+ switch(TV:TypedVal) {'SwitchBlock([Ks:KList],, TrailingLabels:K)}
     => switchImpl(TV, [Ks,, 'SwitchGroup(TrailingLabels,, .K)], .K)
     ~> switchEnd
 

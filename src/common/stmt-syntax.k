@@ -11,8 +11,11 @@ syntax Stmt ::= "if" "(" K ")" "{" K "}" "else" "{" K "}" [strict(1),klabel('If)
 		|"do" "{" K "}" "while" "(" K ")"[strict(2),klabel('DoWhile)]
 		|"for" "(" K ";" K ";" K ")" "{" K "}" [klabel('For)]
 
-		| "{" K "}" [klabel('Block)]
-		| Exp ";"  [strict, klabel('ExprStm)]
+		|"{" K "}" [klabel('Block)]
+		|Exp ";"  [strict, klabel('ExprStm)]
+		|"assert" Exp ";" [strict, klabel('AssertStm)]
+		|"assert" Exp ":" Exp ";" [strict(1), klabel('AssertStm)]
+		|"switch" "(" K ")" "{" K "}" [strict(1),klabel('Switch)]
 
 
 syntax Stmt ::= StackConsumerStmt
