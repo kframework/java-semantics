@@ -31,10 +31,10 @@ syntax KLabel ::= "'Empty"
 //                | "'ExprStm"
 //                | "'AssertStm"
 //                | "'Switch"
-                | "'SwitchBlock"
-                | "'SwitchGroup"
-                | "'Case"
-                | "'Default"
+//                | "'SwitchBlock"
+//                | "'SwitchGroup"
+//                | "'Case"
+//                | "'Default"
 //                | "'While"
 //                | "'DoWhile"
 //                | "'For"
@@ -44,14 +44,14 @@ syntax KLabel ::= "'Empty"
 //                | "'Throw"
                 | "'Try"
                 | "'Catch"
-//                | "'Block"
+                | "'Block"
 
 
 //@ \subsection{Blocks} JLS \$14.2
 
 rule [Block]:
-//    <k> 'Block(S:K) => S ~> env(Env:Map) ...</k>
-    <k> {S:K} => S ~> env(Env:Map) ...</k>
+    <k> 'Block(S:K) => S ~> env(Env:Map) ...</k>
+//    <k> {S:K} => S ~> env(Env:Map) ...</k>
     <env> Env </env>
         [structural]
 
@@ -128,7 +128,7 @@ rule [AssertStm-FirstFalse]:
 
 syntax KItem ::=  switchImpl (
                 TypedVal,   // TV - switch argument
-                KListWrap,  // switch body - list of 'SwitchGroup labels
+                KListWrap,  // switch body - list of 'SwitchGroup labels "case Exp : body"
                 K           // DefaultStm - default block, if any
               )
 
@@ -136,13 +136,11 @@ syntax KItem ::=  switchImpl (
 
 //@ The switchEnd in the right-hand side of => is required to properly interact with break.
 rule [Switch]:
-//    'Switch(TV:TypedVal,, 'SwitchBlock([Ks:KList],, TrailingLabels:K))
- switch(TV:TypedVal) {'SwitchBlock([Ks:KList],, TrailingLabels:K)}
-    => switchImpl(TV, [Ks,, 'SwitchGroup(TrailingLabels,, .K)], .K)
+    switch(TV:TypedVal){[Ks:KList] TrailingLabels:K}
+    => switchImpl(TV, [Ks,, TrailingLabels : .K], .K)
     ~> switchEnd
 
-context switchImpl( _,
-          [ 'SwitchGroup(['Case(HOLE),,_:KList],,_),, _:KList ], _)
+context switchImpl( _, [ [case HOLE ,, _:KList] : _ ,, _:KList ], _)
 
 /*@ The type associated to V and V2 is not important for match, only the value.
 JLS3 \$14.11, page 377: Every case constant expression associated with
@@ -151,7 +149,7 @@ a switch statement must be assignable (�5.2) to the type of the switch Express
 rule [switchImpl-CaseNotMatch]:
     switchImpl(
       V:RawVal :: _,
-      [ 'SwitchGroup([ ( 'Case(V2:RawVal :: _) => .KList ),, _:KList ],,_),, _],
+      [ [ (  case V2:RawVal :: _ => .KList ),, _:KList ] : _ ,, _],
       _
     )
 when
@@ -161,28 +159,32 @@ when
 by it's block. The execution rules for switch will discard switch-related
 constructs and will execute the statements. */
 rule [switchImpl-CaseMatch]:
-    switchImpl( V:RawVal :: _, ['SwitchGroup(['Case(V :: _),,_:KList],,S:K),, Ks:KList], _)
+    switchImpl(
+        V:RawVal :: _,
+        [[case V :: _ ,, _:KList] : S:K,, Ks:KList],
+        _
+    )
     => [S,,Ks]
 
 rule [switchImpl-DefaultSave]:
-    switchImpl( TV:TypedVal, [
-      'SwitchGroup([
-          ( 'Default(_) => .KList ),,
-          _:KList],, S:K),, Ks:KList
-      ],
-      ( _:K => [S,, Ks] )
+    switchImpl(
+        TV:TypedVal,
+        [[ ( default => .KList ),, _:KList] : S:K,, Ks:KList],
+        ( _:K => [S,, Ks] )
     )
 
 rule [switchImpl-SwitchGroup-Discard]:
-    switchImpl( TV:TypedVal,
-      [( 'SwitchGroup([ .KList ],,_) => .KList ),, _],
-    _)
+    switchImpl(
+        TV:TypedVal,
+        [( [ .KList ]: _ => .KList ),, _],
+        _
+    )
 
 rule [switchImpl-Default-Exec]:
     switchImpl( _, [.KList], DefaultStm:K) => DefaultStm
 
 rule [SwitchGroup-Exec]:
-    'SwitchGroup(_:K,, S:K) => S
+    _:KListWrap : S => S
 
 syntax KItem ::=  "switchEnd"
 
@@ -265,12 +267,6 @@ rule [StackConsumerStmt-in-TryFinally]:
 rule [StackConsumerStmt-RestoreEnv]:
     StackCons:StackConsumerStmt ~> env(Env:Map)
     => env(Env:Map) ~> StackCons
-
-//todo: remove this!why cannot?
-rule isStackConsumerStmt('Return(_)) => true
-rule isStackConsumerStmt('Throw(_)) => true
-rule isStackConsumerStmt('Break(_)) => true
-rule isStackConsumerStmt('Continue(_)) => true
 
 //@ \subsection{Break statement}
 
@@ -523,13 +519,13 @@ rule [catchBlocks-dissolve]:
 
 rule [throw-match]:
     throw V::ThrowT:Type;
-    ~> catchBlocks((catch({CatchT:Type X:Id}) CatchS:Stmt) _:CatchList)
-    => { CatchT X; ~> (X = (V::CatchT)); ~> CatchS }
+    ~> catchBlocks((catch(P{CatchT:Type X:Id}) CatchS:Stmt) _:CatchList)
+    => 'Block( CatchT X; ~> (X = (V::CatchT)); ~> CatchS )
 when subtype(ThrowT, CatchT)
 
 rule [throw-not-match]:
     throw V::ThrowT:Type;
-    ~> catchBlocks((catch({CatchT:Type X:Id}) CatchS:Stmt => .) _:CatchList)
+    ~> catchBlocks((catch(P{CatchT:Type X:Id}) CatchS:Stmt => .) _:CatchList)
 when notBool subtype(ThrowT, CatchT)
 
 /*@ Could also be empty catch block

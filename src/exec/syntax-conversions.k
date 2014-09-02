@@ -14,9 +14,9 @@ module SYNTAX-CONVERSIONS
 syntax KLabel ::= "'Param"
 
 //Required for catch
-rule 'Param(_,, K:K,, X:Id) => {K X} [structural]
+rule 'Param(_,, K:K,, X:Id) => P{K X} [structural]
 
-syntax Param ::= "{" K Id "}"        [klabel('ParamImpl)]
+syntax Param ::= "P{" K Id "}"        [klabel('ParamImpl)]
 
 syntax Params ::= List{Param, ","}
 
@@ -24,7 +24,7 @@ syntax KItem ::= toParams( KListWrap )          [function]
            | toParams( KListWrap , Params ) [function]
 
 rule toParams([KLParams:KList]) => toParams([KLParams], .Params)
-rule toParams([KLParams:KList,, 'Param(_,, K:K,, X:Id)], Params:Params) => toParams([KLParams], ({K X},Params))
+rule toParams([KLParams:KList,, 'Param(_,, K:K,, X:Id)], Params:Params) => toParams([KLParams], (P{K X},Params))
 rule toParams([.KList], Params:Params) => Params
 
 // Required for getTypes()

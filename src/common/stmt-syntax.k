@@ -10,19 +10,23 @@ syntax Stmt ::= "if" "(" K ")" "{" K "}" "else" "{" K "}" [strict(1),klabel('If)
 		|"while" "(" K ")" "{" K "}" [strict(1),klabel('While)]
 		|"do" "{" K "}" "while" "(" K ")"[strict(2),klabel('DoWhile)]
 		|"for" "(" K ";" K ";" K ")" "{" K "}" [klabel('For)]
-
-		|"{" K "}" [klabel('Block)]
+//todo:
+//		|"{" K "}" [klabel('Block)]
 		|Exp ";"  [strict, klabel('ExprStm)]
 		|"assert" Exp ";" [strict, klabel('AssertStm)]
 		|"assert" Exp ":" Exp ";" [strict(1), klabel('AssertStm)]
-		|"switch" "(" K ")" "{" K "}" [strict(1),klabel('Switch)]
+		|"switch" "(" K ")" SwitchBlock [strict(1),klabel('Switch)]
+		|KListWrap ":" KListWrap [klabel('SwitchGroup)]
+		|"case" Exp [strict, klabel('Case)]
+		|"default" [klabel('Default)]
 
+syntax SwitchBlock::= "{" KListWrap K "}" [klabel('SwitchBlock)]
 
 syntax Stmt ::= StackConsumerStmt
 syntax StackConsumerStmt ::= "dummyStackConsumerStmt"
-        |"throw" Exp ";" [strict, klabel('Throw)]
-        |"continue" Exp ";" [klabel('Continue)]
-		|"break" Exp ";" [klabel('Break)]
-		|"return" Exp ";" [klabel('Return)]
+        |"throw" K ";" [strict, klabel('Throw)]
+        |"continue" K ";" [klabel('Continue)]
+		|"break" K ";" [klabel('Break)]
+		|"return" K ";" [klabel('Return)]
 
 endmodule
