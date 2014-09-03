@@ -13,8 +13,9 @@ syntax PrefixPostfixExp ::= "++" Exp [klabel('PreIncr)]
 		| Exp "--" [klabel('PostDecr)]
 
  //use sort K instead of Exp for the sake of Lookup, others might be changed when needed
-syntax Exp ::= K "*" K [seqstrict, klabel('Mul)]
-		| K "/" K [seqstrict, klabel('Div)]
+syntax Exp ::=
+      K "*" K     [seqstrict, klabel('Mul)]
+		| Exp "/" Exp [seqstrict, klabel('Div)]
 		| K "%" K [seqstrict, klabel('Remain)]
 		| "+" Exp [strict, klabel('Plus)]
 		| "-" Exp [strict, klabel('Minus)]
