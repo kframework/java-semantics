@@ -174,7 +174,7 @@ rule [lvalue-typedLoc]:
   May be wrapped inside lvalue. If lookup is unwrapped, it evaluates to TypedVal - the store value,
   of the type T - the second lookup argument. If lookup is wrapped into lvalue, it evaluates to loc(OL)::T.
 */
-syntax Lookup ::= lookup (
+syntax Exp ::= lookup (
                     Int,  //OL - the store location to lookup
                     Type  // T - the compile-time type of the resulting value
                   )
