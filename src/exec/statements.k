@@ -26,8 +26,8 @@ rule [ExecutionPhase-Start]:
     <mainClass> ListItem(MainClassS:String) </mainClass>
     <globalPhase> UnfoldingPhase => ExecutionPhase  </globalPhase>
 
-syntax KLabel ::= "'Empty"
-                | "'Labeled"
+syntax KLabel ::= "'Block"
+//                | "'Labeled"
 //                | "'ExprStm"
 //                | "'AssertStm"
 //                | "'Switch"
@@ -44,7 +44,6 @@ syntax KLabel ::= "'Empty"
 //                | "'Throw"
                 | "'Try"
                 | "'Catch"
-                | "'Block"
 
 
 //@ \subsection{Blocks} JLS \$14.2
@@ -80,12 +79,12 @@ rule [LocalVarDec]:
 //@ \subsection{Empty statement} JLS \$14.6
 
 rule [Empty]:
-    'Empty(_) => .
+    ; => .
 
 //@ \subsection{Labeled statements} JLS \$14.7
 
 rule [Labeled]:
-    'Labeled(X:Id,, S:K) => S ~> labeledImpl(X)
+    X:Id : S:K => S ~> labeledImpl(X)
 
 //@ Processed version of the labeled statement
 syntax KItem ::= labeledImpl ( Id )
@@ -128,19 +127,17 @@ rule [AssertStm-FirstFalse]:
 
 syntax KItem ::=  switchImpl (
                 TypedVal,   // TV - switch argument
-                KListWrap,  // switch body - list of 'SwitchGroup labels "case Exp : body"
+                KListWrap,  // switch body - list of 'SwitchGroup labels
                 K           // DefaultStm - default block, if any
               )
 
-//context 'Switch(HOLE,,_)
-
 //@ The switchEnd in the right-hand side of => is required to properly interact with break.
 rule [Switch]:
-    switch(TV:TypedVal){[Ks:KList] TrailingLabels:K}
-    => switchImpl(TV, [Ks,, TrailingLabels : .K], .K)
+    switch(TV:TypedVal){[Ks:KList] [TrailingLabels:KList]}
+    => switchImpl(TV, [Ks,, [TrailingLabels] .K], .K)
     ~> switchEnd
 
-context switchImpl( _, [ [case HOLE ,, _:KList] : _ ,, _:KList ], _)
+context switchImpl( _, [ [case HOLE : ,, _:KList] _ ,, _:KList], _)
 
 /*@ The type associated to V and V2 is not important for match, only the value.
 JLS3 \$14.11, page 377: Every case constant expression associated with
@@ -149,7 +146,7 @@ a switch statement must be assignable (�5.2) to the type of the switch Express
 rule [switchImpl-CaseNotMatch]:
     switchImpl(
       V:RawVal :: _,
-      [ [ (  case V2:RawVal :: _ => .KList ),, _:KList ] : _ ,, _],
+      [ [ (  case V2:RawVal :: _ :=> .KList ),, _:KList ] _ ,, _],
       _
     )
 when
@@ -161,7 +158,7 @@ constructs and will execute the statements. */
 rule [switchImpl-CaseMatch]:
     switchImpl(
         V:RawVal :: _,
-        [[case V :: _ ,, _:KList] : S:K,, Ks:KList],
+        [[case V :: _ : ,, _:KList] S:K,, Ks:KList],
         _
     )
     => [S,,Ks]
@@ -169,14 +166,14 @@ rule [switchImpl-CaseMatch]:
 rule [switchImpl-DefaultSave]:
     switchImpl(
         TV:TypedVal,
-        [[ ( default => .KList ),, _:KList] : S:K,, Ks:KList],
+        [[ ( default: => .KList ),, _:KList] S:K,, Ks:KList],
         ( _:K => [S,, Ks] )
     )
 
 rule [switchImpl-SwitchGroup-Discard]:
     switchImpl(
         TV:TypedVal,
-        [( [ .KList ]: _ => .KList ),, _],
+        [( [ .KList ] _ => .KList ),, _],
         _
     )
 
@@ -184,7 +181,7 @@ rule [switchImpl-Default-Exec]:
     switchImpl( _, [.KList], DefaultStm:K) => DefaultStm
 
 rule [SwitchGroup-Exec]:
-    _:KListWrap : S => S
+    _:KListWrap S:K => S
 
 syntax KItem ::=  "switchEnd"
 
@@ -439,20 +436,20 @@ rule [Throw-CausesThreadTermination]:
 //@ \subsection{Try statement}
 
 rule [Try-Catch-Finally-Desugar]:
-    'Try(TryS:K,, [K:K,, Ks:KList],,FinallyS:K)
-    => 'Try('Try(TryS,,[K,,Ks]),,[.KList],,FinallyS)
+    try TryS:K [K:K,, Ks:KList] finally FinallyS:K
+    => try {try TryS [K,,Ks]} [.KList] finally FinallyS
         [structural]
 
 /*@ \subsubsection{Execution of try-catch} JLS \$14.20.1
 */
 
 //resolve the catch clauses of try statement
-context 'Try(_:K,,[_,, HOLE,, _])
+context try _:K [_,, HOLE,, _]
 
 //resolve 'Param term of the catch clause
-context 'Catch(HOLE,, _)                                [result(ExtKResult)]
+context catch(HOLE)_                                [result(ExtKResult)]
 
-rule 'Catch(KR:ExtKResult,, S:K) => catchImpl(KR,S)
+rule catch(KR:ExtKResult)S:K => catchImpl(KR,S)
 
 /*@ Extended K Result.
   Represents KLabels that should be treated as KResult during execution phase, but not during elaboration phase.
@@ -470,7 +467,7 @@ syntax KResult ::=  catchImpl (
                     )
 
 rule [Try-Catch]:
-    'Try(TryS:K,, [KRs:KList]) => TryS ~> catchBlocks([KRs])
+    try TryS:K [KRs:KList] => TryS ~> catchBlocks([KRs])
 when isKResult(KRs)
 
 /*@ The auxiliary construct that holds catch clauses
@@ -487,7 +484,7 @@ rule [catchBlocks-Discard]:
 */
 
 rule [Try-Finally]:
-    'Try(TryS:K,,[.KList],,FinallyS:K) => TryS ~> finallyBlock(FinallyS)
+    try TryS:K [.KList] finally FinallyS:K => TryS ~> finallyBlock(FinallyS)
 
 /*@ The auxiliary construct that holds finally clause
 after try clause has been moved to the top of computation*/

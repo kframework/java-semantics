@@ -191,10 +191,10 @@ rule true::bool ~> true? => .  [structural]
 /*@ Represent a parser form for a sequence of terms. Is desugared into the pretty form [...]*/
 syntax KLabel ::= "'ListWrap"
 rule 'ListWrap(Ks:KList) => [Ks]                  [structural, anywhere]
-
-//@ Sequence of terms and of any other statements. The first term is moved to the top of computation.
+//todo: both 'KListWrap and 'ListWrap are associted with the same production, so how to get rid of it
 syntax KListWrap ::= "[" KList "]" [klabel('KListWrap)]
 
+//@ Sequence of terms and of any other statements. The first term is moved to the top of computation.
 rule [S1:K,, Stmts:KList] => S1 ~> [Stmts]        [structural]
 rule [.KList] => .K                               [structural]
 
