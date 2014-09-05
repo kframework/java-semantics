@@ -26,31 +26,11 @@ rule [ExecutionPhase-Start]:
     <mainClass> ListItem(MainClassS:String) </mainClass>
     <globalPhase> UnfoldingPhase => ExecutionPhase  </globalPhase>
 
-syntax KLabel ::= "'Block"
-//                | "'Labeled"
-//                | "'ExprStm"
-//                | "'AssertStm"
-//                | "'Switch"
-//                | "'SwitchBlock"
-//                | "'SwitchGroup"
-//                | "'Case"
-//                | "'Default"
-//                | "'While"
-//                | "'DoWhile"
-//                | "'For"
-//                | "'Break"
-//                | "'Continue"
-//                | "'Return"
-//                | "'Throw"
-                | "'Try"
-                | "'Catch"
-
-
 //@ \subsection{Blocks} JLS \$14.2
 
 rule [Block]:
     <k> 'Block(S:K) => S ~> env(Env:Map) ...</k>
-//    <k> {S:K} => S ~> env(Env:Map) ...</k>
+//todo:    <k> {S:K} => S ~> env(Env:Map) ...</k>
     <env> Env </env>
         [structural]
 
