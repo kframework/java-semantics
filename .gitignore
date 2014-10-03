@@ -23,6 +23,8 @@
 /test-runner/test-results.xml
 /test-runner/.test
 
+/.idea/*
+/test/*
 /.idea/workspace.xml
 /.idea/dictionaries/*.*
 /.idea/inspectionProfiles/*
