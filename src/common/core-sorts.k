@@ -210,4 +210,18 @@ syntax KResult ::= Types
 syntax LocMetadata ::= "LocalLocMetadata"   [latex(\terminal{Local})]
                      | "FieldLocMetadata"   [latex(\terminal{Field})]
 
+//todo: why does this pure syntax definition affect krun?
+//                     syntax PackageName ::= List{Id,"."} [seqstrict, klabel('PackageName)]
+//                     syntax ExprName::= Id  [strict, klabel('ExprName)]
+//                                         |AmbName "." Id [strict, klabel('ExprName)]
+//                     syntax TypeName ::= Id [strict, klabel('TypeName)]
+//                                         |PackageOrTypeName "." Id [strict, klabel('TypeName)]
+//                     syntax AmbName ::= Id [strict, klabel('AmbName)]
+//                                         |AmbName "." Id [strict, klabel('AmbName)]
+//                     syntax MethodName ::= Id [strict,klabel('MethodName)]
+//                                            |AmbName "." Id [strict,klabel('MethodName)]
+//                     syntax PackageOrTypeName ::= Id [strict,klabel('PackageOrTypeName)]
+//                                                   |PackageOrTypeName "." Id [strict,klabel('PackageOrTypeName)]
+
+
 endmodule

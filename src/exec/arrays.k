@@ -88,8 +88,12 @@ when isKResult(Dims)
         [structural]
 
 rule [NewArray-ArrayInit]:
-    'NewArray(arrayOf T:Type,, [.KList],, 'ArrayInit([InitContent:KList]))
-    => arrayInitAlloc('NewArray(T,, [length([InitContent])::int],, [.KList]), [InitContent])
+    'NewArray(arrayOf T:Type,, [.KList],, ({InitContent:VarInits})<:ArrayInit)
+    => arrayInitAlloc('NewArray(T,, [length(InitContent)::int],, [.KList]), {InitContent})
+
+syntax KItem ::= length (VarInits)                                  [function]
+rule length(V:VarInit, Vs:VarInits) => length(Vs)+Int 1
+rule length(.VarInits) => 0
 
 /*Computation designed to check that array creation expression dimensions are non-negative. If they are non-negative,
 checkNonNegative is dissolved. Otherwise NegativeArraySizeException is thrown.
@@ -213,35 +217,45 @@ when
 //@ Allocates the array based on previously computed size, then proceeds to array initialization
 syntax KItem ::=  arrayInitAlloc (
                 K,        //newArrayAlloc(), reduces to arrayRef()
-                KListWrap //InitContent - list of initialization expressions
+                ArrayInit //InitContent - list of initialization expressions
               )
               [strict(1)]
 
 rule [arrayInitAlloc]:
-    arrayInitAlloc(arrayRef(T:Type, L:Int, Len:Int)::T, [InitContent:KList])
-    => arrayInitImpl(T, L, [InitContent]) ~> arrayRef(T, L, Len)::T
+    arrayInitAlloc(arrayRef(T:Type, L:Int, Len:Int)::T, {InitContent:VarInits})
+    => arrayInitImpl(T, L, {InitContent}) ~> arrayRef(T, L, Len)::T
 
 syntax KItem ::=  arrayInitImpl (
                 Type,     //T - array type, used by inner ArrayInit's
                 Int,      //L - location of first element in store
-                KListWrap //InitContent - list of initialization expressions
+                ArrayInit //InitContent - list of initialization expressions
               )
 
 rule [arrayInitImpl]:
-    ( . => store(L, K) )
-    ~> arrayInitImpl(_, (L:Int => L +Int 1), [(K:K => .KList),, _] )
-when
-    getKLabel(K) =/=KLabel 'ArrayInit
+    ( . => store(L, E) )
+    ~> arrayInitImpl(_, (L:Int => L +Int 1), ({E:Exp,Remaining:VarInits} => {Remaining}) )
+
 
 rule [arrayInitImpl-inner-ArrayInit-desugar]:
-    ( . => store(L, 'NewArray(arrayOf T,, [.KList],, 'ArrayInit([InitContent]))) )
+    ( . => store(L, 'NewArray(arrayOf T,, [.KList],, A)) )
     ~> arrayInitImpl(
           arrayOf arrayOf T:Type,
           (L:Int => L +Int 1),
-          [('ArrayInit([InitContent:KList]) => .KList),, _]
+            ( {A:ArrayInit, Remaining:VarInits} => {Remaining} )
        )
 
 rule [arrayInitImpl-discard]:
-    arrayInitImpl(_, _, [.KList]) => .
+    arrayInitImpl(_, _, {.VarInits}) => .
+
+syntax VarInit ::= Exp|ArrayInit
+syntax ArrayInit ::= "{" VarInits "}" [klabel('ArrayInit)]
+syntax VarInits ::= List{VarInit, ","}
+
+syntax KItem ::= toVarInits( KListWrap , VarInits) [function]
+
+rule toVarInits([Args:KList,, Arg:VarInit], Es:VarInits) => toVarInits([Args], (Arg,Es))
+rule toVarInits([.KList], Es:VarInits) => Es
+//todo: move it to somewhere else?
+rule 'ArrayInit([InitContent:KList]) => 'ArrayInit(toVarInits([InitContent], .VarInits)) [anywhere]
 
 endmodule
