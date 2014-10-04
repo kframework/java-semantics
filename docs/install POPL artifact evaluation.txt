@@ -1,0 +1,40 @@
+Installation instructions of K-Java version submitted for POPL artifact evaluation.
+
+Prerequisites:
+- Linux OS
+- JDK 7 latest, may work on JDK 8 as well.
+- ant.
+- JAVA_HOME/bin and ANT_HOME/bin should be in PATH.
+- git
+
+1. cd to home directory.
+2. Install the right version of K framework:
+
+    git clone https://github.com/kframework/k k-framework
+      (Takes too long. Maybe it is possible to clone just one branch?)
+    cd k-framework
+    git checkout k-java-compatible
+    ant clean build
+
+3. add k-framework/bin to PATH
+4. Install the right version of K-Java:
+    git clone https://github.com/kframework/java-semantics java-semantics
+    cd java-semantics
+    git checkout popl-artifact-evaluation
+    chmod +x tools/*
+
+5. add java/semantics/tools to PATH.
+
+6. Test the semantics.
+    cd to java-semantics/src:
+
+    kjkompile.sh
+    kjrun.sh ../tests/01_smoke_tests/helloWorld.java
+      result:
+        console output displayed,
+        configuration with just 2 cells displayed: <T> and <out>
+    kjtest.sh ../tests/01_smoke_tests/
+      result: 4 tests out of 6 should pass
+
+
+
