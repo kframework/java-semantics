@@ -1,16 +1,21 @@
-Recommendations:
-  1. Connect to VM through ssh port 3022.
-  2. Set the "lines of scrollback" option in your SSH client to at least 7000. Otherwise you won't be able to see the whole configuration for failing programs.
-  2. We recommend a separate connection through a sftp client through which you can view/edit files on the VM through the editor of your choice. The authors use expandrive.
+Prerequisites:
+  - VirtualBox
+  - A ssh client. Virtualbox have it's own cmd client, but we don't recommend using it.
+  - (optional) a sftp client, such as expandrive or winscp. It will help you to view/edit files through your favorite file editor.
 
-Startup:
-  1. Login with user/pass k/k
-  2. All commands have to be run from java-semantics/src.
+Setup:
+  1. Import the ova file to VirtualBox through File -> Import Appliance.
+  2. Start the imported VM.
+  3. Connect through SSH to port 3022, user/pass k/k .
+  4. Setup the "lines of scrollback" setting of your SSH client to be at least 7000. Otherwise long execution output may not be entirely visible.
+  5. cd java-semantics/src
+      All commands have to be run from java-semantics/src.
 
 I. Execution:
-  2. kjkompile.sh -v
+  1. kjkompile.sh -v
     - this will compile k-java into maude representation.
-  3. Now you can run the program of your choice using kjrun.sh. For example:
+
+  2. Now you can run the program of your choice using kjrun.sh. For example:
 
       kjrun.sh ../tests/01_smoke_tests/helloWorld.java
 
@@ -31,8 +36,6 @@ I. Execution:
 
       kjrun.sh --timeout=0 --split-none ../tests/01_smoke_tests/helloWorld.java
 
-    From the whole suite of 841 tests, right now 7 tests fail. This is because reading from stdin doesn't work. The tests used to work some time ago, the failure is due to a bug in K. Unfortunately this bug was not a priority for he K team, and is not yet fixed. We removed the failing tests to avoid inconveniences.
-
 II. Execution with JDK:
 
       jdk-run.sh ../tests/01_smoke_tests/helloWorld.java
@@ -45,19 +48,19 @@ III. Execution of invalid programs.
 
   We prepared 2 examples in the directory ../invalid.
 
-    1. kjrun.sh ../invalid/invalidTypeConv.java
+    1. A program that get stuck in the dynamic semantics (execution):
+      kjrun.sh ../invalid/invalidTypeConv.java
 
-    This program passes the static phase but gets stuck during execution. Search for the cell <k> to see the remaining computation. The top K term is:
+    Search for the cell <k> to see the remaining computation. The top K term is:
 
       normalize ( "x" :: int )
 
-      This term tries to convert the value "x" to the 32-bit representation corresponding to int type, and there is no rule for such value types.
+      This term tries to convert the value "x" to the 32-bit representation corresponding to int type, and there is no K rule for this.
 
     We have to mention that String is modeled in K-Java as primitive type with native representation in K, not as Java class, for performance reasons.
 
-    2. The second example gets stuck during static phase. We have to run it with a different option that executes only the static semantics, to see the result:
-
-    kjrun.sh --prep-pretty ../invalid/undefinedClass.java
+    2. The second example gets stuck in the static semantics (also called preprocessing). We have to run it with a different option that executes only the static semantics, to see the stuck configuration:
+      kjrun.sh --prep-pretty ../invalid/undefinedClass.java
 
 IV. Testing.
 
@@ -65,7 +68,9 @@ IV. Testing.
 
       kjtest.sh ../tests/01_smoke_tests/ ../invalid/
 
-    The file test-results.xml contains details for failing tests. Each test is run on both JDK and K-Java and results are compared. Be aware that running the whole /tests directory takes 8 hours on a 2.6 ghz machine. It is possible to run multiple tests in parallel, but unfortunately VM was not configured to see multiple CPU cores.
+    The file test-results.xml contains details for failing tests. Each test is run on both JDK and K-Java and results are compared. Be aware that running the whole /tests directory takes 8 hours on a 2.6 ghz machine. It is possible to run multiple tests in parallel, but unfortunately this VM was not configured to see multiple CPU cores (changing this from VirtualBox settings will still produce nrproc=1 on the guest machine).
+
+    From the whole suite of 841 tests, right now 7 tests fail. This is because reading from stdin doesn't work. The tests used to work some time ago, the failure is due to a bug in K. Unfortunately this bug was not a priority for he K team, and is not yet fixed. We removed the failing tests to avoid inconveniences.
 
 V. State-space exploration
     Directory ../model-check/73_examples contains the examples used in the paper.
