@@ -20,7 +20,7 @@ syntax Param ::= "{" K Id "}"        [klabel('ParamImpl)]
 
 syntax Params ::= List{Param, ","}
 
-syntax K ::= toParams( KListWrap )          [function]
+syntax KItem ::= toParams( KListWrap )          [function]
            | toParams( KListWrap , Params ) [function]
 
 rule toParams([KLParams:KList]) => toParams([KLParams], .Params)
@@ -65,13 +65,13 @@ rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:KListWrap) => 
 syntax Exp ::= K "." MethodName "(" Exps ")"       [seqstrict(1,3), klabel('MethodImpl)]
 syntax MethodName ::= Id | MethodRef
 
-/*@ \subsection{if statement}*/
+/*@ \subsection{if statement}
 
 syntax KLabel ::= "'If"
 rule 'If(K1:K,,K2:K) => if (K1) {K2} else {.K}        [structural]
 rule 'If(K1:K,,K2:K,,K3:K) => if (K1) {K2} else {K3}  [structural]
 
-syntax Stmt ::= "if" "(" K ")" "{" K "}" "else" "{" K "}" [strict(1)]
+syntax Stmt ::= "if" "(" K ")" "{" K "}" "else" "{" K "}" [strict(1)]*/
 
 /*@ \subsection{Local variable declaration}*/
 
@@ -84,19 +84,19 @@ rule 'LocalVarDec(_:K,, T:Type,,['VarDec(X:Id)]) => T X;  [structural]
 syntax VarDec ::= Type Id ";"   [klabel('VarDecImpl)]
 syntax Stmt ::= VarDec
 
-/*@ \subsection{Assignment expression}*/
+/*@ \subsection{Assignment expression}
 
-//@ 'Assign(loc(L)::T,, V::T)
+@ 'Assign(loc(L)::T,, V::T)
 syntax KLabel ::= "'Assign"
 
 rule 'Assign(K1:K,, K2:K) => K1 = K2
 
-syntax Exp ::= K "=" K       [klabel('AssignImpl)]
+syntax Exp ::= K "=" K       [klabel('AssignImpl)]*/
 
 /*@ \subsection{Expression statement}*/
 
-rule 'ExprStm(E:Exp) => E;
-syntax Stmt ::= Exp ";"      [strict, klabel('ExprStmImpl)]
+//rule 'ExprStm(E:Exp) => E;
+//syntax Stmt ::= Exp ";"      [strict, klabel('ExprStmImpl)]
 
 /*@ \subsection{Cast}*/
 
@@ -110,22 +110,22 @@ syntax Exp ::= Id
 rule X:Id => 'ExprName(X)
 rule lvalue(X:Id) => lvalue('ExprName(X))
 
-/*@ \subsection{== expression}*/
+/*@ \subsection{== expression}
 
-// Just for the sake of the rule isOverridden
+Just for the sake of the rule isOverridden
 syntax Exp ::= K "==" K
-rule K1:K == K2:K => eqAux(K1, K2)
+rule K1:K == K2:K => eqAux(K1, K2)*/
 
 /*@ \subsection{Throw statement}*/
 
-syntax StackConsumerStmt ::= "throw" Exp ";"
-rule throw E:Exp; => 'Throw(E)
+//syntax StackConsumerStmt ::= "throw" Exp ";"
+//rule throw E:Exp; => 'Throw(E)
 
 /*@ \subsection{Return statement}*/
 
-rule 'Return('None(_)) => return;
-
-syntax StackConsumerStmt ::= "return" ";"
+//rule 'Return('None(_)) => return;
+//
+//syntax StackConsumerStmt ::= "return" ";"
 
 /*@ \subsection{New instance creation}*/
 
@@ -167,14 +167,14 @@ rule [NewInstance-to-QNewInstance-unpack]:
 */
 syntax Exps ::= List{Exp, ","} [seqstrict]
 
-syntax K ::= toExps( KListWrap )        [function]
+syntax KItem ::= toExps( KListWrap )        [function]
            | toExps( KListWrap , Exps ) [function]
 
 rule toExps([Args:KList]) => toExps([Args], .Exps)
 rule toExps([Args:KList,, Arg:Exp], Es:Exps) => toExps([Args], (Arg,Es))
 rule toExps([.KList], Es:Exps) => Es
 
-syntax K ::= toKListWrap( Exps )              [function]
+syntax KItem ::= toKListWrap( Exps )              [function]
            | toKListWrap( KListWrap , Exps )  [function]
 
 rule toKListWrap(Args:Exps) => toKListWrap([.KList], Args)
@@ -185,7 +185,7 @@ syntax Exps ::= TypedVals
 syntax TypedVals ::= List{TypedVal, ","}
 
 //@ Converts a TypedVals term to Types. Uses typeOf underneath.
-syntax K ::=  getTypes (
+syntax KItem ::=  getTypes (
                 TypedVals     // a list of source values
               )
               [function]

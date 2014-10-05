@@ -20,7 +20,7 @@ Running the same program with JDK don't expose the wrong behaviour.
 LTL verification. In every state where "this" is of type BlockingQueue we have head <= tail:
 
   kjkompile.sh --threading-sync
-  kjrun.sh --timeout=0 --ltlmc="[]Ltl (this instanceof BlockingQueue ->Ltl this.head <= this.tail)" \
+  kjrun.sh --timeout=0 --ltlmc="[]Ltl (this instanceof BlockingQueue ->Ltl (this.head) <= (this.tail))" \
     ../model-check/73_examples/queue_4_threads_3_wrong.java > ltl.out
 
 Result: false, 1m5s win, 30s linux. The counter-example path is displayed.

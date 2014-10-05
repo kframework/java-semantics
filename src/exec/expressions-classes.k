@@ -7,6 +7,7 @@ module EXPRESSIONS-CLASSES
     imports CORE-CLASSES //for cast
     imports SUBTYPING
     imports TO-STRING
+    imports STMT-SYNTAX
 
 /*@ \subsection{Instance Of} */
 

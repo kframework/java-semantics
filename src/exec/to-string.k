@@ -70,11 +70,11 @@ rule toString(objectRef(OId:Int, LowestClass:ClassType) :: T:Type)
 
 //@ \subsection{Debug helper functions}
 
-syntax K ::= debugPrint ( K )                [strict]
+syntax KItem ::= debugPrint ( K )                [strict]
 rule <k> debugPrint(Str:String::_) => . ...</k>
      <out>... . => ListItem(Str +String "\n") </out>
 
-syntax K ::= debugString( K )             [function]
+syntax KItem ::= debugString( K )             [function]
            | debugStringList( KListWrap ) [function]
            | Bool2String( Bool )          [function]
 
@@ -117,7 +117,7 @@ rule debugStringList([.KList]) => ""
 rule Bool2String(true) => "true"
 rule Bool2String(false) => "false"
 
-syntax K ::= isDebugStringLeaf ( K )
+syntax KItem ::= isDebugStringLeaf ( K )
 rule isDebugStringLeaf(_:Id) => true
 rule isDebugStringLeaf(_:Int) => true
 rule isDebugStringLeaf(_:Bool) => true

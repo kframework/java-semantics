@@ -43,7 +43,7 @@ rule [TypeName-QualifiedPackage]:
     'TypeName(Pack:PackageId,, X:Id) => typeNameQualifiedImpl(getNamesMap(Pack), X)   [structural]
 
 //@Retrieves the ClassType for the given names map and simple class name
-syntax K ::= typeNameQualifiedImpl ( K, Id ) [strict(1)]
+syntax KItem ::= typeNameQualifiedImpl ( K, Id ) [strict(1)]
 
 rule [typeNameQualifiedImpl-Found]:
     typeNameQualifiedImpl(mapWrap(X |-> Class:ClassType _), X:Id) => Class

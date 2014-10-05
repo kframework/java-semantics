@@ -12,7 +12,7 @@ module PROCESS-TYPE-NAMES
 /*@ \subsection{Start of the phase ProcTypeNamesPhase}*/
 
 //Initial command for the preprocessing semantics
-syntax K ::= "procTypeNames"
+syntax KItem ::= "procTypeNames"
 
 rule [ProcTypeNamesPhase-start]:
     <k> procTypeNames => Program </k>
@@ -52,7 +52,7 @@ rule [PackageName-Start]:
     'PackageName([Ks:KList]) => packageNameImpl("", [Ks:KList])                  [structural]
 
 //Aux construct for processing packages
-syntax K ::= packageNameImpl ( String, KListWrap )
+syntax KItem ::= packageNameImpl ( String, KListWrap )
 
 rule [packageNameImpl-FirstInnerDesugar]:
     packageNameImpl(_:String, [(X:Id => packageId(X)),, Ks:KList])                        [structural]
@@ -73,7 +73,7 @@ rule [packageNameImpl-End]:
 
 /*@ Wrapper of declarations inside a compilation unit. Used to distinguish
 ProcTypeNamesPhase from ProcCompUnitsPhase*/
-syntax K ::=  processTypeNames (
+syntax KItem ::=  processTypeNames (
                 KListWrap,    //declarations inside a compilation unit
                 PackageId // the package of the processed types
               )
@@ -123,14 +123,14 @@ rule [processTypeNames-Discard]:
 /*@ Is converted into a processTypeNames. The first argument is a class/interface body. This function
   have to extract the list of memers from the body and pass them to processTypeNames.
 */
-syntax K ::= processInnerTypes ( K , PackageId )
+syntax KItem ::= processInnerTypes ( K , PackageId )
 rule processInnerTypes('ClassBody([Ks:KList]), Pack:PackageId) => processTypeNames([Ks], Pack)
 rule processInnerTypes([Ks:KList], Pack:PackageId) => processTypeNames([Ks], Pack)             //interface body
 
 /*@ \subsection{Auxiliary constructs}*/
 
 /*@ Computes the metaType based on type declaration label*/
-syntax K ::=  getMetaType (
+syntax KItem ::=  getMetaType (
                 KLabel //type declaration label
               )
               [function]
@@ -139,7 +139,7 @@ rule getMetaType('ClassDec) => classCMT
 rule getMetaType('InterfaceDec) => interfaceCMT
 
 //@ Returns the types map for the given package, or mapWrap(.Map) if there's no such package.
-syntax K ::=  getNamesMap  (
+syntax KItem ::=  getNamesMap  (
                 PackageId //The package for which we want to retrieve the types map
               )
 

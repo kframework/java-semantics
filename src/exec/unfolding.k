@@ -10,7 +10,7 @@ rule [UnfoldingPhase-start]:
 
 /*@ The sole content of <k> cell during UnfoldingPhase
 */
-syntax K ::= "unfoldingPhase"
+syntax KItem ::= "unfoldingPhase"
 
 rule [unfolding-class-unfold-top-level]:
     <k> unfoldingPhase </k>
@@ -53,7 +53,7 @@ rule [unfolding-class-unfold-inner]:
 when
     ClassDecKL ==KLabel 'ClassDec orBool ClassDecKL ==KLabel 'InterfaceDec
 
-syntax K ::= getClassFromClassDec ( K )   [function]
+syntax KItem ::= getClassFromClassDec ( K )   [function]
 rule getClassFromClassDec(_:KLabel('ClassDecHead( _:K,, Class:ClassType,, _:KList),, _)) => Class
 
 rule [unfolding-class-inherit-methods-not-object]:
@@ -120,12 +120,12 @@ rule [unfolding-class-members-except-methods]:
 when
     notBool containsMethodDecs([InstanceFields]) ==K true
 
-syntax K ::= getClassMetaType ( KLabel )      [function]
+syntax KItem ::= getClassMetaType ( KLabel )      [function]
 rule getClassMetaType('ClassDec) => classCMT
 rule getClassMetaType('InterfaceDec) => interfaceCMT
 
 //@ True if given KListWrap contains a 'MethodDec(\_) term
-syntax K ::= containsMethodDecs(  KListWrap )  [function]
+syntax KItem ::= containsMethodDecs(  KListWrap )  [function]
 rule containsMethodDecs([_,, 'MethodDec(_),, _]) => true
 
 rule [unfolding-ImplementsDec]:
@@ -200,7 +200,7 @@ rule [UnfoldingPhase-end]:
 when
     notBool containsFoldedClasses(ClassesBag) ==K true
 
-syntax K ::= containsFoldedClasses ( Bag ) [function]
+syntax KItem ::= containsFoldedClasses ( Bag ) [function]
 rule containsFoldedClasses(
       <class>
         <cphDiscovered> <classPhase> ClassPhase:ClassPhase </classPhase> ...</cphDiscovered>

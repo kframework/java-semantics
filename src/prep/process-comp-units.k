@@ -44,7 +44,7 @@ rule [CompilationUnit]:
 /*@ Wrapper over a list of type declarations and possible other terms, required to distinguish
 this phase from other preprocessing phases
 Type declarations are processed in this phase wrapped in a processTypeDecsInPCUPhase*/
-syntax K ::=  processTypeDecsInPCUPhase  (
+syntax KItem ::=  processTypeDecsInPCUPhase  (
                 KListWrap,  //The list of terms from which we will process just type declarations
                 PackageId,  //The package of the processed types
                 ClassType   //The outer class of this class, if any, or noClass if this is a top-level class
@@ -190,7 +190,7 @@ rule [processTypeDecsInPCUPhase-IInterfaceDec]:
 
 /*@ If the given type is top-level, then save <imports> from the <compUnitImports> cell.
 Otherwise do nothing.*/
-syntax K ::=  saveImportsInPCUPhase (
+syntax KItem ::=  saveImportsInPCUPhase (
                 K //is processed into TypeName
               )
 

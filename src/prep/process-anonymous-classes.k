@@ -52,7 +52,7 @@ rule [elab-NewInstance-anonymous-extends-class]:
     <classType> Class </classType>
     <classMetaType> classCMT </classMetaType>
 
-syntax K ::=  processAnonymousClass (
+syntax KItem ::=  processAnonymousClass (
                 Id,        //Class name
                 ClassType, //Base class
                 KListWrap, //Base interfaces, if any. In fact either zero or one interface is possible at this point.
@@ -124,7 +124,7 @@ First KList - list of actual arguments
 Second KList - the result
 Third arg - a counter used to generate var names
 */
-syntax K ::= buildConstructorFormalParams ( KListWrap, KListWrap, Int )
+syntax KItem ::= buildConstructorFormalParams ( KListWrap, KListWrap, Int )
            | buildConstructorFirstLineArgs ( KListWrap, KListWrap, Int )
 
 rule buildConstructorFormalParams(
@@ -166,7 +166,7 @@ rule [elab-QNewInstance-anonymous-extends-class]:
     <classMetaType> classCMT </classMetaType>
 
 //Qualified anonymous class
-syntax K ::=  processQAnonymousClass (
+syntax KItem ::=  processQAnonymousClass (
                 Id,        //Class name
                 ClassType, //Base class
                 K,         //TypedQual - qualifier

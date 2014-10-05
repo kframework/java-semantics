@@ -1,5 +1,5 @@
 /*
-kjrun.sh --search -v --timeout=0 ../model-check/73_javafan_examples/Philosopher.java
+kjrun.sh --search -v --timeout=0 ../model-check/73_examples/Philosopher.java
 
 Result: 7 solutions (3! good solutions + 1 deadlock), in 1m50s on windows.
 

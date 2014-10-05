@@ -10,7 +10,7 @@ module ARRAYS
   distinguish between regular memory locations and array elements. Array elements need to be represented separately
   in order to support array polymorphism.
 */
-syntax K ::=  RawVal "::" "elem" Type
+syntax KItem ::=  RawVal "::" "elem" Type
 
 /*@ \subsection{Array access}
 Check array bounds, as part of the dynamic typing policy. */
@@ -94,7 +94,7 @@ rule [NewArray-ArrayInit]:
 /*Computation designed to check that array creation expression dimensions are non-negative. If they are non-negative,
 checkNonNegative is dissolved. Otherwise NegativeArraySizeException is thrown.
 */
-syntax K ::=  checkNonNegative (
+syntax KItem ::=  checkNonNegative (
                 KListWrap           // [...,, KResult,, ...] - computed array dimensions
               )
 
@@ -110,7 +110,7 @@ when
 rule checkNonNegative([.KList]) => .
 
 //@ Same as 'NewArray, but after dims were computed and checked
-syntax K ::=  allocAndInitArray (
+syntax KItem ::=  allocAndInitArray (
                 Type, // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
                 KListWrap,  // [Dims:List{KResult}] - array dimensions
                 K     // InitExp - expression used to initialize each array element
@@ -141,7 +141,7 @@ rule [allocAndInitArray]:
     <nextLoc> LI:Int => LI +Int 1 </nextLoc>
 
 //@ Maximum of two numbers
-syntax K ::=  max ( Int, Int )          [function]
+syntax KItem ::=  max ( Int, Int )          [function]
 rule max(I1:Int, I2:Int) => #if I1 >=Int I2
                               #then I1
                               #else I2
@@ -149,7 +149,7 @@ rule max(I1:Int, I2:Int) => #if I1 >=Int I2
 
 /*@ Allocates the given number of elements in the store of the given Type. Used by array instantiation logic.
 */
-syntax K ::=  allocArray (
+syntax KItem ::=  allocArray (
                 Int,  //The number of elements to allocate
                 Type  //The type of each element
               )
@@ -168,7 +168,7 @@ rule allocArray(0, _) => .K       [structural]
   freshly computed for each element, and might alter another locations in the store, as is the case for multidim arrays.
   This procedure don't change the element type in the store.
 */
-syntax K ::=  initArray (
+syntax KItem ::=  initArray (
                 Int,    // The location of the first element
                 Int,    // The number of elements
                 K       /* Expression used to initialize each location. Is evaluated for each location
@@ -194,15 +194,14 @@ rule [storeImpl-array-elem]:
 rule [storeImpl-array-location-check-type]:
     <k>
       storeImpl(L:Int, V:RawVal::T:Type)
-      =>  'If(
-            subtype(typeOf(V), StoreType),,
-            storeImpl(L, V::StoreType),,
-
-            throw new class String2Id("java.lang.ArrayStoreException") (
+      =>  if(subtype(typeOf(V), StoreType))
+            {storeImpl(L, V::StoreType)}
+            else
+            {throw new class String2Id("java.lang.ArrayStoreException") (
                 //the ArrayStoreException argument is the assigned object type
                 (V::T .String2Id("getClass") (.TypedVals)) .String2Id("getName") (.TypedVals)
             );
-          )
+          }
       ...
     </k>
     <store>... L |-> _ :: elem StoreType:Type ...</store>
@@ -212,7 +211,7 @@ when
 //@ \subsection{Array initializer}
 
 //@ Allocates the array based on previously computed size, then proceeds to array initialization
-syntax K ::=  arrayInitAlloc (
+syntax KItem ::=  arrayInitAlloc (
                 K,        //newArrayAlloc(), reduces to arrayRef()
                 KListWrap //InitContent - list of initialization expressions
               )
@@ -222,7 +221,7 @@ rule [arrayInitAlloc]:
     arrayInitAlloc(arrayRef(T:Type, L:Int, Len:Int)::T, [InitContent:KList])
     => arrayInitImpl(T, L, [InitContent]) ~> arrayRef(T, L, Len)::T
 
-syntax K ::=  arrayInitImpl (
+syntax KItem ::=  arrayInitImpl (
                 Type,     //T - array type, used by inner ArrayInit's
                 Int,      //L - location of first element in store
                 KListWrap //InitContent - list of initialization expressions

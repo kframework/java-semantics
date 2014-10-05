@@ -12,7 +12,7 @@ rule [ProcClassDecsPhase-start]:
     <globalPhase> ProcCompUnitsPhase => ProcClassDecsPhase  </globalPhase>
 
 //@ Processes all classes from StoredCPhase to DecsProcessedCPhase.
-syntax K ::=  processClassDecs (
+syntax KItem ::=  processClassDecs (
                 K //setWrap(Set) - the set of all classes
               )
               [strict]
@@ -63,7 +63,7 @@ when
     OuterClassPhase ==K DecsProcessedCPhase orBool OuterClassPhase ==K MembersProcessedCPhase
 
 //@ Process the given class from StoredCPhase to BasesResolvedCPhase.
-syntax K ::=  resolveBases (
+syntax KItem ::=  resolveBases (
                 ClassType,  //The class for which we resolve bases
                 K,          //Base class
                 KListWrap   //Implements clauses
@@ -122,7 +122,7 @@ rule [processClassDecs-discard]:
     processClassDecs(setWrap(.)) => .K
 
 //@ Converts a term of type KList into a Set
-syntax K ::= kListToSet ( KListWrap,  //a list of some K Terms
+syntax KItem ::= kListToSet ( KListWrap,  //a list of some K Terms
                           Set         //the result set
                           )
 
@@ -130,7 +130,7 @@ rule kListToSet([(K:K => .KList),,_], (_ (.Set => SetItem(K) )))
 rule kListToSet([.KList], TypeSet:Set) => setWrap(TypeSet)
 
 //@ Receives a kListToSet term ans saves the resulting set into <imports>
-syntax K ::= saveImplements ( ClassType, K ) [strict(2)]
+syntax KItem ::= saveImplements ( ClassType, K ) [strict(2)]
 
 rule [saveImplements]:
     <k> saveImplements(Class:ClassType, setWrap(ImplSet:Set)) => . ...</k>
@@ -140,7 +140,7 @@ rule [saveImplements]:
 /*@ Computes the full names map used to resolve
     classes by simple name inside the class specified by the arg 4,
     and stores them inside <imports>.*/
-syntax K ::=  saveImports  (
+syntax KItem ::=  saveImports  (
                 ClassType,  //Class - the actual class
                 ClassType,  //The outer class of this class, if any,
                               //or noClass if this is a top-level class

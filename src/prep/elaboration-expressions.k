@@ -11,7 +11,7 @@ Expression labels are not converted by the default rule in the phase elabDispose
   the type of the expression.
 */
 
-syntax K ::= isBoolResultBinaryExpLabel ( KLabel )  [function]
+syntax KItem ::= isBoolResultBinaryExpLabel ( KLabel )  [function]
 rule isBoolResultBinaryExpLabel('LazyOr) => true
 rule isBoolResultBinaryExpLabel('LazyAnd) => true
 rule isBoolResultBinaryExpLabel('Eq) => true
@@ -57,10 +57,14 @@ when
     orBool (KL ==KLabel 'Minus)
     orBool (KL ==KLabel 'Complement)
 
-rule [elabEnd-PrefixPostfix]:
-    elabEnd(KL:KLabel(cast(T1:Type, Exp1:K))) => elabRes(cast(T1, KL(Exp1)))
-when
-    isPrefixPostfixExp(KL(.KList)) ==K true
+//rule [elabEnd-PrefixPostfix]:
+//    elabEnd(KL:KLabel(cast(T1:Type, Exp1:K))) => elabRes(cast(T1, KL(Exp1)))
+//when
+//    isPrefixPostfixExp(KL(.KList)) ==K true
+rule elabEnd((++cast(T1:Type, Exp1:K)):PrefixPostfixExp) => elabRes(cast(T1, ++Exp1))
+rule elabEnd((--cast(T1:Type, Exp1:K)):PrefixPostfixExp) => elabRes(cast(T1, --Exp1))
+rule elabEnd(cast(T1:Type, Exp1:K)++) => elabRes(cast(T1, Exp1++))
+rule elabEnd(cast(T1:Type, Exp1:K)--) => elabRes(cast(T1, Exp1--))
 
 rule [elabEnd-StringPlusAny]:
     elabEnd('Plus(TE1:K,, TE2:K)) => elabRes(cast(classString,'Plus(TE1,, TE2)))
@@ -74,7 +78,7 @@ rule [elabEnd-Cond]:
 /*@ Computes the type of a conditional expression.
     Operands evaluate into types.
 */
-syntax K ::= condType ( Type, Type ) [strict]
+syntax KItem ::= condType ( Type, Type ) [strict]
 
 rule [condType-NoChar]:
     condType(T1:Type,T2:Type) => ifAux(subtype(T1,T2), T2, T1)
@@ -93,7 +97,7 @@ rule [condType-FirstChar]:
     The whole expression is then rewritten into elabRes(cast(SecondArgAsType, FirstArg))
     We cannot eliminate this wrapper because the second argument in all usage places is not a function.
 */
-syntax K ::= elabExpAndType ( K, K )  [strict(2)]
+syntax KItem ::= elabExpAndType ( K, K )  [strict(2)]
 rule elabExpAndType(K:K, T:Type) => elabRes(cast(T, K))
 
 rule [elabEnd-Assign-SameType]:
@@ -106,10 +110,21 @@ rule [elabEnd-Assign-DiffType]:
 when
     T1 =/=K typeOf(TE2)
 
-rule [elabEnd-CompoundAssign]:
-    elabEnd(KL:KLabel(cast(T1:Type, Exp1:K),, TE2:K)) => elabRes(cast(T1, KL(Exp1,, TE2)))
-when
-    isCompoundAssignExp(KL(.KList)) ==K true
+//rule [elabEnd-CompoundAssign]:
+//    elabEnd(KL:KLabel(cast(T1:Type, Exp1:K),, TE2:K)) => elabRes(cast(T1, KL(Exp1,, TE2)))
+//when
+//    isCompoundAssignExp(KL(.KList)) ==K true
+rule elabEnd(cast(T1:Type, Exp1:K) *= TE2:K) => elabRes(cast(T1, Exp1 *= TE2))
+rule elabEnd(cast(T1:Type, Exp1:K) /= TE2:K) => elabRes(cast(T1, Exp1 /= TE2))
+rule elabEnd(cast(T1:Type, Exp1:K) %= TE2:K) => elabRes(cast(T1, Exp1 %= TE2))
+rule elabEnd(cast(T1:Type, Exp1:K) += TE2:K) => elabRes(cast(T1, Exp1 += TE2))
+rule elabEnd(cast(T1:Type, Exp1:K) -= TE2:K) => elabRes(cast(T1, Exp1 -= TE2))
+rule elabEnd(cast(T1:Type, Exp1:K) <<= TE2:K) => elabRes(cast(T1, Exp1 <<= TE2))
+rule elabEnd(cast(T1:Type, Exp1:K) >>= TE2:K) => elabRes(cast(T1, Exp1 >>= TE2))
+rule elabEnd(cast(T1:Type, Exp1:K) >>>= TE2:K) => elabRes(cast(T1, Exp1 >>>= TE2))
+rule elabEnd(cast(T1:Type, Exp1:K) &= TE2:K) => elabRes(cast(T1, Exp1 &= TE2))
+rule elabEnd(cast(T1:Type, Exp1:K) ^= TE2:K) => elabRes(cast(T1, Exp1 ^= TE2))
+rule elabEnd(cast(T1:Type, Exp1:K) |= TE2:K) => elabRes(cast(T1, Exp1 |= TE2))
 
 /*@ \subsection{Elaboration of non-numeric expressions} */
 

@@ -30,19 +30,19 @@ case "$OPTION" in
     aux-kjtest.sh -mode jdk      -threads 12 -timeout  10 -encodeXML false -clean true ${@}
     ;;
 "--t1")
-    aux-kjtest.sh -mode run      -threads  1 -timeout 120 -encodeXML false -clean true ${@}
+    aux-kjtest.sh -mode run      -threads  1 -timeout 300 -encodeXML false -clean true ${@}
     ;;
 "--t2")
-    aux-kjtest.sh -mode run      -threads  2 -timeout 120 -encodeXML false -clean true ${@}
+    aux-kjtest.sh -mode run      -threads  2 -timeout 300 -encodeXML false -clean true ${@}
     ;;
 "--t4")
-    aux-kjtest.sh -mode run      -threads  4 -timeout 120 -encodeXML false -clean true ${@}
+    aux-kjtest.sh -mode run      -threads  4 -timeout 300 -encodeXML false -clean true ${@}
     ;;
 "--t8")
-    aux-kjtest.sh -mode run      -threads  8 -timeout 120 -encodeXML false -clean true ${@}
+    aux-kjtest.sh -mode run      -threads  8 -timeout 300 -encodeXML false -clean true ${@}
     ;;
 "--t12")
-    aux-kjtest.sh -mode run      -threads 12 -timeout 120 -encodeXML false -clean true ${@}
+    aux-kjtest.sh -mode run      -threads 12 -timeout 300 -encodeXML false -clean true ${@}
     ;;
 *)
     echo "Invalid OPTION: ${OPTION}"

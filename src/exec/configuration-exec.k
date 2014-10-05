@@ -178,7 +178,7 @@ configuration
         <program color="LightSteelBlue"> $PGM:K </program>
 
         //Main class, passed as krun argument. We need it from the outside, just like JDK Java.
-        <mainClass color="LightSteelBlue"> $MainClass:ListItem </mainClass>
+        <mainClass color="LightSteelBlue"> $MainClass:List </mainClass>
 
       </phStart>
 
@@ -259,7 +259,7 @@ configuration
       //Cells used for debugging. Not related to the semantics.
       <groupDebug color="Yellow">
 
-        <dissolveEmptyK> true </dissolveEmptyK>
+        <dissolveEmptyK> false </dissolveEmptyK>
 
         //When computation finishes, dissolve all cells except <out>,
         //in order to avoid duplicate solutions during model checking.

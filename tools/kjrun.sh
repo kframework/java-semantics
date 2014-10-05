@@ -60,7 +60,7 @@ if [[ $(uname) == *Linux* ]]
   then TIMEOUT_FACTOR=1
   else TIMEOUT_FACTOR=3
 fi
-TIMEOUT=$((30 * $TIMEOUT_FACTOR))
+TIMEOUT=$((300 * $TIMEOUT_FACTOR))
 SEARCH_TIMEOUT_FACTOR=2
 
 MODE=run-exec

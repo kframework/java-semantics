@@ -1,3 +1,4 @@
+
 //@ \section{Module STATEMENTS}
 
 module STATEMENTS
@@ -7,6 +8,7 @@ module STATEMENTS
     imports VAR-LOOKUP
     imports METHOD-INVOKE // for initParams
     imports TRY-AND-THROW
+    imports STMT-SYNTAX
 
 //@ \subsection{Call of main method}
 
@@ -26,34 +28,35 @@ rule [ExecutionPhase-Start]:
 
 syntax KLabel ::= "'Empty"
                 | "'Labeled"
-                | "'ExprStm"
+//                | "'ExprStm"
                 | "'AssertStm"
                 | "'Switch"
                 | "'SwitchBlock"
                 | "'SwitchGroup"
                 | "'Case"
                 | "'Default"
-                | "'While"
-                | "'DoWhile"
-                | "'For"
-                | "'Break"
-                | "'Continue"
-                | "'Return"
-                | "'Throw"
+//                | "'While"
+//                | "'DoWhile"
+//                | "'For"
+//                | "'Break"
+//                | "'Continue"
+//                | "'Return"
+//                | "'Throw"
                 | "'Try"
                 | "'Catch"
-                | "'Block"
+//                | "'Block"
 
 
 //@ \subsection{Blocks} JLS \$14.2
 
 rule [Block]:
-    <k> 'Block(S:K) => S ~> env(Env:Map) ...</k>
+//    <k> 'Block(S:K) => S ~> env(Env:Map) ...</k>
+    <k> {S:K} => S ~> env(Env:Map) ...</k>
     <env> Env </env>
         [structural]
 
 //@ \texttt{env} Restore the env cell content from env(...) statement argument
-syntax K ::= env ( Map )
+syntax KItem ::= env ( Map )
 
 rule [env]:
     <k> env(Env:Map) => . ...</k>
@@ -85,7 +88,7 @@ rule [Labeled]:
     'Labeled(X:Id,, S:K) => S ~> labeledImpl(X)
 
 //@ Processed version of the labeled statement
-syntax K ::= labeledImpl ( Id )
+syntax KItem ::= labeledImpl ( Id )
 
 rule [labeledImpl-Discard]:
     labeledImpl(_) => .K
@@ -95,6 +98,7 @@ rule [labeledImpl-Discard]:
 rule _:TypedVal; => .K
 
 //@ \subsection{If statement}
+rule if (K1) {K2} => if (K1) {K2} else {.K} 
 
 rule [If-True]:
     if (true::bool) {S:K} else {_} => S
@@ -121,7 +125,7 @@ rule [AssertStm-TwoArgs]:
 
 //@ \subsection{Switch statement}
 
-syntax K ::=  switchImpl (
+syntax KItem ::=  switchImpl (
                 TypedVal,   // TV - switch argument
                 KListWrap,  // switch body - list of 'SwitchGroup labels
                 K           // DefaultStm - default block, if any
@@ -178,30 +182,30 @@ rule [switchImpl-Default-Exec]:
 rule [SwitchGroup-Exec]:
     'SwitchGroup(_:K,, S:K) => S
 
-syntax K ::=  "switchEnd"
+syntax KItem ::=  "switchEnd"
 
 rule [switchEnd-Discard]:
     switchEnd => .K
 
 //@ \subsection{While statement} and loop infrastructure.
 
-rule 'While(E:K,,S:K) => whileImpl(E, S)         [structural]
+rule while(E:K){S:K} => whileImpl(E, S)         [structural]
 
-syntax K ::=  whileImpl (
+syntax KItem ::=  whileImpl (
                 K,  // E - test expression. In For loop, it is UpdClause ~> testExp
                 K   // S - while body
               )
 
 rule [whileImpl]:
-    whileImpl(E:K, S:K) => 'If(E,, 'Block(S ~> whileImpl(E, S)),, .K)     [structural]
+    whileImpl(E:K, S:K) => if(E){S ~> whileImpl(E, S)}    [structural]
 
 //@ \subsection{Do statement}
-rule 'DoWhile(S:K,,E:K) => S ~> whileImpl(E, S)  [structural]
+rule do{S:K}while(E:K) => S ~> whileImpl(E, S)  [structural]
 
 //@ \subsection{For statement}
 
 //wrapper of certain clauses of for statement
-syntax K ::= stm ( KListWrap )
+syntax KItem ::= stm ( KListWrap )
 
 rule [stm-KListWrap-empty]:
     stm([.KList]) => .
@@ -218,35 +222,36 @@ when
     notBool ( getKLabel(K) ==KLabel 'cast )                               [structural]
 
 rule [For-FirstArgV1Red]:
-    'For((
+    for((
       [InitExps:KList] => stm([InitExps])
-    ),,_:KList)
+    );_:K;_:K) {_:K}
         [structural]
 
 //Works also in elaboration phase
 rule [For-FirstArgV2Red]:
-    'For((
+    for((
       'LocalVarDec(Ks:KList) => stm(['LocalVarDec(Ks)])
-    ),,_:KList)
+    );_:K;_:K) {_:K}
         [structural]
 
 rule [For-SecondArgRed]:
-    'For(_:K,,(
+    for(_:K;(
       'None(.KList) => 'Some(true)
-    ),,_:KList)
+    );_:K) {_:K}
         [structural]
 
 rule [For-ThirdArgRed]:
-    'For(_:K,,_:K,,(
+    for(_:K;_:K;(
       [UpdExps:KList] => stm([UpdExps])
-    ),,_:K)
+    )) {_:K}
         [structural]
 
 //this form of resulting while is required for compatibility with continue statement
 rule [For]:
-    'For(stm(InitClause:KListWrap),, 'Some(TestExp:K),, stm(UpdClause:KListWrap),, S:K)
+    for(stm(InitClause:KListWrap); 'Some(TestExp:K); stm(UpdClause:KListWrap)) {S:K}
      => 'Block(stm(InitClause)
-        ~> 'If(TestExp,, 'Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S),, .K))  [structural]
+        //~> 'If(TestExp,, 'Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S),, .K))  [structural]
+        ~> if(TestExp) {'Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S)})  [structural]
 
 //totest model check - the argument of 'return and 'Throw must be evaluated. Otherwise some side effects during
 // evaluation might be evaluated too late
@@ -259,8 +264,7 @@ rule [StackConsumerStmt-RestoreEnv]:
     StackCons:StackConsumerStmt ~> env(Env:Map)
     => env(Env:Map) ~> StackCons
 
-syntax Stmt ::= StackConsumerStmt
-syntax StackConsumerStmt ::= "dummyStackConsumerStmt"
+//todo: remove this!why cannot?
 rule isStackConsumerStmt('Return(_)) => true
 rule isStackConsumerStmt('Throw(_)) => true
 rule isStackConsumerStmt('Break(_)) => true
@@ -269,7 +273,8 @@ rule isStackConsumerStmt('Continue(_)) => true
 //@ \subsection{Break statement}
 
 rule [Break-UnlabeledPropagate]:
-    'Break('None(_)) ~> (KL:KLabel(_) => .)
+   // 'Break('None(_)) ~> (KL:KLabel(_) => .)
+    break 'None(_); ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
@@ -277,54 +282,63 @@ when
     andBool KL =/=KLabel 'switchEnd
 
 rule [Break-Unlabeled]:
-    'Break('None(_)) ~> KL:KLabel(_) => .
+    //'Break('None(_)) ~> KL:KLabel(_) => .
+    break 'None(_); ~> KL:KLabel(_) => .
 when
            KL ==KLabel 'whileImpl
     orBool KL ==KLabel 'switchEnd
 
 rule [Break-LabeledPropagate]:
-    'Break('Some(X:Id)) ~> (KL:KLabel(_) => .)
+   // 'Break('Some(X:Id)) ~> (KL:KLabel(_) => .)
+    break 'Some(X:Id); ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
     andBool KL =/=KLabel 'labeledImpl
 
 rule [BreakLabeledNotMatch]:
-    'Break('Some(X1:Id)) ~> (labeledImpl(X2:Id) => .)
+    //'Break('Some(X1:Id)) ~> (labeledImpl(X2:Id) => .)
+    break 'Some(X1:Id); ~> (labeledImpl(X2:Id) => .)
 when
     X1 =/=K X2
 
 rule [Break-LabeledMatch]:
-    'Break('Some(X:Id)) ~> labeledImpl(X:Id) => .
+    //'Break('Some(X:Id)) ~> labeledImpl(X:Id) => .
+    break 'Some(X:Id); ~> labeledImpl(X:Id) => .
 
 //@ \subsection{Continue statement}
 
 rule [Continue-Propagate]:
-    'Continue(_) ~> (KL:KLabel(_) => .)
+//    'Continue(_) ~> (KL:KLabel(_) => .)
+    continue _; ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
     andBool KL =/=KLabel 'whileImpl
 
 rule [Continue-Unlabeled]:
-    ('Continue('None(_)) => .) ~> whileImpl(_,_)
+//    ('Continue('None(_)) => .) ~> whileImpl(_,_)
+   (continue 'None(_); => .) ~> whileImpl(_,_)
 
 rule [Continue-LabeledMeetsWhile]:
     <k>
-      (. => getWhileLabel(Rest)) ~> 'Continue('Some(X:Id)) ~> whileImpl(_,_) ~> Rest:K
+//      (. => getWhileLabel(Rest)) ~> 'Continue('Some(X:Id)) ~> whileImpl(_,_) ~> Rest:K
+      (. => getWhileLabel(Rest)) ~> continue 'Some(X:Id); ~> whileImpl(_,_) ~> Rest:K
     </k>
 
 rule [Continue-LabeledNotMatch]:
-    (whileLabel(LabelK:K) => .) ~> 'Continue('Some(X:Id)) ~> (whileImpl(_,_) => .)
+//    (whileLabel(LabelK:K) => .) ~> 'Continue('Some(X:Id)) ~> (whileImpl(_,_) => .)
+    (whileLabel(LabelK:K) => .) ~> continue 'Some(X:Id); ~> (whileImpl(_,_) => .)
 when
     LabelK =/=K X
 
 rule [Continue-LabeledMatch]:
-    whileLabel(X) ~> 'Continue('Some(X:Id)) => .
+//    whileLabel(X) ~> 'Continue('Some(X:Id)) => .
+    whileLabel(X) ~> continue 'Some(X:Id); => .
 
 /*@ Auxiliary constructs used in the semantics of continue.
 Search for the label associated with the last encountered while statement*/
-syntax K ::= getWhileLabel ( K )
+syntax KItem ::= getWhileLabel ( K )
            | whileLabel ( K )
 
 rule getWhileLabel((env(_) => .) ~> _)
@@ -342,20 +356,24 @@ value is a subtype of the expected return type.  Moreover, if that is
 the case, then we also up-cast the returned value to one of the
 expected type. */
 
-context 'Return('Some(HOLE))
+//context 'Return('Some(HOLE))
+context return 'Some(HOLE);
 
 rule [Return-None-Desugar]:
-    return; => 'Return('Some(nothing :: void))
+//    'Return('None(_)) => 'Return('Some(nothing :: void))
+    return 'None(_); => return 'Some(nothing :: void);
         [structural]
 
 rule [Return-Propagate]:
-    'Return('Some(TV:TypedVal)) ~> (KL:KLabel(Ks:KList) => .K)
+//    'Return('Some(TV:TypedVal)) ~> (KL:KLabel(Ks:KList) => .K)
+    return 'Some(TV:TypedVal); ~> (KL:KLabel(Ks:KList) => .K)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
 
 rule [Return-MethodEnd]:
-    <k> 'Return('Some(TV:TypedVal)) => TV ~> K </k>
+//    <k> 'Return('Some(TV:TypedVal)) => TV ~> K </k>
+    <k> return 'Some(TV:TypedVal); => TV ~> K </k>
     <stack> ListItem( sl(K:K, MethContext:Bag) ) => . ...</stack>
     <methodContext> _:Bag => MethContext </methodContext>
 
@@ -363,19 +381,21 @@ rule [Return-MethodEnd]:
 Exceptions are propagated now until a catch that can bind them is
 encountered. */
 
-context 'Throw(HOLE)
+//context 'Throw(HOLE)
 
 rule [Throw]:
     (. => checkCatch(subtype(typeOf(TV), T)))
-    ~> 'Throw(TV:TypedVal)
+//    ~> 'Throw(TV:TypedVal)
+    ~> throw TV:TypedVal;
     ~> catchBlocks([catchImpl('ParamImpl(T:Type,, X:Id),_),, _])
 
-syntax K ::= checkCatch ( K )
+syntax KItem ::= checkCatch ( K )
 context checkCatch(HOLE)
 
 rule [Throw-checkCatch-True]:
     checkCatch(true::bool)
-    ~> 'Throw(TV:TypedVal)
+//    ~> 'Throw(TV:TypedVal)
+    ~> throw TV:TypedVal;
     ~> catchBlocks([catchImpl(Param:Param, CatchS:K),, _])
     => 'Block([
           initParams(Param, TV),,
@@ -384,14 +404,17 @@ rule [Throw-checkCatch-True]:
 
 rule [Throw-checkCatch-False]:
     (checkCatch(false::bool) => .)
-    ~> 'Throw(TV:TypedVal)
+//    ~> 'Throw(TV:TypedVal)
+    ~> throw TV:TypedVal;
     ~> catchBlocks([(catchImpl(_,_) => .KList),, _])
 
 rule [Throw-catchBlocks-EmptyDiscard]:
-    'Throw(TV:TypedVal) ~> (catchBlocks([.KList]) => .)
+//    'Throw(TV:TypedVal) ~> (catchBlocks([.KList]) => .)
+    throw TV:TypedVal; ~> (catchBlocks([.KList]) => .)
 
 rule [Throw-Propagate]:
-    'Throw(TV:TypedVal) ~> (KL:KLabel(_) => .)
+//    'Throw(TV:TypedVal) ~> (KL:KLabel(_) => .)
+    throw TV:TypedVal; ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
@@ -399,14 +422,16 @@ when
 
 rule [Throw-MethodEnd]:
     <k>
-      'Throw(TV:TypedVal) ~> (. => K)
+//      'Throw(TV:TypedVal) ~> (. => K)
+      throw TV:TypedVal; ~> (. => K)
     </k>
     <stack> ListItem( sl(K:K, MethContext:Bag) ) => . ...</stack>
     <methodContext> _ => MethContext </methodContext>
 
 rule [Throw-CausesThreadTermination]:
     <k>
-      'Throw(TV:TypedVal)
+//      'Throw(TV:TypedVal)
+      throw TV:TypedVal;
       =>  'Field( class String2Id("java.lang.System"),, String2Id("out") )
             .String2Id("println")
             (cast(classObject, 'Plus( "Thread terminated with exception: ",, TV )));
@@ -452,7 +477,7 @@ when isKResult(KRs)
 
 /*@ The auxiliary construct that holds catch clauses
 after try clause has been moved to the top of computation*/
-syntax K ::= catchBlocks ( KListWrap ) //arg - list of catchImpl
+syntax KItem ::= catchBlocks ( KListWrap ) //arg - list of catchImpl
 
 /*@ If try clause executed without raising an exception, this construct will reach the top of computation.
     In this case it should be discarded.
@@ -468,7 +493,7 @@ rule [Try-Finally]:
 
 /*@ The auxiliary construct that holds finally clause
 after try clause has been moved to the top of computation*/
-syntax K ::= finallyBlock ( K )      //arg - finally block
+syntax KItem ::= finallyBlock ( K )      //arg - finally block
 
 rule [finallyBlock-NormalEnd]:
     finallyBlock(FinallyS:K) => FinallyS
@@ -485,8 +510,8 @@ module TRY-AND-THROW
 syntax Stmt ::= "try" Stmt CatchList
 syntax CatchList ::= List{Catch, ""}
 syntax Catch ::= "catch" "(" Param ")" Stmt
-syntax K ::= catchBlocks ( CatchList )
-syntax K ::= interactsWithThrow( K ) [function]
+syntax KItem ::= catchBlocks ( CatchList )
+syntax KItem ::= interactsWithThrow( K ) [function]
 
 rule [try]:
     try S:Stmt CatchList:CatchList => S ~> catchBlocks(CatchList)

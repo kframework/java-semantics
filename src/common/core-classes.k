@@ -7,22 +7,23 @@ module CORE-CLASSES
     imports CORE-FUNCTIONS
     imports AUX-STRINGS // for retainHead
     imports EXP-SYNTAX //for definitions of sort Exp
+    imports STMT-SYNTAX //for definitions of sort Exp
 
 //@ \subsection{Shortcuts for the most frequently used classes within the semantics}
 
-syntax K ::= "classObject"
+syntax KItem ::= "classObject"
     [function, latex(\terminal{Object})]
 rule classObject => class String2Id("java.lang.Object")
 
-syntax K ::= "classString"
+syntax KItem ::= "classString"
     [function, latex(\terminal{String})]
 rule classString => class String2Id("java.lang.String")
 
-syntax K ::= "classNullPointerException"
+syntax KItem ::= "classNullPointerException"
     [function, latex(\terminal{NullPointerException})]
 rule classNullPointerException => class String2Id("java.lang.NullPointerException")
 
-syntax K ::= "classArrayImpl"                   [function]
+syntax KItem ::= "classArrayImpl"                   [function]
 rule classArrayImpl => class String2Id("java.lang.ArrayImpl")
 
 //@ \subsection{Packages}
@@ -34,11 +35,11 @@ syntax KResult ::= PackageId
 /*@ Converts a term of type ClassType into a term of type PackageId representing this class.
     This is the package for this class' inner classes.
 */
-syntax K ::= toPackage  ( ClassType )       [function]
+syntax KItem ::= toPackage  ( ClassType )       [function]
 rule toPackage(class Class:Id) => packageId(Class)
 
 /*@Returns the package of the given class*/
-syntax K ::= getPackage ( K )               [strict]
+syntax KItem ::= getPackage ( K )               [strict]
 rule getPackage(class ClassId:Id)
     => packageId( String2Id(retainHead(
       Id2String(ClassId),
@@ -58,7 +59,7 @@ rule getClassType(packageId(PackKId:Id), SimpleClass:Id)
      => class String2Id(Id2String(PackKId) +String "." +String Id2String(SimpleClass))
 
 /*@Returns the top-level class enclosing this class*/
-syntax K ::= getTopLevel ( ClassType )
+syntax KItem ::= getTopLevel ( ClassType )
 
 rule [getTopLevel-move-up]:
     <k>
@@ -89,7 +90,7 @@ syntax KLabel ::=   "'Public"
                   | "'StrictFP"
 
 //@ Restore the content of <crntClass> with the given class
-syntax K ::=  restoreCrntClass (
+syntax KItem ::=  restoreCrntClass (
                 ClassType //old content of <crntClass>
               )
 
@@ -98,7 +99,7 @@ rule [restoreAfterProcessLocalClass]:
     <crntClass> _ => Class </crntClass>
 
 //@ Get the internal constructor name for a given class
-syntax K ::= getConsName ( ClassType )                               [function]
+syntax KItem ::= getConsName ( ClassType )                               [function]
 rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(ClassId))
 
 //@ \subsection{Expressions and their subsorts}
@@ -106,36 +107,36 @@ rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(Class
 syntax Exp ::= "dummyExp"
 
     //Infix operators
-rule isExp('LazyOr(_)) => true       /* ||  */
-rule isExp('LazyAnd(_)) => true      /* &&  */
-rule isExp('Or(_)) => true           /* |   */
-rule isExp('ExcOr(_)) => true        /* ^   */
-rule isExp('And(_)) => true          /* &   */
-rule isExp('Eq(_)) => true           /* ==  */
-rule isExp('NotEq(_)) => true        /* !=  */
-rule isExp('Lt(_)) => true           /* <   */
-rule isExp('Gt(_)) => true           /* >   */
-rule isExp('LtEq(_)) => true         /* <=  */
-rule isExp('GtEq(_)) => true         /* >=  */
-rule isExp('LeftShift(_)) => true    /* <<  */
-rule isExp('RightShift(_)) => true   /* >>  */
-rule isExp('URightShift(_)) => true  /* >>> */
+//rule isExp('LazyOr(_)) => true       /* ||  */
+//rule isExp('LazyAnd(_)) => true      /* &&  */
+//rule isExp('Or(_)) => true           /* |   */
+//rule isExp('ExcOr(_)) => true        /* ^   */
+//rule isExp('And(_)) => true          /* &   */
+//rule isExp('Eq(_)) => true           /* ==  */
+//rule isExp('NotEq(_)) => true        /* !=  */
+//rule isExp('Lt(_)) => true           /* <   */
+//rule isExp('Gt(_)) => true           /* >   */
+//rule isExp('LtEq(_)) => true         /* <=  */
+//rule isExp('GtEq(_)) => true         /* >=  */
+//rule isExp('LeftShift(_)) => true    /* <<  */
+//rule isExp('RightShift(_)) => true   /* >>  */
+//rule isExp('URightShift(_)) => true  /* >>> */
 //rule isExp('Plus(_)) => true         /* +   */
-rule isExp('Minus(_)) => true        /* -   */
-rule isExp('Mul(_)) => true          /* *   */
-rule isExp('Div(_)) => true          /* /   */
-rule isExp('Remain(_)) => true       /* %   */
+//rule isExp('Minus(_)) => true        /* -   */
+//rule isExp('Mul(_)) => true          /* *   */
+//rule isExp('Div(_)) => true          /* /   */
+//rule isExp('Remain(_)) => true       /* %   */
 
     //Prefix operators
-rule isExp('Not(_)) => true          /* !   */
-rule isExp('Complement(_)) => true   /* ~   */
+//rule isExp('Not(_)) => true          /* !   */
+//rule isExp('Complement(_)) => true   /* ~   */
     /* +   */ //'Plus   - defined earlier
     /* -   */ //'Minus  - defined earlier
 
     //Ternary operators
-rule isExp('Cond(_)) => true         /* ? : */
+//rule isExp('Cond(_)) => true         /* ? : */
 
-rule isExp('Assign(_)) => true       /* =   */
+//rule isExp('Assign(_)) => true       /* =   */
 
 syntax Exp ::= NonNumericExp
 syntax NonNumericExp ::= "dummyNonNumericExp"
@@ -160,12 +161,12 @@ rule isNonNumericExp('CastRef(_)) => true
 syntax Exp ::= PrefixPostfixExp
 syntax PrefixPostfixExp ::= "dummyPrefixPostfixExp"
 
-rule isPrefixPostfixExp('PreIncr(_)) => true    /* ++  */
-rule isPrefixPostfixExp('PreDecr(_)) => true    /* --  */
-rule isPrefixPostfixExp('PostIncr(_)) => true   /* ++  */
-rule isPrefixPostfixExp('PostDecr(_)) => true   /* --  */
+//rule isPrefixPostfixExp('PreIncr(_)) => true    /* ++  */
+//rule isPrefixPostfixExp('PreDecr(_)) => true    /* --  */
+//rule isPrefixPostfixExp('PostIncr(_)) => true   /* ++  */
+//rule isPrefixPostfixExp('PostDecr(_)) => true   /* --  */
 
-//@ Assign***:KLabel(LHS,, RHS)
+/*@ Assign***:KLabel(LHS,, RHS)
 syntax KLabel ::= "'AssignMul"
                 | "'AssignDiv"
                 | "'AssignRemain"
@@ -177,21 +178,21 @@ syntax KLabel ::= "'AssignMul"
                 | "'AssignAnd"
                 | "'AssignExcOr"
                 | "'AssignOr"
-
+*/
 syntax Exp ::= CompoundAssignExp
 syntax CompoundAssignExp ::= "dummyCompoundAssignExp"
 
-rule isCompoundAssignExp('AssignPlus(_)) => true
-rule isCompoundAssignExp('AssignMinus(_)) => true
-rule isCompoundAssignExp('AssignMul(_)) => true
-rule isCompoundAssignExp('AssignDiv(_)) => true
-rule isCompoundAssignExp('AssignAnd(_)) => true
-rule isCompoundAssignExp('AssignOr(_)) => true
-rule isCompoundAssignExp('AssignExcOr(_)) => true
-rule isCompoundAssignExp('AssignRemain(_)) => true
-rule isCompoundAssignExp('AssignLeftShift(_)) => true
-rule isCompoundAssignExp('AssignRightShift(_)) => true
-rule isCompoundAssignExp('AssignURightShift(_)) => true
+//rule isCompoundAssignExp('AssignPlus(_)) => true
+//rule isCompoundAssignExp('AssignMinus(_)) => true
+//rule isCompoundAssignExp('AssignMul(_)) => true
+//rule isCompoundAssignExp('AssignDiv(_)) => true
+//rule isCompoundAssignExp('AssignAnd(_)) => true
+//rule isCompoundAssignExp('AssignOr(_)) => true
+//rule isCompoundAssignExp('AssignExcOr(_)) => true
+//rule isCompoundAssignExp('AssignRemain(_)) => true
+//rule isCompoundAssignExp('AssignLeftShift(_)) => true
+//rule isCompoundAssignExp('AssignRightShift(_)) => true
+//rule isCompoundAssignExp('AssignURightShift(_)) => true
 
 //@ Since RawVal terms can easily be converted into TypedVal, they are also of sort Exp.
 syntax Exp ::= TypedVal | RawVal

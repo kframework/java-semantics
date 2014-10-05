@@ -75,7 +75,7 @@ rule [Synchronized-on-null]:
     'Synchronized(null::_,,_) => throw new classNullPointerException(null::classString);
 
 /*@Release one level of lock for the given object.*/
-syntax K ::=  releaseLock ( Int )
+syntax KItem ::=  releaseLock ( Int )
 
 rule [releaseLock]:
     <k>
@@ -149,7 +149,7 @@ when
 /*@Second part of a wait. Waiting was already registered to <waitingThreads>.
 When the record in <waitingThreads> will be deleted, waiting itself shall end.
 */
-syntax K ::=  waitImpl (
+syntax KItem ::=  waitImpl (
                 Int //Monitor object location
               )
 
@@ -168,7 +168,7 @@ when
 //@ \subsection{Object.notify(), Object.notifyAll()}
 
 /*@Implementation of Object.notify(), extracted here to avoid rule superfluousness*/
-syntax K ::=  notifyImpl (
+syntax KItem ::=  notifyImpl (
                 Int //store key of the monitor object
               )
 
@@ -203,7 +203,7 @@ when
     andBool HoldLevel >=Int 1
 
 /*@Implementation of Object.notifyAll(), extracted here to avoid rule superfluousness*/
-syntax K ::=  objectNotifyAllImpl (
+syntax KItem ::=  objectNotifyAllImpl (
                 Int //store key of the monitor object
               )
 
@@ -276,7 +276,7 @@ rule [ThreadTermination]:
     <busy> Busy:Set => Busy -Set keys(H) </busy>
     <terminated>... . => SetItem(TId) ...</terminated>
     <globalPhase> ExecutionPhase </globalPhase>
-    <dissolveEmptyK> true </dissolveEmptyK>
+    <dissolveEmptyK> false </dissolveEmptyK>
 
 //@ \subsection{Debug aids}
 

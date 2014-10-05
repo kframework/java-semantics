@@ -30,7 +30,7 @@ Java don't support method overloading in the context of nesting. In other words,
 don't overload but rather hide methods with the same name from outer classes. See program
 inner_in_81_inner_overl_outer as example.
 */
-syntax K ::=  findQualifierForName (
+syntax KItem ::=  findQualifierForName (
                 ClassType,  //The context class in which qualifier is searched for.
                 Id          //Qualifier should contain a method with this name
               )
@@ -51,7 +51,7 @@ rule [elabEnd-findQualifierForName]:
     <enclosingClass> QualEncloserClass:ClassType </enclosingClass>
     <methods> Methods:Map </methods>
 
-syntax K ::= containsName ( Map , Id )        [function]
+syntax KItem ::= containsName ( Map , Id )        [function]
 rule containsName((sig(Name, _) |-> _) _:Map, Name:Id) => true
 
 //@Happens for 'NewInstance expressions for static inner classes.
@@ -109,12 +109,12 @@ rule [elabEnd-Invoke-to-lookupMethod]:
     ~> elabEnd('Invoke( 'Method('MethodName(Qual:K,, Name:Id)),, [ArgExps:KList] ))
 
 //@ Returnts the same type for classes, arrayImplClass for arrays.
-syntax K ::= getLookupTargetType ( RefType )    [function]
+syntax KItem ::= getLookupTargetType ( RefType )    [function]
 rule getLookupTargetType(Class:ClassType) => Class
 rule getLookupTargetType(arrayOf _) => classArrayImpl
 
 //@ True for cast(T,'QThis(\_)), false otherwise
-syntax K ::= isCastOfQThis ( K )                                      [function]
+syntax KItem ::= isCastOfQThis ( K )                                      [function]
 rule isCastOfQThis(cast(_, 'QThis(_))) => true
 
 /*@ Lookup the right methodRef() based on supplied parameters.
@@ -122,14 +122,14 @@ If the method is not found in the supplied class list, we should search for it i
 class list corresponding to the enclosing class of the caller class.
 First we search for the signature - lookupSignature construct.
 Afterwards we cast the actual arguments to the types expected by the found method signature.*/
-syntax K ::=  lookupMethod (
+syntax KItem ::=  lookupMethod (
                 ClassType,//target class, even for arrays.
                 Bool,     //QualIsThis - true if qualifier is cast(_, 'QThis(_)) or cast(_, superMethod(_))
                 Id,       //method name
                 KListWrap //[ArgExps] - parameter expressions of type Cast
               )
 
-syntax K ::=  lookupMethod (
+syntax KItem ::=  lookupMethod (
                 ClassType,//target class, even for arrays.
                 Bool,     //QualIsThis - true if qualifier is cast(_, 'QThis(_)) or cast(_, superMethod(_))
                 Id,       //method name
@@ -178,7 +178,7 @@ rule [lookupMethod-SigFound]:
       tempKResult => methodCastArguments(ArgTypes, [ArgExps], [.KList])
     )
 
-syntax K ::=  methodCastArguments (
+syntax KItem ::=  methodCastArguments (
                 Types,      //ArgTypes - argument types
                 KListWrap,  //ArgExps - actual parameters
                 KListWrap   //Result of parameter casting. Initialized with .KList
@@ -212,7 +212,7 @@ rule [lookupMethod-end]:
 /*@ Marker indicating that arguments of the following 'Invoke, 'QNewInstance, 'QSuperConstrInv, 'AltConstrInv
   have been elaborated.
 */
-syntax K ::=  methodLookupResult (
+syntax KItem ::=  methodLookupResult (
                 Type ,      // Return type
                 KListWrap , // ExpectedArgExps
                 ContextType // Called method context type
@@ -246,7 +246,7 @@ rule [methodProcessArguments-Invoke-end]:
 /*Search for the correct method signature to use
 when calling a given MethodName with the given argument types.
 computes mapWrap(Sig -> MethodTV)*/
-syntax K ::=  lookupSignature (
+syntax KItem ::=  lookupSignature (
                 Id,       // MethodName
                 K,        // Computes into Types - argument types
                 Map,        // methods environment - Map[sig -> Class]
@@ -291,7 +291,7 @@ rule [lookupSignature-Main]:
     <methodAccessMode> NewAccMode:AccessMode </methodAccessMode>
     <methodContextType> NewCT:ContextType </methodContextType>
 
-syntax K ::= getMethodRefArgTypes ( MethodRef )   [function]
+syntax KItem ::= getMethodRefArgTypes ( MethodRef )   [function]
 rule getMethodRefArgTypes( methodRef(sig(_, Ts:Types), _) ) => Ts
 
 rule [lookupSignature-SigDiscard]:
@@ -309,7 +309,7 @@ rule [lookupSignature-End]:
 
 /*@ Tests whether a method from a given class with a given AccessMode and ContextType
 may be called from the current object environment*/
-syntax K ::=  isAccessible (
+syntax KItem ::=  isAccessible (
                 AccessMode, //the method access mode
                 K,          //evaluates to ContextType - staticCT or instanceCT
                 ClassType,  //the method declaring class.
