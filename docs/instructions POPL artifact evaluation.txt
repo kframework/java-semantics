@@ -1,14 +1,14 @@
 Prerequisites:
-  - VirtualBox
-  - A ssh client. Virtualbox have it's own cmd client, but we don't recommend using it.
-  - (optional) a sftp client, such as expandrive or winscp. It will help you to view/edit files through your favorite file editor.
+    - VirtualBox
+    - A ssh client. Virtualbox have it's own cmd client, but we don't recommend using it.
+    - (optional) a sftp client, such as expandrive or winscp. It will help you to view/edit files through your favorite file editor.
 
 Setup:
-  1. Import the ova file to VirtualBox through File -> Import Appliance.
-  2. Start the imported VM.
-  3. Connect through SSH to port 3022, user/pass k/k .
-  4. Setup the "lines of scrollback" setting of your SSH client to be at least 7000. Otherwise long execution output may not be entirely visible.
-  5. cd java-semantics/src
+    1. Import the ova file to VirtualBox through File -> Import Appliance.
+    2. Start the imported VM.
+    3. Connect through SSH to port 3022, user/pass k/k .
+    4. Setup the "lines of scrollback" setting of your SSH client to be at least 7000. Otherwise long execution output may not be entirely visible.
+    5. cd java-semantics/src
       All commands have to be run from java-semantics/src.
 
 I. Execution:
@@ -70,7 +70,7 @@ IV. Testing.
 
     The file test-results.xml contains details for failing tests. Each test is run on both JDK and K-Java and results are compared. Be aware that running the whole /tests directory takes 8 hours on a 2.6 ghz machine. It is possible to run multiple tests in parallel, but unfortunately this VM was not configured to see multiple CPU cores (changing this from VirtualBox settings will still produce nrproc=1 on the guest machine).
 
-    From the whole suite of 841 tests, right now 7 tests fail. This is because reading from stdin doesn't work. The tests used to work some time ago, the failure is due to a bug in K. Unfortunately this bug was not a priority for he K team, and is not yet fixed. We removed the failing tests to avoid inconveniences.
+    From the whole suite of 841 tests, right now 7 tests fail. This is because reading from stdin doesn't work. The tests used to work some time ago, the failure is due to a bug in K. Unfortunately this bug was not a priority for the K team, and is not yet fixed. We removed the failing tests to avoid inconveniences.
 
 V. State-space exploration
     Directory ../model-check/73_examples contains the examples used in the paper.
@@ -98,10 +98,10 @@ VI. LTL Model-checking.
     The file ltl.out will contain the configurations along the execution path violating the property.
 
 VII. Testing multi-threading.
-  Multi-threading tests are in the directory ../model-check/72_threads
+    Multi-threading tests are in the directory ../model-check/72_threads
 
-  1. kjkompile.sh -v --threading
-  2. kjrun.sh --search --timeout=600 ../model-check/72_threads/threads_11_two_th_msg.java
+    1. kjkompile.sh -v --threading
+    2. kjrun.sh --search --timeout=600 ../model-check/72_threads/threads_11_two_th_msg.java
 
-  The output for each solution is the content of the cell <out>. Note that some tests may take too long or fail with "out of memory error". Our Java instance configured to run them has 16GB of RAM.
+    The output for each solution is the content of the cell <out>. Note that some tests may take too long or fail with "out of memory error". Our Java instance configured to run them has 16GB of RAM.
 
