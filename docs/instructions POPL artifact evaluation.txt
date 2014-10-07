@@ -1,13 +1,16 @@
 Prerequisites:
     - VirtualBox
-    - A ssh client. Virtualbox have it's own cmd client, but we don't recommend using it.
-    - (optional) a sftp client, such as expandrive or winscp. It will help you to view/edit files through your favorite file editor.
+    - A ssh client. Virtualbox have it's own cmd client, but we don't
+recommend using it.
+    - (optional) a sftp client, such as expandrive or winscp. It will help you
+to view/edit files through your favorite file editor.
 
 Setup:
     1. Import the ova file to VirtualBox through File -> Import Appliance.
     2. Start the imported VM.
     3. Connect through SSH to port 3022, user/pass k/k .
-    4. Setup the "lines of scrollback" setting of your SSH client to be at least 7000. Otherwise long execution output may not be entirely visible.
+    4. Setup the "lines of scrollback" setting of your SSH client to be at
+least 7000. Otherwise long execution output may not be entirely visible.
     5. cd java-semantics/src
       All commands have to be run from java-semantics/src.
 
@@ -19,20 +22,34 @@ I. Execution:
 
       kjrun.sh ../tests/01_smoke_tests/helloWorld.java
 
-    You should see the stdout output followed by the configuration in the final state (in an xml-like format), with just 2 cells: <T> and <out>. This is because the rest of the cells are deleted at the end of the execution, when the execution is successful. There is one new file created in the current directory: helloWorld.java.pkast. This is the output of the preprocessing phase - the preprocessed program in AST format. It is the concatenation of all the classes in directory java/semantics/class-lib + the classes of the current test. The file serves as cache for multiple executions.
+    You should see the stdout output followed by the configuration in the
+final state (in an xml-like format), with just 2 cells: <T> and <out>.
+This is because the rest of the cells are deleted at the end of the
+execution, when the execution is successful. There is one new file created
+in the current directory: helloWorld.java.pkast. This is the output of the
+preprocessing phase - the preprocessed program in AST format. It is the
+concatenation of all the classes in directory java/semantics/class-lib +
+the classes of the current test. The file serves as cache for multiple
+executions.
 
     IMPORTANT!
-      You have to manually delete the pkast file each time you make changes to the original java file, when the execution produces an error, or if you halt the execution.
+      You have to manually delete the pkast file each time you make changes to
+the original java file, when the execution produces an error, or if you
+halt the execution.
 
-    Some tests contain multiple java files. This was required, for example, to test packages. Such tests are stored in a directory with name ending in ".java". For example, you can run
+    Some tests contain multiple java files. This was required, for example, to
+test packages. Such tests are stored in a directory with name ending in
+".java". For example, you can run
 
       kjrun.sh ../tests/61_packages/packages_21_unq_one_pack.java/
 
     More interesting programs could be found in kjrun.sh ../tests/31_diverse/
 
-    Most directories under /tests contain a file starting with "test-plan" or "test plan" that explains the design of each test.
+    Most directories under /tests contain a file starting with "test-plan" or
+"test plan" that explains the design of each test.
 
-    If you want to see just the stdout content, you can use the option --split-none :
+    If you want to see just the stdout content, you can use the option
+--split-none :
 
       kjrun.sh --timeout=0 --split-none ../tests/01_smoke_tests/helloWorld.java
 
@@ -40,11 +57,13 @@ II. Execution with JDK:
 
       jdk-run.sh ../tests/01_smoke_tests/helloWorld.java
 
-    This script wraps compilation and execution into one command, for convenience.
+    This script wraps compilation and execution into one command, for
+convenience.
 
 III. Execution of invalid programs.
 
-  It would be more interesting to execute an invalid program. Then we will see the whole configuration stuck at the point when no rule could apply.
+  It would be more interesting to execute an invalid program. Then we will see
+the whole configuration stuck at the point when no rule could apply.
 
   We prepared 2 examples in the directory ../invalid.
 
@@ -55,26 +74,42 @@ III. Execution of invalid programs.
 
       normalize ( "x" :: int )
 
-      This term tries to convert the value "x" to the 32-bit representation corresponding to int type, and there is no K rule for this.
+      This term tries to convert the value "x" to the 32-bit representation
+corresponding to int type, and there is no K rule for this.
 
-    We have to mention that String is modeled in K-Java as primitive type with native representation in K, not as Java class, for performance reasons.
+    We have to mention that String is modeled in K-Java as primitive type with
+native representation in K, not as Java class, for performance reasons.
 
-    2. The second example gets stuck in the static semantics (also called preprocessing). We have to run it with a different option that executes only the static semantics, to see the stuck configuration:
+    2. The second example gets stuck in the static semantics (also called
+preprocessing). We have to run it with a different option that executes
+only the static semantics, to see the stuck configuration:
       kjrun.sh --prep-pretty ../invalid/undefinedClass.java
 
 IV. Testing.
 
-  Run kjtest.sh followed by a list of files/directories that you want to test. For example:
+  Run kjtest.sh followed by a list of files/directories that you want to test.
+For example:
 
       kjtest.sh ../tests/01_smoke_tests/ ../invalid/
 
-    The file test-results.xml contains details for failing tests. Each test is run on both JDK and K-Java and results are compared. Be aware that running the whole /tests directory takes 8 hours on a 2.6 ghz machine. It is possible to run multiple tests in parallel, but unfortunately this VM was not configured to see multiple CPU cores (changing this from VirtualBox settings will still produce nrproc=1 on the guest machine).
+    The file test-results.xml contains details for failing tests. Each test is
+run on both JDK and K-Java and results are compared. Be aware that running
+the whole /tests directory takes 8 hours on a 2.6 ghz machine. It is
+possible to run multiple tests in parallel, but unfortunately this VM was
+not configured to see multiple CPU cores (changing this from VirtualBox
+settings will still produce nrproc=1 on the guest machine).
 
-    From the whole suite of 841 tests, right now 7 tests fail. This is because reading from stdin doesn't work. The tests used to work some time ago, the failure is due to a bug in K. Unfortunately this bug was not a priority for the K team, and is not yet fixed. We removed the failing tests to avoid inconveniences.
+    From the whole suite of 841 tests, right now 7 tests fail. This is because
+reading from stdin doesn't work. The tests used to work some time ago, the
+failure is due to a bug in K. Unfortunately this bug was not a priority
+for the K team, and is not yet fixed. We removed the failing tests to
+avoid inconveniences.
 
 V. State-space exploration
-    Directory ../model-check/73_examples contains the examples used in the paper.
-    For state-space exploration we have to recompile the definition with a different option:
+    Directory ../model-check/73_examples contains the examples used in the
+paper.
+    For state-space exploration we have to recompile the definition with a
+different option:
 
       kjkompile.sh -v --threading-sync
 
@@ -82,26 +117,41 @@ V. State-space exploration
 
     kjrun.sh --search --timeout=0 ../model-check/73_examples/Philosopher.java
 
-    The output configuration for the deadlock case is filtered to display just the relevant cells (<thread> and the list inside <out>).
+    The output configuration for the deadlock case is filtered to display just
+the relevant cells (<thread> and the list inside <out>).
 
 VI. LTL Model-checking.
     1. Running the wrong 2-threaded program (as in the paper):
 
-      kjrun.sh --ltlmc="[]Ltl (this instanceof BlockingQueue ->Ltl (this.head) <= (this.tail))" \
-    ../model-check/73_examples/queue_2_threads_2_wrong.java
+      kjrun.sh --ltlmc="[]Ltl \
+        (this instanceof BlockingQueue ->Ltl (this.head) <= (this.tail))" \
+        ../model-check/73_examples/queue_2_threads_2_wrong.java
 
     Execution returns true: the property holds for 2 threads.
 
-    kjrun.sh --timeout=0 --ltlmc="[]Ltl (this instanceof BlockingQueue ->Ltl (this.head) <= (this.tail))" \
-    ../model-check/73_examples/queue_4_threads_3_wrong.java > ltl.out
+    kjrun.sh --timeout=0 --ltlmc="[]Ltl \
+      (this instanceof BlockingQueue ->Ltl (this.head) <= (this.tail))" \
+      ../model-check/73_examples/queue_4_threads_3_wrong.java > ltl.out
 
-    The file ltl.out will contain the configurations along the execution path violating the property.
+    The file ltl.out will contain the configurations along the execution path
+violating the property.
 
 VII. Testing multi-threading.
     Multi-threading tests are in the directory ../model-check/72_threads
 
     1. kjkompile.sh -v --threading
-    2. kjrun.sh --search --timeout=600 ../model-check/72_threads/threads_11_two_th_msg.java
+    2. kjrun.sh --search --timeout=0 \
+        ../model-check/72_threads/threads_11_two_th_msg.java
 
-    The output for each solution is the content of the cell <out>. Note that some tests may take too long or fail with "out of memory error". Our Java instance configured to run them has 16GB of RAM.
+    The output for each solution is the content of the cell <out>. Note that
+some tests may take too long or fail with "out of memory error". Our Java
+instance configured to run them has 16GB of RAM.
+    The distinction between "--threading" and "--threading-sync" is
+the set of rules in the semantics marked as transitions, e.g. rules for
+which all execution interleavings have to be explored. The option
+"threading-sync" marks just the entrances into synchronized blocks as
+transitions. The option "threading" also marks field access rules and
+printing to standard output. Thus, the option "threading-sync" leads to
+faster model-checking, but is only appropriate for properly synchronized
+programs.
 
