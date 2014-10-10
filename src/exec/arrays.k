@@ -113,7 +113,7 @@ rule [NewArray-simple]:
         [structural]
 
 rule [NewArray-ArrayInit]:
-    new T:Type .Dims {InitContent:VarInits}//)<:ArrayInit
+    new arrayOf T:Type .Dims {InitContent:VarInits}
     => arrayInitAlloc((new T [length(InitContent)::int] .Dims), {InitContent})
 
 syntax KItem ::= length (VarInits)                                  [function]
@@ -144,14 +144,14 @@ syntax KItem ::=  allocAndInitArray (
               )
 
 
-//rule [allocAndInitArray-MultiDim-desugar]:
-//    allocAndInitArray(T:Type, Dim1K:DimExp Dim2K:DimExp DEs:DimExps, InitExp:K)
-//    =>  allocAndInitArray(
-//          arrayOf T,
-//          Dim2K DEs,
-//          allocAndInitArray(T, Dim1K, InitExp)
-//        )
-//        [structural]
+rule [allocAndInitArray-MultiDim-desugar]:
+    allocAndInitArray(T:Type, Dim1K:DimExp Dim2K:DimExp DEs:DimExps, InitExp:K)
+    =>  allocAndInitArray(
+          arrayOf T,
+          Dim2K DEs,
+          allocAndInitArray(T, Dim1K, InitExp)
+        )
+        [structural]
 
 
 /*@ The increment of <nextLoc> by one is required to avoid problems with empty arrays.
@@ -236,7 +236,7 @@ rule [storeImpl-array-location-check-type]:
 when
     T =/=K StoreType
 
-@ \subsection{Array initializer}
+//@ \subsection{Array initializer}
 
 //@ Allocates the array based on previously computed size, then proceeds to array initialization
 syntax KItem ::=  arrayInitAlloc (
