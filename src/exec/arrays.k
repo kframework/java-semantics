@@ -66,66 +66,82 @@ and assign the right type ($T$) to the allocated array locations. */
 /*  Either 'NewArray( T:ElemType,, ['Dim(N1),,'Dim('N2),, ...],, [...,, 'Dim(.KList),, ...] )
     Or     'NewArray( T:ElemType,, [...,, 'Dim(.KList),, ...],, 'ArrayInit(_) )
 */
-syntax KLabel ::= "'NewArray"
 
-/* HOLE is of the form 'Dim(K)
-  totest left-to-right evaluation of Dims
+syntax ArrayCreationExp ::= "new" Type DimExps Dims [strict(2), klabel('NewArray)]
+syntax ArrayCreationExp ::= "new" Type Dims ArrayInit [klabel('NewArray)]
+syntax Exp ::= ArrayCreationExp
+
+syntax Dim ::= "[" "]" [klabel('Dim)]
+syntax DimExp ::= "[" Exp "]" [strict, hybrid, klabel('Dim)]
+syntax Dims ::= List{Dim,""}
+syntax DimExps ::= List{DimExp,""} [strict]
+
+/* For multi-dimensions arrays, it is expanded from the last DimExp, but currently, the tail element(s)
+ matching is unavailable for user defined lists, so we reverse list for easier matching
 */
-context 'NewArray(_:Type,, [Dims:KList,, HOLE,, _],, _)
-when isKResult(Dims)
 
-syntax KLabel ::= "'Dim"
+syntax DimExps ::= reverseDimExps(DimExps, DimExps) [function]
+rule reverseDimExps(D:DimExp Ds:DimExps, Es:DimExps) => reverseDimExps(Ds, (D Es))
+rule reverseDimExps(.DimExps, Es:DimExps) => Es
 
-//applies right after the previous rule, because HOLE is of the form 'Dim(K)
-rule 'Dim(K:K) => K [structural]
+syntax DimExps ::= toDimExps( KListWrap , DimExps) [function]
+rule toDimExps([Ds:KList,,D:DimExp], Es:DimExps) => toDimExps([Ds], (D Es))
+rule toDimExps([.KList], Es:DimExps) => Es
+
+//todo: move macro
+rule 'NewArray(_,,([D:DimExp,,Ds:KList] => toDimExps([D,,Ds],.DimExps)),,([.KList] => .Dims))
+rule 'NewArray(_,,([.KList] => .Dims),,_)
 
 /*@ When all dims were computed, check that dims are positive, and only
     after that begin array allocation
 */
 rule [NewArray-simple]:
-    'NewArray(T:Type,, [Dims:KList],, [.KList])
-    => checkNonNegative([Dims]) ~> allocAndInitArray(T, [Dims], default(T))
-when isKResult(Dims)
+    new T:Type Ds:DimExps .Dims
+    => checkNonNegative(Ds) ~> allocAndInitArray(T, reverseDimExps(Ds,.DimExps) , default(T))
+    when isKResult(Ds)
         [structural]
 
 rule [NewArray-ArrayInit]:
-    'NewArray(arrayOf T:Type,, [.KList],, 'ArrayInit([InitContent:KList]))
-    => arrayInitAlloc('NewArray(T,, [length([InitContent])::int],, [.KList]), [InitContent])
+    new arrayOf T:Type .Dims {InitContent:VarInits}
+    => arrayInitAlloc((new T [length(InitContent)::int] .Dims), {InitContent})
+
+syntax Int ::= length (VarInits)                                  [function]
+rule length(V:VarInit, Vs:VarInits) => length(Vs)+Int 1
+rule length(.VarInits) => 0
 
 /*Computation designed to check that array creation expression dimensions are non-negative. If they are non-negative,
 checkNonNegative is dissolved. Otherwise NegativeArraySizeException is thrown.
 */
-syntax KItem ::=  checkNonNegative (
-                KListWrap           // [...,, KResult,, ...] - computed array dimensions
-              )
+syntax KItem ::=  checkNonNegative (DimExps)
 
-rule checkNonNegative([(NI:Int::_ => .KList),, _])
+rule checkNonNegative([NI:Int::_ ] Remainings:DimExps)=> checkNonNegative(Remainings)
 when NI >=Int 0
 
 rule [checkNonNegative-to-NegativeArraySizeException]:
-    checkNonNegative([NI:Int::_,, _])
+    checkNonNegative([NI:Int::_] _)
     => throw new class String2Id("java.lang.NegativeArraySizeException") (null::classString);
 when
     NI <Int 0
 
-rule checkNonNegative([.KList]) => .
+rule checkNonNegative(.DimExps) => .
 
-//@ Same as 'NewArray, but after dims were computed and checked
+//@ Same as 'NewArray, but after DimExps were computed and checked
 syntax KItem ::=  allocAndInitArray (
                 Type, // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
-                KListWrap,  // [Dims:List{KResult}] - array dimensions
+                DimExps,  // DimExps:List{DimExp} - array dimensions
                 K     // InitExp - expression used to initialize each array element
               )
 
+//@ Here we are actually using the reversed DimExps
 rule [allocAndInitArray-MultiDim-desugar]:
-    allocAndInitArray(T:Type, [Dims:KList,,Dim1K:TypedVal,,Dim2K:TypedVal], InitExp:K)
+    allocAndInitArray(T:Type, Dim1K:DimExp Dim2K:DimExp DEs:DimExps, InitExp:K)
     =>  allocAndInitArray(
           arrayOf T,
-          [Dims,,Dim1K],
-          allocAndInitArray(T, [Dim2K], InitExp)
+          Dim2K DEs,
+          allocAndInitArray(T, Dim1K, InitExp)
         )
-when isKResult(Dims)
         [structural]
+
 
 /*@ The increment of <nextLoc> by one is required to avoid problems with empty arrays.
   Two empty arrays allocated one after another should have different starting locations, even if those starting
@@ -214,35 +230,49 @@ when
 //@ Allocates the array based on previously computed size, then proceeds to array initialization
 syntax KItem ::=  arrayInitAlloc (
                 K,        //newArrayAlloc(), reduces to arrayRef()
-                KListWrap //InitContent - list of initialization expressions
+                ArrayInit //{InitContent} - list of initialization expressions
               )
               [strict(1)]
 
 rule [arrayInitAlloc]:
-    arrayInitAlloc(arrayRef(T:Type, L:Int, Len:Int)::T, [InitContent:KList])
-    => arrayInitImpl(T, L, [InitContent]) ~> arrayRef(T, L, Len)::T
+    arrayInitAlloc(arrayRef(T:Type, L:Int, Len:Int)::T, {InitContent:VarInits})
+    => arrayInitImpl(T, L, {InitContent}) ~> arrayRef(T, L, Len)::T
 
 syntax KItem ::=  arrayInitImpl (
                 Type,     //T - array type, used by inner ArrayInit's
                 Int,      //L - location of first element in store
-                KListWrap //InitContent - list of initialization expressions
+                ArrayInit //InitContent - list of initialization expressions
               )
 
-rule [arrayInitImpl]:
-    ( . => store(L, K) )
-    ~> arrayInitImpl(_, (L:Int => L +Int 1), [(K:K => .KList),, _] )
-when
-    getKLabel(K) =/=KLabel 'ArrayInit
+rule [arrayInitImpl-not-ArrayInit]:
+    ( . => store(L, E) )
+    ~> arrayInitImpl(
+                    _,
+                    (L:Int => L +Int 1),
+                    ({E:Exp, Remaining:VarInits} => {Remaining})
+       )
+
 
 rule [arrayInitImpl-inner-ArrayInit-desugar]:
-    ( . => store(L, 'NewArray(arrayOf T,, [.KList],, 'ArrayInit([InitContent]))) )
+    ( . => store(L, (new arrayOf T .Dims A)) )
     ~> arrayInitImpl(
           arrayOf arrayOf T:Type,
           (L:Int => L +Int 1),
-          [('ArrayInit([InitContent:KList]) => .KList),, _]
+          ({A:ArrayInit, Remaining:VarInits} => {Remaining} )
        )
 
 rule [arrayInitImpl-discard]:
-    arrayInitImpl(_, _, [.KList]) => .
+    arrayInitImpl(_, _, {.VarInits}) => .
+
+syntax VarInit ::= Exp|ArrayInit
+syntax ArrayInit ::= "{" VarInits "}" [klabel('ArrayInit)]
+syntax VarInits ::= List{VarInit, ","}
+
+syntax VarInits ::= toVarInits( KListWrap , VarInits) [function]
+rule toVarInits([Args:KList,, Arg:VarInit], Es:VarInits) => toVarInits([Args], (Arg,Es))
+rule toVarInits([.KList], Es:VarInits) => Es
+
+//todo: move macro
+rule 'ArrayInit([InitContent:KList] => toVarInits([InitContent], .VarInits)) [anywhere]
 
 endmodule
