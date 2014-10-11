@@ -125,16 +125,44 @@ VI. LTL Model-checking.
 
       kjrun.sh --ltlmc="[]Ltl \
         (this instanceof BlockingQueue ->Ltl (this.head) <= (this.tail))" \
-        ../model-check/73_examples/queue_2_threads_2_wrong.java
+        ../model-check/73_examples/queue_2_threads_2_wrong.java > ltl.out
 
-    Execution returns true: the property holds for 2 threads.
+    The file ltl.out will contain:
+        preprocess:
+        execute:
+        true
 
-    kjrun.sh --timeout=0 --ltlmc="[]Ltl \
+    The third line, "true", is the actual model-checking result:
+the property holds for 2 threads.
+
+    2. Running the wrong 3-threaded program:
+
+kjrun.sh -v --timeout=0 --ltlmc="[]Ltl \
       (this instanceof BlockingQueue ->Ltl (this.head) <= (this.tail))" \
-      ../model-check/73_examples/queue_4_threads_3_wrong.java > ltl.out
+      ../model-check/73_examples/queue_4_threads_3_wrong.java > ltl.out; \
+      sed --in-place=.temp '/Edges:/,$d' ltl.out
 
-    The file ltl.out will contain the configurations along the execution path
-violating the property.
+    Now the file ltl.out contains the configurations along the
+execution path violating the property. Since every single configuration
+is very large, it is more convenient to see just the content of the cell
+<out> inside each configuration. We can achieve this by running the
+following filter:
+
+      cat ltl.out | grep -Pzo "(?s)<out>.*?</out>"
+
+    If you want to explore the whole configuration, note that each
+configuration is enclosed in a cell <T> - the top cell. It may be
+interesting to see the content of the cells <k> inside a configuration.
+Each configuration will have a number of cells <k> equal to the number
+of threads in the program.
+
+    Limitations. Unfortunately, filtering the configurations similarly to the
+previous section is not supported when LTL formulas are used. Also, not
+all Java expressions can be used inside LTL formulas. We added support
+just for the operators present in the above formulas (file
+ltl-suppport.k). In future, when the syntax of Java will be defined
+in K and K-Java will not rely on an external parser, all expression
+forms will be supported.
 
 VII. Testing multi-threading.
     Multi-threading tests are in the directory ../model-check/72_threads
