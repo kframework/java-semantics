@@ -5,6 +5,7 @@ module ARRAYS
     imports SUBTYPING
     imports EXPRESSIONS
     imports SYNTAX-CONVERSIONS
+    imports STATEMENTS
 
 /*@ The value in store that corresponds to an array element. The consturction "elem" Type is meant to
   distinguish between regular memory locations and array elements. Array elements need to be represented separately
