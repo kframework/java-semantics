@@ -23,12 +23,12 @@ syntax StmtWithoutTrailing ::= Block
 |TryStmt
 |StackConsumerStmt
 |SynchronizedStmt
-//todo:ClassDecStm
+
 syntax BlockStmt ::= Stmt|LocalVarDecStmt|ClassDecStmt
 syntax LocalVarDecStmt ::= LocalVarDec ";" [klabel('LocalVarDecStm)]
 syntax LocalVarDec ::= KListWrap Type Id [strict(2,3), klabel('LocalVarDec)]
 
-
+//todo:ClassDecStm
 syntax ClassDecStmt ::= "dummyclassdecstm"
 
 syntax Block ::= "{" BlockStmt "}" [klabel('Block)]
@@ -62,11 +62,10 @@ syntax ContinueStmt ::= "continue" K ";" [klabel('Continue)]
 syntax BreakStmt ::= "break" K ";" [klabel('Break)]
 syntax ReturnStmt ::= "return" K ";" [klabel('Return)]
 
-syntax SynchronizedStmt ::= "dummySynchronizedStmt"
-                            |"synchronized" "(" Exp ")" Block [strict(1),klabel('Synchronized)]
+syntax SynchronizedStmt ::= "synchronized" "(" Exp ")" Block [strict(1),klabel('Synchronized)]
 //todo
-syntax ExprStmt ::= StmtExp ";"  [strict, klabel('ExprStm)]
-syntax InternalUse ::= TypedVal ";"
+syntax ExprStmt ::= Exp ";"  [strict, klabel('ExprStm)]
+//syntax InternalUse ::= TypedVal ";"
 
 
 

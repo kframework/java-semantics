@@ -222,6 +222,4 @@ syntax LocMetadata ::= "LocalLocMetadata"   [latex(\terminal{Local})]
 //                                            |AmbName "." Id [strict,klabel('MethodName)]
 //                     syntax PackageOrTypeName ::= Id [strict,klabel('PackageOrTypeName)]
 //                                                   |PackageOrTypeName "." Id [strict,klabel('PackageOrTypeName)]
-
-
 endmodule

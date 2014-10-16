@@ -7,7 +7,6 @@ module STATEMENTS
     imports CORE-EXEC     //for sl
     imports VAR-LOOKUP
     imports METHOD-INVOKE // for initParams
-    //imports TRY-AND-THROW
     imports STMT-SYNTAX
 
 //@ \subsection{Call of main method}
@@ -193,7 +192,7 @@ rule [stm-KListWrap-empty]:
         [structural]
 
 rule [stm-KListWrap-exp]:
-    stm([E:StmtExp,, Es:KList]) => E; ~> stm([Es])
+    stm([E:Exp,, Es:KList]) => E; ~> stm([Es])
 when
     getKLabel(E) ==KLabel 'cast                                           [structural]
 
@@ -355,133 +354,119 @@ rule [Return-MethodEnd]:
 /*@ \subsection{Throw statement}
 Exceptions are propagated now until a catch that can bind them is
 encountered. */
-
 rule [Throw]:
-(. => checkCatch(subtype(typeOf(TV), T)))
-// ~> 'Throw(TV:TypedVal)
-~> throw TV:TypedVal;
-~> catchBlocks([catchImpl('ParamImpl(T:Type,, X:Id),_),, _])
+    (. => checkCatch(subtype(typeOf(TV), T)))
+//    ~> 'Throw(TV:TypedVal)
+    ~> throw TV:TypedVal;
+    ~> catchBlocks([catchImpl('ParamImpl(T:Type,, X:Id),_),, _])
+
 syntax KItem ::= checkCatch ( K )
 context checkCatch(HOLE)
+
 rule [Throw-checkCatch-True]:
-checkCatch(true::bool)
-// ~> 'Throw(TV:TypedVal)
-~> throw TV:TypedVal;
-~> catchBlocks([catchImpl(Param:Param, CatchS:K),, _])
-=> 'Block([
-initParams(Param, TV),,
-CatchS
-])
+    checkCatch(true::bool)
+//    ~> 'Throw(TV:TypedVal)
+    ~> throw TV:TypedVal;
+    ~> catchBlocks([catchImpl(Param:Param, CatchS:K),, _])
+    => 'Block([
+          initParams(Param, TV),,
+          CatchS
+        ])
+
 rule [Throw-checkCatch-False]:
-(checkCatch(false::bool) => .)
-// ~> 'Throw(TV:TypedVal)
-~> throw TV:TypedVal;
-~> catchBlocks([(catchImpl(_,_) => .KList),, _])
+    (checkCatch(false::bool) => .)
+//    ~> 'Throw(TV:TypedVal)
+    ~> throw TV:TypedVal;
+    ~> catchBlocks([(catchImpl(_,_) => .KList),, _])
+
 rule [Throw-catchBlocks-EmptyDiscard]:
-// 'Throw(TV:TypedVal) ~> (catchBlocks([.KList]) => .)
-throw TV:TypedVal; ~> (catchBlocks([.KList]) => .)
+//    'Throw(TV:TypedVal) ~> (catchBlocks([.KList]) => .)
+    throw TV:TypedVal; ~> (catchBlocks([.KList]) => .)
+
 rule [Throw-Propagate]:
-// 'Throw(TV:TypedVal) ~> (KL:KLabel(_) => .)
-throw TV:TypedVal; ~> (KL:KLabel(_) => .)
+//    'Throw(TV:TypedVal) ~> (KL:KLabel(_) => .)
+    throw TV:TypedVal; ~> (KL:KLabel(_) => .)
 when
-KL =/=KLabel 'env
-andBool KL =/=KLabel 'finallyBlock
-andBool KL =/=KLabel 'catchBlocks
+            KL =/=KLabel 'env
+    andBool KL =/=KLabel 'finallyBlock
+    andBool KL =/=KLabel 'catchBlocks
+
 rule [Throw-MethodEnd]:
-<k>
-// 'Throw(TV:TypedVal) ~> (. => K)
-throw TV:TypedVal; ~> (. => K)
-</k>
-<stack> ListItem( sl(K:K, MethContext:Bag) ) => . ...</stack>
-<methodContext> _ => MethContext </methodContext>
+    <k>
+//      'Throw(TV:TypedVal) ~> (. => K)
+      throw TV:TypedVal; ~> (. => K)
+    </k>
+    <stack> ListItem( sl(K:K, MethContext:Bag) ) => . ...</stack>
+    <methodContext> _ => MethContext </methodContext>
+
 rule [Throw-CausesThreadTermination]:
-<k>
-// 'Throw(TV:TypedVal)
-throw TV:TypedVal;
-=> 'Field( class String2Id("java.lang.System"),, String2Id("out") )
-.String2Id("println")
-(cast(classObject, 'Plus( "Thread terminated with exception: ",, TV )));
-</k>
-<stack> .List </stack>
+    <k>
+//      'Throw(TV:TypedVal)
+      throw TV:TypedVal;
+      =>  'Field( class String2Id("java.lang.System"),, String2Id("out") )
+            .String2Id("println")
+            (cast(classObject, 'Plus( "Thread terminated with exception: ",, TV )));
+    </k>
+    <stack> .List </stack>
+
 //@ \subsection{Try statement}
+
 rule [Try-Catch-Finally-Desugar]:
-try TryS:K [K:K,, Ks:KList] finally FinallyS:K
-=> try {try TryS [K,,Ks]} [.KList] finally FinallyS
-[structural]
+    try TryS:K [K:K,, Ks:KList] finally FinallyS:K
+    => try {try TryS [K,,Ks]} [.KList] finally FinallyS
+        [structural]
+
 /*@ \subsubsection{Execution of try-catch} JLS \$14.20.1
 */
+
 //resolve the catch clauses of try statement
 context try _:K [_,, HOLE,, _]
+
 //resolve 'Param term of the catch clause
-context catch(HOLE)_ [result(ExtKResult)]
+context catch(HOLE)_                                [result(ExtKResult)]
+
 rule catch(KR:ExtKResult)S:K => catchImpl(KR,S)
+
 /*@ Extended K Result.
-Represents KLabels that should be treated as KResult during execution phase, but not during elaboration phase.
+  Represents KLabels that should be treated as KResult during execution phase, but not during elaboration phase.
 */
 syntax ExtKResult ::= "dummy"
+
 rule isExtKResult(KR:KResult) => true
+
 rule isExtKResult('ParamImpl(T:Type,, _:Id)) => true
+
 //@ Internal representation of a preprocessed catch clause
-syntax KResult ::= catchImpl (
-K, //'Param(...),
-K //the code block
-)
+syntax KResult ::=  catchImpl (
+                      K,  //'Param(...),
+                      K   //the code block
+                    )
+
 rule [Try-Catch]:
-try TryS:K [KRs:KList] => TryS ~> catchBlocks([KRs])
+    try TryS:K [KRs:KList] => TryS ~> catchBlocks([KRs])
 when isKResult(KRs)
+
 /*@ The auxiliary construct that holds catch clauses
 after try clause has been moved to the top of computation*/
 syntax KItem ::= catchBlocks ( KListWrap ) //arg - list of catchImpl
+
 /*@ If try clause executed without raising an exception, this construct will reach the top of computation.
-In this case it should be discarded.
+    In this case it should be discarded.
 */
 rule [catchBlocks-Discard]:
-catchBlocks([_]) => .K
+    catchBlocks([_]) => .K
+
 /*@ \subsubsection{Execution of try-finally} JLS \$14.20.2
 */
+
 rule [Try-Finally]:
-try TryS:K [.KList] finally FinallyS:K => TryS ~> finallyBlock(FinallyS)
+    try TryS:K [.KList] finally FinallyS:K => TryS ~> finallyBlock(FinallyS)
+
 /*@ The auxiliary construct that holds finally clause
 after try clause has been moved to the top of computation*/
-syntax KItem ::= finallyBlock ( K ) //arg - finally block
-rule [finallyBlock-NormalEnd]:
-finallyBlock(FinallyS:K) => FinallyS
-endmodule
-//Not used in the semantics. Used to typechect the rules in the paper only.
-//The equivalent of these rules in the semantics are in the AST form.
-//module TRY-AND-THROW
-//    imports SYNTAX-CONVERSIONS
-//    imports STATEMENTS
-//
-//We won't convert 'try into try now, we just want to typeset the rules.
-//syntax Stmt ::= "try" Stmt CatchList
-//syntax CatchList ::= List{Catch, ""}
-//syntax Catch ::= "catch" "(" Param ")" Stmt
-//syntax KItem ::= catchBlocks ( CatchList )
-//syntax KItem ::= interactsWithThrow( K ) [function]
-//
-//rule [try]:
-//    try S:Stmt CatchList:CatchList => S ~> catchBlocks(CatchList)
-//
-//rule [catchBlocks-dissolve]:
-//    catchBlocks(_:CatchList) => .K
-//
-//rule [throw-match]:
-//    throw V::ThrowT:Type;
-//    ~> catchBlocks((catch(P{CatchT:Type X:Id}) CatchS:Stmt) _:CatchList)
-//    => 'Block( CatchT X; ~> (X = (V::CatchT)); ~> CatchS )
-//when subtype(ThrowT, CatchT)
-//
-//rule [throw-not-match]:
-//    throw V::ThrowT:Type;
-//    ~> catchBlocks((catch(P{CatchT:Type X:Id}) CatchS:Stmt => .) _:CatchList)
-//when notBool subtype(ThrowT, CatchT)
-//
-///*@ Could also be empty catch block
-//*/
-//rule [throw-propagate]:
-//    throw TV:TypedVal; ~> (KI:KItem => .)
-//when notBool interactsWithThrow(KI)
-//
-//endmodule
+syntax KItem ::= finallyBlock ( K )      //arg - finally block
 
+rule [finallyBlock-NormalEnd]:
+    finallyBlock(FinallyS:K) => FinallyS
+
+endmodule

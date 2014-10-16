@@ -43,24 +43,22 @@ when
     Class ==K class String2Id("java.lang.Thread") andBool Id2String(MethodName) ==String "startImpl"
 
 //@ \subsection{Synchronized statement}
-
 // 'Synchronized(objectRef(...)::_,, Block)
 //syntax KLabel ::= "'Synchronized"
-
 //evaluate the expression
 //context 'Synchronized(HOLE,, _)
 
 rule [Synchronized-first-time]:
-//    <k>
-//      'Synchronized(objectRef(OId:Int,_)::_,, Block:K)
-//      => 'Try(Block,, [.KList],, releaseLock(OId))
-//      ...
-//    </k>
     <k>
-          synchronized (objectRef(OId:Int,_)::_) Block:Block
-          => 'Try(Block,, [.KList],, releaseLock(OId))
-          ...
-        </k>
+      'Synchronized(objectRef(OId:Int,_)::_,, Block:K)
+      => 'Try(Block,, [.KList],, releaseLock(OId))
+      ...
+    </k>
+//    <k>
+//          synchronized (objectRef(OId:Int,_)::_) Block:Block
+//          => 'Try(Block,, [.KList],, releaseLock(OId))
+//          ...
+//        </k>
     <holds>... (. => OId |-> 1) ...</holds>
     <busy> Busy:Set (. => SetItem(OId)) </busy>
 when

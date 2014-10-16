@@ -63,19 +63,15 @@ rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:KListWrap) => 
 //the evaluation of the arguments
 /*@ Method invocation expression
 */
-//syntax StmtExp ::= K "." MethodName "(" Exps ")"       [seqstrict(1,3), klabel('MethodImpl)]
+syntax Exp ::= K "." MethodName "(" Exps ")"       [seqstrict(1,3), klabel('MethodImpl)]
 syntax MethodName ::= Id | MethodRef
 
 /*@ \subsection{Local variable declaration}*/
 
 //@ 'LocalVarDec(\_:K,, T:Type,, ['VarDec(X:Id)])
-syntax KLabel ::= "'LocalVarDec"
-                | "'VarDec"
+syntax KLabel ::= "'VarDec"
 
-//rule 'LocalVarDec(_:K,, T:Type,,['VarDec(X:Id)]) => T X;  [structural]
-
-//syntax Stmt ::= VarDec
-
+rule 'LocalVarDec(_:KListWrap,, T:Type,,(['VarDec(X:Id)] => X)) [structural]
 
 /*@ \subsection{Cast}*/
 
@@ -85,7 +81,7 @@ rule ((T:Type) K:K) => cast(T, K)
 /*@ \subsection{Identifier (name) expression}*/
 
 //Naked identifier on top of computation
-//syntax Exp ::= Id
+syntax Exp ::= Id
 rule X:Id => 'ExprName(X)
 rule lvalue(X:Id) => lvalue('ExprName(X))
 
