@@ -246,7 +246,7 @@ The biggest difficulty is computing the expression type, according to JLS1 \$15.
 The whole expression should always come wrapped into a cast, from elaboration.
 Thus we don't have to worry about proper type conversion here.*/
 //rule 'Cond(CondExp:K,, TrueExp:K,, FalseExp:K) => 'If(CondExp,, TrueExp,, FalseExp)
-rule CondExp:Exp ? TrueExp:Exp : FalseExp:Exp => if(CondExp) {TrueExp} else {FalseExp}
+rule CondExp:K ? TrueExp:K : FalseExp:K => if(CondExp) {TrueExp} else {FalseExp}
 /*@ \subsubsection{Assignment operators}
 Both basic assignment and compound assignments like +=, -=, etc. */
 

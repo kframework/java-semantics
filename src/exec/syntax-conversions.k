@@ -16,7 +16,6 @@ syntax KLabel ::= "'Param"
 //Required for catch
 rule 'Param(_,, K:K,, X:Id) => P{K X} [structural]
 
-//add P to {} in case of ambiguity
 syntax Param ::= "P{" K Id "}"        [klabel('ParamImpl)]
 
 syntax Params ::= List{Param, ","}
@@ -63,8 +62,16 @@ rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:KListWrap) => 
 //the evaluation of the arguments
 /*@ Method invocation expression
 */
-//syntax StmtExp ::= K "." MethodName "(" Exps ")"       [seqstrict(1,3), klabel('MethodImpl)]
+syntax Exp ::= K "." MethodName "(" Exps ")"       [seqstrict(1,3), klabel('MethodImpl)]
 syntax MethodName ::= Id | MethodRef
+
+/*@ \subsection{if statement}
+
+syntax KLabel ::= "'If"
+rule 'If(K1:K,,K2:K) => if (K1) {K2} else {.K}        [structural]
+rule 'If(K1:K,,K2:K,,K3:K) => if (K1) {K2} else {K3}  [structural]
+
+syntax Stmt ::= "if" "(" K ")" "{" K "}" "else" "{" K "}" [strict(1)]*/
 
 /*@ \subsection{Local variable declaration}*/
 
@@ -72,10 +79,24 @@ syntax MethodName ::= Id | MethodRef
 syntax KLabel ::= "'LocalVarDec"
                 | "'VarDec"
 
-//rule 'LocalVarDec(_:K,, T:Type,,['VarDec(X:Id)]) => T X;  [structural]
+rule 'LocalVarDec(_:K,, T:Type,,['VarDec(X:Id)]) => T X;  [structural]
 
-//syntax Stmt ::= VarDec
+syntax VarDec ::= Type Id ";"   [klabel('VarDecImpl)]
+syntax Stmt ::= VarDec
 
+/*@ \subsection{Assignment expression}
+
+@ 'Assign(loc(L)::T,, V::T)
+syntax KLabel ::= "'Assign"
+
+rule 'Assign(K1:K,, K2:K) => K1 = K2
+
+syntax Exp ::= K "=" K       [klabel('AssignImpl)]*/
+
+/*@ \subsection{Expression statement}*/
+
+//rule 'ExprStm(E:Exp) => E;
+//syntax Stmt ::= Exp ";"      [strict, klabel('ExprStmImpl)]
 
 /*@ \subsection{Cast}*/
 
@@ -85,9 +106,28 @@ rule ((T:Type) K:K) => cast(T, K)
 /*@ \subsection{Identifier (name) expression}*/
 
 //Naked identifier on top of computation
-//syntax Exp ::= Id
+syntax Exp ::= Id
 rule X:Id => 'ExprName(X)
 rule lvalue(X:Id) => lvalue('ExprName(X))
+
+/*@ \subsection{== expression}
+
+Just for the sake of the rule isOverridden
+syntax Exp ::= K "==" K
+rule K1:K == K2:K => eqAux(K1, K2)*/
+
+/*@ \subsection{Throw statement}*/
+
+//syntax StackConsumerStmt ::= "throw" Exp ";"
+//rule throw E:Exp; => 'Throw(E)
+
+/*@ \subsection{Return statement}*/
+
+//rule 'Return('None(_)) => return;
+//
+//syntax StackConsumerStmt ::= "return" ";"
+
+/*@ \subsection{New instance creation}*/
 
 /* 'NewInstance( _:K,, Class:ClassType,, [Args],, 'None(.KList) )
 

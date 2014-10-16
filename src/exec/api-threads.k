@@ -33,7 +33,7 @@ rule [thread-start]:
             ),,
             String2Id("runnable")
           )
-          .String2Id("run") (.TypedVals) ;
+          .String2Id("run") (.TypedVals) ;  //method invoke, ExprStm
         </k>
         <tid> TId </tid>
         ...
@@ -45,22 +45,17 @@ when
 //@ \subsection{Synchronized statement}
 
 // 'Synchronized(objectRef(...)::_,, Block)
-//syntax KLabel ::= "'Synchronized"
+syntax KLabel ::= "'Synchronized"
 
 //evaluate the expression
-//context 'Synchronized(HOLE,, _)
+context 'Synchronized(HOLE,, _)
 
 rule [Synchronized-first-time]:
-//    <k>
-//      'Synchronized(objectRef(OId:Int,_)::_,, Block:K)
-//      => 'Try(Block,, [.KList],, releaseLock(OId))
-//      ...
-//    </k>
     <k>
-          synchronized (objectRef(OId:Int,_)::_) Block:Block
-          => 'Try(Block,, [.KList],, releaseLock(OId))
-          ...
-        </k>
+      'Synchronized(objectRef(OId:Int,_)::_,, Block:K)
+      => 'Try(Block,, [.KList],, releaseLock(OId))
+      ...
+    </k>
     <holds>... (. => OId |-> 1) ...</holds>
     <busy> Busy:Set (. => SetItem(OId)) </busy>
 when
