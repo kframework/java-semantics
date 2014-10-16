@@ -7,6 +7,7 @@ module STATEMENTS
     imports CORE-EXEC     //for sl
     imports VAR-LOOKUP
     imports METHOD-INVOKE // for initParams
+    imports TRY-AND-THROW
     imports STMT-SYNTAX
 
 //@ \subsection{Call of main method}
@@ -25,11 +26,31 @@ rule [ExecutionPhase-Start]:
     <mainClass> ListItem(MainClassS:String) </mainClass>
     <globalPhase> UnfoldingPhase => ExecutionPhase  </globalPhase>
 
+syntax KLabel ::= "'Block"
+//                | "'Labeled"
+//                | "'ExprStm"
+//                | "'AssertStm"
+//                | "'Switch"
+//                | "'SwitchBlock"
+//                | "'SwitchGroup"
+//                | "'Case"
+//                | "'Default"
+//                | "'While"
+//                | "'DoWhile"
+//                | "'For"
+//                | "'Break"
+//                | "'Continue"
+//                | "'Return"
+//                | "'Throw"
+                | "'Try"
+                | "'Catch"
+
+
 //@ \subsection{Blocks} JLS \$14.2
 
 rule [Block]:
     <k> 'Block(S:K) => S ~> env(Env:Map) ...</k>
-//todo:    <k> {S:K} => S ~> env(Env:Map) ...</k>
+//    <k> {S:K} => S ~> env(Env:Map) ...</k>
     <env> Env </env>
         [structural]
 
@@ -49,7 +70,7 @@ rule [env-double-Discard]:
     Not only local but fields also*/
 
 rule [LocalVarDec]:
-    <k> _:KListWrap T:Type X:Id; => . ...</k>
+    <k> T:Type X:Id; => . ...</k>
     <env> Env:Map => Env[L/X] </env>
     <store>... . => L |-> default(T) ...</store>
     <storeMetadata>... . => L |-> LocalLocMetadata ...</storeMetadata>
@@ -354,6 +375,9 @@ rule [Return-MethodEnd]:
 /*@ \subsection{Throw statement}
 Exceptions are propagated now until a catch that can bind them is
 encountered. */
+
+//context 'Throw(HOLE)
+
 rule [Throw]:
     (. => checkCatch(subtype(typeOf(TV), T)))
 //    ~> 'Throw(TV:TypedVal)
@@ -470,3 +494,42 @@ rule [finallyBlock-NormalEnd]:
     finallyBlock(FinallyS:K) => FinallyS
 
 endmodule
+
+//Not used in the semantics. Used to typechect the rules in the paper only.
+//The equivalent of these rules in the semantics are in the AST form.
+module TRY-AND-THROW
+    imports SYNTAX-CONVERSIONS
+    imports STATEMENTS
+
+//We won't convert 'try into try now, we just want to typeset the rules.
+syntax Stmt ::= "try" Stmt CatchList
+syntax CatchList ::= List{Catch, ""}
+syntax Catch ::= "catch" "(" Param ")" Stmt
+syntax KItem ::= catchBlocks ( CatchList )
+syntax KItem ::= interactsWithThrow( K ) [function]
+
+rule [try]:
+    try S:Stmt CatchList:CatchList => S ~> catchBlocks(CatchList)
+
+rule [catchBlocks-dissolve]:
+    catchBlocks(_:CatchList) => .K
+
+rule [throw-match]:
+    throw V::ThrowT:Type;
+    ~> catchBlocks((catch(P{CatchT:Type X:Id}) CatchS:Stmt) _:CatchList)
+    => 'Block( CatchT X; ~> (X = (V::CatchT)); ~> CatchS )
+when subtype(ThrowT, CatchT)
+
+rule [throw-not-match]:
+    throw V::ThrowT:Type;
+    ~> catchBlocks((catch(P{CatchT:Type X:Id}) CatchS:Stmt => .) _:CatchList)
+when notBool subtype(ThrowT, CatchT)
+
+/*@ Could also be empty catch block
+*/
+rule [throw-propagate]:
+    throw TV:TypedVal; ~> (KI:KItem => .)
+when notBool interactsWithThrow(KI)
+
+endmodule
+

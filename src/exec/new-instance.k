@@ -266,10 +266,10 @@ rule [QSuperConstrInv]:
     <k>
       'QSuperConstrInv(Qual:K,, _,, [ Args:KList ])
       => setEncloser('QThis(Class), BaseClass, Qual)
-         ~> ('Invoke(
+         ~> 'Invoke(
               'QSuperMethod(Class,, .K,, getConsName(BaseClass)),,
               [Args]
-            );)<:ExprStmt
+            );
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
