@@ -63,12 +63,8 @@ syntax BreakStmt ::= "break" K ";" [klabel('Break)]
 syntax ReturnStmt ::= "return" K ";" [klabel('Return)]
 
 syntax SynchronizedStmt ::= "synchronized" "(" Exp ")" Block [strict(1),klabel('Synchronized)]
-//todo
+//todo: replace Exp with StmtExp
 syntax ExprStmt ::= Exp ";"  [strict, klabel('ExprStm)]
-//syntax InternalUse ::= TypedVal ";"
-
-
-
 
 endmodule
 
