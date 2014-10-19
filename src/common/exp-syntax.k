@@ -52,7 +52,7 @@ syntax Exp ::=
  		| Exp "-" Exp [seqstrict, klabel('Minus)]
 
 //todo: change to LHS?
-syntax AssignExp ::= K "=" Exp [seqstrict, klabel('Assign)]
+syntax AssignExp ::= K "=" Exp [klabel('Assign)]
 syntax AssignExp ::= CompoundAssignExp
 syntax CompoundAssignExp ::= "dummyCompoundAssignExp"
                             | Exp "*=" Exp [klabel('AssignMul)]

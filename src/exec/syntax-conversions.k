@@ -68,10 +68,8 @@ syntax MethodName ::= Id | MethodRef
 
 /*@ \subsection{Local variable declaration}*/
 
-//@ 'LocalVarDec(\_:K,, T:Type,, ['VarDec(X:Id)])
 syntax KLabel ::= "'VarDec"
-
-rule 'LocalVarDec(_:KListWrap,, T:Type,,(['VarDec(X:Id)] => X)) [structural]
+rule 'LocalVarDec(_:K,, T:Type,,['VarDec(X:Id)]) => T X;  [structural]
 
 /*@ \subsection{Cast}*/
 

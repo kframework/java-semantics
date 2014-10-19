@@ -49,7 +49,7 @@ rule [env-double-Discard]:
     Not only local but fields also*/
 
 rule [LocalVarDec]:
-    <k> _:KListWrap T:Type X:Id; => . ...</k>
+    <k> T:Type X:Id; => . ...</k>
     <env> Env:Map => Env[L/X] </env>
     <store>... . => L |-> default(T) ...</store>
     <storeMetadata>... . => L |-> LocalLocMetadata ...</storeMetadata>
@@ -423,6 +423,7 @@ rule [Try-Catch-Finally-Desugar]:
 context try _:K [_,, HOLE,, _]
 
 //resolve 'Param term of the catch clause
+
 context catch(HOLE)_                                [result(ExtKResult)]
 
 rule catch(KR:ExtKResult)S:K => catchImpl(KR,S)

@@ -46,7 +46,7 @@ when
 
 rule [Synchronized-first-time]:
     <k>
-          synchronized (objectRef(OId:Int,_)::_) Block:Block
+          synchronized (objectRef(OId:Int,_)::_) Block:K
           => try Block [.KList] finally releaseLock(OId)
           ...
     </k>
@@ -58,7 +58,7 @@ when
 
 rule [Synchronized-nested]:
     <k>
-            synchronized (objectRef(OId:Int,_)::_) Block:Block
+            synchronized (objectRef(OId:Int,_)::_) Block:K
             => try Block [.KList] finally releaseLock(OId)
       ...
     </k>

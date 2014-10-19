@@ -4,7 +4,7 @@ require "core-classes.k"
 module STMT-SYNTAX
     imports CORE-SORTS
     imports CORE-CLASSES
-//todo:be specific
+
 syntax Stmt ::= StmtWithoutTrailing|LabeledStmt|IfThenElseStmt|IfThenStmt|WhileStmt|ForStmt
 
 syntax IfThenElseStmt ::= "if" "(" Exp ")" "{" K "}" "else" "{" K "}" [strict(1),klabel('If)]
@@ -25,8 +25,7 @@ syntax StmtWithoutTrailing ::= Block
 |SynchronizedStmt
 
 syntax BlockStmt ::= Stmt|LocalVarDecStmt|ClassDecStmt
-syntax LocalVarDecStmt ::= LocalVarDec ";" [klabel('LocalVarDecStm)]
-syntax LocalVarDec ::= KListWrap Type Id [strict(2,3), klabel('LocalVarDec)]
+syntax LocalVarDecStmt ::= Type Id ";" [klabel('LocalVarDec)]
 
 //todo:ClassDecStm
 syntax ClassDecStmt ::= "dummyclassdecstm"
@@ -44,11 +43,9 @@ syntax SwitchBlock::= "{" KListWrap KListWrap "}" [klabel('SwitchBlock)]
 syntax DoStmt ::="do" "{" K "}" "while" "(" K ")"[strict(2),klabel('DoWhile)]
 syntax TryStmt ::= "try" Block KListWrap "finally" Block [klabel('Try)]
 		           |"try" Block KListWrap [klabel('Try)]
+		           |"catch" "(" K ")" Block [klabel('Catch)]
 		           //todo:catches
-
-syntax CatchClause ::= "catch" "(" K ")" Block [strict(1),klabel('Catch),result(ExtKResult)]
-
-//syntax Catches ::= List{CatchClause,""}
+	//syntax Catches ::= List{CatchClause,""}
 //syntax KItem ::= toCatches( KListWrap )          [function]
 //           | toCatches( KListWrap , Catches ) [function]
 //rule [L:KList,,C:CatchClause] => toCatches([L,,C])
@@ -63,7 +60,7 @@ syntax BreakStmt ::= "break" K ";" [klabel('Break)]
 syntax ReturnStmt ::= "return" K ";" [klabel('Return)]
 
 syntax SynchronizedStmt ::= "synchronized" "(" Exp ")" Block [strict(1),klabel('Synchronized)]
-//todo: replace Exp with StmtExp
+//todo: replace Exp with StmtExp when all StmtExp are defined
 syntax ExprStmt ::= Exp ";"  [strict, klabel('ExprStm)]
 
 endmodule
