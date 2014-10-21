@@ -7,6 +7,12 @@ $PATH
 
 echo $PATH
 
+# setting permissions for K tools
+chmod +x /home/denis.bogdanas/k-framework-stable/bin/*
+chmod +x /home/denis.bogdanas/k-framework-stable/lib/native/linux/*
+chmod +x /home/denis.bogdanas/k-framework-stable/lib/maude/binaries/*
+
+# setting permissions for K-Java tools
 chmod +x $TOOLS_DIR/*.sh
 
 echo "Using K Framework version:"
