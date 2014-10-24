@@ -33,7 +33,7 @@ rule [thread-start]:
             ),,
             String2Id("runnable")
           )
-          .String2Id("run") (.TypedVals) ;  //method invoke, ExprStm
+          .String2Id("run") (.TypedVals) ;
         </k>
         <tid> TId </tid>
         ...
@@ -44,17 +44,11 @@ when
 
 //@ \subsection{Synchronized statement}
 
-// 'Synchronized(objectRef(...)::_,, Block)
-syntax KLabel ::= "'Synchronized"
-
-//evaluate the expression
-context 'Synchronized(HOLE,, _)
-
 rule [Synchronized-first-time]:
     <k>
-      'Synchronized(objectRef(OId:Int,_)::_,, Block:K)
-      => 'Try(Block,, [.KList],, releaseLock(OId))
-      ...
+          synchronized (objectRef(OId:Int,_)::_) Block:K
+          => try Block [.KList] finally releaseLock(OId)
+          ...
     </k>
     <holds>... (. => OId |-> 1) ...</holds>
     <busy> Busy:Set (. => SetItem(OId)) </busy>
@@ -64,15 +58,15 @@ when
 
 rule [Synchronized-nested]:
     <k>
-      'Synchronized(objectRef(OId:Int,_)::_,, Block:K)
-      => 'Try(Block,, [.KList],, releaseLock(OId))
+            synchronized (objectRef(OId:Int,_)::_) Block:K
+            => try Block [.KList] finally releaseLock(OId)
       ...
     </k>
     <holds>... OId |-> (Level:Int => Level +Int 1) ...</holds>
         [transition-threading, transition-sync]
 
 rule [Synchronized-on-null]:
-    'Synchronized(null::_,,_) => throw new classNullPointerException(null::classString);
+    synchronized (null::_) _ => throw new classNullPointerException(null::classString);
 
 /*@Release one level of lock for the given object.*/
 syntax KItem ::=  releaseLock ( Int )
