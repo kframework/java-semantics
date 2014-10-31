@@ -179,8 +179,20 @@ syntax TypedVal ::= RawVal "::" Type
 syntax KResult ::= TypedVal | Type
 
 /*@ Member access modes*/
-syntax AccessMode ::= "public" | "protected" | "package" | "private"
+syntax AccessMode ::= //"public" | "protected"  | "private"
+Modifier | "package"
 syntax KResult ::= AccessMode
+
+syntax Modifier ::= "public"  [klabel('Public)]
+                  | "private"  [klabel('Private)]
+                  | "protected" [klabel('Protected)]
+                  | "abstract"  [klabel('Abstract)]
+                  | "final" [klabel('Final)]
+                  | "static" [klabel('Static)]
+                  | "native" [klabel('Native)]
+                  | "transient" [klabel('Transient)]
+                  | "volatile" [klabel('Volatile)]
+                  | "strictfp" [klabel('StrictFP)]
 
 /*@ Types of routines represented by a method closure*/
 syntax MethodMetaType ::= "methodMMT" | "constructorMMT"
@@ -211,9 +223,11 @@ syntax LocMetadata ::= "LocalLocMetadata"   [latex(\terminal{Local})]
                      | "FieldLocMetadata"   [latex(\terminal{Field})]
 
 //todo: why does this pure syntax definition affect krun?
-//                     syntax PackageName ::= List{Id,"."} [seqstrict, klabel('PackageName)]
+//PackageName, AmbName and PackageorTypeName syntax doesn't cause problems
+//                    syntax PackageName ::= List{Id,"."} [seqstrict, klabel('PackageName)]
 //                     syntax ExprName::= Id  [strict, klabel('ExprName)]
 //                                         |AmbName "." Id [strict, klabel('ExprName)]
+//breaks if any other syntax is added
 //                     syntax TypeName ::= Id [strict, klabel('TypeName)]
 //                                         |PackageOrTypeName "." Id [strict, klabel('TypeName)]
 //                     syntax AmbName ::= Id [strict, klabel('AmbName)]

@@ -147,7 +147,7 @@ The last two terms bring computation to the state required to continue execution
 */
 rule [qualified-new-instance]:
     <k>
-      Qual:KResult . new Class:ClassType( Args:TypedVals )
+      (Qual:KResult . new Class:ClassType( Args:TypedVals ))
       => staticInit(Class)
         ~> create(Class)
         ~> setEncloser(typedLookup(L), Class, Qual)

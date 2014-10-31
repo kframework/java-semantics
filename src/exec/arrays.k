@@ -16,13 +16,16 @@ syntax KItem ::=  RawVal "::" "elem" Type
 Check array bounds, as part of the dynamic typing policy. */
 
 // 'ArrayAccess(arrayRef(_)::arrayOf T:Type,, N:Int::_)
-syntax KLabel ::= "'ArrayAccess"
+//syntax KLabel ::= "'ArrayAccess"
+
+syntax ArrayAccess ::= Exp "[" Int "]" [seqstrict, klabel('ArrayAccess)]
+syntax Exp ::= ArrayAccess
 
 /* ArrayAccess arguments are heated left-to-right, because if the evaluation of the first argument
   throws an exception, the second one should not be evaluated. JLS $15.3.1
 */
-context 'ArrayAccess(HOLE,,_)
-context 'ArrayAccess(_:KResult,,HOLE)
+//context 'ArrayAccess(HOLE,,_)
+//context 'ArrayAccess(_:KResult,,HOLE)
 context lvalue('ArrayAccess(HOLE,,_))
 context lvalue('ArrayAccess(_:KResult,,HOLE))
 

@@ -63,5 +63,8 @@ syntax SynchronizedStmt ::= "synchronized" "(" Exp ")" Block [strict(1),klabel('
 //todo: replace Exp with StmtExp when all StmtExp are defined
 syntax ExprStmt ::= Exp ";"  [strict, klabel('ExprStm)]
 
+syntax ClassBody ::= "{" KListWrap "}" [klabel('ClassBody)]
+syntax ClassDecHead ::= KListWrap "class" Id K K K [klabel('ClassDecHead)]
+syntax ClassDec ::= ClassDecHead ClassBody [klabel('ClassDec)]
 endmodule
 

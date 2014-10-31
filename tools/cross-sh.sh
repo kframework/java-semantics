@@ -6,9 +6,9 @@ if [  $# == 0 ]; then
     exit 1
 fi
 
-if [[ $(uname) == *Linux* ]]
-  then OUT=$1
-  else OUT="sh $1"
+if [[ $(uname) == *Windows* ]]
+  then OUT="sh $1"
+  else OUT=$1
 fi
 
 echo $OUT
