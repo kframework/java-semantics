@@ -2,7 +2,7 @@
 module ARRAY-SYNTAX
 /*@ \subsection{Array access}
 Check array bounds, as part of the dynamic typing policy. */
-syntax ArrayAccess ::= Exp "[" Int "]" [seqstrict, klabel('ArrayAccess)]
+syntax ArrayAccess ::= Exp "[" Exp "]" [seqstrict, klabel('ArrayAccess)]
 syntax Exp ::= ArrayAccess
 
 /*@ \subsection{Array Declaration}
@@ -43,7 +43,7 @@ context lvalue('ArrayAccess(HOLE,,_))
 context lvalue('ArrayAccess(_:KResult,,HOLE))
 
 rule [ArrayAccess-to-lookup]:
-    'ArrayAccess(arrayRef(_, L:Int, M:Int) :: arrayOf T:Type,, N:Int::_)
+    arrayRef(_, L:Int, M:Int) :: arrayOf T:Type [N:Int::_]
     => lookup(L +Int N, T)
 when (N >=Int 0) andBool (N <Int M)
         [structural, anywhere]
@@ -57,13 +57,13 @@ rule [lookup-array-location]:
     <store>... L |-> V:RawVal ::elem T2:Type ...</store>
 
 rule [ArrayAccess-to-ArrayIndexOutOfBoundsException]:
-    'ArrayAccess(arrayRef(_,_,M:Int) :: _,, N:Int::_)
+    arrayRef(_,_,M:Int) :: _ [N:Int::_]
     => throw new class String2Id("java.lang.ArrayIndexOutOfBoundsException") ( Int2String(N) );
 when notBool ((N >=Int 0) andBool (N <Int M))
         [anywhere]
 
 rule [ArrayAccess-null-to-NullPointerException]:
-    'ArrayAccess(null::_,, _) => throw new classNullPointerException(null::classString);
+    (null::_) [_] => throw new classNullPointerException(null::classString);
         [anywhere]
 
 //@ Array length, as defined in JDK

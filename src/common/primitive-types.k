@@ -3,11 +3,10 @@
 module PRIMITIVE-TYPES
     imports CORE-SORTS
     imports SUBTYPING
-//    imports TYPE-SYNTAX
 
 //@ \subsection{Integer types normalization}
 
-syntax KItem ::= bitCount ( Type ) [function]
+syntax Int ::= bitCount ( Type ) [function]
 rule bitCount(byte) => 8
 rule bitCount(short) => 16
 rule bitCount(int) => 32
