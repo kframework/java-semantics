@@ -358,7 +358,7 @@ rule [Throw]:
     (. => checkCatch(subtype(typeOf(TV), T)))
 //    ~> 'Throw(TV:TypedVal)
     ~> throw TV:TypedVal;
-    ~> catchBlocks([catchImpl('ParamImpl(T:Type,, X:Id),_),, _])
+    ~> catchBlocks([catchImpl(T:Type X:Id,_),, _])
 
 syntax KItem ::= checkCatch ( K )
 context checkCatch(HOLE)
@@ -426,7 +426,7 @@ context try _:K [_,, HOLE,, _]
 
 context catch(HOLE)_                                [result(ExtKResult)]
 
-rule catch(KR:ExtKResult)S:K => catchImpl(KR,S)
+rule catch(KR:Param)S:K => catchImpl(KR,S)
 
 /*@ Extended K Result.
   Represents KLabels that should be treated as KResult during execution phase, but not during elaboration phase.
@@ -435,7 +435,7 @@ syntax ExtKResult ::= "dummy"
 
 rule isExtKResult(KR:KResult) => true
 
-rule isExtKResult('ParamImpl(T:Type,, _:Id)) => true
+rule isExtKResult(T:Type _:Id) => true
 
 //@ Internal representation of a preprocessed catch clause
 syntax KResult ::=  catchImpl (

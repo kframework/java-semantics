@@ -43,15 +43,20 @@ syntax SwitchBlock::= "{" KListWrap KListWrap "}" [klabel('SwitchBlock)]
 syntax DoStmt ::="do" "{" K "}" "while" "(" K ")"[strict(2),klabel('DoWhile)]
 syntax TryStmt ::= "try" Block KListWrap "finally" Block [klabel('Try)]
 		           |"try" Block KListWrap [klabel('Try)]
-		           |"catch" "(" K ")" Block [klabel('Catch)]
-		           //todo:catches
-	//syntax Catches ::= List{CatchClause,""}
-//syntax KItem ::= toCatches( KListWrap )          [function]
-//           | toCatches( KListWrap , Catches ) [function]
-//rule [L:KList,,C:CatchClause] => toCatches([L,,C])
-//rule toCatches([KLCatches:KList]) => toCatches([KLCatches],.Catches)
-//rule toCatches([KLCatches:KList,, C:CatchClause], Catches:Catches) => toCatches([KLCatches], (C Catches))
-//rule toCatches([.KList], Catches:Catches) => Catches
+
+syntax Param ::= Type Id
+syntax CatchClause ::= "catch" "(" Param ")" Block [klabel('Catch)]
+syntax CatchClauses ::= List{CatchClause,""}
+syntax CatchClauses ::= toCatchClauses( KListWrap )          [function]
+           | toCatchClauses( KListWrap , CatchClauses ) [function]
+rule [L:KList,,C:CatchClause] => toCatchClauses([L,,C])
+rule toCatchClauses([KLCatchClauses:KList]) => toCatchClauses([KLCatchClauses],.CatchClauses)
+rule toCatchClauses([KLCatchClauses:KList,, C:CatchClause], CatchClauses:CatchClauses) => toCatchClauses([KLCatchClauses], (C CatchClauses))
+rule toCatchClauses([.KList], CatchClauses:CatchClauses) => CatchClauses
+
+//syntax TryStmt ::= "try" Block CatcheClauses "finally" Block [klabel('Try)]
+//		           |"try" Block CatcheClauses [klabel('Try)]
+//rule 'Try(B1)
 
 syntax StackConsumerStmt ::= "dummyStackConsumerStmt"|ThrowStmt|ContinueStmt|BreakStmt|ReturnStmt
 syntax ThrowStmt ::= "throw" K ";" [strict, klabel('Throw)]
