@@ -219,7 +219,7 @@ if [[ ${PREP_FIRST} == true ]]; then
   if [ ! -e ${PKAST_FILE} ]; then
     CMD="aux-kjrun.sh --time=${TIME} --timeout=${TIMEOUT} --mode=run-prep-ast --output=${PREP_OUTPUT} \
       --cmd-suffix=\"${PREP_AST_CMD_SUFFIX}\" \
-      --input=${PREP_INPUT} --verbose=false ${JAVA_FILE} > ${PKAST_FILE}"
+      --input=${PREP_INPUT} --verbose=${VERBOSE} ${JAVA_FILE} > ${PKAST_FILE}"
     if [[ ${VERBOSE} == true ]]; then
       echo "PREP cmd:"
       echo ${CMD}
