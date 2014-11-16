@@ -56,9 +56,9 @@ PREP_FIRST=true
 TIME=true
 
 # OS-dependent choice of timeout
-if [[ $(uname) == *Linux* ]]
-  then TIMEOUT_FACTOR=1
-  else TIMEOUT_FACTOR=3
+if [[ $(uname) == *Windows* ]]
+  then TIMEOUT_FACTOR=3
+  else TIMEOUT_FACTOR=1
 fi
 TIMEOUT=$((30 * $TIMEOUT_FACTOR))
 SEARCH_TIMEOUT_FACTOR=2
@@ -88,7 +88,7 @@ SILENT=false
 
 CMD_SUFFIX=""
 COUNT_CMD_SUFFIX="| grep \"Solution\" | wc -l"
-PREP_AST_CMD_SUFFIX="| grep -Po '< program > \K.*(?=</ program > )'"
+PREP_AST_CMD_SUFFIX="| sed -n 's/.*< program > \(.*\) <\/ program >.*/\1/p'"
 
 while [[ ${1:0:1} == - ]]; do
   PARAM=`echo $1 | awk -F= '{print $1}'`
