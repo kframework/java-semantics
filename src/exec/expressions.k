@@ -7,7 +7,7 @@ module EXPRESSIONS
     imports PRIMITIVE-TYPES // for normalizeType
     imports TO-STRING
     imports VAR-LOOKUP  // for lookup
-    imports STMT-SYNTAX //for if
+//    imports CORE-FUNCTIONS //for ifAux
 
 /*@ Used to denote a temporary type of an expression. Such an expression should always be wrapped inside a cast
   expression. The cast will then replace tempType with the proper compile-time type.
@@ -50,9 +50,7 @@ rule /* I1 <<  I2 */ I1:Int :: NT1:Type << I2:Int :: _
 rule /* I1 >>  I2 */ I1:Int :: NT1:Type >> I2:Int :: _
     => (I1 >>Int (I2 &Int (bitCount(normalizeType(NT1)) -Int 1))) :: tempType
 rule /* I1 >>> I2 */ I1:Int :: NT1:Type >>> I2:Int :: NT2:NumericType
-  => if((I1 >=Int 0)::bool)
-    {I1 :: NT1 >> I2 :: NT2}
-    else {(I1::NT1 >> I2::NT2) + ( 2::NT1 << (~ I2::NT2))}
+  => ((I1 >=Int 0)::bool)? (I1 :: NT1 >> I2 :: NT2) : ((I1::NT1 >> I2::NT2) + ( 2::NT1 << (~ I2::NT2)))
 
 rule /* I1 + I2     */ I1:Int::_ + I2:Int::_ => (I1 +Int I2) :: tempType
 rule /* F1 + F2 */ F1:Float :: _ + F2:Float :: _ => (F1 +Float F2) :: tempType
@@ -141,7 +139,7 @@ rule rightTypedNumber(I:Int, FloatT:FloatType) => Int2Float(I)::FloatT
 The biggest difficulty is computing the expression type, according to JLS1 \$15.24
 The whole expression should always come wrapped into a cast, from elaboration.
 Thus we don't have to worry about proper type conversion here.*/
-rule CondExp:Exp ? TrueExp:Exp : FalseExp:Exp => if(CondExp) {TrueExp} else {FalseExp}
+rule CondExp:Exp ? TrueExp:Exp : FalseExp:Exp => ifAux(CondExp,TrueExp,FalseExp)
 
 /*@ \subsubsection{Assignment operators}
 Both basic assignment and compound assignments like +=, -=, etc. */

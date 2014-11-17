@@ -63,7 +63,7 @@ rule [Empty]:
 //@ \subsection{Labeled statements} JLS \$14.7
 
 rule [Labeled]:
-    X:Id : S:K => S ~> labeledImpl(X)
+    X:Id : S:Stmt => S ~> labeledImpl(X)
 
 //@ Processed version of the labeled statement
 syntax KItem ::= labeledImpl ( Id )
@@ -76,14 +76,14 @@ rule [labeledImpl-Discard]:
 rule _:TypedVal; => .K
 
 //@ \subsection{If statement}
-rule if (K1) {K2} => if (K1) {K2} else {.K} 
+rule if (K1) K2 => if (K1) K2 else {.K}
 
 rule [If-True]:
-    if (true::bool) {S:K} else {_} => S
+    if (true::bool) S:K else _ => S
         [symbolic-rule]
 
 rule [If-False]:
-    if (false::bool) {_} else {S:K} => S
+    if (false::bool) _ else S:K => S
         [symbolic-rule]
 
 //@ \subsection{Assert statement}

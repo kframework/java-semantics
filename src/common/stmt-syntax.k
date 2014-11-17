@@ -7,14 +7,13 @@ module STMT-SYNTAX
 
 syntax Stmt ::= StmtWithoutTrailing|LabeledStmt|IfThenElseStmt|IfThenStmt|WhileStmt|ForStmt
 
-syntax IfThenElseStmt ::= "if" "(" Exp ")" "{" K "}" "else" "{" K "}" [strict(1),klabel('If)]
-syntax IfThenStmt ::= "if" "(" Exp ")" "{" K "}" [strict(1),klabel('If)]
+syntax IfThenElseStmt ::= "if" "(" Exp ")" Stmt "else" Stmt [strict(1),klabel('If)]
+syntax IfThenStmt ::= "if" "(" Exp ")" Stmt [strict(1),klabel('If)]
 syntax WhileStmt ::= "while" "(" Exp ")" Stmt [strict(1),klabel('While)]
 syntax ForStmt ::= "for" "(" LocalVarDecStmt Exp ";" Exps ")" Stmt [klabel('For)]
 syntax ForStmt ::= "for" "(" Exps ";" Exp ";" Exps ")" Stmt [klabel('For)]
 
-syntax LabeledStmt ::= Id ":" K [klabel('Labeled)]
-
+syntax LabeledStmt ::= Id ":" Stmt [klabel('Labeled)]
 
 syntax StmtWithoutTrailing ::= Block
 |EmptyStmt
@@ -38,6 +37,7 @@ syntax EmptyStmt ::= ";" [klabel('Empty)]
 
 syntax AssertStmt ::="assert" Exp ";" [strict, klabel('AssertStm)]
 		            |"assert" Exp ":" Exp ";" [strict(1), klabel('AssertStm)]
+
 syntax SwitchStmt ::= "switch" "(" Exp ")" SwitchBlock [strict(1),klabel('Switch)]
 syntax SwitchBlock::= "{" SwitchGroups SwitchLabels "}" [klabel('SwitchBlock)]
 syntax SwitchGroup ::= SwitchLabels BlockStmts [klabel('SwitchGroup)]

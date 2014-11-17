@@ -567,7 +567,7 @@ rule [lookupPackageMethod-new-method]:
       lookupPackageMethod(
         Sig:Signature,
         (CurrentC:ClassType, Cs:ClassTypes => Cs),
-        OldDecC:ClassType => if (isOverridden( OldDecC, Acc, CurrentC )) { CurrentC } else { OldDecC }
+        OldDecC:ClassType => ifAux (isOverridden( OldDecC, Acc, CurrentC ),CurrentC,OldDecC )
       )
       ...
     </k>  <br/>

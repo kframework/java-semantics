@@ -214,14 +214,13 @@ rule [storeImpl-array-elem]:
 rule [storeImpl-array-location-check-type]:
     <k>
       storeImpl(L:Int, V:RawVal::T:Type)
-      =>  if(subtype(typeOf(V), StoreType))
-            {storeImpl(L, V::StoreType)}
-            else
-            {throw new class String2Id("java.lang.ArrayStoreException") (
+      =>  ifAux(subtype(typeOf(V), StoreType),
+            storeImpl(L, V::StoreType),
+           throw new class String2Id("java.lang.ArrayStoreException") (
                 //the ArrayStoreException argument is the assigned object type
                 (V::T .String2Id("getClass") (.TypedVals)) .String2Id("getName") (.TypedVals)
             );
-          }
+          )
       ...
     </k>
     <store>... L |-> _ :: elem StoreType:Type ...</store>
