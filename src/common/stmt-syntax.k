@@ -48,10 +48,10 @@ syntax CatchClause ::="catch" "(" Param ")" Block [klabel('Catch)]
 syntax CatchClauses ::= List{CatchClause,""} [strict]
 
 syntax StackConsumerStmt ::= "dummyStackConsumerStmt"|ThrowStmt|ContinueStmt|BreakStmt|ReturnStmt
-syntax ThrowStmt ::= "throw" K ";" [strict, klabel('Throw)]
-syntax ContinueStmt ::= "continue" K ";" [klabel('Continue)]
-syntax BreakStmt ::= "break" K ";" [klabel('Break)]
-syntax ReturnStmt ::= "return" K ";" [klabel('Return)]
+syntax ThrowStmt ::= "throw" Exp ";" [strict, klabel('Throw)]
+syntax ContinueStmt ::= "continue" Exp ";" [klabel('Continue)]
+syntax BreakStmt ::= "break" Exp ";" [klabel('Break)]
+syntax ReturnStmt ::= "return" Exp ";" [klabel('Return)]
 
 syntax SynchronizedStmt ::= "synchronized" "(" Exp ")" Block [strict(1),klabel('Synchronized)]
 //todo: replace Exp with StmtExp when all StmtExp are defined
