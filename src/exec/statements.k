@@ -181,7 +181,8 @@ rule [whileImpl]:
     whileImpl(E:K, S:K) => if(E){S ~> whileImpl(E, S)}    [structural]
 
 //@ \subsection{Do statement}
-rule do{S:K}while(E:K) => S ~> whileImpl(E, S)  [structural]
+syntax DoStmt ::="do" K "while" "(" K ")"";"[strict(2),klabel('DoWhile)]
+rule do S:K while(E:K); => S ~> whileImpl(E, S)  [structural]
 
 //@ \subsection{For statement}
 

@@ -25,22 +25,29 @@ syntax StmtWithoutTrailing ::= Block
 |SynchronizedStmt
 
 syntax BlockStmt ::= Stmt|LocalVarDecStmt|ClassDec
+syntax BlockStmts ::= BlockStmt|BlockStmt BlockStmts
 syntax LocalVarDecStmt ::= Type Id ";" [klabel('LocalVarDec)]
 syntax ClassBody ::= "{" KListWrap "}" [klabel('ClassBody)]
 syntax ClassDecHead ::= KListWrap "class" Id K K K [klabel('ClassDecHead)]
 syntax ClassDec ::= ClassDecHead ClassBody [klabel('ClassDec)]
 
-syntax Block ::= "{" BlockStmt "}" [klabel('Block)]
+syntax Block ::= "{" BlockStmts "}" [klabel('Block)]
 syntax EmptyStmt ::= ";" [klabel('Empty)]
 
 syntax AssertStmt ::="assert" Exp ";" [strict, klabel('AssertStm)]
 		            |"assert" Exp ":" Exp ";" [strict(1), klabel('AssertStm)]
 syntax SwitchStmt ::= "switch" "(" Exp ")" SwitchBlock [strict(1),klabel('Switch)]
-syntax SwitchGroup ::= KListWrap KListWrap [klabel('SwitchGroup)]
+syntax SwitchBlock::= "{" SwitchGroups SwitchLabels "}" [klabel('SwitchBlock)]
+syntax SwitchGroup ::= SwitchLabels BlockStmts [klabel('SwitchGroup)]
+syntax SwitchGroups ::= List{SwitchGroup, ""}
 syntax SwitchLabel ::= "case" Exp ":" [strict, klabel('Case)]
-		               |"default:" [klabel('Default)]
+		               |"default"":" [klabel('Default)]
+syntax SwitchLabels ::= List{SwitchLabel, ""}
+
+syntax SwitchGroup ::= KListWrap KListWrap [klabel('SwitchGroup)]
 syntax SwitchBlock::= "{" KListWrap KListWrap "}" [klabel('SwitchBlock)]
-syntax DoStmt ::="do" "{" K "}" "while" "(" K ")"[strict(2),klabel('DoWhile)]
+
+syntax DoStmt ::="do" Stmt "while" "(" Exp ")"";"[strict(2),klabel('DoWhile)]
 syntax TryStmt ::= "try" Block CatchClauses "finally" Block [klabel('Try)]
 		           |"try" Block CatchClauses [klabel('Try)]
 syntax Param ::= Type Id       [klabel('ParamImpl)]
