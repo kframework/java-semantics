@@ -103,6 +103,8 @@ rule [AssertStm-FirstFalse]:
     assert (false::bool) : (TV:TypedVal); => throw new class String2Id("java.lang.AssertionError") (toString(TV));
 
 //@ \subsection{Switch statement}
+syntax SwitchGroup ::= KListWrap KListWrap [klabel('SwitchGroup)]
+syntax SwitchBlock::= "{" KListWrap KListWrap "}" [klabel('SwitchBlock)]
 
 syntax KItem ::=  switchImpl (
                 TypedVal,   // TV - switch argument
@@ -170,7 +172,7 @@ rule [switchEnd-Discard]:
 
 //@ \subsection{While statement} and loop infrastructure.
 
-rule while(E:K){S:K} => whileImpl(E, S)         [structural]
+rule while(E:K) S:K => whileImpl(E, S)         [structural]
 
 syntax KItem ::=  whileImpl (
                 K,  // E - test expression. In For loop, it is UpdClause ~> testExp
@@ -181,11 +183,11 @@ rule [whileImpl]:
     whileImpl(E:K, S:K) => if(E){S ~> whileImpl(E, S)}    [structural]
 
 //@ \subsection{Do statement}
-syntax DoStmt ::="do" K "while" "(" K ")"";"[strict(2),klabel('DoWhile)]
+
 rule do S:K while(E:K); => S ~> whileImpl(E, S)  [structural]
 
 //@ \subsection{For statement}
-
+syntax ForStmt ::= "for" "(" K ";" K ";" K ")" "{" K "}" [klabel('For)]
 //wrapper of certain clauses of for statement
 syntax KItem ::= stm ( KListWrap )
 

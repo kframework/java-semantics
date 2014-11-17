@@ -9,8 +9,10 @@ syntax Stmt ::= StmtWithoutTrailing|LabeledStmt|IfThenElseStmt|IfThenStmt|WhileS
 
 syntax IfThenElseStmt ::= "if" "(" Exp ")" "{" K "}" "else" "{" K "}" [strict(1),klabel('If)]
 syntax IfThenStmt ::= "if" "(" Exp ")" "{" K "}" [strict(1),klabel('If)]
-syntax WhileStmt ::= "while" "(" Exp ")" "{" K "}" [strict(1),klabel('While)]
-syntax ForStmt ::= "for" "(" K ";" K ";" K ")" "{" K "}" [klabel('For)]
+syntax WhileStmt ::= "while" "(" Exp ")" Stmt [strict(1),klabel('While)]
+syntax ForStmt ::= "for" "(" LocalVarDecStmt Exp ";" Exps ")" Stmt [klabel('For)]
+syntax ForStmt ::= "for" "(" Exps ";" Exp ";" Exps ")" Stmt [klabel('For)]
+
 syntax LabeledStmt ::= Id ":" K [klabel('Labeled)]
 
 
@@ -44,8 +46,6 @@ syntax SwitchLabel ::= "case" Exp ":" [strict, klabel('Case)]
 		               |"default"":" [klabel('Default)]
 syntax SwitchLabels ::= List{SwitchLabel, ""}
 
-syntax SwitchGroup ::= KListWrap KListWrap [klabel('SwitchGroup)]
-syntax SwitchBlock::= "{" KListWrap KListWrap "}" [klabel('SwitchBlock)]
 
 syntax DoStmt ::="do" Stmt "while" "(" Exp ")"";"[strict(2),klabel('DoWhile)]
 syntax TryStmt ::= "try" Block CatchClauses "finally" Block [klabel('Try)]
