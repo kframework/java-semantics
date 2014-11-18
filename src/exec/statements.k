@@ -160,7 +160,8 @@ rule [switchImpl-Default-Exec]:
     switchImpl( _, [.KList], DefaultStm:K) => DefaultStm
 
 rule [SwitchGroup-Exec]:
-    _:KListWrap S:K => S
+    'SwitchGroup(_:K,, S:K) => S
+    //_:KListWrap S:K => S
 
 syntax KItem ::=  "switchEnd"
 

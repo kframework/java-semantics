@@ -386,25 +386,17 @@ If the method is protected or public, then we should call the version of the met
   from the base class and methods declared in the current class, the latter overriding the former.
   The variable DecC is the class where the right method version is declared.
 */
-rule [Invoke-methodInfo-instance-protected]:
+rule [Invoke-methodInfo-instance-protected-or-public]:
     <k>
       objectRef( _, ObjC:ClassType )::_
-        . ( methodInfo(Sig:Signature, _, _,_, instanceCT, protected) => methodRef(Sig, DecC) )
+        . ( methodInfo(Sig:Signature, _, _,_, instanceCT, Acc:AccessMode) => methodRef(Sig, DecC) )
         (_)
       ...
     </k>  <br/>
     <classType> ObjC </classType>
     <methods>... Sig |-> DecC:ClassType ...</methods>
-
-rule [Invoke-methodInfo-instance-public]:
-    <k>
-      objectRef( _, ObjC:ClassType )::_
-        . ( methodInfo(Sig:Signature, _, _,_, instanceCT, public) => methodRef(Sig, DecC) )
-        (_)
-      ...
-    </k>  <br/>
-    <classType> ObjC </classType>
-    <methods>... Sig |-> DecC:ClassType ...</methods>
+when
+    Acc ==K protected orBool Acc ==K public
 
 /*@
 \begin{markdown}
