@@ -171,7 +171,7 @@ rule [switchEnd-Discard]:
     switchEnd => .K
 
 //@ \subsection{While statement} and loop infrastructure.
-
+syntax WhileStmt ::= "while" "(" K ")" K [strict(1),klabel('While)]
 rule while(E:K) S:K => whileImpl(E, S)         [structural]
 
 syntax KItem ::=  whileImpl (
@@ -183,7 +183,7 @@ rule [whileImpl]:
     whileImpl(E:K, S:K) => if(E){S ~> whileImpl(E, S)}    [structural]
 
 //@ \subsection{Do statement}
-
+syntax DoStmt ::="do" K "while" "(" K ")"";"[strict(2),klabel('DoWhile)]
 rule do S:K while(E:K); => S ~> whileImpl(E, S)  [structural]
 
 //@ \subsection{For statement}
