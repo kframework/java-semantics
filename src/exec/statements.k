@@ -61,9 +61,9 @@ rule [Empty]:
     ; => .
 
 //@ \subsection{Labeled statements} JLS \$14.7
-
+syntax LabeledStmt ::= Id ":" K [klabel('Labeled)]
 rule [Labeled]:
-    X:Id : S:Stmt => S ~> labeledImpl(X)
+    X:Id : S:K => S ~> labeledImpl(X)
 
 //@ Processed version of the labeled statement
 syntax KItem ::= labeledImpl ( Id )
@@ -76,6 +76,8 @@ rule [labeledImpl-Discard]:
 rule _:TypedVal; => .K
 
 //@ \subsection{If statement}
+syntax IfThenElseStmt ::= "if" "(" Exp ")" K "else" K [strict(1),klabel('If)]
+syntax IfThenStmt ::= "if" "(" Exp ")" K [strict(1),klabel('If)]
 rule if (K1) K2 => if (K1) K2 else {.K}
 
 rule [If-True]:
