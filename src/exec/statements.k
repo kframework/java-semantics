@@ -282,29 +282,38 @@ rule [Break-LabeledMatch]:
     break X:Id; ~> labeledImpl(X:Id) => .
 
 //@ \subsection{Continue statement}
-
+//macro
+rule 'Continue ('None(_)) => continue;
+rule 'Continue ('Some(X:Id)) => continue X;
 rule [Continue-Propagate]:
-    continue _; ~> (KL:KLabel(_) => .)
+    continue _ ; ~> (KL:KLabel(_) => .)
+when
+            KL =/=KLabel 'env
+    andBool KL =/=KLabel 'finallyBlock
+    andBool KL =/=KLabel 'whileImpl
+
+rule [Continue-Unlabeled-Propagate]:
+    continue; ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
     andBool KL =/=KLabel 'whileImpl
 
 rule [Continue-Unlabeled]:
-   (continue 'None(_); => .) ~> whileImpl(_,_)
+   (continue; => .) ~> whileImpl(_,_)
 
 rule [Continue-LabeledMeetsWhile]:
     <k>
-      (. => getWhileLabel(Rest)) ~> continue 'Some(X:Id); ~> whileImpl(_,_) ~> Rest:K
+      (. => getWhileLabel(Rest)) ~> continue X:Id; ~> whileImpl(_,_) ~> Rest:K
     </k>
 
 rule [Continue-LabeledNotMatch]:
-    (whileLabel(LabelK:K) => .) ~> continue 'Some(X:Id); ~> (whileImpl(_,_) => .)
+    (whileLabel(LabelK:K) => .) ~> continue X:Id; ~> (whileImpl(_,_) => .)
 when
     LabelK =/=K X
 
 rule [Continue-LabeledMatch]:
-    whileLabel(X) ~> continue 'Some(X:Id); => .
+    whileLabel(X) ~> continue X:Id; => .
 
 /*@ Auxiliary constructs used in the semantics of continue.
 Search for the label associated with the last encountered while statement*/
