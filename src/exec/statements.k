@@ -61,7 +61,7 @@ rule [Empty]:
     ; => .
 
 //@ \subsection{Labeled statements} JLS \$14.7
-syntax LabeledStmt ::= Id ":" K [klabel('Labeled)]
+
 rule [Labeled]:
     X:Id : S:K => S ~> labeledImpl(X)
 
@@ -76,8 +76,7 @@ rule [labeledImpl-Discard]:
 rule _:TypedVal; => .K
 
 //@ \subsection{If statement}
-syntax IfThenElseStmt ::= "if" "(" Exp ")" K "else" K [strict(1),klabel('If)]
-syntax IfThenStmt ::= "if" "(" Exp ")" K [strict(1),klabel('If)]
+
 rule if (K1) K2 => if (K1) K2 else {.K}
 
 rule [If-True]:
@@ -105,8 +104,7 @@ rule [AssertStm-FirstFalse]:
     assert (false::bool) : (TV:TypedVal); => throw new class String2Id("java.lang.AssertionError") (toString(TV));
 
 //@ \subsection{Switch statement}
-syntax SwitchGroup ::= KListWrap KListWrap [klabel('SwitchGroup)]
-syntax SwitchBlock::= "{" KListWrap KListWrap "}" [klabel('SwitchBlock)]
+
 
 syntax KItem ::=  switchImpl (
                 TypedVal,   // TV - switch argument
@@ -173,7 +171,7 @@ rule [switchEnd-Discard]:
     switchEnd => .K
 
 //@ \subsection{While statement} and loop infrastructure.
-syntax WhileStmt ::= "while" "(" K ")" K [strict(1),klabel('While)]
+
 rule while(E:K) S:K => whileImpl(E, S)         [structural]
 
 syntax KItem ::=  whileImpl (
@@ -185,11 +183,11 @@ rule [whileImpl]:
     whileImpl(E:K, S:K) => if(E){S ~> whileImpl(E, S)}    [structural]
 
 //@ \subsection{Do statement}
-syntax DoStmt ::="do" K "while" "(" K ")"";"[strict(2),klabel('DoWhile)]
+
 rule do S:K while(E:K); => S ~> whileImpl(E, S)  [structural]
 
 //@ \subsection{For statement}
-syntax ForStmt ::= "for" "(" K ";" K ";" K ")" "{" K "}" [klabel('For)]
+
 //wrapper of certain clauses of for statement
 syntax KItem ::= stm ( KListWrap )
 
@@ -250,7 +248,7 @@ rule [StackConsumerStmt-RestoreEnv]:
     => env(Env:Map) ~> StackCons
 
 //@ \subsection{Break statement}
-syntax BreakStmt ::= "break" K ";" [klabel('Break)]
+
 rule [Break-UnlabeledPropagate]:
     break 'None(_); ~> (KL:KLabel(_) => .)
 when
@@ -281,7 +279,7 @@ rule [Break-LabeledMatch]:
     break 'Some(X:Id); ~> labeledImpl(X:Id) => .
 
 //@ \subsection{Continue statement}
-syntax ContinueStmt ::= "continue" K ";" [klabel('Continue)]
+
 rule [Continue-Propagate]:
     continue _; ~> (KL:KLabel(_) => .)
 when
@@ -324,7 +322,7 @@ of the returned
 value is a subtype of the expected return type.  Moreover, if that is
 the case, then we also up-cast the returned value to one of the
 expected type. */
-syntax ReturnStmt ::= "return" K ";" [klabel('Return)]
+
 context return 'Some(HOLE);
 
 rule [Return-None-Desugar]:
@@ -345,7 +343,7 @@ rule [Return-MethodEnd]:
 /*@ \subsection{Throw statement}
 Exceptions are propagated now until a catch that can bind them is
 encountered. */
-syntax ThrowStmt ::= "throw" K ";" [strict, klabel('Throw)]
+
 rule [Throw]:
     (. => checkCatch(subtype(typeOf(TV), T)))
     ~> throw TV:TypedVal;
