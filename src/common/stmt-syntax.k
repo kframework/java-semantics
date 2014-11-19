@@ -35,13 +35,13 @@ syntax StmtWithoutTrailing ::= Block
 |SynchronizedStmt
 
 syntax BlockStmt ::= Stmt|LocalVarDecStmt|ClassDec
-syntax BlockStmts ::= BlockStmt|BlockStmt BlockStmts
+syntax BlockStmts ::= List{BlockStmt,""}
 syntax LocalVarDecStmt ::= Type Id ";" [klabel('LocalVarDec)]
 syntax ClassBody ::= "{" KListWrap "}" [klabel('ClassBody)]
 syntax ClassDecHead ::= KListWrap "class" Id K K K [klabel('ClassDecHead)]
 syntax ClassDec ::= ClassDecHead ClassBody [klabel('ClassDec)]
 
-//todo:maybe we can try Grigore's proposal with Block
+//todo:maybe we can try Grigore's proposal with Block, inside should be BlockStmts
 syntax Block ::= "{" K "}" [klabel('Block)]
 syntax EmptyStmt ::= ";" [klabel('Empty)]
 
