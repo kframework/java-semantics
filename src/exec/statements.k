@@ -334,21 +334,22 @@ of the returned
 value is a subtype of the expected return type.  Moreover, if that is
 the case, then we also up-cast the returned value to one of the
 expected type. */
-
-context return 'Some(HOLE);
-
+//macro
+rule 'Return ('Some(X:Exp)) => return X;
 rule [Return-None-Desugar]:
-    return 'None(_); => return 'Some(nothing :: void);
+    'Return ('None(_)) => return nothing :: void;
         [structural]
 
+context return HOLE;
+
 rule [Return-Propagate]:
-    return 'Some(TV:TypedVal); ~> (KL:KLabel(Ks:KList) => .K)
+    return TV:TypedVal; ~> (KL:KLabel(Ks:KList) => .K)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
 
 rule [Return-MethodEnd]:
-    <k> return 'Some(TV:TypedVal); => TV ~> K </k>
+    <k> return TV:TypedVal; => TV ~> K </k>
     <stack> ListItem( sl(K:K, MethContext:Bag) ) => . ...</stack>
     <methodContext> _:Bag => MethContext </methodContext>
 
