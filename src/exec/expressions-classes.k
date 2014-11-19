@@ -11,25 +11,18 @@ module EXPRESSIONS-CLASSES
 
 /*@ \subsection{Instance Of} */
 
-//@ 'InstanceOf(V::T,, T2)
-syntax KLabel ::= "'InstanceOf"
-
-context 'InstanceOf(HOLE,,_)
-
 rule [InstanceOf]:
-    'InstanceOf(V:RawVal::_,, RT2:RefType)
-    =>  'LazyAnd((V =/=K null),, subtype(typeOf(V), RT2))
+    V:RawVal::_ instanceof RT2:RefType
+    =>  (V =/=K null) && subtype(typeOf(V), RT2)
 
 /*@ \subsection{Cast} */
-
 rule [cast-RefType]:
     cast(RT1:RefType, V:RawVal :: RT2:RefType)
-    =>  if ( subtype(typeOf(V), RT1) )
-        {V::RT1}
-        else {
+    =>  ifAux ( subtype(typeOf(V), RT1) ,
+        V::RT1,
           throw new class String2Id("java.lang.ClassCastException") (
-            toExps(['Plus('Plus(toString(typeOf(V)),, " cannot be cast to "),, toString(RT1))])
+            toExps([(toString(typeOf(V)) + " cannot be cast to ") + toString(RT1)])
           );
-        }
+        )
 
 endmodule

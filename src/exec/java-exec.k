@@ -45,13 +45,13 @@ module JAVA-EXEC
     imports METHOD-INVOKE-REST
     imports API-CORE
     imports API-THREADS
-    imports LTL-SUPPORT
+   // imports LTL-SUPPORT
     imports JAVA-SYNTAX
 
 endmodule
 
 module JAVA-SYNTAX
-    imports LTL-SUPPORT-SYNTAX
+    //imports LTL-SUPPORT-SYNTAX
     imports EXP-SYNTAX
     imports STMT-SYNTAX
 endmodule

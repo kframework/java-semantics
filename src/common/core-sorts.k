@@ -1,6 +1,33 @@
 //@ \section{Module CORE-SORTS}
+module TYPE-SYNTAX
+     //@ \subsection{Types}
+        syntax Type ::= PrimitiveType
+                      | RefType
+                      | "void" [klabel('Void)]
+
+        syntax IntOrLongType ::= "int" [klabel('Int)] | "long" [klabel('Long)]
+        syntax IntType ::= "byte" [klabel('Byte)]| "short" [klabel('Short)]| IntOrLongType | "char" [klabel('Char)]
+        syntax FloatType ::= "float" [klabel('Float)] | "double" [klabel('Double)]
+        syntax NumericType ::= IntType | FloatType
+        syntax PrimitiveType ::= NumericType | "bool" [klabel('Boolean)]
+
+
+    /*@ A fully qualified class name, or noClass where no valid class could be computed.*/
+    syntax ClassType ::= "class" Id
+                       | "noClass"        [latex({\dotCt{K}})]
+
+    /* A reference type is either a class type, an array type, the null type or a String type. The null type is specified
+        by the JLS although inaccessible to the programmer. String objects and types are not threated as regular objects
+        in the present semantics for performance reasons.
+    */
+    syntax RefType ::= ClassType
+                     | "arrayOf" Type
+                     | "nullType"
+
+endmodule
 
 module CORE-SORTS
+    imports TYPE-SYNTAX
 
 //@ \subsection{Computation phases}
 
@@ -87,33 +114,11 @@ syntax StaticInitStatus ::= "StaticUninitialized"
                           | StaticInitializing ( Int )
                           | "StaticInitialized"
 
-//@ \subsection{Types}
-
-syntax IntOrLongType ::= "int" | "long"
-syntax NumericType ::= IntType | FloatType
-syntax IntType ::= "byte" | "short" | IntOrLongType | "char"
-syntax FloatType ::= "float" | "double"
-syntax PrimitiveType ::= NumericType | "bool"
-
-syntax Type ::= PrimitiveType
-              | RefType
-              | "void"
 
 /*@ A method signature. Required to be KResult by rules in METHOD-INVOKE.*/
 syntax Signature ::= sig ( Id, Types )
 syntax KResult ::= Signature
 
-/*@ A fully qualified class name, or noClass where no valid class could be computed.*/
-syntax ClassType ::= "class" Id
-                   | "noClass"        [latex({\dotCt{K}})]
-
-/* A reference type is either a class type, an array type, the null type or a String type. The null type is specified
-    by the JLS although inaccessible to the programmer. String objects and types are not threated as regular objects
-    in the present semantics for performance reasons.
-*/
-syntax RefType ::= ClassType
-                 | "arrayOf" Type
-                 | "nullType"
 
 /*@ The member accessibility context of the current method - either static or instance.*/
 syntax ContextType ::=  "staticCT"    [latex(\terminal{static})]
@@ -179,8 +184,20 @@ syntax TypedVal ::= RawVal "::" Type
 syntax KResult ::= TypedVal | Type
 
 /*@ Member access modes*/
-syntax AccessMode ::= "public" | "protected" | "package" | "private"
+syntax AccessMode ::= //"public" | "protected"  | "private"
+Modifier | "package"
 syntax KResult ::= AccessMode
+
+syntax Modifier ::= "public"  [klabel('Public)]
+                  | "private"  [klabel('Private)]
+                  | "protected" [klabel('Protected)]
+                  | "abstract"  [klabel('Abstract)]
+                  | "final" [klabel('Final)]
+                  | "static" [klabel('Static)]
+                  | "native" [klabel('Native)]
+                  | "transient" [klabel('Transient)]
+                  | "volatile" [klabel('Volatile)]
+                  | "strictfp" [klabel('StrictFP)]
 
 /*@ Types of routines represented by a method closure*/
 syntax MethodMetaType ::= "methodMMT" | "constructorMMT"
@@ -210,16 +227,5 @@ syntax KResult ::= Types
 syntax LocMetadata ::= "LocalLocMetadata"   [latex(\terminal{Local})]
                      | "FieldLocMetadata"   [latex(\terminal{Field})]
 
-//todo: why does this pure syntax definition affect krun?
-//                     syntax PackageName ::= List{Id,"."} [seqstrict, klabel('PackageName)]
-//                     syntax ExprName::= Id  [strict, klabel('ExprName)]
-//                                         |AmbName "." Id [strict, klabel('ExprName)]
-//                     syntax TypeName ::= Id [strict, klabel('TypeName)]
-//                                         |PackageOrTypeName "." Id [strict, klabel('TypeName)]
-//                     syntax AmbName ::= Id [strict, klabel('AmbName)]
-//                                         |AmbName "." Id [strict, klabel('AmbName)]
-//                     syntax MethodName ::= Id [strict,klabel('MethodName)]
-//                                            |AmbName "." Id [strict,klabel('MethodName)]
-//                     syntax PackageOrTypeName ::= Id [strict,klabel('PackageOrTypeName)]
-//                                                   |PackageOrTypeName "." Id [strict,klabel('PackageOrTypeName)]
+
 endmodule

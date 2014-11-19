@@ -14,10 +14,8 @@ module SYNTAX-CONVERSIONS
 syntax KLabel ::= "'Param"
 
 //Required for catch
-rule 'Param(_,, K:K,, X:Id) => P{K X} [structural]
+rule 'Param(_,, K:Type,, X:Id) => K X [structural]
 
-//add P to {} in case of ambiguity
-syntax Param ::= "P{" K Id "}"        [klabel('ParamImpl)]
 
 syntax Params ::= List{Param, ","}
 
@@ -25,7 +23,7 @@ syntax KItem ::= toParams( KListWrap )          [function]
            | toParams( KListWrap , Params ) [function]
 
 rule toParams([KLParams:KList]) => toParams([KLParams], .Params)
-rule toParams([KLParams:KList,, 'Param(_,, K:K,, X:Id)], Params:Params) => toParams([KLParams], (P{K X},Params))
+rule toParams([KLParams:KList,, 'Param(_,, K:K,, X:Id)], Params:Params) => toParams([KLParams], (K X,Params))
 rule toParams([.KList], Params:Params) => Params
 
 // Required for getTypes()
@@ -63,8 +61,7 @@ rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:KListWrap) => 
 //the evaluation of the arguments
 /*@ Method invocation expression
 */
-syntax Exp ::= K "." MethodName "(" Exps ")"       [seqstrict(1,3), klabel('MethodImpl)]
-syntax MethodName ::= Id | MethodRef
+
 
 /*@ \subsection{Local variable declaration}*/
 
@@ -93,7 +90,6 @@ syntax KLabel ::= "'NewInstance"
 rule 'NewInstance( 'None(.KList),, Class:ClassType,, [ Args:KList ],, 'None(.KList) )
      => new Class( toExps([Args]) )
 
-syntax Exp ::= "new" ClassType "(" Exps ")"
 
 // 'QNewInstance( Qual,, _:K,, Class,, _:K,, [Args],, 'None(.KList) )
 syntax KLabel ::= "'QNewInstance"
@@ -101,10 +97,6 @@ syntax KLabel ::= "'QNewInstance"
 rule 'QNewInstance( Qual:Exp,, _:K,, ClassOrName:ClassOrName,, _:K,, [Args:KList],, _:K )
      => Qual . new ClassOrName( toExps([Args]) )
 
-syntax ClassOrName ::= Id | ClassType
-
-//totest model check - test the arguments evaluation order
-syntax Exp ::= Exp "." "new" ClassOrName "(" Exps ")"     [seqstrict(1,3)]
 
 /*@Unpack 'NewInstance back into 'QNewInstance.
   The difference between desugaring and unpacking is that unpacking is an artificial procedure required to separate
@@ -119,7 +111,6 @@ rule [NewInstance-to-QNewInstance-unpack]:
 /*@
   A list of expressions, usually a list of arguments of a method or constructor.
 */
-syntax Exps ::= List{Exp, ","} [seqstrict]
 
 syntax KItem ::= toExps( KListWrap )        [function]
            | toExps( KListWrap , Exps ) [function]
