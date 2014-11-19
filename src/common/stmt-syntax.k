@@ -49,8 +49,8 @@ syntax AssertStmt ::="assert" Exp ";" [strict, klabel('AssertStm)]
 		            |"assert" Exp ":" Exp ";" [strict(1), klabel('AssertStm)]
 
 syntax SwitchStmt ::= "switch" "(" Exp ")" SwitchBlock [strict(1),klabel('Switch)]
-syntax SwitchBlock::= "{" SwitchGroups SwitchLabels "}" [klabel('SwitchBlock)]
-syntax SwitchGroup ::= SwitchLabels BlockStmts [klabel('SwitchGroup)]
+//syntax SwitchBlock::= "{" SwitchGroups SwitchLabels "}" [klabel('SwitchBlock)]
+//syntax SwitchGroup ::= SwitchLabels BlockStmts [klabel('SwitchGroup)]
 syntax SwitchGroups ::= List{SwitchGroup, ""}
 syntax SwitchLabel ::= "case" Exp ":" [strict, klabel('Case)]
 		               |"default"":" [klabel('Default)]
