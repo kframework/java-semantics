@@ -72,7 +72,8 @@ syntax ContinueStmt ::= "continue" Exp ";" [klabel('Continue)]
 syntax BreakStmt ::= "break" Exp ";" [klabel('Break)]
 syntax ReturnStmt ::= "return" Exp ";" [klabel('Return)]
 */
-syntax BreakStmt ::= "break" K ";" [klabel('Break)]
+syntax BreakStmt ::= "break" Id ";" [klabel('Break)]
+syntax BreakStmt ::= "break" ";"
 syntax ContinueStmt ::= "continue" K ";" [klabel('Continue)]
 syntax ReturnStmt ::= "return" K ";" [klabel('Return)]
 syntax ThrowStmt ::= "throw" K ";" [strict, klabel('Throw)]

@@ -248,9 +248,12 @@ rule [StackConsumerStmt-RestoreEnv]:
     => env(Env:Map) ~> StackCons
 
 //@ \subsection{Break statement}
+//macro
+rule 'Break ('None(_)) => break;
+rule 'Break ('Some(X:Id)) => break X;
 
 rule [Break-UnlabeledPropagate]:
-    break 'None(_); ~> (KL:KLabel(_) => .)
+    break; ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
@@ -258,25 +261,25 @@ when
     andBool KL =/=KLabel 'switchEnd
 
 rule [Break-Unlabeled]:
-    break 'None(_); ~> KL:KLabel(_) => .
+    break; ~> KL:KLabel(_) => .
 when
            KL ==KLabel 'whileImpl
     orBool KL ==KLabel 'switchEnd
 
 rule [Break-LabeledPropagate]:
-    break 'Some(X:Id); ~> (KL:KLabel(_) => .)
+    break X:Id; ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
     andBool KL =/=KLabel 'labeledImpl
 
 rule [BreakLabeledNotMatch]:
-    break 'Some(X1:Id); ~> (labeledImpl(X2:Id) => .)
+    break X1:Id; ~> (labeledImpl(X2:Id) => .)
 when
     X1 =/=K X2
 
 rule [Break-LabeledMatch]:
-    break 'Some(X:Id); ~> labeledImpl(X:Id) => .
+    break X:Id; ~> labeledImpl(X:Id) => .
 
 //@ \subsection{Continue statement}
 
