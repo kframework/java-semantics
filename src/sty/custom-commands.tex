@@ -10,6 +10,9 @@
 % For listing example programs
 \usepackage{listings}
 
+% For {comment} env
+\usepackage{verbatim}
+
 \newenvironment{markdown}%
     {\VerbatimEnvironment\begin{VerbatimOut}{tmp.markdown}}%
     {\end{VerbatimOut}%
@@ -103,7 +106,12 @@
         breaklines=true,showstringspaces=false,emph={label},
         basicstyle=\ttfamily}
 
-% Required in order to make \kall cells inside comments black.
-\renewcommand{\kall}[3][black]{\mall{#1}{#2}{#3}}
+% Default \kall color is white (\mcell turns it to gray), we want it to be black.
+% Required in order to make all \kall cells in math mode black (especially inside comments).
+\renewcommand{\mall}[3]{\ifthenelse
+	{\equal{#1}{white}}
+	{\mcell{black}{#2}{#3}}
+	{\mcell{#1}{#2}{#3}}
+}
 
 % Environment "kdefinition" have effect only in poster style, thus in math style may be safely deleted.
