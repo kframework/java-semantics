@@ -160,7 +160,7 @@ rule [switchImpl-Default-Exec]:
     switchImpl( _, [.KList], DefaultStm:K) => DefaultStm
 
 rule [SwitchGroup-Exec]:
-    _:KListWrap S:K => S
+   (_:K S:K)<:SwitchGroup => S
 
 syntax KItem ::=  "switchEnd"
 
@@ -358,7 +358,7 @@ rule [Throw]:
     (. => checkCatch(subtype(typeOf(TV), T)))
 //    ~> 'Throw(TV:TypedVal)
     ~> throw TV:TypedVal;
-    ~> catchBlocks([catchImpl('ParamImpl(T:Type,, X:Id),_),, _])
+    ~> catchBlocks(catchImpl('ParamImpl(T:Type,, X:Id),_) _:CatchClauses)
 
 syntax KItem ::= checkCatch ( K )
 context checkCatch(HOLE)
@@ -367,7 +367,7 @@ rule [Throw-checkCatch-True]:
     checkCatch(true::bool)
 //    ~> 'Throw(TV:TypedVal)
     ~> throw TV:TypedVal;
-    ~> catchBlocks([catchImpl(Param:Param, CatchS:K),, _])
+    ~> catchBlocks(catchImpl(Param:Param, CatchS:K) _:CatchClauses)
     => 'Block([
           initParams(Param, TV),,
           CatchS
@@ -377,11 +377,11 @@ rule [Throw-checkCatch-False]:
     (checkCatch(false::bool) => .)
 //    ~> 'Throw(TV:TypedVal)
     ~> throw TV:TypedVal;
-    ~> catchBlocks([(catchImpl(_,_) => .KList),, _])
+    ~> catchBlocks(catchImpl(_,_) C:CatchClauses => C)
 
 rule [Throw-catchBlocks-EmptyDiscard]:
 //    'Throw(TV:TypedVal) ~> (catchBlocks([.KList]) => .)
-    throw TV:TypedVal; ~> (catchBlocks([.KList]) => .)
+    throw TV:TypedVal; ~> (catchBlocks(.CatchClauses) => .)
 
 rule [Throw-Propagate]:
 //    'Throw(TV:TypedVal) ~> (KL:KLabel(_) => .)
@@ -412,15 +412,25 @@ rule [Throw-CausesThreadTermination]:
 //@ \subsection{Try statement}
 
 rule [Try-Catch-Finally-Desugar]:
-    try TryS:K [K:K,, Ks:KList] finally FinallyS:K
-    => try {try TryS [K,,Ks]} [.KList] finally FinallyS
+    try TryS:K (K:CatchClause Ks:CatchClauses) finally FinallyS:K
+    => try {try TryS (K Ks)} .CatchClauses finally FinallyS
         [structural]
 
 /*@ \subsubsection{Execution of try-catch} JLS \$14.20.1
 */
+//macro
+rule 'Try(Trys:K,,([Catches:KList] => toCatchClauses([Catches])),,FinallyS:K)
+rule 'Try(Trys:K,,([Catches:KList] => toCatchClauses([Catches])))
+syntax CatchClause ::="catch" "(" K ")" K [klabel('Catch)]
+syntax CatchClauses ::= toCatchClauses( KListWrap )          [function]
+                        | toCatchClauses( KListWrap , CatchClauses ) [function]
+
+rule toCatchClauses([KLCatchClauses:KList]) => toCatchClauses([KLCatchClauses],.CatchClauses)
+rule toCatchClauses([KLCatchClauses:KList,, C:CatchClause], CatchClauses:CatchClauses) => toCatchClauses([KLCatchClauses], (C CatchClauses))
+rule toCatchClauses([.KList], CatchClauses:CatchClauses) => CatchClauses
 
 //resolve the catch clauses of try statement
-context try _:K [_,, HOLE,, _]
+context try _:K HOLE
 
 //resolve 'Param term of the catch clause
 
@@ -438,30 +448,33 @@ rule isExtKResult(KR:KResult) => true
 rule isExtKResult('ParamImpl(T:Type,, _:Id)) => true
 
 //@ Internal representation of a preprocessed catch clause
-syntax KResult ::=  catchImpl (
+syntax CatchImpl ::=  catchImpl (
                       K,  //'Param(...),
                       K   //the code block
                     )
+                    syntax KResult::= CatchImpl
+                    syntax CatchClause ::= CatchImpl
+
 
 rule [Try-Catch]:
-    try TryS:K [KRs:KList] => TryS ~> catchBlocks([KRs])
+    (try TryS:K KRs:CatchClauses => TryS ~> catchBlocks(KRs))
 when isKResult(KRs)
 
 /*@ The auxiliary construct that holds catch clauses
 after try clause has been moved to the top of computation*/
-syntax KItem ::= catchBlocks ( KListWrap ) //arg - list of catchImpl
+syntax KItem ::= catchBlocks ( CatchClauses ) //arg - list of catchImpl
 
 /*@ If try clause executed without raising an exception, this construct will reach the top of computation.
     In this case it should be discarded.
 */
 rule [catchBlocks-Discard]:
-    catchBlocks([_]) => .K
+    catchBlocks(_) => .K
 
 /*@ \subsubsection{Execution of try-finally} JLS \$14.20.2
 */
 
 rule [Try-Finally]:
-    try TryS:K [.KList] finally FinallyS:K => TryS ~> finallyBlock(FinallyS)
+    try TryS:K .CatchClauses finally FinallyS:K => TryS ~> finallyBlock(FinallyS)
 
 /*@ The auxiliary construct that holds finally clause
 after try clause has been moved to the top of computation*/

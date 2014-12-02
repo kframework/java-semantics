@@ -4,32 +4,9 @@ module PRIMITIVE-TYPES
     imports CORE-SORTS
     imports SUBTYPING
 
-syntax KLabel ::= "'Boolean"
-                | "'Byte"
-                | "'Short"
-                | "'Int"
-                | "'Long"
-                | "'Char"
-                | "'Float"
-                | "'Double"
-                | "'Void"
-
-//@ \subsection{Type labels}
-//@Here we rewrite Java AST terms for primitive types into their corresponding Type.
-
-rule 'Byte(.KList) => byte      [structural, anywhere]
-rule 'Short(.KList) => short    [structural, anywhere]
-rule 'Int(.KList) => int        [structural, anywhere]
-rule 'Long(.KList) => long      [structural, anywhere]
-rule 'Char(.KList) => char      [structural, anywhere]
-rule 'Float(.KList) => float    [structural, anywhere]
-rule 'Double(.KList) => double  [structural, anywhere]
-rule 'Boolean(.KList) => bool   [structural, anywhere]
-rule 'Void(.KList) => void      [structural, anywhere]
-
 //@ \subsection{Integer types normalization}
 
-syntax KItem ::= bitCount ( Type ) [function]
+syntax Int ::= bitCount ( Type ) [function]
 rule bitCount(byte) => 8
 rule bitCount(short) => 16
 rule bitCount(int) => 32

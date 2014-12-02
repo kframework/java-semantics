@@ -1,10 +1,34 @@
 //@ \section{Module ARRAYS}
+module ARRAY-SYNTAX
+/*@ \subsection{Array access}
+Check array bounds, as part of the dynamic typing policy. */
+syntax ArrayAccess ::= Exp "[" Exp "]" [seqstrict, klabel('ArrayAccess)]
+syntax Exp ::= ArrayAccess
+
+/*@ \subsection{Array Declaration}
+/*  Either 'NewArray( T:ElemType,, ['Dim(N1),,'Dim('N2),, ...],, [...,, 'Dim(.KList),, ...] )
+    Or     'NewArray( T:ElemType,, [...,, 'Dim(.KList),, ...],, 'ArrayInit(_) )
+*/
+syntax ArrayCreationExp ::= "new" Type DimExps Dims [strict(2), klabel('NewArray)]
+syntax ArrayCreationExp ::= "new" Type Dims ArrayInit [klabel('NewArray)]
+syntax Exp ::= ArrayCreationExp
+
+syntax Dim ::= "[" "]" [klabel('Dim)]
+syntax DimExp ::= "[" Exp "]" [strict, hybrid, klabel('Dim)]
+syntax Dims ::= List{Dim,""}
+syntax DimExps ::= List{DimExp,""} [strict]
+syntax VarInit ::= Exp|ArrayInit
+syntax ArrayInit ::= "{" VarInits "}" [klabel('ArrayInit)]
+syntax VarInits ::= List{VarInit, ","}
+
+endmodule
 
 module ARRAYS
     imports CORE-SORTS
     imports SUBTYPING
     imports EXPRESSIONS
     imports SYNTAX-CONVERSIONS
+    imports ARRAY-SYNTAX
 
 /*@ The value in store that corresponds to an array element. The consturction "elem" Type is meant to
   distinguish between regular memory locations and array elements. Array elements need to be represented separately
@@ -12,22 +36,14 @@ module ARRAYS
 */
 syntax KItem ::=  RawVal "::" "elem" Type
 
-/*@ \subsection{Array access}
-Check array bounds, as part of the dynamic typing policy. */
-
-// 'ArrayAccess(arrayRef(_)::arrayOf T:Type,, N:Int::_)
-syntax KLabel ::= "'ArrayAccess"
-
 /* ArrayAccess arguments are heated left-to-right, because if the evaluation of the first argument
   throws an exception, the second one should not be evaluated. JLS $15.3.1
 */
-context 'ArrayAccess(HOLE,,_)
-context 'ArrayAccess(_:KResult,,HOLE)
 context lvalue('ArrayAccess(HOLE,,_))
 context lvalue('ArrayAccess(_:KResult,,HOLE))
 
 rule [ArrayAccess-to-lookup]:
-    'ArrayAccess(arrayRef(_, L:Int, M:Int) :: arrayOf T:Type,, N:Int::_)
+    arrayRef(_, L:Int, M:Int) :: arrayOf T:Type [N:Int::_]
     => lookup(L +Int N, T)
 when (N >=Int 0) andBool (N <Int M)
         [structural, anywhere]
@@ -41,13 +57,13 @@ rule [lookup-array-location]:
     <store>... L |-> V:RawVal ::elem T2:Type ...</store>
 
 rule [ArrayAccess-to-ArrayIndexOutOfBoundsException]:
-    'ArrayAccess(arrayRef(_,_,M:Int) :: _,, N:Int::_)
+    arrayRef(_,_,M:Int) :: _ [N:Int::_]
     => throw new class String2Id("java.lang.ArrayIndexOutOfBoundsException") ( Int2String(N) );
 when notBool ((N >=Int 0) andBool (N <Int M))
         [anywhere]
 
 rule [ArrayAccess-null-to-NullPointerException]:
-    'ArrayAccess(null::_,, _) => throw new classNullPointerException(null::classString);
+    (null::_) [_] => throw new classNullPointerException(null::classString);
         [anywhere]
 
 //@ Array length, as defined in JDK
@@ -62,18 +78,6 @@ similar to that in untyped SIMPLE, but we have to enforce that the
 type of an array declaration be of the form \texttt{arrayOf $T$}
 and assign the right type ($T$) to the allocated array locations. */
 
-/*  Either 'NewArray( T:ElemType,, ['Dim(N1),,'Dim('N2),, ...],, [...,, 'Dim(.KList),, ...] )
-    Or     'NewArray( T:ElemType,, [...,, 'Dim(.KList),, ...],, 'ArrayInit(_) )
-*/
-
-syntax ArrayCreationExp ::= "new" Type DimExps Dims [strict(2), klabel('NewArray)]
-syntax ArrayCreationExp ::= "new" Type Dims ArrayInit [klabel('NewArray)]
-syntax Exp ::= ArrayCreationExp
-
-syntax Dim ::= "[" "]" [klabel('Dim)]
-syntax DimExp ::= "[" Exp "]" [strict, hybrid, klabel('Dim)]
-syntax Dims ::= List{Dim,""}
-syntax DimExps ::= List{DimExp,""} [strict]
 
 /* For multi-dimensions arrays, it is expanded from the last DimExp, but currently, the tail element(s)
  matching is unavailable for user defined lists, so we reverse list for easier matching
@@ -262,10 +266,6 @@ rule [arrayInitImpl-inner-ArrayInit-desugar]:
 
 rule [arrayInitImpl-discard]:
     arrayInitImpl(_, _, {.VarInits}) => .
-
-syntax VarInit ::= Exp|ArrayInit
-syntax ArrayInit ::= "{" VarInits "}" [klabel('ArrayInit)]
-syntax VarInits ::= List{VarInit, ","}
 
 syntax VarInits ::= toVarInits( KListWrap , VarInits) [function]
 rule toVarInits([Args:KList,, Arg:VarInit], Es:VarInits) => toVarInits([Args], (Arg,Es))

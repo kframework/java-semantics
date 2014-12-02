@@ -24,11 +24,11 @@ syntax StmtWithoutTrailing ::= Block
 |StackConsumerStmt
 |SynchronizedStmt
 
-syntax BlockStmt ::= Stmt|LocalVarDecStmt|ClassDecStmt
+syntax BlockStmt ::= Stmt|LocalVarDecStmt|ClassDec
 syntax LocalVarDecStmt ::= Type Id ";" [klabel('LocalVarDec)]
-
-//todo:ClassDecStm
-syntax ClassDecStmt ::= "dummyclassdecstm"
+syntax ClassBody ::= "{" KListWrap "}" [klabel('ClassBody)]
+syntax ClassDecHead ::= KListWrap "class" Id K K K [klabel('ClassDecHead)]
+syntax ClassDec ::= ClassDecHead ClassBody [klabel('ClassDec)]
 
 syntax Block ::= "{" BlockStmt "}" [klabel('Block)]
 syntax EmptyStmt ::= ";" [klabel('Empty)]
@@ -41,17 +41,11 @@ syntax SwitchLabel ::= "case" Exp ":" [strict, klabel('Case)]
 		               |"default:" [klabel('Default)]
 syntax SwitchBlock::= "{" KListWrap KListWrap "}" [klabel('SwitchBlock)]
 syntax DoStmt ::="do" "{" K "}" "while" "(" K ")"[strict(2),klabel('DoWhile)]
-syntax TryStmt ::= "try" Block KListWrap "finally" Block [klabel('Try)]
-		           |"try" Block KListWrap [klabel('Try)]
-		           |"catch" "(" K ")" Block [klabel('Catch)]
-		           //todo:catches
-	//syntax Catches ::= List{CatchClause,""}
-//syntax KItem ::= toCatches( KListWrap )          [function]
-//           | toCatches( KListWrap , Catches ) [function]
-//rule [L:KList,,C:CatchClause] => toCatches([L,,C])
-//rule toCatches([KLCatches:KList]) => toCatches([KLCatches],.Catches)
-//rule toCatches([KLCatches:KList,, C:CatchClause], Catches:Catches) => toCatches([KLCatches], (C Catches))
-//rule toCatches([.KList], Catches:Catches) => Catches
+syntax TryStmt ::= "try" Block CatchClauses "finally" Block [klabel('Try)]
+		           |"try" Block CatchClauses [klabel('Try)]
+syntax Param ::= Type Id       [klabel('ParamImpl)]
+syntax CatchClause ::="catch" "(" Param ")" Block [klabel('Catch)]
+syntax CatchClauses ::= List{CatchClause,""} [strict]
 
 syntax StackConsumerStmt ::= "dummyStackConsumerStmt"|ThrowStmt|ContinueStmt|BreakStmt|ReturnStmt
 syntax ThrowStmt ::= "throw" K ";" [strict, klabel('Throw)]
@@ -64,4 +58,3 @@ syntax SynchronizedStmt ::= "synchronized" "(" Exp ")" Block [strict(1),klabel('
 syntax ExprStmt ::= Exp ";"  [strict, klabel('ExprStm)]
 
 endmodule
-
