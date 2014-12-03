@@ -56,9 +56,9 @@ PREP_FIRST=true
 TIME=true
 
 # OS-dependent choice of timeout
-if [[ $(uname) == *Windows* ]]
-  then TIMEOUT_FACTOR=3
-  else TIMEOUT_FACTOR=1
+if [[ $(uname) == *Linux* ]] || [[ $(uname) == *Darwin* ]]
+  then TIMEOUT_FACTOR=1
+  else TIMEOUT_FACTOR=3
 fi
 TIMEOUT=$((30 * $TIMEOUT_FACTOR))
 SEARCH_TIMEOUT_FACTOR=2
