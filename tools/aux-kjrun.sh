@@ -149,7 +149,9 @@ fi
 
 # Option timeout
 if [ ${TIMEOUT} -ne 0 ]; then
-    KRUN_CMD="$KRUN_CMD timeout $TIMEOUT"
+if [[ $(uname) != *Darwin* ]]
+  then KRUN_CMD="$KRUN_CMD timeout $TIMEOUT"
+fi
 fi
 
 # OS-dependent selection of krun.
@@ -253,9 +255,9 @@ if [[ ${CMD_SUFFIX} != "" ]]; then
 fi
 
 if [[ ${VERBOSE} == true ]]; then
-  echo "KRUN cmd:"
-  echo ${KRUN_CMD}
-  echo
+
+  echo ${KRUN_CMD} >> krunCMD.txt
+
 fi
 
 # Actual command evaluation
