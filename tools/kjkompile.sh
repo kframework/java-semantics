@@ -72,6 +72,9 @@ while [[ ${1:0:1} == - ]]; do
     "-v" | "--verbose")
       EXTRA_OPTS="$EXTRA_OPTS -v"
       ;;
+    "--debug")
+      EXTRA_OPTS="$EXTRA_OPTS --debug"
+      ;;
     *)
       echo "Invalid option: $PARAM"
       errorMsg

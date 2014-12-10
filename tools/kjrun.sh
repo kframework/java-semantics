@@ -56,7 +56,7 @@ PREP_FIRST=true
 TIME=true
 
 # OS-dependent choice of timeout
-if [[ $(uname) == *Linux* ]]
+if [[ $(uname) == *Linux* ]] || [[ $(uname) == *Darwin* ]]
   then TIMEOUT_FACTOR=1
   else TIMEOUT_FACTOR=3
 fi
@@ -88,7 +88,7 @@ SILENT=false
 
 CMD_SUFFIX=""
 COUNT_CMD_SUFFIX="| grep \"Solution\" | wc -l"
-PREP_AST_CMD_SUFFIX="| grep -Po '< program > \K.*(?=</ program > )'"
+PREP_AST_CMD_SUFFIX="| sed -n 's/.*< program > \(.*\) <\/ program >.*/\1/p'"
 
 while [[ ${1:0:1} == - ]]; do
   PARAM=`echo $1 | awk -F= '{print $1}'`
@@ -219,7 +219,7 @@ if [[ ${PREP_FIRST} == true ]]; then
   if [ ! -e ${PKAST_FILE} ]; then
     CMD="aux-kjrun.sh --time=${TIME} --timeout=${TIMEOUT} --mode=run-prep-ast --output=${PREP_OUTPUT} \
       --cmd-suffix=\"${PREP_AST_CMD_SUFFIX}\" \
-      --input=${PREP_INPUT} --verbose=false ${JAVA_FILE} > ${PKAST_FILE}"
+      --input=${PREP_INPUT} --verbose=${VERBOSE} ${JAVA_FILE} > ${PKAST_FILE}"
     if [[ ${VERBOSE} == true ]]; then
       echo "PREP cmd:"
       echo ${CMD}

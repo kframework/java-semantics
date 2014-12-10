@@ -6,7 +6,7 @@ if [  $# == 0 ]; then
     exit 1
 fi
 
-if [[ $(uname) == *Linux* ]]
+if [[ $(uname) == *Linux* ]] || [[ $(uname) == *Darwin* ]]
   then OUT=$1
   else OUT="sh $1"
 fi

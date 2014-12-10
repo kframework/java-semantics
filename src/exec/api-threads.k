@@ -47,7 +47,7 @@ when
 rule [Synchronized-first-time]:
     <k>
           synchronized (objectRef(OId:Int,_)::_) Block:K
-          => try Block [.KList] finally releaseLock(OId)
+          => try Block .CatchClauses finally releaseLock(OId)
           ...
     </k>
     <holds>... (. => OId |-> 1) ...</holds>
@@ -59,7 +59,7 @@ when
 rule [Synchronized-nested]:
     <k>
             synchronized (objectRef(OId:Int,_)::_) Block:K
-            => try Block [.KList] finally releaseLock(OId)
+            => try Block .CatchClauses finally releaseLock(OId)
       ...
     </k>
     <holds>... OId |-> (Level:Int => Level +Int 1) ...</holds>

@@ -78,17 +78,6 @@ rule [getTopLevel]:
     <classType> Class </classType>
     <enclosingClass> noClass </enclosingClass>
 
-syntax KLabel ::=   "'Public"
-                  | "'Private"
-                  | "'Protected"
-                  | "'Abstract"
-                  | "'Final"
-                  | "'Static"
-                  | "'Native"
-                  | "'Transient"
-                  | "'Volatile"
-                  | "'StrictFP"
-
 //@ Restore the content of <crntClass> with the given class
 syntax KItem ::=  restoreCrntClass (
                 ClassType //old content of <crntClass>

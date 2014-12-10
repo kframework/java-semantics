@@ -27,9 +27,9 @@ rule toString(arrayOf long)  => "[J"
 rule toString(arrayOf char)  => "[C"
 rule toString(arrayOf bool)  => "[Z"
 
-rule toString(arrayOf class Class:Id) => 'Plus("[L",, 'Plus(toString(class Class) ,,";"))
+rule toString(arrayOf class Class:Id) => "[L" + (toString(class Class) + ";")
 
-rule toString(arrayOf arrayOf T:Type) => 'Plus("[",, toString(arrayOf T))
+rule toString(arrayOf arrayOf T:Type) => "[" + toString(arrayOf T)
 
 rule [toString-ClassType-TopLevelWithPackage]:
     <k>
@@ -54,10 +54,8 @@ when
 rule [toString-ClassType-Inner]:
     <k>
       toString(class ClassId:Id)
-      => 'Plus(
-            toString(class OuterClassId),,
-            "$" +String Id2String(getSimpleName(class ClassId))
-         )
+      =>    toString(class OuterClassId) +
+           ("$" +String Id2String(getSimpleName(class ClassId)))
       ...
     </k>
     <classType> class ClassId </classType>
