@@ -205,8 +205,8 @@ case "$OPTION" in
     $KOMPILE_CMD --backend pdf --doc-style "style=math" exec/java-exec.k
     ;;
 "--methods-latex")
-    $KOMPILE_CMD --backend latex --doc-style "style=math" latex/doc-methods-main.k
-    extract-module.sh -m METHOD-INVOKE -o method-invoke.tex doc-methods-main.tex
+    $KOMPILE_CMD --backend latex --doc-style "style=math" exec/java-exec.k
+    extract-module.sh -m METHOD-INVOKE -o method-invoke.tex java-exec.tex
     ;;
 "--methods-pdf")
     kjkompile.sh $EXTRA_OPTS --methods-latex
