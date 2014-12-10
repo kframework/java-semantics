@@ -315,7 +315,7 @@ rule [object-wait]:
         objectRef(OId:Int, _)::_ . methodRef(sig(Method:Id, _), Class:ClassType) (.TypedVals)
         => waitImpl(OId)
         ...
-      </k> <br/>
+      </k>
       <tid> TId:Int </tid>
       <holds>... OId |-> HoldLevel:Int ...</holds>
       ...
