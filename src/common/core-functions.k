@@ -1,4 +1,3 @@
-/*@ \section{Module CORE-FUNCTIONS} */
 module CORE-FUNCTIONS
     imports CORE-SORTS
     imports CORE-CLASSES

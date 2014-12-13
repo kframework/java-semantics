@@ -1,4 +1,10 @@
-/*@ \section{Module ELABORATION-CORE}
+module ELABORATION-CORE
+    imports CORE-SORTS
+    imports SUBTYPING
+    imports ELABORATION-CATEGORIES
+    imports ELABORATION-EXPRESSIONS // for isExpressionLabel
+
+/*@
 Elaborate the composition of code blocks of a class - the last step of preprocessing.
 During this phase we inspect the contents of method bodies, instance initializers and
 static initializers of a class and perform the following transformations:
@@ -53,11 +59,6 @@ static initializers of a class and perform the following transformations:
     context:
       elab('CastRef(_,, elabRes('Minus(cast(int,cast(int, localVar(X)))))))
 */
-module ELABORATION-CORE
-    imports CORE-SORTS
-    imports SUBTYPING
-    imports ELABORATION-CATEGORIES
-    imports ELABORATION-EXPRESSIONS // for isExpressionLabel
 
 /*@Custom hole used for custom heating/cooling rules in the elaboration phase.*/
 syntax KItem ::= "CHOLE"

@@ -1,6 +1,3 @@
-
-//@ \section{Module STATEMENTS}
-
 module STATEMENTS
     imports CORE-SORTS
     imports SUBTYPING

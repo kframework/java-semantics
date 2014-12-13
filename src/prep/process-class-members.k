@@ -1,5 +1,3 @@
-//@ \section{Module PROCESS-CLASS-MEMBERS}
-
 module PROCESS-CLASS-MEMBERS
     imports CORE-SORTS
     imports CORE-CLASSES

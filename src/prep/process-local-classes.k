@@ -1,5 +1,3 @@
-//@ \section{Module PROCESS-LOCAL-CLASSES}
-
 module PROCESS-LOCAL-CLASSES
     imports CORE-SORTS
     imports CORE-CLASSES
@@ -325,7 +323,7 @@ rule [loadElabBuffer]:
     <k> loadElabBuffer => elabRes(ElabBuffer) ...</k>
     <elabBuffer> ElabBuffer:K => [.KList] </elabBuffer>
 
-//@\section{Utility functions for other modules}
+//@\subsection{Utility functions for other modules}
 
 syntax KItem ::= localClassGetExtraArgs( ClassType )
 

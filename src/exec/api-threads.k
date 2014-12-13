@@ -1,5 +1,3 @@
-//@ \section{Module API-THREADS}
-
 module API-THREADS
     imports CORE-SORTS
     imports METHOD-INVOKE-REST  //for invokeImpl
@@ -291,7 +289,7 @@ endmodule
 module API-THREADS-SELECTION
     imports API-THREADS
 
-//@ \section{Methods wait() and notify()}
+//@ \subsection{Methods wait() and notify()}
 
 /*@
 When \verb|object.wait()| is called the method call expression is replaced by \verb|waitImpl()|

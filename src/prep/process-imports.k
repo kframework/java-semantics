@@ -1,10 +1,9 @@
-/*@ \section{Module PROCESS-IMPORTS}
-Rules related to processing import declarations. Part of ProcCompUnitsPhase.
-*/
-
 module PROCESS-IMPORTS
     imports CORE-SORTS
     imports CORE-CLASSES
+
+/*@ Rules related to processing import declarations. Part of ProcCompUnitsPhase.
+*/
 
 syntax KItem ::=  compUnitImportsStart (
                 PackageId // The package of the current compilation unit

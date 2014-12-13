@@ -1,11 +1,12 @@
-//@ \section{Module ARRAYS}
 module ARRAY-SYNTAX
+
 /*@ \subsection{Array access}
 Check array bounds, as part of the dynamic typing policy. */
+
 syntax ArrayAccess ::= Exp "[" Exp "]" [seqstrict, klabel('ArrayAccess)]
 syntax Exp ::= ArrayAccess
 
-/*@ \subsection{Array Declaration}
+//@ \subsection{Array Declaration}
 /*  Either 'NewArray( T:ElemType,, ['Dim(N1),,'Dim('N2),, ...],, [...,, 'Dim(.KList),, ...] )
     Or     'NewArray( T:ElemType,, [...,, 'Dim(.KList),, ...],, 'ArrayInit(_) )
 */

@@ -1,5 +1,3 @@
-//@ \section{Module LABELS-EXEC}
-
 module LABELS-EXEC
 
 /*@ Labels listed here are not used anywhere in the semantics. Some of them may still be produced by parsed programs

@@ -1,12 +1,11 @@
-/*@ \section{Module SYNTAX-CONVERSIONS}
-  Defining the syntax for key portions of the semantics, and converting AST terms back int otheir syntactiv form.
-*/
-
 module SYNTAX-CONVERSIONS
     imports CORE-SORTS
     imports CORE-FUNCTIONS
     imports CORE-CLASSES    //for cast
     imports CORE-EXEC
+
+/*@ Defining the syntax for key portions of the semantics, and converting AST terms back int otheir syntactiv form.
+*/
 
 /*@ \subsection{Method parameter}*/
 

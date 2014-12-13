@@ -1,5 +1,3 @@
-//@ \section{Module ELABORATION-ARRAYS}
-
 module ELABORATION-ARRAYS
     imports CORE-SORTS
     imports ELABORATION-CORE

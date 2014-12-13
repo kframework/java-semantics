@@ -44,7 +44,7 @@ echo "" >> ${OUT_FILE}
 
 # Save to START_LINE_NUM just the line number where moduleName{METHOD-INVOKE} is located:
 START_LINE_NUM=$( \
-    grep -n \begin{module}{\\\\moduleName{${MODULE}}} ${IN_FILE} | \
+    grep -n \begin{module}{${MODULE}} ${IN_FILE} | \
     sed -n 's/^\([0-9]*\)[:].*/\1/p' \
   )
 

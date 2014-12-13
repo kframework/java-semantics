@@ -1,17 +1,18 @@
-/*@ \section{Module PROCESS-TYPE-NAMES}
-First pass - collecting globally accessible names in the program. This includes packages,
-top-level classes and inner classes. In each compilation unit just class declarations
-(both global and inner) are processed. Results are stored in the cell <namesToClasses>.*/
-
 module PROCESS-TYPE-NAMES
     imports CORE-SORTS
     imports CORE-CLASSES
     imports AUX-STRINGS // for retainTail
     imports CORE-PREPROCESSING
 
+/*@
+First pass - collecting globally accessible names in the program. This includes packages,
+top-level classes and inner classes. In each compilation unit just class declarations
+(both global and inner) are processed. Results are stored in the cell <namesToClasses>.
+*/
+
 /*@ \subsection{Start of the phase ProcTypeNamesPhase}*/
 
-//Initial command for the preprocessing semantics
+//@ Initial command for the preprocessing semantics.
 syntax KItem ::= "procTypeNames"
 
 rule [ProcTypeNamesPhase-start]:

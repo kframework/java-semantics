@@ -1,5 +1,3 @@
-//@ \section{Module ELABORATION-METHOD-INVOKE}
-
 module ELABORATION-METHOD-INVOKE
     imports CORE-SORTS
     imports CORE-CLASSES

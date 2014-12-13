@@ -1,5 +1,3 @@
-//@ \section{Module PROCESS-ANONYMOUS-CLASSES}
-
 module PROCESS-ANONYMOUS-CLASSES
     imports CORE-SORTS
     imports CORE-CLASSES

@@ -1,13 +1,12 @@
-/*@ \section{Module CORE-CLASSES}
-    Auxiliary functions related to classes and packages.
-*/
-
 module CORE-CLASSES
     imports CORE-SORTS
     imports CORE-FUNCTIONS
     imports AUX-STRINGS // for retainHead
     imports EXP-SYNTAX //for definitions of sort Exp
     imports STMT-SYNTAX //for definitions of sort Exp
+
+/*@ Auxiliary functions related to classes and packages.
+*/
 
 //@ \subsection{Shortcuts for the most frequently used classes within the semantics}
 

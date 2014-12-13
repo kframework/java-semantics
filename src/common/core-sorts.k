@@ -1,4 +1,3 @@
-//@ \section{Module CORE-SORTS}
 module TYPE-SYNTAX
      //@ \subsection{Types}
         syntax Type ::= PrimitiveType
