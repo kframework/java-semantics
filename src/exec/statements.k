@@ -8,6 +8,7 @@ module STATEMENTS
     imports VAR-LOOKUP
     imports METHOD-INVOKE // for initParams
     imports STMT-SYNTAX
+    imports LIST-MACRO
 
 //@ \subsection{Call of main method}
 

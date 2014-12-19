@@ -1,9 +1,10 @@
 require "core-sorts.k"
 require "core-classes.k"
-
+require "list-syntax.k"
 module STMT-SYNTAX
     imports CORE-SORTS
     imports CORE-CLASSES
+    imports LIST-SYNTAX
 
 syntax Stmt ::= StmtWithoutTrailing|LabeledStmt|IfThenElseStmt|IfThenStmt|WhileStmt|ForStmt
 
