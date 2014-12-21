@@ -127,6 +127,7 @@ rule 'AnnoElemDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
 rule 'InterfaceMemberDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
 rule 'ElemValPairList(Hd,,Tl) => [Hd,,Tl] [anywhere]
 rule 'ElemValList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+rule 'EnumConstList(Hd,,Tl) => [Hd,,Tl] [anywhere]
 rule 'StringPartList(Hd,,Tl) => [Hd,,Tl] [anywhere]
 rule 'ClassBodyDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
 
