@@ -191,14 +191,14 @@ rule true::bool ~> true? => .  [structural]
 syntax KLabel ::= "'ListWrap"
 rule 'ListWrap(Ks:KList) => [Ks]                  [structural, anywhere]
 //todo: both 'KListWrap and 'ListWrap are associted with the same production, so how to get rid of it
-syntax KListWrap ::= "[" KList "]" [klabel('KListWrap)]
+syntax KListWrap ::= "[" KList "]" [klabel('KListWrap), latex(\terminal{[} {#1} \terminal{]})]
 
 //@ Sequence of terms and of any other statements. The first term is moved to the top of computation.
 rule [S1:K,, Stmts:KList] => S1 ~> [Stmts]        [structural]
 rule [.KList] => .K                               [structural]
 
 //@ A wrapper over an arbitrary KList, wrapper being of type KResult.
-syntax KRListWrap ::= "kr" "[" KList "]"
+syntax KRListWrap ::= "kr" "[" KList "]"          [latex(\terminal{kr[} {#1} \terminal{]})]
 syntax KResult ::= KRListWrap
 
 endmodule
