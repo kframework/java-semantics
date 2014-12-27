@@ -33,31 +33,31 @@ static initializers of a class and perform the following transformations:
 
     During elaboration an expression transition through 6 phases:
   1. Elaboration heating:
-      elab('CastRef(_,, 'Minus('ExprName(x))))
-      => elab('Minus('ExprName(x)) ~> elab('CastRef(_,, HOLE)
+      elab('CastRef(\_,, 'Minus('ExprName(x))))
+      => elab('Minus('ExprName(x)) ~> elab('CastRef(\_,, HOLE)
     Some AST terms, especially some statements require custom elaboration heating rules. If the heated expression
       should be always computed into a KResult, such as a type, package or certain literal expresssions, then
       it is heated in the "naked" form, e.g. not wrapped into elab().
   2. Elaboration of children. All the children of the expression are elaborated. After this phase elaborated children
     will be typed (if they are expressions) and wrapped into elabRes(). Typed expressions are cast expressions -
     like cast(T, Exp). The whole initial term will be converted into:
-      elab('Minus(elabRes(cast(int, localVar(X))))) ~> elab('CastRef(_,, HOLE)
+      elab('Minus(elabRes(cast(int, localVar(X))))) ~> elab('CastRef(\_,, HOLE)
   3. Initiation of the step elabDispose. When all children have been elaborated and are either KResult of elabRes(),
     the wrapper is changed from elab() to elabDispose().
-      elabDispose('Minus(elabRes(cast(int, localVar(X))))) ~> elab('CastRef(_,, HOLE)
+      elabDispose('Minus(elabRes(cast(int, localVar(X))))) ~> elab('CastRef(\_,, HOLE)
   4. Unwrapping of children. During elabDispose step elaborated children are unwrapped from their elabRes() wrapper.
-      elabDispose('Minus(cast(int, localVar(X)))) ~> elab('CastRef(_,, HOLE)
+      elabDispose('Minus(cast(int, localVar(X)))) ~> elab('CastRef(\_,, HOLE)
   5. End of the step elabDispose. When all children of the term wrapped into elabDispose have been unwrapped
     from their elabRes() wrapper, the root wrapper is replaced from elabDispose to elabEnd. This contributes
     to more simple rules for the following steps.
-    elabRes('Minus(cast(int, localVar(X)))) ~> elab('CastRef(_,, HOLE)
+    elabRes('Minus(cast(int, localVar(X)))) ~> elab('CastRef(\_,, HOLE)
   6. Computation of elaboration result. Now that all children have been elaborated and unwrapped, it is possible to
     compute the type of the current expression itself. When the expression is fully elaborated, it is wrapped into
     elabRes(). This is the step that requires custom rules for most AST terms.
-      elabRes('Minus(cast(int,cast(int, localVar(X))))) ~> elab('CastRef(_,, HOLE)
+      elabRes('Minus(cast(int,cast(int, localVar(X))))) ~> elab('CastRef(\_,, HOLE)
   7. Elaboration cooling. Once the top K Item was wrapped into elabRes, it is ready to be cooled back into its original
     context:
-      elab('CastRef(_,, elabRes('Minus(cast(int,cast(int, localVar(X)))))))
+      elab('CastRef(\_,, elabRes('Minus(cast(int,cast(int, localVar(X)))))))
 */
 
 /*@Custom hole used for custom heating/cooling rules in the elaboration phase.*/
@@ -144,7 +144,7 @@ rule [elab-cool-default]:
     (ElabK:ElabKResult => .) ~> elab(_:KLabel(_,, (CHOLE => ElabK),, _))
 
 /*@ Must be true for AST nodes that require elaboration heating of their children. For the arguments KL, Ks,
-the original node is of he form KL(KS,,_) and the heated child is always the last element of Ks.
+the original node is of he form KL(KS,,\_) and the heated child is always the last element of Ks.
 Thus it is possible to decide whether the child is allowed to be heated based both on the position of the child
 in the list of arguments as well as based on the state of previous brothers.
 

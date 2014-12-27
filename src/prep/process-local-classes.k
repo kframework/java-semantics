@@ -90,7 +90,7 @@ rule [registerClass]:
                                                  // will be elaborated by getInnerClasses(Encloser) that follows.
 
 /*@ Computes the accessible outer local environment for the given local class.
-  {Accessible outer env} = (the whole outer env} - {all names X that could be resolved by elabLookup(Class, X)}
+  \{Accessible outer env\} = \{the whole outer env\} - \{all names X that could be resolved by elabLookup(Class, X)\}
   elabLookup don't search the var in otuer classes. Just in this class and base classes.
 */
 syntax KItem ::=  localClassGetAccessibleOuterEnv( ClassType )
@@ -157,7 +157,7 @@ rule [localClassTransformIntoInner]:
        #fi
 
 /*@ Same as localClassTransformIntoInner but AccessibleLocalEnv have one more entry
-    - the field LocaClass@LocalEnv_obj that will be created later, a self reference required when a local class
+    - the field LocaClass@LocalEnv\_obj that will be created later, a self reference required when a local class
     instantiates either itself or an enclosing local class. See tests 957, 958.
 */
 syntax KItem ::=  localClassTransformIntoInnerImpl (

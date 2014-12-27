@@ -26,7 +26,7 @@ Or noValue if no suitable result is found.
 This algorithm is correct even when both inner and outer class have methods with the same name.
 Java don't support method overloading in the context of nesting. In other words, inner class methods
 don't overload but rather hide methods with the same name from outer classes. See program
-inner_in_81_inner_overl_outer as example.
+inner\_in\_81\_inner\_overl\_outer.java as example.
 */
 syntax KItem ::=  findQualifierForName (
                 ClassType,  //The context class in which qualifier is searched for.
@@ -56,7 +56,7 @@ rule containsName((sig(Name, _) |-> _) _:Map, Name:Id) => true
 rule [elabEnd-findQualifierForName-static]:
     findQualifierForName(noClass, K:K) => noValue
 
-//@ 'SuperMethod(_:K,, Name:Id)
+// 'SuperMethod(_:K,, Name:Id)
 syntax KLabel ::= "'SuperMethod"
 
 rule customElabEnd('SuperMethod) => true

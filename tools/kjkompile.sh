@@ -196,19 +196,19 @@ case "$OPTION" in
     echo "Done"
     ;;
 "--prep-latex")
-    $KOMPILE_CMD --backend latex --doc-style "style=math" exec/java-exec.k
+    $KOMPILE_CMD --backend latex --doc-style "style=math,modulesAsSections" prep/java-prep.k
     ;;
 "--prep-pdf")
-    $KOMPILE_CMD --backend pdf --doc-style "style=math" exec/java-exec.k
+    $KOMPILE_CMD --backend pdf --doc-style "style=math,modulesAsSections" prep/java-prep.k
     ;;
 "--exec-latex")
-    $KOMPILE_CMD --backend latex --doc-style "style=math" exec/java-exec.k
+    $KOMPILE_CMD --backend latex --doc-style "style=math,modulesAsSections" exec/java-exec.k
     ;;
 "--exec-pdf")
-    $KOMPILE_CMD --backend pdf --doc-style "style=math" exec/java-exec.k
+    $KOMPILE_CMD --backend pdf --doc-style "style=math,modulesAsSections" exec/java-exec.k
     ;;
 "--methods-latex")
-    $KOMPILE_CMD --backend latex --doc-style "style=math" exec/java-exec.k
+    $KOMPILE_CMD --backend latex --doc-style "style=math,modulesAsSections" exec/java-exec.k
     extract-module.sh -m METHOD-INVOKE -o method-invoke.tex java-exec.tex
     ;;
 "--methods-pdf")
@@ -218,7 +218,7 @@ case "$OPTION" in
       --aux-directory=.latex method-invoke.tex
     ;;
 "--new-latex")
-    $KOMPILE_CMD --backend latex --doc-style "style=math" exec/java-exec.k
+    $KOMPILE_CMD --backend latex --doc-style "style=math,modulesAsSections" exec/java-exec.k
     extract-module.sh -m NEW-INSTANCE -o new-instance.tex java-exec.tex
     ;;
 "--new-pdf")

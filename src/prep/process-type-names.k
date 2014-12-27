@@ -22,7 +22,7 @@ rule [ProcTypeNamesPhase-start]:
 
 /*@ \subsection{Compilation units}*/
 
-//@ 'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _)
+// 'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _)
 syntax KLabel ::= "'CompilationUnit"
                 | "'PackageDec"
 

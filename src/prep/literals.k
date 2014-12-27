@@ -165,7 +165,7 @@ rule 'Lit('Char('OctaEscape3( I1:Int,, I2:Int,, I3:Int )))
      +Int octaAsciiToInt(I2) *Int  8
      +Int octaAsciiToInt(I3)          :: char
 
-//@ 'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
+// 'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
 syntax KLabel ::= "'UnicodeEscape"
 rule 'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
     =>    hexAsciiToInt(I1) *Int 4096
@@ -175,7 +175,7 @@ rule 'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
 
 //@ \subsection{String literals}
 
-//@ 'Lit('String(['Chars(Str:String),, 'NamedEscape(_),, _:KList ]))
+// 'Lit('String(['Chars(Str:String),, 'NamedEscape(_),, _:KList ]))
 syntax KLabel ::= "'String"
                 | "'Chars"
 
