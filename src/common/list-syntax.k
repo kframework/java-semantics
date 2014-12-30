@@ -72,7 +72,7 @@ syntax SwitchLabelList ::= List{SwitchLabel, ""} [klabel('SwitchLabelList)]
                       syntax   InterfaceType
                       syntax   ExceptionType
                       syntax   Id
-                      syntax   TypeDec
+                      syntax   TypeDec::= ClassDec
                       syntax   VarDec
                       syntax   ImportDec
                       syntax   ActualTypeArg
@@ -100,55 +100,56 @@ endmodule
 
 module LIST-MACRO
 imports CORE-FUNCTIONS
-//rule 'SwitchLabelList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'SwitchGroupList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'BlockStmList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'InterfaceTypeList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'ExceptionTypeList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'IdList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'TypeDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'VarDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'ImportDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'ActualTypeArgList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'ClassOrInterfaceTypeList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'TypeParamList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'AbstractMethodModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'AnnoAbstractMethodModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'AnnoMethodModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'AnnoVarModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
 
-//rule 'AnnoConstrModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'AnnoConstantModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'AnnoFieldModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'AnnoInterfaceModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'AnnoList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'AnnoElemDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'InterfaceMemberDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'ElemValPairList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'ElemValList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'EnumConstList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'StringPartList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule 'ClassBodyDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-//rule '.List`{""`}(.KList) => .KList
-syntax KItem ::= toKListWrap(UserList) [function]
-                | toKListWrap(UserList, KListWrap) [function]
+syntax KItem ::= toKListWrap(K) [function]
+                | toKListWrap(K, KListWrap) [function]
 
-rule toKListWrap(UL:UserList) => toKListWrap(UL,[.KList])
+rule toKListWrap(UL) => toKListWrap(UL,[.KList])
 
-rule toKListWrap('AnnoClassModList(Hd,,Tl), [L:KList]) => toKListWrap(Tl, [L,,Hd])
-rule toKListWrap('ImportDecList(Hd,,Tl), [L:KList]) => toKListWrap(Tl, [L,,Hd])
-rule toKListWrap('TypeDecList(Hd,,Tl), [L:KList]) => toKListWrap(Tl, [L,,Hd])
+rule toKListWrap(Label:KLabel(Hd,,Tl), [L:KList]) => toKListWrap(Tl, [L,,Hd])
 
 rule toKListWrap('.List`{""`}(.KList), KL:KListWrap) => KL
-//rule toKListWrap('.List`{""`}(.KList)) => [.KList]
+rule toKListWrap('.List`{"`,"`}(.KList), KL:KListWrap) => KL
+rule toKListWrap('.List`{"."`}(.KList), KL:KListWrap) => KL
+rule toKListWrap('.List`{"&"`}(.KList), KL:KListWrap) => KL
 
 
 
 
 
-rule    'ClassDecHead((Mod:UserList => toKListWrap(Mod)),,_) [anywhere]
-rule    'CompilationUnit(_,,(ImportDecs:UserList => toKListWrap(ImportDecs)),,_) [anywhere]
-rule    'CompilationUnit(_,,(TypeDecs:UserList => toKListWrap(TypeDecs)))[anywhere]
+//AnnoClassModList "class" Id  TypeParams? Super? Interfaces? -> ClassDecHead {cons("ClassDecHead")}
+rule    'ClassDecHead(('AnnoClassModList(A) => toKListWrap('AnnoClassModList(A))),,_) [anywhere]
+rule    'ClassDecHead(('.List`{""`}(.KList) => [.KList]),,_) [anywhere]
 
+//PackageDec? ImportDecList TypeDecList -> CompilationUnit   {cons("CompilationUnit")}
+rule    'CompilationUnit(_,,('ImportDecList(I) => toKListWrap('ImportDecList(I))),,_) [anywhere]
+rule    'CompilationUnit(_,,('.List`{""`}(.KList) => [.KList]),,_) [anywhere]
+rule    'CompilationUnit(_,,('TypeDecList(T) => toKListWrap('TypeDecList(T))))[anywhere]
+
+// "{" ClassBodyDecList "}" -> ClassBody {cons("ClassBody")}
+rule    'ClassBody(('ClassBodyDecList(C) => toKListWrap('ClassBodyDecList(C)))) [anywhere]
+rule    'ClassBody(('.List`{""`}(.KList) => [.KList])) [anywhere]
+
+//AnnoMethodModList TypeParams? ResultType Id "(" FormalParamList ")" Throws?  -> MethodDecHead {cons("MethodDecHead")}
+rule    'MethodDecHead(('AnnoMethodModList(A) => toKListWrap('AnnoMethodModList(A))),,_) [anywhere]
+rule    'MethodDecHead(('.List`{""`}(.KList) => [.KList]),,_) [anywhere]
+rule    'MethodDecHead(_,,('_`,_(Params) => toKListWrap('_`,_(Params))),,_) [anywhere]
+rule    'MethodDecHead(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [anywhere]
+
+//"{" BlockStmList "}" -> Block {cons("Block")}
+rule    'Block('BlockStmList(B) => toKListWrap('BlockStmList(B))) [anywhere]
+rule    'Block(('.List`{""`}(.KList) => [.KList])) [anywhere]
+
+//MethodSpec "(" ExprList ")" -> Expr {cons("Invoke")}
+rule    'Invoke(_,,('_`,_(Exps) => toKListWrap('_`,_(Exps)))) [anywhere]
+rule    'Invoke(_,,('.List`{"`,"`}(.KList) => [.KList])) [anywhere]
+
+//"\"" StringPartList "\"" -> StringLiteral {cons("String")}
+rule    'String(('StringPartList(S) => toKListWrap('StringPartList(S)))) [anywhere]
+rule    'String(('.List`{""`}(.KList) => [.KList])) [anywhere]
+
+//AnnoVarModList Type       VarDecId -> FormalParam {cons("Param")}
+rule    'Param(('AnnoVarModList(A) => toKListWrap('AnnoVarModList(A))),,_) [anywhere]
+rule    'Param(('.List`{""`}(.KList) => [.KList]),,_) [anywhere]
 
 endmodule

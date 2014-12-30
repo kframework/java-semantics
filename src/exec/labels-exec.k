@@ -38,6 +38,8 @@ syntax KLabel ::= "'GenericMethod"
                 | "'TypeParams"
                 | "'Member"
                 | "'TypeVar"
+                | "'CompilationUnit"
+                | "'String"
 
 //Labels below are defined in their appropriate place in execution-related modules
 syntax KLabel ::=
