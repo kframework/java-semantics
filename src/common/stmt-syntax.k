@@ -27,11 +27,11 @@ syntax StmtWithoutTrailing ::= Block
 
 syntax BlockStmt ::= Stmt|LocalVarDecStmt|ClassDec
 syntax LocalVarDecStmt ::= Type Id ";" [klabel('LocalVarDec)]
-syntax ClassBody ::= "{" KListWrap "}" [klabel('ClassBody)]
-syntax ClassDecHead ::= KListWrap "class" Id K K K [klabel('ClassDecHead)]
+syntax ClassBody ::= "{" ClassBodyDecList "}" [klabel('ClassBody)]
+syntax ClassDecHead ::= AnnoClassModList "class" Id K K K [klabel('ClassDecHead)]
 syntax ClassDec ::= ClassDecHead ClassBody [klabel('ClassDec)]
 
-syntax Block ::= "{" BlockStmt "}" [klabel('Block)]
+syntax Block ::= "{" K "}" [klabel('Block)]
 syntax EmptyStmt ::= ";" [klabel('Empty)]
 
 syntax AssertStmt ::="assert" Exp ";" [strict, klabel('AssertStm)]

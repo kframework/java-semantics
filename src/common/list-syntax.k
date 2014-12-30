@@ -99,36 +99,56 @@ syntax SwitchLabelList ::= List{SwitchLabel, ""} [klabel('SwitchLabelList)]
 endmodule
 
 module LIST-MACRO
-imports LIST-SYNTAX
+imports CORE-FUNCTIONS
+//rule 'SwitchLabelList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'SwitchGroupList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'BlockStmList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'InterfaceTypeList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'ExceptionTypeList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'IdList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'TypeDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'VarDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'ImportDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'ActualTypeArgList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'ClassOrInterfaceTypeList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'TypeParamList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'AbstractMethodModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'AnnoAbstractMethodModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'AnnoMethodModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'AnnoVarModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
 
-rule 'SwitchLabelList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'SwitchGroupList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'BlockStmList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'InterfaceTypeList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'ExceptionTypeList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'IdList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'TypeDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'VarDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'ImportDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'ActualTypeArgList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'ClassOrInterfaceTypeList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'TypeParamList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'AbstractMethodModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'AnnoAbstractMethodModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'AnnoMethodModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'AnnoVarModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'AnnoClassModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'AnnoConstrModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'AnnoConstantModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'AnnoFieldModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'AnnoInterfaceModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'AnnoList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'AnnoElemDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'InterfaceMemberDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'ElemValPairList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'ElemValList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'EnumConstList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'StringPartList(Hd,,Tl) => [Hd,,Tl] [anywhere]
-rule 'ClassBodyDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'AnnoConstrModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'AnnoConstantModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'AnnoFieldModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'AnnoInterfaceModList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'AnnoList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'AnnoElemDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'InterfaceMemberDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'ElemValPairList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'ElemValList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'EnumConstList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'StringPartList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule 'ClassBodyDecList(Hd,,Tl) => [Hd,,Tl] [anywhere]
+//rule '.List`{""`}(.KList) => .KList
+syntax KItem ::= toKListWrap(UserList) [function]
+                | toKListWrap(UserList, KListWrap) [function]
+
+rule toKListWrap(UL:UserList) => toKListWrap(UL,[.KList])
+
+rule toKListWrap('AnnoClassModList(Hd,,Tl), [L:KList]) => toKListWrap(Tl, [L,,Hd])
+rule toKListWrap('ImportDecList(Hd,,Tl), [L:KList]) => toKListWrap(Tl, [L,,Hd])
+rule toKListWrap('TypeDecList(Hd,,Tl), [L:KList]) => toKListWrap(Tl, [L,,Hd])
+
+rule toKListWrap('.List`{""`}(.KList), KL:KListWrap) => KL
+//rule toKListWrap('.List`{""`}(.KList)) => [.KList]
+
+
+
+
+
+rule    'ClassDecHead((Mod:UserList => toKListWrap(Mod)),,_) [anywhere]
+rule    'CompilationUnit(_,,(ImportDecs:UserList => toKListWrap(ImportDecs)),,_) [anywhere]
+rule    'CompilationUnit(_,,(TypeDecs:UserList => toKListWrap(TypeDecs)))[anywhere]
+
 
 endmodule
