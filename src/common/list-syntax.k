@@ -152,4 +152,18 @@ rule    'String(('.List`{""`}(.KList) => [.KList])) [anywhere]
 rule    'Param(('AnnoVarModList(A) => toKListWrap('AnnoVarModList(A))),,_) [anywhere]
 rule    'Param(('.List`{""`}(.KList) => [.KList]),,_) [anywhere]
 
+//AnnoVarModList Type VarDecList -> LocalVarDec {prefer, cons("LocalVarDec")}
+rule    'LocalVarDec(('AnnoVarModList(A) => toKListWrap('AnnoVarModList(A))),,_) [anywhere]
+rule    'LocalVarDec(('.List`{""`}(.KList) => [.KList]),,_) [anywhere]
+rule    'LocalVarDec(_,,('VarDecList(A) => toKListWrap('VarDecList(A)))) [anywhere]
+
+//"new" ArrayBaseType DimExpr+ Dim*  -> ArrayCreationExpr {cons("NewArray")}
+//"new" ArrayBaseType Dim+ ArrayInit -> ArrayCreationExpr {cons("NewArray")}
+rule    'NewArray(_,,('__(D) => toKListWrap('__(D))),,_) [anywhere]
+rule    'NewArray(_,,('.List`{""`}(.KList) => [.KList])) [anywhere]
+
+//"{"   VarInitList   "}" -> ArrayInit {cons("ArrayInit")}
+//"{" VarInitList "," "}" -> ArrayInit {cons("ArrayInit")}
+rule    'ArrayInit(('_`,_(V) => toKListWrap('_`,_(V)))) [anywhere]
+rule    'ArrayInit(('.List`{"`,"`}(.KList) => [.KList])) [anywhere]
 endmodule
