@@ -172,4 +172,42 @@ rule    'ArrayInit(('.List`{"`,"`}(.KList) => [.KList])) [anywhere]
 rule    'For(_,,('_`,_(Exps) => toKListWrap('_`,_(Exps))),,_) [anywhere]
 rule    'For(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [anywhere]
 
+// AnnoConstrModList TypeParams? Id "(" FormalParamList ")" Throws? -> ConstrHead {cons("ConstrDecHead")}
+rule    'ConstrDecHead(('AnnoConstrModList(A) => toKListWrap('AnnoConstrModList(A))),,_) [anywhere]
+rule    'ConstrDecHead(('.List`{""`}(.KList) => [.KList]),,_) [anywhere]
+rule    'ConstrDecHead(_,,('_`,_(Params) => toKListWrap('_`,_(Params))),,_) [anywhere]
+rule    'ConstrDecHead(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [anywhere]
+
+//"{" ConstrInv? BlockStmList "}" -> ConstrBody {cons("ConstrBody")}
+rule    'ConstrBody(_,,('BlockStmList(B) => toKListWrap('BlockStmList(B)))) [anywhere]
+rule    'ConstrBody(_,,('.List`{""`}(.KList) => [.KList])) [anywhere]
+
+// TypeArgs? "this"  "(" ExprList ")" ";" -> ConstrInv {cons("AltConstrInv")}
+rule    'AltConstrInv(_,,('_`,_(Exps) => toKListWrap('_`,_(Exps)))) [anywhere]
+rule    'AltConstrInv(_,,('.List`{"`,"`}(.KList) => [.KList])) [anywhere]
+
+// TypeArgs? "super" "(" ExprList ")" ";" -> ConstrInv {cons("SuperConstrInv")}
+rule    'SuperConstrInv(_,,('_`,_(Exps) => toKListWrap('_`,_(Exps)))) [anywhere]
+rule    'SuperConstrInv(_,,('.List`{"`,"`}(.KList) => [.KList])) [anywhere]
+
+// Expr "." TypeArgs? "super" "(" ExprList ")" ";" -> ConstrInv {cons("QSuperConstrInv")}
+rule    'QSuperConstrInv(_,,('_`,_(Exps) => toKListWrap('_`,_(Exps)))) [anywhere]
+rule    'QSuperConstrInv(_,,('.List`{"`,"`}(.KList) => [.KList])) [anywhere]
+
+//AnnoFieldModList Type VarDecList ";" -> FieldDec {cons("FieldDec")}
+rule    'FieldDec(('AnnoFieldModList(A) => toKListWrap('AnnoFieldModList(A))),,_) [anywhere]
+rule    'FieldDec(('.List`{""`}(.KList) => [.KList]),,_) [anywhere]
+rule    'FieldDec(_,,('VarDecList(V) => toKListWrap('VarDecList(V)))) [anywhere]
+
+//"new" TypeArgs? ClassOrInterfaceType "(" ExprList ")" ClassBody? -> Expr {cons("NewInstance")}
+rule    'NewInstance(_,,('_`,_(Exps) => toKListWrap('_`,_(Exps))),,_) [anywhere]
+rule    'NewInstance(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [anywhere]
+// Expr "." "new" TypeArgs? Id         TypeArgs? "(" ExprList ")" ClassBody? -> Expr {cons("QNewInstance")}
+rule    'QNewInstance(_,,('_`,_(Exps) => toKListWrap('_`,_(Exps))),,_) [anywhere]
+rule    'QNewInstance(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [anywhere]
+
+//"try" Block CatchClauseList -> Stm {cons("Try")}
+//"try" Block CatchClauseList "finally" Block -> Stm {cons("Try")}
+rule    'Try(_,,('__(Catches) => toKListWrap('__(Catches))),,_) [anywhere]
+rule    'Try(_,,('.List`{""`}(.KList) => [.KList]),,_) [anywhere]
 endmodule
