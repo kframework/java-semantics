@@ -210,4 +210,14 @@ rule    'QNewInstance(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [anywhere]
 //"try" Block CatchClauseList "finally" Block -> Stm {cons("Try")}
 rule    'Try(_,,('__(Catches) => toKListWrap('__(Catches))),,_) [anywhere]
 rule    'Try(_,,('.List`{""`}(.KList) => [.KList]),,_) [anywhere]
+
+//"{" SwitchGroupList SwitchLabelList "}" -> SwitchBlock {cons("SwitchBlock")}
+rule    'SwitchBlock(('SwitchGroupList(SG) => toKListWrap('SwitchGroupList(SG))),,_) [anywhere]
+rule    'SwitchBlock(_,,('SwitchLabelList(SL) => toKListWrap('SwitchLabelList(SL)))) [anywhere]
+rule    'SwitchBlock(_,,('.List`{""`}(.KList) => [.KList]),,_) [anywhere]
+
+// SwitchLabelPlusList BlockStmPlusList -> SwitchGroup  {cons("SwitchGroup")}
+rule    'SwitchGroup(('SwitchLabelList(SL) => toKListWrap('SwitchLabelList(SL))),,_)    [anywhere]
+rule    'SwitchGroup(_,,('BlockStmList(B) => toKListWrap('BlockStmList(B))))    [anywhere]
+
 endmodule
