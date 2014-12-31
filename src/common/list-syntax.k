@@ -166,4 +166,10 @@ rule    'NewArray(_,,('.List`{""`}(.KList) => [.KList])) [anywhere]
 //"{" VarInitList "," "}" -> ArrayInit {cons("ArrayInit")}
 rule    'ArrayInit(('_`,_(V) => toKListWrap('_`,_(V)))) [anywhere]
 rule    'ArrayInit(('.List`{"`,"`}(.KList) => [.KList])) [anywhere]
+
+//"for" "(" LocalVarDec ";" Expr? ";" ExprList ")" Stm -> Stm {cons("For")}
+//"for" "(" ExprList ";" Expr? ";" ExprList ")" Stm -> Stm {cons("For")}
+rule    'For(_,,('_`,_(Exps) => toKListWrap('_`,_(Exps))),,_) [anywhere]
+rule    'For(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [anywhere]
+
 endmodule
