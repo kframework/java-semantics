@@ -66,7 +66,7 @@ syntax UserList ::=     BlockStmList
                       | EnumConstList
                       | ClassBodyDecList
 
-/* Syntax below should be put in other modules when they are perfectly defined. */
+/* todo: Syntax below should be put in other modules when they are perfectly defined. */
                       syntax   InterfaceType
                       syntax   ExceptionType
                       syntax   Id
@@ -105,11 +105,7 @@ syntax KItem ::= toKListWrap(K) [function]
 rule toKListWrap(UL) => toKListWrap(UL,[.KList])
 
 rule toKListWrap(Label:KLabel(Hd,,Tl), [L:KList]) => toKListWrap(Tl, [L,,Hd])
-
-rule toKListWrap('.List`{""`}(.KList), KL:KListWrap) => KL
-rule toKListWrap('.List`{"`,"`}(.KList), KL:KListWrap) => KL
-rule toKListWrap('.List`{"."`}(.KList), KL:KListWrap) => KL
-rule toKListWrap('.List`{"&"`}(.KList), KL:KListWrap) => KL
+rule toKListWrap(Label:KLabel(.KList), KL:KListWrap) => KL
 
 
 //AnnoClassModList "class" Id  TypeParams? Super? Interfaces? -> ClassDecHead {cons("ClassDecHead")}
