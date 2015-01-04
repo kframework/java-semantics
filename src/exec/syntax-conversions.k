@@ -64,7 +64,7 @@ rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:KListWrap) => 
 
 
 /*@ \subsection{Local variable declaration}*/
-
+syntax LocalVarDecStmt ::= Type Id ";"
 syntax KLabel ::= "'VarDec"
 rule 'LocalVarDec(_:K,, T:Type,,['VarDec(X:Id)]) => T X;  [structural]
 

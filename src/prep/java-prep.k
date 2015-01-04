@@ -9,6 +9,7 @@ require "../common/primitive-types.k"
 require "../common/subtyping.k"
 require "../common/exp-syntax.k"
 require "../common/stmt-syntax.k"
+require "../common/list-syntax.k"
 require "core-preprocessing.k"
 require "process-type-names.k"
 require "process-comp-units.k"
@@ -54,10 +55,14 @@ module JAVA-PREP
     imports PRIMITIVE-TYPES
     imports LITERALS
     imports SUBTYPING
+
     imports JAVA-SYNTAX
+    imports LIST-MACRO
 
 endmodule
 
 module JAVA-SYNTAX
-// No syntax needed, we are using an external parser.
+imports LIST-SYNTAX
+imports STMT-SYNTAX
+imports EXP-SYNTAX
 endmodule

@@ -169,7 +169,7 @@ rule 'Lit('Char('OctaEscape3( I1:Int,, I2:Int,, I3:Int )))
 
 //@ 'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
 syntax KLabel ::= "'UnicodeEscape"
-rule 'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
+rule 'Lit('Char('UnicodeEscape(_,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
     =>    hexAsciiToInt(I1) *Int 4096
      +Int hexAsciiToInt(I2) *Int  256
      +Int hexAsciiToInt(I3) *Int   16

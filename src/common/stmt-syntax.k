@@ -1,9 +1,10 @@
 require "core-sorts.k"
 require "core-classes.k"
-
+require "list-syntax.k"
 module STMT-SYNTAX
     imports CORE-SORTS
     imports CORE-CLASSES
+    imports LIST-SYNTAX
 
 syntax Stmt ::= StmtWithoutTrailing|LabeledStmt|IfThenElseStmt|IfThenStmt|WhileStmt|ForStmt
 
@@ -25,12 +26,13 @@ syntax StmtWithoutTrailing ::= Block
 |SynchronizedStmt
 
 syntax BlockStmt ::= Stmt|LocalVarDecStmt|ClassDec
-syntax LocalVarDecStmt ::= Type Id ";" [klabel('LocalVarDec)]
-syntax ClassBody ::= "{" KListWrap "}" [klabel('ClassBody)]
-syntax ClassDecHead ::= KListWrap "class" Id K K K [klabel('ClassDecHead)]
+syntax LocalVarDecStmt ::= LocalVarDec ";" [klabel('LocalVarDecStm)]
+syntax LocalVarDec ::= AnnoVarModList Type VarDecList [klabel('LocalVarDec)]
+syntax ClassBody ::= "{" ClassBodyDecList "}" [klabel('ClassBody)]
+syntax ClassDecHead ::= AnnoClassModList "class" Id K K K [klabel('ClassDecHead)]
 syntax ClassDec ::= ClassDecHead ClassBody [klabel('ClassDec)]
 
-syntax Block ::= "{" BlockStmt "}" [klabel('Block)]
+syntax Block ::= "{" K "}" [klabel('Block)]
 syntax EmptyStmt ::= ";" [klabel('Empty)]
 
 syntax AssertStmt ::="assert" Exp ";" [strict, klabel('AssertStm)]

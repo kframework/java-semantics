@@ -52,6 +52,7 @@ endmodule
 
 module JAVA-SYNTAX
     //imports LTL-SUPPORT-SYNTAX
-    imports EXP-SYNTAX
+    imports LIST-SYNTAX
     imports STMT-SYNTAX
+    imports EXP-SYNTAX
 endmodule
