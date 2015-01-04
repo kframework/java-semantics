@@ -1,3 +1,4 @@
+require "lexical-syntax.k"
 //@ \section{Module CORE-SORTS}
 module TYPE-SYNTAX
      //@ \subsection{Types}

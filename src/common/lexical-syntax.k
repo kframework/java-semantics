@@ -19,6 +19,6 @@ syntax Modifier ::= Public
                   | Native
                   | Transient
                   | Volatile
-                  | Strictfp
+                  | StrictFP
 
 endmodule
