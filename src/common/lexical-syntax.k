@@ -5,10 +5,6 @@ module LEXICAL-SYNTAX
 //@ \subsection{Id.sdf} todo
 //syntax Id ::= ID [klabel('Id)]
 //syntax ID ::= Token{[A-Za-z\_\$][A-Za-z0-9\_\$]*}
-syntax ID ::= //KeyWord [reject] only terminals can be rejected todo
-              "true"  [reject]
-            | "false" [reject]
-            | "null"  [reject]
 
 //@ \subsection{KeyWord.sdf(not needed?)}
 /*
@@ -65,6 +61,12 @@ syntax Keyword ::= "abstract"
 */
 
 //@ \subsection{LineTerminators.sdf}
+syntax EndOfFile
+syntax CarriageReturn ::= Token{[\r]}
+syntax LineTerminator ::= EndOfFile
+                        | CarriageReturn
+                        | Token{[\n]}
+                        | Token{[\r][\n]}
 
 //@ \subsection{Modifiers.sdf}
 syntax Public ::= "public"  [klabel('Public)]
