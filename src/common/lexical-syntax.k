@@ -1,6 +1,7 @@
 module LEXICAL-SYNTAX
 //@ \subsection{Comments.sdf}
-//@ \subsection{Id.sdf}
+
+//@ \subsection{Id.sdf} todo
 //syntax Id ::= ID [klabel('Id)]
 //syntax ID ::= Token{[A-Za-z\_\$][A-Za-z0-9\_\$]*}
 syntax ID ::= //KeyWord [reject] only terminals can be rejected todo
@@ -83,10 +84,6 @@ syntax Modifier ::= Public
                   | Transient
                   | Volatile
                   | StrictFP
-
-//@ \subsection{BooleanLiterals.sdf}
-syntax BoolLiteral ::= Bool [klabel('Bool)]
-//syntax Bool ::= true [klabel('True)] todo:"true"?
 
 //@ \subsection{UnicodeEscape.sdf}
 syntax UnicodeEscape ::= Token {"\\" [u]+ [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]} [klabel('UnicodeEscape)]

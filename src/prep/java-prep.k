@@ -10,6 +10,8 @@ require "../common/subtyping.k"
 require "../common/exp-syntax.k"
 require "../common/stmt-syntax.k"
 require "../common/list-syntax.k"
+require "../common/lexical-syntax.k"
+require "../common/literal-syntax.k"
 require "core-preprocessing.k"
 require "process-type-names.k"
 require "process-comp-units.k"
@@ -62,7 +64,9 @@ module JAVA-PREP
 endmodule
 
 module JAVA-SYNTAX
-imports LIST-SYNTAX
-imports STMT-SYNTAX
-imports EXP-SYNTAX
+    imports LIST-SYNTAX
+    imports STMT-SYNTAX
+    imports EXP-SYNTAX
+    imports LEXICAL-SYNTAX
+    imports LITERAL-SYNTAX
 endmodule
