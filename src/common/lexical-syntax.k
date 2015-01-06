@@ -1,5 +1,6 @@
 module LEXICAL-SYNTAX
 //@ \subsection{Comments.sdf}
+//no need to define because K provides fixed layout
 
 //@ \subsection{Id.sdf} todo
 //syntax Id ::= ID [klabel('Id)]
@@ -63,6 +64,8 @@ syntax Keyword ::= "abstract"
                  | "while"
 */
 
+//@ \subsection{LineTerminators.sdf}
+
 //@ \subsection{Modifiers.sdf}
 syntax Public ::= "public"  [klabel('Public)]
 syntax Private ::= "private"  [klabel('Private)]
@@ -87,4 +90,7 @@ syntax Modifier ::= Public
 
 //@ \subsection{UnicodeEscape.sdf}
 syntax UnicodeEscape ::= Token {"\\" [u]+ [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]} [klabel('UnicodeEscape)]
+
+//@ \subsection{WhiteSpace.sdf}
+//no need to define because K provides fixed layout
 endmodule
