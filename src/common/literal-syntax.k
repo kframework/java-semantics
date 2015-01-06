@@ -1,6 +1,8 @@
 require "lexical-syntax.k"
+require "list-syntax.k"
 module LITERAL-SYNTAX
 imports LEXICAL-SYNTAX
+imports LIST-SYNTAX
 //@ \subsection{BooleanLiterals.sdf} todo
 syntax BoolLiteral ::= Bool [klabel('Bool)]
 //syntax Bool ::= true [klabel('True)] todo:"true"?
@@ -25,25 +27,31 @@ syntax OctaEscape ::= Token{"\\" [0-7]}                  [klabel('OctaEscape1)]
 
 //@ \subsection{IntegerLiterals.sdf}
 //inline token declaration not allowed
-//syntax Ll ::= Token{[lL]?}
-//
+//syntax Ll ::= Token{[lL]} cannot define "L"
+
+//java heap space problem, same code on small language test works
 //syntax DeciNumeral ::=  Token{[1-9][0-9]*} //| "0"
-//syntax DeciLiteral ::= DeciNumeral Ll
+//syntax DeciLiteral ::= DeciNumeral
 //
 //syntax HexaNumeral ::= Token{[0][xX] [0-9a-fA-F]+}
-//syntax HexaLiteral ::= HexaNumeral Ll
+//syntax HexaLiteral ::= HexaNumeral
+//
 //syntax OctaNumeral ::= Token{[0]     [0-7]+}
-//syntax OctaLiteral ::= OctaNumeral Ll
+//syntax OctaLiteral ::= OctaNumeral
 //
 //syntax IntLiteral ::= DeciLiteral [klabel('Deci)]
 //                    | HexaLiteral [klabel('Hexa)]
 //                    | OctaLiteral [klabel('Octa)]
 
-//@ \subsection{FloatingPointLiterals.sdf} todo
 
 //@ \subsection{NullLiteral.sdf}
 syntax NullLiteral ::= "null" [klabel('Null)]
 
 //@ \subsection{StringLiterals.sdf} todo
+syntax StringLiteral ::= "\"" StringPartList "\"" [klabel('String)]
+syntax StringPart ::= StringChars [klabel('Chars)]
+                    | UnicodeEscape
+                    | EscapeSeq
+syntax StringChars //::= Token {~[\"\\\n\13]}
 
 endmodule
