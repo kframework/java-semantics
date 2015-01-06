@@ -195,7 +195,6 @@ rule charToString(I:Int :: char) => chrChar(I)
 //@ \subsection{Null literal}
 
 //@ 'Lit('Null(.KList))
-syntax KLabel ::= "'Null"
 rule 'Lit('Null(.KList)) => null
 
 endmodule

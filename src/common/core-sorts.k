@@ -1,4 +1,5 @@
 require "lexical-syntax.k"
+require "literal-syntax.k"
 //@ \section{Module CORE-SORTS}
 module TYPE-SYNTAX
      //@ \subsection{Types}
@@ -30,6 +31,7 @@ endmodule
 module CORE-SORTS
     imports TYPE-SYNTAX
     imports LEXICAL-SYNTAX
+    imports LITERAL-SYNTAX
 
 //@ \subsection{Computation phases}
 
@@ -173,7 +175,7 @@ syntax ArrayRef ::=   arrayRef (
                         Int    // Length
                       )
 
-syntax RawRefVal ::= ObjectRef | ArrayRef | String | "null"
+syntax RawRefVal ::= ObjectRef | ArrayRef | String | NullLiteral
 
 /*@ A typed value is a pair of of a raw value and a type. Anywhere during execution we will evaluated typed expressions
     into typed values, never into raw values alone.
