@@ -3,9 +3,10 @@ require "list-syntax.k"
 module LITERAL-SYNTAX
 imports LEXICAL-SYNTAX
 imports LIST-SYNTAX
-//@ \subsection{BooleanLiterals.sdf} todo
+//@ \subsection{BooleanLiterals.sdf}
 syntax BoolLiteral ::= Bool [klabel('Bool)]
-//syntax Bool ::= true [klabel('True)] todo:"true"?
+syntax Bool ::= "true"  [onlyLabel, klabel('True)]
+syntax Bool ::= "false" [onlyLabel, klabel('False)]
 
 //@ \subsection{CharacterLiterals.sdf} todo
 syntax SingleChar// ::= Token{[\r\n\'\\]}//don't unserstand ^?
