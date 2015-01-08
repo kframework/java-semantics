@@ -2,9 +2,9 @@ module LEXICAL-SYNTAX
 //@ \subsection{Comments.sdf}
 //no need to define because K provides fixed layout
 
-//@ \subsection{Id.sdf} todo
-//syntax Id ::= ID [klabel('Id)]
-//syntax ID ::= Token{[A-Za-z\_\$][A-Za-z0-9\_\$]*}
+//@ \subsection{Identifiers.sdf}
+syntax Id ::= ID [klabel('Id)]
+syntax ID ::= Token{[A-Za-z\_\$][A-Za-z0-9\_\$]*} [onlyLabel]
 
 //@ \subsection{KeyWord.sdf(not needed?)}
 /*
