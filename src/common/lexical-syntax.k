@@ -62,11 +62,11 @@ syntax Keyword ::= "abstract"
 
 //@ \subsection{LineTerminators.sdf}
 syntax EndOfFile
-syntax CarriageReturn ::= Token{[\r]}
+syntax CarriageReturn ::= Token{[\r]}              [onlyLabel]
 syntax LineTerminator ::= EndOfFile
                         | CarriageReturn
-                        | Token{[\n]}
-                        | Token{[\r][\n]}
+                        | Token{[\n]}              [onlyLabel]
+                        | Token{[\r][\n]}          [onlyLabel]
 
 //@ \subsection{Modifiers.sdf}
 syntax Public ::= "public"  [klabel('Public)]
@@ -91,7 +91,7 @@ syntax Modifier ::= Public
                   | StrictFP
 
 //@ \subsection{UnicodeEscape.sdf}
-syntax UnicodeEscape ::= Token {"\\" [u]+ [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]} [klabel('UnicodeEscape)]
+syntax UnicodeEscape ::= Token {[\\][u]+ [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]} [onlyLabel, klabel('UnicodeEscape)]
 
 //@ \subsection{WhiteSpace.sdf}
 //no need to define because K provides fixed layout
