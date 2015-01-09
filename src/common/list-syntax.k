@@ -1,8 +1,10 @@
 require "stmt-syntax.k"
 require "literal-syntax.k"
+require "type-syntax.k"
 module LIST-SYNTAX
 imports STMT-SYNTAX
 imports LITERAL-SYNTAX
+imports TYPE-SYNTAX
 /*A module for list only, for the easy of implementation and management.
  There are six lists ((formal)params, dims, dimexps, exps, varinits, catchclauses)
  already defined before, because there is no automatic refactor for rename, and also those
@@ -76,7 +78,7 @@ syntax UserList ::=     BlockStmList
                       syntax   TypeDec::= ClassDec
                       syntax   VarDec
                       syntax   ImportDec
-                      syntax   ActualTypeArg
+
                       syntax   ClassOrInterfaceType
                       syntax   TypeParam
                       syntax   AbstractMethodMod

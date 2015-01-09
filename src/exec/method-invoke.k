@@ -885,7 +885,7 @@ when
 
 // Eliminate the most base class before returning the result, because it is exclusive.
 rule [getClassChain-end]:
-    getClassChain(Class:ClassType, (Class, MoreDerivedClasses:ClassTypes)) => (Class, MoreDerivedClasses)
+    getClassChain(Class:ClassType, (Class, MoreDerivedClasses:ClassTypes)) => (Class, MoreDerivedClasses)<:ClassTypes
 
 rule [Invoke-methodRef-native]:
     <k>
