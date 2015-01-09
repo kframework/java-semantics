@@ -76,9 +76,6 @@ rule hexAsciiToInt(I:Int) => hexDigitToInt(chrChar(I))
 //@ \subsection{Integer literals}
 
 syntax KLabel ::= "'Lit"
-                | "'Deci"
-                | "'Hexa"
-                | "'Octa"
 
 rule [Lit-Deci]:
     'Lit('Deci(Str:String))
@@ -118,9 +115,6 @@ rule [Lit-FFloat]:
 /*@ 'Lit('Bool('True(.KList)))
     'Lit('Bool('False(.KList)))
 */
-syntax KLabel ::= "'Bool"
-                | "'True"
-                | "'False"
 
 rule 'Lit('Bool('True(.KList))) => true
 
@@ -130,7 +124,6 @@ rule 'Lit('Bool('False(.KList))) => false
 //@ Chars are represented as int values, as described in java specification.
 
 //@ 'Lit('Char('Single( I:Int )))
-syntax KLabel ::= "'Single"
 rule 'Lit('Char('Single( I:Int ))) => I :: char
 
 // 'Lit('Char('NamedEscape( Int ))
@@ -174,8 +167,6 @@ rule 'Lit('Char('UnicodeEscape(_,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
 //@ \subsection{String literals}
 
 //@ 'Lit('String(['Chars(Str:String),, 'NamedEscape(_),, _:KList ]))
-syntax KLabel ::= "'String"
-                | "'Chars"
 
 rule  'Lit('String([K1:K,, K2:K,, Ks:KList]))
       => plusAux( 'Lit('String([K1])),

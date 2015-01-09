@@ -9,11 +9,11 @@ syntax Bool ::= "true"  [onlyLabel, klabel('True)]
 syntax Bool ::= "false" [onlyLabel, klabel('False)]
 
 //@ \subsection{CharacterLiterals.sdf} todo
-syntax SingleChar// ::= Token{[\r\n\'\\]}//don't unserstand ^?
+syntax SingleChar// ::= Token{[\r\n\'\\]}//don't understand ^?
 syntax CharContent ::= SingleChar [klabel('Single)]
                      | UnicodeEscape
                      | EscapeSeq
-//syntax CharLiteral ::= "'" CharContent "'"  [klabel('Char)]                   Multiple lookahead not fully supported
+syntax CharLiteral //::= "\'" CharContent "\'"  [klabel('Char)]
 
 //@ \subsection{EscapeSequences.sdf}
 
@@ -25,6 +25,7 @@ syntax OctaEscape ::= Token{"\\" [0-7]}                  [klabel('OctaEscape1)]
                     | Token{"\\" [0-3][0-7][0-7]}        [klabel('OctaEscape3)]
 
 //@ \subsection{FloatingPointLiterals.sdf} todo
+syntax FloatLiteral ::= Float      [klabel('Float)]
 
 //@ \subsection{IntegerLiterals.sdf}
 syntax DeciLiteral ::= Token{[1-9][0-9]* [lL]?} [onlyLabel]
