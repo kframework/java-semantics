@@ -27,23 +27,13 @@ syntax OctaEscape ::= Token{"\\" [0-7]}                  [klabel('OctaEscape1)]
 //@ \subsection{FloatingPointLiterals.sdf} todo
 
 //@ \subsection{IntegerLiterals.sdf}
-//inline token declaration not allowed
-//syntax Ll ::= Token{[lL]} cannot define "L"
+syntax DeciLiteral ::= Token{[1-9][0-9]* [lL]?} [onlyLabel]
+syntax HexaLiteral ::= Token{[0][xX] [0-9a-fA-F]+ [lL]?} [onlyLabel]
+syntax OctaLiteral ::= Token{[0]     [0-7]+ [lL]?} [onlyLabel]
 
-//java heap space problem, same code on small language test works
-//syntax DeciNumeral ::=  Token{[1-9][0-9]*} //| "0"
-//syntax DeciLiteral ::= DeciNumeral
-//
-//syntax HexaNumeral ::= Token{[0][xX] [0-9a-fA-F]+}
-//syntax HexaLiteral ::= HexaNumeral
-//
-//syntax OctaNumeral ::= Token{[0]     [0-7]+}
-//syntax OctaLiteral ::= OctaNumeral
-//
-//syntax IntLiteral ::= DeciLiteral [klabel('Deci)]
-//                    | HexaLiteral [klabel('Hexa)]
-//                    | OctaLiteral [klabel('Octa)]
-
+syntax IntLiteral ::= DeciLiteral [klabel('Deci)]
+                    | HexaLiteral [klabel('Hexa)]
+                    | OctaLiteral [klabel('Octa)]
 
 //@ \subsection{NullLiteral.sdf}
 syntax NullLiteral ::= "null" [klabel('Null)]
