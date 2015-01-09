@@ -13,16 +13,17 @@ syntax SingleChar// ::= Token{[\r\n\'\\]}//don't understand ^?
 syntax CharContent ::= SingleChar [klabel('Single)]
                      | UnicodeEscape
                      | EscapeSeq
-syntax CharLiteral //::= "\'" CharContent "\'"  [klabel('Char)]
+//Problem: Multiple lookahead not fully supported (does not appear when tested in small language)
+syntax CharLiteral //::= "'" CharContent "'"  [klabel('Char)]
 
 //@ \subsection{EscapeSequences.sdf}
 
 syntax EscapeSeq ::= OctaEscape | NamedEscape
-syntax NamedEscape ::= Token{"\\" [btnfr\"\'\\]}         [klabel('NamedEscape)]
-syntax OctaEscape ::= Token{"\\" [0-7]}                  [klabel('OctaEscape1)]
-                    | Token{"\\" [0-3][0-7]}             [klabel('OctaEscape2)]
-                    | Token{"\\" [4-7][0-7]}             [klabel('OctaEscape2)]
-                    | Token{"\\" [0-3][0-7][0-7]}        [klabel('OctaEscape3)]
+syntax NamedEscape ::= Token{"\\" [btnfr\"\'\\]}         [onlyLabel, klabel('NamedEscape)]
+syntax OctaEscape ::= Token{"\\" [0-7]}                  [onlyLabel, klabel('OctaEscape1)]
+                    | Token{"\\" [0-3][0-7]}             [onlyLabel, klabel('OctaEscape2)]
+                    | Token{"\\" [4-7][0-7]}             [onlyLabel, klabel('OctaEscape2)]
+                    | Token{"\\" [0-3][0-7][0-7]}        [onlyLabel, klabel('OctaEscape3)]
 
 //@ \subsection{FloatingPointLiterals.sdf} todo
 syntax FloatLiteral ::= Float      [klabel('Float)]

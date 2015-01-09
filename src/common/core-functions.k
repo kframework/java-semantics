@@ -168,7 +168,6 @@ rule getSimpleName(class ClassId:Id)
 /*@ \subsection{Identifiers}*/
 
 //@ 'Id(Str:String)
-syntax KLabel ::= "'Id"
 
 /*@Convert the AST representation of an Id into a K Id.*/
 rule 'Id(Str:String) => String2Id(Str)                [structural, anywhere]
