@@ -1,6 +1,8 @@
 require "core-sorts.k"
+require "name-syntax.k"
 module TYPE-SYNTAX
     imports CORE-SORTS
+    imports NAME-SYNTAX
 //@ \subsection{Main.sdf}
 syntax Type ::= PrimitiveType //PrimType in sdf
               | RefType
@@ -8,7 +10,9 @@ syntax Type ::= PrimitiveType //PrimType in sdf
 
 //@ \subsection{ParameterizedTypes.sdf} todo
 syntax TypeArgs ::= "<" ActualTypeArgList ">"        [klabel('TypeArgs)]
-syntax ActualTypeArg ::= Type | "?" WildcardBound    [klabel('Wildcard)]
+syntax ActualTypeArg ::= Type
+                        | "?" WildcardBound    [prefer, klabel('Wildcard)]
+                        | "?"                  [klabel('Wildcard)]
 syntax WildcardBound ::= "extends" RefType [klabel('WildcardUpperBound)]
                         |"super"   RefType [klabel('WildcardLowerBound)]
 
