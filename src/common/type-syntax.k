@@ -44,10 +44,12 @@ syntax TypeDecSpec ::= TypeName
                      | TypeDecSpec TypeArgs "." Id [klabel('Member)]
 
 //syntax TypeVar ::= TypeVarId   [klabel('TypeVar)]
-//todo: 
-//syntax ArrayType ::= Type "[" "]"    [klabel('ArrayType)]
 
-syntax RefType ::= ClassOrInterfaceType //| ArrayType
+syntax ArrayType ::= Type "[" "]"   [klabel('ArrayType)]
+//The above syntax is different from Denis' arrayType syntax, so added anywhere rule here
+rule    (T:Type [])<:ArrayType => arrayOf T [anywhere]
+
+syntax RefType ::= ClassOrInterfaceType | ArrayType
 
 /* Denis' syntax: A reference type is either a class type, an array type, the null type or a String type. The null type is specified
         by the JLS although inaccessible to the programmer. String objects and types are not threated as regular objects
