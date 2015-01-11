@@ -28,7 +28,7 @@ syntax FloatType ::= "float" [klabel('Float)] | "double" [klabel('Double)]
 syntax NumericType ::= IntType | FloatType
 syntax PrimitiveType ::= NumericType | "bool" [klabel('Boolean)] //"boolean" in sdf
 
-//@ \subsection{ReferenceTypes.sdf} todo
+//@ \subsection{ReferenceTypes.sdf}
     /*@ A fully qualified class name, or noClass where no valid class could be computed.*/
 syntax ClassOrInterfaceType ::= TypeDecSpec [klabel('ClassOrInterfaceType)]
                               | TypeDecSpec TypeArgs [prefer, klabel('ClassOrInterfaceType)]
@@ -43,11 +43,11 @@ syntax ClassType ::= "class" Id
 syntax TypeDecSpec ::= TypeName
                      | TypeDecSpec TypeArgs "." Id [klabel('Member)]
 
-//syntax TypeVar ::= TypeVarId   [klabel('TypeVar)]
+syntax TypeVar ::= TypeVarId   [klabel('TypeVar)]
 
-syntax ArrayType ::= Type "[" "]"   [klabel('ArrayType)]
+syntax ArrayType ::= Type "[" "]"   [strict, klabel('ArrayType)]
 //The above syntax is different from Denis' arrayType syntax, so added anywhere rule here
-rule    (T:Type [])<:ArrayType => arrayOf T [anywhere]
+rule 'ArrayType(T:Type) => arrayOf T     [anywhere]
 
 syntax RefType ::= ClassOrInterfaceType | ArrayType
 
@@ -59,11 +59,11 @@ syntax RefType ::= ClassType
                  | "arrayOf" Type
                  | "nullType"
 
-//@ \subsection{TypeVariables.sdf} todo
-//syntax TypeVarId ::= Id
-//syntax TypeBound ::= "extends" ClassOrInterfaceTypeList     [klabel('TypeBound)]
-//syntax TypeParam ::= TypeVarId                     [klabel('TypeParam)]
-//                   | TypeVarId TypeBound           [prefer, klabel('TypeParam)]
-//syntax TypeParams ::= "<" TypeParamList ">"        [klabel('TypeParams)]
+//@ \subsection{TypeVariables.sdf}
+syntax TypeVarId ::= Id
+syntax TypeBound ::= "extends" ClassOrInterfaceTypeList     [klabel('TypeBound)]
+syntax TypeParam ::= TypeVarId                     [klabel('TypeParam)]
+                   | TypeVarId TypeBound           [prefer, klabel('TypeParam)]
+syntax TypeParams ::= "<" TypeParamList ">"        [klabel('TypeParams)]
 
 endmodule
