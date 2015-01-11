@@ -151,7 +151,7 @@ rule [qualified-new-instance]:
       => staticInit(Class)
         ~> create(Class)
         ~> setEncloser(typedLookup(L), Class, Qual)
-        ~> typedLookup(L) .getConsName(Class) (Args);
+        ~> (typedLookup(L) .getConsName(Class) (Args);)
         ~> restoreMethContext(MethContext)
         ~> typedLookup(L)
       ...

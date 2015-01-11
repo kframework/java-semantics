@@ -5,7 +5,7 @@ imports LIST-SYNTAX
 //                     syntax PackageName ::= IdList [klabel('PackageName)]
 //                     syntax ExprName::= Id  [klabel('ExprName)]
 //                                      | AmbName "." Id [klabel('ExprName)]
-//                     syntax TypeName ::= Id [klabel('TypeName)]
+                     syntax TypeName ::= Id [klabel('TypeName)]
 //                                      | PackageOrTypeName "." Id [klabel('TypeName)]
 //                     syntax AmbName ::= Id [klabel('AmbName)]
 //                                      | AmbName "." Id [klabel('AmbName)]
