@@ -1,33 +1,11 @@
+require "lexical-syntax.k"
+require "literal-syntax.k"
+require "type-syntax.k"
 //@ \section{Module CORE-SORTS}
-module TYPE-SYNTAX
-     //@ \subsection{Types}
-        syntax Type ::= PrimitiveType
-                      | RefType
-                      | "void" [klabel('Void)]
-
-        syntax IntOrLongType ::= "int" [klabel('Int)] | "long" [klabel('Long)]
-        syntax IntType ::= "byte" [klabel('Byte)]| "short" [klabel('Short)]| IntOrLongType | "char" [klabel('Char)]
-        syntax FloatType ::= "float" [klabel('Float)] | "double" [klabel('Double)]
-        syntax NumericType ::= IntType | FloatType
-        syntax PrimitiveType ::= NumericType | "bool" [klabel('Boolean)]
-
-
-    /*@ A fully qualified class name, or noClass where no valid class could be computed.*/
-    syntax ClassType ::= "class" Id
-                       | "noClass"        [latex({\dotCt{K}})]
-
-    /* A reference type is either a class type, an array type, the null type or a String type. The null type is specified
-        by the JLS although inaccessible to the programmer. String objects and types are not threated as regular objects
-        in the present semantics for performance reasons.
-    */
-    syntax RefType ::= ClassType
-                     | "arrayOf" Type
-                     | "nullType"
-
-endmodule
-
 module CORE-SORTS
     imports TYPE-SYNTAX
+    imports LEXICAL-SYNTAX
+    imports LITERAL-SYNTAX
 
 //@ \subsection{Computation phases}
 
@@ -171,7 +149,7 @@ syntax ArrayRef ::=   arrayRef (
                         Int    // Length
                       )
 
-syntax RawRefVal ::= ObjectRef | ArrayRef | String | "null"
+syntax RawRefVal ::= ObjectRef | ArrayRef | String | NullLiteral
 
 /*@ A typed value is a pair of of a raw value and a type. Anywhere during execution we will evaluated typed expressions
     into typed values, never into raw values alone.
@@ -184,20 +162,8 @@ syntax TypedVal ::= RawVal "::" Type
 syntax KResult ::= TypedVal | Type
 
 /*@ Member access modes*/
-syntax AccessMode ::= //"public" | "protected"  | "private"
-Modifier | "package"
+syntax AccessMode ::= Public | Protected  | Private | "package"
 syntax KResult ::= AccessMode
-
-syntax Modifier ::= "public"  [klabel('Public)]
-                  | "private"  [klabel('Private)]
-                  | "protected" [klabel('Protected)]
-                  | "abstract"  [klabel('Abstract)]
-                  | "final" [klabel('Final)]
-                  | "static" [klabel('Static)]
-                  | "native" [klabel('Native)]
-                  | "transient" [klabel('Transient)]
-                  | "volatile" [klabel('Volatile)]
-                  | "strictfp" [klabel('StrictFP)]
 
 /*@ Types of routines represented by a method closure*/
 syntax MethodMetaType ::= "methodMMT" | "constructorMMT"

@@ -76,9 +76,6 @@ rule hexAsciiToInt(I:Int) => hexDigitToInt(chrChar(I))
 //@ \subsection{Integer literals}
 
 syntax KLabel ::= "'Lit"
-                | "'Deci"
-                | "'Hexa"
-                | "'Octa"
 
 rule [Lit-Deci]:
     'Lit('Deci(Str:String))
@@ -118,9 +115,6 @@ rule [Lit-FFloat]:
 /*@ 'Lit('Bool('True(.KList)))
     'Lit('Bool('False(.KList)))
 */
-syntax KLabel ::= "'Bool"
-                | "'True"
-                | "'False"
 
 rule 'Lit('Bool('True(.KList))) => true
 
@@ -130,11 +124,9 @@ rule 'Lit('Bool('False(.KList))) => false
 //@ Chars are represented as int values, as described in java specification.
 
 //@ 'Lit('Char('Single( I:Int )))
-syntax KLabel ::= "'Single"
 rule 'Lit('Char('Single( I:Int ))) => I :: char
 
-// 'Lit('Char('NamedEscape( Int )))
-syntax KLabel ::= "'NamedEscape"
+// 'Lit('Char('NamedEscape( Int ))
 
 //K bug the three escape characters below are not parsed by K3 in their nice form. Confirmed on 04/03/2014.
 rule 'Lit('Char('NamedEscape(  98 ))) =>                 8 :: char  // \b
@@ -152,9 +144,6 @@ rule 'Lit('Char('NamedEscape(  92 ))) => ordChar("\\") :: char  //"
     'Lit('Char('OctaEscape2( I1:Int,, I2:Int )))
     'Lit('Char('OctaEscape3( I1:Int,, I2:Int,, I3:Int )))
 */
-syntax KLabel ::= "'OctaEscape1"
-                | "'OctaEscape2"
-                | "'OctaEscape3"
 
 rule 'Lit('Char('OctaEscape1( I:Int ))) => octaAsciiToInt(I) :: char
 
@@ -168,7 +157,7 @@ rule 'Lit('Char('OctaEscape3( I1:Int,, I2:Int,, I3:Int )))
      +Int octaAsciiToInt(I3)          :: char
 
 //@ 'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
-syntax KLabel ::= "'UnicodeEscape"
+
 rule 'Lit('Char('UnicodeEscape(_,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
     =>    hexAsciiToInt(I1) *Int 4096
      +Int hexAsciiToInt(I2) *Int  256
@@ -178,8 +167,6 @@ rule 'Lit('Char('UnicodeEscape(_,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
 //@ \subsection{String literals}
 
 //@ 'Lit('String(['Chars(Str:String),, 'NamedEscape(_),, _:KList ]))
-syntax KLabel ::= "'String"
-                | "'Chars"
 
 rule  'Lit('String([K1:K,, K2:K,, Ks:KList]))
       => plusAux( 'Lit('String([K1])),
@@ -199,7 +186,6 @@ rule charToString(I:Int :: char) => chrChar(I)
 //@ \subsection{Null literal}
 
 //@ 'Lit('Null(.KList))
-syntax KLabel ::= "'Null"
 rule 'Lit('Null(.KList)) => null
 
 endmodule

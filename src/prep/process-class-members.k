@@ -437,7 +437,7 @@ when
     andBool (getContextType(Modifiers) ==K staticCT)
 
     //condition for not being compile-time constant
-    andBool notBool(        isFinal(Modifiers)
+    andBool notBool(        isFinalModifiers(Modifiers)
                     andBool (getKLabel(InitExp) ==KLabel 'Lit orBool isKResult(InitExp) ==K true)
                    )
         [structural]
@@ -480,7 +480,7 @@ context 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, HOLE) ])
 when
             getContextType(Modifiers) ==K staticCT
     //condition for not being compile-time constant
-    andBool isFinal(Modifiers) andBool getKLabel(HOLE) ==KLabel 'Lit
+    andBool isFinalModifiers(Modifiers) andBool getKLabel(HOLE) ==KLabel 'Lit
 
 rule [FieldDec-compile-time-constant]:
     <k>
@@ -492,7 +492,7 @@ rule [FieldDec-compile-time-constant]:
     <constantEnv> Env:Map => Env[TV/X] </constantEnv>
 when
             getContextType(Modifiers) ==K staticCT
-    andBool isFinal(Modifiers)
+    andBool isFinalModifiers(Modifiers)
 
 /*@ Discard inner class declarations at this phase. They are processed when their
     respective <class> tag is encountered as part of processClasses.
@@ -529,16 +529,16 @@ when        KL =/=KLabel 'Synchronized
 rule isSynchronized([.KList]) => false::bool
 
 //@ Used to provide an approximate implementation of the distinction between static constant and non-constant fields.
-syntax KItem ::=  isFinal (
+syntax KItem ::=  isFinalModifiers (
                 KListWrap   //[...] - the list of method attributes
               )
               [function]
 
-rule isFinal(['Final(_),,_]) => true
+rule isFinalModifiers(['Final(_),,_]) => true
 
-rule isFinal([(KL:KLabel(_) => .KList),, _])
+rule isFinalModifiers([(KL:KLabel(_) => .KList),, _])
 when        KL =/=KLabel 'Final
 
-rule isFinal([.KList])      => false
+rule isFinalModifiers([.KList])      => false
 
 endmodule

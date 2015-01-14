@@ -7,8 +7,7 @@ require "../common/core-classes.k"
 require "../common/core-functions.k"
 require "../common/primitive-types.k"
 require "../common/subtyping.k"
-require "../common/exp-syntax.k"
-require "../common/stmt-syntax.k"
+require "../common/java-syntax.k"
 require "core-exec.k"
 require "syntax-conversions.k"
 require "to-string.k"
@@ -48,11 +47,4 @@ module JAVA-EXEC
    // imports LTL-SUPPORT
     imports JAVA-SYNTAX
 
-endmodule
-
-module JAVA-SYNTAX
-    //imports LTL-SUPPORT-SYNTAX
-    imports LIST-SYNTAX
-    imports STMT-SYNTAX
-    imports EXP-SYNTAX
 endmodule

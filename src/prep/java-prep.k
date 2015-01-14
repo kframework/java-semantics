@@ -7,9 +7,7 @@ require "../common/core-classes.k"
 require "../common/aux-strings.k"
 require "../common/primitive-types.k"
 require "../common/subtyping.k"
-require "../common/exp-syntax.k"
-require "../common/stmt-syntax.k"
-require "../common/list-syntax.k"
+require "../common/java-syntax.k"
 require "core-preprocessing.k"
 require "process-type-names.k"
 require "process-comp-units.k"
@@ -61,8 +59,4 @@ module JAVA-PREP
 
 endmodule
 
-module JAVA-SYNTAX
-imports LIST-SYNTAX
-imports STMT-SYNTAX
-imports EXP-SYNTAX
-endmodule
+
