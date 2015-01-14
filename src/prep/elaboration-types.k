@@ -8,10 +8,6 @@ module ELABORATION-TYPES
 
 /*@ \subsection{Elaboration of types} */
 
-syntax KLabel ::= "'ClassOrInterfaceType"
-                | "'ClassType"
-                | "'InterfaceType"
-
 rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK [structural]
 rule 'InterfaceType(TypeK:K,, _) => TypeK        [structural]
 rule 'ClassType(TypeK:K,, _) => TypeK            [structural]

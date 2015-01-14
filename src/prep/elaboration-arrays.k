@@ -90,12 +90,6 @@ rule [elabEnd-Field-ArrayLength]:
 when
     Id2String(X) ==String "length"
 
-//@ 'ArrayType(T:Type)
-syntax KLabel ::= "'ArrayType"
-
-context 'ArrayType(HOLE)
-rule 'ArrayType(T:Type) => arrayOf T     [structural]
-
 rule [elabEnd-NewArray-EmptyDims]:
     elabEnd('NewArray( (T:Type => arrayOf T),, [_],,
         [ ( 'Dim(.KList) => .KList ) ,,_:KList] ))
