@@ -372,7 +372,7 @@ rule [Invoke-methodInfo-instance-on-null]:
 The logic for private instance methods is the same as for static methods, with the difference that the qualifier is not discarded.
 */
 rule [Invoke-methodInfo-instance-private]:
-    objectRef(_,_)::_
+    (objectRef(_,_)::_)
       . ( methodInfo(Sig:Signature, _, classCMT, DecC:ClassType, instanceCT, private) => methodRef(Sig, DecC) )
       (_)
 
@@ -388,7 +388,7 @@ If the method is protected or public, then we should call the version of the met
 */
 rule [Invoke-methodInfo-instance-protected-or-public]:
     <k>
-      objectRef( _, ObjC:ClassType )::_
+      (objectRef( _, ObjC:ClassType )::_)
         . ( methodInfo(Sig:Signature, _, _,_, instanceCT, Acc:AccessMode) => methodRef(Sig, DecC) )
         (_)
       ...
@@ -471,7 +471,7 @@ The rule for package access mode delegates searching for the right method declar
 */
 rule [Invoke-methodInfo-instance-package]:
     <k>
-      objectRef( _, ObjC:ClassType )::QualC:ClassType
+      (objectRef( _, ObjC:ClassType )::QualC:ClassType)
         . ( methodInfo(Sig:Signature, QualC, classCMT, _, instanceCT, package)
             => lookupPackageMethod( Sig, getClassChain(QualC, ObjC), noClass)
           )
@@ -885,7 +885,7 @@ when
 
 // Eliminate the most base class before returning the result, because it is exclusive.
 rule [getClassChain-end]:
-    getClassChain(Class:ClassType, (Class, MoreDerivedClasses:ClassTypes)) => (Class, MoreDerivedClasses)
+    getClassChain(Class:ClassType, (Class, MoreDerivedClasses:ClassTypes)) => (Class, MoreDerivedClasses)<:ClassTypes
 
 rule [Invoke-methodRef-native]:
     <k>
