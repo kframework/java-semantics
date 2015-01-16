@@ -1,34 +1,11 @@
 //@ \section{Module ARRAYS}
-module ARRAY-SYNTAX
-/*@ \subsection{Array access}
-Check array bounds, as part of the dynamic typing policy. */
-syntax ArrayAccess ::= Exp "[" Exp "]" [seqstrict, klabel('ArrayAccess)]
-syntax Exp ::= ArrayAccess
-
-/*@ \subsection{Array Declaration}
-/*  Either 'NewArray( T:ElemType,, ['Dim(N1),,'Dim('N2),, ...],, [...,, 'Dim(.KList),, ...] )
-    Or     'NewArray( T:ElemType,, [...,, 'Dim(.KList),, ...],, 'ArrayInit(_) )
-*/
-syntax ArrayCreationExp ::= "new" Type DimExps Dims [strict(2), klabel('NewArray)]
-syntax ArrayCreationExp ::= "new" Type Dims ArrayInit [klabel('NewArray)]
-syntax Exp ::= ArrayCreationExp
-
-syntax Dim ::= "[" "]" [klabel('Dim)]
-syntax DimExp ::= "[" Exp "]" [strict, hybrid, klabel('Dim)]
-syntax Dims ::= List{Dim,""}
-syntax DimExps ::= List{DimExp,""} [strict]
-syntax VarInit ::= Exp|ArrayInit
-syntax ArrayInit ::= "{" VarInits "}" [klabel('ArrayInit)]
-syntax VarInits ::= List{VarInit, ","}
-
-endmodule
 
 module ARRAYS
     imports CORE-SORTS
     imports SUBTYPING
     imports EXPRESSIONS
     imports SYNTAX-CONVERSIONS
-    imports ARRAY-SYNTAX
+    imports JAVA-SYNTAX
 
 /*@ The value in store that corresponds to an array element. The consturction "elem" Type is meant to
   distinguish between regular memory locations and array elements. Array elements need to be represented separately

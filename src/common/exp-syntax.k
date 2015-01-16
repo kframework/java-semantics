@@ -89,4 +89,21 @@ syntax FieldAccess ::= Exp "." Id [klabel('Field)]
 //TypeName cannot be properly defined, use K instead
 syntax Exp ::= "this" [klabel('This)] | K "." "this" [klabel('QThis)]
 
+//@ \subsection{ArrayAccess.sdf}
+syntax ArrayAccess ::= Exp "[" Exp "]" [seqstrict, klabel('ArrayAccess)]
+syntax Exp ::= ArrayAccess
+
+//@ \subsection{ArrayCreation.sdf}
+/*  Either 'NewArray( T:ElemType,, ['Dim(N1),,'Dim('N2),, ...],, [...,, 'Dim(.KList),, ...] )
+    Or     'NewArray( T:ElemType,, [...,, 'Dim(.KList),, ...],, 'ArrayInit(_) )
+*/
+syntax ArrayCreationExp ::= "new" Type DimExps Dims [strict(2), klabel('NewArray)]
+syntax ArrayCreationExp ::= "new" Type Dims ArrayInit [klabel('NewArray)]
+syntax Exp ::= ArrayCreationExp
+
+syntax Dim ::= "[" "]" [klabel('Dim)]
+syntax DimExp ::= "[" Exp "]" [strict, hybrid, klabel('Dim)]
+
+syntax Dims ::= List{Dim,""} // [klabel('DimList)]
+syntax DimExps ::= List{DimExp,""} [strict]
 endmodule
