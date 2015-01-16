@@ -138,4 +138,19 @@ rule 'StringPartList(Hd,,[Tl:KList]) => [Hd,,Tl] [macro]
 rule 'ClassBodyDecList(Hd,,[Tl:KList]) => [Hd,,Tl] [macro]
 rule '_`,_(Hd,,[Tl:KList]) => [Hd,,Tl] [macro]
 rule '__(Hd,,[Tl:KList]) => [Hd,,Tl] [macro]
+
+//Below is a preparation for the change of parser. possibly used when backend changes.
+syntax KLabel::= "'DimList"
+                |"'DimExprList"
+                |"'ExprList"
+                |"'VarInitList"
+                |"'CatchClauseList"
+                |"'FormalParamList"
+rule 'DimList(Hd,,[Tl:KList]) => [Hd,,Tl] [macro]
+rule 'DimExprList(Hd,,[Tl:KList]) => [Hd,,Tl] [macro]
+rule 'ExprList(Hd,,[Tl:KList]) => [Hd,,Tl] [macro]
+rule 'VarInitList(Hd,,[Tl:KList]) => [Hd,,Tl] [macro]
+rule 'CatchClauseList(Hd,,[Tl:KList]) => [Hd,,Tl] [macro]
+rule 'FormalParamList(Hd,,[Tl:KList]) => [Hd,,Tl] [macro]
+
 endmodule
