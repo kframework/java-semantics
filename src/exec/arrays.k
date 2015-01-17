@@ -20,7 +20,7 @@ context lvalue('ArrayAccess(HOLE,,_))
 context lvalue('ArrayAccess(_:KResult,,HOLE))
 
 rule [ArrayAccess-to-lookup]:
-    arrayRef(_, L:Int, M:Int) :: arrayOf T:Type [N:Int::_]
+    (arrayRef(_, L:Int, M:Int) :: arrayOf T:Type [N:Int::_])
     => lookup(L +Int N, T)
 when (N >=Int 0) andBool (N <Int M)
         [structural, anywhere]

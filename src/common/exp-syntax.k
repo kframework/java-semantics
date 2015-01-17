@@ -27,23 +27,10 @@ syntax ClassInstanceCreationExp ::= "new" ClassType "(" Exps ")" [klabel('NewIns
                                    | Exp "." "new" ClassOrName "(" Exps ")"     [seqstrict(1,3), klabel('QNewInstance)]
 
 syntax StmtExp ::= PrefixPostfixExp|AssignExp|MethodInvokeExp|ClassInstanceCreationExp
-//@ Operators with side effects - prefix, postfix ++/--
-syntax PrefixPostfixExp ::= "dummyPrefixPostfixExp"
-syntax PrefixPostfixExp ::=
-		  Exp "++" [klabel('PostIncr)]
-		| Exp "--" [klabel('PostDecr)]
-		> "++" Exp [klabel('PreIncr)]
-        | "--" Exp [klabel('PreDecr)]
 
- //use sort K instead of Exp for the sake of Lookup, others might be changed when needed
-syntax Exp ::=
-          Exp "*" Exp [seqstrict, klabel('Mul)]
-		| Exp "/" Exp [seqstrict, klabel('Div)]
-		| Exp "%" Exp [seqstrict, klabel('Remain)]
-		| "+" Exp [strict, klabel('Plus)]
-		| "-" Exp [strict, klabel('Minus)]
-		> Exp "+" Exp [seqstrict, klabel('Plus)]
- 		| Exp "-" Exp [seqstrict, klabel('Minus)]
+
+
+
 
 //todo: change to LHS?
 syntax AssignExp ::= K "=" Exp [klabel('Assign)]
@@ -61,6 +48,29 @@ syntax CompoundAssignExp ::= "dummyCompoundAssignExp"
                             | Exp "^=" Exp [klabel('AssignExcOr)]
                             | Exp "|=" Exp [klabel('AssignOr)]
 
+//@ \subsection{UnaryOperators.sdf}
+syntax Exp ::= "~" Exp [strict, klabel('Complement)]
+             | "!" Exp [strict, klabel('Not)]
+             | "+" Exp [strict, klabel('Plus)]
+             | "-" Exp [strict, klabel('Minus)]
+
+//@ Operators with side effects - prefix, postfix ++/--
+syntax PrefixPostfixExp ::= "dummyPrefixPostfixExp"
+syntax PrefixPostfixExp ::=
+		  Exp "++" [klabel('PostIncr)]
+		| Exp "--" [klabel('PostDecr)]
+		> "++" Exp [klabel('PreIncr)]
+        | "--" Exp [klabel('PreDecr)]
+
+syntax Exp ::= "(" PrimType ")" [klabel('CastPrim)]
+syntax Exp ::= "(" RefType ")"  [klabel('CastRef)]
+//@ \subsection{BinaryOperators.sdf}
+syntax Exp ::= Exp "*" Exp [seqstrict, klabel('Mul)]
+		     | Exp "/" Exp [seqstrict, klabel('Div)]
+		     | Exp "%" Exp [seqstrict, klabel('Remain)]
+		     > Exp "+" Exp [seqstrict, klabel('Plus)]
+ 		     | Exp "-" Exp [seqstrict, klabel('Minus)]
+
 syntax Exp ::= Exp "<<" Exp [seqstrict, klabel('LeftShift)]
               | Exp ">>" Exp [seqstrict, klabel('RightShift)]
               | Exp ">>>" Exp [seqstrict, klabel('URightShift)]
@@ -75,11 +85,10 @@ syntax Exp ::= Exp "||" Exp [strict(1), klabel('LazyOr)]
              | Exp "^" Exp [seqstrict, klabel('ExcOr)]
              | Exp "&" Exp [seqstrict, klabel('And)]
 
-syntax Exp ::= "~" Exp [strict, klabel('Complement)]
-             | "!" Exp [strict, klabel('Not)]
-
 syntax Exp ::= Exp "?" Exp ":" Exp [klabel('Cond)]
 syntax Exp ::= Exp "instanceof" RefType [strict, klabel('InstanceOf)]
+
+//@ \subsection{FieldAccess.sdf}
 syntax Exp ::= FieldAccess
 syntax FieldAccess ::= Exp "." Id [klabel('Field)]
                        |"super" "." Id [klabel('SuperField)]
@@ -90,16 +99,22 @@ syntax FieldAccess ::= Exp "." Id [klabel('Field)]
 syntax Exp ::= "this" [klabel('This)] | K "." "this" [klabel('QThis)]
 
 //@ \subsection{ArrayAccess.sdf}
-syntax ArrayAccess ::= Exp "[" Exp "]" [seqstrict, klabel('ArrayAccess)]
+//syntax ArraySubscript ::= "[" Exp "]"   [bracket]
+syntax ArrayAccess ::= Exp "[" Exp "]"    [seqstrict, klabel('ArrayAccess)]
 syntax Exp ::= ArrayAccess
 
 //@ \subsection{ArrayCreation.sdf}
 /*  Either 'NewArray( T:ElemType,, ['Dim(N1),,'Dim('N2),, ...],, [...,, 'Dim(.KList),, ...] )
     Or     'NewArray( T:ElemType,, [...,, 'Dim(.KList),, ...],, 'ArrayInit(_) )
 */
+//cannot put ArrayBaseType instead of Type below, because rules and aux functions use Type
 syntax ArrayCreationExp ::= "new" Type DimExps Dims [strict(2), klabel('NewArray)]
 syntax ArrayCreationExp ::= "new" Type Dims ArrayInit [klabel('NewArray)]
 syntax Exp ::= ArrayCreationExp
+
+syntax ArrayBaseType ::= PrimType
+                       | TypeName
+                       | TypeName "<" "?" ">" [klabel('UnboundWld)]
 
 syntax Dim ::= "[" "]" [klabel('Dim)]
 syntax DimExp ::= "[" Exp "]" [strict, hybrid, klabel('Dim)]
