@@ -218,8 +218,8 @@ rule     (. => lvalue(K)) ~> ((K:K => HOLE) >>>=  _) when notBool (isKResult(K) 
 rule     (. => lvalue(K)) ~> ((K:K => HOLE) &=  _) when notBool (isKResult(K) ==K true)
 rule     (. => lvalue(K)) ~> ((K:K => HOLE) ^=  _) when notBool (isKResult(K) ==K true)
 rule     (. => lvalue(K)) ~> ((K:K => HOLE) |=  _) when notBool (isKResult(K) ==K true)
-rule     (. => lvalue(K)) ~> ++(K:K => HOLE) when notBool (isKResult(K) ==K true)
-rule     (. => lvalue(K)) ~> --(K:K => HOLE) when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> (++(K:K => HOLE))<:PrefixPostfixExp when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> (--(K:K => HOLE))<:PrefixPostfixExp when notBool (isKResult(K) ==K true)
 rule     (. => lvalue(K)) ~> (K:K => HOLE)++ when notBool (isKResult(K) ==K true)
 rule     (. => lvalue(K)) ~> (K:K => HOLE)-- when notBool (isKResult(K) ==K true)
 
@@ -235,8 +235,8 @@ rule     (KR:KResult => .) ~> ((HOLE => KR) >>>=  _)
 rule     (KR:KResult => .) ~> ((HOLE => KR) &=  _)
 rule     (KR:KResult => .) ~> ((HOLE => KR) ^=  _)
 rule     (KR:KResult => .) ~> ((HOLE => KR) |=  _)
-rule     (KR:KResult => .) ~> ++(HOLE => KR)
-rule     (KR:KResult => .) ~> --(HOLE => KR)
+rule     (KR:KResult => .) ~> (++(HOLE => KR))<:PrefixPostfixExp
+rule     (KR:KResult => .) ~> (--(HOLE => KR))<:PrefixPostfixExp
 rule     (KR:KResult => .) ~> (HOLE => KR)++
 rule     (KR:KResult => .) ~> (HOLE => KR)--
 

@@ -33,10 +33,10 @@ syntax StmtExp ::= PrefixPostfixExp|AssignExp|MethodInvokeExp|ClassInstanceCreat
 
 
 //todo: change to LHS?
+//syntax LHS ::= ExprName | FieldAccess | ArrayAccess
 syntax AssignExp ::= K "=" Exp [klabel('Assign)]
 syntax AssignExp ::= CompoundAssignExp
-syntax CompoundAssignExp ::= "dummyCompoundAssignExp"
-                            | Exp "*=" Exp [klabel('AssignMul)]
+syntax CompoundAssignExp ::=  Exp "*=" Exp [klabel('AssignMul)]
                             | Exp "/=" Exp [klabel('AssignDiv)]
                             | Exp "%=" Exp [klabel('AssignRemain)]
                             | Exp "+=" Exp [klabel('AssignPlus)]
@@ -49,21 +49,22 @@ syntax CompoundAssignExp ::= "dummyCompoundAssignExp"
                             | Exp "|=" Exp [klabel('AssignOr)]
 
 //@ \subsection{UnaryOperators.sdf}
+syntax Exp ::= "(" PrimType ")" Exp [klabel('CastPrim)]
+syntax Exp ::= "(" RefType ")" Exp [klabel('CastRef)]
+
 syntax Exp ::= "~" Exp [strict, klabel('Complement)]
              | "!" Exp [strict, klabel('Not)]
              | "+" Exp [strict, klabel('Plus)]
              | "-" Exp [strict, klabel('Minus)]
 
 //@ Operators with side effects - prefix, postfix ++/--
-syntax PrefixPostfixExp ::= "dummyPrefixPostfixExp"
-syntax PrefixPostfixExp ::=
-		  Exp "++" [klabel('PostIncr)]
-		| Exp "--" [klabel('PostDecr)]
-		> "++" Exp [klabel('PreIncr)]
-        | "--" Exp [klabel('PreDecr)]
+syntax PrefixPostfixExp ::= "++" Exp [klabel('PreIncr)]
+                          | "--" Exp [klabel('PreDecr)]
 
-syntax Exp ::= "(" PrimType ")" [klabel('CastPrim)]
-syntax Exp ::= "(" RefType ")"  [klabel('CastRef)]
+//@ \subsection{Postfix.sdf}
+syntax PrefixPostfixExp ::= Exp "++" [klabel('PostIncr)]
+                          | Exp "--" [klabel('PostDecr)]
+
 //@ \subsection{BinaryOperators.sdf}
 syntax Exp ::= Exp "*" Exp [seqstrict, klabel('Mul)]
 		     | Exp "/" Exp [seqstrict, klabel('Div)]
@@ -71,7 +72,7 @@ syntax Exp ::= Exp "*" Exp [seqstrict, klabel('Mul)]
 		     > Exp "+" Exp [seqstrict, klabel('Plus)]
  		     | Exp "-" Exp [seqstrict, klabel('Minus)]
 
-syntax Exp ::= Exp "<<" Exp [seqstrict, klabel('LeftShift)]
+syntax Exp ::=  Exp "<<" Exp [seqstrict, klabel('LeftShift)]
               | Exp ">>" Exp [seqstrict, klabel('RightShift)]
               | Exp ">>>" Exp [seqstrict, klabel('URightShift)]
 
@@ -92,11 +93,7 @@ syntax Exp ::= Exp "instanceof" RefType [strict, klabel('InstanceOf)]
 syntax Exp ::= FieldAccess
 syntax FieldAccess ::= Exp "." Id [klabel('Field)]
                        |"super" "." Id [klabel('SuperField)]
-//                       |TypeName "." "super" "." Id [klabel('QSuperField)]
-//                        |ExprName "." Id [reject]
-
-//TypeName cannot be properly defined, use K instead
-syntax Exp ::= "this" [klabel('This)] | K "." "this" [klabel('QThis)]
+                       |TypeName "." "super" "." Id [klabel('QSuperField)]
 
 //@ \subsection{ArrayAccess.sdf}
 //syntax ArraySubscript ::= "[" Exp "]"   [bracket]
@@ -121,4 +118,21 @@ syntax DimExp ::= "[" Exp "]" [strict, hybrid, klabel('Dim)]
 
 syntax Dims ::= List{Dim,""} // [klabel('DimList)]
 syntax DimExps ::= List{DimExp,""} [strict]
+
+//@ \subsection{Primary.sdf}
+syntax Exp ::= Literal  [klabel('Lit)]
+syntax Literal ::=  IntLiteral
+                  | FloatLiteral
+                  | BoolLiteral
+                  | CharLiteral
+                  | StringLiteral
+                  | NullLiteral
+                  | ClassLiteral
+
+syntax ClassLiteral ::= Type "." "class"    [klabel('Class)]
+                     | "void" "." "class"   [klabel('VoidClass)]
+
+//TypeName cannot be properly defined, use K instead
+syntax Exp ::= "this" [klabel('This)] | K "." "this" [klabel('QThis)]
+
 endmodule

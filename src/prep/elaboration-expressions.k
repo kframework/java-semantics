@@ -61,8 +61,8 @@ when
 //    elabEnd(KL:KLabel(cast(T1:Type, Exp1:K))) => elabRes(cast(T1, KL(Exp1)))
 //when
 //    isPrefixPostfixExp(KL(.KList)) ==K true
-rule elabEnd((++cast(T1:Type, Exp1:K)):PrefixPostfixExp) => elabRes(cast(T1, ++Exp1))
-rule elabEnd((--cast(T1:Type, Exp1:K)):PrefixPostfixExp) => elabRes(cast(T1, --Exp1))
+rule elabEnd((++cast(T1:Type, Exp1:K)):PrefixPostfixExp) => elabRes(cast(T1, (++Exp1)<:PrefixPostfixExp))
+rule elabEnd((--cast(T1:Type, Exp1:K)):PrefixPostfixExp) => elabRes(cast(T1, (--Exp1)<:PrefixPostfixExp))
 rule elabEnd(cast(T1:Type, Exp1:K)++) => elabRes(cast(T1, Exp1++))
 rule elabEnd(cast(T1:Type, Exp1:K)--) => elabRes(cast(T1, Exp1--))
 
