@@ -147,6 +147,7 @@ rule CondExp:Exp ? TrueExp:Exp : FalseExp:Exp => if(CondExp) {TrueExp} else {Fal
 Both basic assignment and compound assignments like +=, -=, etc. */
 
 context _:KResult = HOLE
+syntax LHS ::= TypedVal
 
 rule [Assign]:
     loc(L:Int) :: ResT:Type = V:RawVal :: ResT => store(L, V::ResT) ~> V::ResT

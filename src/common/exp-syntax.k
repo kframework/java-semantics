@@ -30,23 +30,21 @@ syntax StmtExp ::= PrefixPostfixExp|AssignExp|MethodInvokeExp|ClassInstanceCreat
 
 
 
-
-
-//todo: change to LHS?
-//syntax LHS ::= ExprName | FieldAccess | ArrayAccess
-syntax AssignExp ::= K "=" Exp [klabel('Assign)]
+//@ \subsection{AssignmentOperators.sdf}
+syntax LHS ::= ExprName | FieldAccess | ArrayAccess
+syntax AssignExp ::= LHS "=" Exp [klabel('Assign)]
 syntax AssignExp ::= CompoundAssignExp
-syntax CompoundAssignExp ::=  Exp "*=" Exp [klabel('AssignMul)]
-                            | Exp "/=" Exp [klabel('AssignDiv)]
-                            | Exp "%=" Exp [klabel('AssignRemain)]
-                            | Exp "+=" Exp [klabel('AssignPlus)]
-                            | Exp "-=" Exp [klabel('AssignMinus)]
-                            | Exp "<<=" Exp [klabel('AssignLeftShift)]
-                            | Exp ">>=" Exp [klabel('AssignRightShift)]
-                            | Exp ">>>=" Exp [klabel('AssignURightShift)]
-                            | Exp "&=" Exp [klabel('AssignAnd)]
-                            | Exp "^=" Exp [klabel('AssignExcOr)]
-                            | Exp "|=" Exp [klabel('AssignOr)]
+syntax CompoundAssignExp ::=  LHS "*=" Exp [klabel('AssignMul)]
+                            | LHS "/=" Exp [klabel('AssignDiv)]
+                            | LHS "%=" Exp [klabel('AssignRemain)]
+                            | LHS "+=" Exp [klabel('AssignPlus)]
+                            | LHS "-=" Exp [klabel('AssignMinus)]
+                            | LHS "<<=" Exp [klabel('AssignLeftShift)]
+                            | LHS ">>=" Exp [klabel('AssignRightShift)]
+                            | LHS ">>>=" Exp [klabel('AssignURightShift)]
+                            | LHS "&=" Exp [klabel('AssignAnd)]
+                            | LHS "^=" Exp [klabel('AssignExcOr)]
+                            | LHS "|=" Exp [klabel('AssignOr)]
 
 //@ \subsection{UnaryOperators.sdf}
 syntax Exp ::= "(" PrimType ")" Exp [klabel('CastPrim)]

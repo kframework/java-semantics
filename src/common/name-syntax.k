@@ -3,7 +3,7 @@ imports LIST-SYNTAX
 //todo: why does this pure syntax definition affect krun?
 //PackageName, AmbName and PackageorTypeName syntax doesn't cause problems
 //                     syntax PackageName ::= IdList [klabel('PackageName)]
-//                     syntax ExprName::= Id  [klabel('ExprName)]
+                     syntax ExprName::= Id  [klabel('ExprName)]
 //                                      | AmbName "." Id [klabel('ExprName)]
                      syntax TypeName ::= Id [klabel('TypeName)]
 //                                      | PackageOrTypeName "." Id [klabel('TypeName)]
