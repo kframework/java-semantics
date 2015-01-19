@@ -760,7 +760,7 @@ syntax KItem ::= initParams ( Params,   // {T:Type X:Id},... - parameter declara
 
 rule [initParams]:
     initParams(T:Type X:Id, RestP:Params, (TV:TypedVal, RestV:TypedVals))
-      => T X;
+      => (T X;)<:LocalVarDecStmt
       ~> (X = ((T) TV:TypedVal));
       ~> initParams(RestP, RestV)
 

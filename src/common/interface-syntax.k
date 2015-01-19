@@ -1,0 +1,3 @@
+module INTERFACE-SYNTAX
+syntax InterfaceDec
+endmodule

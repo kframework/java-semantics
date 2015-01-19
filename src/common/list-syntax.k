@@ -79,7 +79,7 @@ syntax UserList ::=     BlockStmList
 
 /* todo: Syntax below should be put in other modules when they are perfectly defined. */
                       syntax   InterfaceType
-                      syntax   ExceptionType
+
 
                       syntax   TypeDec::= ClassDec
 

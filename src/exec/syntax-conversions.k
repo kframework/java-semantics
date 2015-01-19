@@ -11,13 +11,8 @@ module SYNTAX-CONVERSIONS
 /*@ \subsection{Method parameter}*/
 
 // 'Param(\_:K,, T:Type,, X:Id). Consumed by initParams().
-syntax KLabel ::= "'Param"
-
 //Required for catch
 rule 'Param(_,, K:Type,, X:Id) => K X [structural]
-
-
-
 
 syntax KItem ::= toParams( KListWrap )          [function]
            | toParams( KListWrap , Params ) [function]
@@ -44,14 +39,11 @@ General structure:
   [Args] - argument expressions
 )
 */
-syntax KLabel ::= "'Invoke"
 
 /* 'Method(Qual:K,, \_:K,, Name:Id)
     'Method('MethodName(Qual:K,, Name:Id))
 */
-syntax KLabel ::= "'Method"
-                | "'MethodName"
-
+syntax KLabel ::= "'MethodName"
 rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:KListWrap) => Qual.Name(toExps(ArgList)) [structural]
 
 //totest model check - expressions should be evaluated from left to right. A test for this
@@ -65,7 +57,6 @@ rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:KListWrap) => 
 
 /*@ \subsection{Local variable declaration}*/
 syntax LocalVarDecStmt ::= Type Id ";"
-syntax KLabel ::= "'VarDec"
 rule 'LocalVarDec(_:K,, T:Type,,['VarDec(X:Id)]) => T X;  [structural]
 
 /*@ \subsection{Cast}*/
@@ -85,15 +76,11 @@ rule lvalue(X:Id) => lvalue('ExprName(X))
     Although we could have just 'QNewInstance at runtime, having runtime semantics for 'NewInstance is preferred
     because we have a lot of 'Throw('NewInstance()) through our runtime semantics.
 */
-syntax KLabel ::= "'NewInstance"
-
 rule 'NewInstance( 'None(.KList),, Class:ClassType,, [ Args:KList ],, 'None(.KList) )
      => new Class( toExps([Args]) )
 
 
 // 'QNewInstance( Qual,, _:K,, Class,, _:K,, [Args],, 'None(.KList) )
-syntax KLabel ::= "'QNewInstance"
-
 rule 'QNewInstance( Qual:Exp,, _:K,, ClassOrName:ClassOrName,, _:K,, [Args:KList],, _:K )
      => Qual . new ClassOrName( toExps([Args]) )
 

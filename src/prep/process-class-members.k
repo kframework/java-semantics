@@ -225,8 +225,6 @@ the only difference is the addition of the types.  */
   Body:K
 )
 */
-syntax KLabel ::= "'MethodDec"
-                | "'MethodDecHead"
 
 //resolving the return type
 context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _),, _)
