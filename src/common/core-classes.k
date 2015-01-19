@@ -125,7 +125,7 @@ syntax Exp ::= TypedVal | RawVal
 /*@ These auxiliary terms functions that should be threated as expressions in the elaboration phase.
 */
 syntax Exp ::= AuxTermExp
-
+syntax LHS ::= AuxTermExp
 /*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
 such as an anonymous class declaration. Is typed with the type of the expression.
 At runtime is rewritten into the statement, that should evaluate into .K, followed by the expression,

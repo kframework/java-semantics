@@ -6,7 +6,7 @@ module TYPE-SYNTAX
     imports NAME-SYNTAX
     imports LIST-SYNTAX
 //@ \subsection{Main.sdf}
-syntax Type ::= PrimitiveType //PrimType in sdf
+syntax Type ::= PrimType
               | RefType
 //Denis' syntax
               | "void" [klabel('Void)]
@@ -26,7 +26,7 @@ syntax FloatType ::= "float" [klabel('Float)] | "double" [klabel('Double)]
 
 //NumType in sdf
 syntax NumericType ::= IntType | FloatType
-syntax PrimitiveType ::= NumericType | "bool" [klabel('Boolean)] //"boolean" in sdf
+syntax PrimType ::= NumericType | "bool" [klabel('Boolean)] //"boolean" in sdf
 
 //@ \subsection{ReferenceTypes.sdf}
     /*@ A fully qualified class name, or noClass where no valid class could be computed.*/
@@ -36,17 +36,20 @@ syntax InterfaceType ::= TypeDecSpec [klabel('InterfaceType)]
                        | TypeDecSpec TypeArgs [prefer, klabel('InterfaceType)]
 syntax ClassType ::= TypeDecSpec [klabel('ClassType)]
                    | TypeDecSpec TypeArgs [prefer, klabel('ClassType)]
-//Denis' syntax
+
+//Denis' syntax (I made ClassType a sub of ClassOrInterfaceType for simplicity of other syntax definitions)
+syntax ClassOrInterfaceType ::= ClassType
 syntax ClassType ::= "class" Id
                    | "noClass"        [latex({\dotCt{K}})]
+
 
 syntax TypeDecSpec ::= TypeName
                      | TypeDecSpec TypeArgs "." Id [klabel('Member)]
 
 syntax TypeVar ::= TypeVarId   [klabel('TypeVar)]
 
-syntax ArrayType ::= Type "[" "]"   [strict, klabel('ArrayType)]
-//The above syntax is different from Denis' arrayType syntax, so added anywhere rule here
+syntax ArrayType ::= Type "[" "]"   [strict, klabel('ArrayType)] | "arrayOf" Type
+//The sdf syntax (left) is different from Denis' syntax (right), so added anywhere rule here
 rule 'ArrayType(T:Type) => arrayOf T     [anywhere]
 
 syntax RefType ::= ClassOrInterfaceType | ArrayType
@@ -55,9 +58,7 @@ syntax RefType ::= ClassOrInterfaceType | ArrayType
         by the JLS although inaccessible to the programmer. String objects and types are not threated as regular objects
         in the present semantics for performance reasons.
 */
-syntax RefType ::= ClassType
-                 | "arrayOf" Type
-                 | "nullType"
+syntax RefType ::= "nullType"
 
 //@ \subsection{TypeVariables.sdf}
 syntax TypeVarId ::= Id

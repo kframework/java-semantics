@@ -47,7 +47,6 @@ syntax TryStmt ::= "try" Block CatchClauses "finally" Block [klabel('Try)]
 		           |"try" Block CatchClauses [klabel('Try)]
 syntax Param ::= Type Id       [klabel('ParamImpl)]
 syntax CatchClause ::="catch" "(" Param ")" Block [klabel('Catch)]
-syntax CatchClauses ::= List{CatchClause,""} [strict]
 
 syntax StackConsumerStmt ::= "dummyStackConsumerStmt"|ThrowStmt|ContinueStmt|BreakStmt|ReturnStmt
 syntax ThrowStmt ::= "throw" K ";" [strict, klabel('Throw)]

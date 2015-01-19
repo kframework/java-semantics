@@ -4,6 +4,8 @@ require "list-syntax.k"
 require "lexical-syntax.k"
 require "literal-syntax.k"
 require "name-syntax.k"
+require "class-syntax.k"
+require "array-syntax.k"
 module JAVA-SYNTAX
     imports LIST-SYNTAX
     imports STMT-SYNTAX
@@ -11,4 +13,6 @@ module JAVA-SYNTAX
     imports LEXICAL-SYNTAX
     imports LITERAL-SYNTAX
     imports NAME-SYNTAX
+    imports CLASS-SYNTAX
+    imports ARRAY-SYNTAX
 endmodule

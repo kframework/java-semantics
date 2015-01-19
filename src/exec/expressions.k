@@ -147,6 +147,7 @@ rule CondExp:Exp ? TrueExp:Exp : FalseExp:Exp => if(CondExp) {TrueExp} else {Fal
 Both basic assignment and compound assignments like +=, -=, etc. */
 
 context _:KResult = HOLE
+syntax LHS ::= TypedVal
 
 rule [Assign]:
     loc(L:Int) :: ResT:Type = V:RawVal :: ResT => store(L, V::ResT) ~> V::ResT
@@ -218,8 +219,8 @@ rule     (. => lvalue(K)) ~> ((K:K => HOLE) >>>=  _) when notBool (isKResult(K) 
 rule     (. => lvalue(K)) ~> ((K:K => HOLE) &=  _) when notBool (isKResult(K) ==K true)
 rule     (. => lvalue(K)) ~> ((K:K => HOLE) ^=  _) when notBool (isKResult(K) ==K true)
 rule     (. => lvalue(K)) ~> ((K:K => HOLE) |=  _) when notBool (isKResult(K) ==K true)
-rule     (. => lvalue(K)) ~> ++(K:K => HOLE) when notBool (isKResult(K) ==K true)
-rule     (. => lvalue(K)) ~> --(K:K => HOLE) when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> (++(K:K => HOLE))<:PrefixPostfixExp when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> (--(K:K => HOLE))<:PrefixPostfixExp when notBool (isKResult(K) ==K true)
 rule     (. => lvalue(K)) ~> (K:K => HOLE)++ when notBool (isKResult(K) ==K true)
 rule     (. => lvalue(K)) ~> (K:K => HOLE)-- when notBool (isKResult(K) ==K true)
 
@@ -235,8 +236,8 @@ rule     (KR:KResult => .) ~> ((HOLE => KR) >>>=  _)
 rule     (KR:KResult => .) ~> ((HOLE => KR) &=  _)
 rule     (KR:KResult => .) ~> ((HOLE => KR) ^=  _)
 rule     (KR:KResult => .) ~> ((HOLE => KR) |=  _)
-rule     (KR:KResult => .) ~> ++(HOLE => KR)
-rule     (KR:KResult => .) ~> --(HOLE => KR)
+rule     (KR:KResult => .) ~> (++(HOLE => KR))<:PrefixPostfixExp
+rule     (KR:KResult => .) ~> (--(HOLE => KR))<:PrefixPostfixExp
 rule     (KR:KResult => .) ~> (HOLE => KR)++
 rule     (KR:KResult => .) ~> (HOLE => KR)--
 

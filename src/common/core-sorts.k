@@ -182,6 +182,7 @@ syntax MethodRef ::=   methodRef(
                           )
                         | "noMethodRef"   [latex({\dotCt{K}})]
 syntax KResult ::= MethodRef
+syntax MethodName ::= MethodRef
 
 /*@ A list of types. Elements are of sort Type. Used especially to denote argument types of a method.*/
 syntax Types ::=  types (

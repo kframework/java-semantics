@@ -8,60 +8,84 @@ module EXP-SYNTAX
     imports SHARED-SYNTAX
 
 syntax Exp ::= StmtExp
-syntax Exps ::= List{Exp, ","} [seqstrict]
-
-//cannot use this either
-//syntax MethodInvokeExp ::= MethodSpec "(" KListWrap ")" [klabel('Invoke)]
-//syntax MethodSpec ::= MethodName [klabel('Method)]
-//                    |Exp "." K Id [klabel('Method)]
-//                    |"super" "." K Id [klabel('SuperMethod)]
-//                    |TypeName "." "super" "." K Id [klabel('QSuperMethod)]
-//                    |AmbName "." K Id [klabel('GenericMethod)]
-
-syntax MethodName ::= Id | MethodRef
-syntax MethodInvokeExp ::= K "." MethodName "(" Exps ")"       [seqstrict(1,3), klabel('MethodImpl)]
-
-
-syntax ClassOrName ::= Id | ClassType
-syntax ClassInstanceCreationExp ::= "new" ClassType "(" Exps ")" [klabel('NewInstance)]
-                                   | Exp "." "new" ClassOrName "(" Exps ")"     [seqstrict(1,3), klabel('QNewInstance)]
-
 syntax StmtExp ::= PrefixPostfixExp|AssignExp|MethodInvokeExp|ClassInstanceCreationExp
-//@ Operators with side effects - prefix, postfix ++/--
-syntax PrefixPostfixExp ::= "dummyPrefixPostfixExp"
-syntax PrefixPostfixExp ::=
-		  Exp "++" [klabel('PostIncr)]
-		| Exp "--" [klabel('PostDecr)]
-		> "++" Exp [klabel('PreIncr)]
-        | "--" Exp [klabel('PreDecr)]
 
- //use sort K instead of Exp for the sake of Lookup, others might be changed when needed
-syntax Exp ::=
-          Exp "*" Exp [seqstrict, klabel('Mul)]
-		| Exp "/" Exp [seqstrict, klabel('Div)]
-		| Exp "%" Exp [seqstrict, klabel('Remain)]
-		| "+" Exp [strict, klabel('Plus)]
-		| "-" Exp [strict, klabel('Minus)]
-		> Exp "+" Exp [seqstrict, klabel('Plus)]
- 		| Exp "-" Exp [seqstrict, klabel('Minus)]
+//@ \subsection{MethodInvocation.sdf}
+syntax MethodInvokeExp ::= MethodSpec "(" Exps ")"          [klabel('Invoke)]
+syntax MethodSpec ::= MethodName                            [klabel('Method)]
+                    | Exp "." TypeArgs Id                   [prefer, klabel('Method)]
+                    | Exp "." Id                            [klabel('Method)]
+                    | "super" "." TypeArgs Id               [prefer, klabel('SuperMethod)]
+                    | "super" "." Id                        [klabel('SuperMethod)]
+                    | TypeName "." "super" "." TypeArgs Id  [prefer, klabel('QSuperMethod)]
+                    | TypeName "." "super" "." Id           [klabel('QSuperMethod)]
+                    | AmbName "." TypeArgs Id               [klabel('GenericMethod)]
 
-//todo: change to LHS?
-syntax AssignExp ::= K "=" Exp [klabel('Assign)]
+//Denis' syntax
+syntax MethodInvokeExp ::= K "." MethodName "(" Exps ")"    [seqstrict(1,3), klabel('MethodImpl)]
+
+//@ \subsection{ClassInstanceCreation.sdf}
+/*todo: for optionals, I usually used two syntax and one with [prefer] attribute.
+But ClassInstanceCreationExp has two or three optionals inside one syntax declaration,
+I feel I am doing wired things.*/
+syntax ClassInstanceCreationExp ::= "new" TypeArgs ClassOrInterfaceType "(" Exps ")" ClassBody  [klabel('NewInstance)]
+                                  | "new" ClassOrInterfaceType "(" Exps ")" ClassBody  [klabel('NewInstance)]
+                                  | "new" TypeArgs ClassOrInterfaceType "(" Exps ")"  [klabel('NewInstance)]
+                                  | "new" ClassOrInterfaceType "(" Exps ")"  [klabel('NewInstance)]
+                                  | Exp "." "new" TypeArgs Id TypeArgs "(" Exps ")" ClassBody [klabel('QNewInstance)]
+                                  | Exp "." "new" TypeArgs Id TypeArgs "(" Exps ")"  [klabel('QNewInstance)]
+                                  | Exp "." "new" TypeArgs Id "(" Exps ")" ClassBody [klabel('QNewInstance)]
+                                  | Exp "." "new" TypeArgs Id "(" Exps ")"  [klabel('QNewInstance)]
+                                  | Exp "." "new" Id TypeArgs "(" Exps ")" ClassBody [klabel('QNewInstance)]
+                                  | Exp "." "new" Id TypeArgs "(" Exps ")" [klabel('QNewInstance)]
+                                  | Exp "." "new" Id "(" Exps ")" ClassBody [klabel('QNewInstance)]
+                                  | Exp "." "new" Id "(" Exps ")" [klabel('QNewInstance)]
+
+//Denis' syntax
+syntax ClassOrName ::= Id | ClassType
+syntax ClassInstanceCreationExp ::= Exp "." "new" ClassOrName "(" Exps ")"  [seqstrict(1,3), klabel('QNewInstance)]
+
+//@ \subsection{AssignmentOperators.sdf}
+syntax LHS ::= ExprName | FieldAccess | ArrayAccess
+syntax AssignExp ::= LHS "=" Exp [klabel('Assign)]
 syntax AssignExp ::= CompoundAssignExp
-syntax CompoundAssignExp ::= "dummyCompoundAssignExp"
-                            | Exp "*=" Exp [klabel('AssignMul)]
-                            | Exp "/=" Exp [klabel('AssignDiv)]
-                            | Exp "%=" Exp [klabel('AssignRemain)]
-                            | Exp "+=" Exp [klabel('AssignPlus)]
-                            | Exp "-=" Exp [klabel('AssignMinus)]
-                            | Exp "<<=" Exp [klabel('AssignLeftShift)]
-                            | Exp ">>=" Exp [klabel('AssignRightShift)]
-                            | Exp ">>>=" Exp [klabel('AssignURightShift)]
-                            | Exp "&=" Exp [klabel('AssignAnd)]
-                            | Exp "^=" Exp [klabel('AssignExcOr)]
-                            | Exp "|=" Exp [klabel('AssignOr)]
+syntax CompoundAssignExp ::=  LHS "*=" Exp [klabel('AssignMul)]
+                            | LHS "/=" Exp [klabel('AssignDiv)]
+                            | LHS "%=" Exp [klabel('AssignRemain)]
+                            | LHS "+=" Exp [klabel('AssignPlus)]
+                            | LHS "-=" Exp [klabel('AssignMinus)]
+                            | LHS "<<=" Exp [klabel('AssignLeftShift)]
+                            | LHS ">>=" Exp [klabel('AssignRightShift)]
+                            | LHS ">>>=" Exp [klabel('AssignURightShift)]
+                            | LHS "&=" Exp [klabel('AssignAnd)]
+                            | LHS "^=" Exp [klabel('AssignExcOr)]
+                            | LHS "|=" Exp [klabel('AssignOr)]
 
-syntax Exp ::= Exp "<<" Exp [seqstrict, klabel('LeftShift)]
+//@ \subsection{UnaryOperators.sdf}
+syntax Exp ::= "(" PrimType ")" Exp [klabel('CastPrim)]
+syntax Exp ::= "(" RefType ")" Exp [klabel('CastRef)]
+
+syntax Exp ::= "~" Exp [strict, klabel('Complement)]
+             | "!" Exp [strict, klabel('Not)]
+             | "+" Exp [strict, klabel('Plus)]
+             | "-" Exp [strict, klabel('Minus)]
+
+//@ Operators with side effects - prefix, postfix ++/--
+syntax PrefixPostfixExp ::= "++" Exp [klabel('PreIncr)]
+                          | "--" Exp [klabel('PreDecr)]
+
+//@ \subsection{Postfix.sdf}
+syntax PrefixPostfixExp ::= Exp "++" [klabel('PostIncr)]
+                          | Exp "--" [klabel('PostDecr)]
+
+//@ \subsection{BinaryOperators.sdf}
+syntax Exp ::= Exp "*" Exp [seqstrict, klabel('Mul)]
+		     | Exp "/" Exp [seqstrict, klabel('Div)]
+		     | Exp "%" Exp [seqstrict, klabel('Remain)]
+		     > Exp "+" Exp [seqstrict, klabel('Plus)]
+ 		     | Exp "-" Exp [seqstrict, klabel('Minus)]
+
+syntax Exp ::=  Exp "<<" Exp [seqstrict, klabel('LeftShift)]
               | Exp ">>" Exp [seqstrict, klabel('RightShift)]
               | Exp ">>>" Exp [seqstrict, klabel('URightShift)]
 
@@ -75,18 +99,49 @@ syntax Exp ::= Exp "||" Exp [strict(1), klabel('LazyOr)]
              | Exp "^" Exp [seqstrict, klabel('ExcOr)]
              | Exp "&" Exp [seqstrict, klabel('And)]
 
-syntax Exp ::= "~" Exp [strict, klabel('Complement)]
-             | "!" Exp [strict, klabel('Not)]
-
 syntax Exp ::= Exp "?" Exp ":" Exp [klabel('Cond)]
 syntax Exp ::= Exp "instanceof" RefType [strict, klabel('InstanceOf)]
+
+//@ \subsection{FieldAccess.sdf}
 syntax Exp ::= FieldAccess
 syntax FieldAccess ::= Exp "." Id [klabel('Field)]
                        |"super" "." Id [klabel('SuperField)]
-//                       |TypeName "." "super" "." Id [klabel('QSuperField)]
-//                        |ExprName "." Id [reject]
+                       |TypeName "." "super" "." Id [klabel('QSuperField)]
 
-//TypeName cannot be properly defined, use K instead
-syntax Exp ::= "this" [klabel('This)] | K "." "this" [klabel('QThis)]
+//@ \subsection{ArrayAccess.sdf}
+//syntax ArraySubscript ::= "[" Exp "]"   [bracket]
+syntax ArrayAccess ::= Exp "[" Exp "]"    [seqstrict, klabel('ArrayAccess)]
+syntax Exp ::= ArrayAccess
 
+//@ \subsection{ArrayCreation.sdf}
+/*  Either 'NewArray( T:ElemType,, ['Dim(N1),,'Dim('N2),, ...],, [...,, 'Dim(.KList),, ...] )
+    Or     'NewArray( T:ElemType,, [...,, 'Dim(.KList),, ...],, 'ArrayInit(_) )
+*/
+//todo:cannot put ArrayBaseType instead of Type below, because rules and aux functions use Type
+syntax ArrayCreationExp ::= "new" Type DimExps Dims [strict(2), klabel('NewArray)]
+syntax ArrayCreationExp ::= "new" Type Dims ArrayInit [klabel('NewArray)]
+syntax Exp ::= ArrayCreationExp
+
+syntax ArrayBaseType ::= PrimType
+                       | TypeName
+                       | TypeName "<" "?" ">" [klabel('UnboundWld)]
+
+syntax Dim ::= "[" "]" [klabel('Dim)]
+syntax DimExp ::= "[" Exp "]" [strict, hybrid, klabel('Dim)]
+
+//@ \subsection{Primary.sdf}
+syntax Exp ::= Literal  [klabel('Lit)]
+syntax Literal ::=  IntLiteral
+                  | FloatLiteral
+                  | BoolLiteral
+                  | CharLiteral
+                  | StringLiteral
+                  | NullLiteral
+                  | ClassLiteral
+
+syntax ClassLiteral ::= Type "." "class"    [klabel('Class)]
+                     | "void" "." "class"   [klabel('VoidClass)]
+
+syntax Exp ::= "this" [klabel('This)] | TypeName "." "this" [klabel('QThis)]
+syntax Exp ::= "(" Exp ")"  [bracket]
 endmodule
