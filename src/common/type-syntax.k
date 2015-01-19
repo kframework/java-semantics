@@ -8,7 +8,8 @@ module TYPE-SYNTAX
 //@ \subsection{Main.sdf}
 syntax Type ::= PrimType
               | RefType
-//Denis' syntax
+/*Denis' syntax: actually in sdf "void" together with Type composed ResultType,
+since now "void" is Type, there is no need for another syntax of ResultType.*/
               | "void" [klabel('Void)]
 
 //@ \subsection{ParameterizedTypes.sdf}

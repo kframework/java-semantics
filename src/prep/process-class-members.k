@@ -243,7 +243,7 @@ rule [MethodDec]:
         Body:K //could be 'Block([...]) or 'NoMethodBody
       )
       => storeMethod([Params],
-            getContextType(Modifiers), getAccessMode(Modifiers), isSynchronized(Modifiers), methodMMT, noValue, Body,
+            getContextType(Modifiers), getAccessMode(Modifiers), isSynchronizedModifiers(Modifiers), methodMMT, noValue, Body,
             sig(Name, getTypes([Params])), ReturnType)
       ...
     </k>
@@ -374,7 +374,7 @@ rule [ConstrDec]:
           'ConstrBody(
         'Some(FirstLine:K) ,,[BodyKs:KList]))
       => storeMethod([Params],
-          instanceCT, getAccessMode(Modifiers), isSynchronized(Modifiers), constructorMMT, FirstLine,
+          instanceCT, getAccessMode(Modifiers), isSynchronizedModifiers(Modifiers), constructorMMT, FirstLine,
           'Block([
 
             //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
@@ -516,17 +516,17 @@ rule [convertInstanceInitIntoMethod]:
 //@ \subsection{Auxiliary functions}
 
 //@ Evaluates to true::bool if synchronized is among modifiers, false otherwise
-syntax KItem ::=  isSynchronized (
+syntax KItem ::=  isSynchronizedModifiers (
                 KListWrap       //[...] - the list of method attributes
               )
               [function]
 
-rule isSynchronized(['Synchronized(_),,_]) => true::bool
+rule isSynchronizedModifiers(['Synchronized(_),,_]) => true::bool
 
-rule isSynchronized([(KL:KLabel(_) => .KList),, _])
+rule isSynchronizedModifiers([(KL:KLabel(_) => .KList),, _])
 when        KL =/=KLabel 'Synchronized
 
-rule isSynchronized([.KList]) => false::bool
+rule isSynchronizedModifiers([.KList]) => false::bool
 
 //@ Used to provide an approximate implementation of the distinction between static constant and non-constant fields.
 syntax KItem ::=  isFinalModifiers (

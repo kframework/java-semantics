@@ -28,9 +28,6 @@ syntax StmtWithoutTrailing ::= Block
 syntax BlockStmt ::= Stmt|LocalVarDecStmt|ClassDec
 syntax LocalVarDecStmt ::= LocalVarDec ";" [klabel('LocalVarDecStm)]
 syntax LocalVarDec ::= AnnoVarModList Type VarDecList [klabel('LocalVarDec)]
-syntax ClassBody ::= "{" ClassBodyDecList "}" [klabel('ClassBody)]
-syntax ClassDecHead ::= AnnoClassModList "class" Id K K K [klabel('ClassDecHead)]
-syntax ClassDec ::= ClassDecHead ClassBody [klabel('ClassDec)]
 
 syntax Block ::= "{" K "}" [klabel('Block)]
 syntax EmptyStmt ::= ";" [klabel('Empty)]

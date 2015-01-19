@@ -79,6 +79,7 @@ syntax Native ::= "native" [klabel('Native)]
 syntax Transient ::= "transient" [klabel('Transient)]
 syntax Volatile ::= "volatile" [klabel('Volatile)]
 syntax StrictFP ::= "strictfp" [klabel('StrictFP)]
+syntax Synchronized ::= "synchronized" [klabel('Synchronized)]
 syntax Modifier ::= Public
                   | Private
                   | Protected
@@ -89,6 +90,7 @@ syntax Modifier ::= Public
                   | Transient
                   | Volatile
                   | StrictFP
+                  | Synchronized
 
 //@ \subsection{UnicodeEscape.sdf}
 syntax UnicodeEscape ::= Token {[\\][u]+ [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]} [onlyLabel, klabel('UnicodeEscape)]

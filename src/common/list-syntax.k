@@ -82,19 +82,19 @@ syntax UserList ::=     BlockStmList
                       syntax   ExceptionType
 
                       syntax   TypeDec::= ClassDec
-                      syntax   VarDec
+
                       syntax   ImportDec
 
 
 
                       syntax   AbstractMethodMod
                       syntax   AnnoAbstractMethodMod
-                      syntax   AnnoMethodMod
-                      syntax   AnnoVarMod
-                      syntax   AnnoClassMod
-                      syntax   AnnoConstrMod
+
+
+
+
                       syntax   AnnoConstantMod
-                      syntax   AnnoFieldMod
+
                       syntax   AnnoInterfaceMod
                       syntax   Anno
                       syntax   AnnoElemDec
@@ -102,8 +102,6 @@ syntax UserList ::=     BlockStmList
                       syntax   ElemValPair
                       syntax   ElemVal
 
-                      syntax   EnumConst
-                      syntax   ClassBodyDec
 
 endmodule
 
