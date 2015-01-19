@@ -196,7 +196,7 @@ rule [storeImpl-array-location-check-type]:
             else
             {throw new class String2Id("java.lang.ArrayStoreException") (
                 //the ArrayStoreException argument is the assigned object type
-                (V::T .String2Id("getClass") (.TypedVals)) .String2Id("getName") (.TypedVals)
+                (V::T .((String2Id("getClass")):>MethodName) (.TypedVals)) .((String2Id("getName")):>MethodName) (.TypedVals)
             );
           }
       ...

@@ -11,15 +11,15 @@ syntax Exp ::= StmtExp
 syntax StmtExp ::= PrefixPostfixExp|AssignExp|MethodInvokeExp|ClassInstanceCreationExp
 
 //@ \subsection{MethodInvocation.sdf}
-//syntax MethodInvokeExp ::= MethodSpec "(" Exps ")"          [klabel('Invoke)]
-//syntax MethodSpec ::= MethodName                            [klabel('Method)]
-//                    | Exp "." TypeArgs Id                   [prefer, klabel('Method)]
-//                    | Exp "." Id                            [klabel('Method)]
-//                    | "super" "." TypeArgs Id               [prefer, klabel('SuperMethod)]
-//                    | "super" "." Id                        [klabel('SuperMethod)]
-//                    | TypeName "." "super" "." TypeArgs Id  [prefer, klabel('QSuperMethod)]
-//                    | TypeName "." "super" "." Id           [klabel('QSuperMethod)]
-//                    | AmbName "." TypeArgs Id               [klabel('GenericMethod)]
+syntax MethodInvokeExp ::= MethodSpec "(" Exps ")"          [klabel('Invoke)]
+syntax MethodSpec ::= MethodName                            [klabel('Method)]
+                    | Exp "." TypeArgs Id                   [prefer, klabel('Method)]
+                    | Exp "." Id                            [klabel('Method)]
+                    | "super" "." TypeArgs Id               [prefer, klabel('SuperMethod)]
+                    | "super" "." Id                        [klabel('SuperMethod)]
+                    | TypeName "." "super" "." TypeArgs Id  [prefer, klabel('QSuperMethod)]
+                    | TypeName "." "super" "." Id           [klabel('QSuperMethod)]
+                    | AmbName "." TypeArgs Id               [klabel('GenericMethod)]
 
 //Denis' syntax
 syntax MethodInvokeExp ::= K "." MethodName "(" Exps ")"       [seqstrict(1,3), klabel('MethodImpl)]
