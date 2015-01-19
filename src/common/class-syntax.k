@@ -23,19 +23,19 @@ syntax AnnoClassMod ::= Anno | ClassMod
 syntax Super ::= "extends" ClassType                    [klabel('SuperDec)]
 syntax Interfaces ::= "implements" InterfaceTypeList    [klabel('ImplementsDec)]
 
-syntax ClassBodyDec ::= InstanceInit | StaticInit ClassMemberDec //| ConstrDec
+syntax ClassBodyDec ::= InstanceInit | StaticInit ClassMemberDec | ConstrDec
 
 syntax ClassMemberDec ::= FieldDec | ClassDec | MethodDec | InterfaceDec | ";" [klabel('SemiColon)]
 
-//@ \subsection{ConstructorDeclarations.sdf} todo
-//syntax ConstrHead   ::=  AnnoConstrModList TypeParams Type Id "(" Params ")" Throws [prefer, klabel('ConstrDecHead)]
-//                       | AnnoConstrModList TypeParams Type Id "(" Params ")"    [klabel('ConstrDecHead)]
-//                       | AnnoConstrModList Type Id "(" Params ")" Throws   [klabel('ConstrDecHead)]
-//                       | AnnoConstrModList Type Id "(" Params ")"    [klabel('ConstrDecHead)]
-//
-//syntax ConstrDec ::= ConstrHead ConstrBody                    [klabel('ConstrDec)]
-//syntax ConstrBody ::= "{" ConstrInv BlockStmList "}"          [prefer, klabel('ConstrBody)]
-                   // | "{" BlockStmList "}"                    [klabel('ConstrBody)]
+//@ \subsection{ConstructorDeclarations.sdf}
+syntax ConstrHead   ::=  AnnoConstrModList TypeParams Type Id "(" Params ")" Throws [prefer, klabel('ConstrDecHead)]
+                       | AnnoConstrModList TypeParams Type Id "(" Params ")"    [klabel('ConstrDecHead)]
+                       | AnnoConstrModList Type Id "(" Params ")" Throws   [klabel('ConstrDecHead)]
+                       | AnnoConstrModList Type Id "(" Params ")"    [klabel('ConstrDecHead)]
+
+syntax ConstrDec ::= ConstrHead ConstrBody                    [klabel('ConstrDec)]
+syntax ConstrBody ::= "{" ConstrInv BlockStmList "}"          [prefer, klabel('ConstrBody)]
+                    | "{" BlockStmList "}"                    [klabel('ConstrBody)]
 
 syntax ConstrInv ::= TypeArgs "this"  "(" Exps ")" ";"        [prefer, klabel('AltConstrInv)]
 syntax ConstrInv ::= "this"  "(" Exps ")" ";"                 [klabel('AltConstrInv)]
