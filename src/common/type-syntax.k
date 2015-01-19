@@ -36,9 +36,12 @@ syntax InterfaceType ::= TypeDecSpec [klabel('InterfaceType)]
                        | TypeDecSpec TypeArgs [prefer, klabel('InterfaceType)]
 syntax ClassType ::= TypeDecSpec [klabel('ClassType)]
                    | TypeDecSpec TypeArgs [prefer, klabel('ClassType)]
-//Denis' syntax
+
+//Denis' syntax (I made ClassType a sub of ClassOrInterfaceType for simplicity of other syntax definitions)
+syntax ClassOrInterfaceType ::= ClassType
 syntax ClassType ::= "class" Id
                    | "noClass"        [latex({\dotCt{K}})]
+
 
 syntax TypeDecSpec ::= TypeName
                      | TypeDecSpec TypeArgs "." Id [klabel('Member)]
@@ -55,8 +58,7 @@ syntax RefType ::= ClassOrInterfaceType | ArrayType
         by the JLS although inaccessible to the programmer. String objects and types are not threated as regular objects
         in the present semantics for performance reasons.
 */
-syntax RefType ::= ClassType
-                 | "nullType"
+syntax RefType ::= "nullType"
 
 //@ \subsection{TypeVariables.sdf}
 syntax TypeVarId ::= Id

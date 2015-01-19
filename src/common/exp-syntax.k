@@ -22,26 +22,28 @@ syntax MethodSpec ::= MethodName                            [klabel('Method)]
                     | AmbName "." TypeArgs Id               [klabel('GenericMethod)]
 
 //Denis' syntax
-syntax MethodInvokeExp ::= K "." MethodName "(" Exps ")"       [seqstrict(1,3), klabel('MethodImpl)]
+syntax MethodInvokeExp ::= K "." MethodName "(" Exps ")"    [seqstrict(1,3), klabel('MethodImpl)]
 
-//@ \subsection{MethodInvocation.sdf} todo
-//syntax ClassInstanceCreationExp ::= "new" TypeArgs ClassOrInterfaceType "(" Exps ")" ClassBody  [klabel('NewInstance)]
-//                                  | "new" ClassOrInterfaceType "(" Exps ")" ClassBody  [klabel('NewInstance)]
-//                                  | "new" TypeArgs ClassOrInterfaceType "(" Exps ")"  [klabel('NewInstance)]
-//                                  | "new" ClassOrInterfaceType "(" Exps ")"  [klabel('NewInstance)]
-//                                  | Exp "." "new" TypeArgs Id TypeArgs "(" Exps ")" ClassBody [klabel('QNewInstance)]
-//                                  | Exp "." "new" TypeArgs Id TypeArgs "(" Exps ")"  [klabel('QNewInstance)]
-//                                  | Exp "." "new" TypeArgs Id "(" Exps ")" ClassBody [klabel('QNewInstance)]
-//                                  | Exp "." "new" TypeArgs Id "(" Exps ")"  [klabel('QNewInstance)]
-//                                  | Exp "." "new" Id TypeArgs "(" Exps ")" ClassBody [klabel('QNewInstance)]
-//                                  | Exp "." "new" Id TypeArgs "(" Exps ")" [klabel('QNewInstance)]
-//                                  | Exp "." "new" Id "(" Exps ")" ClassBody [klabel('QNewInstance)]
-//                                  | Exp "." "new" Id "(" Exps ")" [klabel('QNewInstance)]
+//@ \subsection{ClassInstanceCreation.sdf}
+/*todo: for optionals, I usually used two syntax and one with [prefer] attribute.
+But ClassInstanceCreationExp has two or three optionals inside one syntax declaration,
+I feel I am doing wired things.*/
+syntax ClassInstanceCreationExp ::= "new" TypeArgs ClassOrInterfaceType "(" Exps ")" ClassBody  [klabel('NewInstance)]
+                                  | "new" ClassOrInterfaceType "(" Exps ")" ClassBody  [klabel('NewInstance)]
+                                  | "new" TypeArgs ClassOrInterfaceType "(" Exps ")"  [klabel('NewInstance)]
+                                  | "new" ClassOrInterfaceType "(" Exps ")"  [klabel('NewInstance)]
+                                  | Exp "." "new" TypeArgs Id TypeArgs "(" Exps ")" ClassBody [klabel('QNewInstance)]
+                                  | Exp "." "new" TypeArgs Id TypeArgs "(" Exps ")"  [klabel('QNewInstance)]
+                                  | Exp "." "new" TypeArgs Id "(" Exps ")" ClassBody [klabel('QNewInstance)]
+                                  | Exp "." "new" TypeArgs Id "(" Exps ")"  [klabel('QNewInstance)]
+                                  | Exp "." "new" Id TypeArgs "(" Exps ")" ClassBody [klabel('QNewInstance)]
+                                  | Exp "." "new" Id TypeArgs "(" Exps ")" [klabel('QNewInstance)]
+                                  | Exp "." "new" Id "(" Exps ")" ClassBody [klabel('QNewInstance)]
+                                  | Exp "." "new" Id "(" Exps ")" [klabel('QNewInstance)]
 
 //Denis' syntax
 syntax ClassOrName ::= Id | ClassType
-syntax ClassInstanceCreationExp ::= "new" ClassType "(" Exps ")" [klabel('NewInstance)]
-                                   | Exp "." "new" ClassOrName "(" Exps ")"     [seqstrict(1,3), klabel('QNewInstance)]
+syntax ClassInstanceCreationExp ::= Exp "." "new" ClassOrName "(" Exps ")"  [seqstrict(1,3), klabel('QNewInstance)]
 
 //@ \subsection{AssignmentOperators.sdf}
 syntax LHS ::= ExprName | FieldAccess | ArrayAccess
@@ -140,7 +142,6 @@ syntax Literal ::=  IntLiteral
 syntax ClassLiteral ::= Type "." "class"    [klabel('Class)]
                      | "void" "." "class"   [klabel('VoidClass)]
 
-//todo:TypeName cannot be properly defined, using K instead
-syntax Exp ::= "this" [klabel('This)] | K "." "this" [klabel('QThis)]
+syntax Exp ::= "this" [klabel('This)] | TypeName "." "this" [klabel('QThis)]
 syntax Exp ::= "(" Exp ")"  [bracket]
 endmodule
