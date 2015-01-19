@@ -17,7 +17,7 @@ syntax KLabel ::= "'Param"
 rule 'Param(_,, K:Type,, X:Id) => K X [structural]
 
 
-syntax Params ::= List{Param, ","}
+
 
 syntax KItem ::= toParams( KListWrap )          [function]
            | toParams( KListWrap , Params ) [function]

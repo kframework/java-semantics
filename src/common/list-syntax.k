@@ -40,6 +40,12 @@ syntax BlockStmList ::= List{BlockStmt, ""} [klabel('BlockStmList)]
 syntax SwitchGroupList ::= List{SwitchGroup, ""} [klabel('SwitchGroupList)]
 syntax SwitchLabelList ::= List{SwitchLabel, ""} [klabel('SwitchLabelList)]
 
+syntax Exps ::= List{Exp, ","} [seqstrict]
+syntax Dims ::= List{Dim,""} // [klabel('DimList)]
+syntax DimExps ::= List{DimExp,""} [strict]
+syntax VarInits ::= List{VarInit, ","} //  [klabel('VarInitList)]
+syntax CatchClauses ::= List{CatchClause,""} [strict]
+syntax Params ::= List{Param, ","}
 
 syntax UserList ::=     BlockStmList
                       | SwitchGroupList

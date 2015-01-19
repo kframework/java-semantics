@@ -8,27 +8,40 @@ module EXP-SYNTAX
     imports SHARED-SYNTAX
 
 syntax Exp ::= StmtExp
-syntax Exps ::= List{Exp, ","} [seqstrict]
+syntax StmtExp ::= PrefixPostfixExp|AssignExp|MethodInvokeExp|ClassInstanceCreationExp
 
-//cannot use this either
-//syntax MethodInvokeExp ::= MethodSpec "(" KListWrap ")" [klabel('Invoke)]
-//syntax MethodSpec ::= MethodName [klabel('Method)]
-//                    |Exp "." K Id [klabel('Method)]
-//                    |"super" "." K Id [klabel('SuperMethod)]
-//                    |TypeName "." "super" "." K Id [klabel('QSuperMethod)]
-//                    |AmbName "." K Id [klabel('GenericMethod)]
+//@ \subsection{MethodInvocation.sdf}
+//syntax MethodInvokeExp ::= MethodSpec "(" Exps ")"          [klabel('Invoke)]
+//syntax MethodSpec ::= MethodName                            [klabel('Method)]
+//                    | Exp "." TypeArgs Id                   [prefer, klabel('Method)]
+//                    | Exp "." Id                            [klabel('Method)]
+//                    | "super" "." TypeArgs Id               [prefer, klabel('SuperMethod)]
+//                    | "super" "." Id                        [klabel('SuperMethod)]
+//                    | TypeName "." "super" "." TypeArgs Id  [prefer, klabel('QSuperMethod)]
+//                    | TypeName "." "super" "." Id           [klabel('QSuperMethod)]
+//                    | AmbName "." TypeArgs Id               [klabel('GenericMethod)]
 
-syntax MethodName ::= Id | MethodRef
+//Denis' syntax
 syntax MethodInvokeExp ::= K "." MethodName "(" Exps ")"       [seqstrict(1,3), klabel('MethodImpl)]
 
+//@ \subsection{MethodInvocation.sdf} todo
+//syntax ClassInstanceCreationExp ::= "new" TypeArgs ClassOrInterfaceType "(" Exps ")" ClassBody  [klabel('NewInstance)]
+//                                  | "new" ClassOrInterfaceType "(" Exps ")" ClassBody  [klabel('NewInstance)]
+//                                  | "new" TypeArgs ClassOrInterfaceType "(" Exps ")"  [klabel('NewInstance)]
+//                                  | "new" ClassOrInterfaceType "(" Exps ")"  [klabel('NewInstance)]
+//                                  | Exp "." "new" TypeArgs Id TypeArgs "(" Exps ")" ClassBody [klabel('QNewInstance)]
+//                                  | Exp "." "new" TypeArgs Id TypeArgs "(" Exps ")"  [klabel('QNewInstance)]
+//                                  | Exp "." "new" TypeArgs Id "(" Exps ")" ClassBody [klabel('QNewInstance)]
+//                                  | Exp "." "new" TypeArgs Id "(" Exps ")"  [klabel('QNewInstance)]
+//                                  | Exp "." "new" Id TypeArgs "(" Exps ")" ClassBody [klabel('QNewInstance)]
+//                                  | Exp "." "new" Id TypeArgs "(" Exps ")" [klabel('QNewInstance)]
+//                                  | Exp "." "new" Id "(" Exps ")" ClassBody [klabel('QNewInstance)]
+//                                  | Exp "." "new" Id "(" Exps ")" [klabel('QNewInstance)]
 
+//Denis' syntax
 syntax ClassOrName ::= Id | ClassType
 syntax ClassInstanceCreationExp ::= "new" ClassType "(" Exps ")" [klabel('NewInstance)]
                                    | Exp "." "new" ClassOrName "(" Exps ")"     [seqstrict(1,3), klabel('QNewInstance)]
-
-syntax StmtExp ::= PrefixPostfixExp|AssignExp|MethodInvokeExp|ClassInstanceCreationExp
-
-
 
 //@ \subsection{AssignmentOperators.sdf}
 syntax LHS ::= ExprName | FieldAccess | ArrayAccess
@@ -102,7 +115,7 @@ syntax Exp ::= ArrayAccess
 /*  Either 'NewArray( T:ElemType,, ['Dim(N1),,'Dim('N2),, ...],, [...,, 'Dim(.KList),, ...] )
     Or     'NewArray( T:ElemType,, [...,, 'Dim(.KList),, ...],, 'ArrayInit(_) )
 */
-//cannot put ArrayBaseType instead of Type below, because rules and aux functions use Type
+//todo:cannot put ArrayBaseType instead of Type below, because rules and aux functions use Type
 syntax ArrayCreationExp ::= "new" Type DimExps Dims [strict(2), klabel('NewArray)]
 syntax ArrayCreationExp ::= "new" Type Dims ArrayInit [klabel('NewArray)]
 syntax Exp ::= ArrayCreationExp
@@ -113,9 +126,6 @@ syntax ArrayBaseType ::= PrimType
 
 syntax Dim ::= "[" "]" [klabel('Dim)]
 syntax DimExp ::= "[" Exp "]" [strict, hybrid, klabel('Dim)]
-
-syntax Dims ::= List{Dim,""} // [klabel('DimList)]
-syntax DimExps ::= List{DimExp,""} [strict]
 
 //@ \subsection{Primary.sdf}
 syntax Exp ::= Literal  [klabel('Lit)]
@@ -130,7 +140,7 @@ syntax Literal ::=  IntLiteral
 syntax ClassLiteral ::= Type "." "class"    [klabel('Class)]
                      | "void" "." "class"   [klabel('VoidClass)]
 
-//TypeName cannot be properly defined, use K instead
+//todo:TypeName cannot be properly defined, using K instead
 syntax Exp ::= "this" [klabel('This)] | K "." "this" [klabel('QThis)]
-
+syntax Exp ::= "(" Exp ")"  [bracket]
 endmodule

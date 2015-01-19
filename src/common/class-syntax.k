@@ -3,6 +3,8 @@ require "exp-syntax.k"
 module CLASS-SYNTAX
 imports ARRAY-SYNTAX
 imports EXP-SYNTAX
+//@ \subsection{ClassDeclarations.sdf}
+
 //@ \subsection{FieldDeclarations.sdf}
 syntax VarInit ::= Exp | ArrayInit
 endmodule
