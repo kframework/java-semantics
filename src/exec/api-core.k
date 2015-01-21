@@ -78,8 +78,6 @@ rule [readString]:
     <k> readString => Str :: classString ...</k>
     <in> ListItem(Str:String) => . ...</in>
 
-syntax KLabel ::= "'Class"        // X.class : the class literal
-
 /*@ object.getClass()*/
 rule [object-getClass-on-object]:
     <k>

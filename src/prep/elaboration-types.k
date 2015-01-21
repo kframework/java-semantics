@@ -17,8 +17,6 @@ rule 'ClassType(TypeK:K,, _) => TypeK            [structural]
 */
 
 //@ 'PackageOrTypeName(Qual,, Name)
-syntax KLabel ::= "'PackageOrTypeName"
-
 context 'PackageOrTypeName(HOLE,, _:K)
 
 rule 'PackageOrTypeName(KRs:KList,, K:K) => 'TypeName(KRs,,K) ?? 'PackageName([KRs,,K])
@@ -28,8 +26,6 @@ when isKResult(KRs)                              [structural]
     the qualifier into a package.*/
 
 //@ 'TypeName(Qual,, X:Id)
-syntax KLabel ::= "'TypeName"
-
 context 'TypeName(HOLE,,_:Id)
 
 rule [TypeName-QualifiedClass]:

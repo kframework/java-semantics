@@ -59,7 +59,6 @@ rule [elabEnd-findQualifierForName-static]:
     findQualifierForName(noClass, K:K) => noValue
 
 //@ 'SuperMethod(_:K,, Name:Id)
-syntax KLabel ::= "'SuperMethod"
 
 rule customElabEnd('SuperMethod) => true
 

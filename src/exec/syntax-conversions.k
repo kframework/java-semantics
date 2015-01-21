@@ -43,7 +43,6 @@ General structure:
 /* 'Method(Qual:K,, \_:K,, Name:Id)
     'Method('MethodName(Qual:K,, Name:Id))
 */
-syntax KLabel ::= "'MethodName"
 rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:KListWrap) => Qual.Name(toExps(ArgList)) [structural]
 
 //totest model check - expressions should be evaluated from left to right. A test for this

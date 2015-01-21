@@ -75,8 +75,6 @@ rule hexAsciiToInt(I:Int) => hexDigitToInt(chrChar(I))
 
 //@ \subsection{Integer literals}
 
-syntax KLabel ::= "'Lit"
-
 rule [Lit-Deci]:
     'Lit('Deci(Str:String))
     =>  #if (lastChar(Str) ==String "l") orBool (lastChar(Str) ==String "L")

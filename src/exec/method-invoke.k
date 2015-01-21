@@ -842,8 +842,6 @@ when
     isArrayRef(QualRV) ==K true orBool isString(QualRV) ==K true
 
 //@ 'QSuperMethod(Class:ClassType,, \_:K,, Name:Id)
-syntax KLabel ::= "'QSuperMethod"
-
 rule [Invoke-QSuperMethod]:
     'Invoke(
       ('QSuperMethod(Class:ClassType,, _:K,, Name:Id)

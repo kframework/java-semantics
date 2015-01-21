@@ -6,9 +6,6 @@ module ELABORATION-ARRAYS
 
 //@ \subsection{Desugaring of array declarators with c-style dimensions and initializers}
 
-syntax KLabel ::= "'ArrayVarDecId"
-                | "'ArrayInit"
-
 /*@ C-style array declaration
     Applied in both elaboration and execution phase
 */

@@ -3,9 +3,6 @@ module ELABORATION-VARS
     imports ELABORATION-CORE
 
 //@ Elaboration of rules in java-var-lookup
-
-syntax KLabel ::= "'AmbName"
-
 //@ Both unqualified and qualified AmbName.
 rule [elabEnd-AmbName]:
     elabEnd('AmbName(Ks:KList)) => elabEnd('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName([Ks])
@@ -153,8 +150,6 @@ syntax KItem ::=  nameInVarDecs(
 
 rule nameInVarDecs(X:Id, [_,, _:KLabel(.K,, T:Type,, ['VarDec(X)]),, _]) => true
 
-syntax KLabel ::= "'This"
-
 rule [elabEnd-This]:
     <k> elabEnd('This(.KList) => 'QThis(Class)) ...</k>
     <crntClass> Class:ClassType </crntClass>
@@ -176,7 +171,6 @@ rule [elabEnd-Field-QualClass]:
     => elabFieldImpl(noValue, elabLookup(X, Class))
 
 //@ 'SuperField(X:Id)
-syntax KLabel ::= "'SuperField"
 
 rule [elabEnd-SuperField]:
     <k>
@@ -186,7 +180,6 @@ rule [elabEnd-SuperField]:
     <crntClass> Class:ClassType </crntClass>
 
 //@ 'QSuperField(Class:ClassType,, X:Id)
-syntax KLabel ::= "'QSuperField"
 
 rule [elabEnd-QSuperField]:
     <k>

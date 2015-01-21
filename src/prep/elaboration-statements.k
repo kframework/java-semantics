@@ -79,8 +79,6 @@ rule [elab-LocalVarDec]:
 //@\subsection{Elaboration of SuperConstrInv, QSuperConstrInv, AltConstrInv}
 
 //@ 'SuperConstrInv( _:K,, [ Args:KList ] )
-syntax KLabel ::=  "'SuperConstrInv"
-
 //@ Desugaring unqualified superclass constructor invocation into a qualified one
 rule [elab-SuperConstrInv-desugar]:
     <k>

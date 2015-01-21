@@ -128,8 +128,6 @@ rule elabEnd(cast(T1:Type, Exp1:K) |= TE2:K) => elabRes(cast(T1, Exp1 |= TE2))
 
 /*@ \subsection{Elaboration of non-numeric expressions} */
 
-syntax KLabel ::= "'CastPrim"
-                | "'CastRef"
 //@ elab cast
 rule elabEnd('CastPrim(T:Type,, TExp:K) => cast(T, TExp))      [structural]
 rule elabEnd('CastRef(T:Type,, TExp:K)  => cast(T, TExp))      [structural]
