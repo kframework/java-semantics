@@ -176,7 +176,7 @@ rule 'Id(Str:String) => String2Id(Str)                [structural, anywhere]
 
 //@ Labels used when a particular term is optional, in many places in Java grammar.
 syntax KLabel ::= "'Some"
-                | "'None"
+syntax None ::= ""   [onlyLabel, klabel('None)]
 
 /*@ \texttt{Generic guard.}
     A generic computational guard (should be builtin): it allows the computation to continue only if a prefix

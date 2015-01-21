@@ -49,11 +49,13 @@ syntax TryStmt ::= "try" Block CatchClauses "finally" Block [klabel('Try)]
 syntax Param ::= Type Id       [klabel('ParamImpl)]
 syntax CatchClause ::="catch" "(" Param ")" Block [klabel('Catch)]
 
-syntax StackConsumerStmt ::= "dummyStackConsumerStmt"|ThrowStmt|ContinueStmt|BreakStmt|ReturnStmt
-syntax ThrowStmt ::= "throw" K ";" [strict, klabel('Throw)]
-syntax ContinueStmt ::= "continue" K ";" [klabel('Continue)]
-syntax BreakStmt ::= "break" K ";" [klabel('Break)]
-syntax ReturnStmt ::= "return" K ";" [klabel('Return)]
+syntax StackConsumerStmt ::= ThrowStmt|ContinueStmt|BreakStmt|ReturnStmt
+syntax ThrowStmt ::= "throw" Exp ";" [strict, klabel('Throw)]
+syntax ContinueStmt ::= "continue" OptionalId ";" [klabel('Continue)]
+syntax BreakStmt ::= "break" OptionalId ";" [klabel('Break)]
+syntax ReturnStmt ::= "return" OptionalExp ";" [klabel('Return)]
+syntax OptionalId ::= Id [klabel('Some)] | None
+syntax OptionalExp ::= Exp [klabel('Some)] | None
 
 syntax SynchronizedStmt ::= "synchronized" "(" Exp ")" Block [strict(1),klabel('Synchronized)]
 //todo: replace Exp with StmtExp when all StmtExp are defined
