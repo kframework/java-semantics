@@ -44,8 +44,6 @@ when
 
 //@ Local var declarations desugaring
 
-syntax KLabel ::= "'LocalVarDecStm"
-
 rule [elab-LocalVarDecStm-desugar]:
     elab('LocalVarDecStm('LocalVarDec(Ks:KList))
       => 'LocalVarDec(Ks)

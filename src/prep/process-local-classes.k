@@ -10,7 +10,6 @@ module PROCESS-LOCAL-CLASSES
 
 /*@ ClassDecStm('ClassDec(...))
 */
-syntax KLabel ::= "'ClassDecStm"
 
 rule [elab-ClassDecStm]:
     elab('ClassDecStm(ClassDec:K)) => processLocalClassDec( ClassDec, generateLocalClassType(ClassDec), false )

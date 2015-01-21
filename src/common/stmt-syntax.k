@@ -25,11 +25,15 @@ syntax StmtWithoutTrailing ::= Block
 |StackConsumerStmt
 |SynchronizedStmt
 
-syntax BlockStmt ::= Stmt|LocalVarDecStmt|ClassDec
-syntax LocalVarDecStmt ::= LocalVarDec ";" [klabel('LocalVarDecStm)]
-syntax LocalVarDec ::= AnnoVarModList Type VarDecList [klabel('LocalVarDec)]
-
+//@ \subsection{Blocks.sdf}
+syntax BlockStmt ::= Stmt | LocalVarDecStmt | ClassDec [klabel('ClassDecStm)]
 syntax Block ::= "{" K "}" [klabel('Block)]
+
+//@ \subsection{LocalVariableDeclaraions.sdf}
+syntax LocalVarDecStmt ::= LocalVarDec ";" [prefer, klabel('LocalVarDecStm)]
+syntax LocalVarDec ::= AnnoVarModList Type VarDecList [prefer, klabel('LocalVarDec)]
+
+//@ \subsection{Statements.sdf}
 syntax EmptyStmt ::= ";" [klabel('Empty)]
 
 syntax AssertStmt ::="assert" Exp ";" [strict, klabel('AssertStm)]
