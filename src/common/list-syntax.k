@@ -77,19 +77,6 @@ syntax UserList ::=     BlockStmList
                       | EnumConstList
                       | ClassBodyDecList
 
-/* todo: Syntax below should be put in other modules when they are perfectly defined. */
-
-
-
-                      syntax   TypeDec::= ClassDec
-
-                      syntax   ImportDec
-
-
-
-
-
-
 
 endmodule
 

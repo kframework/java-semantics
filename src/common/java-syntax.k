@@ -7,6 +7,7 @@ require "name-syntax.k"
 require "class-syntax.k"
 require "array-syntax.k"
 require "interface-syntax.k"
+require "package-syntax.k"
 module JAVA-SYNTAX
     imports LIST-SYNTAX
     imports STMT-SYNTAX
@@ -17,4 +18,5 @@ module JAVA-SYNTAX
     imports CLASS-SYNTAX
     imports ARRAY-SYNTAX
     imports INTERFACE-SYNTAX
+    imports PACKAGE-SYNTAX
 endmodule

@@ -2,7 +2,7 @@ module NAME-SYNTAX
 imports LIST-SYNTAX
 //todo: why does this pure syntax definition affect krun?
 //PackageName, AmbName and PackageorTypeName syntax doesn't cause problems
-//                     syntax PackageName ::= IdList [klabel('PackageName)]
+                     syntax PackageName ::= IdList [klabel('PackageName)]
                      syntax AmbName ::= Id [klabel('AmbName)]
                                       | AmbName "." Id [klabel('AmbName)]
 //                     syntax PackageOrTypeName ::= Id [klabel('PackageOrTypeName)]
