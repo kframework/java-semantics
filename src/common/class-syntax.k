@@ -23,11 +23,14 @@ syntax AnnoClassMod ::= Anno | ClassMod
 syntax Super ::= "extends" ClassType                    [klabel('SuperDec)]
 syntax Interfaces ::= "implements" InterfaceTypeList    [klabel('ImplementsDec)]
 
-syntax ClassBodyDec ::= InstanceInit | StaticInit ClassMemberDec | ConstrDec
+syntax ClassBodyDec ::= InstanceInit | StaticInit | ClassMemberDec | ConstrDec
 
-syntax ClassMemberDec ::= FieldDec | ClassDec | MethodDec | InterfaceDec | ";" [klabel('SemiColon)]
+syntax ClassMemberDec ::= FieldDec | ClassDec | MethodDec | InterfaceDec | SemiColon
+
+syntax SemiColon ::= ";" [klabel('SemiColon)]
 
 //@ \subsection{ConstructorDeclarations.sdf}
+//todo optionals
 syntax ConstrHead   ::=  AnnoConstrModList TypeParams Type Id "(" Params ")" Throws [prefer, klabel('ConstrDecHead)]
                        | AnnoConstrModList TypeParams Type Id "(" Params ")"    [klabel('ConstrDecHead)]
                        | AnnoConstrModList Type Id "(" Params ")" Throws   [klabel('ConstrDecHead)]
@@ -92,7 +95,7 @@ syntax Param ::= AnnoVarModList Type "..." VarDecId     [klabel('VarArityParam)]
 syntax Throws ::= "throws" ExceptionTypeList
 syntax ExceptionType ::= ClassType
 syntax MethodBody ::= Block | ";" [klabel('NoMethodBody)]
-
+//todo optionals
 syntax MethodDecHead ::= AnnoMethodModList TypeParams Type Id "(" Params ")" Throws [prefer, klabel('MethodDecHead)]
                        | AnnoMethodModList TypeParams Type Id "(" Params ")"    [klabel('MethodDecHead)]
                        | AnnoMethodModList Type Id "(" Params ")" Throws   [klabel('MethodDecHead)]

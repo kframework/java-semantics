@@ -78,7 +78,7 @@ syntax UserList ::=     BlockStmList
                       | ClassBodyDecList
 
 /* todo: Syntax below should be put in other modules when they are perfectly defined. */
-                      syntax   InterfaceType
+
 
 
                       syntax   TypeDec::= ClassDec
@@ -87,20 +87,8 @@ syntax UserList ::=     BlockStmList
 
 
 
-                      syntax   AbstractMethodMod
-                      syntax   AnnoAbstractMethodMod
 
 
-
-
-                      syntax   AnnoConstantMod
-
-                      syntax   AnnoInterfaceMod
-                      syntax   Anno
-                      syntax   AnnoElemDec
-                      syntax   InterfaceMemberDec
-                      syntax   ElemValPair
-                      syntax   ElemVal
 
 
 endmodule

@@ -25,7 +25,7 @@ syntax MethodSpec ::= MethodName                            [klabel('Method)]
 syntax MethodInvokeExp ::= K "." MethodName "(" Exps ")"    [seqstrict(1,3), klabel('MethodImpl)]
 
 //@ \subsection{ClassInstanceCreation.sdf}
-/*todo: for optionals, I usually used two syntax and one with [prefer] attribute.
+/*todo optionals, I usually used two syntax and one with [prefer] attribute.
 But ClassInstanceCreationExp has two or three optionals inside one syntax declaration,
 I feel I am doing wired things.*/
 syntax ClassInstanceCreationExp ::= "new" TypeArgs ClassOrInterfaceType "(" Exps ")" ClassBody  [klabel('NewInstance)]
