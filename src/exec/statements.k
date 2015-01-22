@@ -76,7 +76,7 @@ rule [labeledImpl-Discard]:
 rule _:TypedVal; => .K
 
 //@ \subsection{If statement}
-rule if (K1) {K2} => if (K1) {K2} else {.K} 
+rule if (K1) {K2} => if (K1) {K2} else {.K}
 
 rule [If-True]:
     if (true::bool) {S:K} else {_} => S
@@ -183,55 +183,38 @@ rule [whileImpl]:
 rule do{S:K}while(E:K) => S ~> whileImpl(E, S)  [structural]
 
 //@ \subsection{For statement}
-
 //wrapper of certain clauses of for statement
-syntax KItem ::= stm ( KListWrap )
+syntax K ::= stm ( KListWrap )
 
 rule [stm-KListWrap-empty]:
-    stm([.KList]) => .
-        [structural]
+    stm([.KList]) => .                                                   [structural]
 
 rule [stm-KListWrap-exp]:
     stm([E:Exp,, Es:KList]) => E; ~> stm([Es])
-when
-    getKLabel(E) ==KLabel 'cast                                           [structural]
+    when getKLabel(E) ==KLabel 'cast                                     [structural]
 
 rule [stm-KListWrap-LocalVarDec]:
     stm([K:K,,Ks:KList]) => [K,,Ks]
-when
-    notBool ( getKLabel(K) ==KLabel 'cast )                               [structural]
+    when notBool ( getKLabel(K) ==KLabel 'cast )                         [structural]
 
 rule [For-FirstArgV1Red]:
-    for((
-      [InitExps:KList] => stm([InitExps])
-    );_:K;_:K) {_:K}
-        [structural]
+    'For(([InitExps:KList] => stm([InitExps])),,_:KList)                 [structural]
 
 //Works also in elaboration phase
 rule [For-FirstArgV2Red]:
-    for((
-      'LocalVarDec(Ks:KList) => stm(['LocalVarDec(Ks)])
-    );_:K;_:K) {_:K}
-        [structural]
+    'For(('LocalVarDec(Ks:KList) => stm(['LocalVarDec(Ks)])),,_:KList)   [structural]
 
 rule [For-SecondArgRed]:
-    for(_:K;(
-      'None(.KList) => 'Some(true)
-    );_:K) {_:K}
-        [structural]
+    'For(_:K,,('None(.KList) => 'Some(true)),,_:KList)                   [structural]
 
 rule [For-ThirdArgRed]:
-    for(_:K;_:K;(
-      [UpdExps:KList] => stm([UpdExps])
-    )) {_:K}
-        [structural]
+    'For(_:K,,_:K,,([UpdExps:KList] => stm([UpdExps])),,_:K)             [structural]
 
 //this form of resulting while is required for compatibility with continue statement
 rule [For]:
-    for(stm(InitClause:KListWrap); 'Some(TestExp:K); stm(UpdClause:KListWrap)) {S:K}
-     => 'Block(stm(InitClause)
-        //~> 'If(TestExp,, 'Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S),, .K))  [structural]
-        ~> if(TestExp) {'Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S)})  [structural]
+    'For(stm(InitClause:KListWrap),, 'Some(TestExp:K),, stm(UpdClause:KListWrap),, S:K)
+    => 'Block(stm(InitClause)
+    ~> 'If(TestExp,, 'Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S),, .K)) [structural]
 
 //totest model check - the argument of 'return and 'Throw must be evaluated. Otherwise some side effects during
 // evaluation might be evaluated too late

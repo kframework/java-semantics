@@ -6,25 +6,6 @@ module STMT-SYNTAX
     imports CORE-CLASSES
     imports LIST-SYNTAX
 
-syntax Stmt ::= StmtWithoutTrailing|LabeledStmt|IfThenElseStmt|IfThenStmt|WhileStmt|ForStmt
-
-syntax IfThenElseStmt ::= "if" "(" Exp ")" "{" K "}" "else" "{" K "}" [strict(1),klabel('If)]
-syntax IfThenStmt ::= "if" "(" Exp ")" "{" K "}" [strict(1),klabel('If)]
-syntax WhileStmt ::= "while" "(" Exp ")" "{" K "}" [strict(1),klabel('While)]
-syntax ForStmt ::= "for" "(" K ";" K ";" K ")" "{" K "}" [klabel('For)]
-syntax LabeledStmt ::= Id ":" K [klabel('Labeled)]
-
-
-syntax StmtWithoutTrailing ::= Block
-|EmptyStmt
-|ExprStmt
-|AssertStmt
-|SwitchStmt
-|DoStmt
-|TryStmt
-|StackConsumerStmt
-|SynchronizedStmt
-
 //@ \subsection{Blocks.sdf}
 syntax BlockStmt ::= Stmt | LocalVarDecStmt | ClassDec [klabel('ClassDecStm)]
 syntax Block ::= "{" K "}" [klabel('Block)]
@@ -34,10 +15,39 @@ syntax LocalVarDecStmt ::= LocalVarDec ";" [prefer, klabel('LocalVarDecStm)]
 syntax LocalVarDec ::= AnnoVarModList Type VarDecList [prefer, klabel('LocalVarDec)]
 
 //@ \subsection{Statements.sdf}
+syntax Stmt ::= StmtWithoutTrailing
+              | LabeledStmt
+              | IfThenElseStmt
+              | IfThenStmt
+              | WhileStmt
+              | ForStmt
+
+syntax IfThenElseStmt ::= "if" "(" Exp ")" "{" K "}" "else" "{" K "}" [strict(1), klabel('If)]
+syntax IfThenStmt ::= "if" "(" Exp ")" "{" K "}" [prefer, strict(1), klabel('If)]
+syntax WhileStmt ::= "while" "(" Exp ")" "{" K "}" [strict(1),klabel('While)]
+syntax ForStmt ::= "for" "(" LocalVarDec ";" OptionalExp ";" Exps ")" Stmt [klabel('For)]
+syntax ForStmt ::= "for" "(" Exps ";" OptionalExp ";" Exps ")" Stmt [klabel('For)]
+syntax ForStmt ::= "for" "(" Param ":" Exp ")" Stmt [klabel('ForEach)]
+syntax LabeledStmt ::= Id ":" K [klabel('Labeled)]
+
+syntax StmtWithoutTrailing ::= Block
+                             | EmptyStmt
+                             | ExprStmt
+                             | AssertStmt
+                             | SwitchStmt
+                             | DoStmt
+                             | TryStmt
+                             | StackConsumerStmt
+                             | SynchronizedStmt
+
+
 syntax EmptyStmt ::= ";" [klabel('Empty)]
 
-syntax AssertStmt ::="assert" Exp ";" [strict, klabel('AssertStm)]
-		            |"assert" Exp ":" Exp ";" [strict(1), klabel('AssertStm)]
+syntax ExprStmt ::= Exp ";"  [strict, klabel('ExprStm)]
+
+syntax AssertStmt ::= "assert" Exp ";"         [strict, klabel('AssertStm)]
+		            | "assert" Exp ":" Exp ";" [strict(1), klabel('AssertStm)]
+
 syntax SwitchStmt ::= "switch" "(" Exp ")" SwitchBlock [strict(1),klabel('Switch)]
 syntax SwitchGroup ::= KListWrap KListWrap [klabel('SwitchGroup)]
 syntax SwitchLabel ::= "case" Exp ":" [strict, klabel('Case)]
@@ -58,7 +68,7 @@ syntax OptionalId ::= Id [klabel('Some)] | None
 syntax OptionalExp ::= Exp [klabel('Some)] | None
 
 syntax SynchronizedStmt ::= "synchronized" "(" Exp ")" Block [strict(1),klabel('Synchronized)]
-//todo: replace Exp with StmtExp when all StmtExp are defined
-syntax ExprStmt ::= Exp ";"  [strict, klabel('ExprStm)]
+
+
 
 endmodule
