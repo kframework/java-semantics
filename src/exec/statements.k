@@ -76,14 +76,20 @@ rule [labeledImpl-Discard]:
 rule _:TypedVal; => .K
 
 //@ \subsection{If statement}
-rule if (K1) {K2} => if (K1) {K2} else {.K}
-
 rule [If-True]:
-    if (true::bool) {S:K} else {_} => S
+    if (true::bool) S:Stmt else _:Stmt => S
         [symbolic-rule]
 
 rule [If-False]:
-    if (false::bool) {_} else {S:K} => S
+    if (false::bool) _:Stmt else S:Stmt => S
+        [symbolic-rule]
+
+rule [If-True]:
+    if (true::bool) S:Stmt => S
+        [symbolic-rule]
+
+rule [If-False]:
+    if (false::bool) _:Stmt => .
         [symbolic-rule]
 
 //@ \subsection{Assert statement}
@@ -169,7 +175,8 @@ rule [switchEnd-Discard]:
 
 //@ \subsection{While statement} and loop infrastructure.
 
-rule while(E:K){S:K} => whileImpl(E, S)         [structural]
+rule [while]:
+    while(E:Exp)S:Stmt => whileImpl(E, S)                              [structural]
 
 syntax KItem ::=  whileImpl (
                 K,  // E - test expression. In For loop, it is UpdClause ~> testExp
@@ -177,10 +184,11 @@ syntax KItem ::=  whileImpl (
               )
 
 rule [whileImpl]:
-    whileImpl(E:K, S:K) => if(E){S ~> whileImpl(E, S)}    [structural]
+    whileImpl(E:K, S:K) => ifAux(E, S ~> whileImpl(E, S), .K)           [structural]
 
 //@ \subsection{Do statement}
-rule do{S:K}while(E:K) => S ~> whileImpl(E, S)  [structural]
+rule [do-while]:
+    do S:Stmt while(E:Exp); => S ~> whileImpl(E, S)                     [structural]
 
 //@ \subsection{For statement}
 //wrapper of certain clauses of for statement
@@ -214,7 +222,7 @@ rule [For-ThirdArgRed]:
 rule [For]:
     'For(stm(InitClause:KListWrap),, 'Some(TestExp:K),, stm(UpdClause:KListWrap),, S:K)
     => 'Block(stm(InitClause)
-    ~> 'If(TestExp,, 'Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S),, .K)) [structural]
+    ~> ifAux(TestExp, ('Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp,S)), .K)) [structural]
 
 //totest model check - the argument of 'return and 'Throw must be evaluated. Otherwise some side effects during
 // evaluation might be evaluated too late
