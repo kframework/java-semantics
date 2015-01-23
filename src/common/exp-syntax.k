@@ -13,37 +13,23 @@ syntax StmtExp ::= PrefixPostfixExp|AssignExp|MethodInvokeExp|ClassInstanceCreat
 //@ \subsection{MethodInvocation.sdf}
 syntax MethodInvokeExp ::= MethodSpec "(" Exps ")"          [klabel('Invoke)]
 syntax MethodSpec ::= MethodName                            [klabel('Method)]
-                    | Exp "." TypeArgs Id                   [prefer, klabel('Method)]
-                    | Exp "." Id                            [klabel('Method)]
-                    | "super" "." TypeArgs Id               [prefer, klabel('SuperMethod)]
-                    | "super" "." Id                        [klabel('SuperMethod)]
-                    | TypeName "." "super" "." TypeArgs Id  [prefer, klabel('QSuperMethod)]
-                    | TypeName "." "super" "." Id           [klabel('QSuperMethod)]
+                    | Exp "." OptionalTypeArgs Id           [klabel('Method)]
+                    | "super" "." OptionalTypeArgs Id               [klabel('SuperMethod)]
+                    | TypeName "." "super" "." OptionalTypeArgs Id  [klabel('QSuperMethod)]
                     | AmbName "." TypeArgs Id               [klabel('GenericMethod)]
 
 //Denis' syntax
 syntax MethodInvokeExp ::= K "." MethodName "(" Exps ")"    [seqstrict(1,3), klabel('MethodImpl)]
 
 //@ \subsection{ClassInstanceCreation.sdf}
-/*todo optionals, I usually used two syntax and one with [prefer] attribute.
-But ClassInstanceCreationExp has two or three optionals inside one syntax declaration,
-I feel I am doing wired things.*/
-syntax ClassInstanceCreationExp ::= "new" TypeArgs ClassOrInterfaceType "(" Exps ")" ClassBody  [klabel('NewInstance)]
-                                  | "new" ClassOrInterfaceType "(" Exps ")" ClassBody  [klabel('NewInstance)]
-                                  | "new" TypeArgs ClassOrInterfaceType "(" Exps ")"  [klabel('NewInstance)]
-                                  | "new" ClassOrInterfaceType "(" Exps ")"  [klabel('NewInstance)]
-                                  | Exp "." "new" TypeArgs Id TypeArgs "(" Exps ")" ClassBody [klabel('QNewInstance)]
-                                  | Exp "." "new" TypeArgs Id TypeArgs "(" Exps ")"  [klabel('QNewInstance)]
-                                  | Exp "." "new" TypeArgs Id "(" Exps ")" ClassBody [klabel('QNewInstance)]
-                                  | Exp "." "new" TypeArgs Id "(" Exps ")"  [klabel('QNewInstance)]
-                                  | Exp "." "new" Id TypeArgs "(" Exps ")" ClassBody [klabel('QNewInstance)]
-                                  | Exp "." "new" Id TypeArgs "(" Exps ")" [klabel('QNewInstance)]
-                                  | Exp "." "new" Id "(" Exps ")" ClassBody [klabel('QNewInstance)]
-                                  | Exp "." "new" Id "(" Exps ")" [klabel('QNewInstance)]
+syntax ClassInstanceCreationExp ::=
+ "new" OptionalTypeArgs ClassOrInterfaceType "(" Exps ")" OptionalClassBody  [klabel('NewInstance)]
+| Exp "." "new" OptionalTypeArgs Id OptionalTypeArgs "(" Exps ")" OptionalClassBody [klabel('QNewInstance)]
 
 //Denis' syntax
 syntax ClassOrName ::= Id | ClassType
-syntax ClassInstanceCreationExp ::= Exp "." "new" ClassOrName "(" Exps ")"  [seqstrict(1,3), klabel('QNewInstance)]
+syntax ClassInstanceCreationExp ::= "new" ClassType "(" Exps ")"
+                                  | Exp "." "new" ClassOrName "(" Exps ")"  [seqstrict(1,3)]
 
 //@ \subsection{AssignmentOperators.sdf}
 syntax LHS ::= ExprName | FieldAccess | ArrayAccess
