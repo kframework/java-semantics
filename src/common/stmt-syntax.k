@@ -28,7 +28,7 @@ syntax WhileStmt ::= "while" "(" Exp ")" Stmt [strict(1),klabel('While)]
 syntax ForStmt ::= "for" "(" LocalVarDec ";" OptionalExp ";" Exps ")" Stmt [klabel('For)]
 syntax ForStmt ::= "for" "(" Exps ";" OptionalExp ";" Exps ")" Stmt [klabel('For)]
 syntax ForStmt ::= "for" "(" Param ":" Exp ")" Stmt [klabel('ForEach)]
-syntax LabeledStmt ::= Id ":" K [klabel('Labeled)]
+syntax LabeledStmt ::= Id ":" Stmt [klabel('Labeled)]
 
 syntax StmtWithoutTrailing ::= Block
                              | EmptyStmt

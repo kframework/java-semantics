@@ -9,6 +9,9 @@ module STATEMENTS
     imports METHOD-INVOKE // for initParams
     imports STMT-SYNTAX
 
+//@ \subsection{isStmt}
+rule isStmt('For(_)) => true
+
 //@ \subsection{Call of main method}
 
 //For now main class may only be placed in the default package.
@@ -63,7 +66,7 @@ rule [Empty]:
 //@ \subsection{Labeled statements} JLS \$14.7
 
 rule [Labeled]:
-    X:Id : S:K => S ~> labeledImpl(X)
+    X:Id : S:Stmt => S ~> labeledImpl(X)
 
 //@ Processed version of the labeled statement
 syntax KItem ::= labeledImpl ( Id )
@@ -98,15 +101,18 @@ rule [AssertStm-True-OneArg]:
         assert true::bool; => .
 
 rule [AssertStm-False-OneArg]:
-        assert false::bool; => throw new class String2Id("java.lang.AssertionError") (null::classString);
+        assert false::bool;
+        => throw new class String2Id("java.lang.AssertionError") (null::classString);
 
 //full version:    assert exp1:exp2;
 rule [AssertStm-FirstTrue-SecondDiscarded]:
         assert true::bool : _ ; => .
 
 context assert false::bool : HOLE;
+
 rule [AssertStm-FirstFalse]:
-    assert (false::bool) : (TV:TypedVal); => throw new class String2Id("java.lang.AssertionError") (toString(TV));
+        assert (false::bool) : (TV:TypedVal);
+        => throw new class String2Id("java.lang.AssertionError") (toString(TV));
 
 //@ \subsection{Switch statement}
 
