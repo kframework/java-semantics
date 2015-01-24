@@ -15,8 +15,8 @@ since now "void" is Type, there is no need for another syntax of ResultType.*/
 //@ \subsection{ParameterizedTypes.sdf}
 syntax TypeArgs ::= "<" ActualTypeArgList ">"        [klabel('TypeArgs)]
 syntax ActualTypeArg ::= Type
-                        | "?" WildcardBound    [prefer, klabel('Wildcard)]
-                        | "?"                  [klabel('Wildcard)]
+                        | "?" OptionalWildcardBound    [klabel('Wildcard)]
+
 syntax WildcardBound ::= "extends" RefType [klabel('WildcardUpperBound)]
                         |"super"   RefType [klabel('WildcardLowerBound)]
 
@@ -43,7 +43,6 @@ syntax ClassOrInterfaceType ::= ClassType
 syntax ClassType ::= "class" Id
                    | "noClass"        [latex({\dotCt{K}})]
 
-
 syntax TypeDecSpec ::= TypeName
                      | TypeDecSpec TypeArgs "." Id [klabel('Member)]
 
@@ -64,8 +63,7 @@ syntax RefType ::= "nullType"
 //@ \subsection{TypeVariables.sdf}
 syntax TypeVarId ::= Id
 syntax TypeBound ::= "extends" ClassOrInterfaceTypeList     [klabel('TypeBound)]
-syntax TypeParam ::= TypeVarId                     [klabel('TypeParam)]
-                   | TypeVarId TypeBound           [prefer, klabel('TypeParam)]
+syntax TypeParam ::= TypeVarId OptionalTypeBound           [klabel('TypeParam)]
 syntax TypeParams ::= "<" TypeParamList ">"        [klabel('TypeParams)]
 
 endmodule

@@ -8,8 +8,9 @@ syntax ClassDec ::= ClassDecHead ClassBody [klabel('ClassDec)]
 syntax ClassDec ::= EnumDec
 
 syntax ClassBody ::= "{" ClassBodyDecList "}" [klabel('ClassBody)]
-//todo optionals
-syntax ClassDecHead ::= AnnoClassModList "class" Id TypeParams Super Interfaces [prefer, klabel('ClassDecHead)]
+
+syntax ClassDecHead ::= AnnoClassModList "class" Id OptionalTypeParams
+                        OptionalSuper OptionalInterfaces [klabel('ClassDecHead)]
 
 syntax ClassMod ::= Public
                   | Private
@@ -30,22 +31,15 @@ syntax ClassMemberDec ::= FieldDec | ClassDec | MethodDec | InterfaceDec | SemiC
 syntax SemiColon ::= ";" [klabel('SemiColon)]
 
 //@ \subsection{ConstructorDeclarations.sdf}
-//todo optionals
-syntax ConstrHead   ::=  AnnoConstrModList TypeParams Type Id "(" Params ")" Throws [prefer, klabel('ConstrDecHead)]
-                       | AnnoConstrModList TypeParams Type Id "(" Params ")"    [klabel('ConstrDecHead)]
-                       | AnnoConstrModList Type Id "(" Params ")" Throws   [klabel('ConstrDecHead)]
-                       | AnnoConstrModList Type Id "(" Params ")"    [klabel('ConstrDecHead)]
+syntax ConstrHead   ::=  AnnoConstrModList OptionalTypeParams Type
+                        Id "(" Params ")" OptionalThrows [klabel('ConstrDecHead)]
 
 syntax ConstrDec ::= ConstrHead ConstrBody                    [klabel('ConstrDec)]
-syntax ConstrBody ::= "{" ConstrInv BlockStmList "}"          [prefer, klabel('ConstrBody)]
-                    | "{" BlockStmList "}"                    [klabel('ConstrBody)]
+syntax ConstrBody ::= "{" OptionalConstrInv BlockStmList "}"          [klabel('ConstrBody)]
 
-syntax ConstrInv ::= TypeArgs "this"  "(" Exps ")" ";"        [prefer, klabel('AltConstrInv)]
-syntax ConstrInv ::= "this"  "(" Exps ")" ";"                 [klabel('AltConstrInv)]
-syntax ConstrInv ::= TypeArgs "super"  "(" Exps ")" ";"       [prefer, klabel('SuperConstrInv)]
-syntax ConstrInv ::= "super"  "(" Exps ")" ";"                [klabel('SuperConstrInv)]
-syntax ConstrInv ::= Exp "." TypeArgs "super"  "(" Exps ")" ";" [prefer, klabel('QSuperConstrInv)]
-syntax ConstrInv ::= Exp "." "super"  "(" Exps ")" ";"          [klabel('QSuperConstrInv)]
+syntax ConstrInv ::= OptionalTypeArgs "this"  "(" Exps ")" ";"        [klabel('AltConstrInv)]
+syntax ConstrInv ::= OptionalTypeArgs "super"  "(" Exps ")" ";"       [klabel('SuperConstrInv)]
+syntax ConstrInv ::= Exp "." OptionalTypeArgs "super"  "(" Exps ")" ";" [klabel('QSuperConstrInv)]
 
 syntax ConstrMod ::= Public
                   | Private
@@ -53,17 +47,14 @@ syntax ConstrMod ::= Public
 syntax AnnoConstrMod ::= Anno | ConstrMod
 
 //@ \subsection{EnumDeclarations.sdf}
-syntax EnumDecHead ::= AnnoClassModList "enum" Id Interfaces [prefer, klabel('EnumDecHead)]
-                     | AnnoClassModList "enum" Id            [klabel('EnumDecHead)]
+syntax EnumDecHead ::= AnnoClassModList "enum" Id OptionalInterfaces [klabel('EnumDecHead)]
 
 syntax EnumDec ::= EnumDecHead EnumBody                     [klabel('EnumDec)]
 
-syntax EnumBody ::= "{" EnumConstList EnumBodyDecs"}"       [prefer, klabel('EnumBody)]
-                  | "{" EnumConstList "}"                   [klabel('EnumBody)]
-                  | "{" EnumConstList "," EnumBodyDecs "}"  [prefer, klabel('EnumBody)]
-                  | "{" EnumConstList "," "}"               [klabel('EnumBody)]
-//todo optionals
-syntax EnumConst ::= Id EnumConstArgs ClassBody [prefer, klabel('EnumConst)]
+syntax EnumBody ::= "{" EnumConstList OptionalEnumBodyDecs"}"       [klabel('EnumBody)]
+                  | "{" EnumConstList "," OptionalEnumBodyDecs "}"  [klabel('EnumBody)]
+
+syntax EnumConst ::= Id OptionalEnumConstArgs OptionalClassBody [klabel('EnumConst)]
 
 syntax EnumConstArgs ::= "(" Exps ")"           [bracket]
 
@@ -95,11 +86,9 @@ syntax Param ::= AnnoVarModList Type "..." VarDecId     [klabel('VarArityParam)]
 syntax Throws ::= "throws" ExceptionTypeList
 syntax ExceptionType ::= ClassType
 syntax MethodBody ::= Block | ";" [klabel('NoMethodBody)]
-//todo optionals
-syntax MethodDecHead ::= AnnoMethodModList TypeParams Type Id "(" Params ")" Throws [prefer, klabel('MethodDecHead)]
-                       | AnnoMethodModList TypeParams Type Id "(" Params ")"    [klabel('MethodDecHead)]
-                       | AnnoMethodModList Type Id "(" Params ")" Throws   [klabel('MethodDecHead)]
-                       | AnnoMethodModList Type Id "(" Params ")"    [klabel('MethodDecHead)]
+
+syntax MethodDecHead ::= AnnoMethodModList OptionalTypeParams Type
+                         Id "(" Params ")" OptionalThrows [klabel('MethodDecHead)]
 
 syntax MethodDec ::= MethodDecHead MethodBody [klabel('MethodDec)]
 
