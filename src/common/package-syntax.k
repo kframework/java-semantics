@@ -1,7 +1,6 @@
 module PACKAGE-SYNTAX
 //@ \subsection{CompilationUnits.sdf}
-syntax CompilationUnit ::= PackageDec ImportDecList TypeDecList [prefer, klabel('CompilationUnit)]
-                         | ImportDecList TypeDecList [klabel('CompilationUnit)]
+syntax CompilationUnit ::= OptionalPackageDec ImportDecList TypeDecList [klabel('CompilationUnit)]
 
 //@ \subsection{TypeDeclarations.sdf}
 syntax TypeDec ::= ClassDec | InterfaceDec | SemiColon
