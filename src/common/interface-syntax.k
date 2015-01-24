@@ -1,7 +1,8 @@
 module INTERFACE-SYNTAX
 //@ \subsection{AbstractMethodDeclarations.sdf}
-//todo optionals
-syntax AbstractMethodDec ::= AnnoAbstractMethodModList TypeParams Type Id "(" Params ")" Throws ";" [prefer, klabel('AbstractMethodDec)]
+syntax AbstractMethodDec ::= AnnoAbstractMethodModList OptionalTypeParams
+                            Type Id "(" Params ")" OptionalThrows ";" [klabel('AbstractMethodDec)]
+
 syntax AbstractMethodMod ::= Public | Abstract
 syntax AnnoAbstractMethodMod ::= Anno | AbstractMethodMod
 
@@ -22,8 +23,7 @@ syntax AnnoDecHead ::= AnnoInterfaceModList "@" "interface" Id      [klabel('Ann
 syntax AnnoDec ::= AnnoDecHead "{" AnnoElemDecList "}"      [klabel('AnnoDec)]
 
 syntax AnnoElemDec ::= ConstantDec | ClassDec | InterfaceDec | EnumDec | AnnoDec | SemiColon
-syntax AnnoElemDec ::= AbstractMethodModList Type Id "(" ")" DefaultVal ";" [prefer, klabel('AnnoMethodDec)]
-                     | AbstractMethodModList Type Id "(" ")" ";" [klabel('AnnoMethodDec)]
+syntax AnnoElemDec ::= AbstractMethodModList Type Id "(" ")" OptionalDefaultVal ";" [klabel('AnnoMethodDec)]
 
 syntax DefaultVal ::= "default" ElemVal [klabel('DefaultVal)]
 
@@ -37,8 +37,8 @@ syntax AnnoConstantMod ::= Anno | ConstantMod
 //@ \subsection{InterfaceDeclarations.sdf}
 syntax InterfaceDec ::= InterfaceDecHead "{" InterfaceMemberDecList "}" [klabel('InterfaceDec)]
 
-//todo optionals
-syntax InterfaceDecHead ::= AnnoInterfaceModList "interface" Id TypeParams ExtendsInterfaces [prefer, klabel('InterfaceDecHead)]
+syntax InterfaceDecHead ::= AnnoInterfaceModList "interface" Id OptionalTypeParams
+                           OptionalExtendsInterfaces [prefer, klabel('InterfaceDecHead)]
 
 syntax ExtendsInterfaces ::= "extends" InterfaceTypeList  [klabel('ExtendsInterfaces)]
 
