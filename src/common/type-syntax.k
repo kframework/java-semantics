@@ -31,7 +31,8 @@ syntax PrimType ::= NumericType | "bool" [klabel('Boolean)] //"boolean" in sdf
 
 //@ \subsection{ReferenceTypes.sdf}
     /*@ A fully qualified class name, or noClass where no valid class could be computed.*/
-syntax ClassOrInterfaceType ::= TypeDecSpec [klabel('ClassOrInterfaceType)]
+syntax ClassOrInterfaceType ::= TypeDecSpec OptionalTypeArgs [klabel('ClassOrInterfaceType)]
+rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK [anywhere]
 
 syntax InterfaceType ::= TypeDecSpec OptionalTypeArgs [klabel('InterfaceType)]
 //sdf ClassType, use another name JavaClassType to avoid conflict with Denis' ClassType syntax
