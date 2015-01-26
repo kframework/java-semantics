@@ -32,14 +32,12 @@ syntax PrimType ::= NumericType | "bool" [klabel('Boolean)] //"boolean" in sdf
 //@ \subsection{ReferenceTypes.sdf}
     /*@ A fully qualified class name, or noClass where no valid class could be computed.*/
 syntax ClassOrInterfaceType ::= TypeDecSpec [klabel('ClassOrInterfaceType)]
-                              | TypeDecSpec TypeArgs [prefer, klabel('ClassOrInterfaceType)]
-syntax InterfaceType ::= TypeDecSpec [klabel('InterfaceType)]
-                       | TypeDecSpec TypeArgs [prefer, klabel('InterfaceType)]
-syntax ClassType ::= TypeDecSpec [klabel('ClassType)]
-                   | TypeDecSpec TypeArgs [prefer, klabel('ClassType)]
 
-//Denis' syntax (I made ClassType a sub of ClassOrInterfaceType for simplicity of other syntax definitions)
-syntax ClassOrInterfaceType ::= ClassType
+syntax InterfaceType ::= TypeDecSpec OptionalTypeArgs [klabel('InterfaceType)]
+//sdf ClassType, use another name JavaClassType to avoid conflict with Denis' ClassType syntax
+syntax JavaClassType ::= TypeDecSpec OptionalTypeArgs [klabel('ClassType)]
+
+//Denis' syntax
 syntax ClassType ::= "class" Id
                    | "noClass"        [latex({\dotCt{K}})]
 
@@ -48,8 +46,8 @@ syntax TypeDecSpec ::= TypeName
 
 syntax TypeVar ::= TypeVarId   [klabel('TypeVar)]
 
-syntax ArrayType ::= Type "[" "]"   [strict, klabel('ArrayType)] | "arrayOf" Type
-//The sdf syntax (left) is different from Denis' syntax (right), so added anywhere rule here
+syntax ArrayType ::= Type "[" "]"   [strict, klabel('ArrayType)]
+//The sdf syntax (left) is different from Denis' syntax, so added anywhere rule here
 rule 'ArrayType(T:Type) => arrayOf T     [anywhere]
 
 syntax RefType ::= ClassOrInterfaceType | ArrayType
@@ -58,7 +56,7 @@ syntax RefType ::= ClassOrInterfaceType | ArrayType
         by the JLS although inaccessible to the programmer. String objects and types are not threated as regular objects
         in the present semantics for performance reasons.
 */
-syntax RefType ::= "nullType"
+syntax RefType ::= ClassType | "nullType" | "arrayOf" Type
 
 //@ \subsection{TypeVariables.sdf}
 syntax TypeVarId ::= Id

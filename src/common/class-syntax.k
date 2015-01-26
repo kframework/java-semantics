@@ -21,7 +21,7 @@ syntax ClassMod ::= Public
                   | StrictFP
 syntax AnnoClassMod ::= Anno | ClassMod
 
-syntax Super ::= "extends" ClassType                    [klabel('SuperDec)]
+syntax Super ::= "extends" JavaClassType                    [klabel('SuperDec)]
 syntax Interfaces ::= "implements" InterfaceTypeList    [klabel('ImplementsDec)]
 
 syntax ClassBodyDec ::= InstanceInit | StaticInit | ClassMemberDec | ConstrDec
@@ -84,7 +84,7 @@ syntax Param ::= AnnoVarModList Type VarDecId           [klabel('Param)]
 syntax Param ::= AnnoVarModList Type "..." VarDecId     [klabel('VarArityParam)]
 
 syntax Throws ::= "throws" ExceptionTypeList
-syntax ExceptionType ::= ClassType
+syntax ExceptionType ::= JavaClassType
 syntax MethodBody ::= Block | ";" [klabel('NoMethodBody)]
 
 syntax MethodDecHead ::= AnnoMethodModList OptionalTypeParams Type

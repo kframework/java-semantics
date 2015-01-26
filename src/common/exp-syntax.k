@@ -22,9 +22,8 @@ syntax MethodSpec ::= MethodName                            [klabel('Method)]
 syntax MethodInvokeExp ::= K "." MethodName "(" Exps ")"    [seqstrict(1,3), klabel('MethodImpl)]
 
 //@ \subsection{ClassInstanceCreation.sdf}
-syntax ClassInstanceCreationExp ::=
- "new" OptionalTypeArgs ClassOrInterfaceType "(" Exps ")" OptionalClassBody  [klabel('NewInstance)]
-| Exp "." "new" OptionalTypeArgs Id OptionalTypeArgs "(" Exps ")" OptionalClassBody [klabel('QNewInstance)]
+syntax ClassInstanceCreationExp ::= "new" OptionalTypeArgs ClassOrInterfaceType "(" Exps ")" OptionalClassBody  [klabel('NewInstance)]
+syntax ClassInstanceCreationExp ::= Exp "." "new" OptionalTypeArgs Id OptionalTypeArgs "(" Exps ")" OptionalClassBody [klabel('QNewInstance)]
 
 //Denis' syntax
 syntax ClassOrName ::= Id | ClassType
