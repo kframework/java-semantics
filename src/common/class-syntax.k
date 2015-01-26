@@ -64,7 +64,7 @@ syntax EnumBodyDecs ::= ";" ClassBodyDecList    [klabel('EnumBodyDecs)]
 syntax FieldDec ::= AnnoFieldModList Type VarDecList ";"    [klabel('FieldDec)]
 
 syntax VarDec ::= VarDecId                [klabel('VarDec)]
-               // | VarDecId "=" VarInit    [klabel('VarDec)]
+                | VarDecId "=" VarInit    [klabel('VarDec)]
 
 syntax VarDecId ::= Id | Id Dims          [klabel('ArrayVarDecId)]
 
