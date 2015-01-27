@@ -12,6 +12,7 @@ module STATEMENTS
 //@ \subsection{isStmt}
 rule isStmt('For(_)) => true
 rule isStmt('Switch(_)) => true
+rule isStmt('Block(_)) => true
 
 //@ \subsection{Call of main method}
 
@@ -33,7 +34,6 @@ rule [ExecutionPhase-Start]:
 
 rule [Block]:
     <k> 'Block(S:K) => S ~> env(Env:Map) ...</k>
-//todo:    <k> {S:K} => S ~> env(Env:Map) ...</k>
     <env> Env </env>
         [structural]
 
@@ -392,17 +392,17 @@ rule [Throw-CausesThreadTermination]:
 
 rule [Try-Catch-Finally-Desugar]:
     try TryS:K (K:CatchClause Ks:CatchClauses) finally FinallyS:K
-    => try {try TryS (K Ks)} .CatchClauses finally FinallyS
+    => try 'Block(try TryS (K Ks)) .CatchClauses finally FinallyS
         [structural]
 
 /*@ \subsubsection{Execution of try-catch} JLS \$14.20.1
 */
 //macro
-rule 'Try(Trys:K,,([Catches:KList] => toCatchClauses([Catches])),,FinallyS:K)
-rule 'Try(Trys:K,,([Catches:KList] => toCatchClauses([Catches])))
-syntax CatchClause ::="catch" "(" K ")" K [klabel('Catch)]
-syntax CatchClauses ::= toCatchClauses( KListWrap )          [function]
-                        | toCatchClauses( KListWrap , CatchClauses ) [function]
+rule 'Try(Trys:K,,([Catches:KList] => toCatchClauses([Catches])),,FinallyS:K)   [anywhere]
+rule 'Try(Trys:K,,([Catches:KList] => toCatchClauses([Catches])))               [anywhere]
+
+syntax CatchClauses ::= toCatchClauses( KListWrap )                             [function]
+                      | toCatchClauses( KListWrap , CatchClauses )              [function]
 
 rule toCatchClauses([KLCatchClauses:KList]) => toCatchClauses([KLCatchClauses],.CatchClauses)
 rule toCatchClauses([KLCatchClauses:KList,, C:CatchClause], CatchClauses:CatchClauses) => toCatchClauses([KLCatchClauses], (C CatchClauses))
@@ -411,9 +411,11 @@ rule toCatchClauses([.KList], CatchClauses:CatchClauses) => CatchClauses
 //resolve the catch clauses of try statement
 context try _:K HOLE
 
+syntax CatchClause ::= "catch" "(" K ")" K          [klabel('Catch)]
 //resolve 'Param term of the catch clause
-
 context catch(HOLE)_                                [result(ExtKResult)]
+
+rule 'Param(_,, K:Type,, X:Id) => K X               [structural]
 
 rule catch(KR:ExtKResult)S:K => catchImpl(KR,S)
 
@@ -431,13 +433,12 @@ syntax CatchImpl ::=  catchImpl (
                       K,  //'Param(...),
                       K   //the code block
                     )
-                    syntax KResult::= CatchImpl
-                    syntax CatchClause ::= CatchImpl
-
+syntax KResult ::= CatchImpl
+syntax CatchClause ::= CatchImpl
 
 rule [Try-Catch]:
     (try TryS:K KRs:CatchClauses => TryS ~> catchBlocks(KRs))
-when isKResult(KRs)
+    when isKResult(KRs)
 
 /*@ The auxiliary construct that holds catch clauses
 after try clause has been moved to the top of computation*/

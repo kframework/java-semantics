@@ -8,7 +8,7 @@ module STMT-SYNTAX
 
 //@ \subsection{Blocks.sdf}
 syntax BlockStmt ::= Stmt | LocalVarDecStmt | ClassDec [klabel('ClassDecStm)]
-syntax Block ::= "{" K "}" [klabel('Block)]
+syntax Block ::= "{" BlockStmList "}" [klabel('Block)]
 
 //@ \subsection{LocalVariableDeclaraions.sdf}
 syntax LocalVarDecStmt ::= LocalVarDec ";" [prefer, klabel('LocalVarDecStm)]
