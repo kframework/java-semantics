@@ -48,22 +48,22 @@ syntax ExprStmt ::= Exp ";"  [strict, klabel('ExprStm)]
 syntax AssertStmt ::= "assert" Exp ";"         [strict, klabel('AssertStm)]
 		            | "assert" Exp ":" Exp ";" [strict(1), klabel('AssertStm)]
 
-syntax SwitchStmt ::= "switch" "(" Exp ")" SwitchBlock [strict(1),klabel('Switch)]
-syntax SwitchGroup ::= KListWrap KListWrap [klabel('SwitchGroup)]
-syntax SwitchLabel ::= "case" Exp ":" [strict, klabel('Case)]
-		               |"default:" [klabel('Default)]
-syntax SwitchBlock::= "{" KListWrap KListWrap "}" [klabel('SwitchBlock)]
+syntax SwitchStmt ::= "switch" "(" Exp ")" SwitchBlock [strict(1), klabel('Switch)]
+syntax SwitchGroup ::=  SwitchLabelList BlockStmList [klabel('SwitchGroup)]
+syntax SwitchLabel ::= "case" Exp ":" [klabel('Case)]
+		             | "default"  ":" [klabel('Default)]
+syntax SwitchBlock::= "{" SwitchGroupList SwitchLabelList "}" [klabel('SwitchBlock)]
 
-syntax DoStmt ::="do" Stmt "while" "(" Exp ")" ";" [strict(2),klabel('DoWhile)]
+syntax DoStmt ::= "do" Stmt "while" "(" Exp ")" ";" [strict(2),klabel('DoWhile)]
 
-syntax CatchClause ::="catch" "(" Param ")" Block [klabel('Catch)]
+syntax CatchClause ::= "catch" "(" Param ")" Block [klabel('Catch)]
 syntax TryStmt ::= "try" Block CatchClauses "finally" Block [klabel('Try)]
-		           |"try" Block CatchClauses [klabel('Try)]
+		         | "try" Block CatchClauses [klabel('Try)]
 //Denis' syntax
 syntax Param ::= Type Id       [klabel('ParamImpl)]
 
 
-syntax StackConsumerStmt ::= ThrowStmt|ContinueStmt|BreakStmt|ReturnStmt
+syntax StackConsumerStmt ::= ThrowStmt | ContinueStmt | BreakStmt | ReturnStmt
 syntax ThrowStmt ::= "throw" Exp ";" [strict, klabel('Throw)]
 syntax ContinueStmt ::= "continue" OptionalId ";" [klabel('Continue)]
 syntax BreakStmt ::= "break" OptionalId ";" [klabel('Break)]
