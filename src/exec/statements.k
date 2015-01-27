@@ -11,6 +11,7 @@ module STATEMENTS
 
 //@ \subsection{isStmt}
 rule isStmt('For(_)) => true
+rule isStmt('Switch(_)) => true
 
 //@ \subsection{Call of main method}
 
