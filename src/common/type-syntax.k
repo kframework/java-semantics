@@ -8,61 +8,70 @@ module TYPE-SYNTAX
 //@ \subsection{Main.sdf}
 syntax Type ::= PrimType
               | RefType
-/*Denis' syntax: actually in sdf "void" together with Type composed ResultType,
+/*Denis' syntax: actually in sdf "void" together with Type compose ResultType,
 since now "void" is Type, there is no need for another syntax of ResultType.*/
-              | "void" [klabel('Void)]
+              | "void"                                  [klabel('Void)]
+
 
 //@ \subsection{ParameterizedTypes.sdf}
-syntax TypeArgs ::= "<" ActualTypeArgList ">"        [klabel('TypeArgs)]
-syntax ActualTypeArg ::= Type
-                        | "?" OptionalWildcardBound    [klabel('Wildcard)]
+syntax TypeArgs ::= "<" ActualTypeArgList ">"           [klabel('TypeArgs)]
 
-syntax WildcardBound ::= "extends" RefType [klabel('WildcardUpperBound)]
-                        |"super"   RefType [klabel('WildcardLowerBound)]
+syntax ActualTypeArg ::= Type
+                       | "?" OptionalWildcardBound      [klabel('Wildcard)]
+
+syntax WildcardBound ::= "extends" RefType              [klabel('WildcardUpperBound)]
+                       | "super"   RefType              [klabel('WildcardLowerBound)]
+
 
 //@ \subsection{PrimitiveTypes.sdf}
-syntax IntOrLongType ::= "int" [klabel('Int)] | "long" [klabel('Long)]
-syntax IntType ::= "byte" [klabel('Byte)]| "short" [klabel('Short)]| IntOrLongType | "char" [klabel('Char)]
-syntax FloatType ::= "float" [klabel('Float)] | "double" [klabel('Double)]
+syntax IntOrLongType ::= "int"                          [klabel('Int)]
+                       | "long"                         [klabel('Long)]
+syntax IntType ::= "byte"                               [klabel('Byte)]
+                 | "short"                              [klabel('Short)]
+                 | "char"                               [klabel('Char)]
+                 | IntOrLongType
 
-//NumType in sdf
+syntax FloatType ::= "float"                            [klabel('Float)]
+                   | "double"                           [klabel('Double)]
+//sdf NumType
 syntax NumericType ::= IntType | FloatType
-syntax PrimType ::= NumericType | "bool" [klabel('Boolean)] //"boolean" in sdf
+syntax PrimType ::= NumericType | "bool"                [klabel('Boolean)] //sdf "boolean"
+
 
 //@ \subsection{ReferenceTypes.sdf}
     /*@ A fully qualified class name, or noClass where no valid class could be computed.*/
-syntax ClassOrInterfaceType ::= TypeDecSpec OptionalTypeArgs [klabel('ClassOrInterfaceType)]
-rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK [anywhere]
+syntax ClassOrInterfaceType ::= TypeDecSpec OptionalTypeArgs    [klabel('ClassOrInterfaceType)]
+rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK                [anywhere]
 
-syntax InterfaceType ::= TypeDecSpec OptionalTypeArgs [klabel('InterfaceType)]
+syntax InterfaceType ::= TypeDecSpec OptionalTypeArgs           [klabel('InterfaceType)]
 //sdf ClassType, use another name JavaClassType to avoid conflict with Denis' ClassType syntax
-syntax JavaClassType ::= TypeDecSpec OptionalTypeArgs [klabel('ClassType)]
+syntax JavaClassType ::= TypeDecSpec OptionalTypeArgs           [klabel('ClassType)]
 
 //Denis' syntax
-syntax ClassType ::= "class" Id
-                   | "noClass"        [latex({\dotCt{K}})]
+syntax ClassType ::= "class" Id | "noClass"                     [latex({\dotCt{K}})]
 
-syntax TypeDecSpec ::= TypeName
-                     | TypeDecSpec TypeArgs "." Id [klabel('Member)]
+syntax TypeDecSpec ::= TypeName | TypeDecSpec TypeArgs "." Id   [klabel('Member)]
 
-syntax TypeVar ::= TypeVarId   [klabel('TypeVar)]
+syntax TypeVar ::= TypeVarId                                    [klabel('TypeVar)]
 
-syntax ArrayType ::= Type "[" "]"   [strict, klabel('ArrayType)]
-//The sdf syntax (left) is different from Denis' syntax, so added anywhere rule here
-rule 'ArrayType(T:Type) => arrayOf T     [anywhere]
+syntax ArrayType ::= Type "[" "]"                               [strict, klabel('ArrayType)]
+//The sdf syntax (left) is different from Denis' syntax ( arrayof ), so added anywhere rule here
+rule 'ArrayType(T:Type) => arrayOf T                            [anywhere]
 
 syntax RefType ::= ClassOrInterfaceType | ArrayType
-
-/* Denis' syntax: A reference type is either a class type, an array type, the null type or a String type. The null type is specified
-        by the JLS although inaccessible to the programmer. String objects and types are not threated as regular objects
-        in the present semantics for performance reasons.
+/* Denis' syntax: A reference type is either a class type, an array type, the null type or a String type.
+The null type is specified by the JLS although inaccessible to the programmer. String objects and
+types are not threated as regular objects in the present semantics for performance reasons.
 */
 syntax RefType ::= ClassType | "nullType" | "arrayOf" Type
 
+
 //@ \subsection{TypeVariables.sdf}
 syntax TypeVarId ::= Id
-syntax TypeBound ::= "extends" ClassOrInterfaceTypeList     [klabel('TypeBound)]
-syntax TypeParam ::= TypeVarId OptionalTypeBound           [klabel('TypeParam)]
-syntax TypeParams ::= "<" TypeParamList ">"        [klabel('TypeParams)]
+
+syntax TypeBound ::= "extends" ClassOrInterfaceTypeList         [klabel('TypeBound)]
+
+syntax TypeParam ::= TypeVarId OptionalTypeBound                [klabel('TypeParam)]
+syntax TypeParams ::= "<" TypeParamList ">"                     [klabel('TypeParams)]
 
 endmodule
