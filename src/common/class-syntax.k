@@ -3,13 +3,15 @@ require "exp-syntax.k"
 module CLASS-SYNTAX
 imports ARRAY-SYNTAX
 imports EXP-SYNTAX
-//@ \subsection{ClassDeclarations.sdf}
-syntax ClassDec ::= ClassDecHead ClassBody [klabel('ClassDec)]
-syntax ClassDec ::= EnumDec
 
-syntax ClassBody ::= "{" ClassBodyDecList "}" [klabel('ClassBody)]
-//todo optionals
-syntax ClassDecHead ::= AnnoClassModList "class" Id TypeParams Super Interfaces [prefer, klabel('ClassDecHead)]
+//@ \subsection{ClassDeclarations.sdf}
+syntax ClassDecHead ::=
+    AnnoClassModList "class" Id OptionalTypeParams OptionalSuper OptionalInterfaces
+                                                                        [klabel('ClassDecHead)]
+syntax ClassBody ::= "{" ClassBodyDecList "}"                           [klabel('ClassBody)]
+
+syntax ClassDec ::= ClassDecHead ClassBody                              [klabel('ClassDec)]
+syntax ClassDec ::= EnumDec
 
 syntax ClassMod ::= Public
                   | Private
@@ -18,64 +20,64 @@ syntax ClassMod ::= Public
                   | Final
                   | Static
                   | StrictFP
+
 syntax AnnoClassMod ::= Anno | ClassMod
 
-syntax Super ::= "extends" ClassType                    [klabel('SuperDec)]
-syntax Interfaces ::= "implements" InterfaceTypeList    [klabel('ImplementsDec)]
+syntax Super ::= "extends" JavaClassType                                [klabel('SuperDec)]
+
+syntax Interfaces ::= "implements" InterfaceTypeList                    [klabel('ImplementsDec)]
 
 syntax ClassBodyDec ::= InstanceInit | StaticInit | ClassMemberDec | ConstrDec
 
 syntax ClassMemberDec ::= FieldDec | ClassDec | MethodDec | InterfaceDec | SemiColon
 
-syntax SemiColon ::= ";" [klabel('SemiColon)]
+syntax SemiColon ::= ";"                                                [klabel('SemiColon)]
+
 
 //@ \subsection{ConstructorDeclarations.sdf}
-//todo optionals
-syntax ConstrHead   ::=  AnnoConstrModList TypeParams Type Id "(" Params ")" Throws [prefer, klabel('ConstrDecHead)]
-                       | AnnoConstrModList TypeParams Type Id "(" Params ")"    [klabel('ConstrDecHead)]
-                       | AnnoConstrModList Type Id "(" Params ")" Throws   [klabel('ConstrDecHead)]
-                       | AnnoConstrModList Type Id "(" Params ")"    [klabel('ConstrDecHead)]
+syntax ConstrHead ::=
+    AnnoConstrModList OptionalTypeParams Type Id "(" Params ")" OptionalThrows
+                                                                        [klabel('ConstrDecHead)]
+syntax ConstrBody ::= "{" OptionalConstrInv BlockStmList "}"            [klabel('ConstrBody)]
 
-syntax ConstrDec ::= ConstrHead ConstrBody                    [klabel('ConstrDec)]
-syntax ConstrBody ::= "{" ConstrInv BlockStmList "}"          [prefer, klabel('ConstrBody)]
-                    | "{" BlockStmList "}"                    [klabel('ConstrBody)]
+syntax ConstrDec ::= ConstrHead ConstrBody                              [klabel('ConstrDec)]
 
-syntax ConstrInv ::= TypeArgs "this"  "(" Exps ")" ";"        [prefer, klabel('AltConstrInv)]
-syntax ConstrInv ::= "this"  "(" Exps ")" ";"                 [klabel('AltConstrInv)]
-syntax ConstrInv ::= TypeArgs "super"  "(" Exps ")" ";"       [prefer, klabel('SuperConstrInv)]
-syntax ConstrInv ::= "super"  "(" Exps ")" ";"                [klabel('SuperConstrInv)]
-syntax ConstrInv ::= Exp "." TypeArgs "super"  "(" Exps ")" ";" [prefer, klabel('QSuperConstrInv)]
-syntax ConstrInv ::= Exp "." "super"  "(" Exps ")" ";"          [klabel('QSuperConstrInv)]
+syntax ConstrInv ::= OptionalTypeArgs "this"  "(" Exps ")" ";"          [klabel('AltConstrInv)]
+syntax ConstrInv ::= OptionalTypeArgs "super"  "(" Exps ")" ";"         [klabel('SuperConstrInv)]
+syntax ConstrInv ::= Exp "." OptionalTypeArgs "super"  "(" Exps ")" ";" [klabel('QSuperConstrInv)]
 
 syntax ConstrMod ::= Public
-                  | Private
-                  | Protected
+                   | Private
+                   | Protected
+
 syntax AnnoConstrMod ::= Anno | ConstrMod
 
+
 //@ \subsection{EnumDeclarations.sdf}
-syntax EnumDecHead ::= AnnoClassModList "enum" Id Interfaces [prefer, klabel('EnumDecHead)]
-                     | AnnoClassModList "enum" Id            [klabel('EnumDecHead)]
+syntax EnumDecHead ::= AnnoClassModList "enum" Id OptionalInterfaces    [klabel('EnumDecHead)]
+/*
+Java allows , at the end of List.
+This makes copy-pasting easier, especially with one element per line.
+*/
+syntax EnumBody ::= "{" EnumConstList OptionalEnumBodyDecs"}"           [klabel('EnumBody)]
+                  | "{" EnumConstList "," OptionalEnumBodyDecs "}"      [klabel('EnumBody)]
 
-syntax EnumDec ::= EnumDecHead EnumBody                     [klabel('EnumDec)]
+syntax EnumDec ::= EnumDecHead EnumBody                                 [klabel('EnumDec)]
 
-syntax EnumBody ::= "{" EnumConstList EnumBodyDecs"}"       [prefer, klabel('EnumBody)]
-                  | "{" EnumConstList "}"                   [klabel('EnumBody)]
-                  | "{" EnumConstList "," EnumBodyDecs "}"  [prefer, klabel('EnumBody)]
-                  | "{" EnumConstList "," "}"               [klabel('EnumBody)]
-//todo optionals
-syntax EnumConst ::= Id EnumConstArgs ClassBody [prefer, klabel('EnumConst)]
+syntax EnumConst ::= Id OptionalEnumConstArgs OptionalClassBody         [klabel('EnumConst)]
 
-syntax EnumConstArgs ::= "(" Exps ")"           [bracket]
+syntax EnumConstArgs ::= "(" Exps ")"                                   [bracket]
 
-syntax EnumBodyDecs ::= ";" ClassBodyDecList    [klabel('EnumBodyDecs)]
+syntax EnumBodyDecs ::= ";" ClassBodyDecList                            [klabel('EnumBodyDecs)]
+
 
 //@ \subsection{FieldDeclarations.sdf}
-syntax FieldDec ::= AnnoFieldModList Type VarDecList ";"    [klabel('FieldDec)]
+syntax FieldDec ::= AnnoFieldModList Type VarDecList ";"                [klabel('FieldDec)]
 
-syntax VarDec ::= VarDecId                [klabel('VarDec)]
-               // | VarDecId "=" VarInit    [klabel('VarDec)]
+syntax VarDec ::= VarDecId                                              [klabel('VarDec)]
+                | VarDecId "=" VarInit                                  [klabel('VarDec)]
 
-syntax VarDecId ::= Id | Id Dims          [klabel('ArrayVarDecId)]
+syntax VarDecId ::= Id | Id Dims                                        [klabel('ArrayVarDecId)]
 
 syntax VarInit ::= Exp | ArrayInit
 
@@ -86,40 +88,46 @@ syntax FieldMod ::= Public
                   | Static
                   | Transient
                   | Volatile
+
 syntax AnnoFieldMod ::= Anno | FieldMod
 
+
 //@ \subsection{MethodDeclarations.sdf}
-syntax Param ::= AnnoVarModList Type VarDecId           [klabel('Param)]
-syntax Param ::= AnnoVarModList Type "..." VarDecId     [klabel('VarArityParam)]
+syntax MethodDecHead ::=
+    AnnoMethodModList OptionalTypeParams Type Id "(" Params ")" OptionalThrows
+                                                                        [klabel('MethodDecHead)]
+syntax MethodBody ::= Block | ";"                                       [klabel('NoMethodBody)]
+syntax MethodDec ::= MethodDecHead MethodBody                           [klabel('MethodDec)]
 
-syntax Throws ::= "throws" ExceptionTypeList
-syntax ExceptionType ::= ClassType
-syntax MethodBody ::= Block | ";" [klabel('NoMethodBody)]
-//todo optionals
-syntax MethodDecHead ::= AnnoMethodModList TypeParams Type Id "(" Params ")" Throws [prefer, klabel('MethodDecHead)]
-                       | AnnoMethodModList TypeParams Type Id "(" Params ")"    [klabel('MethodDecHead)]
-                       | AnnoMethodModList Type Id "(" Params ")" Throws   [klabel('MethodDecHead)]
-                       | AnnoMethodModList Type Id "(" Params ")"    [klabel('MethodDecHead)]
+syntax Param ::= AnnoVarModList Type VarDecId                           [klabel('Param)]
+syntax Param ::= AnnoVarModList Type "..." VarDecId                     [klabel('VarArityParam)]
 
-syntax MethodDec ::= MethodDecHead MethodBody [klabel('MethodDec)]
+syntax Throws ::= "throws" ExceptionTypeList                            [klabel('ThrowsDec)]
+
+syntax ExceptionType ::= JavaClassType
 
 syntax MethodMod ::= Public
-                  | Private
-                  | Protected
-                  | Abstract
-                  | Final
-                  | Static
-                  | Native
-                  | Synchronized
-                  | StrictFP
+                   | Private
+                   | Protected
+                   | Abstract
+                   | Final
+                   | Static
+                   | Native
+                   | Synchronized
+                   | StrictFP
+
 syntax AnnoMethodMod ::= Anno | MethodMod
 
 syntax VarMod ::= Final
+
 syntax AnnoVarMod ::= Anno | VarMod
 
+
 //@ \subsection{InstanceInitializers.sdf}
-syntax InstanceInit ::= Block           [klabel('InstanceInit)]
+syntax InstanceInit ::= Block                                           [klabel('InstanceInit)]
+
 
 //@ \subsection{StaticInitializers.sdf}
-syntax StaticInit ::= "static" Block    [klabel('StaticInit)]
+syntax StaticInit ::= "static" Block                                    [klabel('StaticInit)]
+
 endmodule

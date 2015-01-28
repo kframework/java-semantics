@@ -9,6 +9,11 @@ module STATEMENTS
     imports METHOD-INVOKE // for initParams
     imports STMT-SYNTAX
 
+//@ \subsection{isStmt}
+rule isStmt('For(_)) => true
+rule isStmt('Switch(_)) => true
+rule isStmt('Block(_)) => true
+
 //@ \subsection{Call of main method}
 
 //For now main class may only be placed in the default package.
@@ -29,7 +34,6 @@ rule [ExecutionPhase-Start]:
 
 rule [Block]:
     <k> 'Block(S:K) => S ~> env(Env:Map) ...</k>
-//todo:    <k> {S:K} => S ~> env(Env:Map) ...</k>
     <env> Env </env>
         [structural]
 
@@ -63,7 +67,7 @@ rule [Empty]:
 //@ \subsection{Labeled statements} JLS \$14.7
 
 rule [Labeled]:
-    X:Id : S:K => S ~> labeledImpl(X)
+    X:Id : S:Stmt => S ~> labeledImpl(X)
 
 //@ Processed version of the labeled statement
 syntax KItem ::= labeledImpl ( Id )
@@ -76,14 +80,20 @@ rule [labeledImpl-Discard]:
 rule _:TypedVal; => .K
 
 //@ \subsection{If statement}
-rule if (K1) {K2} => if (K1) {K2} else {.K} 
-
 rule [If-True]:
-    if (true::bool) {S:K} else {_} => S
+    if (true::bool) S:Stmt else _:Stmt => S
         [symbolic-rule]
 
 rule [If-False]:
-    if (false::bool) {_} else {S:K} => S
+    if (false::bool) _:Stmt else S:Stmt => S
+        [symbolic-rule]
+
+rule [If-True]:
+    if (true::bool) S:Stmt => S
+        [symbolic-rule]
+
+rule [If-False]:
+    if (false::bool) _:Stmt => .
         [symbolic-rule]
 
 //@ \subsection{Assert statement}
@@ -92,84 +102,69 @@ rule [AssertStm-True-OneArg]:
         assert true::bool; => .
 
 rule [AssertStm-False-OneArg]:
-        assert false::bool; => throw new class String2Id("java.lang.AssertionError") (null::classString);
+        assert false::bool;
+        => throw new class String2Id("java.lang.AssertionError") (null::classString);
 
 //full version:    assert exp1:exp2;
 rule [AssertStm-FirstTrue-SecondDiscarded]:
         assert true::bool : _ ; => .
 
 context assert false::bool : HOLE;
+
 rule [AssertStm-FirstFalse]:
-    assert (false::bool) : (TV:TypedVal); => throw new class String2Id("java.lang.AssertionError") (toString(TV));
+        assert (false::bool) : (TV:TypedVal);
+        => throw new class String2Id("java.lang.AssertionError") (toString(TV));
 
 //@ \subsection{Switch statement}
 
-syntax KItem ::=  switchImpl (
-                TypedVal,   // TV - switch argument
-                KListWrap,  // switch body - list of 'SwitchGroup labels
-                K           // DefaultStm - default block, if any
-              )
+
+syntax K ::= switchImpl (
+             TypedVal, // TV - switch argument
+             KListWrap, // switch body - list of 'SwitchGroup labels
+             K // DefaultStm - default block, if any
+             )
 
 //@ The switchEnd in the right-hand side of => is required to properly interact with break.
 rule [Switch]:
-    switch(TV:TypedVal){[Ks:KList] [TrailingLabels:KList]}
-    => switchImpl(TV, [Ks,, [TrailingLabels] .K], .K)
+    'Switch(TV:TypedVal,, 'SwitchBlock([Ks:KList],, TrailingLabels:K))
+    => switchImpl(TV, [Ks,, 'SwitchGroup(TrailingLabels,, .K)], .K)
     ~> switchEnd
 
-context switchImpl( _, [ [case HOLE : ,, _:KList] _ ,, _:KList], _)
-
+context switchImpl( _,[ 'SwitchGroup(['Case(HOLE),,_:KList],,_),, _:KList ], _)
 /*@ The type associated to V and V2 is not important for match, only the value.
 JLS3 \$14.11, page 377: Every case constant expression associated with
 a switch statement must be assignable (�5.2) to the type of the switch Expression.*/
-
 rule [switchImpl-CaseNotMatch]:
-    switchImpl(
-      V:RawVal :: _,
-      [ [ (  case V2:RawVal :: _ :=> .KList ),, _:KList ] _ ,, _],
-      _
-    )
-when
-    V =/=K V2
+    switchImpl(V:RawVal :: _,[ 'SwitchGroup([ ( 'Case(V2:RawVal :: _) => .KList ),, _:KList ],,_),, _],_)
+    when V =/=K V2
 
 /*@Once case of first switch group matches, the whole switch is replaced
 by it's block. The execution rules for switch will discard switch-related
 constructs and will execute the statements. */
 rule [switchImpl-CaseMatch]:
-    switchImpl(
-        V:RawVal :: _,
-        [[case V :: _ : ,, _:KList] S:K,, Ks:KList],
-        _
-    )
-    => [S,,Ks]
+    switchImpl(V:RawVal :: _, ['SwitchGroup(['Case(V :: _),,_:KList],,S:K),, Ks:KList], _) => [S,,Ks]
 
 rule [switchImpl-DefaultSave]:
-    switchImpl(
-        TV:TypedVal,
-        [[ ( default: => .KList ),, _:KList] S:K,, Ks:KList],
-        ( _:K => [S,, Ks] )
-    )
+    switchImpl(TV:TypedVal, ['SwitchGroup([('Default(_) => .KList ),, _:KList],, S:K),, Ks:KList],( _:K => [S,, Ks]))
 
 rule [switchImpl-SwitchGroup-Discard]:
-    switchImpl(
-        TV:TypedVal,
-        [( [ .KList ] _ => .KList ),, _],
-        _
-    )
+    switchImpl( TV:TypedVal, [('SwitchGroup([ .KList ],,_) => .KList ),, _], _)
 
 rule [switchImpl-Default-Exec]:
     switchImpl( _, [.KList], DefaultStm:K) => DefaultStm
 
 rule [SwitchGroup-Exec]:
-   (_:K S:K)<:SwitchGroup => S
+    'SwitchGroup(_:K,, S:K) => S
 
-syntax KItem ::=  "switchEnd"
+syntax K ::= "switchEnd"
 
 rule [switchEnd-Discard]:
     switchEnd => .K
 
 //@ \subsection{While statement} and loop infrastructure.
 
-rule while(E:K){S:K} => whileImpl(E, S)         [structural]
+rule [while]:
+    while(E:Exp)S:Stmt => whileImpl(E, S)                              [structural]
 
 syntax KItem ::=  whileImpl (
                 K,  // E - test expression. In For loop, it is UpdClause ~> testExp
@@ -177,61 +172,45 @@ syntax KItem ::=  whileImpl (
               )
 
 rule [whileImpl]:
-    whileImpl(E:K, S:K) => if(E){S ~> whileImpl(E, S)}    [structural]
+    whileImpl(E:K, S:K) => ifAux(E, S ~> whileImpl(E, S), .K)           [structural]
 
 //@ \subsection{Do statement}
-rule do{S:K}while(E:K) => S ~> whileImpl(E, S)  [structural]
+rule [do-while]:
+    do S:Stmt while(E:Exp); => S ~> whileImpl(E, S)                     [structural]
 
 //@ \subsection{For statement}
-
 //wrapper of certain clauses of for statement
-syntax KItem ::= stm ( KListWrap )
+syntax K ::= stm ( KListWrap )
 
 rule [stm-KListWrap-empty]:
-    stm([.KList]) => .
-        [structural]
+    stm([.KList]) => .                                                   [structural]
 
 rule [stm-KListWrap-exp]:
     stm([E:Exp,, Es:KList]) => E; ~> stm([Es])
-when
-    getKLabel(E) ==KLabel 'cast                                           [structural]
+    when getKLabel(E) ==KLabel 'cast                                     [structural]
 
 rule [stm-KListWrap-LocalVarDec]:
     stm([K:K,,Ks:KList]) => [K,,Ks]
-when
-    notBool ( getKLabel(K) ==KLabel 'cast )                               [structural]
+    when notBool ( getKLabel(K) ==KLabel 'cast )                         [structural]
 
 rule [For-FirstArgV1Red]:
-    for((
-      [InitExps:KList] => stm([InitExps])
-    );_:K;_:K) {_:K}
-        [structural]
+    'For(([InitExps:KList] => stm([InitExps])),,_:KList)                 [structural]
 
 //Works also in elaboration phase
 rule [For-FirstArgV2Red]:
-    for((
-      'LocalVarDec(Ks:KList) => stm(['LocalVarDec(Ks)])
-    );_:K;_:K) {_:K}
-        [structural]
+    'For(('LocalVarDec(Ks:KList) => stm(['LocalVarDec(Ks)])),,_:KList)   [structural]
 
 rule [For-SecondArgRed]:
-    for(_:K;(
-      'None(.KList) => 'Some(true)
-    );_:K) {_:K}
-        [structural]
+    'For(_:K,,('None(.KList) => 'Some(true)),,_:KList)                   [structural]
 
 rule [For-ThirdArgRed]:
-    for(_:K;_:K;(
-      [UpdExps:KList] => stm([UpdExps])
-    )) {_:K}
-        [structural]
+    'For(_:K,,_:K,,([UpdExps:KList] => stm([UpdExps])),,_:K)             [structural]
 
 //this form of resulting while is required for compatibility with continue statement
 rule [For]:
-    for(stm(InitClause:KListWrap); 'Some(TestExp:K); stm(UpdClause:KListWrap)) {S:K}
-     => 'Block(stm(InitClause)
-        //~> 'If(TestExp,, 'Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S),, .K))  [structural]
-        ~> if(TestExp) {'Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S)})  [structural]
+    'For(stm(InitClause:KListWrap),, 'Some(TestExp:K),, stm(UpdClause:KListWrap),, S:K)
+    => 'Block(stm(InitClause)
+    ~> ifAux(TestExp, ('Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp,S)), .K)) [structural]
 
 //totest model check - the argument of 'return and 'Throw must be evaluated. Otherwise some side effects during
 // evaluation might be evaluated too late
@@ -413,17 +392,17 @@ rule [Throw-CausesThreadTermination]:
 
 rule [Try-Catch-Finally-Desugar]:
     try TryS:K (K:CatchClause Ks:CatchClauses) finally FinallyS:K
-    => try {try TryS (K Ks)} .CatchClauses finally FinallyS
+    => try 'Block(try TryS (K Ks)) .CatchClauses finally FinallyS
         [structural]
 
 /*@ \subsubsection{Execution of try-catch} JLS \$14.20.1
 */
 //macro
-rule 'Try(Trys:K,,([Catches:KList] => toCatchClauses([Catches])),,FinallyS:K)
-rule 'Try(Trys:K,,([Catches:KList] => toCatchClauses([Catches])))
-syntax CatchClause ::="catch" "(" K ")" K [klabel('Catch)]
-syntax CatchClauses ::= toCatchClauses( KListWrap )          [function]
-                        | toCatchClauses( KListWrap , CatchClauses ) [function]
+rule 'Try(Trys:K,,([Catches:KList] => toCatchClauses([Catches])),,FinallyS:K)   [anywhere]
+rule 'Try(Trys:K,,([Catches:KList] => toCatchClauses([Catches])))               [anywhere]
+
+syntax CatchClauses ::= toCatchClauses( KListWrap )                             [function]
+                      | toCatchClauses( KListWrap , CatchClauses )              [function]
 
 rule toCatchClauses([KLCatchClauses:KList]) => toCatchClauses([KLCatchClauses],.CatchClauses)
 rule toCatchClauses([KLCatchClauses:KList,, C:CatchClause], CatchClauses:CatchClauses) => toCatchClauses([KLCatchClauses], (C CatchClauses))
@@ -432,9 +411,11 @@ rule toCatchClauses([.KList], CatchClauses:CatchClauses) => CatchClauses
 //resolve the catch clauses of try statement
 context try _:K HOLE
 
+syntax CatchClause ::= "catch" "(" K ")" K          [klabel('Catch)]
 //resolve 'Param term of the catch clause
-
 context catch(HOLE)_                                [result(ExtKResult)]
+
+rule 'Param(_,, K:Type,, X:Id) => K X               [structural]
 
 rule catch(KR:ExtKResult)S:K => catchImpl(KR,S)
 
@@ -452,13 +433,12 @@ syntax CatchImpl ::=  catchImpl (
                       K,  //'Param(...),
                       K   //the code block
                     )
-                    syntax KResult::= CatchImpl
-                    syntax CatchClause ::= CatchImpl
-
+syntax KResult ::= CatchImpl
+syntax CatchClause ::= CatchImpl
 
 rule [Try-Catch]:
     (try TryS:K KRs:CatchClauses => TryS ~> catchBlocks(KRs))
-when isKResult(KRs)
+    when isKResult(KRs)
 
 /*@ The auxiliary construct that holds catch clauses
 after try clause has been moved to the top of computation*/

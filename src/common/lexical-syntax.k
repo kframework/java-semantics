@@ -4,7 +4,7 @@ module LEXICAL-SYNTAX
 
 //@ \subsection{Identifiers.sdf}
 syntax Id ::= ID [klabel('Id)]
-syntax ID ::= Token{[A-Za-z\_\$][A-Za-z0-9\_\$]*} [onlyLabel]
+syntax ID ::= Token{[A-Za-z\_\$][A-Za-z0-9\_\$]*}   [onlyLabel]
 
 //@ \subsection{KeyWord.sdf(not needed?)}
 /*
@@ -62,24 +62,26 @@ syntax Keyword ::= "abstract"
 
 //@ \subsection{LineTerminators.sdf}
 syntax EndOfFile
-syntax CarriageReturn ::= Token{[\r]}              [onlyLabel]
+syntax CarriageReturn ::= Token{[\r]}               [onlyLabel]
 syntax LineTerminator ::= EndOfFile
                         | CarriageReturn
-                        | Token{[\n]}              [onlyLabel]
-                        | Token{[\r][\n]}          [onlyLabel]
+                        | Token{[\n]}               [onlyLabel]
+                        | Token{[\r][\n]}           [onlyLabel]
+
 
 //@ \subsection{Modifiers.sdf}
-syntax Public ::= "public"  [klabel('Public)]
-syntax Private ::= "private"  [klabel('Private)]
-syntax Protected ::= "protected" [klabel('Protected)]
-syntax Abstract ::= "abstract"  [klabel('Abstract)]
-syntax Final ::= "final" [klabel('Final)]
-syntax Static ::= "static" [klabel('Static)]
-syntax Native ::= "native" [klabel('Native)]
-syntax Transient ::= "transient" [klabel('Transient)]
-syntax Volatile ::= "volatile" [klabel('Volatile)]
-syntax StrictFP ::= "strictfp" [klabel('StrictFP)]
-syntax Synchronized ::= "synchronized" [klabel('Synchronized)]
+syntax Public ::= "public"                          [klabel('Public)]
+syntax Private ::= "private"                        [klabel('Private)]
+syntax Protected ::= "protected"                    [klabel('Protected)]
+syntax Abstract ::= "abstract"                      [klabel('Abstract)]
+syntax Final ::= "final"                            [klabel('Final)]
+syntax Static ::= "static"                          [klabel('Static)]
+syntax Native ::= "native"                          [klabel('Native)]
+syntax Transient ::= "transient"                    [klabel('Transient)]
+syntax Volatile ::= "volatile"                      [klabel('Volatile)]
+syntax StrictFP ::= "strictfp"                      [klabel('StrictFP)]
+syntax Synchronized ::= "synchronized"              [klabel('Synchronized)]
+
 syntax Modifier ::= Public
                   | Private
                   | Protected
@@ -93,7 +95,8 @@ syntax Modifier ::= Public
                   | Synchronized
 
 //@ \subsection{UnicodeEscape.sdf}
-syntax UnicodeEscape ::= Token {[\\][u]+ [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]} [onlyLabel, klabel('UnicodeEscape)]
+syntax UnicodeEscape ::= Token {[\\][u]+ [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]}
+                                                    [onlyLabel, klabel('UnicodeEscape)]
 
 //@ \subsection{WhiteSpace.sdf}
 //no need to define because K provides fixed layout

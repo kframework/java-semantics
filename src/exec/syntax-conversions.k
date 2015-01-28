@@ -11,8 +11,6 @@ module SYNTAX-CONVERSIONS
 /*@ \subsection{Method parameter}*/
 
 // 'Param(\_:K,, T:Type,, X:Id). Consumed by initParams().
-//Required for catch
-rule 'Param(_,, K:Type,, X:Id) => K X [structural]
 
 syntax KItem ::= toParams( KListWrap )          [function]
            | toParams( KListWrap , Params ) [function]

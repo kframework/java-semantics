@@ -174,10 +174,6 @@ rule 'Id(Str:String) => String2Id(Str)                [structural, anywhere]
 
 /*@ \subsection{Other auxiliary constructs} */
 
-//@ Labels used when a particular term is optional, in many places in Java grammar.
-syntax KLabel ::= "'Some"
-                | "'None"
-
 /*@ \texttt{Generic guard.}
     A generic computational guard (should be builtin): it allows the computation to continue only if a prefix
     guard evaluates to true.
