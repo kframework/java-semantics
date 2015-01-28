@@ -78,8 +78,6 @@ rule [readString]:
     <k> readString => Str :: classString ...</k>
     <in> ListItem(Str:String) => . ...</in>
 
-syntax KLabel ::= "'Class"        // X.class : the class literal
-
 /*@ object.getClass()*/
 rule [object-getClass-on-object]:
     <k>
@@ -204,7 +202,7 @@ rule [String-compareTo]:
       Str:String::Class,
       [ParamStr:String::_]
     )
-    => if (Str <String ParamStr) {-1} else { if (Str ==String ParamStr) {0} else {1}}
+    => ifAux(Str <String ParamStr, -1, ifAux(Str ==String ParamStr,0,1))
 when
     Class ==K classString andBool Id2String(MethodName) ==String "compareTo"
 

@@ -19,10 +19,6 @@ rule [compUnitImportsStart]:
     <compUnitImports> _ => PackMap </compUnitImports>
 
 //Process K-AST terms 'TypeImportDec or 'TypeImportOnDemandDec
-
-syntax KLabel ::= "'TypeImportDec"
-                | "'TypeImportOnDemandDec"
-
 context 'TypeImportDec(HOLE)
 
 rule [TypeImportDec]:

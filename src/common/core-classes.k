@@ -92,9 +92,6 @@ syntax KItem ::= getConsName ( ClassType )                               [functi
 rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(ClassId))
 
 //@ \subsection{Expressions and their subsorts}
-
-syntax Exp ::= "dummyExp"
-
 syntax Exp ::= NonNumericExp
 syntax NonNumericExp ::= "dummyNonNumericExp"
 
@@ -102,13 +99,11 @@ rule isNonNumericExp('ArrayAccess(_)) => true
 rule isNonNumericExp('NewInstance(_)) => true    // also in customElabChildren
 rule isNonNumericExp('QNewInstance(_)) => true   // also in customElabChildren
 rule isNonNumericExp('InstanceOf(_)) => true
-//rule isMethodInvokeExp('Invoke(_)) => true
 rule isNonNumericExp('Invoke(_)) => true
 rule isNonNumericExp('This(_)) => true
 rule isNonNumericExp('QThis(_)) => true
 rule isNonNumericExp('AmbName(_)) => true
 rule isNonNumericExp('ExprName(_)) => true
-//rule isMethodInvokeExp('Field(_)) => true
 rule isNonNumericExp('Field(_)) => true
 rule isNonNumericExp('SuperField(_)) => true
 rule isNonNumericExp('QSuperField(_)) => true
@@ -125,7 +120,7 @@ syntax Exp ::= TypedVal | RawVal
 /*@ These auxiliary terms functions that should be threated as expressions in the elaboration phase.
 */
 syntax Exp ::= AuxTermExp
-
+syntax LHS ::= AuxTermExp
 /*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
 such as an anonymous class declaration. Is typed with the type of the expression.
 At runtime is rewritten into the statement, that should evaluate into .K, followed by the expression,

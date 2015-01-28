@@ -37,14 +37,12 @@ rule [staticInit]:
             StaticInit,,
 
             //catch clause of 'Try
-            [
-              'Catch(
-                'Param( [.KList],, classObject,, String2Id("e") ),,
-                {throw new class String2Id("java.lang.ExceptionInInitializerError") (
-                  ((classObject) String2Id("e"))
-                );}
-              )
-            ],,
+              [
+                'Catch('ParamImpl(classObject,, String2Id("e") ),,
+                'Block(throw new class String2Id("java.lang.ExceptionInInitializerError")
+                (((classObject) String2Id("e")));))
+              ]
+            ,,
 
             //finally clause of 'Try
             [

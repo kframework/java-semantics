@@ -260,8 +260,6 @@ rule [FieldDec-instance]:
 //@\subsection{Execution of QSuperConstrInv, AltConstrInv}
 
 // 'QSuperConstrInv( Qual:K,, _:K,, [ Args:KList ] )
-syntax KLabel ::=  "'QSuperConstrInv"
-
 rule [QSuperConstrInv]:
     <k>
       'QSuperConstrInv(Qual:K,, _,, [ Args:KList ])
@@ -277,8 +275,6 @@ rule [QSuperConstrInv]:
     <extends> BaseClass:ClassType </extends>
 
 // 'AltConstrInv( _:K,, [ Args:KList ] )
-syntax KLabel ::= "'AltConstrInv"
-
 rule [AltConstrInv]:
     <k>
       'AltConstrInv(_,, [ Args:KList ])

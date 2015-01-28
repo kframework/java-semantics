@@ -567,7 +567,7 @@ rule [lookupPackageMethod-new-method]:
       lookupPackageMethod(
         Sig:Signature,
         (CurrentC:ClassType, Cs:ClassTypes => Cs),
-        OldDecC:ClassType => if (isOverridden( OldDecC, Acc, CurrentC )) { CurrentC } else { OldDecC }
+        OldDecC:ClassType => ifAux (isOverridden( OldDecC, Acc, CurrentC ),CurrentC,OldDecC )
       )
       ...
     </k>
@@ -760,7 +760,7 @@ syntax KItem ::= initParams ( Params,   // {T:Type X:Id},... - parameter declara
 
 rule [initParams]:
     initParams(T:Type X:Id, RestP:Params, (TV:TypedVal, RestV:TypedVals))
-      => T X;
+      => (T X;)<:LocalVarDecStmt
       ~> (X = ((T) TV:TypedVal));
       ~> initParams(RestP, RestV)
 
@@ -842,8 +842,6 @@ when
     isArrayRef(QualRV) ==K true orBool isString(QualRV) ==K true
 
 //@ 'QSuperMethod(Class:ClassType,, \_:K,, Name:Id)
-syntax KLabel ::= "'QSuperMethod"
-
 rule [Invoke-QSuperMethod]:
     'Invoke(
       ('QSuperMethod(Class:ClassType,, _:K,, Name:Id)

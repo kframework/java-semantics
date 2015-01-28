@@ -225,8 +225,6 @@ the only difference is the addition of the types.  */
   Body:K
 )
 */
-syntax KLabel ::= "'MethodDec"
-                | "'MethodDecHead"
 
 //resolving the return type
 context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _),, _)
@@ -243,7 +241,7 @@ rule [MethodDec]:
         Body:K //could be 'Block([...]) or 'NoMethodBody
       )
       => storeMethod([Params],
-            getContextType(Modifiers), getAccessMode(Modifiers), isSynchronized(Modifiers), methodMMT, noValue, Body,
+            getContextType(Modifiers), getAccessMode(Modifiers), isSynchronizedModifiers(Modifiers), methodMMT, noValue, Body,
             sig(Name, getTypes([Params])), ReturnType)
       ...
     </k>
@@ -254,9 +252,6 @@ when
 syntax KItem ::= paramTypesResolved( KListWrap )              [function]
 rule paramTypesResolved([('Param(_:K,, T:Type,, _:Id) => .KList),, _])
 rule paramTypesResolved([.KList]) => true
-
-syntax KLabel ::= "'AbstractMethodDec"
-                | "'NoMethodBody"
 
 rule [AbstractMethodDec]:
     'AbstractMethodDec(_:K,, Ks:KList)
@@ -326,9 +321,6 @@ rule [storeMethod-discard-default-constructor]:
     <classType> Class </classType>
     <methods>... Sig |-> _ ...</methods>
 
-syntax KLabel ::= "'ConstrDec"
-                | "'ConstrDecHead"
-                | "'ConstrBody"
 
 rule [ConstrDec-SuperCall-Desugar]:
     <k>
@@ -374,7 +366,7 @@ rule [ConstrDec]:
           'ConstrBody(
         'Some(FirstLine:K) ,,[BodyKs:KList]))
       => storeMethod([Params],
-          instanceCT, getAccessMode(Modifiers), isSynchronized(Modifiers), constructorMMT, FirstLine,
+          instanceCT, getAccessMode(Modifiers), isSynchronizedModifiers(Modifiers), constructorMMT, FirstLine,
           'Block([
 
             //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
@@ -392,7 +384,6 @@ rule [ConstrDec]:
 when paramTypesResolved([Params])
 
 //@ 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, InitExp:K),, _])
-syntax KLabel ::= "'FieldDec"
 
 //resolve field declaration type
 context 'FieldDec(_:K,, HOLE,, _)
@@ -418,7 +409,6 @@ when
     getContextType(Modifiers) ==K instanceCT
         [structural]
 
-syntax KLabel ::= "'InstanceInit"
 
 rule [InstanceInit]:
     <k> 'InstanceInit(K:K) => . ...</k>
@@ -451,7 +441,6 @@ when
     getContextType(Modifiers) ==K staticCT
         [structural]
 
-syntax KLabel ::= "'StaticInit"
 
 rule [StaticInit-Save]:
     <k> 'StaticInit(K:K) => . ...</k>
@@ -460,7 +449,6 @@ rule [StaticInit-Save]:
     <staticInit> [_,,(.KList => K)] </staticInit>
         [structural]
 
-syntax KLabel ::= "'ConstantDec"
 
 /*@ The parser represents interface fields as 'ConstantDec labels.
   This rule desugars them into 'FieldDec labels and adds the modifiers "public static final".
@@ -516,17 +504,17 @@ rule [convertInstanceInitIntoMethod]:
 //@ \subsection{Auxiliary functions}
 
 //@ Evaluates to true::bool if synchronized is among modifiers, false otherwise
-syntax KItem ::=  isSynchronized (
+syntax KItem ::=  isSynchronizedModifiers (
                 KListWrap       //[...] - the list of method attributes
               )
               [function]
 
-rule isSynchronized(['Synchronized(_),,_]) => true::bool
+rule isSynchronizedModifiers(['Synchronized(_),,_]) => true::bool
 
-rule isSynchronized([(KL:KLabel(_) => .KList),, _])
+rule isSynchronizedModifiers([(KL:KLabel(_) => .KList),, _])
 when        KL =/=KLabel 'Synchronized
 
-rule isSynchronized([.KList]) => false::bool
+rule isSynchronizedModifiers([.KList]) => false::bool
 
 //@ Used to provide an approximate implementation of the distinction between static constant and non-constant fields.
 syntax KItem ::=  isFinalModifiers (

@@ -64,7 +64,7 @@ rule [toString-ClassType-Inner]:
 //@ \texttt{toString for objectRef}
 
 rule toString(objectRef(OId:Int, LowestClass:ClassType) :: T:Type)
-    =>  objectRef(OId, LowestClass) :: T .String2Id("toString") (.TypedVals)
+    =>  objectRef(OId, LowestClass) :: T .((String2Id("toString")):>MethodName) (.TypedVals)
 
 //@ \subsection{Debug helper functions}
 

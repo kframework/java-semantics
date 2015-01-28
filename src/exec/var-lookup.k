@@ -11,7 +11,7 @@ module VAR-LOOKUP
 /*@ Local variable access. At runtime may have one form:
     - 'ExprName(X:Id) - local variable
 */
-syntax KLabel ::= "'ExprName"
+
 
 /*@ At execution phase 'ExprName(X) always represent a local variable.
 */
@@ -26,8 +26,6 @@ rule [lvalue-ExprName-local]:
 /*@ \subsection{QThis - Self reference} */
 
 //@ 'QThis(Class:ClassType)
-syntax KLabel ::= "'QThis"
-
 rule [QThis]:
     <k>
       'QThis(Class:ClassType) => lookupQThis(Class, RV::CrntClass)
@@ -74,8 +72,6 @@ when
     - 'ExprName(Class, X:Id) - static field
     - 'ExprName(Qual, X:Id) - instance field
 */
-syntax KLabel ::= "'Field"
-
 context 'Field(HOLE,, _)
 context lvalue('Field(HOLE,, _))
 

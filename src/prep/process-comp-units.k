@@ -81,11 +81,6 @@ rule [processTypeDecsInPCUPhase-typeDec-ComputeFullName]:
   'ClassBody( [ Decls - member declarations ] )
 )
 */
-syntax KLabel ::= "'ClassDec"
-                | "'ClassBody"
-                | "'ClassDecHead"
-                | "'SuperDec"
-                | "'ImplementsDec"
 
 rule [ClassDec-NoExtendsDesugar]:
     processTypeDecsInPCUPhase(
@@ -160,10 +155,6 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
               #else getContextType(Modifiers)
             #fi
     </classContextType>
-
-syntax KLabel ::= "'InterfaceDec"
-                | "'InterfaceDecHead"
-                | "'ExtendsInterfaces"
 
 rule [processTypeDecsInPCUPhase-IInterfaceDec]:
     <k>

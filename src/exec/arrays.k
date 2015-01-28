@@ -1,34 +1,11 @@
 //@ \section{Module ARRAYS}
-module ARRAY-SYNTAX
-/*@ \subsection{Array access}
-Check array bounds, as part of the dynamic typing policy. */
-syntax ArrayAccess ::= Exp "[" Exp "]" [seqstrict, klabel('ArrayAccess)]
-syntax Exp ::= ArrayAccess
-
-/*@ \subsection{Array Declaration}
-/*  Either 'NewArray( T:ElemType,, ['Dim(N1),,'Dim('N2),, ...],, [...,, 'Dim(.KList),, ...] )
-    Or     'NewArray( T:ElemType,, [...,, 'Dim(.KList),, ...],, 'ArrayInit(_) )
-*/
-syntax ArrayCreationExp ::= "new" Type DimExps Dims [strict(2), klabel('NewArray)]
-syntax ArrayCreationExp ::= "new" Type Dims ArrayInit [klabel('NewArray)]
-syntax Exp ::= ArrayCreationExp
-
-syntax Dim ::= "[" "]" [klabel('Dim)]
-syntax DimExp ::= "[" Exp "]" [strict, hybrid, klabel('Dim)]
-syntax Dims ::= List{Dim,""}
-syntax DimExps ::= List{DimExp,""} [strict]
-syntax VarInit ::= Exp|ArrayInit
-syntax ArrayInit ::= "{" VarInits "}" [klabel('ArrayInit)]
-syntax VarInits ::= List{VarInit, ","}
-
-endmodule
 
 module ARRAYS
     imports CORE-SORTS
     imports SUBTYPING
     imports EXPRESSIONS
     imports SYNTAX-CONVERSIONS
-    imports ARRAY-SYNTAX
+    imports JAVA-SYNTAX
 
 /*@ The value in store that corresponds to an array element. The consturction "elem" Type is meant to
   distinguish between regular memory locations and array elements. Array elements need to be represented separately
@@ -43,7 +20,7 @@ context lvalue('ArrayAccess(HOLE,,_))
 context lvalue('ArrayAccess(_:KResult,,HOLE))
 
 rule [ArrayAccess-to-lookup]:
-    arrayRef(_, L:Int, M:Int) :: arrayOf T:Type [N:Int::_]
+    (arrayRef(_, L:Int, M:Int) :: arrayOf T:Type [N:Int::_])
     => lookup(L +Int N, T)
 when (N >=Int 0) andBool (N <Int M)
         [structural, anywhere]
@@ -214,14 +191,13 @@ rule [storeImpl-array-elem]:
 rule [storeImpl-array-location-check-type]:
     <k>
       storeImpl(L:Int, V:RawVal::T:Type)
-      =>  if(subtype(typeOf(V), StoreType))
-            {storeImpl(L, V::StoreType)}
-            else
-            {throw new class String2Id("java.lang.ArrayStoreException") (
+      =>  ifAux(subtype(typeOf(V), StoreType),
+             storeImpl(L, V::StoreType),
+             throw new class String2Id("java.lang.ArrayStoreException") (
                 //the ArrayStoreException argument is the assigned object type
-                (V::T .String2Id("getClass") (.TypedVals)) .String2Id("getName") (.TypedVals)
+                (V::T .((String2Id("getClass")):>MethodName) (.TypedVals)) .((String2Id("getName")):>MethodName) (.TypedVals)
             );
-          }
+          )
       ...
     </k>
     <store>... L |-> _ :: elem StoreType:Type ...</store>

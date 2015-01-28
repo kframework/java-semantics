@@ -22,9 +22,6 @@ rule [ProcTypeNamesPhase-start]:
 /*@ \subsection{Compilation units}*/
 
 //@ 'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _)
-syntax KLabel ::= "'CompilationUnit"
-                | "'PackageDec"
-
 rule [CompilationUnit-DefaultPackage-Desugar]:
     'CompilationUnit(
       ( 'None(_) => 'Some('PackageDec(.K,, 'PackageName( [.KList] ))) ),,
@@ -46,7 +43,6 @@ rule [CompilationUnit]:
 /*@ \subsection{Packages}*/
 
 //@ 'PackageName([Ks])
-syntax KLabel ::= "'PackageName"
 
 rule [PackageName-Start]:
     'PackageName([Ks:KList]) => packageNameImpl("", [Ks:KList])                  [structural]
