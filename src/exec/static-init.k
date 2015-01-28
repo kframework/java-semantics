@@ -38,9 +38,9 @@ rule [staticInit]:
 
             //catch clause of 'Try
               [
-               catch('ParamImpl(classObject,, String2Id("e") ))
-                {throw new class String2Id("java.lang.ExceptionInInitializerError")
-                (((classObject) String2Id("e")));}
+                'Catch('ParamImpl(classObject,, String2Id("e") ),,
+                'Block(throw new class String2Id("java.lang.ExceptionInInitializerError")
+                (((classObject) String2Id("e")));))
               ]
             ,,
 
