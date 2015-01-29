@@ -1,4 +1,3 @@
-require "labels-prep.k"
 require "configuration-prep.k"
 require "../common/java-doc.k"
 require "../common/core-sorts.k"
@@ -30,7 +29,6 @@ require "process-anonymous-classes.k"
 require "folding.k"
 
 module JAVA-PREP
-    imports LABELS-PREP
     imports CONFIGURATION-PREP
     imports CORE-SORTS
     imports AUX-STRINGS
