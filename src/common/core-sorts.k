@@ -194,5 +194,26 @@ syntax KResult ::= Types
 syntax LocMetadata ::= "LocalLocMetadata"   [latex(\terminal{Local})]
                      | "FieldLocMetadata"   [latex(\terminal{Field})]
 
+//Denis' syntax
+syntax MethodInvokeExp ::= K "." MethodName "(" Exps ")"   [seqstrict(1,3), klabel('MethodImpl)]
 
+syntax ClassInstanceCreationExp ::= "new" ClassType "(" Exps ")"
+                                  | Exp "." "new" ClassOrName "(" Exps ")"      [seqstrict(1,3)]
+
+//Denis' syntax
+syntax ClassOrName ::= Id | ClassType
+//Denis' syntax
+syntax ClassType ::= "class" Id | "noClass"                     [latex({\dotCt{K}})]
+//Denis' syntax
+syntax Param ::= Type Id                                            [klabel('ParamImpl)]
+
+/* Denis' syntax: A reference type is either a class type, an array type, the null type or a String type.
+The null type is specified by the JLS although inaccessible to the programmer. String objects and
+types are not threated as regular objects in the present semantics for performance reasons.
+*/
+syntax RefType ::= ClassType | "nullType" | "arrayOf" Type
+//The sdf syntax of array is different from Denis' syntax ( arrayof ), so added anywhere rule here
+rule 'ArrayType(T:Type) => arrayOf T                            [anywhere]
+
+rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK                [anywhere]
 endmodule

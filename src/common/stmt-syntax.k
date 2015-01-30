@@ -1,9 +1,5 @@
-require "core-sorts.k"
-require "core-classes.k"
 require "list-syntax.k"
 module STMT-SYNTAX
-    imports CORE-SORTS
-    imports CORE-CLASSES
     imports LIST-SYNTAX
 
 //@ \subsection{Blocks.sdf}
@@ -65,8 +61,6 @@ syntax DoStmt ::= "do" Stmt "while" "(" Exp ")" ";"                 [strict(2), 
 syntax CatchClause ::= "catch" "(" Param ")" Block                  [klabel('Catch)]
 syntax TryStmt ::= "try" Block CatchClauses "finally" Block         [klabel('Try)]
 		         | "try" Block CatchClauses                         [klabel('Try)]
-//Denis' syntax
-syntax Param ::= Type Id                                            [klabel('ParamImpl)]
 
 syntax ThrowStmt ::= "throw" Exp ";"                                [strict, klabel('Throw)]
 syntax ContinueStmt ::= "continue" OptionalId ";"                   [klabel('Continue)]
