@@ -1,4 +1,3 @@
-require "labels-exec.k"
 require "configuration-exec.k"
 require "../common/java-doc.k"
 require "../common/aux-strings.k"
@@ -25,7 +24,6 @@ require "api-threads.k"
 require "ltl-support.k"
 
 module JAVA-EXEC
-    imports LABELS-EXEC
     imports CONFIGURATION-EXEC
     imports CORE-SORTS
     imports AUX-STRINGS
