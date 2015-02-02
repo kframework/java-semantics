@@ -1,6 +1,5 @@
-require "list-syntax.k"
 module STMT-SYNTAX
-    imports LIST-SYNTAX
+    imports CLASS-SYNTAX
 
 //@ \subsection{Blocks.sdf}
 syntax BlockStmt ::= Stmt | LocalVarDecStmt | ClassDec  [klabel('ClassDecStm)]

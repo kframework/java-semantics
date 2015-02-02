@@ -1,6 +1,5 @@
-require "shared-syntax.k"
 module EXP-SYNTAX
-    imports SHARED-SYNTAX
+    imports TYPE-SYNTAX
 
 syntax Exp ::= StmtExp
 syntax StmtExp ::= PrefixPostfixExp | AssignExp | MethodInvokeExp | ClassInstanceCreationExp
@@ -12,7 +11,6 @@ syntax MethodSpec ::= MethodName                                        [klabel(
                     | "super" "." OptionalTypeArgs Id                   [klabel('SuperMethod)]
                     | TypeName "." "super" "." OptionalTypeArgs Id      [klabel('QSuperMethod)]
                     | AmbName "." TypeArgs Id                           [klabel('GenericMethod)]
-
 
 
 //@ \subsection{ClassInstanceCreation.sdf}
@@ -117,6 +115,11 @@ syntax ArrayBaseType ::= PrimType
 
 syntax Dim ::= "[" "]"                                              [klabel('Dim)]
 syntax DimExp ::= "[" Exp "]"                                       [strict, hybrid, klabel('Dim)]
+
+
+//@ \subsection{ArrayInitializers.sdf}
+syntax ArrayInit ::= "{" VarInits "}" [klabel('ArrayInit)]
+syntax ArrayInit ::= "{" VarInits "," "}" [klabel('ArrayInit)]
 
 
 //@ \subsection{Primary.sdf}

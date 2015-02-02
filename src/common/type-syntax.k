@@ -1,8 +1,7 @@
-require "name-syntax.k"
-require "list-syntax.k"
 module TYPE-SYNTAX
     imports NAME-SYNTAX
-    imports LIST-SYNTAX
+    imports OPTIONAL-SYNTAX
+
 //@ \subsection{Main.sdf}
 syntax Type ::= PrimType
               | RefType

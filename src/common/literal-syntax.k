@@ -1,8 +1,7 @@
-require "lexical-syntax.k"
-require "list-syntax.k"
 module LITERAL-SYNTAX
-imports LEXICAL-SYNTAX
-imports LIST-SYNTAX
+    imports LEXICAL-SYNTAX
+    imports LIST-SYNTAX
+
 //@ \subsection{BooleanLiterals.sdf}
 syntax BoolLiteral ::= Boolean                          [klabel('Bool)]
 syntax Boolean ::= "true"                               [onlyLabel, klabel('True)]
