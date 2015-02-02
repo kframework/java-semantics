@@ -62,7 +62,7 @@ rule [LocalVarDec]:
 //@ \subsection{Empty statement} JLS \$14.6
 
 rule [Empty]:
-    ; => .
+    ;<:EmptyStmt => .
 
 //@ \subsection{Labeled statements} JLS \$14.7
 

@@ -1,5 +1,6 @@
 module EXP-SYNTAX
     imports TYPE-SYNTAX
+    imports SHARED-SYNTAX
 
 syntax Exp ::= StmtExp
 syntax StmtExp ::= PrefixPostfixExp | AssignExp | MethodInvokeExp | ClassInstanceCreationExp

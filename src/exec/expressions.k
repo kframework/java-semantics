@@ -144,7 +144,7 @@ rule CondExp:Exp ? TrueExp:Exp : FalseExp:Exp => ifAux(CondExp,TrueExp,FalseExp)
 /*@ \subsubsection{Assignment operators}
 Both basic assignment and compound assignments like +=, -=, etc. */
 
-context _:KResult = HOLE
+context (_:KResult = HOLE)<:AssignExp
 syntax LHS ::= TypedVal
 
 rule [Assign]:
@@ -205,7 +205,7 @@ when
 rule [exp-lvalue-Cool]:
     (KR:KResult => .) ~> KL:KLabel((HOLE => KR),, _)*/
 
-rule     (. => lvalue(K)) ~> ((K:K => HOLE) =  _) when notBool (isKResult(K) ==K true)
+rule     (. => lvalue(K)) ~> ((K:K => HOLE) =  _)<:AssignExp when notBool (isKResult(K) ==K true)
 rule     (. => lvalue(K)) ~> ((K:K => HOLE) *=  _) when notBool (isKResult(K) ==K true)
 rule     (. => lvalue(K)) ~> ((K:K => HOLE) /=  _) when notBool (isKResult(K) ==K true)
 rule     (. => lvalue(K)) ~> ((K:K => HOLE) %=  _) when notBool (isKResult(K) ==K true)
@@ -222,7 +222,7 @@ rule     (. => lvalue(K)) ~> (--(K:K => HOLE))<:PrefixPostfixExp when notBool (i
 rule     (. => lvalue(K)) ~> (K:K => HOLE)++ when notBool (isKResult(K) ==K true)
 rule     (. => lvalue(K)) ~> (K:K => HOLE)-- when notBool (isKResult(K) ==K true)
 
-rule     (KR:KResult => .) ~> ((HOLE => KR) =  _)
+rule     (KR:KResult => .) ~> ((HOLE => KR) =  _)<:AssignExp
 rule     (KR:KResult => .) ~> ((HOLE => KR) *=  _)
 rule     (KR:KResult => .) ~> ((HOLE => KR) /=  _)
 rule     (KR:KResult => .) ~> ((HOLE => KR) %=  _)
