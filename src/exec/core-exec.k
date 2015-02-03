@@ -2,7 +2,6 @@
 
 module CORE-EXEC
     imports CORE-SORTS
-    imports SYNTAX-CONVERSIONS
 
 //@ ListItem content as a stack layer
 syntax KItem ::=  sl (

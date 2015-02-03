@@ -1,7 +1,5 @@
 //@ \section{Module PRIMITIVE-TYPES}
-
 module PRIMITIVE-TYPES
-    imports CORE-SORTS
     imports SUBTYPING
 
 //@ \subsection{Integer types normalization}

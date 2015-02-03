@@ -1,11 +1,6 @@
-require "lexical-syntax.k"
-require "literal-syntax.k"
-require "type-syntax.k"
 //@ \section{Module CORE-SORTS}
 module CORE-SORTS
     imports TYPE-SYNTAX
-    imports LEXICAL-SYNTAX
-    imports LITERAL-SYNTAX
 
 //@ \subsection{Computation phases}
 

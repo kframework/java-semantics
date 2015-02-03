@@ -57,7 +57,7 @@ module ELABORATION-CORE
     imports CORE-SORTS
     imports SUBTYPING
     imports ELABORATION-CATEGORIES
-    imports ELABORATION-EXPRESSIONS // for isExpressionLabel
+
 
 /*@Custom hole used for custom heating/cooling rules in the elaboration phase.*/
 syntax KItem ::= "CHOLE"

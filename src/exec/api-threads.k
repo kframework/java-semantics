@@ -4,7 +4,6 @@ module API-THREADS
     imports CORE-SORTS
     imports METHOD-INVOKE-REST  //for invokeImpl
     imports VAR-LOOKUP          //for typedLookup
-    imports API-THREADS-SELECTION
 
 /*@Java API related to threads and locks. Just the core part.*/
 
@@ -286,10 +285,6 @@ rule [DissolveAllExceptOut]:
     </T>
     => <T> <out> Out </out> </T>
 
-endmodule
-
-module API-THREADS-SELECTION
-    imports API-THREADS
 
 //@ \section{Methods wait() and notify()}
 
