@@ -118,7 +118,7 @@ rule [AssertStm-FirstFalse]:
 //@ \subsection{Switch statement}
 
 
-syntax K ::= switchImpl (
+syntax KItem ::= switchImpl (
              TypedVal, // TV - switch argument
              KListWrap, // switch body - list of 'SwitchGroup labels
              K // DefaultStm - default block, if any
@@ -156,7 +156,7 @@ rule [switchImpl-Default-Exec]:
 rule [SwitchGroup-Exec]:
     'SwitchGroup(_:K,, S:K) => S
 
-syntax K ::= "switchEnd"
+syntax KItem ::= "switchEnd"
 
 rule [switchEnd-Discard]:
     switchEnd => .K
@@ -180,7 +180,7 @@ rule [do-while]:
 
 //@ \subsection{For statement}
 //wrapper of certain clauses of for statement
-syntax K ::= stm ( KListWrap )
+syntax KItem ::= stm ( KListWrap )
 
 rule [stm-KListWrap-empty]:
     stm([.KList]) => .                                                   [structural]
