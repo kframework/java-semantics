@@ -1,4 +1,6 @@
 module PACKAGE-SYNTAX
+    imports CLASS-SYNTAX
+
 //@ \subsection{CompilationUnits.sdf}
 syntax CompilationUnit ::= OptionalPackageDec ImportDecList TypeDecList  [klabel('CompilationUnit)]
 

@@ -7,7 +7,7 @@ module CORE-CLASSES
     imports CORE-FUNCTIONS
     imports AUX-STRINGS // for retainHead
     imports EXP-SYNTAX //for definitions of sort Exp
-    imports STMT-SYNTAX //for definitions of sort Exp
+    imports STMT-SYNTAX //for definitions of sort Stmt
 
 //@ \subsection{Shortcuts for the most frequently used classes within the semantics}
 

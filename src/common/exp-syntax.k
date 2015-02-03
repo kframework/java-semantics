@@ -1,10 +1,5 @@
-require "core-sorts.k"
-require "core-classes.k"
-require "shared-syntax.k"
-
 module EXP-SYNTAX
-    imports CORE-SORTS
-    imports CORE-CLASSES
+    imports TYPE-SYNTAX
     imports SHARED-SYNTAX
 
 syntax Exp ::= StmtExp
@@ -18,9 +13,6 @@ syntax MethodSpec ::= MethodName                                        [klabel(
                     | TypeName "." "super" "." OptionalTypeArgs Id      [klabel('QSuperMethod)]
                     | AmbName "." TypeArgs Id                           [klabel('GenericMethod)]
 
-//Denis' syntax
-syntax MethodInvokeExp ::= K "." MethodName "(" Exps ")"   [seqstrict(1,3), klabel('MethodImpl)]
-
 
 //@ \subsection{ClassInstanceCreation.sdf}
 syntax ClassInstanceCreationExp ::=
@@ -29,12 +21,6 @@ syntax ClassInstanceCreationExp ::=
 syntax ClassInstanceCreationExp ::=
     Exp "." "new" OptionalTypeArgs Id OptionalTypeArgs "(" Exps ")" OptionalClassBody
                                                                         [klabel('QNewInstance)]
-
-//Denis' syntax
-syntax ClassOrName ::= Id | ClassType
-
-syntax ClassInstanceCreationExp ::= "new" ClassType "(" Exps ")"
-                                  | Exp "." "new" ClassOrName "(" Exps ")"      [seqstrict(1,3)]
 
 
 //@ \subsection{AssignmentOperators.sdf}
@@ -130,6 +116,11 @@ syntax ArrayBaseType ::= PrimType
 
 syntax Dim ::= "[" "]"                                              [klabel('Dim)]
 syntax DimExp ::= "[" Exp "]"                                       [strict, hybrid, klabel('Dim)]
+
+
+//@ \subsection{ArrayInitializers.sdf}
+syntax ArrayInit ::= "{" VarInits "}" [klabel('ArrayInit)]
+syntax ArrayInit ::= "{" VarInits "," "}" [klabel('ArrayInit)]
 
 
 //@ \subsection{Primary.sdf}

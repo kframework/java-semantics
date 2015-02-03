@@ -1,8 +1,5 @@
-require "array-syntax.k"
-require "exp-syntax.k"
 module CLASS-SYNTAX
-imports ARRAY-SYNTAX
-imports EXP-SYNTAX
+    imports EXP-SYNTAX
 
 //@ \subsection{ClassDeclarations.sdf}
 syntax ClassDecHead ::=
@@ -21,6 +18,8 @@ syntax ClassMod ::= Public
                   | Static
                   | StrictFP
 
+syntax Anno
+
 syntax AnnoClassMod ::= Anno | ClassMod
 
 syntax Super ::= "extends" JavaClassType                                [klabel('SuperDec)]
@@ -31,8 +30,9 @@ syntax ClassBodyDec ::= InstanceInit | StaticInit | ClassMemberDec | ConstrDec
 
 syntax ClassMemberDec ::= FieldDec | ClassDec | MethodDec | InterfaceDec | SemiColon
 
-syntax SemiColon ::= ";"                                                [klabel('SemiColon)]
+syntax InterfaceDec
 
+syntax SemiColon ::= ";"                                                [klabel('SemiColon)]
 
 //@ \subsection{ConstructorDeclarations.sdf}
 syntax ConstrHead ::=
@@ -129,5 +129,6 @@ syntax InstanceInit ::= Block                                           [klabel(
 
 //@ \subsection{StaticInitializers.sdf}
 syntax StaticInit ::= "static" Block                                    [klabel('StaticInit)]
+syntax Block
 
 endmodule

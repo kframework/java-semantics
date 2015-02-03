@@ -5,10 +5,11 @@ require "lexical-syntax.k"
 require "literal-syntax.k"
 require "name-syntax.k"
 require "class-syntax.k"
-require "array-syntax.k"
 require "interface-syntax.k"
 require "package-syntax.k"
 require "optional-syntax.k"
+require "type-syntax.k"
+require "shared-syntax.k"
 module JAVA-SYNTAX
     imports LIST-SYNTAX
     imports STMT-SYNTAX
@@ -17,8 +18,9 @@ module JAVA-SYNTAX
     imports LITERAL-SYNTAX
     imports NAME-SYNTAX
     imports CLASS-SYNTAX
-    imports ARRAY-SYNTAX
     imports INTERFACE-SYNTAX
     imports PACKAGE-SYNTAX
     imports OPTIONAL-SYNTAX
+    imports TYPE-SYNTAX
+    imports SHARED-SYNTAX
 endmodule

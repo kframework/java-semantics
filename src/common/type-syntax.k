@@ -1,17 +1,13 @@
-require "core-sorts.k"
-require "name-syntax.k"
-require "list-syntax.k"
 module TYPE-SYNTAX
-    imports CORE-SORTS
     imports NAME-SYNTAX
-    imports LIST-SYNTAX
+    imports OPTIONAL-SYNTAX
+
 //@ \subsection{Main.sdf}
 syntax Type ::= PrimType
               | RefType
 /*Denis' syntax: actually in sdf "void" together with Type compose ResultType,
 since now "void" is Type, there is no need for another syntax of ResultType.*/
               | "void"                                  [klabel('Void)]
-
 
 //@ \subsection{ParameterizedTypes.sdf}
 syntax TypeArgs ::= "<" ActualTypeArgList ">"           [klabel('TypeArgs)]
@@ -41,29 +37,18 @@ syntax PrimType ::= NumericType | "bool"                [klabel('Boolean)] //sdf
 //@ \subsection{ReferenceTypes.sdf}
     /*@ A fully qualified class name, or noClass where no valid class could be computed.*/
 syntax ClassOrInterfaceType ::= TypeDecSpec OptionalTypeArgs    [klabel('ClassOrInterfaceType)]
-rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK                [anywhere]
 
 syntax InterfaceType ::= TypeDecSpec OptionalTypeArgs           [klabel('InterfaceType)]
 //sdf ClassType, use another name JavaClassType to avoid conflict with Denis' ClassType syntax
 syntax JavaClassType ::= TypeDecSpec OptionalTypeArgs           [klabel('ClassType)]
-
-//Denis' syntax
-syntax ClassType ::= "class" Id | "noClass"                     [latex({\dotCt{K}})]
 
 syntax TypeDecSpec ::= TypeName | TypeDecSpec TypeArgs "." Id   [klabel('Member)]
 
 syntax TypeVar ::= TypeVarId                                    [klabel('TypeVar)]
 
 syntax ArrayType ::= Type "[" "]"                               [strict, klabel('ArrayType)]
-//The sdf syntax (left) is different from Denis' syntax ( arrayof ), so added anywhere rule here
-rule 'ArrayType(T:Type) => arrayOf T                            [anywhere]
 
 syntax RefType ::= ClassOrInterfaceType | ArrayType
-/* Denis' syntax: A reference type is either a class type, an array type, the null type or a String type.
-The null type is specified by the JLS although inaccessible to the programmer. String objects and
-types are not threated as regular objects in the present semantics for performance reasons.
-*/
-syntax RefType ::= ClassType | "nullType" | "arrayOf" Type
 
 
 //@ \subsection{TypeVariables.sdf}

@@ -24,4 +24,21 @@ syntax OptionalClassBody         ::= ClassBody          [prefer, klabel('Some)] 
 syntax OptionalEnumBodyDecs      ::= EnumBodyDecs       [prefer, klabel('Some)] | None
 syntax OptionalEnumConstArgs     ::= EnumConstArgs      [prefer, klabel('Some)] | None
 
+syntax Id
+syntax Exp
+syntax WildcardBound
+syntax TypeArgs
+syntax TypeParams
+syntax TypeBound
+syntax Throws
+syntax DefaultVal
+syntax ExtendsInterfaces
+syntax Interfaces
+syntax PackageDec
+syntax Super
+syntax ConstrInv
+syntax ClassBody
+syntax EnumBodyDecs
+syntax EnumConstArgs
+
 endmodule

@@ -1,4 +1,6 @@
 module INTERFACE-SYNTAX
+    imports CLASS-SYNTAX
+
 //@ \subsection{AbstractMethodDeclarations.sdf}
 syntax AbstractMethodDec ::=
     AnnoAbstractMethodModList OptionalTypeParams Type Id "(" Params ")" OptionalThrows ";"

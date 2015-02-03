@@ -1,5 +1,5 @@
 module NAME-SYNTAX
-imports LIST-SYNTAX
+    imports LITERAL-SYNTAX
 
 syntax PackageName ::= IdList                           [klabel('PackageName)]
 
