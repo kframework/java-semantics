@@ -3,6 +3,7 @@ module UNFOLDING
     imports CORE-FUNCTIONS
     imports SYNTAX-CONVERSIONS
 
+
 rule [UnfoldingPhase-start]:
     <k> . => unfoldingPhase </k>
     <globalPhase> FoldingPhase => UnfoldingPhase </globalPhase>
@@ -158,7 +159,8 @@ rule [unfolding-MethodDec]:
       )
       ...
     </methodDecs>
-    <methods> Env:Map => Env[Class / sig(Name:Id, getTypes([Params]))] </methods>
+    //todo
+    <methods> Env:Map => Env[sig(Name:Id, getTypes([Params])) <- Class] </methods>
     <folded>
       _:KLabel(
         'ClassDecHead(_),,

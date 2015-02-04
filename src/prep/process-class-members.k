@@ -155,7 +155,7 @@ rule [tryInherit-Discard]:
     tryInherit(noClass) => .K
 
 rule [tryInheritImpl-Unfold]:
-    <k> (. => tryInheritImpl(MI)) ~> tryInheritImpl( (MI:MapItem => .) _:MapItem _) ...</k>
+    <k> (. => tryInheritImpl((M |-> I))) ~> tryInheritImpl( ((M:K |-> I:K) => .) _|->_ _) ...</k>
 
 rule [tryInheritImpl]:
     tryInheritImpl(Sig:K |-> DecClass:ClassType)

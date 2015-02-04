@@ -29,7 +29,7 @@ rule normalize(I:Int :: char)
           toUnsigned(normalizeImpl(I::char))
         )
 
-rule normalize(I:Int :: FloatT:FloatType) => Int2Float(I)::FloatT
+rule normalize(I:Int :: FloatT:FloatType) => Int2Float(I,53,11)::FloatT
 
 rule normalize(F:Float :: IntT:IntType) => normalize(Float2Int(F) :: IntT:IntType)
 
