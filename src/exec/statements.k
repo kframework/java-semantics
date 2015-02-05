@@ -8,6 +8,7 @@ module STATEMENTS
     imports VAR-LOOKUP
     imports METHOD-INVOKE // for initParams
     imports STMT-SYNTAX
+    imports TO-STRING
 
 //@ \subsection{isStmt}
 rule isStmt('For(_)) => true

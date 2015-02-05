@@ -23,8 +23,8 @@ context 'TypeImportDec(HOLE)
 
 rule [TypeImportDec]:
     <k> 'TypeImportDec(Class:ClassType) => . ...</k>
-    <namesToClasses>... _ |-> mapWrap(X:Id |-> Class _) ...</namesToClasses>
-    <compUnitImports> Imp:Map => Imp[Class / X] </compUnitImports>
+    <namesToClasses>... _ |-> mapWrap((X:Id |-> Class) _) ...</namesToClasses>
+    <compUnitImports> Imp:Map => Imp[X <- Class] </compUnitImports>
 
 context 'TypeImportOnDemandDec(HOLE)
 
@@ -43,7 +43,7 @@ syntax KItem ::=  importOnDemandImpl (
 
 rule [importOnDemandImpl-public]:
     <k> importOnDemandImpl((X:Id |-> Class:ClassType => .) _) ...</k>
-    <compUnitImports> Imp:Map => Imp[Class / X] </compUnitImports>
+    <compUnitImports> Imp:Map => Imp[X <- Class] </compUnitImports>
     //<compUnitImports> (Imp:Map => update(Imp, X |-> Class)) </compUnitImports>
     <classType> Class </classType>
     <classAccessMode> public </classAccessMode>

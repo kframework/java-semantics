@@ -9,7 +9,7 @@ rule [elabEnd-AmbName]:
 
 rule [elabEnd-ExprName-localVar-ok]:
     <k> elabEnd('ExprName(X:Id)) => elabRes(cast(T, 'ExprName(X))) ...</k>
-    <elabEnv> ListItem(mapWrap(X |-> T:Type _)) ...</elabEnv>
+    <elabEnv> ListItem(mapWrap((X |-> T:Type) _)) ...</elabEnv>
 
 rule [elabEnd-localVar-to-noValue]:
     <k> elabEnd('ExprName(X:Id)) => externalVar(X, Class) ...</k>

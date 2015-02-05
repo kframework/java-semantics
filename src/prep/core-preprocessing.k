@@ -4,7 +4,7 @@
 
 module CORE-PREPROCESSING
     imports CORE-SORTS
-    imports CORE-FUNCTIONS
+    imports CORE-CLASSES
 
 //@ \subsection{Auxiliary constructs for retrieving a set of classes}
 

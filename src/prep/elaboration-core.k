@@ -182,8 +182,8 @@ when
 syntax KItem ::= haveElabRes ( KListWrap )          [function]
 rule haveElabRes([_,, elabRes(_),, _]) => true
 
-//K bug additional rule required since we introduced KListWrap
-rule haveElabRes([_,, KList2KLabel _,, elabRes(_),, _ (_),, _]) => true
+//K bug additional rule required since we introduced KListWrap? todo
+//rule haveElabRes([_,, KList2KLabel _,, elabRes(_),, _ (_),, _]) => true
 
 /*@ The 3rd elaboration-phase wrapper for expressions. Represents the case when children are completely elaborated and
 unwrapped from elabRes(), but root node might not be elaborated yet. The implementation is scattered across all modules

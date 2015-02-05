@@ -6,6 +6,7 @@ module SYNTAX-CONVERSIONS
     imports CORE-SORTS
     imports CORE-FUNCTIONS
     imports CORE-CLASSES    //for cast
+    imports CORE-EXEC
 
 /*@ \subsection{Method parameter}*/
 

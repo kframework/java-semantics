@@ -9,22 +9,7 @@ module CORE-CLASSES
     imports EXP-SYNTAX //for definitions of sort Exp
     imports STMT-SYNTAX //for definitions of sort Stmt
 
-//@ \subsection{Shortcuts for the most frequently used classes within the semantics}
 
-syntax KItem ::= "classObject"
-    [function, latex(\terminal{Object})]
-rule classObject => class String2Id("java.lang.Object")
-
-syntax KItem ::= "classString"
-    [function, latex(\terminal{String})]
-rule classString => class String2Id("java.lang.String")
-
-syntax KItem ::= "classNullPointerException"
-    [function, latex(\terminal{NullPointerException})]
-rule classNullPointerException => class String2Id("java.lang.NullPointerException")
-
-syntax KItem ::= "classArrayImpl"                   [function]
-rule classArrayImpl => class String2Id("java.lang.ArrayImpl")
 
 //@ \subsection{Packages}
 
@@ -115,18 +100,8 @@ rule isNonNumericExp('CastRef(_)) => true
 //@ Since RawVal terms can easily be converted into TypedVal, they are also of sort Exp.
 syntax Exp ::= TypedVal | RawVal
 
-//@ \subsubsection{Computation terms produced during elaboration}
 
-/*@ These auxiliary terms functions that should be threated as expressions in the elaboration phase.
-*/
-syntax Exp ::= AuxTermExp
-syntax LHS ::= AuxTermExp
-/*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
-such as an anonymous class declaration. Is typed with the type of the expression.
-At runtime is rewritten into the statement, that should evaluate into .K, followed by the expression,
-that should evaluate to value.*/
-syntax AuxTermExp ::= stmtAndExp ( K, K )
 
-syntax AuxTermExp ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
+
 
 endmodule

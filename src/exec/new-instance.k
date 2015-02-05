@@ -4,6 +4,7 @@ module NEW-INSTANCE
     imports CORE-EXEC   //for sl, restoreMethContext
     imports STATIC-INIT // for staticInit
     imports VAR-LOOKUP  //for typedLookup()
+    imports SYNTAX-CONVERSIONS  //for toExps()
 
 /*@
 \section{Module NEW-INSTANCE}

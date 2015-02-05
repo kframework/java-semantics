@@ -204,7 +204,7 @@ rule [inherit]:
     <k> inherit(methodRef(Sig:Signature, DecClass:ClassType)) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <methods> Env:Map => Env[DecClass/Sig] </methods>
+    <methods> Env:Map => Env[Sig <- DecClass] </methods>
 
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
@@ -294,7 +294,7 @@ rule [storeMethod]:
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <methods> Env:Map => Env[Class / Sig] </methods>
+    <methods> Env:Map => Env[Sig <- Class] </methods>
     ( .Bag => <methodDec>
                      <methodSignature> Sig </methodSignature>
                      <methodReturnType> ReturnType </methodReturnType>
@@ -477,7 +477,7 @@ rule [FieldDec-compile-time-constant]:
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <constantEnv> Env:Map => Env[TV/X] </constantEnv>
+    <constantEnv> Env:Map => Env[X <- TV] </constantEnv>
 when
             getContextType(Modifiers) ==K staticCT
     andBool isFinalModifiers(Modifiers)

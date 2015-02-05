@@ -40,7 +40,7 @@ rule [staticInit]:
               [
                 'Catch('ParamImpl(classObject,, String2Id("e") ),,
                 'Block(throw new class String2Id("java.lang.ExceptionInInitializerError")
-                (((classObject) String2Id("e")));))
+                (((class String2Id("java.lang.Object")) String2Id("e")));))
               ]
             ,,
 
