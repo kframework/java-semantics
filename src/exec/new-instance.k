@@ -157,7 +157,7 @@ rule [qualified-new-instance]:
         ~> typedLookup(L)
       ...
     </k>
-    <store>... . => L |-> objectRef(L, Class) :: Class ...</store>
+    <store>... .Map => L |-> objectRef(L, Class) :: Class ...</store>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
     (.Bag =>  <object>
                 <objectId> L </objectId>
@@ -170,7 +170,7 @@ rule [qualified-new-instance]:
           <crntClass> .K </crntClass>
           <location> L </location>
     </methodContext>
-    <storeMetadata>... . => L |-> LocalLocMetadata ...</storeMetadata>
+    <storeMetadata>... .Map => L |-> LocalLocMetadata ...</storeMetadata>
 
 syntax KItem ::=  create ( ClassType )
 
@@ -253,9 +253,9 @@ module NEW-INSTANCE-REST
 
 rule [FieldDec-instance]:
     <k> 'FieldDec([.KList],, T:Type,,['VarDec(X:Id)]) => . ...</k>
-    <env> Env:Map => Env[L/X] </env>
-    <store>... . => L |-> default(T) ...</store>
-    <storeMetadata>... . => L |-> FieldLocMetadata ...</storeMetadata>
+    <env> Env:Map => Env[X <- L] </env>
+    <store>... .Map => L |-> default(T) ...</store>
+    <storeMetadata>... .Map => L |-> FieldLocMetadata ...</storeMetadata>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 
 //@\subsection{Execution of QSuperConstrInv, AltConstrInv}

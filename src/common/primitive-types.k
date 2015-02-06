@@ -87,7 +87,7 @@ when (IT =/=K int) andBool (IT =/=K long)
 
 /*@ Important! Binary normalizeType cannot be function because it uses sybtype in implementation.
 */
-syntax KItem ::= normalizeType ( Type, Type )
+syntax KItem ::= normalizeType ( Type, Type )   [function]
 
 rule normalizeType(NT1:IntType, NT2:IntType) => int
 when (NT1 =/=K long) andBool (NT2 =/=K long)

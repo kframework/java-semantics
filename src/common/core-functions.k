@@ -139,14 +139,11 @@ syntax KItem ::=  mapDiff(
                 K   //setWrap(Set)
               )
               [strict]
-
-rule mapDiff( mapWrap( (Key:K |-> _ => .Map) _), setWrap( (SetItem(Key) => .Set) _) )
-
-rule mapDiff( mapWrap( MyMap:Map ), setWrap( (SetItem(Key:K) => .Set) _) )
-when
-    notBool Key in keys(MyMap)
-
-rule mapDiff(mapWrap( MyMap:Map ), setWrap(.Set)) => mapWrap(MyMap)
+//todo
+//rule mapDiff( mapWrap( (Key:K |-> _ => .Map) _:Map), setWrap( (SetItem(Key) => .Set) _:Set) )
+//rule mapDiff( mapWrap( MyMap:Map ), setWrap( (SetItem(Key:K) => .Set) _:Set) )
+//when    notBool Key in keys(MyMap)
+//rule mapDiff(mapWrap( MyMap:Map ), setWrap(.Set)) => mapWrap(MyMap)
 
 syntax KItem ::= isEmpty( Map )   [function]
 rule isEmpty(.Map) => true
@@ -160,12 +157,11 @@ syntax KItem ::=  setUnion (
                 K   //setWrap(Set)
               )
               [strict]
-
-rule setUnion(setWrap( S1:Set (. => SetItem(K)) ), setWrap( S2:Set (SetItem(K:K) => .) ))
-when
-    notBool(K in S1)
-rule setUnion(setWrap( S1:Set SetItem(K) ), setWrap( S2:Set (SetItem(K:K) => .) ))
-rule setUnion(setWrap(S1:Set), setWrap(.Set)) => setWrap(S1)
+//todo use include function
+//rule setUnion(setWrap( S1:Set (.Set => SetItem(K)) ), setWrap( S2:Set (SetItem(K:K) => .Set) ))
+//when    notBool(K in S1)
+//rule setUnion(setWrap( S1:Set SetItem(K) ), setWrap( S2:Set (SetItem(K:K) => .Set) ))
+//rule setUnion(setWrap(S1:Set), setWrap(.Set)) => setWrap(S1)
 
 syntax Set ::= getSet ( K )           [function]
 rule getSet(setWrap(S1:Set)) => S1
@@ -218,7 +214,8 @@ syntax KLabel ::= "'ListWrap"
 rule 'ListWrap(Ks:KList) => [Ks]                  [structural, anywhere]
 //todo: both 'KListWrap and 'ListWrap are associted with the same production, so how to get rid of it
 syntax KListWrap ::= "[" KList "]" [klabel('KListWrap)]
-syntax KItem ::= KListWrap
+syntax UserList ::= KListWrap
+
 //@ Sequence of terms and of any other statements. The first term is moved to the top of computation.
 rule [S1:K,, Stmts:KList] => S1 ~> [Stmts]        [structural]
 rule [.KList] => .K                               [structural]

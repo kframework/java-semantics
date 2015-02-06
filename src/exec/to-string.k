@@ -69,8 +69,8 @@ rule toString(objectRef(OId:Int, LowestClass:ClassType) :: T:Type)
 //@ \subsection{Debug helper functions}
 
 syntax KItem ::= debugPrint ( K )                [strict]
-rule <k> debugPrint(Str:String::_) => . ...</k>
-     <out>... . => ListItem(Str +String "\n") </out>
+rule <k> debugPrint(Str:String::_) => .K ...</k>
+     <out>... .List => ListItem(Str +String "\n") </out>
 
 syntax KItem ::= debugString( K )             [function]
            | debugStringList( KListWrap ) [function]

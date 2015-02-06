@@ -30,7 +30,7 @@ rule [system-out-print-string]:
       ) => nothing::void
       ...
     </k>
-    <out>... . => ListItem(Str) </out>
+    <out>... .List => ListItem(Str) </out>
 when
     Class ==K class String2Id("java.io.PrintWriter") andBool Id2String(MethodName) ==String "print"
 
@@ -264,11 +264,11 @@ rule [storeCopy-discard]:
 */
 rule [Lit-Class-Instantiate]:
     <k>
-        (. => saveClassLiteral(T, new class String2Id("java.lang.Class") (toString(T)) ) )
+        (.K => saveClassLiteral(T, new class String2Id("java.lang.Class") (toString(T)) ) )
         ~> 'Lit('Class(T:Type))
       ...
     </k>
-    <classLiteralsMap> CLMap:Map (. => T |-> temp) </classLiteralsMap>
+    <classLiteralsMap> CLMap:Map (.Map => T |-> temp) </classLiteralsMap>
 when notBool T in keys(CLMap)
         [transition-threading]
 

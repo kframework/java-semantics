@@ -55,9 +55,9 @@ rule [env-double-Discard]:
 
 rule [LocalVarDec]:
     <k> T:Type X:Id; => . ...</k>
-    <env> Env:Map => Env[L/X] </env>
-    <store>... . => L |-> default(T) ...</store>
-    <storeMetadata>... . => L |-> LocalLocMetadata ...</storeMetadata>
+    <env> Env:Map => Env[X <- L] </env>
+    <store>... .Map => (L |-> default(T)) ...</store>
+    <storeMetadata>... .Map => (L |-> LocalLocMetadata) ...</storeMetadata>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 
 //@ \subsection{Empty statement} JLS \$14.6

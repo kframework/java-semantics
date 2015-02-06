@@ -728,18 +728,18 @@ The return statement at the end ensures that there is a return statement on ever
 */
 rule [Invoke-methodRef]:
     <k>
-      Qual:KResult . methodRef(Sig:Signature, DecC:ClassType) (Args:TypedVals) ~> RestK:K
-      => staticInit(DecC) ~> initParams(Params, Args) ~> Body ~> return ('Some(nothing :: void)) ;
+      (Qual:KResult . methodRef(Sig:Signature, DecC:ClassType) (Args:TypedVals) ~> RestK:K
+      => staticInit(DecC) ~> initParams(Params, Args) ~> Body ~> return ('Some(nothing :: void)) ;)
     </k>
     <stack>
-      . => ListItem(sl(RestK, MethodContext))
+      .List => ListItem(sl(RestK, MethodContext))
       ...
     </stack>
     <methodContext>
-      MethodContext:Bag
+      (MethodContext:Bag
       =>  <env> .Map </env>
           <crntClass> DecC </crntClass>
-          <location> getOId(Qual) </location>
+          <location> getOId(Qual) </location>)
     </methodContext>
 
     <classType> DecC </classType>

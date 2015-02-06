@@ -106,7 +106,7 @@ configuration
                 <methodSignature color="Blue"> .K </methodSignature>
 
                 //Method params
-                <methodParams color="Blue"> ([.KList]):KItem </methodParams>
+                <methodParams color="Blue"> [.KList]:>UserList </methodParams>
                 <br/>
 
                 //Method body

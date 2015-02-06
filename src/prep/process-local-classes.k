@@ -50,7 +50,7 @@ rule [processLocalClassDec-register-name]:
       )
       ...
     </k>
-    <localTypes> ListItem(mapWrap(LocalTypes:Map => LocalTypes[GeneratedClass / InitName])) ...</localTypes>
+    <localTypes> ListItem(mapWrap(LocalTypes:Map => LocalTypes[InitName <- GeneratedClass])) ...</localTypes>
     <contextType> CT:ContextType </contextType>
 
 //@ The second argument: existing modifiers

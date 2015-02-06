@@ -153,8 +153,8 @@ syntax KItem ::=  allocArray (
 
 rule [allocArray]:
     <k> allocArray(N:Int => N -Int 1, T:Type) ...</k>
-    <store>... . => LI |-> (undefined :: elem T) ...</store>
-    <storeMetadata>... . => LI |-> FieldLocMetadata ...</storeMetadata>
+    <store>... .Map => LI |-> (undefined :: elem T) ...</store>
+    <storeMetadata>... .Map => LI |-> FieldLocMetadata ...</storeMetadata>
     <nextLoc> LI:Int => LI +Int 1 </nextLoc>
 when
     N >Int 0
