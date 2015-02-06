@@ -76,26 +76,6 @@ rule [restoreAfterProcessLocalClass]:
 syntax KItem ::= getConsName ( ClassType )                               [function]
 rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(ClassId))
 
-//@ \subsection{Expressions and their subsorts}
-syntax Exp ::= NonNumericExp
-syntax NonNumericExp ::= "dummyNonNumericExp"
-
-rule isNonNumericExp('ArrayAccess(_)) => true
-rule isNonNumericExp('NewInstance(_)) => true    // also in customElabChildren
-rule isNonNumericExp('QNewInstance(_)) => true   // also in customElabChildren
-rule isNonNumericExp('InstanceOf(_)) => true
-rule isNonNumericExp('Invoke(_)) => true
-rule isNonNumericExp('This(_)) => true
-rule isNonNumericExp('QThis(_)) => true
-rule isNonNumericExp('AmbName(_)) => true
-rule isNonNumericExp('ExprName(_)) => true
-rule isNonNumericExp('Field(_)) => true
-rule isNonNumericExp('SuperField(_)) => true
-rule isNonNumericExp('QSuperField(_)) => true
-rule isNonNumericExp('NewArray(_)) => true
-rule isNonNumericExp('CastPrim(_)) => true
-rule isNonNumericExp('CastRef(_)) => true
-
 
 //@ Since RawVal terms can easily be converted into TypedVal, they are also of sort Exp.
 syntax Exp ::= TypedVal | RawVal

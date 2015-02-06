@@ -328,14 +328,14 @@ when
 rule [Return-MethodEnd]:
 //    <k> 'Return('Some(TV:TypedVal)) => TV ~> K </k>
     <k> return 'Some(TV:TypedVal); => TV ~> K </k>
-    <stack> ListItem( sl(K:K, MethContext:Bag) ) => . ...</stack>
+    <stack> ListItem( sl(K:K, MethContext:Bag) ) => .List ...</stack>
     <methodContext> _:Bag => MethContext </methodContext>
 
 /*@ \subsection{Throw statement}
 Exceptions are propagated now until a catch that can bind them is
 encountered. */
 rule [Throw]:
-    (. => checkCatch(subtype(typeOf(TV), T)))
+    (.K => checkCatch(subtype(typeOf(TV), T)))
 //    ~> 'Throw(TV:TypedVal)
     ~> throw TV:TypedVal;
     ~> catchBlocks(catchImpl('ParamImpl(T:Type,, X:Id),_) _:CatchClauses)
@@ -376,7 +376,7 @@ rule [Throw-MethodEnd]:
 //      'Throw(TV:TypedVal) ~> (. => K)
       throw TV:TypedVal; ~> (. => K)
     </k>
-    <stack> ListItem( sl(K:K, MethContext:Bag) ) => . ...</stack>
+    <stack> ListItem( sl(K:K, MethContext:Bag) ) => .List ...</stack>
     <methodContext> _ => MethContext </methodContext>
 
 rule [Throw-CausesThreadTermination]:
@@ -423,11 +423,10 @@ rule catch(KR:ExtKResult)S:K => catchImpl(KR,S)
 /*@ Extended K Result.
   Represents KLabels that should be treated as KResult during execution phase, but not during elaboration phase.
 */
-syntax ExtKResult ::= "dummy"
+syntax ExtKResult ::= ParamImpl
 
 rule isExtKResult(KR:KResult) => true
 
-rule isExtKResult('ParamImpl(T:Type,, _:Id)) => true
 
 //@ Internal representation of a preprocessed catch clause
 syntax CatchImpl ::=  catchImpl (

@@ -20,11 +20,11 @@ rule [compUnitImportsStart]:
 
 //Process K-AST terms 'TypeImportDec or 'TypeImportOnDemandDec
 context 'TypeImportDec(HOLE)
-
-rule [TypeImportDec]:
-    <k> 'TypeImportDec(Class:ClassType) => . ...</k>
-    <namesToClasses>... _ |-> mapWrap((X:Id |-> Class) _) ...</namesToClasses>
-    <compUnitImports> Imp:Map => Imp[X <- Class] </compUnitImports>
+//todo mapItemByValue
+//rule [TypeImportDec]:
+//    <k> 'TypeImportDec(Class:ClassType) => . ...</k>
+//    <namesToClasses>... _ |-> mapWrap((X:Id |-> Class) _) ...</namesToClasses>
+//    <compUnitImports> Imp:Map => Imp[X <- Class] </compUnitImports>
 
 context 'TypeImportOnDemandDec(HOLE)
 
@@ -42,9 +42,8 @@ syntax KItem ::=  importOnDemandImpl (
               )
 
 rule [importOnDemandImpl-public]:
-    <k> importOnDemandImpl((X:Id |-> Class:ClassType => .) _) ...</k>
+    <k> importOnDemandImpl((X:Id |-> Class:ClassType => .Map) _:Map) ...</k>
     <compUnitImports> Imp:Map => Imp[X <- Class] </compUnitImports>
-    //<compUnitImports> (Imp:Map => update(Imp, X |-> Class)) </compUnitImports>
     <classType> Class </classType>
     <classAccessMode> public </classAccessMode>
 

@@ -72,11 +72,11 @@ syntax KItem ::=  "readInt"
 
 rule [readInt]:
     <k> readInt => I :: int ...</k>
-    <in> ListItem(I:Int) => . ...</in>
+    <in> ListItem(I:Int) => .List ...</in>
 
 rule [readString]:
     <k> readString => Str :: classString ...</k>
-    <in> ListItem(Str:String) => . ...</in>
+    <in> ListItem(Str:String) => .List ...</in>
 
 /*@ object.getClass()*/
 rule [object-getClass-on-object]:
