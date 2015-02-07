@@ -1,7 +1,5 @@
 require "builtins/model-checker.k"
 require "../common/shared-syntax.k"
-/*@ \section{Module LTL-SUPPORT-SYNTAX}
-*/
 
 module LTL-SUPPORT-SYNTAX
     imports SYNTAX-CONVERSIONS
@@ -10,25 +8,27 @@ module LTL-SUPPORT-SYNTAX
 syntax Prop ::= Exp
 
 //For the sake of second argument of instanceof
-syntax Exp ::= ClassType
+//syntax Exp ::= ClassType
 
 //@ Access to static field
 syntax Exp ::= ClassType "." Id
 
+//For the RHS of instanceof.
+syntax RefType ::= Id
+
+syntax Exp ::= "(" Exp ")" [bracket]
+
 //@ Access to an instance (or static) field
-             | Exp "." Id
+//             | Exp "." Id
 
 //@ <= operator, for LTL formulas, moved to shared syntax
          //   > Exp "<=" Exp
 
           //| Exp "!=" Exp
-             | "this"
-             | Exp "instanceof" Exp
+//             | "this"
+//             | Exp "instanceof" Exp
 
 endmodule
-
-/*@ \section{Module LTL-SUPPORT}
-*/
 
 module LTL-SUPPORT
     imports LTL-SUPPORT-SYNTAX
@@ -43,13 +43,13 @@ module LTL-SUPPORT
 rule B:Bag |=Ltl KL:KLabel((E:Exp => ltlEval(B, E)),, _:K)
 when
     //(KL ==KLabel '_==_ orBool KL ==KLabel '_<=_ orBool KL ==KLabel '_!=_ orBool KL ==KLabel '_instanceof_)
-    (KL ==KLabel 'Eq orBool KL ==KLabel 'LtEq orBool KL ==KLabel 'NotEq orBool KL ==KLabel '_instanceof_)
+    (KL ==KLabel 'Eq orBool KL ==KLabel 'LtEq orBool KL ==KLabel 'NotEq orBool KL ==KLabel 'InstanceOf)
     andBool notBool isKResult(E) ==K true                                                           [anywhere]
 
 rule B:Bag |=Ltl KL:KLabel(_:K,, (E:Exp => ltlEval(B, E)))
 when
     //(KL ==KLabel '_==_ orBool KL ==KLabel '_<=_ orBool KL ==KLabel '_!=_ orBool KL ==KLabel '_instanceof_)
-    (KL ==KLabel 'Eq orBool KL ==KLabel 'LtEq orBool KL ==KLabel 'NotEq orBool KL ==KLabel '_instanceof_)
+    (KL ==KLabel 'Eq orBool KL ==KLabel 'LtEq orBool KL ==KLabel 'NotEq orBool KL ==KLabel 'InstanceOf)
     andBool notBool isKResult(E) ==K true                                                           [anywhere]
 
 rule B:Bag |=Ltl ((RV1:RawVal::_) == (RV2:RawVal::_)) => RV1 ==K RV2      [anywhere]

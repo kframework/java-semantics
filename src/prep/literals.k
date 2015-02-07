@@ -1,5 +1,3 @@
-//@ \section{Module LITERALS}
-
 module LITERALS
     imports CORE-SORTS
     imports AUX-STRINGS

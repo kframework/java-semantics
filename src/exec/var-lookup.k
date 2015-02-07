@@ -1,5 +1,3 @@
-//@ \section{Module VAR-LOOKUP}
-
 module VAR-LOOKUP
     imports CORE-SORTS
     imports SUBTYPING

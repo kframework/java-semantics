@@ -1,5 +1,3 @@
-//@ \section{Module PROCESS-CLASS-MEMBERS}
-
 module PROCESS-CLASS-MEMBERS
     imports CORE-SORTS
     imports CORE-CLASSES
@@ -212,7 +210,7 @@ closures, so that their type contract can be checked at invocation
 time.  The rule below is conceptually similar to that of untyped KOOL;
 the only difference is the addition of the types.  */
 
-/*@
+/*
 'MethodDec(
   'MethodDecHead(
     Modifiers:KListWrap,,

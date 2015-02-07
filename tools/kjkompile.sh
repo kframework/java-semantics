@@ -35,6 +35,7 @@ For more options use aux-kjrun.sh
   --methods-pdf
   --new-latex
   --new-pdf
+  --modules-latex
   --help
 
   ADDITIONAL OPTIONS:
@@ -66,7 +67,7 @@ while [[ ${1:0:1} == - ]]; do
       ;;
     "--exec"|"--exec-only" \
       |"--strictness"|"--threading"|"--threading-sync"|"--symbolic"|"--prep-latex"|"--prep-pdf" \
-      |"--exec-latex"|"--methods-latex"|"--methods-pdf"|"--new-latex"|"--new-pdf")
+      |"--exec-latex"|"--methods-latex"|"--methods-pdf"|"--new-latex"|"--new-pdf"|"--modules-latex")
       OPTION=${PARAM}
       ;;
     "-v" | "--verbose")
@@ -196,19 +197,19 @@ case "$OPTION" in
     echo "Done"
     ;;
 "--prep-latex")
-    $KOMPILE_CMD --backend latex --doc-style "style=math" exec/java-exec.k
+    $KOMPILE_CMD --backend latex --doc-style "style=math,modulesAsSections" prep/java-prep.k
     ;;
 "--prep-pdf")
-    $KOMPILE_CMD --backend pdf --doc-style "style=math" exec/java-exec.k
+    $KOMPILE_CMD --backend pdf --doc-style "style=math,modulesAsSections" prep/java-prep.k
     ;;
 "--exec-latex")
-    $KOMPILE_CMD --backend latex --doc-style "style=math" exec/java-exec.k
+    $KOMPILE_CMD --backend latex --doc-style "style=math,modulesAsSections" exec/java-exec.k
     ;;
 "--exec-pdf")
-    $KOMPILE_CMD --backend pdf --doc-style "style=math" exec/java-exec.k
+    $KOMPILE_CMD --backend pdf --doc-style "style=math,modulesAsSections" exec/java-exec.k
     ;;
 "--methods-latex")
-    $KOMPILE_CMD --backend latex --doc-style "style=math" exec/java-exec.k
+    $KOMPILE_CMD --backend latex --doc-style "style=math,modulesAsSections" exec/java-exec.k
     extract-module.sh -m METHOD-INVOKE -o method-invoke.tex java-exec.tex
     ;;
 "--methods-pdf")
@@ -218,7 +219,7 @@ case "$OPTION" in
       --aux-directory=.latex method-invoke.tex
     ;;
 "--new-latex")
-    $KOMPILE_CMD --backend latex --doc-style "style=math" exec/java-exec.k
+    $KOMPILE_CMD --backend latex --doc-style "style=math,modulesAsSections" exec/java-exec.k
     extract-module.sh -m NEW-INSTANCE -o new-instance.tex java-exec.tex
     ;;
 "--new-pdf")
@@ -227,4 +228,29 @@ case "$OPTION" in
     pdflatex -synctex=-1 -max-print-line=120 -interaction=nonstopmode -shell-escape \
       --aux-directory=.latex new-instance.tex
     ;;
+"--modules-latex")
+    echo "Preprocessing semantics:"
+    # "&> file" redirects both stdin and stderr to the given file
+    $KOMPILE_CMD -d exec --backend latex --doc-style "style=math,modulesAsSections" exec/java-exec.k &> exec-out.txt \
+        & $KOMPILE_CMD -d prep --backend latex --doc-style "style=math,modulesAsSections" prep/java-prep.k
+    wait
+
+    echo
+    echo
+    echo "Execution semantics:"
+
+    cat exec-out.txt
+    rm -rf exec-out.txt
+    mv prep/java-prep.tex .
+    mv prep/k.sty .
+    mv exec/java-exec.tex .
+    mv exec/k.sty .
+
+    echo
+    echo
+    extract-all-modules.sh java-prep.tex
+    extract-all-modules.sh java-exec.tex
+    echo "Done"
+    ;;
+
 esac

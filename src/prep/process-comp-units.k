@@ -1,4 +1,10 @@
-/*@ \section{Module PROCESS-COMP-UNITS}
+module PROCESS-COMP-UNITS
+    imports CORE-SORTS
+    imports CORE-CLASSES
+    imports PROCESS-TYPE-NAMES
+    imports PROCESS-IMPORTS     //for compUnitImportsStart()
+
+/*@
 ProcCompUnitsPhase:
   For each CompUnit separately:
 1. Process import declarations. Build <compUnitImports>.
@@ -17,11 +23,6 @@ ProcCompUnitsPhase:
   This way we will have fast access to the declaration of a class, and will be able to
 process declarations in a less-restricted order.
 */
-module PROCESS-COMP-UNITS
-    imports CORE-SORTS
-    imports CORE-CLASSES
-    imports PROCESS-TYPE-NAMES
-    imports PROCESS-IMPORTS     //for compUnitImportsStart()
 
 /*@ \subsection{Second pass - processing declarations} */
 

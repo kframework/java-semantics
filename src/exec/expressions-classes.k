@@ -1,13 +1,12 @@
-/*@ \section{Module EXPRESSIONS-CLASSES}
-  Class-related expressions.
-*/
-
 module EXPRESSIONS-CLASSES
     imports CORE-SORTS
     imports CORE-CLASSES //for cast
     imports SUBTYPING
     imports TO-STRING
     imports STMT-SYNTAX
+
+/*@ Expressions that operate over objects.
+*/
 
 /*@ \subsection{Instance Of} */
 

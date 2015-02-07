@@ -1,5 +1,3 @@
-//@ \section{Module EXPRESSIONS}
-
 module EXPRESSIONS
     imports CORE-SORTS
     imports CORE-CLASSES

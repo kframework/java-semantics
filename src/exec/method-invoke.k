@@ -5,8 +5,6 @@ module METHOD-INVOKE
     imports STATIC-INIT //for staticInit()
 
 /*@
-\section{Module METHOD-INVOKE}
-
 \subsection{Background}
 
 In this section we present the fragment of configuration used by runtime method

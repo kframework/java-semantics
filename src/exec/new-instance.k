@@ -6,8 +6,6 @@ module NEW-INSTANCE
     imports VAR-LOOKUP  //for typedLookup()
 
 /*@
-\section{Module NEW-INSTANCE}
-
 \subsection{Background}
 
 In this subsection we present the fragment of configuration used by runtime method

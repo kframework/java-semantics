@@ -1,5 +1,3 @@
-//@ \section{Module STATIC-INIT}
-
 module STATIC-INIT
     imports CORE-SORTS
     imports CORE-CLASSES          //for objectClass
