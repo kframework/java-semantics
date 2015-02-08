@@ -52,7 +52,8 @@ rule [elabEnd-findQualifierForName]:
     <methods> Methods:Map </methods>
 
 syntax KItem ::= containsName ( Map , Id )        [function]
-rule containsName((sig(Name, _) |-> _) _:Map, Name:Id) => true
+//todo mapItem
+//rule containsName((sig(Name, _) |-> _) _:Map, Name:Id) => true
 
 //@Happens for 'NewInstance expressions for static inner classes.
 rule [elabEnd-findQualifierForName-static]:
@@ -261,7 +262,7 @@ rule [lookupSignature-Main]:
       lookupSignature(
         MethodName:Id,
         CallTs:Types,
-        (sig(MethodName, SigTs:Types) |-> NewDecClass:ClassType => .) _:Map,
+        (sig(MethodName, SigTs:Types) |-> NewDecClass:ClassType => .Map) _:Map,
         IsQ:Bool,
         OldMethodRef:MethodRef
         => ifAux(
@@ -292,16 +293,16 @@ rule [lookupSignature-Main]:
 
 syntax KItem ::= getMethodRefArgTypes ( MethodRef )   [function]
 rule getMethodRefArgTypes( methodRef(sig(_, Ts:Types), _) ) => Ts
-
-rule [lookupSignature-SigDiscard]:
-    lookupSignature(
-      MethodName:Id,
-      _,
-      (sig(Name:Id, _) |-> _ => .) _:Map,
-      _,_,_
-    )
-when
-    Name =/=K MethodName
+//todo mapItem
+//rule [lookupSignature-SigDiscard]:
+//    lookupSignature(
+//      MethodName:Id,
+//      _,
+//      (sig(Name:Id, _) |-> _ => .) _:Map,
+//      _,_,_
+//    )
+//when
+//    Name =/=K MethodName
 
 rule [lookupSignature-End]:
     lookupSignature(_,_, .Map,_, MethodRef:MethodRef, _) => MethodRef

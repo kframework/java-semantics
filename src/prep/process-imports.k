@@ -40,17 +40,17 @@ rule [TypeImportOnDemandDec]:
 syntax KItem ::=  importOnDemandImpl (
                 Map //Map[X |-> Class] - classes to consider for importing.
               )
+//todo mapItemByValue
+//rule [importOnDemandImpl-public]:
+//    <k> importOnDemandImpl((X:Id |-> Class:ClassType => .Map) _:Map) ...</k>
+//    <compUnitImports> Imp:Map => Imp[X <- Class] </compUnitImports>
+//    <classType> Class </classType>
+//    <classAccessMode> public </classAccessMode>
 
-rule [importOnDemandImpl-public]:
-    <k> importOnDemandImpl((X:Id |-> Class:ClassType => .Map) _:Map) ...</k>
-    <compUnitImports> Imp:Map => Imp[X <- Class] </compUnitImports>
-    <classType> Class </classType>
-    <classAccessMode> public </classAccessMode>
-
-rule [importOnDemandImpl-package]:
-    <k> importOnDemandImpl((X:Id |-> Class:ClassType => .) _) ...</k>
-    <classType> Class </classType>
-    <classAccessMode> package </classAccessMode>
+//rule [importOnDemandImpl-package]:
+//    <k> importOnDemandImpl((X:Id |-> Class:ClassType => .Map) _:Map) ...</k>
+//    <classType> Class </classType>
+//    <classAccessMode> package </classAccessMode>
 
 rule [importOnDemandImpl-discard]:
     importOnDemandImpl(.Map) => .K
@@ -60,7 +60,7 @@ This is required because some tests import some packages from JDK that are not i
 class-lib.*/
 rule [TypeImportOnDemandDec-Unexisting]:
     <k>
-      'TypeImportOnDemandDec(Pack:PackageId) => .
+      'TypeImportOnDemandDec(Pack:PackageId) => .K
       ...
     </k>
     <namesToClasses> PackMap:Map </namesToClasses>

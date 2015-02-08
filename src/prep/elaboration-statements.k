@@ -24,8 +24,8 @@ This is because these statements are blocks that might declare local variables.
 */
 rule [elab-Block-For-Catch-heat-FirstSubterm]:
     <k> elab(KL:KLabel(K:K,, Ks:KList)) => elab(K) ~> elab(KL(CHOLE,, Ks:KList)) ...</k>
-    <elabEnv> (. => ListItem(ElabEnvLI)) ListItem(ElabEnvLI:K) ...</elabEnv>
-    <localTypes> (. => ListItem(LocalTypesLI)) ListItem(LocalTypesLI:K) ...</localTypes>
+    <elabEnv> (.List => ListItem(ElabEnvLI)) ListItem(ElabEnvLI:K) ...</elabEnv>
+    <localTypes> (.List => ListItem(LocalTypesLI)) ListItem(LocalTypesLI:K) ...</localTypes>
 when
     isVarDecHolderLabel(KL) ==K true andBool notBool isElabKResult(K) ==K true
 
@@ -72,7 +72,7 @@ rule [elab-LocalVarDec]:
       => elabRes('LocalVarDec(K,, T,, ['VarDec(X)]))
       ...
     </k>
-    <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv>
+    <elabEnv> ListItem(mapWrap((.Map => X |-> T) _)) ...</elabEnv>
 
 //@\subsection{Elaboration of SuperConstrInv, QSuperConstrInv, AltConstrInv}
 
