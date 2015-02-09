@@ -197,20 +197,30 @@ case "$OPTION" in
     echo "Done"
     ;;
 "--prep-latex")
-    $KOMPILE_CMD --backend latex --doc-style "style=math,modulesAsSections" prep/java-prep.k
+    $KOMPILE_CMD -d prep --backend latex --doc-style "style=math,modulesAsSections" prep/java-prep.k
+    mv prep/java-prep.tex .
+    mv prep/k.sty .
     ;;
 "--prep-pdf")
-    $KOMPILE_CMD --backend pdf --doc-style "style=math,modulesAsSections" prep/java-prep.k
+    $KOMPILE_CMD -d prep --backend pdf --doc-style "style=math,modulesAsSections" prep/java-prep.k
+    mv prep/java-prep.tex .
+    mv prep/k.sty .
     ;;
 "--exec-latex")
-    $KOMPILE_CMD --backend latex --doc-style "style=math,modulesAsSections" exec/java-exec.k
+    $KOMPILE_CMD -d exec --backend latex --doc-style "style=math,modulesAsSections" exec/java-exec.k
+    mv exec/java-exec.tex .
+    mv exec/k.sty .
     ;;
 "--exec-pdf")
-    $KOMPILE_CMD --backend pdf --doc-style "style=math,modulesAsSections" exec/java-exec.k
+    $KOMPILE_CMD -d exec --backend pdf --doc-style "style=math,modulesAsSections" exec/java-exec.k
+    mv exec/java-exec.tex .
+    mv exec/k.sty .
     ;;
 "--methods-latex")
-    $KOMPILE_CMD --backend latex --doc-style "style=math,modulesAsSections" exec/java-exec.k
+    $KOMPILE_CMD -d exec --backend latex --doc-style "style=math,modulesAsSections" exec/java-exec.k
     extract-module.sh -m METHOD-INVOKE -o method-invoke.tex java-exec.tex
+    mv exec/java-exec.tex .
+    mv exec/k.sty .
     ;;
 "--methods-pdf")
     kjkompile.sh $EXTRA_OPTS --methods-latex
@@ -219,8 +229,10 @@ case "$OPTION" in
       --aux-directory=.latex method-invoke.tex
     ;;
 "--new-latex")
-    $KOMPILE_CMD --backend latex --doc-style "style=math,modulesAsSections" exec/java-exec.k
+    $KOMPILE_CMD -d exec --backend latex --doc-style "style=math,modulesAsSections" exec/java-exec.k
     extract-module.sh -m NEW-INSTANCE -o new-instance.tex java-exec.tex
+    mv exec/java-exec.tex .
+    mv exec/k.sty .
     ;;
 "--new-pdf")
     kjkompile.sh $EXTRA_OPTS --new-latex
@@ -231,8 +243,8 @@ case "$OPTION" in
 "--modules-latex")
     echo "Preprocessing semantics:"
     # "&> file" redirects both stdin and stderr to the given file
-    $KOMPILE_CMD -d exec --backend latex --doc-style "style=math,modulesAsSections" exec/java-exec.k &> exec-out.txt \
-        & $KOMPILE_CMD -d prep --backend latex --doc-style "style=math,modulesAsSections" prep/java-prep.k
+    kjkompile.sh $EXTRA_OPTS --exec-latex &> exec-out.txt \
+        & kjkompile.sh $EXTRA_OPTS --prep-latex
     wait
 
     echo
@@ -241,10 +253,6 @@ case "$OPTION" in
 
     cat exec-out.txt
     rm -rf exec-out.txt
-    mv prep/java-prep.tex .
-    mv prep/k.sty .
-    mv exec/java-exec.tex .
-    mv exec/k.sty .
 
     echo
     echo
