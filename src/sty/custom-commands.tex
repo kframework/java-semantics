@@ -17,6 +17,11 @@
         breaklines=true,showstringspaces=false,emph={label},
         basicstyle=\ttfamily}
 
+% #1 = sort, #2 = name
+\newcommand{\cellref}[2][]{
+  \kall{#2}{#1}
+}
+
 % Environment "kdefinition" have effect only in poster style, thus in math style may be safely deleted.
 
 %Disable text justification, will eliminate overfulls inside text.
