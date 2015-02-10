@@ -203,7 +203,7 @@ when
 syntax KItem ::= containsFoldedClasses ( Bag ) [function]
 rule containsFoldedClasses(
       <class>
-        <cphDiscovered> <classPhase> ClassPhase:ClassPhase </classPhase> ...</cphDiscovered>
+        <classPhase> ClassPhase:ClassPhase </classPhase>
         ...
       </class>
       _:Bag

@@ -19,6 +19,7 @@
 
 % #1 = sort, #2 = name
 \newcommand{\cellref}[2][]{
+  %\kall{#2}{\ifthenelse{\isempty{#1}}{}{$\sortName{#1}$}}%doesn't work
   \kall{#2}{#1}
 }
 

@@ -213,14 +213,12 @@ The rest of the global cells are related to debugging.
 
 configuration
     <T>
+      //Configuration part 1: threads
       <threads color="GreenYellow">
         <thread multiplicity="*" color="GreenYellow">
           <k color="Green"> $COMMAND:K </k>
 
           <stack color="Green"> .List </stack>
-
-          // \smallskip
-          <br/>
 
           /*The execution context of the current method - local names environment, return type,
             context type and current object.*/
@@ -237,233 +235,198 @@ configuration
           </methodContext>
 
           <br/>
-
           //Multithreading-related cells
-          <threadData color="Yellow">
 
-            //Thread Id
-            <tid color="BlueViolet"> 0 </tid>
+          //Thread Id
+          <tid color="BlueViolet"> 0 </tid>
 
-            //Map[OL |-> Count] - the amount of times this thread holds the monitor objects referred bu the keys
-            <holds color="BlueViolet"> .Map </holds>
+          //Map[OL |-> Count] - the amount of times this thread holds the monitor objects referred bu the keys
+          <holds color="BlueViolet"> .Map </holds>
 
-            //Whether this thread was interrupted by another thread by a call to Thread.interrupt()
-            <interrupted color="BlueViolet"> false </interrupted>
-
-          </threadData>
+          //Whether this thread was interrupted by another thread by a call to Thread.interrupt()
+          <interrupted color="BlueViolet"> false </interrupted>
         </thread>
       </threads>
 
       <br/>
       <br/>
+      //Configuration part 2: classes
 
       <classes color="Red">
         <class multiplicity="*" color="Red">
 
-          <cphDiscovered color="Yellow">
-            //sort ClassType. Contains the fully qualified class name.
-            <classType color="Red"> .K </classType>
+          //Class Phase Discovered
 
-            //Either classMetaT or interfaceMetaT. Used in many semantics phases, including execution.
-            <classMetaType color="Maroon"> .K </classMetaType>
+          //sort ClassType. Contains the fully qualified class name.
+          <classType color="Red"> .K </classType>
 
-            //The major phase of <class> lifecycle. See ClassPhase definition.
-            <classPhase color="Maroon"> .K </classPhase>
+          //Either classMetaT or interfaceMetaT. Used in many semantics phases, including execution.
+          <classMetaType color="Maroon"> .K </classMetaType>
 
-          </cphDiscovered>
-
-          <br/>
-
-          <cphCreated color="Yellow">
-
-            //Used by object instantiation
-            //noClass if this is a top-level class,
-            //ClassType of the enclosing class otherwise
-            <enclosingClass color="DarkGoldenrod"> noClass </enclosingClass>
-
-          </cphCreated>
-
-          <cphDecs color="Yellow">
-
-            //The base class, or noClass for interfaces and Object.
-            <extends color="SpringGreen"> .K </extends>
-
-          </cphDecs>
+          //The major phase of <class> lifecycle. See ClassPhase definition.
+          <classPhase color="Maroon"> .K </classPhase>
 
           <br/>
+          //Class Phase Created
 
-          <cphMembers color="Yellow">
+          //Used by object instantiation
+          //noClass if this is a top-level class,
+          //ClassType of the enclosing class otherwise
+          <enclosingClass color="DarkGoldenrod"> noClass </enclosingClass>
 
-            //Transitively implemented interfaces. Used by subtyping rules.
-            <implTrans color="DeepPink"> .Set </implTrans>
+          //Class Phase Decs
 
-            /*Signatures of methods accessible to this class (both declared and inherited)
-              Map[Sig -> Class]
-              Used in elaboration of method calls.*/
-            <methods color="Blue"> .Map </methods>
-            <br/>
-
-            /*All methods declared in this class.
-              Used in elaboration of method calls.*/
-            <methodDecs color="Blue">
-
-              <methodDec multiplicity="*" color="Blue">
-
-                //Method signature, of type Signature
-                <methodSignature color="Blue"> .K </methodSignature>
-
-                //Method params
-                <methodParams color="Blue"> [.KList] </methodParams>
-                <br/>
-
-                //Method body
-                <methodBody color="Blue"> .K </methodBody>
-
-                <methodAccessMode color="Blue"> .K </methodAccessMode>
-                <br/>
-
-                //Either staticCT or instanceCT
-                <methodContextType color="Blue"> .K </methodContextType>
-
-              </methodDec>
-            </methodDecs>
-
-            <br/>
-
-            //[...,, 'LocalVarDec(_),, ...] - Instance field declarations. Used during object instantiation.
-            <instanceFields color="Indigo"> [.KList] </instanceFields>
-
-            //[...,, 'FieldDec('Static(_),,T,,_),, ...] - Static field declarations. Used during class instantiation.
-            <staticFields color="DarkSlateGray"> [.KList] </staticFields>
-
-            //The sequence of static initializers (that also includes field initializers)
-            //see static-init.k for more details.
-            <staticInit color="DarkSlateGray"> [.KList] </staticInit>
-
-          </cphMembers>
+          //The base class, or noClass for interfaces and Object.
+          <extends color="SpringGreen"> .K </extends>
 
           <br/>
+          //Class Phase Members
 
-          //Cells used during folding phase
-          <cphFolding color="Yellow">
+          //Transitively implemented interfaces. Used by subtyping rules.
+          <implTrans color="DeepPink"> .Set </implTrans>
 
-            //The whole class folded back into a 'ClassDec(...) node
-            <folded color="Teal"> .K </folded>
+          /*Signatures of methods accessible to this class (both declared and inherited)
+            Map[Sig -> Class]
+            Used in elaboration of method calls.*/
+          <methods color="Blue"> .Map </methods>
 
-          </cphFolding>
+          /*All methods declared in this class.
+            Used in elaboration of method calls.*/
+          <methodDecs color="Blue">
+
+            <methodDec multiplicity="*" color="Blue">
+
+              //Method signature, of type Signature
+              <methodSignature color="Blue"> .K </methodSignature>
+
+              //Method params
+              <methodParams color="Blue"> [.KList] </methodParams>
+
+              //Method body
+              <methodBody color="Blue"> .K </methodBody>
+
+              <methodAccessMode color="Blue"> .K </methodAccessMode>
+
+              //Either staticCT or instanceCT
+              <methodContextType color="Blue"> .K </methodContextType>
+
+            </methodDec>
+          </methodDecs>
+
+          //[...,, 'LocalVarDec(_),, ...] - Instance field declarations. Used during object instantiation.
+          <instanceFields color="Indigo"> [.KList] </instanceFields>
+
+          //[...,, 'FieldDec('Static(_),,T,,_),, ...] - Static field declarations. Used during class instantiation.
+          <staticFields color="DarkSlateGray"> [.KList] </staticFields>
+
+          //The sequence of static initializers (that also includes field initializers)
+          //see static-init.k for more details.
+          <staticInit color="DarkSlateGray"> [.KList] </staticInit>
 
           <br/>
+          //Class Phase Folding
 
-          //Cells used during execution phase
-          <cphExec color="Yellow">
+          //The whole class folded back into a 'ClassDec(...) node
+          <folded color="Teal"> .K </folded>
 
-            //Initialization status of this class. See static-init.k for more details.
-            //Only used during execution phase.
-            <staticInitStatus color="Teal"> StaticUninitialized </staticInitStatus>
+          <br/>
+          //Class Phase Execution - cells only used during execution
 
-            /*The map of static fields declared in this class only, and NOT in superclasses or superinterfaces.
-              Map[Id -> Location] Used during static variable lookup.*/
-            <staticEnv color="DarkSlateGray"> .Map </staticEnv>
+          //Initialization status of this class. See static-init.k for more details.
+          //Only used during execution phase.
+          <staticInitStatus color="Teal"> StaticUninitialized </staticInitStatus>
 
-          </cphExec>
+          /*The map of static fields declared in this class only, and NOT in superclasses or superinterfaces.
+            Map[Id -> Location] Used during static variable lookup.*/
+          <staticEnv color="DarkSlateGray"> .Map </staticEnv>
 
         </class>
       </classes>
 
       <br/>
       <br/>
+      //Configuration part 3: global cells
 
       <globalPhase color="YellowGreen"> $STARTPHASE:GlobalPhase </globalPhase>
       <lastGlobalPhase color="YellowGreen"> $ENDPHASE:GlobalPhase </lastGlobalPhase>
 
       <br/>
+      //Global Phase Start
 
-      <phStart color="Yellow">
+      //The initial program loaded by krun. For full mode and preprocessing this is
+      //the initial java program, for execution mode it is the folded java program.
+      <program color="LightSteelBlue"> $PGM:K </program>
 
-        //The initial program loaded by krun. For full mode and preprocessing this is
-        //the initial java program, for execution mode it is the folded java program.
-        <program color="LightSteelBlue"> $PGM:K </program>
-
-        //Main class, passed as krun argument. We need it from the outside, just like JDK Java.
-        <mainClass color="LightSteelBlue"> $MainClass:List </mainClass>
-
-      </phStart>
+      //Main class, passed as krun argument. We need it from the outside, just like JDK Java.
+      <mainClass color="LightSteelBlue"> $MainClass:List </mainClass>
 
       <br/>
+      //Global Phase Execution
 
-      <phExec color="Yellow">
+      //Execution memory. Map[Location:Int->Value:TypedVal]. Both local vars and heap vars are stored here.
+      <store color="DarkCyan"> .Map </store>
 
-        //Execution memory. Map[Location:Int->Value:TypedVal]. Both local vars and heap vars are stored here.
-        <store color="DarkCyan"> .Map </store>
+      //The type of each location - whether it is LocalAttr or FieldAttr. Relevant only for multi-threading
+      //model checking
+      //Map[Location:Int -> LocMetadata].
+      <storeMetadata color="DarkCyan"> .Map </storeMetadata>
 
-        //The type of each location - whether it is LocalAttr or FieldAttr. Relevant only for multi-threading
-        //model checking
-        //Map[Location:Int -> LocMetadata].
-        <storeMetadata color="DarkCyan"> .Map </storeMetadata>
+      //Counter for next location to be used in the cell <store>.
+      <nextLoc color="DarkCyan"> 0 </nextLoc>
 
-        //Counter for next location to be used in the cell <store>.
-        <nextLoc color="DarkCyan"> 0 </nextLoc>
+      //Represents the storage of objects. Since objects have a complex inner structure,
+      //we need to hold them separately if we want to represent that structure as a cell tree.
+      <objectStore color="Cyan">
+        <object color="Cyan" multiplicity="*">
 
-        <br/>
+          //The id of this object. Same as store location for the newly created object reference.
+          <objectId color="Cyan"> .K </objectId>
 
-        //Represents the storage of objects. Since objects have a complex inner structure,
-        //we need to hold them separately if we want to represent that structure as a cell tree.
-        <objectStore color="Cyan">
-          <object color="Cyan" multiplicity="*">
+          //The actual object class
+          <objectType color="Cyan"> .K </objectType>
 
-            //The id of this object. Same as store location for the newly created object reference.
-            <objectId color="Cyan"> .K </objectId>
+          //One layer for each class in the inheritance chain of this object
+          <layer color="Cyan" multiplicity="*">
 
-            //The actual object class
-            <objectType color="Cyan"> .K </objectType>
+            //The class corresponding to the given chain
+            <layerClass color="Cyan"> .K </layerClass>
 
-            //One layer for each class in the inheritance chain of this object
-            <layer color="Cyan" multiplicity="*">
+            //Map[Id |-> Loc] -> fields defined in this layer
+            <layerEnv color="Cyan"> .Map </layerEnv>
 
-              //The class corresponding to the given chain
-              <layerClass color="Cyan"> .K </layerClass>
+            //objectRef() ::_ - a reference to the directly enclosing object, or noValue if none.
+            <layerEnclosingObject color="Cyan"> noValue </layerEnclosingObject>
+          </layer>
+        </object>
+      </objectStore>
 
-              //Map[Id |-> Loc] -> fields defined in this layer
-              <layerEnv color="Cyan"> .Map </layerEnv>
+      //Standard input. Each token is a ListItem.
+      <in color="LightPink" stream="stdin"> .List </in>
 
-              <br/>
+      //Standard output. Each token is a ListItem.
+      <out color="LightPink" stream="stdout"> .List </out>
 
-              //objectRef() ::_ - a reference to the directly enclosing object, or noValue if none.
-              <layerEnclosingObject color="Cyan"> noValue </layerEnclosingObject>
-            </layer>
-          </object>
-        </objectStore>
-
-        <br/>
-
-        //Standard input. Each token is a ListItem.
-        <in color="LightPink" stream="stdin"> .List </in>
-
-        //Standard output. Each token is a ListItem.
-        <out color="LightPink" stream="stdout"> .List </out>
-
-        //A map from types to objectRef() terms that represent their T.class value
-        //Created an used in execution phase, by expressions of the form X.class
-        //Type: Map[Type->TypedVal]. Type may be any reference type.
-        <classLiteralsMap color="LightPink"> .Map </classLiteralsMap>
-
-        <br/>
-
-        //Set[OL:Int] - the set of locations of used monitor objects
-        <busy color="LightGreen"> .Set </busy>
-
-        //Map[ThreadId:Int |-> OL:Int] - map from threads to objects they are waiting on
-        //waiting on those objects used by methods Object.wait(), Object.notify(), Object.notifyAll().
-        <waitingThreads color="LightGreen"> .Map </waitingThreads>
-
-        //Set[ThreadId:Int] The set of terminated threads.
-        <terminated color="LightGreen"> .Set </terminated>
-
-      </phExec>
+      //A map from types to objectRef() terms that represent their T.class value
+      //Created an used in execution phase, by expressions of the form X.class
+      //Type: Map[Type->TypedVal]. Type may be any reference type.
+      <classLiteralsMap color="LightPink"> .Map </classLiteralsMap>
 
       <br/>
+      //Multithreading-related global cells
 
+      //Set[OL:Int] - the set of locations of used monitor objects
+      <busy color="LightGreen"> .Set </busy>
+
+      //Map[ThreadId:Int |-> OL:Int] - map from threads to objects they are waiting on
+      //waiting on those objects used by methods Object.wait(), Object.notify(), Object.notifyAll().
+      <waitingThreads color="LightGreen"> .Map </waitingThreads>
+
+      //Set[ThreadId:Int] The set of terminated threads.
+      <terminated color="LightGreen"> .Set </terminated>
+
+      <br/>
       //Cells used for debugging. Not related to the semantics.
+
       <groupDebug color="Yellow">
 
         <dissolveEmptyK> false </dissolveEmptyK>
