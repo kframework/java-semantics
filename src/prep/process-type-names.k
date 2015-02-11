@@ -8,17 +8,9 @@ module PROCESS-TYPE-NAMES
 First pass - collecting globally accessible names in the program. This includes packages,
 top-level classes and inner classes. In each compilation unit just class declarations
 (both global and inner) are processed. Results are stored in the cell <namesToClasses>.
+
+The initial configuration contains the initial program in cells <k> and <program>, and global phase is ProcTypeNamesPhase.
 */
-
-/*@ \subsection{Start of the phase ProcTypeNamesPhase}*/
-
-//@ Initial command for the preprocessing semantics.
-syntax KItem ::= "procTypeNames"
-
-rule [ProcTypeNamesPhase-start]:
-    <k> procTypeNames => Program </k>
-    <program> Program:K </program>
-    <globalPhase> ProcTypeNamesPhase </globalPhase>
 
 /*@ \subsection{Compilation units}*/
 

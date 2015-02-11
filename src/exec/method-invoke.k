@@ -8,76 +8,80 @@ module METHOD-INVOKE
 \subsection{Background}
 
 In this section we present the fragment of configuration used by runtime method
-  invocation. The figure below contains the cells and their sorts.
+  invocation. The figure below contains the cells and their sorts\footnote{$AM^{***}$ = \sortName{AccessMode}, $CT^{***}$ = \sortName{ContextType}}.
 
 \vspace{3ex}
 
-$
-\kall{T}{\begin{array}{@{}c@{}}
-	\kall[GreenYellow]{threads}{
-		\kall[GreenYellow]{thread*}{
-		\begin{array}{@{}c@{}}
-			\kall[Green]{k}{K}
-			\mathrel{}\kall[Green]{stack}{ \ List \left[ \ (K, Bag) \ \right] \ }
-			\mathrel{}\\\mathrel{}\kall[Orange]{methodContext}{
-				\kall[Crimson]{env}{ Map \left[Id \mapsto Int \right] }
-				\mathrel{}\kall[DarkOrange]{crntClass}{ ClassType }
-				\mathrel{}\kall[DarkOrange]{location}{ Int }
-			}
-		\end{array}
-		}
-	}
-	\mathrel{}\\\mathrel{}\\\mathrel{}\
+\kwrap{
+\kall{T}{\manualBRBlock{
+  \kall[GreenYellow]{threads}{
+    \kall[GreenYellow]{thread*}{
+      \kall[Green]{k}{K}
+      \cellSep
+      \kall[Green]{stack}{ List \allowbreak {[} \allowbreak (K, Bag) \allowbreak {]} }
+      \cellSep
+      \kall[Orange]{methodContext}{
+        \kall[Crimson]{env}{ Map \left[Id \mapsto Int \right] }
+        \cellSep
+        \kall[DarkOrange]{crntClass}{ ClassType }
+        \cellSep
+        \kall[DarkOrange]{location}{ Int }
+      }
+    }
+  }
+  \cellBR
+  \cellBR
   \kall[Red]{classes}{
-		\kall[Red]{class*}{\begin{array}{@{}c@{}}
-			\kall[Red]{classType}{ ClassType }
-			\mathrel{}\kall[Maroon]{classMetaType}{ ClassMetaType }
-			\mathrel{}
-				\mathrel{}\\\mathrel{}\
-				\kall[Blue]{methods}{ Map \left[Signature \mapsto ClassType \right] }
-				\mathrel{}\\\mathrel{}\kall[Blue]{methodDecs}{
-					\kall[Blue]{methodDec*}{\begin{array}{@{}c@{}}
-						\kall[Blue]{methodSignature}{ Signature }
-						\mathrel{}\\\mathrel{}\
-						\kall[Blue]{methodParams}{ \ List \left[ \ MethodParam \ \right] \ }
-						\mathrel{}\\\mathrel{}\kall[Blue]{methodBody}{ K }
-						\mathrel{}\\\mathrel{}\
-						\kall[Blue]{methodAccessMode}{ AccessMode }
-						\mathrel{}\\\mathrel{}\kall[Blue]{methodContextType}{ ContextType }
-					\end{array}
-					}
-				}
-		\end{array}
-		}
-	}
-\end{array}
+    \kall[Red]{class*}{\manualBRBlock{
+      \kall[Red]{classType}{ ClassType }
+      \cellSep
+      \kall[Maroon]{classMetaType}{ ClassMetaType }
+      \cellSep
+      \kall[Blue]{methods}{ Map \left[Signature \mapsto ClassType \right] }
+      \cellBR
+      \cellBR
+      \kall[Blue]{methodDecs}{
+        \kall[Blue]{methodDec*}{
+          \kall[Blue]{methodSignature}{ Signature }
+          \cellSep
+          \kall[Blue]{methodParams}{ List }
+          \cellSep
+          \kall[Blue]{methodBody}{ K }
+          \cellSep
+          \kall[Blue]{methodAccessMode}{ AM^{***} }
+          \cellSep
+          \kall[Blue]{methodContextType}{ CT^{***} }
+        }
+      }
+    }}
+  }
+}}
 }
-$
 
 \vspace{3ex}
 
-The cell $\kall{k}{}$ stores the current computation. The cell $\kall{stack}{}$ is a list of pairs of the
+The cell \cellref[]{k} stores the current computation. The cell \cellref[]{stack} is a list of pairs of the
   form (K, Bag), and represents the standard method call stack. The first element
   represents the remaining computation at the moment the method was called. The second
-  element of sort Bag represents the content of cell $\kall{methodContext}{}$ at the moment
+  element of sort Bag represents the content of cell \cellref[]{methodContext} at the moment
   of method call.
 
-The cell $\kall{class}{}$ contains various sub-cells holding the content of that class. The
-  first cell in $\kall{classType}{}$ of sort ClassType that holds the fully qualified class name.
-  This cell serves as a key in all rules that match a fragment of a $\kall{class}{}$. The value
-  in the cell $\kall{classMetaType}{}$ is either "class" or "interface". From now on we will
+The cell \cellref[]{class} contains various sub-cells holding the content of that class. The
+  first cell in \cellref[]{classType} of sort ClassType that holds the fully qualified class name.
+  This cell serves as a key in all rules that match a fragment of a \cellref[]{class}. The value
+  in the cell \cellref[]{classMetaType} is either "class" or "interface". From now on we will
   refer to both meta types as classes, referring to metatype value when distinction
-  is necessary. The next cell is $\kall{methods}{}$. This is a map from method signatures to
+  is necessary. The next cell is \cellref[]{methods}. This is a map from method signatures to
   classes where the respective signatures are declared. It contains not only the methods
   declared in this class, but also those inherited from the base class, but not from the
   base interfaces. By "inherited" here we mean all the methods contained in the cell
-  $\kall{methods}{}$ of the base class that were not overridden by a method declaration with
+  \cellref[]{methods} of the base class that were not overridden by a method declaration with
   the same signature in the current class. This definition is different from the
   inheritance rules in JLS \S8.4.6, although the difference is only relevant at the
   elaboration time.
 
-The cell $\kall{methodDec}{}$ represents a method declared inside the current class. The subcell
-  $\kall{methodSignature}{}$ is the key for accessing other cells for this declaration. The other
+The cell \cellref[]{methodDec} represents a method declared inside the current class. The subcell
+  \cellref[]{methodSignature} is the key for accessing other cells for this declaration. The other
   cells are the parameters, the body, the access mode (private, public etc.) and the
   context type (either instance or static).
 
@@ -218,7 +222,7 @@ During the second step of the method invocation the second argument of the produ
     package when no access modifier is provided.
 
 All the information stored in methodInfo() is static. In K-Java we already have
-  this information computed, but it is stored in various cells inside $\kall{class}{}$ and $\kall{classDec}{}$.
+  this information computed, but it is stored in various cells inside \cellref[]{class} and \cellref[]{classDec}.
   The rules from step 3 simply load the relevant information from configuration
   cells to methodInfo() arguments.
 \end{markdown} */
@@ -281,7 +285,7 @@ rule [Invoke-compute-methodInfo-DecC]:
     <methods>... Sig |-> DecC:ClassType ...</methods>
 
 /*@ \begin{markdown}
-There is one case that is not covered by the previous rule - the case when the cell $\kall{methods}{}$ does not have a key
+There is one case that is not covered by the previous rule - the case when the cell \cellref[]{methods} does not have a key
   equal to Sig. This is possible in one of the following situations:
 
   - Qualifying type is an interface.
@@ -379,8 +383,8 @@ If the method is protected or public, then we should call the version of the met
   the qualifying object (ObjC). Recall that the runtime type of an object is stored in the second argument of
   objectRef().
   This case also covers qualifying type interface, since interface methods are always public.
-  The right method will always be the one referred by the signature Sig in the cell $\kall{methods}{}$ associated with the
-  actual object class. This is because the unfolding phase populates $\kall{methods}{}$ with the union of methods inherited
+  The right method will always be the one referred by the signature Sig in the cell \cellref[]{methods} associated with the
+  actual object class. This is because the unfolding phase populates \cellref[]{methods} with the union of methods inherited
   from the base class and methods declared in the current class, the latter overriding the former.
   The variable DecC is the class where the right method version is declared.
 */
@@ -518,14 +522,14 @@ syntax KItem ::=  lookupPackageMethod (
 \begin{markdown}
 The rules for lookupPackageMethod() are based on the following two properties of the configuration:
 
-  - if the cell $\kall{methods}{}$ for a particular class contains a key Sig, then $\kall{methods}{}$ for all classes derived from it
+  - if the cell \cellref[]{methods} for a particular class contains a key Sig, then \cellref[]{methods} for all classes derived from it
     will contain the key Sig.
   - if a particular class contain a method declaration with signature Sig access mode Acc, then all declarations
     of Sig in derived classes (that are not necessarily overriding!) will have the access mode equal to either Acc or a
     value wider than Acc.
 
-The first property is ensured by the unfolding algorithm. Because $\kall{methods}{}$ of a derived class inherit all the $\kall{methods}{}$
-  of the direct base class, the map $\kall{methods}{}$ may only grow from base classes to derived. The second property is ensured
+The first property is ensured by the unfolding algorithm. Because \cellref[]{methods} of a derived class inherit all the \cellref[]{methods}
+  of the direct base class, the map \cellref[]{methods} may only grow from base classes to derived. The second property is ensured
   by restrictions on overriding specified in JLS \S8.4.8.3: "The access modifier (\S6.6) of an overriding or hiding
   method must provide at least as much access as the overridden or hidden method".
 
@@ -551,7 +555,7 @@ rule [lookupPackageMethod-layer-first-dec-found]:
 The second rule matches when we already found a declaring class (OldDecC) and the current class CurrentC has another
   method declaration with the right signature. The presence of a declaration with signature  Sig inside CurrentC is identified by the
   match $\mathrel{}\kall{class}{\kall{classType}{ CurrentC } \mathrel{}\kall{methods}{... Sig \mapsto CurrentC ...} }$,
-  according to the definition of $\kall{methods}{}$.
+  according to the definition of \cellref[]{methods}.
 
 If the method in CurrentC directly overrides the method in OldDecC, the declaring class is updated to CurrentC. Otherwise the declaring class stays unchanged. The rules for direct overriding (case 1a above) are defined in the auxiliary function isOverridden(). The function takes three arguments:
 \begin{markdown}
@@ -607,7 +611,7 @@ rule isOverridden(_, private, _) => false
 /*@
 The third rule represents the case when CurrentC chain does not contain method declarations with signature
   Sig. This case is identified by the side condition CurrentC =/=K DecC. Indeed, the two classes are different only
-  when the entry Sig $\mapsto$ DecC in $\kall{methods}{}$ was inherited rather than produced by a method in CurrentC.
+  when the entry Sig $\mapsto$ DecC in \cellref[]{methods} was inherited rather than produced by a method in CurrentC.
 */
 rule [lookupPackageMethod-no-new-method]:
     <k>
@@ -697,12 +701,12 @@ When the term lookupPackageMethod() is first produced it takes as arguments the 
 The central rule of method invocation is matched when the second argument of method call expression reaches the form
   methodRef(). This rule performs the following operations:
 
-  - saves the rest of computation (RestK) and the content of $\kall{methodContext}{}$ as a new entry of the cell $\kall{stack}{}$
+  - saves the rest of computation (RestK) and the content of \cellref[]{methodContext} as a new entry of the cell \cellref[]{stack}
     This data is restored back by the rules for return statement.
   - Initializes the new method context.
-    - The local variable environment $\kall{env}{}$ is emptied
-    - current class $\kall{crntClass}{}$ is initialized to the class declaring the method
-    - object location $\kall{location}{}$ is initialized to the location of the qualifier object for instance methods,
+    - The local variable environment \cellref[]{env} is emptied
+    - current class \cellref[]{crntClass} is initialized to the class declaring the method
+    - object location \cellref[]{location} is initialized to the location of the qualifier object for instance methods,
       or \dotCt{K} for static methods. The extraction of the location from the qualifier value is performed by the
       function getOId().
   - Rewrites the method call expression into a sequence of four terms:

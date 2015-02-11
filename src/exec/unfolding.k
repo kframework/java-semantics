@@ -3,14 +3,18 @@ module UNFOLDING
     imports CORE-FUNCTIONS
     imports SYNTAX-CONVERSIONS
 
-rule [UnfoldingPhase-start]:
-    <k> . => unfoldingPhase </k>
-    <globalPhase> FoldingPhase => UnfoldingPhase </globalPhase>
-    <lastGlobalPhase> ExecutionPhase </lastGlobalPhase>
-
-/*@ The sole content of <k> cell during UnfoldingPhase
+/*@At the beginning of execution semantics <k> contains the term unfoldingPhase, <program> is non-empty and the global phase is UnfoldingPhase.
 */
+
 syntax KItem ::= "unfoldingPhase"
+
+//@In the initial configuration the cell <threads> is empty, global phase is UnfoldingPhase, <program> is non-empty.
+rule [UnfoldingPhase-start]:
+    <threads>
+      . => <thread> <k> unfoldingPhase </k> ...</thread>
+    </threads>
+    <globalPhase> UnfoldingPhase </globalPhase>
+    <program> [_:K,, _] </program>
 
 rule [unfolding-class-unfold-top-level]:
     <k> unfoldingPhase </k>
@@ -203,7 +207,7 @@ when
 syntax KItem ::= containsFoldedClasses ( Bag ) [function]
 rule containsFoldedClasses(
       <class>
-        <cphDiscovered> <classPhase> ClassPhase:ClassPhase </classPhase> ...</cphDiscovered>
+        <classPhase> ClassPhase:ClassPhase </classPhase>
         ...
       </class>
       _:Bag
