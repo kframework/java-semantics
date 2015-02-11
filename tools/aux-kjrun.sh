@@ -171,29 +171,17 @@ case "$MODE" in
                         -cENDPHASE=\"'FoldingPhase(.KList)\""
     ;;
 "run-exec")
-    KRUN_CMD="$KRUN_CMD -cCOMMAND=\"'unfoldingPhase(.KList)\" \
-                        -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
-                        -cENDPHASE=\"'ExecutionPhase(.KList)\""
     ;;
 "search")
-    KRUN_CMD="$KRUN_CMD --search-final \
-                        -cCOMMAND=\"'unfoldingPhase(.KList)\" \
-                        -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
-                        -cENDPHASE=\"'ExecutionPhase(.KList)\""
+    KRUN_CMD="$KRUN_CMD --search-final"
     ;;
 "symbolic")
     IN_FILE=${JAVA_FILE%.java}.cIN.in
     IN_VALUE=$(<${IN_FILE})
-    KRUN_CMD="$KRUN_CMD --search -cPC=true -cIN=\"$IN_VALUE\" \
-                        -cCOMMAND=\"'unfoldingPhase(.KList)\" \
-                        -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
-                        -cENDPHASE=\"'ExecutionPhase(.KList)\""
+    KRUN_CMD="$KRUN_CMD --search -cPC=true -cIN=\"$IN_VALUE\""
     ;;
 "debug")
-    KRUN_CMD="$KRUN_CMD --debug \
-                        -cCOMMAND=\"'unfoldingPhase(.KList)\" \
-                        -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
-                        -cENDPHASE=\"'ExecutionPhase(.KList)\""
+    KRUN_CMD="$KRUN_CMD --debug"
     ;;
 *)
     echo "Invalid MODE: ${MODE}"

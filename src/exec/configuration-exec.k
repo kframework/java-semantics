@@ -216,7 +216,7 @@ configuration
       //Configuration part 1: threads
       <threads color="GreenYellow">
         <thread multiplicity="*" color="GreenYellow">
-          <k color="Green"> $COMMAND:K </k>
+          <k color="Green"> .K </k>
 
           <stack color="Green"> .List </stack>
 
@@ -353,11 +353,9 @@ configuration
       <br/>
       //Configuration part 3: global cells
 
-      <globalPhase color="YellowGreen"> $STARTPHASE:GlobalPhase </globalPhase>
-      <lastGlobalPhase color="YellowGreen"> $ENDPHASE:GlobalPhase </lastGlobalPhase>
+      //Initial cells, loaded by krun and initial configuration.
 
-      <br/>
-      //Global Phase Start
+      <globalPhase color="YellowGreen"> UnfoldingPhase </globalPhase>
 
       //The initial program loaded by krun. For full mode and preprocessing this is
       //the initial java program, for execution mode it is the folded java program.
@@ -366,6 +364,7 @@ configuration
       //Main class, passed as krun argument. We need it from the outside, just like JDK Java.
       <mainClass color="LightSteelBlue"> $MainClass:List </mainClass>
 
+      <br/>
       <br/>
       //Global Phase Execution
 
