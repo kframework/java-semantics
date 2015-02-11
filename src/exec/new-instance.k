@@ -13,56 +13,58 @@ In this subsection we present the fragment of configuration used by runtime meth
 
 \vspace{3ex}
 
-$
-\kall{T}{
-\begin{array}{@{}c@{}}
-\kall[GreenYellow]{threads}{
-  \kall[GreenYellow]{thread*}{
-  \begin{array}{@{}c@{}}
-    \kall[Green]{k}{\variable[K]{K}{user}}
-    \mathrel{}\\\mathrel{}
-    \kall[Orange]{methodContext}{
-      \kall[Crimson]{env}{ Map \left[Id \mapsto Int \right] }
-      \mathrel{}\kall[DarkOrange]{crntClass}{ ClassType }
-      \mathrel{}\kall[DarkOrange]{location}{ Int }
-    }
-  \end{array}
-  }
-}
-\mathrel{}\\\mathrel{}\\\mathrel{}
-\kall[Red]{classes}{
-  \kall[Red]{class*}{
-  \begin{array}{@{}c@{}}
-    \kall[Red]{classType}{ ClassType } \mathrel{}
-    \kall[DarkGoldenrod]{enclosingClass}{ ClassType } \mathrel{}\\\mathrel{}
-    \kall[SpringGreen]{extends}{ ClassType } \mathrel{}
-    \kall[Indigo]{instanceFields}{List[FieldDec]}
-  \end{array}
-  }
-}
-\mathrel{}\\\mathrel{}
-\kall[DarkCyan]{store}{Map \left[Int \mapsto TypedVal \right]}
-\mathrel{}\kall[DarkCyan]{nextLoc}{Int}
-\mathrel{}\\\mathrel{}
-\kall[Cyan]{objectStore}{
-  \kall[Cyan]{object*}{
-    \begin{array}{@{}c@{}}
-      \kall[Cyan]{objectId}{Int}
-      \mathrel{}\kall[Cyan]{objectType}{ClassType}
-      \mathrel{}\\\mathrel{}
-      \kall[Cyan]{layer*}{
-        \begin{array}{@{}c@{}}
-          \kall[Cyan]{layerClass}{ClassType}
-          \mathrel{}\kall[Cyan]{layerEnv}{ Map \left[Id \mapsto Int \right] }
-          \mathrel{}\\\mathrel{}\kall[Cyan]{layerEnclosingObject}{ K }
-        \end{array}
+\kwrap{
+\kall{T}{\manualBRBlock{
+  \kall[GreenYellow]{threads}{
+    \kall[GreenYellow]{thread*}{
+      \kall[Green]{k}{\variable[K]{K}{user}}
+      \cellSep
+      \kall[Orange]{methodContext}{
+        \kall[Crimson]{env}{ Map \left[Id \mapsto Int \right] }
+        \cellSep
+        \kall[DarkOrange]{crntClass}{ ClassType }
+        \cellSep
+        \kall[DarkOrange]{location}{ Int }
       }
-    \end{array}
+    }
   }
+  \cellBR
+  \cellBR
+  \kall[Red]{classes}{
+    \kall[Red]{class*}{
+      \kall[Red]{classType}{ ClassType }
+      \cellSep
+      \kall[DarkGoldenrod]{enclosingClass}{ ClassType }
+      \cellSep
+      \kall[SpringGreen]{extends}{ ClassType }
+      \cellSep
+      \kall[Indigo]{instanceFields}{List[FieldDec]}
+    }
+  }
+  \cellBR
+  \cellBR
+  \kall[DarkCyan]{store}{Map \left[Int \mapsto TypedVal \right]}
+  \cellSep
+  \kall[DarkCyan]{nextLoc}{Int}
+  \cellBR
+  \cellBR
+  \kall[Cyan]{objectStore}{
+    \kall[Cyan]{object*}{
+      \kall[Cyan]{objectId}{Int}
+      \cellSep
+      \kall[Cyan]{objectType}{ClassType}
+      \cellSep
+      \kall[Cyan]{layer*}{
+        \kall[Cyan]{layerClass}{ClassType}
+        \cellSep
+        \kall[Cyan]{layerEnv}{ Map \left[Id \mapsto Int \right] }
+        \cellSep
+        \kall[Cyan]{layerEnclosingObject}{ K }
+      }
+    }
+  }
+}}
 }
-\end{array}
-}
-$
 
 \vspace{3ex}
 

@@ -290,6 +290,9 @@ configuration
             Used in elaboration of method calls.*/
           <methods color="Blue"> .Map </methods>
 
+          <br/>
+          <br/>
+
           /*All methods declared in this class.
             Used in elaboration of method calls.*/
           <methodDecs color="Blue">
@@ -312,6 +315,9 @@ configuration
 
             </methodDec>
           </methodDecs>
+
+          <br/>
+          <br/>
 
           //[...,, 'LocalVarDec(_),, ...] - Instance field declarations. Used during object instantiation.
           <instanceFields color="Indigo"> [.KList] </instanceFields>
@@ -374,6 +380,9 @@ configuration
       //Counter for next location to be used in the cell <store>.
       <nextLoc color="DarkCyan"> 0 </nextLoc>
 
+      <br/>
+      <br/>
+
       //Represents the storage of objects. Since objects have a complex inner structure,
       //we need to hold them separately if we want to represent that structure as a cell tree.
       <objectStore color="Cyan">
@@ -400,6 +409,9 @@ configuration
         </object>
       </objectStore>
 
+      <br/>
+      <br/>
+
       //Standard input. Each token is a ListItem.
       <in color="LightPink" stream="stdin"> .List </in>
 
@@ -424,6 +436,7 @@ configuration
       //Set[ThreadId:Int] The set of terminated threads.
       <terminated color="LightGreen"> .Set </terminated>
 
+      <br/>
       <br/>
       //Cells used for debugging. Not related to the semantics.
 

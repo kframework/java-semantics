@@ -23,6 +23,12 @@
   \kall{#2}{#1}
 }
 
+%Wraps a group of cells and properly aligns them.
+\newcommand{\kwrap}[1]{%
+  \setkeys{k}{ruleHangindent=0pt,StartVspace=0ex,EndVspace=0ex}%
+  \ksentence[]{}{}{#1}{}{}{}%
+}
+
 % Environment "kdefinition" have effect only in poster style, thus in math style may be safely deleted.
 
 %Disable text justification, will eliminate overfulls inside text.

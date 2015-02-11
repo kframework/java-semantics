@@ -8,51 +8,55 @@ module METHOD-INVOKE
 \subsection{Background}
 
 In this section we present the fragment of configuration used by runtime method
-  invocation. The figure below contains the cells and their sorts.
+  invocation. The figure below contains the cells and their sorts\footnote{$AM^{***}$ = \sortName{AccessMode}, $CT^{***}$ = \sortName{ContextType}}.
 
 \vspace{3ex}
 
-$
-\kall{T}{\begin{array}{@{}c@{}}
-	\kall[GreenYellow]{threads}{
-		\kall[GreenYellow]{thread*}{
-		\begin{array}{@{}c@{}}
-			\kall[Green]{k}{K}
-			\mathrel{}\kall[Green]{stack}{ \ List \left[ \ (K, Bag) \ \right] \ }
-			\mathrel{}\\\mathrel{}\kall[Orange]{methodContext}{
-				\kall[Crimson]{env}{ Map \left[Id \mapsto Int \right] }
-				\mathrel{}\kall[DarkOrange]{crntClass}{ ClassType }
-				\mathrel{}\kall[DarkOrange]{location}{ Int }
-			}
-		\end{array}
-		}
-	}
-	\mathrel{}\\\mathrel{}\\\mathrel{}\
+\kwrap{
+\kall{T}{\manualBRBlock{
+  \kall[GreenYellow]{threads}{
+    \kall[GreenYellow]{thread*}{
+      \kall[Green]{k}{K}
+      \cellSep
+      \kall[Green]{stack}{ List \allowbreak {[} \allowbreak (K, Bag) \allowbreak {]} }
+      \cellSep
+      \kall[Orange]{methodContext}{
+        \kall[Crimson]{env}{ Map \left[Id \mapsto Int \right] }
+        \cellSep
+        \kall[DarkOrange]{crntClass}{ ClassType }
+        \cellSep
+        \kall[DarkOrange]{location}{ Int }
+      }
+    }
+  }
+  \cellBR
+  \cellBR
   \kall[Red]{classes}{
-		\kall[Red]{class*}{\begin{array}{@{}c@{}}
-			\kall[Red]{classType}{ ClassType }
-			\mathrel{}\kall[Maroon]{classMetaType}{ ClassMetaType }
-			\mathrel{}
-				\mathrel{}\\\mathrel{}\
-				\kall[Blue]{methods}{ Map \left[Signature \mapsto ClassType \right] }
-				\mathrel{}\\\mathrel{}\kall[Blue]{methodDecs}{
-					\kall[Blue]{methodDec*}{\begin{array}{@{}c@{}}
-						\kall[Blue]{methodSignature}{ Signature }
-						\mathrel{}\\\mathrel{}\
-						\kall[Blue]{methodParams}{ \ List \left[ \ MethodParam \ \right] \ }
-						\mathrel{}\\\mathrel{}\kall[Blue]{methodBody}{ K }
-						\mathrel{}\\\mathrel{}\
-						\kall[Blue]{methodAccessMode}{ AccessMode }
-						\mathrel{}\\\mathrel{}\kall[Blue]{methodContextType}{ ContextType }
-					\end{array}
-					}
-				}
-		\end{array}
-		}
-	}
-\end{array}
+    \kall[Red]{class*}{\manualBRBlock{
+      \kall[Red]{classType}{ ClassType }
+      \cellSep
+      \kall[Maroon]{classMetaType}{ ClassMetaType }
+      \cellSep
+      \kall[Blue]{methods}{ Map \left[Signature \mapsto ClassType \right] }
+      \cellBR
+      \cellBR
+      \kall[Blue]{methodDecs}{
+        \kall[Blue]{methodDec*}{
+          \kall[Blue]{methodSignature}{ Signature }
+          \cellSep
+          \kall[Blue]{methodParams}{ List }
+          \cellSep
+          \kall[Blue]{methodBody}{ K }
+          \cellSep
+          \kall[Blue]{methodAccessMode}{ AM^{***} }
+          \cellSep
+          \kall[Blue]{methodContextType}{ CT^{***} }
+        }
+      }
+    }}
+  }
+}}
 }
-$
 
 \vspace{3ex}
 
