@@ -166,9 +166,6 @@ KRUN_CMD="$KRUN_CMD \
 
 case "$MODE" in
 "run-prep-config" | "run-prep-ast")
-    KRUN_CMD="$KRUN_CMD -cCOMMAND=\"'procTypeNames(.KList)\" \
-                        -cSTARTPHASE=\"'ProcTypeNamesPhase(.KList)\" \
-                        -cENDPHASE=\"'FoldingPhase(.KList)\""
     ;;
 "run-exec")
     ;;
