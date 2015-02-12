@@ -40,7 +40,12 @@ rule [TypeImportOnDemandDec]:
 syntax KItem ::=  importOnDemandImpl (
                 Map //Map[X |-> Class] - classes to consider for importing.
               )
-//todo mapItemByValue
+//flattens the first mapItem as a walkaround to match mapItem by Value
+syntax KItem ::= importOnDemandImpl (Id,ClassType,Map)
+
+rule [importOnDemandImplConversion]:
+    importOnDemandImpl((Key:Id |-> Value:ClassType) Remains:Map) => importOnDemandImpl(Key,Value,Remains)
+//todo mapItemByValue/ is this solution ok?
 //rule [importOnDemandImpl-public]:
 //    <k> importOnDemandImpl((X:Id |-> Class:ClassType => .Map) _:Map) ...</k>
 //    <compUnitImports> Imp:Map => Imp[X <- Class] </compUnitImports>
@@ -51,6 +56,17 @@ syntax KItem ::=  importOnDemandImpl (
 //    <k> importOnDemandImpl((X:Id |-> Class:ClassType => .Map) _:Map) ...</k>
 //    <classType> Class </classType>
 //    <classAccessMode> package </classAccessMode>
+
+rule [importOnDemandImpl-public]:
+    <k> (importOnDemandImpl(X:Id, Class:ClassType, Remains:Map) => importOnDemandImpl(Remains)) ...</k>
+    <compUnitImports> Imp:Map => Imp[X <- Class] </compUnitImports>
+    <classType> Class </classType>
+    <classAccessMode> public </classAccessMode>
+
+rule [importOnDemandImpl-package]:
+    <k> (importOnDemandImpl(X:Id, Class:ClassType, Remains:Map) => importOnDemandImpl(Remains)) ...</k>
+    <classType> Class </classType>
+    <classAccessMode> package </classAccessMode>
 
 rule [importOnDemandImpl-discard]:
     importOnDemandImpl(.Map) => .K
