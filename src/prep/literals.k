@@ -108,7 +108,7 @@ rule [Lit-FFloat]:
 
 //@ \subsection{bool literals}
 
-/*@ 'Lit('Bool('True(.KList)))
+/*  'Lit('Bool('True(.KList)))
     'Lit('Bool('False(.KList)))
 */
 
@@ -119,7 +119,7 @@ rule 'Lit('Bool('False(.KList))) => false
 //@ \subsection{char literals}
 //@ Chars are represented as int values, as described in java specification.
 
-//@ 'Lit('Char('Single( I:Int )))
+//   'Lit('Char('Single( I:Int )))
 rule 'Lit('Char('Single( I:Int ))) => I :: char
 
 // 'Lit('Char('NamedEscape( Int ))
@@ -136,7 +136,7 @@ rule 'Lit('Char('NamedEscape( 114 ))) => ordChar("\r") :: char
 rule 'Lit('Char('NamedEscape(  34 ))) => ordChar("\"") :: char  //"
 rule 'Lit('Char('NamedEscape(  92 ))) => ordChar("\\") :: char  //"
 
-/*@ 'Lit('Char('OctaEscape1( I:Int )))
+/*  'Lit('Char('OctaEscape1( I:Int )))
     'Lit('Char('OctaEscape2( I1:Int,, I2:Int )))
     'Lit('Char('OctaEscape3( I1:Int,, I2:Int,, I3:Int )))
 */
@@ -152,7 +152,7 @@ rule 'Lit('Char('OctaEscape3( I1:Int,, I2:Int,, I3:Int )))
      +Int octaAsciiToInt(I2) *Int  8
      +Int octaAsciiToInt(I3)          :: char
 
-//@ 'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
+//   'Lit('Char('UnicodeEscape(_:K,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
 
 rule 'Lit('Char('UnicodeEscape(_,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
     =>    hexAsciiToInt(I1) *Int 4096
@@ -162,7 +162,7 @@ rule 'Lit('Char('UnicodeEscape(_,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
 
 //@ \subsection{String literals}
 
-//@ 'Lit('String(['Chars(Str:String),, 'NamedEscape(_),, _:KList ]))
+// 'Lit('String(['Chars(Str:String),, 'NamedEscape(_),, _:KList ]))
 
 rule  'Lit('String([K1:K,, K2:K,, Ks:KList]))
       => plusAux( 'Lit('String([K1])),
@@ -181,7 +181,7 @@ rule charToString(I:Int :: char) => chrChar(I)
 
 //@ \subsection{Null literal}
 
-//@ 'Lit('Null(.KList))
+//   'Lit('Null(.KList))
 rule 'Lit('Null(.KList)) => null
 
 endmodule

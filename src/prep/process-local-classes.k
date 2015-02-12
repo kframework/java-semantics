@@ -6,8 +6,7 @@ module PROCESS-LOCAL-CLASSES
     imports PROCESS-CLASS-MEMBERS //for processTypeWithDepends
     imports ELABORATION-VARS   //for elabLookup
 
-/*@ ClassDecStm('ClassDec(...))
-*/
+// ClassDecStm('ClassDec(...))
 
 rule [elab-ClassDecStm]:
     elab('ClassDecStm(ClassDec:K)) => processLocalClassDec( ClassDec, generateLocalClassType(ClassDec), false )
@@ -29,7 +28,7 @@ rule [generateLocalClassType]:
 //@ Register a local class in the given generated package and fully process it.
 syntax KItem ::=  processLocalClassDec (
                 K,          //the 'ClassDec term
-                ClassType,  //GeneratedClass:ClassType at substep 1, .K when generated name have been registered.
+                ClassType,  //GeneratedClass:ClassType at substep 1, .K when generated name has been registered.
                 Bool        //ClassRegistered - false for substep 1, true for substep 2.
               )
               [strict(2)]
@@ -155,7 +154,7 @@ rule [localClassTransformIntoInner]:
          #else .K
        #fi
 
-/*@ Same as localClassTransformIntoInner but AccessibleLocalEnv have one more entry
+/*@ Same as localClassTransformIntoInner but AccessibleLocalEnv has one more entry
     - the field LocaClass@LocalEnv\_obj that will be created later, a self reference required when a local class
     instantiates either itself or an enclosing local class. See tests 957, 958.
 */

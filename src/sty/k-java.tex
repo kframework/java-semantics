@@ -13,18 +13,31 @@
 \title{JAVA-EXEC}
 \begin{document}
 
-\chapter{Common modules}
+\chapter{K-Java Syntax}
+
+\input{../.modules/exp-syntax.tex}
+\input{../.modules/stmt-syntax.tex}
+\input{../.modules/type-syntax.tex}
+\input{../.modules/class-syntax.tex}
+\input{../.modules/interface-syntax.tex}
+\input{../.modules/package-syntax.tex}
+\input{../.modules/name-syntax.tex}
+\input{../.modules/list-syntax.tex}
+\input{../.modules/lexical-syntax.tex}
+\input{../.modules/literal-syntax.tex}
+\input{../.modules/optional-syntax.tex}
+\input{../.modules/shared-syntax.tex}
+
+\chapter{K-Java Common modules}
 
 \input{../.modules/core-sorts.tex}
 \input{../.modules/core-functions.tex}
 \input{../.modules/core-classes.tex}
-\input{../.modules/exp-syntax.tex}
-\input{../.modules/stmt-syntax.tex}
 \input{../.modules/primitive-types.tex}
 \input{../.modules/subtyping.tex}
 \input{../.modules/aux-strings.tex}
 
-\chapter{Dynamic semantics}
+\chapter{K-Java Dynamic semantics}
 
 \input{../.modules/configuration-exec.tex}
 \input{../.modules/core-exec.tex}
@@ -34,15 +47,18 @@
 \input{../.modules/var-lookup.tex}
 \input{../.modules/arrays.tex}
 \input{../.modules/new-instance.tex}
+\input{../.modules/new-instance-rest.tex}
 \input{../.modules/method-invoke.tex}
+\input{../.modules/method-invoke-rest.tex}
 \input{../.modules/static-init.tex}
 \input{../.modules/api-core.tex}
+\input{../.modules/api-threads-selection.tex}
 \input{../.modules/api-threads.tex}
 \input{../.modules/unfolding.tex}
 \input{../.modules/to-string.tex}
 \input{../.modules/syntax-conversions.tex}
 
-\chapter{Static semantics}
+\chapter{K-Java Static semantics}
 
 \input{../.modules/configuration-prep.tex}
 \input{../.modules/core-preprocessing.tex}
@@ -67,3 +83,9 @@
 \input{../.modules/folding.tex}
 
 \end{document}
+
+% Ignored files:
+% \input{../.modules/java-exec.tex}
+% \input{../.modules/java-prep.tex}
+% \input{../.modules/java-syntax.tex}
+% \input{../.modules/list-macro.tex}

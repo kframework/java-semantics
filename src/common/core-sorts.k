@@ -116,7 +116,7 @@ syntax RawVal ::= Int | Float | Bool | RawRefVal
 /*@ A reference value, in its four forms - as regular object, array, null or String. As mentioned previously
     String values have special treatment in this semantics and are implemented as regular strings.
 
-The object closure have the following structure:
+The object closure has the following structure:
 \begin{itemize}
 \item OL:Int -- the object location
 \item List -- the object content, of the form
@@ -136,7 +136,7 @@ syntax ObjectRef ::=  objectRef (
                                   // implementation, or actual object class if there are no restrictions.
                       )
 
-/*@ The arrayRef have the following structure:
+/*@ The arrayRef has the following structure:
 \begin{itemize}
 \item Type -- type of the array
 \item Int -- location of the first element

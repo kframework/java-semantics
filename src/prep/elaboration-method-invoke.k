@@ -20,7 +20,7 @@ rule [elabEnd-Method-MethodName-to-elabRes]:
 
 /*@ Computes into an expression of the form elabRes(cast(QualClass, 'QThis(QualClass))),
 where QualClass is searched in the enclosing context of the first argument,
-being the innermost class that have a method with name = the second argument.
+being the innermost class that has a method with name = the second argument.
 Or noValue if no suitable result is found.
 
 This algorithm is correct even when both inner and outer class have methods with the same name.
@@ -56,7 +56,7 @@ rule containsName((sig(Name, _) |-> _) _:Map, Name:Id) => true
 rule [elabEnd-findQualifierForName-static]:
     findQualifierForName(noClass, K:K) => noValue
 
-//@ 'SuperMethod(_:K,, Name:Id)
+// 'SuperMethod(_:K,, Name:Id)
 
 rule customElabEnd('SuperMethod) => true
 
@@ -110,7 +110,7 @@ syntax KItem ::= getLookupTargetType ( RefType )    [function]
 rule getLookupTargetType(Class:ClassType) => Class
 rule getLookupTargetType(arrayOf _) => classArrayImpl
 
-//@ True for cast(T,'QThis(\_)), false otherwise
+// True for cast(T,'QThis(\_)), false otherwise
 syntax KItem ::= isCastOfQThis ( K )                                      [function]
 rule isCastOfQThis(cast(_, 'QThis(_))) => true
 

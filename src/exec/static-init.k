@@ -17,7 +17,7 @@ Initialization status of a class may have 3 states: StaticUninitialized, StaticI
 2. status = StaticInitializing(TId), TId = this thread => this is a recursive initialization request, discard the term.
 3. status = StaticInitializing(TId), IID = another thread => we should wait until the initialization is completed
   by another thread. Do not match this case.
-4. status = StaticInitialized => the class have been already initialized. Discard the term.
+4. status = StaticInitialized => the class has already been initialized. Discard the term.
 */
 syntax KItem ::=  staticInit (
                 ClassType // Class - the ClassType to be initialized,

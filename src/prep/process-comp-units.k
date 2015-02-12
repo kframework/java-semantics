@@ -70,7 +70,7 @@ rule [processTypeDecsInPCUPhase-typeDec-ComputeFullName]:
       Pack:PackageId, _
     )                [structural]
 
-/*@
+/*
 'ClassDec(
   'ClassDecHead(
     [Modifiers],,

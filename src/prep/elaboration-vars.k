@@ -111,7 +111,7 @@ rule [elabLookup-Found-constant]:
     <constantEnv>... X |-> TV:TypedVal ...</constantEnv>
 
 /*@If X is not found in the current class, search for it first in base interfaces, then in the base class.
-This order is necessary to avoid the case when base class have a private field X, and base
+This order is necessary to avoid the case when base class has a private field X, and base
 interfaces have a public one. In this case we should choose the field from the interface.
 */
 rule [elabLookup-NextClass]:
@@ -170,7 +170,7 @@ rule [elabEnd-Field-QualClass]:
     elabEnd('Field(Class:ClassType,, X:Id))
     => elabFieldImpl(noValue, elabLookup(X, Class))
 
-//@ 'SuperField(X:Id)
+// 'SuperField(X:Id)
 
 rule [elabEnd-SuperField]:
     <k>
@@ -179,7 +179,7 @@ rule [elabEnd-SuperField]:
     </k>
     <crntClass> Class:ClassType </crntClass>
 
-//@ 'QSuperField(Class:ClassType,, X:Id)
+// 'QSuperField(Class:ClassType,, X:Id)
 
 rule [elabEnd-QSuperField]:
     <k>

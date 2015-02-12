@@ -96,7 +96,7 @@ rule [chainOfResponsibility-Result2]:
     - KResult
     - elabRes(...)
 
-  It is notably NOT a cast() expression. This, together with the fact that cast() have no elaboration heatig rules,
+  It is notably NOT a cast() expression. This, together with the fact that cast() has no elaboration heatig rules,
   makes the whole elaboration phase non-reentrant.
 */
 syntax KItem ::= isElabKList ( KListWrap )                 [function]
@@ -179,7 +179,7 @@ rule [elabDispose-to-elabEnd]:
 when
     notBool haveElabRes([Ks]) ==K true
 
-//@ True if given KList have no terms of the form elabRes(...), false otherwise.
+//@ True if given KList has no terms of the form elabRes(...), false otherwise.
 syntax KItem ::= haveElabRes ( KListWrap )          [function]
 rule haveElabRes([_,, elabRes(_),, _]) => true
 

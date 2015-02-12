@@ -690,7 +690,7 @@ When the term lookupPackageMethod() is first produced it takes as arguments the 
  That class is A. For classes B and C the second rule for lookupMethodM() matches. In both cases the method f()
  defined in B and C overrides the previously found one. In the first case classes the method B.f() overrides A.f()
  because the access mode is package and both A and B are in the same package. In the second case C.f()
- overrides B.f() because B.f() have protected access mode, and is thus always overridden. The final result of
+ overrides B.f() because B.f() has protected access mode, and is thus always overridden. The final result of
  method lookup procedure is the version of method f() declared in the class C.
 */
 
@@ -843,7 +843,7 @@ rule [Invoke-methodInfo-on-array-or-string]:
 when
     isArrayRef(QualRV) ==K true orBool isString(QualRV) ==K true
 
-//@ 'QSuperMethod(Class:ClassType,, \_:K,, Name:Id)
+// 'QSuperMethod(Class:ClassType,, _:K,, Name:Id)
 rule [Invoke-QSuperMethod]:
     'Invoke(
       ('QSuperMethod(Class:ClassType,, _:K,, Name:Id)

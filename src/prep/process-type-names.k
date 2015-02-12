@@ -14,7 +14,7 @@ The initial configuration contains the initial program in cells <k> and <program
 
 /*@ \subsection{Compilation units}*/
 
-//@ 'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _)
+// 'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _)
 rule [CompilationUnit-DefaultPackage-Desugar]:
     'CompilationUnit(
       ( 'None(_) => 'Some('PackageDec(.K,, 'PackageName( [.KList] ))) ),,
@@ -35,7 +35,7 @@ rule [CompilationUnit]:
 
 /*@ \subsection{Packages}*/
 
-//@ 'PackageName([Ks])
+// 'PackageName([Ks])
 
 rule [PackageName-Start]:
     'PackageName([Ks:KList]) => packageNameImpl("", [Ks:KList])                  [structural]
@@ -72,7 +72,7 @@ rule [processTypeNames-AddPackage]:
     <namesToClasses> PackMap:Map => PackMap[mapWrap(.Map) / PackId] </namesToClasses>
 when notBool PackId in keys(PackMap)
 
-/*@ May be both class or interface name. Anonymous labels will be one of:
+/*@ A type name is either class or interface name. Anonymous labels will be one of:
       - 'ClassDec('ClassDecHead(...))
       - 'InterfaceDec('InterfaceDecHead(...))*/
 rule [processTypeNames]:

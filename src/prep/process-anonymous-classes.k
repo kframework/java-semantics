@@ -3,7 +3,7 @@ module PROCESS-ANONYMOUS-CLASSES
     imports CORE-CLASSES
     imports ELABORATION-CORE
 
-/*Case one - anonymous class implementing an interface. The class body have nothing else
+/*Case one - anonymous class implementing an interface. The class body has nothing else
 but the members provided in the anonymous class definition block.
 */
 rule [elab-NewInstance-anonymous-implements-interface]:

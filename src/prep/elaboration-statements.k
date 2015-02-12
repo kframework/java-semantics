@@ -8,7 +8,7 @@ module ELABORATION-STATEMENTS
 
 //K bug: support for KListWrap. This rule was replaced by a special section for elaboration of KListWrap.
 // See other K-bug-s.
-/*@ 'KListWrap nodes need to be elaborated left-to-right. Required when direct child elements might contain variable
+/* 'KListWrap nodes need to be elaborated left-to-right. Required when direct child elements might contain variable
 declarations.
 */
 //rule customElabHeating('KListWrap, HeadKs:KList,, K:K) => isElabKList(HeadKs)
@@ -76,7 +76,7 @@ rule [elab-LocalVarDec]:
 
 //@\subsection{Elaboration of SuperConstrInv, QSuperConstrInv, AltConstrInv}
 
-//@ 'SuperConstrInv( _:K,, [ Args:KList ] )
+// 'SuperConstrInv( _:K,, [ Args:KList ] )
 //@ Desugaring unqualified superclass constructor invocation into a qualified one
 rule [elab-SuperConstrInv-desugar]:
     <k>

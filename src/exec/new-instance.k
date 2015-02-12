@@ -80,7 +80,7 @@ The cell \cellref[]{class} contains various sub-cells holding the content of tha
   this class is an inner class. The vase class is stored inside \cellref[]{extends} and the list of declarations of
   instance fields without identifiers is stored in \cellref[]{instanceFields}.
 
-The next two cells are related to the store. The cell \cellref[]{store} have a central role in the semantics -- it is
+The next two cells are related to the store. The cell \cellref[]{store} has a central role in the semantics -- it is
   the map from object locations (values in the cell \cellref[]{env}) to their actual typed values.
   The cell \cellref[]{nextLoc} is the counter of store locations.
 
@@ -108,7 +108,7 @@ rule [qualified-new-instance-resolve-class]:
     Qual . new (Name:Id => getClassType(toPackage(typeOf(Qual)), Name)) (_)
 
 /*@
-After the new instance expression have been normalized, the qualifier and the arguments are brought to the top of
+After the new instance expression has been normalized, the qualifier and the arguments are brought to the top of
   computation by the strictness rules and evaluated. Qualifier is evaluated first, and arguments are evaluated
   left-to-right according to JLS.
 
@@ -116,7 +116,7 @@ When all the subexpressions of new have been evaluated, the main rule for new co
   number of cells, that will be explained next.
   First the current value of the counter inside \cellref[]{nextLoc} is used as the location of the newly created object.
   The counter is incremented for the next use.
-  Inside \cellref[]{objectStore} a new cell \cellref[]{object} is created for the new object. For now it have just two
+  Inside \cellref[]{objectStore} a new cell \cellref[]{object} is created for the new object. For now it has just two
   sub-cells specified -- \cellref[]{objectId} and \cellref[]{objectType}, and no layers. Curiously we don't have
   to specify neither \cellref[]{object} nor \cellref[]{objectStore} cells explicitly here, we have to specify just
   the cells inside them that are modified. The capability to ignore surrounding cells when they can be automatically

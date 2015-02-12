@@ -15,7 +15,7 @@ The execution configuration consists from the top-level cell \cellref{T}, whose 
 On the next line there are 3 cells related to multithreading:
 \begin{itemize}
   \item \cellref{tid} -- the thread identified, generated when the thread is created.
-  \item \cellref[Map{{[}}Int\mapsto{}Int{{]}}]{holds} -- a map from Object locations to integer numbers. Map keys are monitor objects on which the current thread have the locks. Map values hold the number of times the lock was acquired.
+  \item \cellref[Map{{[}}Int\mapsto{}Int{{]}}]{holds} -- a map from Object locations to integer numbers. Map keys are monitor objects on which the current thread has the locks. Map values hold the number of times the lock was acquired.
   \item \cellref[Bool]{interrupted} -- boolean value signaling whether the current thread was interrupted.
 \end{itemize}
 

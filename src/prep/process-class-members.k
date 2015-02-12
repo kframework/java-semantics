@@ -308,7 +308,7 @@ when
     notBool (Sig in keys(Env) andBool MMT ==K constructorMMT)
 
 /*@ Discard the default consturctor that was added by the rule [processTypeDecsInPCUPhase-ClassDec]
-    if this class already have a default constructor.
+    if this class already has a default constructor.
 */
 rule [storeMethod-discard-default-constructor]:
     <k>
@@ -381,7 +381,7 @@ rule [ConstrDec]:
     <crntClass> Class:ClassType </crntClass>
 when paramTypesResolved([Params])
 
-//@ 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, InitExp:K),, _])
+// 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, InitExp:K),, _])
 
 //resolve field declaration type
 context 'FieldDec(_:K,, HOLE,, _)

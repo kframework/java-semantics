@@ -48,7 +48,7 @@ rule [unfolding-class-unfold-inner]:
       </folded>
 
       /*It is ok to unfold inner classes only after this class entered UnfoldingStartedCPhase,
-        e.g. after it's base class have been completely unfolded.
+        e.g. after it's base class has been completely unfolded.
         This is always possible, because a Java class cannot depend on itself (JLS7 $8.1.4 p.192)
       */
       <classPhase> UnfoldingStartedCPhase </classPhase>
@@ -128,7 +128,7 @@ syntax KItem ::= getClassMetaType ( KLabel )      [function]
 rule getClassMetaType('ClassDec) => classCMT
 rule getClassMetaType('InterfaceDec) => interfaceCMT
 
-//@ True if given KListWrap contains a 'MethodDec(\_) term
+// True if given KListWrap contains a 'MethodDec(\_) term
 syntax KItem ::= containsMethodDecs(  KListWrap )  [function]
 rule containsMethodDecs([_,, 'MethodDec(_),, _]) => true
 

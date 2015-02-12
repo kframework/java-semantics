@@ -3,7 +3,7 @@ module CONFIGURATION-PREP
     imports CORE-FUNCTIONS
 
 /*@
-The configuration is divided into three large cell groups. The group \cellref[]{threads} contains one or multiple cells \cellref[]{thread}. Here is the data related to the execution of a thread, such as the computation, stack, local environment. The second group is contained inside \cellref[]{classes} that have multiple \cellref[]{class} cells -- anything class-related. What remains are the top-level cells -- the third group. Top-level cells are related to memory store, global thread-synchronization data and auxiliary cells for debugging.
+The configuration is divided into three large cell groups. The group \cellref[]{threads} contains one or multiple cells \cellref[]{thread}. Here is the data related to the execution of a thread, such as the computation, stack, local environment. The second group is contained inside \cellref[]{classes} that has multiple \cellref[]{class} cells -- anything class-related. What remains are the top-level cells -- the third group. Top-level cells are related to memory store, global thread-synchronization data and auxiliary cells for debugging.
 
 Some cells in this configuration are not used within the rules. They serve only for grouping other cells by context. Grouping cells are colored yellow, whereas actual semantics cells have other colors.
 
@@ -25,7 +25,7 @@ The group of cells \cellref[\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end
 
 \begin{itemize}
 \item \cellref[Int]{tid} -- the thread id.
-\item \cellref[Map{[}Int\mapsto{}Int{]}]{holds} -- a map from Object locations to integer numbers. Map keys are monitor objects on which the current thread have the locks. Map values hold the number of times the lock was acquired.
+\item \cellref[Map{[}Int\mapsto{}Int{]}]{holds} -- a map from Object locations to integer numbers. Map keys are monitor objects on which the current thread has the locks. Map values hold the number of times the lock was acquired.
 \item \cellref[Bool]{interrupted} -- boolean value signaling whether the current thread was interrupted.
 \end{itemize}
 
@@ -76,7 +76,7 @@ Next during this phase each class is stored into a \cellref[]{class} cell. Again
 \item \cellref[ClassType]{className} -- The fully qualified class name.
 \item \cellref[ClassMetaType]{classMetaType} -- Whether the type stored in this cell is class or interface. To avoid
 terminology superfluousness, we will refer from now on to both classes and interfaces as "classes", making distinctions only when necessary.
-\item \cellref[ClassPhase]{classPhase} -- represents the state of this class. In addition to the global computation phase, each class have its own lifecycle phase. Class phases are required to keep track which classes were processed in the current global phase and which were not. During each global phase all classes should transition to a certain class phase. However the relationship between global phases and class phases is not one-to-one. There could be several per-class transitions in one global phase, and none in another. The order in which classes are preprocessed is not their literal order but the order imposed by their dependency relationship. More details will be presented below. The class phases are:
+\item \cellref[ClassPhase]{classPhase} -- represents the state of this class. In addition to the global computation phase, each class has its own lifecycle phase. Class phases are required to keep track which classes were processed in the current global phase and which were not. During each global phase all classes should transition to a certain class phase. However the relationship between global phases and class phases is not one-to-one. There could be several per-class transitions in one global phase, and none in another. The order in which classes are preprocessed is not their literal order but the order imposed by their dependency relationship. More details will be presented below. The class phases are:
 
 \begin{itemize}
 \item Created -- the initial phase. At the end of Process Compilation Units all classes are registered as "created".
@@ -107,7 +107,7 @@ Next phase is Process Class Declarations. Here each class passes through two mor
 \item \cellref[K]{unprocessedBases} -- Initialized with the list of fully qualified class names for classes mentioned in extends/implements clauses of this class.
 \end{itemize}
 
-Once \cellref[K]{unprocessedBases} are saved the class enters into the phase Bases Resolved. It then waits in this phase until all extends/implements classes reach the phase Declarations Processed. The restrictions inJLS related to class dependencies guarantee that classes cannot have cyclic dependencies, thus a class cannot get locked in the waiting state. The cell \cellref[K]{unprocessedBases} is used to determine the moment when the class may exit the waiting state. Once a class reaches the phase Declarations Processed, is is deleted from cells \cellref[K]{unprocessedBases} of other classes. Thus, when all extends/implements dependencies of a class reach the phase Declarations Processed, the content of the its \cellref[K]{unprocessedBases} cell becomes empty. Once in this state, the class enters into the phase Declarations Processed itself and computes three more cells:
+Once \cellref[K]{unprocessedBases} are saved the class enters into the phase Bases Resolved. It then waits in this phase until all extends/implements classes reach the phase Declarations Processed. The restrictions in JLS related to class dependencies guarantee that classes cannot have cyclic dependencies, thus a class cannot get locked in the waiting state. The cell \cellref[K]{unprocessedBases} is used to determine the moment when the class may exit the waiting state. Once a class reaches the phase Declarations Processed, is is deleted from cells \cellref[K]{unprocessedBases} of other classes. Thus, when all extends/implements dependencies of a class reach the phase Declarations Processed, the content of the its \cellref[K]{unprocessedBases} cell becomes empty. Once in this state, the class enters into the phase Declarations Processed itself and computes three more cells:
 
 \begin{itemize}
 \item \cellref[ClassType]{extends} -- The base class, fully qualified.

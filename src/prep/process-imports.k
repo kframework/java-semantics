@@ -55,7 +55,7 @@ rule [importOnDemandImpl-package]:
 rule [importOnDemandImpl-discard]:
     importOnDemandImpl(.Map) => .K
 
-/*@ Importing a nonexistent package have no effect.
+/*@ Importing a nonexistent package has no effect.
 This is required because some tests import some packages from JDK that are not included in
 class-lib.*/
 rule [TypeImportOnDemandDec-Unexisting]:
