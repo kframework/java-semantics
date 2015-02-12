@@ -137,6 +137,7 @@ rule <k> saveImplTrans(setWrap(S1:Set)) => .K ...</k>
 syntax KItem ::= tryInheritSet ( Set )
            | tryInherit ( ClassType )
            | tryInheritImpl ( Map )
+           | tryInheritImpl ( K , K )
 
 rule [tryInheritSet]:
     (.K => tryInherit(Class:ClassType)) ~> tryInheritSet( (SetItem(Class) => .Set) _)
@@ -154,12 +155,12 @@ rule [tryInherit]:
 rule [tryInherit-Discard]:
     tryInherit(noClass) => .K
 
-//todo mapItem
-//rule [tryInheritImpl-Unfold]:
-//    <k> (.K => tryInheritImpl((M |-> I))) ~> tryInheritImpl( ((M:K |-> I:K) => .Map) _|->_ _) ...</k>
+//todo mapItem/solution
+rule [tryInheritImpl-Unfold]:
+    (.K => tryInheritImpl(M, I)) ~> tryInheritImpl((M:K |-> I:K => .Map) _:Map)
 
 rule [tryInheritImpl]:
-    tryInheritImpl(Sig:K |-> DecClass:ClassType)
+    tryInheritImpl(Sig:K , DecClass:ClassType)
     => ifAux(
           isInheritable(getMethodAccessMode(methodRef(Sig, DecClass))),
           inherit(methodRef(Sig, DecClass)),
