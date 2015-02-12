@@ -305,11 +305,26 @@ when
     notBool haveUnaugmentedConstructors(ConsName, LocalEnvClass, Methods) ==K true
 
 syntax KItem ::= haveUnaugmentedConstructors( Id, ClassType, Map )                [function]
-//todo mapItem
+syntax KItem ::= haveUnaugmentedConstructors( Id, ClassType, Signature, Map )     [function]
+//todo mapItem/solution proposed
 //rule haveUnaugmentedConstructors(ConsName:Id, LocalEnvClass:ClassType,
 //                                 (sig(ConsName:Id, types(TList:KList)) |-> _) _:Map) => true
 //when
 //    notBool getLastKListElement([TList]) ==K LocalEnvClass
+rule [haveUnaugmentedConstructorsConversion]:
+    haveUnaugmentedConstructors(I:Id, C:ClassType, (Key:Signature |-> _) Remains:Map) =>
+    haveUnaugmentedConstructors(I, C, Key, Remains)
+
+rule haveUnaugmentedConstructors(ConsName:Id, LocalEnvClass:ClassType,
+                                 sig(ConsName:Id, types(TList:KList)), _:Map) => true
+when
+    notBool getLastKListElement([TList]) ==K LocalEnvClass
+
+rule haveUnaugmentedConstructors(ConsName:Id, LocalEnvClass:ClassType,
+                                 sig(ConsName:Id, types(TList:KList)), Remains:Map) =>
+     haveUnaugmentedConstructors(ConsName, LocalEnvClass, Remains)
+when
+     getLastKListElement([TList]) ==K LocalEnvClass
 
 //@ Elaborates the given node and saves it to <elabBuffer>
 syntax KItem ::= appendToElabBuffer ( K ) //[strict, context(result(ElabKResult))] //K bug generalized strictness
