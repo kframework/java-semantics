@@ -101,53 +101,49 @@ rule [folding-class-end]:
     ( <methodDecs> .Bag </methodDecs> => .Bag)
     <folded> _:KLabel(_) </folded>
     <classPhase> MembersProcessedCPhase => FoldedCPhase </classPhase>
+//todo mapItem/solution
+rule [folding-class-fold-top-level]:
+    <k> foldingPhase </k>
+    <namesToClasses>
+      packageId(Class) |-> mapWrap(.Map)
+      ...
+    </namesToClasses>
+    ( <class>
+        <classType> class Class:Id </classType>
+        <enclosingClass> noClass </enclosingClass>
+        <folded> ClassDec:K </folded>
+        <classPhase> FoldedCPhase </classPhase>
+        ...
+      </class> => .Bag
+    )
+    <program> [_,, (.KList => ClassDec)] </program>
 //todo mapItem
-//rule [folding-class-fold-top-level]:
-//    <k> foldingPhase </k>
-//    <namesToClasses>
-//      ClassPack:PackageId |-> mapWrap(.Map)
-//      ...
-//    </namesToClasses>
-//    ( <class>
-//        <classType> Class:ClassType </classType>
-//        <enclosingClass> noClass </enclosingClass>
-//        <folded> ClassDec:K </folded>
-//        <classPhase> FoldedCPhase </classPhase>
-//        ...
-//      </class> => .Bag
-//    )
-//    <program> [_,, (.KList => ClassDec)] </program>
-//when
-//    ClassPack ==K toPackage(Class)
-
-//rule [folding-class-fold-inner]:
-//    <k> foldingPhase </k>
-//    <namesToClasses>
-//      ClassPack:PackageId |-> mapWrap(.Map)
-//      EnclosingClassPack:PackageId |-> mapWrap(_:Map (_ |-> Class => .Map) )
-//      ...
-//    </namesToClasses>
-//    ( <class>
-//        <classType> Class:ClassType </classType>
-//        <enclosingClass> EnclosingClass:ClassType </enclosingClass>
-//        <folded> ClassDec:K </folded>
-//        <classPhase> FoldedCPhase </classPhase>
-//        ...
-//      </class> => .Bag
-//    )
-//    <class>
-//      <classType> EnclosingClass </classType>
-//      <folded>
-//        _:KLabel(
-//          'ClassDecHead(_),,
-//          'ClassBody( [_,, ( .KList => ClassDec )] )
-//        )
-//      </folded>
-//      <classPhase> FoldedCPhase </classPhase>
-//      ...
-//    </class>
-//when
-//    ClassPack ==K toPackage(Class) andBool EnclosingClassPack ==K toPackage(EnclosingClass)
+rule [folding-class-fold-inner]:
+    <k> foldingPhase </k>
+    <namesToClasses>
+      packageId(Class) |-> mapWrap(.Map)
+//      packageId(EnclosingClass) |-> mapWrap(_:Map (_ |-> class Class => .Map) )
+      ...
+    </namesToClasses>
+    ( <class>
+        <classType> class Class:Id </classType>
+        <enclosingClass> class EnclosingClass:Id </enclosingClass>
+        <folded> ClassDec:K </folded>
+        <classPhase> FoldedCPhase </classPhase>
+        ...
+      </class> => .Bag
+    )
+    <class>
+      <classType> class EnclosingClass </classType>
+      <folded>
+        _:KLabel(
+          'ClassDecHead(_),,
+          'ClassBody( [_,, ( .KList => ClassDec )] )
+        )
+      </folded>
+      <classPhase> FoldedCPhase </classPhase>
+      ...
+    </class>
 
 rule [FoldingPhase-end]:
     <k> foldingPhase => . </k>
