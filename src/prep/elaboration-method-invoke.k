@@ -51,9 +51,15 @@ rule [elabEnd-findQualifierForName]:
     <enclosingClass> QualEncloserClass:ClassType </enclosingClass>
     <methods> Methods:Map </methods>
 
-syntax KItem ::= containsName ( Map , Id )        [function]
-//todo mapItem
-//rule containsName((sig(Name, _) |-> _) _:Map, Name:Id) => true
+//@Checks whether a given map contains the given Id in its key:sig(Id,_)
+syntax KItem ::= containsName ( Map , Id )                      [function]
+               | containsName ( Signature, Map , Id )           [function]
+
+//todo mapItem/solution
+rule containsName((S:Signature |-> _) Remains:Map, Name:Id) => containsName(S, Remains, Name)
+rule containsName(sig(Name,_), _, Name:Id) => true
+rule containsName(sig(Name1:Id,_), Remains:Map, Name:Id) => containsName(Remains, Name) when Name1 =/=K Name
+rule containsName(.Map, _) => false
 
 //@Happens for 'NewInstance expressions for static inner classes.
 rule [elabEnd-findQualifierForName-static]:
