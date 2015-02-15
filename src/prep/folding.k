@@ -117,12 +117,12 @@ rule [folding-class-fold-top-level]:
       </class> => .Bag
     )
     <program> [_,, (.KList => ClassDec)] </program>
-//todo mapItem
+//todo mapItem/solution
 rule [folding-class-fold-inner]:
     <k> foldingPhase </k>
     <namesToClasses>
       packageId(Class) |-> mapWrap(.Map)
-//      packageId(EnclosingClass) |-> mapWrap(_:Map (_ |-> class Class => .Map) )
+      packageId(EnclosingClass) |-> mapWrap(M:Map => removeMapItemsByValue(M, class Class))
       ...
     </namesToClasses>
     ( <class>
