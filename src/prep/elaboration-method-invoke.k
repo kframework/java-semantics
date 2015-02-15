@@ -299,16 +299,14 @@ rule [lookupSignature-Main]:
 
 syntax KItem ::= getMethodRefArgTypes ( MethodRef )   [function]
 rule getMethodRefArgTypes( methodRef(sig(_, Ts:Types), _) ) => Ts
-//todo mapItem
-//rule [lookupSignature-SigDiscard]:
-//    lookupSignature(
-//      MethodName:Id,
-//      _,
-//      (sig(Name:Id, _) |-> _ => .) _:Map,
-//      _,_,_
-//    )
-//when
-//    Name =/=K MethodName
+//todo mapItem/solution
+rule [lookupSignature-SigDiscard]:
+    lookupSignature(
+      MethodName:Id,
+      _,
+      (M:Map => mapItemsByPartialKey(M,MethodName)),
+      _,_,_
+    )
 
 rule [lookupSignature-End]:
     lookupSignature(_,_, .Map,_, MethodRef:MethodRef, _) => MethodRef

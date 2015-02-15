@@ -157,6 +157,18 @@ rule removeMapItemsByValue(Key:K, Value:K, Remanis:Map, V:K, M:Map) => removeMap
 when Value =/=K V
 rule removeMapItemsByValue(.Map, V:K, M:Map) => M
 
+syntax KItem ::= mapItemsByPartialKey (Map,K)             [function]
+               | mapItemsByPartialKey (Map,K,Map)         [function]
+               | mapItemsByPartialKey (K,K,Map,K,Map)     [function]
+
+rule mapItemsByPartialKey(M:Map, V:K) => mapItemsByPartialKey(M, V, .Map)
+rule mapItemsByPartialKey((Key:K |-> Value:K) Remanis:Map, V:K, M:Map) => mapItemsByPartialKey(Key, Value, Remanis, V, M)
+rule mapItemsByPartialKey(sig(I:Id, T:Types), Value:K, Remanis:Map, I, M:Map)
+     => mapItemsByPartialKey(Remanis, I, M (sig(I,T) |-> Value))
+rule mapItemsByPartialKey(sig(I:Id, T:Types), Value:K, Remanis:Map, V:K, M:Map) => mapItemsByPartialKey(Remanis, V, M)
+when I =/=K V
+rule mapItemsByPartialKey(.Map, V:K, M:Map) => M
+
 syntax KItem ::= isEmpty( Map )   [function]
 rule isEmpty(.Map) => true
 
