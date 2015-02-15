@@ -145,6 +145,18 @@ syntax KItem ::=  mapDiff(
 //when    notBool Key in keys(MyMap)
 //rule mapDiff(mapWrap( MyMap:Map ), setWrap(.Set)) => mapWrap(MyMap)
 
+//@ Substracts from the given map the value given (match is on the value)
+syntax KItem ::= removeMapItemsByValue (Map,K)             [function]
+               | removeMapItemsByValue (Map,K,Map)         [function]
+               | removeMapItemsByValue (K,K,Map,K,Map)     [function]
+
+rule removeMapItemsByValue(M:Map, V:K) => removeMapItemsByValue(M, V, .Map)
+rule removeMapItemsByValue((Key:K |-> Value:K) Remanis:Map, V:K, M:Map) => removeMapItemsByValue(Key, Value, Remanis, V, M)
+rule removeMapItemsByValue(Key:K, V, Remanis:Map, V:K, M:Map) => removeMapItemsByValue(Remanis, V, M)
+rule removeMapItemsByValue(Key:K, Value:K, Remanis:Map, V:K, M:Map) => removeMapItemsByValue(Remanis, V, M (Key |-> Value))
+when Value =/=K V
+rule removeMapItemsByValue(.Map, V:K, M:Map) => M
+
 syntax KItem ::= isEmpty( Map )   [function]
 rule isEmpty(.Map) => true
 

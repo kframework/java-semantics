@@ -87,10 +87,13 @@ K performance evaluation with the rule below active and commented:
 
   Conclusion: the rule below have no impact on performance.
 */
-//todo mapItemByValue
+//todo mapItemByValue/solution
 //rule [monitor-completely-released]:
 //    <holds>... (OL:Int |-> 0 => .Map) ...</holds>
 //    <busy>... (SetItem(OL) => .Set) ...</busy>
+rule [monitor-completely-released]:
+    <holds> M:Map => removeMapItemsByValue(M,0) </holds>
+    <busy> S:Set => S -Set keys(M -Map removeMapItemsByValue(M,0)) </busy>
 
 //@ \subsection{Thread.join()}
 
@@ -166,14 +169,14 @@ syntax KItem ::=  notifyImpl (
                 Int //store key of the monitor object
               )
 
-//todo mapItemByValue
-//rule [notifyImpl-someone-waiting]:
-//    <k>
-//      notifyImpl(OL:Int) => nothing::void
-//      ...
-//    </k>
-//    <waitingThreads>... (_ |-> OL => .Map) ...</waitingThreads>
-//        [transition-threading]
+//todo mapItemByValue/solution
+rule [notifyImpl-someone-waiting]:
+    <k>
+      notifyImpl(OL:Int) => nothing::void
+      ...
+    </k>
+    <waitingThreads> M:Map => removeMapItemsByValue(M,OL) </waitingThreads>
+        [transition-threading]
 
 rule [notifyImpl-no-one-waiting]:
     <k>
@@ -201,14 +204,14 @@ when
 syntax KItem ::=  objectNotifyAllImpl (
                 Int //store key of the monitor object
               )
-//todo mapItemByValue
-//rule [objectNotifyAllImpl-someone-waiting]:
-//    <k>
-//      objectNotifyAllImpl(OL:Int)
-//      ...
-//    </k>
-//    <waitingThreads>... (_ |-> OL => .Map) ...</waitingThreads>
-//        [transition-threading]
+//todo mapItemByValue/solution
+rule [objectNotifyAllImpl-someone-waiting]:
+    <k>
+      objectNotifyAllImpl(OL:Int)
+      ...
+    </k>
+    <waitingThreads> M:Map => removeMapItemsByValue(M,OL) </waitingThreads>
+        [transition-threading]
 
 rule [objectNotifyAllImpl-no-one-waiting]:
     <k>
@@ -349,11 +352,11 @@ Here we present the rule for the first case. If there is a thread waiting on the
   associated to that value we enable the waiting thread to proceed. If there is no thread waiting for this object then
   the term \verb|notifyImpl()| is simply consumed.
 */
-//todo mapItemByValue
-//rule [notifyImpl-someone-waiting]:
-//    <k> notifyImpl(OId:Int) => nothing::void ...</k>
-//    <waitingThreads>... (_ |-> OId => .Map) ...</waitingThreads>
-//        [transition-threading]
+//todo mapItemByValue/solution
+rule [notifyImpl-someone-waiting]:
+    <k> notifyImpl(OId:Int) => nothing::void ...</k>
+    <waitingThreads> M:Map => removeMapItemsByValue(M,OId) </waitingThreads>
+        [transition-threading]
 
 /*@
 At this stage the rule for \verb|waitImpl()| could match. The rule checks in its side conditions that the current
