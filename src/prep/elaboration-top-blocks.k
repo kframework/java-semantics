@@ -102,12 +102,10 @@ rule [elabMethods-Cool-Constructor]:
     (<methodConstrFirstLine> FirstLine:K </methodConstrFirstLine> => .Bag)
     <methodBody> CHOLE => [FirstLine,, Body] </methodBody>
     <methodMetaType> constructorMMT => methodMMT </methodMetaType>
-//todo mapItemByValue
-//rule [elabMethods-discard-method]:
-//    <k> elabMethods( (Sig:Signature |-> DeclClass:ClassType => .Map) _) ... </k>
-//    <crntClass> Class:ClassType </crntClass>
-//when
-//    DeclClass =/=K Class
+//todo mapItemByValue/solution
+rule [elabMethods-discard-method]:
+    <k> elabMethods(M:Map => M -Map removeMapItemsByValue(M,Class) ) ... </k>
+    <crntClass> Class:ClassType </crntClass>
 
 rule [elabMethods-End]:
     elabMethods( .Map ) => .
