@@ -25,6 +25,24 @@ context 'TypeImportDec(HOLE)
 //    <k> 'TypeImportDec(Class:ClassType) => . ...</k>
 //    <namesToClasses>... _ |-> mapWrap((X:Id |-> Class) _) ...</namesToClasses>
 //    <compUnitImports> Imp:Map => Imp[X <- Class] </compUnitImports>
+syntax KItem ::= typeImportDecImpl (List, ClassType)
+
+rule [typeImportDecImplConversion]:
+     typeImportDecImpl((ListItem(mapWrap((Key:Id |-> Value:K) Remains:Map)) =>
+                        ListItem(Key) ListItem(Value) ListItem(mapWrap(Remains))) _:List, _)
+
+rule typeImportDecImpl((ListItem(Key:Id) ListItem(Value:K) => .List) _:List, Class:ClassType)
+when Class =/=K Value
+
+rule <k> typeImportDecImpl((ListItem(X:Id) ListItem(Class) => .List) _:List, Class:ClassType)  ...</k>
+     <compUnitImports> Imp:Map => Imp[X <- Class] </compUnitImports>
+
+rule typeImportDecImpl((ListItem(mapWrap(.Map)) => .List) _:List,_)
+rule typeImportDecImpl(.List,_) => .K
+
+rule [TypeImportDec]:
+    <k> 'TypeImportDec(Class:ClassType) => typeImportDecImpl(values(M), Class) ...</k>
+    <namesToClasses> M:Map </namesToClasses>
 
 context 'TypeImportOnDemandDec(HOLE)
 
