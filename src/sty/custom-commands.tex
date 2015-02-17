@@ -5,6 +5,10 @@
 % Reduces page borders, now we can put more characters in one line
 %\usepackage{fullpage}
 
+
+%Font set latin modern is not compatible with large angular brackets (package yhmath), so we cannot use it.
+%\usepackage{lmodern}
+
 %Required package fancyvrb already imported by k.sty
 \newenvironment{markdown}%
     {\VerbatimEnvironment\begin{VerbatimOut}{tmp.markdown}}%
@@ -18,9 +22,12 @@
         basicstyle=\ttfamily}
 
 % #1 = sort, #2 = name
-\newcommand{\cellref}[2][]{
+\newcommand{\cellref}[2][]{%
   %\kall{#2}{\ifthenelse{\isempty{#1}}{}{$\sortName{#1}$}}%doesn't work
-  \kall{#2}{#1}
+  %Style 1: rendering the cell
+  \kall{#2}{#1}%
+  %Style 2: just cell name
+  %{\color{mcellBracketDefaultColor} #2}%
 }
 
 %Wraps a group of cells and properly aligns them.
