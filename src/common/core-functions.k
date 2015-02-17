@@ -133,27 +133,15 @@ syntax KItem ::=  mapUnion (
 rule mapUnion(mapWrap( M1:Map => M1[K1 <- K2] ), mapWrap( _:Map (K1:K |-> K2:K => .Map) ))
 rule mapUnion(mapWrap(M1:Map), mapWrap(.Map)) => mapWrap(M1)
 
-//@ Substracts fron the given map the keys found in the given set
-syntax KItem ::=  mapDiff(
-                K,  //mapWrap(Map)
-                K   //setWrap(Set)
-              )
-              [strict]
-//todo
-//rule mapDiff( mapWrap( (Key:K |-> _ => .Map) _:Map), setWrap( (SetItem(Key) => .Set) _:Set) )
-//rule mapDiff( mapWrap( MyMap:Map ), setWrap( (SetItem(Key:K) => .Set) _:Set) )
-//when    notBool Key in keys(MyMap)
-//rule mapDiff(mapWrap( MyMap:Map ), setWrap(.Set)) => mapWrap(MyMap)
-
 //@ Substracts from the given map the value given (match is on the value)
 syntax KItem ::= removeMapItemsByValue (Map,K)             [function]
                | removeMapItemsByValue (Map,K,Map)         [function]
                | removeMapItemsByValue (K,K,Map,K,Map)     [function]
 
 rule removeMapItemsByValue(M:Map, V:K) => removeMapItemsByValue(M, V, .Map)
-rule removeMapItemsByValue((Key:K |-> Value:K) Remanis:Map, V:K, M:Map) => removeMapItemsByValue(Key, Value, Remanis, V, M)
-rule removeMapItemsByValue(Key:K, V, Remanis:Map, V:K, M:Map) => removeMapItemsByValue(Remanis, V, M)
-rule removeMapItemsByValue(Key:K, Value:K, Remanis:Map, V:K, M:Map) => removeMapItemsByValue(Remanis, V, M (Key |-> Value))
+rule removeMapItemsByValue((Key:K |-> Value:K) Remains:Map, V:K, M:Map) => removeMapItemsByValue(Key, Value, Remains, V, M)
+rule removeMapItemsByValue(Key:K, V, Remains:Map, V:K, M:Map) => removeMapItemsByValue(Remains, V, M)
+rule removeMapItemsByValue(Key:K, Value:K, Remains:Map, V:K, M:Map) => removeMapItemsByValue(Remains, V, M (Key |-> Value))
 when Value =/=K V
 rule removeMapItemsByValue(.Map, V:K, M:Map) => M
 
@@ -162,10 +150,10 @@ syntax KItem ::= mapItemsByPartialKey (Map,K)             [function]
                | mapItemsByPartialKey (K,K,Map,K,Map)     [function]
 
 rule mapItemsByPartialKey(M:Map, V:K) => mapItemsByPartialKey(M, V, .Map)
-rule mapItemsByPartialKey((Key:K |-> Value:K) Remanis:Map, V:K, M:Map) => mapItemsByPartialKey(Key, Value, Remanis, V, M)
-rule mapItemsByPartialKey(sig(I:Id, T:Types), Value:K, Remanis:Map, I, M:Map)
-     => mapItemsByPartialKey(Remanis, I, M (sig(I,T) |-> Value))
-rule mapItemsByPartialKey(sig(I:Id, T:Types), Value:K, Remanis:Map, V:K, M:Map) => mapItemsByPartialKey(Remanis, V, M)
+rule mapItemsByPartialKey((Key:K |-> Value:K) Remains:Map, V:K, M:Map) => mapItemsByPartialKey(Key, Value, Remains, V, M)
+rule mapItemsByPartialKey(sig(I:Id, T:Types), Value:K, Remains:Map, I, M:Map)
+     => mapItemsByPartialKey(Remains, I, M (sig(I,T) |-> Value))
+rule mapItemsByPartialKey(sig(I:Id, T:Types), Value:K, Remains:Map, V:K, M:Map) => mapItemsByPartialKey(Remains, V, M)
 when I =/=K V
 rule mapItemsByPartialKey(.Map, V:K, M:Map) => M
 
@@ -181,11 +169,7 @@ syntax KItem ::=  setUnion (
                 K   //setWrap(Set)
               )
               [strict]
-//todo use include function
-//rule setUnion(setWrap( S1:Set (.Set => SetItem(K)) ), setWrap( S2:Set (SetItem(K:K) => .Set) ))
-//when    notBool(K in S1)
-//rule setUnion(setWrap( S1:Set SetItem(K) ), setWrap( S2:Set (SetItem(K:K) => .Set) ))
-//rule setUnion(setWrap(S1:Set), setWrap(.Set)) => setWrap(S1)
+rule setUnion(setWrap(S1:Set), setWrap(S2:Set)) => setWrap(S1 S2)
 
 syntax Set ::= getSet ( K )           [function]
 rule getSet(setWrap(S1:Set)) => S1

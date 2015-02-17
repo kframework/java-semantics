@@ -37,7 +37,7 @@ configuration
             //Thread Id
             <tid color="BlueViolet"> 0 </tid>
 
-            //Map[OL |-> Count] - the amount of times this thread holds the monitor objects referred bu the keys
+            //Map[OL |-> Count] - the amount of times this thread holds the monitor objects referred by the keys
             <holds color="BlueViolet"> .Map </holds>
 
             //Whether this thread was interrupted by another thread by a call to Thread.interrupt()
