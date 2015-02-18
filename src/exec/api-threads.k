@@ -293,13 +293,13 @@ module API-THREADS-SELECTION
 
 /*@
 When \verb|object.wait()| is called the method call expression is replaced by \verb|waitImpl()|
--- an auxiliary function that is used later to exit from the waiting state.
+--- an auxiliary function that is used later to exit from the waiting state.
 The id of the current thread (\verb|TId|) has to be registered in the set inside \cellref[]{waitingThreads}.
   The cell \cellref[]{holds} attached to each thread stores the number of times the current thread
   acquired the lock on each object. Here we use it to make sure that the current thread acquired the lock at least once
   (see the side condition). Otherwise calling the method \verb|wait()| is illegal and we have to throw an exception, according
   to Java API. The exceptional case is covered by other rules. Another cell matched here is \cellref[]{busy}. It stores
-  the set of objects that serve as synchronization monitors -- arguments of blocks \verb|synchronized|. When
+  the set of objects that serve as synchronization monitors --- arguments of blocks \verb|synchronized|. When
   an object enters the waiting state it have to release the ownership of this monitor, this is reflected by deleting
   the entry \verb|OL| from the set. In this rule the cell \cellref[]{thread} is used solely for clarity, to separate
   the cells that are attached to a thread from global cells. In fact, if we would delete \cellref[]{thread} here and
@@ -330,7 +330,7 @@ when
 When another thread calls \verb|notify()| we have to make sure that the thread holds the monitor on the target object
   (the side condition). Otherwise we have to throw an exception. The actual logic of \verb|notify()| is delegated
   to \verb|notifyImpl()|, in order to avoid duplication. The construct \verb|notifyImpl()| requires two rules for two
-  cases -- the case when there is at least one thread waiting on the target object, and the case when there is no one.
+  cases --- the case when there is at least one thread waiting on the target object, and the case when there is no one.
 */
 rule [object-notify]:
     <k>

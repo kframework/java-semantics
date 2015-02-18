@@ -3,7 +3,7 @@ module CORE-FUNCTIONS
     imports CORE-CLASSES
 
 /*@ Returns the type associated with various K terms. The implementation is scattered among various K files.
-  For a type - the type itself. For a typed expression - the type component. For some raw values - their most common
+  For a type --- the type itself. For a typed expression - the type component. For some raw values - their most common
     type.
 */
 syntax KItem ::= typeOf ( K )                           [function]

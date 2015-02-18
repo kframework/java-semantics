@@ -132,9 +132,13 @@ when
 rule [localClassGetAccessibleOuterEnv-end]:
     localClassGetAccessibleOuterEnv( Class:ClassType, .Map, NewOuterEnv:Map, _, noValue ) => mapWrap(NewOuterEnv)
 
-/*@ Convert the given local class into an equivalent inner class, with the following transformations:
+/*@
+\begin{markdown}
+Convert the given local class into an equivalent inner class, with the following transformations:
+
   - Add a field to the class for each outer local variable
   - For each constructor add an argument for each outer local variable
+\end{markdown}
 */
 syntax KItem ::=  localClassTransformIntoInner (
                 ClassType,  //the local class
@@ -155,7 +159,7 @@ rule [localClassTransformIntoInner]:
        #fi
 
 /*@ Same as localClassTransformIntoInner but AccessibleLocalEnv has one more entry
-    - the field LocaClass@LocalEnv\_obj that will be created later, a self reference required when a local class
+    --- the field LocaClass@LocalEnv\_obj that will be created later, a self reference required when a local class
     instantiates either itself or an enclosing local class. See tests 957, 958.
 */
 syntax KItem ::=  localClassTransformIntoInnerImpl (
@@ -326,7 +330,7 @@ rule [loadElabBuffer]:
 syntax KItem ::= localClassGetExtraArgs( ClassType )
 
 /*@ When <enclosingLocalEnv> is not empty (only possible for certain local classes),
-  we add one more argument to the consturctor call - the local environment object. */
+  we add one more argument to the consturctor call --- the local environment object. */
 rule [elab-QNewInstance-local-augment-arguments]:
     <k>
       localClassGetExtraArgs(Class:ClassType)

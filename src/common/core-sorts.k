@@ -98,14 +98,14 @@ syntax Signature ::= sig ( Id, Types )
 syntax KResult ::= Signature
 
 
-/*@ The member accessibility context of the current method - either static or instance.*/
+/*@ The member accessibility context of the current method --- either static or instance.*/
 syntax ContextType ::=  "staticCT"    [latex(\terminal{static})]
                       | "instanceCT"  [latex(\terminal{instance})]
 syntax KResult ::= ContextType
 
 //@ \subsection{Values}
 
-/*  Represents a java value. May be either primitive - int, float, bool, of reference. The values nothing and undefined
+/*  Represents a java value. May be either primitive --- int, float, bool, of reference. The values nothing and undefined
     are special cases required by the semantics. The value nothing is associated with the return type void. The value
     undefined is the initial value of uninitialized local variables, before the first assignment.
 */
@@ -113,13 +113,13 @@ syntax RawVal ::= Int | Float | Bool | RawRefVal
                 | "nothing"
                 | "undefined" [latex(\bot)]
 
-/*@ A reference value, in its four forms - as regular object, array, null or String. As mentioned previously
+/*@ A reference value, in its four forms --- as regular object, array, null or String. As mentioned previously
     String values have special treatment in this semantics and are implemented as regular strings.
 
 The object closure has the following structure:
 \begin{itemize}
-\item OL:Int -- the object location
-\item List -- the object content, of the form
+\item OL:Int --- the object location
+\item List --- the object content, of the form
 \begin{verbatim}
   ListItem(layer(
     Class,
@@ -138,9 +138,9 @@ syntax ObjectRef ::=  objectRef (
 
 /*@ The arrayRef has the following structure:
 \begin{itemize}
-\item Type -- type of the array
-\item Int -- location of the first element
-\item Int -- array length
+\item Type --- type of the array
+\item Int --- location of the first element
+\item Int --- array length
 \end{itemize}
 */
 syntax ArrayRef ::=   arrayRef (
@@ -190,7 +190,7 @@ syntax Types ::=  types (
                   )
 syntax KResult ::= Types
 
-//Location type of each store location - either local variable or field
+//@Location type of each store location --- either local variable or field
 syntax LocMetadata ::= "LocalLocMetadata"   [latex(\terminal{Local})]
                      | "FieldLocMetadata"   [latex(\terminal{Field})]
 

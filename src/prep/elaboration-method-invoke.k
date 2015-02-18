@@ -117,7 +117,7 @@ rule isCastOfQThis(cast(_, 'QThis(_))) => true
 /*@ Lookup the right methodRef() based on supplied parameters.
 If the method is not found in the supplied class list, we should search for it in the
 class list corresponding to the enclosing class of the caller class.
-First we search for the signature - lookupSignature construct.
+First we search for the signature --- lookupSignature construct.
 Afterwards we cast the actual arguments to the types expected by the found method signature.*/
 syntax KItem ::=  lookupMethod (
                 ClassType,//target class, even for arrays.

@@ -110,7 +110,7 @@ The type after four dots (::) separator is the static type associated with that 
   objectRef() are the address inside the store and the runtime type of the object.
 
 For the sake of simplicity we we will also
-  consider \dotCt{K} - the unit element of K to be KResult. The value \dotCt{K} is often
+  consider \dotCt{K} --- the unit element of K to be KResult. The value \dotCt{K} is often
   used in auxiliary functions as a placeholder until some actual value is computed.
 
 
@@ -214,11 +214,11 @@ During the second step of the method invocation the second argument of the produ
 
   - Method signature Sig
   - Qualifying class QualC of the method invocation, e.g. the compile-time type of the qualifier.
-  - The meta type of QualC - MetaT. It may have one of the two values - class or interface.
-  - DecC - declaring class, the class where the method was actually declared, as observed by QualT.
+  - The meta type of QualC --- MetaT. It may have one of the two values - class or interface.
+  - DecC --- declaring class, the class where the method was actually declared, as observed by QualT.
     E.g. the most derived class in QualC hierarchy where there is a declaration of a method with signature Sig.
-  - ContextT - the context type of the method. Either static, for static methods, or instance for non-static methods.
-  - Acc - access modifier (private, package, protected or public). For the purpose of uniformity we use the modifier
+  - ContextT --- the context type of the method. Either static, for static methods, or instance for non-static methods.
+  - Acc --- access modifier (private, package, protected or public). For the purpose of uniformity we use the modifier
     package when no access modifier is provided.
 
 All the information stored in methodInfo() is static. In K-Java we already have
@@ -242,7 +242,7 @@ syntax MethodName ::= methodInfo(
 The first rule from this step rewrites the method name into a methodInfo() term whose first argument is the method
 signature.
   The auxiliary function getTypes() computes the list of types from the list of parameter declarations. The second
-  argument of methodInfo() is also computed at this step - it is the type of the qualifier. The rest of the arguments
+  argument of methodInfo() is also computed at this step --- it is the type of the qualifier. The rest of the arguments
   are filled in with default values. They will be rewritten into actual values by the following rules.
 */
 rule [Invoke-compute-methodInfo-Signature]:
@@ -285,7 +285,7 @@ rule [Invoke-compute-methodInfo-DecC]:
     <methods>... Sig |-> DecC:ClassType ...</methods>
 
 /*@ \begin{markdown}
-There is one case that is not covered by the previous rule - the case when the cell \cellref[]{methods} does not have a key
+There is one case that is not covered by the previous rule --- the case when the cell \cellref[]{methods} does not have a key
   equal to Sig. This is possible in one of the following situations:
 
   - Qualifying type is an interface.
@@ -325,8 +325,8 @@ rule [Invoke-compute-methodInfo-ContextType]:
 
 In the third step of the method invocation algorithm, the actual method declaration is chosen. This step starts once all
   the fields of methodInfo() were filled in (where possible). The rules of this step rewrite methodInfo() into
-  methodRef() - another auxiliary data structure.
-The production methodRef() is a reference to a method declaration. It contains two fields - Sig and DecC - the
+  methodRef() --- another auxiliary data structure.
+The production methodRef() is a reference to a method declaration. It contains two fields --- Sig and DecC --- the
   signature and the declaration class. The implementation class is the class that contains the actual method
   declaration to be invoked.
 

@@ -26,6 +26,7 @@ rule typeOf('ParamImpl(T:Type,, _:Id)) => T
 /*
 General structure:
 
+\begin{verbatim}
 'Invoke(
   'Method(
     'MethodName(
@@ -33,8 +34,9 @@ General structure:
       Name:Id
     )
   ),,
-  [Args] - argument expressions
+  [Args] --- argument expressions
 )
+\end{verbatim}
 */
 
 /* 'Method(Qual:K,, \_:K,, Name:Id)
@@ -47,8 +49,6 @@ rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:KListWrap) => 
 //somehow.
 //totest - if qualifier evaluates to null, NullPointerException should be thrown after
 //the evaluation of the arguments
-/*@ Method invocation expression
-*/
 
 
 /*@ \subsection{Local variable declaration}*/
@@ -89,7 +89,7 @@ rule [NewInstance-to-QNewInstance-unpack]:
     new Class:ClassType(ArgExps:Exps)
     => noValue . new Class:ClassType(ArgExps:Exps)
 
-/*@ \subsection{Syntactic lists - Exps, TypedVals, ClassTypes}*/
+/*@ \subsection{Syntactic lists --- Exps, TypedVals, ClassTypes}*/
 
 /*@
   A list of expressions, usually a list of arguments of a method or constructor.

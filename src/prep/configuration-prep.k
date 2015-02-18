@@ -52,11 +52,11 @@ Also during Process Type Names classes are first registered. Again, both top-lev
 \paragraph{Process Compilation Units} At the beginning of this phase computation is again initialized with the initial AST from \cellref{program}. The following new cells are filled in inside each \cellref{class}:
 
 \begin{itemize}
-	\item \cellref[ClassType]{enclosingClass} -- the directly enclosing class, for inner classes, or no value for top-level classes.
-	\item \cellref[K]{rawExtends} -- The extends clause of this class, in its raw (AST) form.
-	\item \cellref[K]{rawImplements} -- The implements clause, in AST form.
-	\item \cellref[K]{rawDeclarations} -- The class body, in AST form.
-	\item \cellref[Map{[}Id\mapsto{}ClassType{]}]{cuImports} -- A map from names accessible inside this class to fully qualified class names they represent. Only computed for top-level classes at this phase. For inner classes this cell remains empty.
+	\item \cellref[ClassType]{enclosingClass} --- the directly enclosing class, for inner classes, or no value for top-level classes.
+	\item \cellref[K]{rawExtends} --- The extends clause of this class, in its raw (AST) form.
+	\item \cellref[K]{rawImplements} --- The implements clause, in AST form.
+	\item \cellref[K]{rawDeclarations} --- The class body, in AST form.
+	\item \cellref[Map{[}Id\mapsto{}ClassType{]}]{cuImports} --- A map from names accessible inside this class to fully qualified class names they represent. Only computed for top-level classes at this phase. For inner classes this cell remains empty.
 	\item \cellref[ContextType]{classContextType} --- Either static or instance, for inner classes. Always static for top-level classes.
 \end{itemize}
 
@@ -72,15 +72,15 @@ Also during Process Compilation Units the following global cell is used:
 \paragraph{Process Class Declarations} Here each class passes through two more class phases: Bases Processed and Declarations Processed. First, for each class the semantics attempts to resolve its extends/implements clauses into fully qualified class names. The order in which dependencies are resolved depends on both class inheritance relationships as well as nesting relationships. Once the dependencies of a class are resolved, they are stored into a temporary cell:
 
 \begin{itemize}
-\item \cellref[K]{unprocessedBases} -- Initialized with the list of fully qualified class names for classes mentioned in extends/implements clauses of this class.
+\item \cellref[K]{unprocessedBases} --- Initialized with the list of fully qualified class names for classes mentioned in extends/implements clauses of this class.
 \end{itemize}
 
 Once the content of \cellref[K]{unprocessedBases} is created, the class enters into Bases Resolved phase. It then waits in this phase until all classes referred in extends/implements reach the phase Declarations Processed. The restrictions in JLS related to class dependencies guarantee that classes cannot have cyclic dependencies, thus a class cannot get locked in the waiting state. The cell \cellref[K]{unprocessedBases} is used to determine the moment when the class may exit the waiting state. Once a class reaches the phase Declarations Processed, is is deleted from cells \cellref[K]{unprocessedBases} of other classes. Thus, when all extends/implements dependencies of a class reach the phase Declarations Processed, the content of the its \cellref[K]{unprocessedBases} cell becomes empty. Once in this state, the class enters into the phase Declarations Processed itself and computes three more cells:
 
 \begin{itemize}
-\item \cellref[ClassType]{extends} -- The base class, fully qualified.
-\item \cellref[Set{[}ClassType{]}]{implements} -- The list of directly implemented interfaces, fully qualified.
-\item \cellref[Map{[}Id\mapsto{}ClassType{]}]{imports} -- The map of classes accessible by simple name within the body of this class. The rules for computing this map are complex and include the following sources:
+\item \cellref[ClassType]{extends} --- The base class, fully qualified.
+\item \cellref[Set{[}ClassType{]}]{implements} --- The list of directly implemented interfaces, fully qualified.
+\item \cellref[Map{[}Id\mapsto{}ClassType{]}]{imports} --- The map of classes accessible by simple name within the body of this class. The rules for computing this map are complex and include the following sources:
 
 \begin{itemize}
 \item Imports declarations of the current compilation unit.
@@ -112,7 +112,7 @@ During Process Class Declarations the following global cell is first used:
 The following new class cells are produced:
 
 \begin{itemize}
-	\item \cellref[Set{[}ClassType{]}]{implTrans} -- The transitive closure of implemented interfaces. In the remaining phases this set is used by the subtyping relationship.
+	\item \cellref[Set{[}ClassType{]}]{implTrans} --- The transitive closure of implemented interfaces. In the remaining phases this set is used by the subtyping relationship.
   \item \cellref[ Map {[} Signature \mapsto ClassType {]} ]{methods} --- The map of accessible methods. Keys are method signatures, values are classes where methods are defined. Includes both methods declared within this class as well as methods inherited from base classes/ base interfaces.
   \item \cellref[Bag]{methodDecs} --- the collection of method declarations (\cellref{methodDec} cells)in the current class. This cell contains only a subset of methods from \cellref{methods}, as the set of accessible methods from \cellref{methods} also includes methods inherited from base classes/interfaces. Hence the need of two separate collections. Each \cellref[Bag]{methodDec} contains the following data:
   \begin{itemize}
@@ -126,10 +126,10 @@ The following new class cells are produced:
 		\item \cellref[MethodMetaType]{methodMetaType} --- either method or constructor
   \end{itemize}
   \item \cellref[K]{instanceFields} --- The list of instance field declarations, stored as a list of local variable declaration statements, without initializers. Used during object instantiation.
-	\item \cellref[K]{instanceInit} -- The list of instance initializers of the class combined into one big instance initializer. Instance field initializers are also concatenated into this cell in their textual order.
+	\item \cellref[K]{instanceInit} --- The list of instance initializers of the class combined into one big instance initializer. Instance field initializers are also concatenated into this cell in their textual order.
   \item \cellref[K]{staticFields} --- The list of static field declarations, in a similar format to \cellref{instanceFields}
    \item \cellref[K]{staticInit} --- The list of static initializers and static field initializers concatenated into one block.
-	\item \cellref[Map{[}Id \mapsto Value{]}]{constantEnv} -- The map from compile-time constants to their actual values. Constants in Java have a slightly different semantics compared to final static fields. In particular, accessing them don't trigger static initialization of the declaring class.
+	\item \cellref[Map{[}Id \mapsto Value{]}]{constantEnv} --- The map from compile-time constants to their actual values. Constants in Java have a slightly different semantics compared to final static fields. In particular, accessing them don't trigger static initialization of the declaring class.
 \end{itemize}
 
 Once all the cells above are computed the class proceeds into the phase Members Processed and the cell \cellref[]{rawDeclarations} is deleted.

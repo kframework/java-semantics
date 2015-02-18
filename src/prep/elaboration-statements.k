@@ -4,7 +4,7 @@ module ELABORATION-STATEMENTS
     imports ELABORATION-METHOD-INVOKE //for lookupMethod
     imports PROCESS-LOCAL-CLASSES //for localClassGetExtraArgs
 
-//@ Elaboration of 'KListWrap, 'Block, 'For or 'Catch - nodes that may contain variable declarations.
+//@ Elaboration of 'KListWrap, 'Block, 'For or 'Catch --- nodes that may contain variable declarations.
 
 //K bug: support for KListWrap. This rule was replaced by a special section for elaboration of KListWrap.
 // See other K-bug-s.
@@ -19,7 +19,7 @@ rule isVarDecHolderLabel('For) => true
 rule isVarDecHolderLabel('Catch) => true
 
 /*@ In addition to what defaul elab heating does, when we heat the first argument of 'Block, 'For of 'Catch
-we need to save a copy of elaboration environment - e.g. the last entry of <elabEnv> <localTypes>.
+we need to save a copy of elaboration environment, e.g. the last entry of <elabEnv> <localTypes>.
 This is because these statements are blocks that might declare local variables.
 */
 rule [elab-Block-For-Catch-heat-FirstSubterm]:

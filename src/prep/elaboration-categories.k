@@ -227,12 +227,16 @@ rule isElabNaked('PackageOrTypeName(_)) => true
 rule isElabNaked('Id(_)) => true
 rule isElabNaked('Lit(InnerKL:KLabel(_))) => InnerKL =/=KLabel 'Class
 
-/*@ Terms that should use custom elaboration rules. For those terms:
-    - They will not be automatically heated from their parents into the elab() state.
-    - They will not be automatically passed to elabDispose() state. Instead, those terms should have custom rules
-      for elaboration start (heating) and elaboration end (cooling).
-  Since all the automatic elaboration-related rules are an incredible mess, we have to put all the AST terms into this
+/*@
+\begin{markdown}
+Terms that should use custom elaboration rules. For those terms:
+
+  - They will not be automatically heated from their parents into the elab() state.
+  - They will not be automatically passed to elabDispose() state. Instead, those terms should have custom rules for elaboration start (heating) and elaboration end (cooling).
+
+Since all the automatic elaboration-related rules are an incredible mess, we have to put all the AST terms into this
     cathegory one by one, and eliminate automatic elaboration heating/cooling rules altogether.
+\end{markdown}
 */
 syntax KItem ::= customElabChildren ( KLabel )                [function]
 rule customElabChildren(KL:KLabel) =>

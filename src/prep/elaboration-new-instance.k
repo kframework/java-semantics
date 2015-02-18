@@ -9,7 +9,7 @@ module ELABORATION-NEW-INSTANCE
 
 /*@ \subsubsection{Elaboration of 'NewInstance and 'QNewInstance} */
 
-/*@ elab('NewInstance()) is strict in arguments 2 and 3 - class name and constrctor arguments.
+/*@ elab('NewInstance()) is strict in arguments 2 and 3 --- class name and constrctor arguments.
     Constrctor arguments have to be heated if this class is anonymous.
 */
 rule customElabHeating('NewInstance, [Ks:KList]) => length([Ks]) in (SetItem(2) SetItem(3))
@@ -33,9 +33,13 @@ rule [elab-NewInstance]:
     <enclosingClass> EnclosingClass:ClassType </enclosingClass>
     <classContextType> CT:ContextType </classContextType>
 
-/*@ elab('QNewInstance()) is strict in all its arguments except the class name (3) and anonymous body(6).
+/*@
+\begin{markdown}
+elab('QNewInstance()) is strict in all its arguments except the class name (3) and anonymous body(6):
+
   - Argument (3) is heated if it is not a simple name but a precusros to a type
-  - Argument (6) is heated if it is 'None() - an empty body.
+  - Argument (6) is heated if it is 'None() --- an empty body.
+\end{markdown}
 */
 rule customElabHeating('QNewInstance, [Ks:KList,,KHole:K])
      => length([Ks,,KHole]) in (SetItem(1) SetItem(2) SetItem(4) SetItem(5))
@@ -94,7 +98,7 @@ rule [elabEnd-QNewInstance-to-lookupMethod]:
     )
     ~> elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, [Args:KList],, 'None(.KList)))
 
-/*@ All new instance creation expressions are converted into qualified ones - 'QNewInstance, during elaboration phase.
+/*@ All new instance creation expressions are converted into qualified ones --- 'QNewInstance, during elaboration phase.
   For instance inner classes, the qualifier will be a valid expression for the qualifier. For other classes qualifier
   will be noValue. At this stage 'QNewInstance is wrapped in elabEnd.
 */

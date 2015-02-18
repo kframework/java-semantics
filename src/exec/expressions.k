@@ -148,16 +148,18 @@ syntax LHS ::= TypedVal
 rule [Assign]:
     loc(L:Int) :: ResT:Type = V:RawVal :: ResT => store(L, V::ResT) ~> V::ResT
 
-/*@ Desugars compound assign into the underlying operator + assign.
-
-    Question: Why not during elaboration phase?
+/*@
+\begin{markdown}
+Desugars compound assign into the underlying operator + assign. Could probably be done during elaboration.
     Answer:
   - in the LHS of => location L is referred once
   - in the RHS of => it is referred twice
   - at elaboration phase we would have to rewrite the original expresion that produces L
       from one occurence to two occuences.
   - if operator LHS expression has side effects, we would end up with the side effect twice.
-  - Example: v[i++] += 1*/
+  - Example: v[i++] += 1
+\end{markdown}
+*/
 
 rule loc(L:Int) :: T:Type *= Exp2:K => loc(L)::T = cast(T, lookup(L, T) * Exp2)
 rule loc(L:Int) :: T:Type /= Exp2:K => loc(L)::T = cast(T, lookup(L, T) / Exp2)

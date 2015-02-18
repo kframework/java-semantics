@@ -3,20 +3,20 @@ module CONFIGURATION-EXEC
     imports CORE-FUNCTIONS
 
 /*@
-The execution configuration consists from the top-level cell \cellref{T}, whose content is divided into three large cell groups. The group \cellref[]{threads} contains one or multiple cells \cellref[]{thread}. Here is included the data related to the execution of a thread, such as the computation, stack, local environment. The second group is contained inside \cellref[]{classes} that have multiple \cellref[]{class} cells -- all the content related to particular classes. The third group consists of the remaining top-level cells.
+The execution configuration consists from the top-level cell \cellref{T}, whose content is divided into three large cell groups. The group \cellref[]{threads} contains one or multiple cells \cellref[]{thread}. Here is included the data related to the execution of a thread, such as the computation, stack, local environment. The second group is contained inside \cellref[]{classes} that have multiple \cellref[]{class} cells --- all the content related to particular classes. The third group consists of the remaining top-level cells.
 
-\paragraph{Threads} Each execution thread has a corresponding \cellref{thread}. Inside a thread, \cellref[K]{k} is represents the actual computation - the sequence of tasks to be executed. Next cells are \cellref[List]{stack} -- the method call stack, and \cellref{methodContext}. The \cellref{methodContext} holds the local context of the executed method:
+\paragraph{Threads} Each execution thread has a corresponding \cellref{thread}. Inside a thread, \cellref[K]{k} is represents the actual computation --- the sequence of tasks to be executed. Next cells are \cellref[List]{stack} --- the method call stack, and \cellref{methodContext}. The \cellref{methodContext} holds the local context of the executed method:
 \begin{itemize}
-  \item \cellref[Map{{[}}Id\mapsto{}Int{{]}}]{env} -- the map from local variable names to their location inside \cellref[]{store}.
-  \item \cellref[ClassType]{crntClass} -- the current class, the type of \verb|this|
-  \item \cellref[Int]{location} -- The location in memory store of the current object.
+  \item \cellref[Map{{[}}Id\mapsto{}Int{{]}}]{env} --- the map from local variable names to their location inside \cellref[]{store}.
+  \item \cellref[ClassType]{crntClass} --- the current class, the type of \verb|this|
+  \item \cellref[Int]{location} --- The location in memory store of the current object.
 \end{itemize}
 
 On the next line there are 3 cells related to multithreading:
 \begin{itemize}
-  \item \cellref{tid} -- the thread identified, generated when the thread is created.
-  \item \cellref[Map{{[}}Int\mapsto{}Int{{]}}]{holds} -- a map from Object locations to integer numbers. Map keys are monitor objects on which the current thread has the locks. Map values hold the number of times the lock was acquired.
-  \item \cellref[Bool]{interrupted} -- boolean value signaling whether the current thread was interrupted.
+  \item \cellref{tid} --- the thread identified, generated when the thread is created.
+  \item \cellref[Map{{[}}Int\mapsto{}Int{{]}}]{holds} --- a map from Object locations to integer numbers. Map keys are monitor objects on which the current thread has the locks. Map values hold the number of times the lock was acquired.
+  \item \cellref[Bool]{interrupted} --- boolean value signaling whether the current thread was interrupted.
 \end{itemize}
 
 \paragraph{Classes} The cell \cellref{classes} contains one \cellref{class} for each class in the program, both for supported JDK classes and for user-defined classes. Cell \cellref{class} has the following content:
@@ -82,7 +82,7 @@ The next row contains global cells related to multithreading:
 \begin{itemize}
   \item \cellref[ Set{[} ObjLocation:Int {]} ]{busy} --- the set of busy objects. E.g. monitor objects for which there is a thread holding the monitor.
   \item \cellref[ Map{[} ThreadId:Int \mapsto OL:Int {]} ]{waitingThreads} --- The map from threads to monitor objects on which respective threads are blocked in a call to \verb|wait()|. Used by the methods \verb|Object.wait()|, \verb|Object.notify()|, \verb|Object.notifyAll()|.
-  \item \cellref[Set{[}ThreadId:Int{]}]{terminated} -- the set of identifiers of terminated threads.
+  \item \cellref[Set{[}ThreadId:Int{]}]{terminated} --- the set of identifiers of terminated threads.
 \end{itemize}
 
 The rest of the global cells are used for debugging purposes.

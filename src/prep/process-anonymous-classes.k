@@ -116,11 +116,15 @@ rule [processAnonymousClass]:
       )
     )
 
-/*@ Build the part of the constructor of an anonymous class definition corresponding
+/*@
+\begin{markdown}
+Build the part of the constructor of an anonymous class definition corresponding
 to formal params, and arguments of the superclass constructor invocation, respectively
-First KList - list of actual arguments
-Second KList - the result
-Third arg - a counter used to generate var names
+
+  - First KList --- list of actual arguments
+  - Second KList --- the result
+  - Third arg --- a counter used to generate var names
+\end{markdown}
 */
 syntax KItem ::= buildConstructorFormalParams ( KListWrap, KListWrap, Int )
            | buildConstructorFirstLineArgs ( KListWrap, KListWrap, Int )

@@ -3,7 +3,7 @@ module PROCESS-CLASS-MEMBERS
     imports CORE-CLASSES
     imports CORE-PREPROCESSING
 
-/*@ \subsection{Third pass - processing class members} */
+/*@ \subsection{Third pass --- processing class members} */
 
 /*@ We need to process Object first. Thus when we will process any interfaces,
     Object class will already be processed.*/
@@ -48,23 +48,27 @@ rule [processTypeWithDepends-Discard]:
 rule [processTypeWithDepends-Discard2]:
     processTypeWithDepends(noClass) => .K
 
+/*@
+\begin{markdown}
+For each class computes the set of inherited interfaces, inherits all the members,
+processes inner declarations. Computes the following class cells:
+
+  - <implTrans>
+  - <instanceFields>
+  - <methods>
+  - <methodDecs>
+  - <instanceInit> --- temporary cell, deleted after class body is processed.
+  - <staticEnv>
+  - <staticInit>
+
+First we inherit methods from interfaces, then from the base class, and in the end we add methods declared in this
+  class. Each new method overwrites previous methods with the same signature.
+\end{markdown}
+*/
 syntax KItem ::=  processType (
                 ClassType  //the class to be processed
               )
 
-/*@ For each class compute the set of inherited interfaces, inherit all the members,
-process inner declarations. Compute the following class cells:
-  <implTrans>
-  <instanceFields>
-  <methods>
-  <methodDecs>
-  <instanceInit> - temporary cell, deleted after class body is processed.
-  <staticEnv>
-  <staticInit>
-
-First we inherit methods from interfaces, then from the base class, and in the end we add methods declared in this
-  class. Each new method overwrites previous methods with the same signature.
-*/
 rule [processType]:
     <k>
       processType(Class:ClassType) => computeImplTrans(SetItem(BaseClass) ISet)
@@ -102,7 +106,7 @@ rule [processType-discard]:
     <classType> Class </classType>
     <classPhase> MembersProcessedCPhase </classPhase>
 
-//@ Compute <implTrans> cell - interfaces transitively implemented
+//@ Compute <implTrans> cell --- interfaces transitively implemented
 syntax KItem ::= computeImplTrans ( Set )
 
 rule [computeImplTrans]:

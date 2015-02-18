@@ -3,7 +3,7 @@ module PROCESS-CLASS-DECS
     imports CORE-PREPROCESSING
     imports PROCESS-TYPE-NAMES
 
-/*@ \subsection{Third pass - processing class dependencies and imports} */
+/*@ \subsection{Third pass --- processing class dependencies and imports} */
 
 rule [ProcClassDecsPhase-start]:
     <k> . => processClassDecs(getTopLevelClasses) </k>
@@ -186,11 +186,15 @@ rule [saveImports-InheritTypes]:
 rule [saveImports-Discard-noClass]:
     saveImports(_,_, [(noClass => .KList),, _], _,_,_)
 
-/*@ Compute the final result - the combined accessible classes map, with this components in order:
+/*@
+\begin{markdown}
+Compute the final result --- the combined accessible classes map, with this components in order:
+
   - external names
   - local block names (for local classes only)
   - inherited names
   - inner names
+\end{markdown}
 */
 rule [saveImports-ComputeResult]:
     <k>

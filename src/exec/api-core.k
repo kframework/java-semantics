@@ -256,7 +256,7 @@ when
 rule [storeCopy-discard]:
     storeCopy(_, _, 0) => .
 
-//@\subsection{Class literal - <Class>.class}
+//@\subsection{Class literal --- <Class>.class}
 
 /*@ We need to synchronize access to class literals to avoid instantiation of the came .class by multiple threads.
   This is done by the term temp in <classLiteralsMap>. We cannot use 'Synchronized because it required an

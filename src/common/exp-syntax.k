@@ -51,7 +51,7 @@ syntax Exp ::= "~" Exp      [strict, klabel('Complement)]
              | "+" Exp      [strict, klabel('Plus)]
              | "-" Exp      [strict, klabel('Minus)]
 
-//@ Operators with side effects - prefix, postfix ++/--
+//@ Operators with side effects --- prefix, postfix ++/--
 syntax PrefixPostfixExp ::= "++" Exp    [klabel('PreIncr)]
                           | "--" Exp    [klabel('PreDecr)]
 

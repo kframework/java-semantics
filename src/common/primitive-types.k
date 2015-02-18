@@ -11,7 +11,7 @@ rule bitCount(int) => 32
 rule bitCount(long) => 64
 rule bitCount(char) => 16
 
-/*@ Symbolic execution limitation: this construct cannot be [function]
+/* Symbolic execution limitation: this construct cannot be [function]
     When conditionals are needed, implementation have to use 'If - the symbolically processed version of if.
 */
 syntax KItem ::= normalize ( TypedVal )
@@ -56,7 +56,7 @@ rule normalizeImpl(I:Int :: T:Type)
         +Int (1 <<Int bitCount(T)))
         &Int ((1 <<Int bitCount(T)) -Int 1)) :: T)
 
-/*@ Symbolic execution limitation: this construct cannot be [function]
+/* Symbolic execution limitation: this construct cannot be [function]
     When conditionals are needed, implementation have to use 'If - the symbolically processed version of if.
 */
 syntax KItem ::= normalizeSign ( TypedVal )       [strict]
@@ -67,7 +67,7 @@ rule normalizeSign(I:Int :: T:Type)
           I -Int (1 <<Int bitCount(T)) :: T
         )
 
-/*@ Symbolic execution limitation: this construct cannot be [function]
+/* Symbolic execution limitation: this construct cannot be [function]
     When conditionals are needed, implementation have to use 'If - the symbolically processed version of if.
 */
 syntax KItem ::= toUnsigned ( TypedVal )          [strict]

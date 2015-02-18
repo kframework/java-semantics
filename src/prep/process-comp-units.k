@@ -5,11 +5,14 @@ module PROCESS-COMP-UNITS
     imports PROCESS-IMPORTS     //for compUnitImportsStart()
 
 /*@
+\begin{markdown}
 ProcCompUnitsPhase:
-  For each CompUnit separately:
+  For each Compilation unit separately:
+
 1. Process import declarations. Build <compUnitImports>.
 
   For each class C in CompUnit separately:
+
 2. For each class save the <class> cell with just the following:
   - <classType> - since we process CU content recursively, should be available
   - <enclosingClass>
@@ -22,9 +25,10 @@ ProcCompUnitsPhase:
 
   This way we will have fast access to the declaration of a class, and will be able to
 process declarations in a less-restricted order.
+\end{markdown}
 */
 
-/*@ \subsection{Second pass - processing declarations} */
+/*@ \subsection{Second pass --- processing declarations} */
 
 rule [ProcCompUnitsPhase-start]:
     <k> . => Program </k>
@@ -70,7 +74,8 @@ rule [processTypeDecsInPCUPhase-typeDec-ComputeFullName]:
       Pack:PackageId, _
     )                [structural]
 
-/*
+/*@
+\begin{verbatim}
 'ClassDec(
   'ClassDecHead(
     [Modifiers],,
@@ -79,8 +84,9 @@ rule [processTypeDecsInPCUPhase-typeDec-ComputeFullName]:
     'Some('SuperDec( BaseClassRaw - extends declaration )),,
     'Some('ImplementsDec([ ImplTypesRaw - implements declarations ]))
   ),,
-  'ClassBody( [ Decls - member declarations ] )
+  'ClassBody( [ Decls --- member declarations ] )
 )
+\end{verbatim}
 */
 
 rule [ClassDec-NoExtendsDesugar]:

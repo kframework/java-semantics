@@ -68,28 +68,28 @@ In this subsection we present the fragment of configuration used by runtime meth
 
 \vspace{3ex}
 
-The cell \cellref[]{k} stores the current computation. Inside \cellref[]{env} we store the local environment -- a map
+The cell \cellref[]{k} stores the current computation. Inside \cellref[]{env} we store the local environment --- a map
   from variable names to their locations in the store. The cell \cellref[]{methodContext} store information about the
-  current object -- the one accessible through the keyword this. Both \cellref[]{env} and \cellref[]{methodContext} play
+  current object --- the one accessible through the keyword this. Both \cellref[]{env} and \cellref[]{methodContext} play
   a special role in object instantiation.
 
 The cell \cellref[]{class} contains various sub-cells holding the content of that class. The
   first cell in \cellref[]{classType} of sort ClassType that holds the fully qualified class name.
   This cell is a unique identifier of a class, and is used as a key to access other cells inside a \cellref[]{class}.
-  Next relevant cells inside \cellref[]{class} are \cellref[]{enclosingClass} - the directly enclosing class in case
+  Next relevant cells inside \cellref[]{class} are \cellref[]{enclosingClass} --- the directly enclosing class in case
   this class is an inner class. The vase class is stored inside \cellref[]{extends} and the list of declarations of
   instance fields without identifiers is stored in \cellref[]{instanceFields}.
 
-The next two cells are related to the store. The cell \cellref[]{store} has a central role in the semantics -- it is
+The next two cells are related to the store. The cell \cellref[]{store} has a central role in the semantics --- it is
   the map from object locations (values in the cell \cellref[]{env}) to their actual typed values.
   The cell \cellref[]{nextLoc} is the counter of store locations.
 
-The remaining big group of cells -- \cellref[]{objectStore} contains the inner structure of objects.
+The remaining big group of cells --- \cellref[]{objectStore} contains the inner structure of objects.
   The \cellref[]{objectId} is an unique identifier of the object. Every reference to this object in the store is
   a reference to this id. Inside \cellref[]{objectType} is the actual runtime type of the object. Next we have a list
   of \cellref[]{layer} cells, each of them representing an inheritance layer of the object. Starting from class
   Object and ending with the actual object type. Inside each layer \cellref[]{layerClass} stores its
-  associated class, \cellref[]{layerEnv} -- the fields and \cellref[]{layerEnclosingObject} -- the enclosing object,
+  associated class, \cellref[]{layerEnv} --- the fields and \cellref[]{layerEnclosingObject} --- the enclosing object,
   in the case when \cellref[]{layerClass} is a non-static inner class. The complex rules for Java inner classes
   allow each layer to have its distinctive enclosing object, and we have tests that specifically target this
   requirement.
@@ -117,11 +117,11 @@ When all the subexpressions of new have been evaluated, the main rule for new co
   First the current value of the counter inside \cellref[]{nextLoc} is used as the location of the newly created object.
   The counter is incremented for the next use.
   Inside \cellref[]{objectStore} a new cell \cellref[]{object} is created for the new object. For now it has just two
-  sub-cells specified -- \cellref[]{objectId} and \cellref[]{objectType}, and no layers. Curiously we don't have
+  sub-cells specified --- \cellref[]{objectId} and \cellref[]{objectType}, and no layers. Curiously we don't have
   to specify neither \cellref[]{object} nor \cellref[]{objectStore} cells explicitly here, we have to specify just
   the cells inside them that are modified. The capability to ignore surrounding cells when they can be automatically
   inferred is called configuration abstraction, another K feature\cite{k-jlap}. In the cell \cellref[]{store}
-  a new entry is created with key being L and value - a reference to the newly created object in \cellref[]{object}.
+  a new entry is created with key being L and value --- a reference to the newly created object in \cellref[]{object}.
   The content of \cellref[]{methodContext} is reset to a default state. This default state is required
   by rules that are applied next.
 

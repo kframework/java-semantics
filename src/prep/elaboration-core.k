@@ -5,21 +5,22 @@ module ELABORATION-CORE
     imports ELABORATION-EXPRESSIONS // for isExpressionLabel
 
 /*@
-Elaborate the composition of code blocks of a class - the last step of preprocessing.
+\begin{markdown}
+Elaborate the composition of code blocks of a class --- the last step of preprocessing (besides Folding).
 During this phase we inspect the contents of method bodies, instance initializers and
 static initializers of a class and perform the following transformations:
 \begin{itemize}
   \item each variable name x is resolved into either:
   \begin{itemize}
-    \item x - a local var
-    \item Class.x - a static var defined in the class Class
-    \item field(obj, Class, x) - a field of object obj declared in the class Class.
+    \item x --- a local var
+    \item Class.x --- a static var defined in the class Class
+    \item field(obj, Class, x) --- a field of object obj declared in the class Class.
       Term obj could also be 'This.
   \end{itemize}
   \item each method name is resolved into either:
   \begin{itemize}
-    \item Class.m - a static method defined in the class Class
-    \item method(obj, Class, x) - an instance method of object obj declared in the class Class.
+    \item Class.m --- a static method defined in the class Class
+    \item method(obj, Class, x) --- an instance method of object obj declared in the class Class.
       Term obj could also be 'This. The actual version of the method will be looked up at runtime.
   \end{itemize}
   \item each method signature is resolved into its appropriate overloaded version. To
@@ -28,10 +29,11 @@ static initializers of a class and perform the following transformations:
     T being the compile-time type of the expression.
 \end{itemize}
 
-    /smallskip
-    During elaboration, elaborated members will be wrapped into elab().
+\smallskip
+During elaboration, elaborated members will be wrapped into elab().
 
-    During elaboration an expression transition through 6 phases:
+During elaboration an expression transition through 6 phases:
+
   1. Elaboration heating:
       elab('CastRef(\_,, 'Minus('ExprName(x))))
       => elab('Minus('ExprName(x)) ~> elab('CastRef(\_,, HOLE)
@@ -55,9 +57,9 @@ static initializers of a class and perform the following transformations:
     compute the type of the current expression itself. When the expression is fully elaborated, it is wrapped into
     elabRes(). This is the step that requires custom rules for most AST terms.
       elabRes('Minus(cast(int,cast(int, localVar(X))))) ~> elab('CastRef(\_,, HOLE)
-  7. Elaboration cooling. Once the top K Item was wrapped into elabRes, it is ready to be cooled back into its original
-    context:
+  7. Elaboration cooling. Once the top K Item was wrapped into elabRes, it is ready to be cooled back into its original context:
       elab('CastRef(\_,, elabRes('Minus(cast(int,cast(int, localVar(X)))))))
+\end{markdown}
 */
 
 /*@Custom hole used for custom heating/cooling rules in the elaboration phase.*/
@@ -91,13 +93,17 @@ when ElabRes =/=K noValue
 rule [chainOfResponsibility-Result2]:
     noValue ~> (CHOLE ?? K:K) => K
 
-/*@ Computes to true if the given argument is a list of elaboration results, false otherwise.
-  An elaborated result is either:
-    - KResult
-    - elabRes(...)
+/*@
+\begin{markdown}
+Computes to true if the given argument is a list of elaboration results, false otherwise.
+An elaborated result is either:
+
+  - KResult
+  - elabRes(...)
 
   It is notably NOT a cast() expression. This, together with the fact that cast() has no elaboration heatig rules,
   makes the whole elaboration phase non-reentrant.
+\end{markdown}
 */
 syntax KItem ::= isElabKList ( KListWrap )                 [function]
 rule isElabKList([ElabKR:ElabKResult,, Ks:KList]) => isElabKList([Ks])
@@ -155,12 +161,17 @@ defaultElabHeating.
 The predicate definition is scattered across modules related to elaboration.*/
 syntax KItem ::= customElabHeating ( KLabel, KListWrap )          [function]
 
-/*@ The default algorithm of transforming the term from elab to elabRes, when the children were completely elaborated.
+/*@
+\begin{markdown}
+The default algorithm of transforming the term from elab to elabRes, when the children were completely elaborated.
   Deletes elabRes wrappers from children. This algorithm is activated when the following conditions apply:
-    - term is not customElabChildren
-    - term children are completely elaborated - isElab(children)
-    - term is not naked. This case should never be true, but there is some weird case that requires it.
-  When the default algorithm is not appropriate, the respective term should be in the cathegory customElabChildren
+
+  - term is not customElabChildren
+  - term children are completely elaborated --- isElab(children)
+  - term is not naked. This case should never be true, but there is some weird case that requires it.
+
+When the default algorithm is not appropriate, the respective term should be in the cathegory customElabChildren
+\end{markdown}
 */
 syntax KItem ::= elabDispose ( K )
 
@@ -229,9 +240,9 @@ rule [elabEnd-findQualifierOfType-top-level]:
 rule [elabEnd-findQualifierOfType-static]:
     findQualifierOfType(noClass, K:K) => noValue
 
-/*@ \subsection{Elaboration of statements - step elabEnd} */
+/*@ \subsection{Elaboration of statements --- step elabEnd} */
 
-/*@ Applies to all nodes that are not expressins - statements and non-expression auxiliary functions
+/*@ Applies to all nodes that are not expressins --- statements and non-expression auxiliary functions
 */
 rule [elabEnd-default-all-except-expressions]:
     elabEnd(KL:KLabel(Ks:KList)) => elabRes(KL(Ks))
@@ -248,7 +259,7 @@ rule elabEnd( stmtAndExp(Stmt:K, cast(T:Type, Exp:K)) )
           #else elabRes(cast(T:Type, Exp:K))
         #fi
 
-/*@ \subsection{Elaboration of KListWrap - the list of terms} */
+/*@ \subsection{Elaboration of KListWrap --- the list of terms} */
 //K bug: this section is a workaround t a serious K' bug that prevents [...] to be properly heated and cooled
 
 rule [elab-heat-KListWrap]:

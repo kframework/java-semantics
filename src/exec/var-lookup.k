@@ -7,7 +7,7 @@ module VAR-LOOKUP
 //@ \subsection{Local variable access}
 
 /* Local variable access. At runtime may have one form:
-    - 'ExprName(X:Id) - local variable
+    - 'ExprName(X:Id) --- local variable
 */
 
 
@@ -21,7 +21,7 @@ rule [lvalue-ExprName-local]:
     <k> lvalue('ExprName(X:Id)) => typedLoc(L) ...</k>
     <env>... X |-> L:Int ...</env>
 
-/*@ \subsection{QThis - Self reference} */
+/*@ \subsection{QThis --- Self reference} */
 
 // 'QThis(Class:ClassType)
 rule [QThis]:
@@ -37,7 +37,7 @@ rule [QThis]:
       ...
     </store>
 
-//@ Search for the right value representing QThis(Class) - an expression of type Class.this
+//@ Search for the right value representing QThis(Class) --- an expression of type Class.this
 syntax KItem ::=  lookupQThis (
                 ClassType,  //the type of this to look for,
                 TypedVal    //the objectRef where the type should be found
@@ -67,8 +67,8 @@ when
 /*@ \subsection{Instance field access} */
 
 /*@ Variable access. May have 2 forms:
-    - 'ExprName(Class, X:Id) - static field
-    - 'ExprName(Qual, X:Id) - instance field
+    - 'ExprName(Class, X:Id) --- static field
+    - 'ExprName(Qual, X:Id) --- instance field
 */
 context 'Field(HOLE,, _)
 context lvalue('Field(HOLE,, _))
@@ -165,8 +165,8 @@ rule [lvalue-typedLoc]:
 /*@ \subsection{lookup} */
 
 /*@ Retrieve a value from the store based on its location and the given compile-time type.
-  May be wrapped inside lvalue. If lookup is unwrapped, it evaluates to TypedVal - the store value,
-  of the type T - the second lookup argument. If lookup is wrapped into lvalue, it evaluates to loc(OL)::T.
+  May be wrapped inside lvalue. If lookup is unwrapped, it evaluates to TypedVal --- the store value,
+  of the type T --- the second lookup argument. If lookup is wrapped into lvalue, it evaluates to loc(OL)::T.
 */
 syntax Exp ::= lookup (
                     Int,  //OL - the store location to lookup

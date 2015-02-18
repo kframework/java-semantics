@@ -72,9 +72,14 @@ rule [processTypeNames-AddPackage]:
     <namesToClasses> PackMap:Map => PackMap[mapWrap(.Map) / PackId] </namesToClasses>
 when notBool PackId in keys(PackMap)
 
-/*@ A type name is either class or interface name. Anonymous labels will be one of:
-      - 'ClassDec('ClassDecHead(...))
-      - 'InterfaceDec('InterfaceDecHead(...))*/
+/*@
+\begin{markdown}
+A type name is either class or interface name. Anonymous labels will be one of:
+
+  - 'ClassDec('ClassDecHead(...))
+  - 'InterfaceDec('InterfaceDecHead(...))
+\end{markdown}
+*/
 rule [processTypeNames]:
     <k>
       processTypeNames(
