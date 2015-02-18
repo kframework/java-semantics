@@ -18,7 +18,7 @@ rule toString(true::_) => "true"
 rule toString(false::_) => "false"
 rule toString(null::_) => "null"
 
-//@ toString(arrayOf T)
+//@ \verb|toString(arrayOf T)|
 
 rule toString(arrayOf byte)  => "[B"
 rule toString(arrayOf short) => "[S"

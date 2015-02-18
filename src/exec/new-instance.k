@@ -126,22 +126,22 @@ When all the subexpressions of new have been evaluated, the main rule for new co
   by rules that are applied next.
 
 Inside \cellref[]{k} the new instance expression is rewritten into a sequence of computations that will be executed
-  by the following rules. The auxiliary function staticInit() triggers static initialization of the instantiated class,
-  in case it was not triggered earlier. Next, the function create() populates the layers of the object inside
+  by the following rules. The auxiliary function \verb|staticInit()| triggers static initialization of the instantiated class,
+  in case it was not triggered earlier. Next, the function \verb|create()| populates the layers of the object inside
   \cellref[]{object} This also includes allocation of all instance fields, and their initialization to the default value.
-  Field initializers are not executed yet. The function setEncloser() sets the enclosing object for the current class,
+  Field initializers are not executed yet. The function \verb|setEncloser()| sets the enclosing object for the current class,
   if the current class is an inner class. If some of the base classes are also inner classes, the encloser for their
   respective \cellref[]{layer} will be set as part of constructor invocation.
 
-The next term in the computation (the one starting with typedLookup(L)) might look a bit weird, but it is in fact
+The next term in the computation (the one starting with \verb|typedLookup(L)|) might look a bit weird, but it is in fact
   the invocation of the constructor. This term represents a mix of Java syntax for method invocation and auxiliary
   functions defined inside K-Java. It illustrates, among others, the power of K parser. Now, after all memory
   allocation procedures have been completed, it is the right time for it to be invoked. Preprocessing semantics
-  transforms all constructors into plain methods. The function typedLookup(L) is evaluated into the object stored
-  at the location L, that will serve as a qualifier for constructor invocation. The function getConsName() converts
+  transforms all constructors into plain methods. The function \verb|typedLookup(L)| is evaluated into the object stored
+  at the location L, that will serve as a qualifier for constructor invocation. The function \verb|getConsName()| converts
   the class name into the name of the constructor method. What remains is plain Java syntax for method invocation.
 
-The last two terms bring computation to the state required to continue execution. Function restoreMethoContext()
+The last two terms bring computation to the state required to continue execution. Function \verb|restoreMethoContext()|
   restores \cellref[]{methodContext} to the the state before object creation. The last term is the result value of
   the object instantiation expression.
 */

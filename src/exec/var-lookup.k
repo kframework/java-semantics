@@ -1,17 +1,17 @@
 module VAR-LOOKUP
     imports CORE-SORTS
     imports SUBTYPING
-    imports STATIC-INIT         //for staticInit()
+    imports STATIC-INIT         //for \verb|staticInit()|
     imports EXPRESSIONS
 
 //@ \subsection{Local variable access}
 
 /* Local variable access. At runtime may have one form:
-    - 'ExprName(X:Id) --- local variable
+    - \verb|'ExprName(X:Id)| --- local variable
 */
 
 
-/*@ At execution phase 'ExprName(X) always represent a local variable.
+/*@ At execution phase \verb|'ExprName(X)| always represents a local variable.
 */
 rule [ExprName-local]:
     <k> 'ExprName(X:Id) => typedLookup(L) ...</k>
@@ -37,7 +37,7 @@ rule [QThis]:
       ...
     </store>
 
-//@ Search for the right value representing QThis(Class) --- an expression of type Class.this
+//@ Search for the right value representing \verb|QThis(Class)| --- an expression of type Class.this
 syntax KItem ::=  lookupQThis (
                 ClassType,  //the type of this to look for,
                 TypedVal    //the objectRef where the type should be found
@@ -67,8 +67,8 @@ when
 /*@ \subsection{Instance field access} */
 
 /*@ Variable access. May have 2 forms:
-    - 'ExprName(Class, X:Id) --- static field
-    - 'ExprName(Qual, X:Id) --- instance field
+    - \verb|'ExprName(Class, X:Id)| --- static field
+    - \verb|'ExprName(Qual, X:Id)| --- instance field
 */
 context 'Field(HOLE,, _)
 context lvalue('Field(HOLE,, _))
@@ -112,7 +112,7 @@ rule [lvalue-Field-static]:
     => staticInit(TargetClass) ~> lvalue(staticFieldLookup(TargetClass, X))
 
 /*@ The actual implementation of static field lookup. The distinction between this function and
-    'Field(Class, X) term is that at the moment when this function is called the target clas is
+    \verb|'Field(Class, X)| term is that at the moment when this function is called the target clas is
     surely initialized.
 */
 syntax KItem ::= staticFieldLookup ( ClassType , Id )
@@ -166,7 +166,7 @@ rule [lvalue-typedLoc]:
 
 /*@ Retrieve a value from the store based on its location and the given compile-time type.
   May be wrapped inside lvalue. If lookup is unwrapped, it evaluates to TypedVal --- the store value,
-  of the type T --- the second lookup argument. If lookup is wrapped into lvalue, it evaluates to loc(OL)::T.
+  of the type T --- the second lookup argument. If lookup is wrapped into lvalue, it evaluates to \verb|loc(OL)|::T.
 */
 syntax Exp ::= lookup (
                     Int,  //OL - the store location to lookup

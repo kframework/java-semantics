@@ -60,7 +60,7 @@ rule [elabEnd-findQualifierForName-static]:
 
 rule customElabEnd('SuperMethod) => true
 
-// super.X(_)
+//@ \verb|super.X(_)|
 rule [SuperMethod-desugar]:
     <k>
       elabEnd('SuperMethod(K:K,, Name:Id)) => elabEnd('QSuperMethod(Class,, K:K,, Name:Id))

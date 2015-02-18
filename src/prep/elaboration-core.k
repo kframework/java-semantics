@@ -14,23 +14,23 @@ static initializers of a class and perform the following transformations:
   \begin{itemize}
     \item x --- a local var
     \item Class.x --- a static var defined in the class Class
-    \item field(obj, Class, x) --- a field of object obj declared in the class Class.
+    \item \verb|field(obj, Class, x)| --- a field of object obj declared in the class Class.
       Term obj could also be 'This.
   \end{itemize}
   \item each method name is resolved into either:
   \begin{itemize}
     \item Class.m --- a static method defined in the class Class
-    \item method(obj, Class, x) --- an instance method of object obj declared in the class Class.
+    \item \verb|method(obj, Class, x)| --- an instance method of object obj declared in the class Class.
       Term obj could also be 'This. The actual version of the method will be looked up at runtime.
   \end{itemize}
   \item each method signature is resolved into its appropriate overloaded version. To
     denote the version, each actual parameter will be casted to the type of the actual parameter.
-  \item each expression Exp will be replaced with a corresponding typed expression cast(T, Exp),
+  \item each expression Exp will be replaced with a corresponding typed expression \verb|cast(T, Exp)|,
     T being the compile-time type of the expression.
 \end{itemize}
 
 \smallskip
-During elaboration, elaborated members will be wrapped into elab().
+During elaboration, elaborated members will be wrapped into \verb|elab()|.
 
 During elaboration an expression transition through 6 phases:
 
@@ -39,24 +39,24 @@ During elaboration an expression transition through 6 phases:
       => elab('Minus('ExprName(x)) ~> elab('CastRef(\_,, HOLE)
     Some AST terms, especially some statements require custom elaboration heating rules. If the heated expression
       should be always computed into a KResult, such as a type, package or certain literal expresssions, then
-      it is heated in the "naked" form, e.g. not wrapped into elab().
+      it is heated in the "naked" form, e.g. not wrapped into \verb|elab()|.
   2. Elaboration of children. All the children of the expression are elaborated. After this phase elaborated children
-    will be typed (if they are expressions) and wrapped into elabRes(). Typed expressions are cast expressions -
-    like cast(T, Exp). The whole initial term will be converted into:
-      elab('Minus(elabRes(cast(int, localVar(X))))) ~> elab('CastRef(\_,, HOLE)
-  3. Initiation of the step elabDispose. When all children have been elaborated and are either KResult of elabRes(),
-    the wrapper is changed from elab() to elabDispose().
-      elabDispose('Minus(elabRes(cast(int, localVar(X))))) ~> elab('CastRef(\_,, HOLE)
-  4. Unwrapping of children. During elabDispose step elaborated children are unwrapped from their elabRes() wrapper.
-      elabDispose('Minus(cast(int, localVar(X)))) ~> elab('CastRef(\_,, HOLE)
+    will be typed (if they are expressions) and wrapped into \verb|elabRes()|. Typed expressions are cast expressions -
+    like \verb|cast(T, Exp)|. The whole initial term will be converted into:
+      elab('Minus(elabRes(cast(int, localVar(X))))) ~> elab(CastRef(\_,, HOLE)
+  3. Initiation of the step elabDispose. When all children have been elaborated and are either KResult of \verb|elabRes()|,
+    the wrapper is changed from \verb|elab()| to \verb|elabDispose()|.
+      elabDispose('Minus(elabRes(cast(int, localVar(X))))) ~> elab(CastRef(\_,, HOLE)
+  4. Unwrapping of children. During elabDispose step elaborated children are unwrapped from their \verb|elabRes()| wrapper.
+      elabDispose('Minus(cast(int, localVar(X)))) ~> elab(CastRef(\_,, HOLE)
   5. End of the step elabDispose. When all children of the term wrapped into elabDispose have been unwrapped
-    from their elabRes() wrapper, the root wrapper is replaced from elabDispose to elabEnd. This contributes
+    from their \verb|elabRes()| wrapper, the root wrapper is replaced from elabDispose to elabEnd. This contributes
     to more simple rules for the following steps.
-    elabRes('Minus(cast(int, localVar(X)))) ~> elab('CastRef(\_,, HOLE)
+    elabRes('Minus(cast(int, localVar(X)))) ~> elab(CastRef(\_,, HOLE)
   6. Computation of elaboration result. Now that all children have been elaborated and unwrapped, it is possible to
     compute the type of the current expression itself. When the expression is fully elaborated, it is wrapped into
-    elabRes(). This is the step that requires custom rules for most AST terms.
-      elabRes('Minus(cast(int,cast(int, localVar(X))))) ~> elab('CastRef(\_,, HOLE)
+    \verb|elabRes()|. This is the step that requires custom rules for most AST terms.
+      elabRes('Minus(cast(int,cast(int, localVar(X))))) ~> elab(CastRef(\_,, HOLE)
   7. Elaboration cooling. Once the top K Item was wrapped into elabRes, it is ready to be cooled back into its original context:
       elab('CastRef(\_,, elabRes('Minus(cast(int,cast(int, localVar(X)))))))
 \end{markdown}
@@ -75,7 +75,7 @@ rule isElabKResult(KR:KResult) => true
 /*@ \subsection{Operator ??}*/
 
 /*@ Chain of responsibility pattern.
-Evaluate the first argument. if it is KResult (except noValue) or elabRes(), the result of the ?? expression is
+Evaluate the first argument. if it is KResult (except noValue) or \verb|elabRes()|, the result of the ?? expression is
 the result of the first argument. Otherwise, if the first argument evaluates to noValue, the result of the
 ?? expression is the result of the second argument.
 */
@@ -99,9 +99,9 @@ Computes to true if the given argument is a list of elaboration results, false o
 An elaborated result is either:
 
   - KResult
-  - elabRes(...)
+  - \verb|elabRes(...)|
 
-  It is notably NOT a cast() expression. This, together with the fact that cast() has no elaboration heatig rules,
+  It is notably NOT a \verb|cast()| expression. This, together with the fact that \verb|cast()| has no elaboration heatig rules,
   makes the whole elaboration phase non-reentrant.
 \end{markdown}
 */
@@ -132,7 +132,7 @@ The attribute [transition-strictness] is used as transition attribute for testin
 This is a rule that may lead to unexpected nondeterminism if it is wrongly implemented.
 In order to expose incorrect nondeterminism we need to model-check a program that exposes the nondeterminism.
 
-Labels that are "naked" should be heated in their pure form. Other terms should be heated wrapped into elab().
+Labels that are "naked" should be heated in their pure form. Other terms should be heated wrapped into \verb|elab()|.
 */
 rule [elab-heat-default]:
     (. => #if isElabNaked(K) ==K true
@@ -150,7 +150,7 @@ rule [elab-cool-default]:
     (ElabK:ElabKResult => .) ~> elab(_:KLabel(_,, (CHOLE => ElabK),, _))
 
 /*@ Must be true for AST nodes that require elaboration heating of their children. For the arguments KL, Ks,
-the original node is of he form KL(KS,,\_) and the heated child is always the last element of Ks.
+the original node is of he form \verb|KL(KS,,\_)| and the heated child is always the last element of Ks.
 Thus it is possible to decide whether the child is allowed to be heated based both on the position of the child
 in the list of arguments as well as based on the state of previous brothers.
 
@@ -167,7 +167,7 @@ The default algorithm of transforming the term from elab to elabRes, when the ch
   Deletes elabRes wrappers from children. This algorithm is activated when the following conditions apply:
 
   - term is not customElabChildren
-  - term children are completely elaborated --- isElab(children)
+  - term children are completely elaborated --- \verb|isElab(children)|
   - term is not naked. This case should never be true, but there is some weird case that requires it.
 
 When the default algorithm is not appropriate, the respective term should be in the cathegory customElabChildren
@@ -190,7 +190,7 @@ rule [elabDispose-to-elabEnd]:
 when
     notBool haveElabRes([Ks]) ==K true
 
-//@ True if given KList has no terms of the form elabRes(...), false otherwise.
+//@ True if given KList has no terms of the form \verb|elabRes(...)|, false otherwise.
 syntax KItem ::= haveElabRes ( KListWrap )          [function]
 rule haveElabRes([_,, elabRes(_),, _]) => true
 
@@ -198,7 +198,7 @@ rule haveElabRes([_,, elabRes(_),, _]) => true
 rule haveElabRes([_,, KList2KLabel _,, elabRes(_),, _ (_),, _]) => true
 
 /*@ The 3rd elaboration-phase wrapper for expressions. Represents the case when children are completely elaborated and
-unwrapped from elabRes(), but root node might not be elaborated yet. The implementation is scattered across all modules
+unwrapped from \verb|elabRes()|, but root node might not be elaborated yet. The implementation is scattered across all modules
 that deal with the elaboration phase.
 */
 syntax KItem ::= elabEnd ( K )

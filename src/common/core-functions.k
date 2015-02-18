@@ -14,10 +14,10 @@ rule typeOf(null) => nullType
 rule typeOf(objectRef(_, Class:ClassType)) => Class
 rule typeOf(arrayRef( arrayOf T:Type, _, _)) => arrayOf T
 
-/* Required by getTypes in elaboration phase, invoked by lookupMethod. */
+/*@ Required by \verb|getTypes()| in elaboration phase, invoked by \verb|lookupMethod()|. */
 rule typeOf(cast(T:Type, _)) => T
 
-// Required for getTypes()
+//@ Required for \verb|getTypes()|
 rule typeOf('Param(_:K,, T:Type,, _:Id)) => T
 
 /*@The default value for all types. Used for field initializers.*/
@@ -90,7 +90,7 @@ rule plusAux(Str1:String :: _, Str2:String :: _) => (Str1 +String Str2) :: class
 */
 syntax KResult ::= mapWrap ( Map )
 
-/*@ The union of two maps. Arguments are of the form mapWrap(Map). In this operation, elements of the second map
+/*@ The union of two maps. Arguments are of the form \verb|mapWrap(Map)|. In this operation, elements of the second map
     overwrite elements of the first map if they collide.
 */
 syntax KItem ::=  mapUnion (
@@ -123,7 +123,7 @@ rule isEmpty(.Map) => true
 /*@A wrapper for sets, similar to the one for maps.*/
 syntax KResult ::= setWrap ( Set )
 
-/*The union of two sets. Arguments are of the form setWrap(Set).*/
+/*@ The union of two sets. Arguments are of the form \verb|setWrap(Set)|.*/
 syntax KItem ::=  setUnion (
                 K,  //setWrap(Set)
                 K   //setWrap(Set)
@@ -165,8 +165,6 @@ rule getSimpleName(class ClassId:Id)
     ))
 
 /*@ \subsection{Identifiers}*/
-
-// 'Id(Str:String)
 
 /*@Convert the AST representation of an Id into a K Id.*/
 rule 'Id(Str:String) => String2Id(Str)                [structural, anywhere]

@@ -6,7 +6,7 @@ module API-THREADS
 
 /*@Java API related to threads and locks. Just the core part.*/
 
-//@ \subsection{Method Thread.start()}
+//@ \subsection{Method \texttt{Thread.start()}}
 rule [thread-start]:
     <thread>
       <k>
@@ -90,7 +90,7 @@ rule [monitor-completely-released]:
     <holds>... (OL:Int |-> 0 => .) ...</holds>
     <busy>... (SetItem(OL) => .) ...</busy>
 
-//@ \subsection{Thread.join()}
+//@ \subsection{\texttt{Thread.join()}}
 
 rule [thread-join]:
     <k>
@@ -120,7 +120,7 @@ when
     Class ==K class String2Id("java.lang.Thread") andBool Id2String(MethodName) ==String "joinImpl"
         [transition-threading, transition-sync]
 
-//@ \subsection{Object.wait()}
+//@ \subsection{\texttt{Object.wait()}}
 
 rule [object-wait-notify-notifyAll-without-sync]:
     <k>
@@ -157,9 +157,9 @@ when
       notBool OL in Busy
         [transition-threading, transition-sync]
 
-//@ \subsection{Object.notify(), Object.notifyAll()}
+//@ \subsection{\texttt{Object.notify()}, \texttt{Object.notifyAll()}}
 
-/*@Implementation of Object.notify(), extracted here to avoid rule superfluousness*/
+/*@Implementation of \verb|Object.notify()|, extracted here to avoid rule superfluousness*/
 syntax KItem ::=  notifyImpl (
                 Int //store key of the monitor object
               )
@@ -194,7 +194,7 @@ when
     andBool Id2String(MethodName) ==String "notifyAll"
     andBool HoldLevel >=Int 1
 
-/*@Implementation of Object.notifyAll(), extracted here to avoid rule superfluousness*/
+/*@Implementation of \verb|Object.notifyAll()|, extracted here to avoid rule superfluousness*/
 syntax KItem ::=  objectNotifyAllImpl (
                 Int //store key of the monitor object
               )
@@ -217,7 +217,7 @@ when
     notBool OL in values(WT)
         [transition-threading]
 
-//@ \subsection{Thread.interrupt()}
+//@ \subsection{\texttt{Thread.interrupt()}}
 
 rule [thread-interrupt]:
     <thread>
@@ -289,7 +289,7 @@ endmodule
 module API-THREADS-SELECTION
     imports API-THREADS
 
-//@ \subsection{Methods wait() and notify()}
+//@ \subsection{Methods \texttt{wait()} and \texttt{notify()}}
 
 /*@
 When \verb|object.wait()| is called the method call expression is replaced by \verb|waitImpl()|

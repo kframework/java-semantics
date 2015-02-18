@@ -6,7 +6,7 @@ module ELABORATION-EXPRESSIONS
 
 /*@ \subsection{Elaboration of numeric expressions}
 
-Expression labels are not converted by the default rule in the phase elabDispose() => elabRes(...)
+Expression labels are not converted by the default rule in the phase \verb|elabDispose()| => \verb|elabRes(...)|
   Each expression needs a specialized rule for disposing, that will compute, among others,
   the type of the expression.
 */

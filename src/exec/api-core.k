@@ -4,7 +4,7 @@ module API-CORE
     imports ARRAYS        // for allocAndInitArray()
 
 /*@
-All the methods defined in this module through invokeImpl are native, their body is 'NoMethodBody(\_), thus
+All the methods defined in this module through invokeImpl are native, their body is \verb|'NoMethodBody(\_)|, thus
   they cannot be matched by rules in METHOD-INVOKE.
 */
 
@@ -20,7 +20,7 @@ context
 when
     Class ==K class String2Id("java.io.PrintWriter") andBool Id2String(MethodName) ==String "print"
 
-//@ System.out.print(). For integers and strings, print their value. For classes, print class type.
+//@ System.\verb|out.print()|. For integers and strings, print their value. For classes, print class type.
 
 rule [system-out-print-string]:
     <k>
@@ -49,7 +49,7 @@ when
     andBool (Id2String(MethodName) ==String "print")
     andBool notBool (isString(RV) ==K true)
 
-/*@Scanner.nextInt(), used to read from the console.*/
+/*@\verb|Scanner.nextInt()|, used to read from the console.*/
 rule [scanner-nextInt]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType), _,
@@ -78,7 +78,7 @@ rule [readString]:
     <k> readString => Str :: classString ...</k>
     <in> ListItem(Str:String) => . ...</in>
 
-/*@ object.getClass()*/
+/*@ \verb|object.getClass()|*/
 rule [object-getClass-on-object]:
     <k>
       invokeImpl(
@@ -113,7 +113,7 @@ rule [object-getClass-on-array]:
 when
     Class ==K classObject andBool Id2String(MethodName) ==String "getClass"
 
-/*@ String.toString(). For Object.toString() the implementation is in the library java code.*/
+/*@ \verb|String.toString()|. For \verb|Object.toString()| the implementation is in the library java code.*/
 rule [object-toString-on-String]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType), Str:String::_,
@@ -122,7 +122,7 @@ rule [object-toString-on-String]:
 when
     Class ==K classObject andBool Id2String(MethodName) ==String "toString"
 
-/*@Object.hashCode(). Returns the canonical memory location of the objectRef. */
+/*@\verb|Object.hashCode()|. Returns the canonical memory location of the objectRef. */
 rule [object-hashCode]:
     <k>
       invokeImpl(
@@ -141,7 +141,7 @@ when
 
 //@\subsection{String methods}
 
-//@ int String.length()
+//@ int \verb|String.length()|
 rule [String-length]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType),
@@ -162,7 +162,7 @@ rule [String-charAt]:
 when
     Class ==K classString andBool Id2String(MethodName) ==String "charAt"
 
-//@static native String String.valueOf(int i);
+//@static native String \verb|String.valueOf(int i)|;
 rule [String-valueOf]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType),
@@ -173,7 +173,7 @@ rule [String-valueOf]:
 when
     Class ==K classString andBool Id2String(MethodName) ==String "valueOf"
 
-//@boolean String.equals(Object)
+//@boolean \verb|String.equals(Object)|
 rule [String-equals]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType),
@@ -184,7 +184,7 @@ rule [String-equals]:
 when
     Class ==K classString andBool Id2String(MethodName) ==String "equals"
 
-//@String.toString()
+//@\verb|String.toString()|
 rule [String-toString]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType),
@@ -195,7 +195,7 @@ rule [String-toString]:
 when
     Class ==K classString andBool Id2String(MethodName) ==String "toString"
 
-//@ int String.compareTo(Object another)
+//@ int \verb|String.compareTo(Object another)|
 rule [String-compareTo]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType),

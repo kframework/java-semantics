@@ -11,7 +11,7 @@ rule [ElaborationPhase-start]:
     <globalPhase> ProcClassMembersPhase => ElaborationPhase  </globalPhase>
 
 /*@ Elaborate the blocks inside all classes.
-Argument K = setWrap(Set) --- the set of all classes.
+Argument K = \verb|setWrap(Set)| --- the set of all classes.
 */
 syntax KItem ::= elaborateBlocks ( K ) [strict]
 

@@ -16,7 +16,7 @@ syntax KItem ::=  processClassDecs (
               [strict]
 
 /*@ Question: how do we know if bases were already resolved for this class or not?
-  Answer: When resolveBases(Class) is consumed by the rule [resolveBasesEnd], the class
+  Answer: When \verb|resolveBases(Class)| is consumed by the rule [resolveBasesEnd], the class
   changes its state: StoredCPhase => BasesResolvedCPhase
 */
 rule [processClassDecs-resolveBases-TopLevel-Start]:

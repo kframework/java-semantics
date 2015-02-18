@@ -210,7 +210,7 @@ rule defaultElabHeating('Id) => true*/
 rule defaultElabHeating('stmtAndExp) => true
 
 /*@ Naked terms are those that should be computed directly into KResult during elaboration.
-  Those are literals, types and packages. They are heated "as is", without being wrapped into elab().
+  Those are literals, types and packages. They are heated "as is", without being wrapped into \verb|elab()|.
   An exception is the class literal that is not executed during elaboration.
 
   Some auxiliary functions are also included in this cathegory in order to reduce the usage of elaboration wrappers.
@@ -231,8 +231,8 @@ rule isElabNaked('Lit(InnerKL:KLabel(_))) => InnerKL =/=KLabel 'Class
 \begin{markdown}
 Terms that should use custom elaboration rules. For those terms:
 
-  - They will not be automatically heated from their parents into the elab() state.
-  - They will not be automatically passed to elabDispose() state. Instead, those terms should have custom rules for elaboration start (heating) and elaboration end (cooling).
+  - They will not be automatically heated from their parents into the \verb|elab()| state.
+  - They will not be automatically passed to \verb|elabDispose()| state. Instead, those terms should have custom rules for elaboration start (heating) and elaboration end (cooling).
 
 Since all the automatic elaboration-related rules are an incredible mess, we have to put all the AST terms into this
     cathegory one by one, and eliminate automatic elaboration heating/cooling rules altogether.

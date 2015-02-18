@@ -34,7 +34,7 @@ rule [Block]:
     <env> Env </env>
         [structural]
 
-//@ \texttt{env} Restore the env cell content from env(...) statement argument
+//@ \texttt{env} Restore the env cell content from \verb|env(...)| statement argument
 syntax KItem ::= env ( Map )
 
 rule [env]:

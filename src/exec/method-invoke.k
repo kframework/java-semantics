@@ -107,7 +107,7 @@ The first represents a class. Second is a typed value, the result of evaluation 
 \end{syntaxBlock}
 
 The type after four dots (::) separator is the static type associated with that value. The values inside
-  objectRef() are the address inside the store and the runtime type of the object.
+  \verb|objectRef()| are the address inside the store and the runtime type of the object.
 
 For the sake of simplicity we we will also
   consider \dotCt{K} --- the unit element of K to be KResult. The value \dotCt{K} is often
@@ -118,18 +118,18 @@ For the sake of simplicity we we will also
 \begin{markdown}
 An elaborated method invocation expression may have one of the following forms:
 
-  - An invocation of a static method qualified by its class: Class.f(args)
+  - An invocation of a static method qualified by its class: \verb|Class.f(args)|
   - An invocation of a static method qualified by an expression producing an object:
-    o.f(args). Even if the method is
+    \verb|o.f(args)|. Even if the method is
     static we cannot simply replace the qualifier with its compile-time type at
     elaboration phase, because the qualifier
     expression still has to be evaluated and might produce side effects. We cannot replace it with
-    o; class.f(args); either, because o; might be invalid. Not all expressions
+    o; \verb|class.f(args)|; either, because o; might be invalid. Not all expressions
     valid as qualifiers are valid as expression statements (JLS \S14.8). We wanted the elaboration
     result to be a valid Java program, thus we could not afford such a transformation.
 
-  - An invocation of an instance method qualified by a class reference: o.f(args)
-  - An invocation of an instance method qualified by an interface reference: i.f(args)
+  - An invocation of an instance method qualified by a class reference: \verb|o.f(args)|
+  - An invocation of an instance method qualified by an interface reference: \verb|i.f(args)|
 
 The evaluation of the method invocation expression consists from 5 steps outlined below.
   Those steps, unless otherwise specified, are common to all the method call forms
@@ -209,8 +209,8 @@ Note that arguments have to be evaluated even in the case when the qualifier eva
 \begin{markdown}
 During the second step of the method invocation the second argument of the production is replaced with the
   auxiliary data
-  structure methodInfo(). This data structure contains the information required to choose the right method lookup
-  strategy at the next step. The production methodInfo() contains the following arguments:
+  structure \verb|methodInfo()|. This data structure contains the information required to choose the right method lookup
+  strategy at the next step. The production \verb|methodInfo()| contains the following arguments:
 
   - Method signature Sig
   - Qualifying class QualC of the method invocation, e.g. the compile-time type of the qualifier.
@@ -221,10 +221,10 @@ During the second step of the method invocation the second argument of the produ
   - Acc --- access modifier (private, package, protected or public). For the purpose of uniformity we use the modifier
     package when no access modifier is provided.
 
-All the information stored in methodInfo() is static. In K-Java we already have
+All the information stored in \verb|methodInfo()| is static. In K-Java we already have
   this information computed, but it is stored in various cells inside \cellref[]{class} and \cellref[]{classDec}.
   The rules from step 3 simply load the relevant information from configuration
-  cells to methodInfo() arguments.
+  cells to \verb|methodInfo()| arguments.
 \end{markdown} */
 syntax MethodName ::= methodInfo(
                         Signature,    //Sig - method signature
@@ -239,10 +239,10 @@ syntax MethodName ::= methodInfo(
                       )
 
 /*@
-The first rule from this step rewrites the method name into a methodInfo() term whose first argument is the method
+The first rule from this step rewrites the method name into a \verb|methodInfo()| term whose first argument is the method
 signature.
-  The auxiliary function getTypes() computes the list of types from the list of parameter declarations. The second
-  argument of methodInfo() is also computed at this step --- it is the type of the qualifier. The rest of the arguments
+  The auxiliary function \verb|getTypes()| computes the list of types from the list of parameter declarations. The second
+  argument of \verb|methodInfo()| is also computed at this step --- it is the type of the qualifier. The rest of the arguments
   are filled in with default values. They will be rewritten into actual values by the following rules.
 */
 rule [Invoke-compute-methodInfo-Signature]:
@@ -268,7 +268,7 @@ Note that in this rule variable Args is defined of type TypedVals instead of Exp
 Because TypedVal is subsorted to KResult, TypedVals being a list of KResult is implicitly subsorted to KResult.
 */
 
-/* Impl: We could combine this rule with the previous one by using getLookupTargetType(), but we'll keep it this way
+/* Impl: We could combine this rule with the previous one by using \verb|getLookupTargetType()|, but we'll keep it this way
     to keep the core part of method invocation separate from the non object-related part. */
 
 /*@
@@ -308,7 +308,7 @@ when
     notBool Sig in keys(Methods)
 
 /*@
-The last rule of step 3 loads ContextT and Acc. It requires DecC, so this rule may only match after the second rule for methodInfo().
+The last rule of step 3 loads ContextT and Acc. It requires DecC, so this rule may only match after the second rule for \verb|methodInfo()|.
 */
 rule [Invoke-compute-methodInfo-ContextType]:
     <k>
@@ -324,9 +324,9 @@ rule [Invoke-compute-methodInfo-ContextType]:
 \subsection{Lookup method declaration}
 
 In the third step of the method invocation algorithm, the actual method declaration is chosen. This step starts once all
-  the fields of methodInfo() were filled in (where possible). The rules of this step rewrite methodInfo() into
-  methodRef() --- another auxiliary data structure.
-The production methodRef() is a reference to a method declaration. It contains two fields --- Sig and DecC --- the
+  the fields of \verb|methodInfo()| were filled in (where possible). The rules of this step rewrite \verb|methodInfo()| into
+  \verb|methodRef()| --- another auxiliary data structure.
+The production \verb|methodRef()| is a reference to a method declaration. It contains two fields --- Sig and DecC --- the
   signature and the declaration class. The implementation class is the class that contains the actual method
   declaration to be invoked.
 
@@ -381,7 +381,7 @@ rule [Invoke-methodInfo-instance-private]:
 /*@
 If the method is protected or public, then we should call the version of the method visible to the runtime type of
   the qualifying object (ObjC). Recall that the runtime type of an object is stored in the second argument of
-  objectRef().
+  \verb|objectRef()|.
   This case also covers qualifying type interface, since interface methods are always public.
   The right method will always be the one referred by the signature Sig in the cell \cellref[]{methods} associated with the
   actual object class. This is because the unfolding phase populates \cellref[]{methods} with the union of methods inherited
@@ -435,7 +435,7 @@ public class C extends B {
   protected void f(int a) { ... }
 }
 
-((A) new C()).f();
+((A) new \verb|C()|).f();
 \end{lstlisting}
 \end{minipage}
 
@@ -462,11 +462,11 @@ In contrast, the K-Java algorithm starts the search with the qualifying type (e.
   derived class) that overrides the original one.
 
 The rule for package access mode delegates searching for the right method declaration to the auxiliary function
-  lookupPackageMethod(). The function takes 3 arguments:
+  \verb|lookupPackageMethod()|. The function takes 3 arguments:
 
   - method signature Sig
   - the list of classes in the inheritance chain between the qualifying class QualC and the actual object class ObjC.
-    This list is produced by classChain()
+    This list is produced by \verb|classChain()|
   - the third argument represents the declaring class of the best method found so far.
     It is initialized with \dotCt{K}.
 \end{markdown}
@@ -484,10 +484,10 @@ rule [Invoke-methodInfo-instance-package]:
     <methods>... Sig |-> _ ...</methods>
 
 /*@
-Before the evaluation of lookupPackageMethod() may begin, the term lookupPackageMethod() has to be heated to the top
+Before the evaluation of \verb|lookupPackageMethod()| may begin, the term \verb|lookupPackageMethod()| has to be heated to the top
   of computation. The side condition in the context rule below ensured that the second argument of method call
-  expression is heated only if it contains a term lookupPackageMethod(). If it has other forms,
-  such as the method name or methodInfo(), it won't be heated.
+  expression is heated only if it contains a term \verb|lookupPackageMethod()|. If it has other forms,
+  such as the method name or \verb|methodInfo()|, it won't be heated.
 */
 context _:K . HOLE (_)
 when
@@ -520,7 +520,7 @@ syntax KItem ::=  lookupPackageMethod (
 
 /*@
 \begin{markdown}
-The rules for lookupPackageMethod() are based on the following two properties of the configuration:
+The rules for \verb|lookupPackageMethod()| are based on the following two properties of the configuration:
 
   - if the cell \cellref[]{methods} for a particular class contains a key Sig, then \cellref[]{methods} for all classes derived from it
     will contain the key Sig.
@@ -557,7 +557,7 @@ The second rule matches when we already found a declaring class (OldDecC) and th
   match $\mathrel{}\kall{class}{\kall{classType}{ CurrentC } \mathrel{}\kall{methods}{... Sig \mapsto CurrentC ...} }$,
   according to the definition of \cellref[]{methods}.
 
-If the method in CurrentC directly overrides the method in OldDecC, the declaring class is updated to CurrentC. Otherwise the declaring class stays unchanged. The rules for direct overriding (case 1a above) are defined in the auxiliary function isOverridden(). The function takes three arguments:
+If the method in CurrentC directly overrides the method in OldDecC, the declaring class is updated to CurrentC. Otherwise the declaring class stays unchanged. The rules for direct overriding (case 1a above) are defined in the auxiliary function \verb|isOverridden()|. The function takes three arguments:
 \begin{markdown}
   - The base class OldDecC
   - The derived class CurrentC
@@ -629,13 +629,13 @@ when
 
 /*@
 The last rule matches when the chain of classes stored in the first argument remains empty. It rewrites the whole
-  lookupPackageMethod() into a reference to the method that has to be invoked.
+  \verb|lookupPackageMethod()| into a reference to the method that has to be invoked.
 */
 rule [lookupPackageMethod-end]:
     lookupPackageMethod( Sig:Signature, .ClassTypes, DecC:ClassType ) => methodRef(Sig, DecC)
 
 /*@
-For the code example above, the term lookupPackageMethod() will pass through the following forms during evaluation:
+For the code example above, the term \verb|lookupPackageMethod()| will pass through the following forms during evaluation:
 
 \begin{tabular}{ | l | l | }
   \hline
@@ -683,15 +683,15 @@ For the code example above, the term lookupPackageMethod() will pass through the
 
 \vspace{3ex}
 
-When the term lookupPackageMethod() is first produced it takes as arguments the method signature (rendered here as f()
+When the term \verb|lookupPackageMethod()| is first produced it takes as arguments the method signature (rendered here as \verb|f()|
  for convenience), the chain of classes from the qualifying class A to the runtime class C,
  and \dotCt{K} as the third argument. Since the third argument is \dotCt{K} only the third rule can match. This rule deletes A
- from the class chain and updates the third argument to the class that defines the version of f() accessible to A.
- That class is A. For classes B and C the second rule for lookupMethodM() matches. In both cases the method f()
- defined in B and C overrides the previously found one. In the first case classes the method B.f() overrides A.f()
- because the access mode is package and both A and B are in the same package. In the second case C.f()
- overrides B.f() because B.f() has protected access mode, and is thus always overridden. The final result of
- method lookup procedure is the version of method f() declared in the class C.
+ from the class chain and updates the third argument to the class that defines the version of \verb|f()| accessible to A.
+ That class is A. For classes B and C the second rule for \verb|lookupMethodM()| matches. In both cases the method \verb|f()|
+ defined in B and C overrides the previously found one. In the first case classes the method \verb|B.f()| overrides \verb|A.f()|
+ because the access mode is package and both A and B are in the same package. In the second case \verb|C.f()|
+ overrides \verb|B.f()| because \verb|B.f()| has protected access mode, and is thus always overridden. The final result of
+ method lookup procedure is the version of method \verb|f()| declared in the class C.
 */
 
 /*@
@@ -699,7 +699,7 @@ When the term lookupPackageMethod() is first produced it takes as arguments the 
 
 \begin{markdown}
 The central rule of method invocation is matched when the second argument of method call expression reaches the form
-  methodRef(). This rule performs the following operations:
+  \verb|methodRef()|. This rule performs the following operations:
 
   - saves the rest of computation (RestK) and the content of \cellref[]{methodContext} as a new entry of the cell \cellref[]{stack}
     This data is restored back by the rules for return statement.
@@ -708,19 +708,19 @@ The central rule of method invocation is matched when the second argument of met
     - current class \cellref[]{crntClass} is initialized to the class declaring the method
     - object location \cellref[]{location} is initialized to the location of the qualifier object for instance methods,
       or \dotCt{K} for static methods. The extraction of the location from the qualifier value is performed by the
-      function getOId().
+      function \verb|getOId()|.
   - Rewrites the method call expression into a sequence of four terms:
     - static initialization of the qualifying class
     - parameters initialization
     - actual method body
     - a return statement with no arguments after the method body.
 
-The function staticInit() triggers static initialization of the qualifying class, if this class was not initialized yet.
+The function \verb|staticInit()| triggers static initialization of the qualifying class, if this class was not initialized yet.
   Repeated calls of this function have no effect. Is required just for static methods and is described in JLS \S12.4.
   For an instance method call, the qualifying class will always be initialized already,
-  so staticInit() will have no effect.
+  so \verb|staticInit()| will have no effect.
 
-The function initParams() rewrites each parameter declaration into two statements. First is a local variable
+The function \verb|initParams()| rewrites each parameter declaration into two statements. First is a local variable
   declaration with that parameter name. The second is an assignment to that variable of the actual argument value.
 
 The return statement at the end ensures that there is a return statement on every execution path of the method. The
@@ -851,7 +851,7 @@ rule [Invoke-QSuperMethod]:
       ),, _
     )
 
-/* Elaboration result for super keyword in A.super.m() call. Have to be a typed expression.
+/*@ Elaboration result for super keyword in A.\verb|super.m()| call. Have to be a typed expression.
 */
 syntax MethodName ::= superMethodImpl ( K ) // is always equal to A.this - used to lookup the right qualifier closure.
                                         [strict]
@@ -862,7 +862,7 @@ rule [superMethodImpl]:
         objectRef(
           OId:Int,
           //The layers above the layer where method should be searched
-          // should be discarded in order to implement super.m() functionality.
+          // should be discarded in order to implement \verb|super.m()| functionality.
           _
         )::Class:ClassType  //due to the way term superMethod() is first constructed, this is the upper search layer
       )

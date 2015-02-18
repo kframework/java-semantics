@@ -6,7 +6,7 @@ module CORE-PREPROCESSING
 
 //@ \subsection{Auxiliary constructs for retrieving a set of classes}
 
-/*@ Returns a setWrap(Set[ClassType]), containing all top level classes in the program.
+/*@ Returns a \verb|setWrap(Set[ClassType])|, containing all top level classes in the program.
     Uses \verb|<namesToClasses>| to compute the result. Used by the starting rule of several preprocessing phases.
 */
 syntax KItem ::= "getTopLevelClasses"
@@ -35,7 +35,7 @@ rule [getTopLevelClasses-not-top-level]:
 rule getTopLevelClasses(_ (_ |-> mapWrap(.Map) => .Map), _)
 rule getTopLevelClasses(.Map, ClassesSet:Set) => setWrap(ClassesSet)
 
-/*@ Returns a setWrap(Set[ClassType]), containing all direct inner classes of the given class.
+/*@ Returns a \verb|setWrap(Set[ClassType])|, containing all direct inner classes of the given class.
     Uses \verb|<namesToClasses>| to compute the result.
 */
 syntax KItem ::= getInnerClasses ( ClassType )

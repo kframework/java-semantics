@@ -18,7 +18,7 @@ rule toParams([KLParams:KList]) => toParams([KLParams], .Params)
 rule toParams([KLParams:KList,, 'Param(_,, K:K,, X:Id)], Params:Params) => toParams([KLParams], (K X,Params))
 rule toParams([.KList], Params:Params) => Params
 
-// Required for getTypes()
+//@ Required for getTypes()
 rule typeOf('ParamImpl(T:Type,, _:Id)) => T
 
 /*@ \subsection{Method invocation}*/
