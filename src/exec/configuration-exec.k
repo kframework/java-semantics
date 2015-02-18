@@ -28,7 +28,7 @@ On the next line there are 3 cells related to multithreading:
   \item \cellref[ClassType]{enclosingClass} --- For inner classes, the direct lexically enclosing class of this class. For top-level classes --- no value.
   \item \cellref[ClassType]{extends} --- The base class.
   \item \cellref[Set {[} ClassType {]} ]{implTrans} --- the transitive closure of implemented interfaces.
-  \item \cellref[ Map {[} Signature \mapsto ClassType {]} ]{methods} --- The map of accessible methods. Keys are method signatures, values are classes where methods are defined. Includes both methods declared within this class as well amd methods inherited from base classes/ base interfaces.
+  \item \cellref[ Map {[} Signature \mapsto ClassType {]} ]{methods} --- The map of accessible methods. Keys are method signatures, values are classes where methods are defined. Includes both methods declared within this class as well as methods inherited from base classes/ base interfaces.
   \item \cellref[Bag]{methodDecs} --- the collection of method declarations (\cellref{methodDec} cells)in the current class. This cell contains only a subset of methods from \cellref{methods}, as the set of accessible methods from \cellref{methods} also includes methods inherited from base classes/interfaces. Hence the need of two separate collections. Each \cellref[Bag]{methodDec} contains the following data:
   \begin{itemize}
     \item \cellref[Signature]{methodSignature} --- The method signature, acting as identifier of the \cellref{methodDec}

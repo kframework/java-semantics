@@ -3,111 +3,79 @@ module CONFIGURATION-PREP
     imports CORE-FUNCTIONS
 
 /*@
-The configuration is divided into three large cell groups. The group \cellref[]{threads} contains one or multiple cells \cellref[]{thread}. Here is the data related to the execution of a thread, such as the computation, stack, local environment. The second group is contained inside \cellref[]{classes} that has multiple \cellref[]{class} cells -- anything class-related. What remains are the top-level cells -- the third group. Top-level cells are related to memory store, global thread-synchronization data and auxiliary cells for debugging.
-
-Some cells in this configuration are not used within the rules. They serve only for grouping other cells by context. Grouping cells are colored yellow, whereas actual semantics cells have other colors.
-
-While describing the configuration we will denote with \cellref[\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}]{cell} a container cell, holding another cells, and with \cellref[Type]{cell} a leaf cell and its type.
-
-During the preprocessing phase there is only one \cellref[\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}]{thread} where the whole program with all its classes is preprocessed. During execution phase there might be multiple \cellref[]{thread} cells -- one per actual running thread. The cell \cellref[]{thread} contains leaf-cells \cellref[]{k} and \cellref[]{stack} and container cells \cellref[\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}]{methodContext} and \cellref[\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}]{threadData}. The cell \cellref[]{k} is the actual computation, both during preprocessing phases and execution. When the cell \cellref[]{k} remains empty during preprocessing, this represents the end of the current preprocessing phase and transition to the next one. If the cell \cellref[]{k} remains empty during the execution, the enclosing thread is terminated. The next cell in order is \cellref[]{stack} -- the thread stack.
-
-Inside the cell \cellref[\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}]{methodContext} we have various data holding the context of the currently executing method. Here we have:
+The Static semantics consists of several phases that analyze the input program, distribute it from the AST form to a set of cells and finally assembles it back to an AST, this time containing just a subset of features of Java. Each phase digs deeper into a program strucutre, and most phases also store their result into new cells. Below is the list of global phases, in their execution order:
 
 \begin{itemize}
-\item \cellref[Map{[}Id\mapsto{}Int{]}]{env} -- the map from local variable names to their location inside \cellref[]{store}.
-\item \cellref[]{localClassesEnv} is related to local classes and will be explained later.
-\item \cellref[Type]{return} -- method return type.
-\item \cellref[ContextType]{contextType} -- may have one of two values: staticCT or instanceCT, depending on whether the current method is static or non-static.
-\item \cellref[\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}]{crntObj} -- the object associated with the current running method, if any. In non-static contexts \cellref[ClassType]{crntClass} contains the compile-time class associated to the current method, and \cellref[Int]{location} holds the location of the current object in the store. For static contexts cells have empty values: noClass and $\dotCt{K}$ respectively.
+	\item Process Type Names
+	\item Process Compilation Units
+	\item Process Class Declarations
+	\item Process Class Members
+	\item Elaboration
+	\item Folding
 \end{itemize}
 
-The group of cells \cellref[\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}]{threadData} contains:
+The configuration cells may be divided into 2 categories: cells directly placed inside the all-enclosing cell \cellref{T} (top-level cells), and cells inside \cellref{classes}. The cell \cellref{classes} is a collection of \cellref{class} cells, each representing a Java class (both supported classes from JDK and classes defined by the developer). A \cellref{class} contains all components of a class --- such as extends/implements clauses, imports, fields, methods, etc, each distributed into a separate class, in order to be conveniently accessed when needed.
 
+In the remaining of this section are documented all cells of the configuration, ordered by the global phase in which they are first used.
+
+\paragraph{Initial state} The first row contains three cells most relevant to computation initial state:
 \begin{itemize}
-\item \cellref[Int]{tid} -- the thread id.
-\item \cellref[Map{[}Int\mapsto{}Int{]}]{holds} -- a map from Object locations to integer numbers. Map keys are monitor objects on which the current thread has the locks. Map values hold the number of times the lock was acquired.
-\item \cellref[Bool]{interrupted} -- boolean value signaling whether the current thread was interrupted.
+	\item \cellref[K]{k} --- Holds the current computation in all phases of the semantics. Initializes with the AST representation of the program.
+	\item \cellref[K]{program} --- A backup of program AST. Required because the initial AST is needed in both 1st ans 2nd phase of static K-Java, but the first phase destroys the content inside \cellref{k}. Also used in the last phase (Folding) to assemble the preprocessed program.
+	\item \cellref[GlobalPhase]{globalPhase} --- The current computation global phase.
 \end{itemize}
 
-From the evaluation standpoint, the semantics is divided into several preprocessing phases followed by the actual program execution. Preprocessing phases are roughly equivalent to java compilation. They perform all the computations that would be traditionally expected from the compiler. The evaluation phases are:
-
+\paragraph{Process Type Names} During this phase, one global cell is computed:
 \begin{itemize}
-\item Process Type Names
-\item Process Compilation Units
-\item Process Class Declarations
-\item Process Class Members
-\item Elaboration
-\item Execution
+	\item \cellref[Map{[}PackageId\mapsto{}Map{[}Id\mapsto{}ClassType{]}{]}]{namesToClasses} A two-level map. First level is a map from package names to second-level maps. Second-level maps are from simple class names to fully qualified class names within the package. This cell is extensively used through the semantics. The map contains both top-level and inner classes. For inner classes, their enclosing package is the fully qualified class name of the directly enclosing class.
 \end{itemize}
 
-The current evaluation phase of the semantics is stored in \cellref[]{globalPhase}. The cell is initialized with the id of the first phase - ProcTypeNamesPhase.
-
-Next are the cells from the group \cellref[\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}]{phStart} that exist since the program beginning:
+Also during Process Type Names classes are first registered. Again, both top-level and inner classes are covered. In a newly created \cellref[]{class} just a few sub-cells are initialized with data:
 
 \begin{itemize}
-\item \cellref[K]{program} -- The input program, in AST format.
-\item \cellref[String]{mainClass} -- The initial class, containing the method main().
-\end{itemize}
+	\item \cellref[ClassType]{classType} --- The fully qualified class name. The identifier of the class.
+	\item \cellref[ClassMetaType]{classMetaType} --- Whether the type stored in this cell is class or interface. To avoid terminology superfluousness, we will refer hereafter to both classes and interfaces as "classes", making distinctions only when necessary.
+	\item \cellref[ClassAccessMode]{classAccessMode} --- The access modifier of the class, either public or package.
+	\item \cellref[ClassPhase]{classPhase} --- represents the state of this class. In addition to the global computation phase, each class has its own lifecycle phase. Class phases are required to keep track which classes were processed in the current global phase and which were not. During each global phase all classes should transition to a certain class phase. However, as we shall see, not all global phases change the state of the class. The class phases are:
 
-Both cells are initialized with arguments passed through command-line, same way as for JDK Java.
-
-The remaining global cells are grouped by the phase when they first come into play. Thus, the cells within \cellref[]{phTN} are populated during Process Type Names phase, the cells from \cellref[]{phCU} -- during Process Compilation Unit and so on. The last group of global cells, \cellref[]{groupDebug} serve for debugging.
-
-\bigskip
-
-In the phase Process Type Names the semantics passes through all compilation units and computes two global cells:
-
-\begin{itemize}
-\item \cellref[Map{[}PackageId\mapsto{}Map{[}Id\mapsto{}ClassType{]}{]}]{namesToClasses} A two-level map. First level is a map from package names to another map. That second-level map maps simple class names within a package to fully-qualified class names. This cell is extensively used through the semantics. The map contains both top-level and inner classes. For inner classes, their enclosing package is the fully qualified class name of the directly enclosing class.
-\item \cellref[Map{[}ClassType\mapsto{}AccessMode{]}]{classesToAccessModes} -- A map from class names to their respective access mode, for all classes.
-\end{itemize}
-
-\bigskip
-
-The phase Process Compilation Units takes again as input the whole program and analyzes it at a deeper level. This time data collected at the previous phase is used to process compilation unit imports. Imports data is stored temporarily in the cell:
-
-\begin{itemize}
-\item \cellref[Map{[}Id\mapsto{}ClassType{]}]{compUnitImports} A map from all type names accessible in this compilation unit to their respective fully qualified class names. This includes both classes accessible through imports declarations and classes declared in the package of the current compilation unit.
-\end{itemize}
-
-Next during this phase each class is stored into a \cellref[]{class} cell. Again, both top-level and inner classes are covered. In a newly created a \cellref[]{class} just a few sub-cells are initialized with data. Among them three have a central role in the whole semantics:
-
-\begin{itemize}
-\item \cellref[ClassType]{className} -- The fully qualified class name.
-\item \cellref[ClassMetaType]{classMetaType} -- Whether the type stored in this cell is class or interface. To avoid
-terminology superfluousness, we will refer from now on to both classes and interfaces as "classes", making distinctions only when necessary.
-\item \cellref[ClassPhase]{classPhase} -- represents the state of this class. In addition to the global computation phase, each class has its own lifecycle phase. Class phases are required to keep track which classes were processed in the current global phase and which were not. During each global phase all classes should transition to a certain class phase. However the relationship between global phases and class phases is not one-to-one. There could be several per-class transitions in one global phase, and none in another. The order in which classes are preprocessed is not their literal order but the order imposed by their dependency relationship. More details will be presented below. The class phases are:
-
-\begin{itemize}
-\item Created -- the initial phase. At the end of Process Compilation Units all classes are registered as "created".
-\item Bases Resolved
-\item Declaration Processed
-\item Members Processed
-\end{itemize}
+	\begin{itemize}
+		\item Discovered --- the initial phase. At the end of Process Type Names all classes are in the state "Discovered".
+		\item Stored
+		\item Bases Resolved
+		\item Declaration Processed
+		\item Members Processed
+		\item Folded
+	\end{itemize}
 
 \end{itemize}
 
-In addition to the three cells above, during Process Compilation Units a few more cells are saved. They are grouped under \cellref[\begin{array}{@{}c@{}}{\kall{}{}... \ \kall{}{}}\end{array}]{cphCreated} :
+\paragraph{Process Compilation Units} At the beginning of this phase computation is again initialized with the initial AST from \cellref{program}. The following new cells are filled in inside each \cellref{class}:
 
 \begin{itemize}
-\item \cellref[ClassType]{enclosingClass} -- the directly enclosing class, for inner classes. The value noClass fr top-level classes.
-\item \cellref[K]{rawExtends} -- The extends clause of this class, in its raw form.
-\item \cellref[K]{rawImplements} -- The implements clause, in AST form.
-\item \cellref[K]{rawDeclarations} -- The class body, in AST form.
-\item \cellref[Map{[}Id\mapsto{}ClassType{]}]{cuImports} -- For top-level classes, the content of this cell copies \cellref[]{compUnitImports} computed for this compilation unit. For inner classes the cell is empty. The classes in this cell are required to resolve extends/implements clauses of top-level cells.
+	\item \cellref[ClassType]{enclosingClass} -- the directly enclosing class, for inner classes, or no value for top-level classes.
+	\item \cellref[K]{rawExtends} -- The extends clause of this class, in its raw (AST) form.
+	\item \cellref[K]{rawImplements} -- The implements clause, in AST form.
+	\item \cellref[K]{rawDeclarations} -- The class body, in AST form.
+	\item \cellref[Map{[}Id\mapsto{}ClassType{]}]{cuImports} -- A map from names accessible inside this class to fully qualified class names they represent. Only computed for top-level classes at this phase. For inner classes this cell remains empty.
+	\item \cellref[ContextType]{classContextType} --- Either static or instance, for inner classes. Always static for top-level classes.
 \end{itemize}
 
-As we can see, the cells saved during the class phase Created contain all the data of the original AST of the class. Thus, initial AST representation of the program is no longer needed. In fact, the cell \cellref[]{program} is discarded at the end of Process Compilation Units. The remaining preprocessing phases will use class data in this initial form to compute other cells within \cellref[]{class}, finally used for execution.
+The class phase changes from Discovered to Stored. As we can see, the cells computed so far contain all the data of the original program. Thus, initial AST representation of the program is no longer needed. In fact, the cell \cellref[]{program} is discarded at the end of Process Compilation Units. The remaining preprocessing phases will use class data in this initial form to compute other cells within \cellref[]{class}, finally used for execution.
 
-\bigskip
 
-Next phase is Process Class Declarations. Here each class passes through two more class phases: Bases Processed and Declarations Processed. First, for each class the semantics attempts to resolve its extends/implements clauses into fully qualified class names. The order in which dependencies are resolved depends on both class inheritance relationships as well as nesting relationships. Once the dependencies of a class are resolved, they are stored into a temporary cell:
+Also during Process Compilation Units the following global cell is used:
+
+\begin{itemize}
+	\item \cellref[Map{[}Id\mapsto{}ClassType{]}]{compUnitImports} A map from all type names accessible in the current compilation unit (Java file) to their respective fully qualified class names. This includes both classes accessible through imports declarations and classes declared in the package of the current compilation unit. Used to compute \cellref{cuImports} of top-level classes.
+\end{itemize}
+
+\paragraph{Process Class Declarations} Here each class passes through two more class phases: Bases Processed and Declarations Processed. First, for each class the semantics attempts to resolve its extends/implements clauses into fully qualified class names. The order in which dependencies are resolved depends on both class inheritance relationships as well as nesting relationships. Once the dependencies of a class are resolved, they are stored into a temporary cell:
 
 \begin{itemize}
 \item \cellref[K]{unprocessedBases} -- Initialized with the list of fully qualified class names for classes mentioned in extends/implements clauses of this class.
 \end{itemize}
 
-Once \cellref[K]{unprocessedBases} are saved the class enters into the phase Bases Resolved. It then waits in this phase until all extends/implements classes reach the phase Declarations Processed. The restrictions in JLS related to class dependencies guarantee that classes cannot have cyclic dependencies, thus a class cannot get locked in the waiting state. The cell \cellref[K]{unprocessedBases} is used to determine the moment when the class may exit the waiting state. Once a class reaches the phase Declarations Processed, is is deleted from cells \cellref[K]{unprocessedBases} of other classes. Thus, when all extends/implements dependencies of a class reach the phase Declarations Processed, the content of the its \cellref[K]{unprocessedBases} cell becomes empty. Once in this state, the class enters into the phase Declarations Processed itself and computes three more cells:
+Once the content of \cellref[K]{unprocessedBases} is created, the class enters into Bases Resolved phase. It then waits in this phase until all classes referred in extends/implements reach the phase Declarations Processed. The restrictions in JLS related to class dependencies guarantee that classes cannot have cyclic dependencies, thus a class cannot get locked in the waiting state. The cell \cellref[K]{unprocessedBases} is used to determine the moment when the class may exit the waiting state. Once a class reaches the phase Declarations Processed, is is deleted from cells \cellref[K]{unprocessedBases} of other classes. Thus, when all extends/implements dependencies of a class reach the phase Declarations Processed, the content of the its \cellref[K]{unprocessedBases} cell becomes empty. Once in this state, the class enters into the phase Declarations Processed itself and computes three more cells:
 
 \begin{itemize}
 \item \cellref[ClassType]{extends} -- The base class, fully qualified.
@@ -127,36 +95,46 @@ The need to cover all these cases leads to the intricate order in which class de
 
 When a class enters the phase Declarations Processed, the cells \cellref[]{rawExtends}, \cellref[]{rawImplements} and \cellref[K]{unprocessedBases} are no longer needed and are discarded. Once all classes reach this phase the computation proceeds to the next global phase.
 
-\bigskip
-
-During the global phase Process Class Members each class processes its members and reaches the state Members Processes. Until then the class body is stored in \cellref[]{rawDeclarations}. A class member could be one of:
-
+During Process Class Declarations the following global cell is first used:
 \begin{itemize}
-\item field
-\item method
-\item constructor
-\item static or instance initializer
+	\item \cellref[ClassType]{crntClass} --- The current class. Used in multiple phases starting from Process Class Declarations.
 \end{itemize}
 
-During this global phase class members are distributed into the following cells:
+\paragraph{Process Class Members} During this phase each class processes its members and reaches the state Members Processes. Until then, the class body is stored in \cellref[]{rawDeclarations}. A class member could be one of:
 
 \begin{itemize}
-\item \cellref[Set{[}ClassType{]}]{implTrans} -- The transitive closure of implemented interfaces. In the remaining phases this set is used by the subtyping relationship.
-\item \cellref[Map{[}Signature\mapsto{}ClassType{]}]{methods} -- The map of accessible methods. Keys are method signatures, values are classes where methods are defined. Includes both methods declared within this class as well amd methods inherited from base classes/ base interfaces.
-\item \cellref[\text{Multiple inner cells}]{methodDecs} -- The map of defined methods. Map values are method implementations. This cell includes only methods defined within the body of the present class.
-\item \cellref[K]{fieldDecs} -- The list of instance field declarations, stored as a list of local variable declaration statements, without initializers. Used during object instantiation.
-\item \cellref[Map{[}Id\mapsto Field Entry{]}]{instanceEnv} -- the same fields as in \cellref[]{fieldDecs} but in a different form. Used in the elaboration phase.
-\item \cellref[K]{instanceInit} -- The list of instance initializers of the class combined into one big instance initializer. Instance field initializers are also concatenated into this cell in their textual order. The content of this cell is executed as part of object instantiation.
-\item \cellref[Map{[}Id \mapsto Location{]}]{staticEnv} -- The map from static fields declared in this class to their locations in the store. Since static fields have only one instance per class declaration, it is possible to allocate a value in the store for them at this phase, when static fields are first reaced.
-\item \cellref[K]{staticInit} -- The list of static initializers and static field initializers concatenated into one block. Invoked during class static initialization.
-\item \cellref[Map{[}Id \mapsto Value{]}]{constantEnv} -- The map from constants to their actual values. Constants in Java have a slightly different semantics compared to final static fields. In particular, accessing them don't trigger static initialization of the declaring class.
+	\item field
+	\item method
+	\item constructor
+	\item static or instance initializer
+\end{itemize}
+
+The following new class cells are produced:
+
+\begin{itemize}
+	\item \cellref[Set{[}ClassType{]}]{implTrans} -- The transitive closure of implemented interfaces. In the remaining phases this set is used by the subtyping relationship.
+  \item \cellref[ Map {[} Signature \mapsto ClassType {]} ]{methods} --- The map of accessible methods. Keys are method signatures, values are classes where methods are defined. Includes both methods declared within this class as well as methods inherited from base classes/ base interfaces.
+  \item \cellref[Bag]{methodDecs} --- the collection of method declarations (\cellref{methodDec} cells)in the current class. This cell contains only a subset of methods from \cellref{methods}, as the set of accessible methods from \cellref{methods} also includes methods inherited from base classes/interfaces. Hence the need of two separate collections. Each \cellref[Bag]{methodDec} contains the following data:
+  \begin{itemize}
+    \item \cellref[Signature]{methodSignature} --- The method signature, acting as identifier of the \cellref{methodDec}
+		\item \cellref[Type]{methodReturnType} --- Method return type
+    \item \cellref[ List{[} Param {]} ]{methodParams} --- method parameters
+    \item \cellref[K]{methodConstrFirstLine} --- the first line of a constructor (if this method is indeed a constructor, for other classes than \verb|Object|). It contains a call to another constructor: either \verb|super()| or \verb|this()|.
+		\item \cellref[K]{methodBody} --- method body
+    \item \cellref[AccessMode]{methodAccessMode} --- method access mode
+    \item \cellref[ContextType]{methodContextType} --- either static or instance
+		\item \cellref[MethodMetaType]{methodMetaType} --- either method or constructor
+  \end{itemize}
+  \item \cellref[K]{instanceFields} --- The list of instance field declarations, stored as a list of local variable declaration statements, without initializers. Used during object instantiation.
+	\item \cellref[K]{instanceInit} -- The list of instance initializers of the class combined into one big instance initializer. Instance field initializers are also concatenated into this cell in their textual order.
+  \item \cellref[K]{staticFields} --- The list of static field declarations, in a similar format to \cellref{instanceFields}
+   \item \cellref[K]{staticInit} --- The list of static initializers and static field initializers concatenated into one block.
+	\item \cellref[Map{[}Id \mapsto Value{]}]{constantEnv} -- The map from compile-time constants to their actual values. Constants in Java have a slightly different semantics compared to final static fields. In particular, accessing them don't trigger static initialization of the declaring class.
 \end{itemize}
 
 Once all the cells above are computed the class proceeds into the phase Members Processed and the cell \cellref[]{rawDeclarations} is deleted.
 
-\bigskip
-
-The last preprocessing phase is Elaboration. Here all the code blocks are processed - method and constructor bodies, static and instance initializers. Most of the information traditionally inferred by the compiler is computed at this phase. More precisely the elaboration performs the following transformations:
+\paragraph{Elaboration} Here all the code blocks are processed --- method and constructor bodies, static and instance initializers. Most of the information traditionally inferred by the compiler is computed at this phase. More precisely the elaboration performs the following transformations:
 
 \begin{itemize}
 \item Each name is resolved into local variable, field, method, class or package. While a method may be distinguished from other cathegories purely syntactically, resolving to other categories requires knowledge of the names existing in the current context.
@@ -169,46 +147,22 @@ The last preprocessing phase is Elaboration. Here all the code blocks are proces
 Despite this phase being the most complex preprocessing phase of all, it introduces few new cells. Most of them are related to local classes. Inside \cellref[]{class} just one new cell is introduced:
 
 \begin{itemize}
-\item \cellref[Map{[}Id \mapsto Type{]}]{enclosingLocalEnv} -- The map from local variables of the current block to their types. Used during local classes processing.
+\item \cellref[Map{[}Id \mapsto Type{]}]{enclosingLocalEnv} --- The map from local variables of the current block to their types. Used during local classes processing.
 \end{itemize}
 
 Among global cells the following new cells are added:
 
 \begin{itemize}
-\item \cellref[List[mapWrap(Map[Id \mapsto Type])]]{elabEnv} -- A stack where each layer is a map of local variables. Each layer of the stack represents a code block, in the blocks nesting order. Inside each layer, the map is from local variables accessible in that layer to variable types.
-\item \cellref[List[mapWrap(Map[Id \mapsto ClassType])]]{localTypes} -- A cell similar in structure to the previous one. This time map keys are local classes instead of variables.
-\item \cellref[Int]{nextLocalId} -- a number used to generate unique fully-qualified class names for local classes.
+	\item \cellref[List[mapWrap(Map[Id \mapsto Type])]]{elabEnv} --- A stack where each layer is a map of local variables. Each layer of the stack represents a code block, in the blocks nesting order. Inside each layer, the map is from local variables accessible in that layer to variable types.
+	\item \cellref[Int]{contextType} --- The context type of the currently elaborated class. Either static or instance.
+	\item \cellref[List[mapWrap(Map[Id \mapsto ClassType])]]{localTypes} --- A cell similar in structure to \cellref{elabEnv}. This time it contains stack layers which are maps from local class names to local class types.
+	\item \cellref[Int]{nextLocalId} --- a number used to generate unique fully-qualified class names for local classes.
+	\item \cellref[K]{elabBuffer} --- a temporary cell used during elaboration of local classes.
 \end{itemize}
 
-During the elaboration phase no cells are consumed. Instead, the code blocks stored inside \cellref[]{methodDecs}, \cellref[]{instanceInit}, \cellref[]{staticInit} are processed and stored back into the same cell. After elaboration the classes remain in the same state -- Members Processes. The state Members Processed is in fact the final state of the cell \cellref[]{class}.
+During the elaboration phase no cells are consumed. Instead, the code blocks stored inside \cellref[]{methodDecs}, \cellref[]{instanceInit}, \cellref[]{staticInit} are processed and stored back into the same cell. After elaboration the classes remain in the same state --- Members Processed. The state Members Processed is in fact the final state of the cell \cellref[]{class}.
 
-\bigskip
-
-When evaluation reaches the last phase, execution, classes have one more cell to enter into play:
-
-\begin{itemize}
-\item \cellref[]{staticInitStatus} -- a flag indicating whether the class was statically initialized or not.
-\end{itemize}
-
-Among global cells the following are related to execution phase:
-
-\begin{itemize}
-\item \cellref[Map{[}Location:Int \mapsto Value:TypedVal{]}]{store} -- the program memory. Map from memory locations to actual values. The single most important cell of the execution phase.
-\item \cellref[Int]{nextLoc} -- the number of allocated memory locations. Used to generate unique memory addresses for each allocation.
-\item \cellref[List]{in} -- the standard input, represented as pre-parsed list of elements of type Int or String.
-\item \cellref[List]{out} -- the standard output.
-\item \cellref[Map{[}Type \mapsto TypedVal{]}]{classLiteralsMap} -- a map from types T to objects that represent the value of the expression T.class .
-
-\item the remaining cells are related to threads:
-\begin{itemize}
-\item \cellref[Set{[}ObjLocation:Int{]}]{busy} -- the set of busy objects. E.g. monitor objects for which there is a thread holding the monitor.
-\item \cellref[Map{[}ThreadId:Int \mapsto OL:Int{]}]{waitingThreads} -- The map from threads to monitor objects on which the threads are blocked in a call to wait(). Used by the methods Object.wait(), Object.notify(), Object.notifyAll().
-\item \cellref[Set{[}ThreadId:Int{]}]{terminated} -- the set of terminated threads.
-\end{itemize}
-
-\end{itemize}
-
-The rest of the global cells are related to debugging.
+\paragraph{Folding} During the last phase of static semantics the program is assembled from \cellref{classes} back into the AST form. First the content of each class is assembled into \cellref[K]{folded} of the respective class, and the class phase changes to Folded. Second, the AST representation of each class is appended into \cellref{program}. When this phase ends, the content of \cellref{program} is printed to the standart output.
 */
 
 configuration
@@ -217,11 +171,11 @@ configuration
 
       <k color="Green"> $PGM:K </k>
 
-      <globalPhase color="YellowGreen"> ProcTypeNamesPhase </globalPhase>
-
       //The initial program loaded by krun. For full mode and preprocessing this is
       //the initial java program, for execution mode it is the folded java program.
       <program color="LightSteelBlue"> $PGM:K </program>
+
+      <globalPhase color="YellowGreen"> ProcTypeNamesPhase </globalPhase>
 
       <br/>
       <br/>
