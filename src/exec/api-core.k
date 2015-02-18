@@ -259,7 +259,7 @@ rule [storeCopy-discard]:
 //@\subsection{Class literal --- <Class>.class}
 
 /*@ We need to synchronize access to class literals to avoid instantiation of the came .class by multiple threads.
-  This is done by the term temp in <classLiteralsMap>. We cannot use 'Synchronized because it required an
+  This is done by the term temp in \verb|<classLiteralsMap>|. We cannot use 'Synchronized because it required an
   objectRef as argument, and we might not have any objects instantiated at the moment.
 */
 rule [Lit-Class-Instantiate]:
@@ -287,7 +287,7 @@ rule [Lit-Class]:
     <k> 'Lit('Class(T:Type)) => TV ...</k>
     <classLiteralsMap>... T |-> TV:TypedVal ...</classLiteralsMap>
 
-//@Used inside <classLiteralsMap> only for synchronization purposes
+//@Used inside \verb|<classLiteralsMap>| only for synchronization purposes
 syntax KItem ::=  "temp"
 
 endmodule

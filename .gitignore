@@ -33,6 +33,7 @@
 /src/.latex
 /src/.modules
 /src/sty/.project
+/src/sty/.texlipse
 /src/sty/*.pdf
 /src/sty/*.synctex
 /src/sty/.latex

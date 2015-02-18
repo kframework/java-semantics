@@ -37,7 +37,7 @@ rule [elaborateBlocks-discard]:
     elaborateBlocks(setWrap(.)) => .
 
 /*@ Elaborates the methods of the current class. The map contains the methods that were not elaborated yet.
-When a class elaboration starts, the map is initialized with the contet of <methods> --- all the methods accessible in
+When a class elaboration starts, the map is initialized with the contet of \verb|<methods>| --- all the methods accessible in
 the current class. Only methods declared in the current class are elaborated. The rest are discarded from the map.
 */
 syntax KItem ::= elabMethods ( Map )
@@ -128,7 +128,7 @@ rule [elabStaticInit-End]:
     <classType> Class </classType>
     <staticInit> CHOLE => K </staticInit>
 
-//@Adds a new empty layer to <elabEnv>
+//@Adds a new empty layer to \verb|<elabEnv>|
 syntax KItem ::= "addElabEnv"
 rule [addElabEnv]:
     <k> addElabEnv => . ...</k>

@@ -121,7 +121,7 @@ rule [allocAndInitArray-MultiDim-desugar]:
         [structural]
 
 
-/*@ The increment of <nextLoc> by one is required to avoid problems with empty arrays.
+/*@ The increment of \verb|<nextLoc>| by one is required to avoid problems with empty arrays.
   Two empty arrays allocated one after another should have different starting locations, even if those starting
   locations are not used. This is required to identify them as two different objects. Their distinction
   could be tested by the operator ==.

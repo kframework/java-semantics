@@ -53,13 +53,13 @@ rule [processTypeWithDepends-Discard2]:
 For each class computes the set of inherited interfaces, inherits all the members,
 processes inner declarations. Computes the following class cells:
 
-  - <implTrans>
-  - <instanceFields>
-  - <methods>
-  - <methodDecs>
-  - <instanceInit> --- temporary cell, deleted after class body is processed.
-  - <staticEnv>
-  - <staticInit>
+  - \verb|<implTrans>|
+  - \verb|<instanceFields>|
+  - \verb|<methods>|
+  - \verb|<methodDecs>|
+  - \verb|<instanceInit>| --- temporary cell, deleted after class body is processed.
+  - \verb|<staticEnv>|
+  - \verb|<staticInit>|
 
 First we inherit methods from interfaces, then from the base class, and in the end we add methods declared in this
   class. Each new method overwrites previous methods with the same signature.
@@ -106,7 +106,7 @@ rule [processType-discard]:
     <classType> Class </classType>
     <classPhase> MembersProcessedCPhase </classPhase>
 
-//@ Compute <implTrans> cell --- interfaces transitively implemented
+//@ Compute \verb|<implTrans>| cell --- interfaces transitively implemented
 syntax KItem ::= computeImplTrans ( Set )
 
 rule [computeImplTrans]:
@@ -198,7 +198,7 @@ rule isOverridden(BaseC:ClassType, package, SubC:ClassType)
 rule isOverridden(_, private, _) => false
 
 /*@ Inherit a method by the current class. The inherited method overwrites previous methods
-  with the same signature in <methods>
+  with the same signature in \verb|<methods>|
 */
 syntax KItem ::=  inherit ( MethodRef )
 
@@ -485,7 +485,7 @@ when
     andBool isFinalModifiers(Modifiers)
 
 /*@ Discard inner class declarations at this phase. They are processed when their
-    respective <class> tag is encountered as part of processClasses.
+    respective \verb|<class>| tag is encountered as part of processClasses.
 */
 rule [ClassDec-discard]: 'ClassDec(_) => .
 rule [InterfaceDec-discard]: 'InterfaceDec(_) => .

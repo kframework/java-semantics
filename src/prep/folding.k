@@ -7,7 +7,7 @@ rule [FoldingPhase-start]:
     <globalPhase> ElaborationPhase => FoldingPhase </globalPhase>
     (.Bag => <program> [.KList] </program>)
 
-/*@ The sole content of <k> cell during FoldingPhase
+/*@ The sole content of \verb|<k>| cell during FoldingPhase
 */
 syntax KItem ::= "foldingPhase"
 

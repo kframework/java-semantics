@@ -9,16 +9,16 @@ module PROCESS-COMP-UNITS
 ProcCompUnitsPhase:
   For each Compilation unit separately:
 
-1. Process import declarations. Build <compUnitImports>.
+1. Process import declarations. Build \verb|<compUnitImports>|.
 
   For each class C in CompUnit separately:
 
-2. For each class save the <class> cell with just the following:
-  - <classType> - since we process CU content recursively, should be available
-  - <enclosingClass>
-  - <imports> - just for top-level classes, imports are taken from the <compUnitImports>.
+2. For each class save the \verb|<class>| cell with just the following:
+  - \verb|<classType>| --- since we process CU content recursively, should be available
+  - \verb|<enclosingClass>|
+  - \verb|<imports>| --- just for top-level classes, imports are taken from the \verb|<compUnitImports>|.
               For inner classes this cell is still empty.
-  - <classDec> - content of its 'ClassDec term. When this term is non-empty
+  - \verb|<classDec>| --- content of its 'ClassDec term. When this term is non-empty
     then the class has not been preprocessed yet.
 
 3. Process inner classes of C.
@@ -75,6 +75,8 @@ rule [processTypeDecsInPCUPhase-typeDec-ComputeFullName]:
     )                [structural]
 
 /*@
+Structure of 'ClassDec:
+
 \begin{verbatim}
 'ClassDec(
   'ClassDecHead(
@@ -186,7 +188,7 @@ rule [processTypeDecsInPCUPhase-IInterfaceDec]:
     <rawDeclarations> _ => [Decls] </rawDeclarations>
     <classContextType> _ => staticCT </classContextType>
 
-/*@ If the given type is top-level, then save <imports> from the <compUnitImports> cell.
+/*@ If the given type is top-level, then save \verb|<imports>| from the \verb|<compUnitImports>| cell.
 Otherwise do nothing.*/
 syntax KItem ::=  saveImportsInPCUPhase (
                 K //is processed into TypeName

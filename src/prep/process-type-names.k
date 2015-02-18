@@ -7,9 +7,9 @@ module PROCESS-TYPE-NAMES
 /*@
 First pass - collecting globally accessible names in the program. This includes packages,
 top-level classes and inner classes. In each compilation unit just class declarations
-(both global and inner) are processed. Results are stored in the cell <namesToClasses>.
+(both global and inner) are processed. Results are stored in the cell \verb|<namesToClasses>|.
 
-The initial configuration contains the initial program in cells <k> and <program>, and global phase is ProcTypeNamesPhase.
+The initial configuration contains the initial program in cells \verb|<k>| and \verb|<program>|, and global phase is ProcTypeNamesPhase.
 */
 
 /*@ \subsection{Compilation units}*/
@@ -109,7 +109,7 @@ rule [processTypeNames-ElemDiscard]:
     processTypeNames([(Label:KLabel(_) => .KList),, _], _)
 when notBool( (Label ==KLabel 'ClassDec) orBool (Label ==KLabel 'InterfaceDec) )
 
-//We match PackId in <namesToClasses> just to be sure that the package was added to the map.
+//@We match PackId in \verb|<namesToClasses>| just to be sure that the package was added to the map.
 rule [processTypeNames-Discard]:
     <k> processTypeNames([.KList], PackId:PackageId) => .K ...</k>
     <namesToClasses>... PackId |-> _ ...</namesToClasses>

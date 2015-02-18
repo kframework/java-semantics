@@ -311,7 +311,7 @@ rule haveUnaugmentedConstructors(ConsName:Id, LocalEnvClass:ClassType,
 when
     notBool getLastKListElement([TList]) ==K LocalEnvClass
 
-//@ Elaborates the given node and saves it to <elabBuffer>
+//@ Elaborates the given node and saves it to \verb|<elabBuffer>|
 syntax KItem ::= appendToElabBuffer ( K ) //[strict, context(result(ElabKResult))] //K bug generalized strictness
 context appendToElabBuffer ( HOLE )              [result(ElabKResult)]
 
@@ -329,7 +329,7 @@ rule [loadElabBuffer]:
 
 syntax KItem ::= localClassGetExtraArgs( ClassType )
 
-/*@ When <enclosingLocalEnv> is not empty (only possible for certain local classes),
+/*@ When \verb|<enclosingLocalEnv>| is not empty (only possible for certain local classes),
   we add one more argument to the consturctor call --- the local environment object. */
 rule [elab-QNewInstance-local-augment-arguments]:
     <k>

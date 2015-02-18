@@ -138,8 +138,8 @@ when
     )
     andBool notBool OL in keys(Holds)
 
-/*@Second part of a wait. Waiting was already registered to <waitingThreads>.
-When the record in <waitingThreads> will be deleted, waiting itself shall end.
+/*@Second part of a wait. Waiting was already registered to \verb|<waitingThreads>|.
+When the record in \verb|<waitingThreads>| will be deleted, waiting itself shall end.
 */
 syntax KItem ::=  waitImpl (
                 Int //Monitor object location
@@ -272,8 +272,8 @@ rule [ThreadTermination]:
 
 //@ \subsection{Debug aids}
 
-/*@ Dissolve all cells except <out> for the purpose of model checking. We will avoid duplicates caused by the same
-    <out> but different order of content in other cells.*/
+/*@ Dissolve all cells except \verb|<out>| for the purpose of model checking. We will avoid duplicates caused by the same
+    \verb|<out>| but different order of content in other cells.*/
 rule [DissolveAllExceptOut]:
     <T>
       <out> Out:List </out>

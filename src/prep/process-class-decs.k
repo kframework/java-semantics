@@ -127,7 +127,7 @@ syntax KItem ::= kListToSet ( KListWrap,  //a list of some K Terms
 rule kListToSet([(K:K => .KList),,_], (_ (.Set => SetItem(K) )))
 rule kListToSet([.KList], TypeSet:Set) => setWrap(TypeSet)
 
-//@ Receives a kListToSet term ans saves the resulting set into <imports>
+//@ Receives a kListToSet term ans saves the resulting set into \verb|<imports>|
 syntax KItem ::= saveImplements ( ClassType, K ) [strict(2)]
 
 rule [saveImplements]:
@@ -137,7 +137,7 @@ rule [saveImplements]:
 
 /*@ Computes the full names map used to resolve
     classes by simple name inside the class specified by the arg 4,
-    and stores them inside <imports>.*/
+    and stores them inside \verb|<imports>|.*/
 syntax KItem ::=  saveImports  (
                 ClassType,  //Class - the actual class
                 ClassType,  //The outer class of this class, if any,
@@ -214,7 +214,7 @@ rule [saveImports-ComputeResult]:
     <classType> BaseClass:ClassType </classType>
     <imports> BaseClassMap:Map </imports>
 
-//@ Save the computed Imports map into the <imports> cell of the given class
+//@ Save the computed Imports map into the \verb|<imports>| cell of the given class
 rule [saveImports-end]:
     <k>
       saveImports(Class:ClassType, _,_,_,_, mapWrap(Imports:Map)) => .

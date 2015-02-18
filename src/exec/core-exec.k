@@ -10,7 +10,7 @@ syntax KItem ::=  sl (
 
 //@ \subsection{Auxiliary methods}
 
-//@ Restore the content of the cell <methodContext>
+//@ Restore the content of the cell \verb|<methodContext>|
 syntax KItem ::=  restoreMethContext (
                 Bag                 //The content of <methodContext>
               )

@@ -35,7 +35,7 @@ rule [TypeImportOnDemandDec]:
     <namesToClasses>... Pack |-> mapWrap(PackMap:Map) ...</namesToClasses>
     <compUnitImports> Imp:Map </compUnitImports>
 
-//@ Imports to <compUnitImports> cell public classes from the given map. Classes with package access are ignored.
+//@ Imports to \verb|<compUnitImports>| cell public classes from the given map. Classes with package access are ignored.
 syntax KItem ::=  importOnDemandImpl (
                 Map //Map[X |-> Class] - classes to consider for importing.
               )

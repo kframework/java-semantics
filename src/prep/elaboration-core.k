@@ -112,13 +112,13 @@ rule isElabKList([.KList]) => true
 //@ Elaborate parameter type, if not elaborated yet. For catch clause.
 context  elab('Param(_:K,, HOLE,, _:Id))
 
-/*@Adds params to the <elabEnv>. Used in both ELABORATION-TOP-BLOCKS and ELABORATION-BLOCKS
+/*@Adds params to the \verb|<elabEnv>|. Used in both ELABORATION-TOP-BLOCKS and ELABORATION-BLOCKS
 */
 rule [elab-Param]:
     <k> elab('Param(K1:K,, T:Type,, X:Id)) => elabRes('Param(K1:K,, T:Type,, X:Id)) ...</k>
     <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv>
 
-//@Removes the last layer from <elabEnv>
+//@Removes the last layer from \verb|<elabEnv>|
 syntax KItem ::= "removeLastElabEnv"
 rule [removeLastElabEnv]:
     <k> removeLastElabEnv => . ...</k>

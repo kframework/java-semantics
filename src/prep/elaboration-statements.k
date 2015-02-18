@@ -19,7 +19,7 @@ rule isVarDecHolderLabel('For) => true
 rule isVarDecHolderLabel('Catch) => true
 
 /*@ In addition to what defaul elab heating does, when we heat the first argument of 'Block, 'For of 'Catch
-we need to save a copy of elaboration environment, e.g. the last entry of <elabEnv> <localTypes>.
+we need to save a copy of elaboration environment, e.g. the last entry of \verb|<elabEnv>| \verb|<localTypes>|.
 This is because these statements are blocks that might declare local variables.
 */
 rule [elab-Block-For-Catch-heat-FirstSubterm]:
@@ -49,7 +49,7 @@ rule [elab-LocalVarDecStm-desugar]:
       => 'LocalVarDec(Ks)
     )                                                   [structural]
 
-//@ Resolve the local var type, required to register the var in <elabEnv>
+//@ Resolve the local var type, required to register the var in \verb|<elabEnv>|
 context elab('LocalVarDec(_:K,, HOLE,, _:K))
 
 rule [elab-LocalVarDec-multi-desugar]:

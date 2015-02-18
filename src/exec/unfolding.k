@@ -3,12 +3,12 @@ module UNFOLDING
     imports CORE-FUNCTIONS
     imports SYNTAX-CONVERSIONS
 
-/*@At the beginning of execution semantics <k> contains the term unfoldingPhase, <program> is non-empty and the global phase is UnfoldingPhase.
+/*@At the beginning of execution semantics \verb|<k>| contains the term unfoldingPhase, \verb|<program>| is non-empty and the global phase is UnfoldingPhase.
 */
 
 syntax KItem ::= "unfoldingPhase"
 
-//@In the initial configuration the cell <threads> is empty, global phase is UnfoldingPhase, <program> is non-empty.
+//@In the initial configuration the cell \verb|<threads>| is empty, global phase is UnfoldingPhase, \verb|<program>| is non-empty.
 rule [UnfoldingPhase-start]:
     <threads>
       . => <thread> <k> unfoldingPhase </k> ...</thread>

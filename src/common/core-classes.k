@@ -77,7 +77,7 @@ rule [getTopLevel]:
     <classType> Class </classType>
     <enclosingClass> noClass </enclosingClass>
 
-//@ Restore the content of <crntClass> with the given class
+//@ Restore the content of \verb|<crntClass>| with the given class
 syntax KItem ::=  restoreCrntClass (
                 ClassType //old content of <crntClass>
               )
