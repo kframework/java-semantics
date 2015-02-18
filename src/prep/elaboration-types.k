@@ -33,7 +33,7 @@ rule [TypeName-QualifiedPackage]:
 syntax KItem ::= typeNameQualifiedImpl ( K, Id ) [strict(1)]
 
 rule [typeNameQualifiedImpl-Found]:
-    typeNameQualifiedImpl(mapWrap(X |-> Class:ClassType _), X:Id) => Class
+    typeNameQualifiedImpl(mapWrap((X |-> Class:ClassType) _), X:Id) => Class
 
 rule [typeNameQualifiedImpl-NotFound]:
     typeNameQualifiedImpl(mapWrap(NamesMap:Map), X:Id) => noValue
@@ -41,7 +41,7 @@ when notBool X in keys(NamesMap)
 
 rule [TypeName-local-in-any-Phase]:
     <k> 'TypeName(X:Id) => Class ...</k>
-    <localTypes> ListItem(mapWrap(X |-> Class:ClassType _)) ...</localTypes>
+    <localTypes> ListItem(mapWrap((X |-> Class:ClassType) _)) ...</localTypes>
 
 rule [TypeName-global]:
     <k> 'TypeName(X:Id) => Class ...</k>

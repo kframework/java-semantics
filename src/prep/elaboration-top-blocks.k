@@ -22,11 +22,11 @@ syntax KItem ::= elaborateBlocks ( K ) [strict]
 */
 rule [elaborateBlocks]:
     <k>
-      (. => elabMethods(Methods) ~> elabStaticInit
+      (.K => elabMethods(Methods) ~> elabStaticInit
         ~> elaborateBlocks(getInnerClasses(Class))
         ~> restoreCrntClass(OldCrntClass)
       )
-      ~> elaborateBlocks(setWrap((SetItem(Class:ClassType) => .) _:Set))
+      ~> elaborateBlocks(setWrap((SetItem(Class:ClassType) => .Set) _:Set))
       ...
     </k>
     <crntClass> OldCrntClass:ClassType => Class </crntClass>
@@ -102,12 +102,10 @@ rule [elabMethods-Cool-Constructor]:
     (<methodConstrFirstLine> FirstLine:K </methodConstrFirstLine> => .Bag)
     <methodBody> CHOLE => [FirstLine,, Body] </methodBody>
     <methodMetaType> constructorMMT => methodMMT </methodMetaType>
-
+//todo mapItemByValue/solution
 rule [elabMethods-discard-method]:
-    <k> elabMethods( (Sig:Signature |-> DeclClass:ClassType => .Map) _) ... </k>
+    <k> elabMethods(M:Map => M -Map removeMapItemsByValue(M,Class) ) ... </k>
     <crntClass> Class:ClassType </crntClass>
-when
-    DeclClass =/=K Class
 
 rule [elabMethods-End]:
     elabMethods( .Map ) => .
@@ -131,8 +129,8 @@ rule [elabStaticInit-End]:
 //@Adds a new empty layer to <elabEnv>
 syntax KItem ::= "addElabEnv"
 rule [addElabEnv]:
-    <k> addElabEnv => . ...</k>
-    <elabEnv> . => ListItem(mapWrap(.Map)) ...</elabEnv>
-    <localTypes> . => ListItem(mapWrap(.Map)) ...</localTypes>
+    <k> addElabEnv => .K ...</k>
+    <elabEnv> .List => ListItem(mapWrap(.Map)) ...</elabEnv>
+    <localTypes> .List => ListItem(mapWrap(.Map)) ...</localTypes>
 
 endmodule

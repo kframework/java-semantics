@@ -71,6 +71,8 @@ syntax UserList     ::= BlockStmList
                       | StringPartList
                       | EnumConstList
                       | ClassBodyDecList
+                      | Params
+
 
 
 endmodule

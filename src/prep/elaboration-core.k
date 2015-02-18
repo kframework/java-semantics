@@ -57,7 +57,7 @@ module ELABORATION-CORE
     imports CORE-SORTS
     imports SUBTYPING
     imports ELABORATION-CATEGORIES
-    imports ELABORATION-EXPRESSIONS // for isExpressionLabel
+
 
 /*@Custom hole used for custom heating/cooling rules in the elaboration phase.*/
 syntax KItem ::= "CHOLE"
@@ -109,14 +109,14 @@ context  elab('Param(_:K,, HOLE,, _:Id))
 */
 rule [elab-Param]:
     <k> elab('Param(K1:K,, T:Type,, X:Id)) => elabRes('Param(K1:K,, T:Type,, X:Id)) ...</k>
-    <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv>
+    <elabEnv> ListItem(mapWrap((.Map => X |-> T) _)) ...</elabEnv>
 
 //@Removes the last layer from <elabEnv>
 syntax KItem ::= "removeLastElabEnv"
 rule [removeLastElabEnv]:
-    <k> removeLastElabEnv => . ...</k>
-    <elabEnv> ListItem(_) => . ...</elabEnv>
-    <localTypes> ListItem(_) => . ...</localTypes>
+    <k> removeLastElabEnv => .K ...</k>
+    <elabEnv> ListItem(_) => .List ...</elabEnv>
+    <localTypes> ListItem(_) => .List ...</localTypes>
 
 /*@ \subsection{Elaboration of code blocks} */
 
@@ -182,8 +182,8 @@ when
 syntax KItem ::= haveElabRes ( KListWrap )          [function]
 rule haveElabRes([_,, elabRes(_),, _]) => true
 
-//K bug additional rule required since we introduced KListWrap
-rule haveElabRes([_,, KList2KLabel _,, elabRes(_),, _ (_),, _]) => true
+//K bug additional rule required since we introduced KListWrap? todo (Shijiao)
+//rule haveElabRes([_,, KList2KLabel _,, elabRes(_),, _ (_),, _]) => true
 
 /*@ The 3rd elaboration-phase wrapper for expressions. Represents the case when children are completely elaborated and
 unwrapped from elabRes(), but root node might not be elaborated yet. The implementation is scattered across all modules

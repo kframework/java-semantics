@@ -1,7 +1,37 @@
 /*@ \section{Module CORE-FUNCTIONS} */
 module CORE-FUNCTIONS
     imports CORE-SORTS
-    imports CORE-CLASSES
+    imports AUX-STRINGS
+
+//@ \subsection{Shortcuts for the most frequently used classes within the semantics}
+
+syntax KItem ::= "classObject"
+    [function, latex(\terminal{Object})]
+rule classObject => class String2Id("java.lang.Object")
+
+syntax KItem ::= "classString"
+    [function, latex(\terminal{String})]
+rule classString => class String2Id("java.lang.String")
+
+syntax KItem ::= "classNullPointerException"
+    [function, latex(\terminal{NullPointerException})]
+rule classNullPointerException => class String2Id("java.lang.NullPointerException")
+
+syntax KItem ::= "classArrayImpl"                   [function]
+rule classArrayImpl => class String2Id("java.lang.ArrayImpl")
+
+//@ \subsubsection{Computation terms produced during elaboration}
+/*@ These auxiliary terms functions that should be threated as expressions in the elaboration phase.
+*/
+syntax Exp ::= AuxTermExp
+syntax LHS ::= AuxTermExp
+/*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
+such as an anonymous class declaration. Is typed with the type of the expression.
+At runtime is rewritten into the statement, that should evaluate into .K, followed by the expression,
+that should evaluate to value.*/
+syntax AuxTermExp ::= stmtAndExp ( K, K )
+
+syntax AuxTermExp ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
 
 /*@ Returns the type associated with various K terms. The implementation is scattered among various K files.
   For a type - the type itself. For a typed expression - the type component. For some raw values - their most common
@@ -100,23 +130,32 @@ syntax KItem ::=  mapUnion (
               )
               [strict]
 
-rule mapUnion(mapWrap( M1:Map => M1[K2/K1] ), mapWrap( _:Map (K1:K |-> K2:K => .Map) ))
+rule mapUnion(mapWrap( M1:Map => M1[K1 <- K2] ), mapWrap( _:Map (K1:K |-> K2:K => .Map) ))
 rule mapUnion(mapWrap(M1:Map), mapWrap(.Map)) => mapWrap(M1)
 
-//@ Substracts fron the given map the keys found in the given set
-syntax KItem ::=  mapDiff(
-                K,  //mapWrap(Map)
-                K   //setWrap(Set)
-              )
-              [strict]
+//@ Substracts from the given map the value given (match is on the value)
+syntax KItem ::= removeMapItemsByValue (Map,K)             [function]
+               | removeMapItemsByValue (Map,K,Map)         [function]
+               | removeMapItemsByValue (K,K,Map,K,Map)     [function]
 
-rule mapDiff( mapWrap( (Key:K |-> _ => .Map) _), setWrap( (SetItem(Key) => .Set) _) )
+rule removeMapItemsByValue(M:Map, V:K) => removeMapItemsByValue(M, V, .Map)
+rule removeMapItemsByValue((Key:K |-> Value:K) Remains:Map, V:K, M:Map) => removeMapItemsByValue(Key, Value, Remains, V, M)
+rule removeMapItemsByValue(Key:K, V, Remains:Map, V:K, M:Map) => removeMapItemsByValue(Remains, V, M)
+rule removeMapItemsByValue(Key:K, Value:K, Remains:Map, V:K, M:Map) => removeMapItemsByValue(Remains, V, M (Key |-> Value))
+when Value =/=K V
+rule removeMapItemsByValue(.Map, V:K, M:Map) => M
 
-rule mapDiff( mapWrap( MyMap:Map ), setWrap( (SetItem(Key:K) => .Set) _) )
-when
-    notBool Key in keys(MyMap)
+syntax KItem ::= mapItemsByPartialKey (Map,K)             [function]
+               | mapItemsByPartialKey (Map,K,Map)         [function]
+               | mapItemsByPartialKey (K,K,Map,K,Map)     [function]
 
-rule mapDiff(mapWrap( MyMap:Map ), setWrap(.Set)) => mapWrap(MyMap)
+rule mapItemsByPartialKey(M:Map, V:K) => mapItemsByPartialKey(M, V, .Map)
+rule mapItemsByPartialKey((Key:K |-> Value:K) Remains:Map, V:K, M:Map) => mapItemsByPartialKey(Key, Value, Remains, V, M)
+rule mapItemsByPartialKey(sig(I:Id, T:Types), Value:K, Remains:Map, I, M:Map)
+     => mapItemsByPartialKey(Remains, I, M (sig(I,T) |-> Value))
+rule mapItemsByPartialKey(sig(I:Id, T:Types), Value:K, Remains:Map, V:K, M:Map) => mapItemsByPartialKey(Remains, V, M)
+when I =/=K V
+rule mapItemsByPartialKey(.Map, V:K, M:Map) => M
 
 syntax KItem ::= isEmpty( Map )   [function]
 rule isEmpty(.Map) => true
@@ -130,12 +169,7 @@ syntax KItem ::=  setUnion (
                 K   //setWrap(Set)
               )
               [strict]
-
-rule setUnion(setWrap( S1:Set (. => SetItem(K)) ), setWrap( S2:Set (SetItem(K:K) => .) ))
-when
-    notBool(K in S1)
-rule setUnion(setWrap( S1:Set SetItem(K) ), setWrap( S2:Set (SetItem(K:K) => .) ))
-rule setUnion(setWrap(S1:Set), setWrap(.Set)) => setWrap(S1)
+rule setUnion(setWrap(S1:Set), setWrap(S2:Set)) => setWrap(S1 S2)
 
 syntax Set ::= getSet ( K )           [function]
 rule getSet(setWrap(S1:Set)) => S1
@@ -188,6 +222,7 @@ syntax KLabel ::= "'ListWrap"
 rule 'ListWrap(Ks:KList) => [Ks]                  [structural, anywhere]
 //todo: both 'KListWrap and 'ListWrap are associted with the same production, so how to get rid of it
 syntax KListWrap ::= "[" KList "]" [klabel('KListWrap)]
+syntax UserList ::= KListWrap
 
 //@ Sequence of terms and of any other statements. The first term is moved to the top of computation.
 rule [S1:K,, Stmts:KList] => S1 ~> [Stmts]        [structural]

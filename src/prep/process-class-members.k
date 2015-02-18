@@ -10,7 +10,7 @@ module PROCESS-CLASS-MEMBERS
 /*@ We need to process Object first. Thus when we will process any interfaces,
     Object class will already be processed.*/
 rule [Start-ProcClassMembersPhase]:
-    <k> . => processTypeWithDepends(classObject) ~> processClasses(getTopLevelClasses) </k>
+    <k> .K => processTypeWithDepends(classObject) ~> processClasses(getTopLevelClasses) </k>
     <globalPhase> ProcClassDecsPhase => ProcClassMembersPhase  </globalPhase>
 
 syntax KItem ::=  processClasses (
@@ -20,10 +20,10 @@ syntax KItem ::=  processClasses (
 
 rule [processClasses]:
     (. => processTypeWithDepends(Class))
-    ~>  processClasses(setWrap( (SetItem(Class:ClassType) => .) _:Set))
+    ~>  processClasses(setWrap( (SetItem(Class:ClassType) => .Set) _:Set))
 
 rule [processClasses-Discard]:
-    processClasses(setWrap(.)) => .
+    processClasses(setWrap(.Set)) => .K
 
 syntax KItem ::=  processTypeWithDepends (
                 ClassType  //the class to be processed,
@@ -43,7 +43,7 @@ rule [processTypeWithDepends]:
     <classPhase> DecsProcessedCPhase </classPhase>
 
 rule [processTypeWithDepends-Discard]:
-    <k> processTypeWithDepends(Class:ClassType) => . ...</k>
+    <k> processTypeWithDepends(Class:ClassType) => .K ...</k>
     <classType> Class </classType>
     <classPhase> MembersProcessedCPhase </classPhase>
 
@@ -91,7 +91,7 @@ rule [processType]:
       <classType> Class </classType>
       <extends> BaseClass:ClassType </extends>
       <implements> ISet:Set </implements>
-      <implTrans> . => ISet </implTrans>
+      <implTrans> .Set => ISet </implTrans>
       ( <rawDeclarations> Decls:K </rawDeclarations> => .Bag)
       <classMetaType> MetaT:ClassMetaType </classMetaType>
       <classPhase> DecsProcessedCPhase => MembersProcessedCPhase </classPhase>
@@ -100,7 +100,7 @@ rule [processType]:
 
 //Could happen when hierarchies of inheritance and that of enclosing get messed up.
 rule [processType-discard]:
-    <k> processType(Class:ClassType) => . ...</k>
+    <k> processType(Class:ClassType) => .K ...</k>
     <classType> Class </classType>
     <classPhase> MembersProcessedCPhase </classPhase>
 
@@ -110,7 +110,7 @@ syntax KItem ::= computeImplTrans ( Set )
 rule [computeImplTrans]:
     <k>
       (. => saveImplTrans(setUnion(setWrap(ITrans), setWrap(BaseItfITrans))))
-      ~> computeImplTrans( (SetItem(BaseItf:ClassType) => .) _)
+      ~> computeImplTrans( (SetItem(BaseItf:ClassType) => .Set) _)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -119,16 +119,16 @@ rule [computeImplTrans]:
     <classType> BaseItf </classType>
     <implTrans> BaseItfITrans:Set </implTrans>
 
-rule [computeImplTrans-Elem-Discard]: computeImplTrans( (SetItem(noClass) => .) _)
+rule [computeImplTrans-Elem-Discard]: computeImplTrans( (SetItem(noClass) => .Set) _)
 
-rule [computeImplTrans-Discard]: computeImplTrans(.) => .
+rule [computeImplTrans-Discard]: computeImplTrans(.Set) => .K
 
 syntax KItem ::=  saveImplTrans (
                 K //setWrap(ISet) - transitive set of inherited interfaces
               )
               [strict]
 
-rule <k> saveImplTrans(setWrap(S1:Set)) => . ...</k>
+rule <k> saveImplTrans(setWrap(S1:Set)) => .K ...</k>
      <crntClass> Class:ClassType </crntClass>
      <classType> Class </classType>
      <implTrans> _ => S1 </implTrans>
@@ -137,11 +137,12 @@ rule <k> saveImplTrans(setWrap(S1:Set)) => . ...</k>
 syntax KItem ::= tryInheritSet ( Set )
            | tryInherit ( ClassType )
            | tryInheritImpl ( Map )
+           | tryInheritImpl ( K , K )
 
 rule [tryInheritSet]:
-    (. => tryInherit(Class:ClassType)) ~> tryInheritSet( (SetItem(Class) => .) _)
+    (.K => tryInherit(Class:ClassType)) ~> tryInheritSet( (SetItem(Class) => .Set) _)
 
-rule [tryInheritSet-Discard]: tryInheritSet(.) => .
+rule [tryInheritSet-Discard]: tryInheritSet(.Set) => .K
 
 rule [tryInherit]:
     <k>
@@ -154,18 +155,19 @@ rule [tryInherit]:
 rule [tryInherit-Discard]:
     tryInherit(noClass) => .K
 
+//todo mapItem/solution
 rule [tryInheritImpl-Unfold]:
-    <k> (. => tryInheritImpl(MI)) ~> tryInheritImpl( (MI:MapItem => .) _:MapItem _) ...</k>
+    (.K => tryInheritImpl(M, I)) ~> tryInheritImpl((M:K |-> I:K => .Map) _:Map)
 
 rule [tryInheritImpl]:
-    tryInheritImpl(Sig:K |-> DecClass:ClassType)
+    tryInheritImpl(Sig:K , DecClass:ClassType)
     => ifAux(
           isInheritable(getMethodAccessMode(methodRef(Sig, DecClass))),
           inherit(methodRef(Sig, DecClass)),
           .K
        )
 
-rule [tryInheritImpl-empty-Discard]: tryInheritImpl(.Map) => .
+rule [tryInheritImpl-empty-Discard]: tryInheritImpl(.Map) => .K
 
 syntax KItem ::= isInheritable ( AccessMode )                        [strict]
 
@@ -204,7 +206,7 @@ rule [inherit]:
     <k> inherit(methodRef(Sig:Signature, DecClass:ClassType)) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <methods> Env:Map => Env[DecClass/Sig] </methods>
+    <methods> Env:Map => Env[Sig <- DecClass] </methods>
 
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
@@ -294,7 +296,7 @@ rule [storeMethod]:
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <methods> Env:Map => Env[Class / Sig] </methods>
+    <methods> Env:Map => Env[Sig <- Class] </methods>
     ( .Bag => <methodDec>
                      <methodSignature> Sig </methodSignature>
                      <methodReturnType> ReturnType </methodReturnType>
@@ -477,7 +479,7 @@ rule [FieldDec-compile-time-constant]:
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <constantEnv> Env:Map => Env[TV/X] </constantEnv>
+    <constantEnv> Env:Map => Env[X <- TV] </constantEnv>
 when
             getContextType(Modifiers) ==K staticCT
     andBool isFinalModifiers(Modifiers)

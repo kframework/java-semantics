@@ -3,6 +3,7 @@
 module ELABORATION-ARRAYS
     imports CORE-SORTS
     imports ELABORATION-CORE
+    imports ELABORATION-EXPRESSIONS//for elabExpAndType
 
 //@ \subsection{Desugaring of array declarators with c-style dimensions and initializers}
 

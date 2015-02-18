@@ -4,7 +4,6 @@ module VAR-LOOKUP
     imports CORE-SORTS
     imports SUBTYPING
     imports STATIC-INIT         //for staticInit()
-    imports EXPRESSIONS
 
 //@ \subsection{Local variable access}
 

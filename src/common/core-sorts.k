@@ -1,11 +1,6 @@
-require "lexical-syntax.k"
-require "literal-syntax.k"
-require "type-syntax.k"
 //@ \section{Module CORE-SORTS}
 module CORE-SORTS
     imports TYPE-SYNTAX
-    imports LEXICAL-SYNTAX
-    imports LITERAL-SYNTAX
 
 //@ \subsection{Computation phases}
 
@@ -205,8 +200,8 @@ syntax ClassOrName ::= Id | ClassType
 //Denis' syntax
 syntax ClassType ::= "class" Id | "noClass"                     [latex({\dotCt{K}})]
 //Denis' syntax
-syntax Param ::= Type Id                                            [klabel('ParamImpl)]
-
+syntax ParamImpl ::= Type Id                                            [klabel('ParamImpl)]
+syntax Param ::= ParamImpl
 /* Denis' syntax: A reference type is either a class type, an array type, the null type or a String type.
 The null type is specified by the JLS although inaccessible to the programmer. String objects and
 types are not threated as regular objects in the present semantics for performance reasons.

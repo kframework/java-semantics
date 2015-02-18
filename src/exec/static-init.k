@@ -40,7 +40,7 @@ rule [staticInit]:
               [
                 'Catch('ParamImpl(classObject,, String2Id("e") ),,
                 'Block(throw new class String2Id("java.lang.ExceptionInInitializerError")
-                (((classObject) String2Id("e")));))
+                (((class String2Id("java.lang.Object")) String2Id("e")));))
               ]
             ,,
 
@@ -109,8 +109,8 @@ rule [FieldDec-static]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticEnv> Env:Map => Env[L/X] </staticEnv>
-    <store>... . => L |-> default(T) ...</store>
-    <storeMetadata>... . => L |-> FieldLocMetadata ...</storeMetadata>
+    <store>... .Map => L |-> default(T) ...</store>
+    <storeMetadata>... .Map => L |-> FieldLocMetadata ...</storeMetadata>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 
 endmodule

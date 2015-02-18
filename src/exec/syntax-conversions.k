@@ -12,7 +12,7 @@ module SYNTAX-CONVERSIONS
 
 // 'Param(\_:K,, T:Type,, X:Id). Consumed by initParams().
 
-syntax KItem ::= toParams( KListWrap )          [function]
+syntax Params ::= toParams( KListWrap )          [function]
            | toParams( KListWrap , Params ) [function]
 
 rule toParams([KLParams:KList]) => toParams([KLParams], .Params)
