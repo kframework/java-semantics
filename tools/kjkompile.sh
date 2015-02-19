@@ -198,47 +198,27 @@ case "$OPTION" in
     ;;
 "--prep-latex")
     $KOMPILE_CMD -d prep --backend latex --doc-style "style=math,modulesAsSections" prep/java-prep.k
-    mv prep/java-prep.tex .
-    mv prep/k.sty .
-    ;;
-"--prep-pdf")
-    $KOMPILE_CMD -d prep --backend pdf --doc-style "style=math,modulesAsSections" prep/java-prep.k
-    mv prep/java-prep.tex .
+    remove-kblock.sh prep/java-prep.tex > java-prep.tex
+    rm prep/java-prep.tex .
     mv prep/k.sty .
     ;;
 "--exec-latex")
     $KOMPILE_CMD -d exec --backend latex --doc-style "style=math,modulesAsSections" exec/java-exec.k
-    mv exec/java-exec.tex .
-    mv exec/k.sty .
-    ;;
-"--exec-pdf")
-    $KOMPILE_CMD -d exec --backend pdf --doc-style "style=math,modulesAsSections" exec/java-exec.k
-    mv exec/java-exec.tex .
+    remove-kblock.sh exec/java-exec.tex > java-exec.tex
+    rm exec/java-exec.tex
     mv exec/k.sty .
     ;;
 "--methods-latex")
-    $KOMPILE_CMD -d exec --backend latex --doc-style "style=math,modulesAsSections" exec/java-exec.k
+    kjkompile.sh $EXTRA_OPTS --exec-latex
     extract-module.sh -m METHOD-INVOKE -o method-invoke.tex java-exec.tex
     mv exec/java-exec.tex .
     mv exec/k.sty .
     ;;
-"--methods-pdf")
-    kjkompile.sh $EXTRA_OPTS --methods-latex
-    mkdir -p .latex
-    pdflatex -synctex=-1 -max-print-line=120 -interaction=nonstopmode -shell-escape \
-      --aux-directory=.latex method-invoke.tex
-    ;;
 "--new-latex")
-    $KOMPILE_CMD -d exec --backend latex --doc-style "style=math,modulesAsSections" exec/java-exec.k
+    kjkompile.sh $EXTRA_OPTS --exec-latex
     extract-module.sh -m NEW-INSTANCE -o new-instance.tex java-exec.tex
     mv exec/java-exec.tex .
     mv exec/k.sty .
-    ;;
-"--new-pdf")
-    kjkompile.sh $EXTRA_OPTS --new-latex
-    mkdir -p .latex
-    pdflatex -synctex=-1 -max-print-line=120 -interaction=nonstopmode -shell-escape \
-      --aux-directory=.latex new-instance.tex
     ;;
 "--modules-latex")
     echo "Preprocessing semantics:"

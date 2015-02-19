@@ -31,10 +31,10 @@
 }
 
 %Wraps a group of cells and properly aligns them.
-\newcommand{\kwrap}[1]{%
+\newcommand{\kwrap}[1]{{%Additional braces to confine the scope of setkeys to this macro
   \setkeys{k}{ruleHangindent=0pt,StartVspace=0ex,EndVspace=0ex}%
   \ksentence[]{}{}{#1}{}{}{}%
-}
+}}
 
 % Environment "kdefinition" have effect only in poster style, thus in math style may be safely deleted.
 

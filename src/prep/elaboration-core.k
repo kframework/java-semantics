@@ -242,7 +242,7 @@ rule [elabEnd-findQualifierOfType-static]:
 
 /*@ \subsection{Elaboration of statements --- step elabEnd} */
 
-/*@ Applies to all nodes that are not expressins --- statements and non-expression auxiliary functions
+/*@ Applies to all nodes that are not expressions --- statements and non-expression auxiliary functions
 */
 rule [elabEnd-default-all-except-expressions]:
     elabEnd(KL:KLabel(Ks:KList)) => elabRes(KL(Ks))
