@@ -38,3 +38,5 @@ This tool executes each program in the given directory with both Java Semantics 
 Directory docs contains two technical reports: the complete documented semantics of module METHOD_INVOKE and
   the documentation of the main rule for new instance creation with all the prerequisites.
 
+## POPL 15' : K-Java: A Complete Semantics of Java
+http://fsl.cs.illinois.edu/index.php/K-Java:_A_Complete_Semantics_of_Java
