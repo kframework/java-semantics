@@ -6,29 +6,17 @@ module PROCESS-COMP-UNITS
 
 /*@
 \begin{markdown}
-ProcCompUnitsPhase:
-  For each Compilation unit separately:
+\paragraph{Module Overview} For each Compilation unit:
 
-1. Process import declarations. Build \verb|<compUnitImports>|.
+  - Process import declarations. Build \verb|<compUnitImports>|.
 
-  For each class C in CompUnit separately:
+For each class C in CompUnit:
 
-2. For each class save the \verb|<class>| cell with just the following:
-  - \verb|<classType>| --- since we process CU content recursively, should be available
-  - \verb|<enclosingClass>|
-  - \verb|<imports>| --- just for top-level classes, imports are taken from the \verb|<compUnitImports>|.
-              For inner classes this cell is still empty.
-  - \verb|<classDec>| --- content of its 'ClassDec term. When this term is non-empty
-    then the class has not been preprocessed yet.
+  - Add to \verb|<class>| containing C the cells mentioned in configuration doc.
+  - Process inner classes of C.
 
-3. Process inner classes of C.
-
-  This way we will have fast access to the declaration of a class, and will be able to
-process declarations in a less-restricted order.
 \end{markdown}
 */
-
-/*@ \subsection{Second pass --- processing declarations} */
 
 rule [ProcCompUnitsPhase-start]:
     <k> . => Program </k>

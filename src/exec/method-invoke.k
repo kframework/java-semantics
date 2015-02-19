@@ -164,14 +164,17 @@ Generally the rules of K-Java do not follow directly the wording of JLS. The rea
 /*@
 \subsection{Evaluation of the qualifier and the arguments}
 
+\begin{markdown}
 The first two parts of method invocation logic are evaluation of the qualifier expression and evaluation of the
   arguments. JLS enforces the following conditions on the order of subexpressions evaluation:
+
    - Arguments have to be evaluated after the qualifier was evaluated. This is ensured
      by checking that the qualifier is of sort KResult at the moment when arguments are
      heated.
    - Arguments are evaluated left to right. To ensure this we add a side condition that
      checks that all the arguments before the one being heated (if any) are already of the
      sort KResult.
+\end{markdown}
 
 While there are two sections dedicated to this logic (\S15.12.4.1, \S15.12.4.2), we don't need any K rules
   for it. Instead, subexpressions evaluation ensured by strictness annotations
@@ -196,6 +199,7 @@ The annotation {\kattribute{seqstrict}(1,3)} on the first definition ensures tha
   qualifier is evaluated. The qualifier term might be either an expression or a Class. If it is expression,
   it will be heated and evaluated. If it is a class (for certain static methods), then it is already a KResult
   strictness rule will have no effect on it.
+
 Note that arguments have to be evaluated even in the case when the qualifier evaluated to null. At the same time
   that if evaluation of the qualifier or any of the arguments
   completes abruptly, the whole method invocation expression completes abruptly for the
@@ -493,7 +497,7 @@ context _:K . HOLE (_)
 when
     getKLabel(HOLE) ==KLabel 'lookupPackageMethod
 
-/*
+/*@
 Returns the list of classes representing the layer of the given object (by OId),
   located between MostBaseClass (exclusively) and MostDerivedClass (inclusively).
 */
@@ -502,7 +506,7 @@ syntax KItem ::=  getClassChain( ClassType, //MostBaseClass
                                           //the list of classes
               )
 
-/* [Skip] The right signature is already found.
+/*@ The right signature is already found.
 Search for the right implementation is performed from the compile-time type of the target
 to more derived types, up to the object type of the target.
 This is required in order to respect the rules of inheritance in the presence of access modes.
@@ -554,7 +558,7 @@ rule [lookupPackageMethod-layer-first-dec-found]:
 /*@
 The second rule matches when we already found a declaring class (OldDecC) and the current class CurrentC has another
   method declaration with the right signature. The presence of a declaration with signature  Sig inside CurrentC is identified by the
-  match $\mathrel{}\kall{class}{\kall{classType}{ CurrentC } \mathrel{}\kall{methods}{... Sig \mapsto CurrentC ...} }$,
+  match $\kall{class}{\kall{classType}{ CurrentC } \mathrel{} \kmiddle{methods}{ Sig \mapsto CurrentC } }$,
   according to the definition of \cellref[]{methods}.
 
 If the method in CurrentC directly overrides the method in OldDecC, the declaring class is updated to CurrentC. Otherwise the declaring class stays unchanged. The rules for direct overriding (case 1a above) are defined in the auxiliary function \verb|isOverridden()|. The function takes three arguments:
@@ -585,13 +589,17 @@ rule [lookupPackageMethod-new-method]:
       ...
     </class>
 
-/*
+/*@
+\begin{markdown}
 Tests if a method declared in class BaseC with access mode Acc is overridden by a method
   with the same signature declared in a subclass SubC.
 
 The method is overridden if either:
+
   - Acc is protected or public
   - Acc is package and BaseC and SubC are declared in the same package (JLS \S6.6)
+
+\end{markdown}
 */
 syntax KItem ::=  isOverridden (
                 ClassType,  //BaseC
@@ -754,7 +762,7 @@ syntax KItem ::= getOId( K )              [function]
 rule getOId( objectRef(OId:Int,_)::_ ) => OId
 rule getOId( noValue ) => noValue
 
-/* Binds a list of formal parameters to their values. Used by method calls and try-catch.
+/*@ Binds a list of formal parameters to their values. Used by method calls and try-catch.
 */
 syntax KItem ::= initParams ( Params,   // {T:Type X:Id},... - parameter declarations
                           TypedVals // values
@@ -825,7 +833,7 @@ module METHOD-INVOKE-REST
     imports SYNTAX-CONVERSIONS
     imports METHOD-INVOKE
 
-/* [Skip]
+/*@
 The next rule for method invocation is applied when the qualifier type is array. This array type is rewritten
   into the auxiliary class ArrayImpl, that is used in K-Java to simulate method invocations over array objects.
   This rule is required in order to minimize the number of particular cases involving arrays in the rules that follow.
@@ -900,7 +908,7 @@ when
     notBool ((DecC ==K classObject) andBool
              (Name ==K String2Id("wait") orBool Name ==K String2Id("notify") orBool Name ==K String2Id("notifyAll")))
 
-/* [Skip] Auxiliary function for methods that need implementation in the semantics. The implementation
+/*@ Auxiliary function for methods that need implementation in the semantics. The implementation
   of this production is given in api-core.k and api-threads.k.
 */
 syntax KItem ::=  invokeImpl (

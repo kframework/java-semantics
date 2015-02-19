@@ -6,11 +6,6 @@ module VAR-LOOKUP
 
 //@ \subsection{Local variable access}
 
-/* Local variable access. At runtime may have one form:
-    - \verb|'ExprName(X:Id)| --- local variable
-*/
-
-
 /*@ At execution phase \verb|'ExprName(X)| always represents a local variable.
 */
 rule [ExprName-local]:
@@ -66,10 +61,9 @@ when
 
 /*@ \subsection{Instance field access} */
 
-/*@ Variable access. May have 2 forms:
-    - \verb|'ExprName(Class, X:Id)| --- static field
-    - \verb|'ExprName(Qual, X:Id)| --- instance field
+/*@ Has the following form: \verb|'ExprName(Qual, X:Id)|.
 */
+
 context 'Field(HOLE,, _)
 context lvalue('Field(HOLE,, _))
 
@@ -102,7 +96,8 @@ rule [Field-instance-OfNull]:
         [anywhere]
 
 /*@ \subsection{Static field access} */
-
+/*@ Has the following form: \verb|'ExprName(Class, X:Id)|.
+*/
 rule [Field-static]:
     'Field( TargetClass:ClassType,, X:Id )
     => staticInit(TargetClass) ~> staticFieldLookup(TargetClass, X)
