@@ -117,7 +117,7 @@ rule 'Lit('Bool('True(.KList))) => true
 rule 'Lit('Bool('False(.KList))) => false
 
 //@ \subsection{char literals}
-//@ Chars are represented as int values, as described in java specification.
+//@ Chars are represented as int values, as described in Java specification.
 
 //   'Lit('Char('Single( I:Int )))
 rule 'Lit('Char('Single( I:Int ))) => I :: char

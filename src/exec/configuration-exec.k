@@ -7,41 +7,41 @@ The execution configuration consists from the top-level cell \cellref{T}, whose 
 
 \paragraph{Threads} Each execution thread has a corresponding \cellref{thread}. Inside a thread, \cellref[K]{k} is represents the actual computation --- the sequence of tasks to be executed. Next cells are \cellref[List]{stack} --- the method call stack, and \cellref{methodContext}. The \cellref{methodContext} holds the local context of the executed method:
 \begin{itemize}
-  \item \cellref[Map{{[}}Id\mapsto{}Int{{]}}]{env} --- the map from local variable names to their location inside \cellref[]{store}.
-  \item \cellref[ClassType]{crntClass} --- the current class, the type of \verb|this|
+  \item \cellref[Map{{[}}Id \mapsto Int{{]}}]{env} --- The map from local variable names to their location inside \cellref[]{store}.
+  \item \cellref[ClassType]{crntClass} --- The current class, the type of \verb|this|.
   \item \cellref[Int]{location} --- The location in memory store of the current object.
 \end{itemize}
 
 On the next line there are 3 cells related to multithreading:
 \begin{itemize}
-  \item \cellref{tid} --- the thread identified, generated when the thread is created.
-  \item \cellref[Map{{[}}Int\mapsto{}Int{{]}}]{holds} --- a map from Object locations to integer numbers. Map keys are monitor objects on which the current thread has the locks. Map values hold the number of times the lock was acquired.
-  \item \cellref[Bool]{interrupted} --- boolean value signaling whether the current thread was interrupted.
+  \item \cellref{tid} --- The thread identified, generated when the thread is created.
+  \item \cellref[Map{{[}}Int \mapsto Int{{]}}]{holds} --- A map from Object locations to integer numbers. Map keys are monitor objects on which the current thread has the locks. Map values hold the number of times the lock was acquired.
+  \item \cellref[Bool]{interrupted} --- A boolean value signaling whether the current thread was interrupted.
 \end{itemize}
 
 \paragraph{Classes} The cell \cellref{classes} contains one \cellref{class} for each class in the program, both for supported JDK classes and for user-defined classes. Cell \cellref{class} has the following content:
 
 \begin{itemize}
-  \item \cellref[ClassType]{classType} --- the fully qualified class name. This cell serves as identifier for the whole \cellref{class}, thus \cellref{classes} may be seen as a map from class name to \cellref{class} content.
-  \item \cellref[ClassMetaType]{classMetaType} --- Whether this type is class or interface. Both are referred hereafter as "classes", making the distinctions only when necessary.
+  \item \cellref[ClassType]{classType} --- The fully qualified class name. This cell serves as identifier for the whole \cellref{class}, thus \cellref{classes} may be seen as a map from class name to \cellref{class} content.
+  \item \cellref[ClassMetaType]{classMetaType} --- Indicates whether this type is class or interface. Both are referred hereafter as "classes", making the distinctions only when necessary.
   \item \cellref[ClassPhase]{classPhase} --- Used during unfolding global phase (see below).
   \item \cellref[ClassType]{enclosingClass} --- For inner classes, the direct lexically enclosing class of this class. For top-level classes --- no value.
   \item \cellref[ClassType]{extends} --- The base class.
-  \item \cellref[Set {[} ClassType {]} ]{implTrans} --- the transitive closure of implemented interfaces.
+  \item \cellref[Set {[} ClassType {]} ]{implTrans} --- The transitive closure of implemented interfaces.
   \item \cellref[ Map {[} Signature \mapsto ClassType {]} ]{methods} --- The map of accessible methods. Keys are method signatures, values are classes where methods are defined. Includes both methods declared within this class as well as methods inherited from base classes/ base interfaces.
-  \item \cellref[Bag]{methodDecs} --- the collection of method declarations (\cellref{methodDec} cells)in the current class. This cell contains only a subset of methods from \cellref{methods}, as the set of accessible methods from \cellref{methods} also includes methods inherited from base classes/interfaces. Hence the need of two separate collections. Each \cellref[Bag]{methodDec} contains the following data:
+  \item \cellref[Bag]{methodDecs} --- The collection of method declarations (\cellref{methodDec} cells)in the current class. This cell contains only a subset of methods from \cellref{methods}, as the set of accessible methods from \cellref{methods} also includes methods inherited from base classes/interfaces. Hence the need of two separate collections. Each \cellref[Bag]{methodDec} contains the following data:
   \begin{itemize}
     \item \cellref[Signature]{methodSignature} --- The method signature, acting as identifier of the \cellref{methodDec}
-    \item \cellref[ List{[} Param {]} ]{methodParams} --- method parameters
+    \item \cellref[ List{[} Param {]} ]{methodParams} --- The method parameters.
     \item \cellref[K]{methodBody} --- method body
-    \item \cellref[AccessMode]{methodAccessMode} --- method access mode
-    \item \cellref[ContextType]{methodContextType} --- either static or instance
+    \item \cellref[AccessMode]{methodAccessMode} --- The method access mode.
+    \item \cellref[ContextType]{methodContextType} --- May be either static or instance.
   \end{itemize}
   \item \cellref[K]{instanceFields} --- The list of instance field declarations, stored as a list of local variable declaration statements, without initializers. Used during object instantiation.
   \item \cellref[K]{staticFields} --- The list of static field declarations, in a similar format as \cellref{instanceFields}
    \item \cellref[K]{staticInit} --- The list of static initializers and static field initializers concatenated into one block. The content of \cellref{staticFields} and \cellref{staticInit} is executed during class static initialization.
-   \item \cellref[K]{folded} --- the initial representation of the class in AST format, during unfolding phase (see below).
-   \item \cellref[StaticInitStatus]{staticInitStatus} --- the static initialization status of the class. May be either uninitialized, initializing or initialized. The content of this class is used to trigger static initialization of the class on first use.
+   \item \cellref[K]{folded} --- The initial representation of the class in AST format, during unfolding phase (see below).
+   \item \cellref[StaticInitStatus]{staticInitStatus} --- The static initialization status of the class. May be either uninitialized, initializing or initialized. The content of this class is used to trigger static initialization of the class on first use.
    \item \cellref[ Map{[} Id \mapsto Location {]} ]{staticEnv} --- The map from static fields declared in this class to their locations in the store. Populated during static initialization. This cell along with \cellref{staticInitStatus} are the only two cells of \cellref{class} altered during program execution, during static initialization. The rest of the cells are populated before the execution.
 \end{itemize}
 
@@ -49,13 +49,13 @@ On the next line there are 3 cells related to multithreading:
 The first three cells after \cellref{classes} are important at the beginning of computation:
 \begin{itemize}
   \item \cellref[K]{program} --- The initial AST representation of the program, containing both core classes from JDK and user-defined classes.
-  \item \cellref[K]{mainClass} --- The class containing the method \verb|main()| --- the starting point of execution. Loaded froma command line argument.
-  \item \cellref[K]{globalPhase} --- Computation in the execution semantics may be in one of two global phases: Unfolding and Execution. The role of hte unfolding phase is to convert the AST representation of the program stored in \cellref{program} into the collection of cells \cellref{classes}. When this operation is complete, execution phase follows.
+  \item \cellref[K]{mainClass} --- The class containing the method \verb|main()| --- the starting point of execution. Loaded from a command line argument.
+  \item \cellref[K]{globalPhase} --- Computation in the execution semantics may be in one of two global phases: Unfolding and Execution. The role of the unfolding phase is to convert the AST representation of the program stored in \cellref{program} into the collection of cells \cellref{classes}. When this operation is complete, execution phase follows.
 \end{itemize}
 
 The next 4 cells represent the memory model of K-Java:
 \begin{itemize}
-  \item \cellref[Map{[}Location:Int \mapsto Value:TypedVal{]}]{store} --- the program memory. Map from memory locations to actual values. For reference types only the reference is stored in this cell.
+  \item \cellref[Map{[}Location:Int \mapsto Value:TypedVal{]}]{store} --- The program memory. Map from memory locations to actual values. For reference types only the reference is stored in this cell.
   \item \cellref[ Map{[} Location:Int \mapsto LocMetadata {]} ]{storeMetadata} --- For each location in \cellref{store}, information whether that location is a local variable or field. Used for performance optimization of multi-threaded model-checking.
   \item \cellref[Int]{nextLoc} --- the next available memory location. Incremmented after each allocation.
   \item \cellref[ Map{[} Type \mapsto TypedVal {]} ]{classLiteralsMap} --- A map from types T to objects that represent the value of the expression \verb|T.class| .
@@ -63,10 +63,10 @@ The next 4 cells represent the memory model of K-Java:
   \begin{itemize}
     \item \cellref[Int]{objectId} --- A unique object identifier, pointed by each reference in \cellref{store}
     \item \cellref[ClassType]{objectType} --- The runtime type of the object.
-    \item \cellref[Bag]{layer} --- There could be multiple layer cells inside an \cellref{object}. Each layer represents a concrete class in the inheritance hierarchy, starting from \verb|java.lang.Object| and finishing with \cellref{objectType}. An object layer stores the follosing information:
+    \item \cellref[Bag]{layer} --- There could be multiple layer cells inside an \cellref{object}. Each layer represents a concrete class in the inheritance hierarchy, starting from \verb|Java.lang.Object| and finishing with \cellref{objectType}. An object layer stores the following information:
     \begin{itemize}
       \item \cellref[ClassType]{layerClass} --- The class represented by this layer.
-      \item \cellref[Map{[}Id \mapsto Int{]}]{layerEnv} --- A map from instante fields to their loations in the store.
+      \item \cellref[Map{[}Id \mapsto Int{]}]{layerEnv} --- A map from instance fields to their locations in the store.
       \item \cellref[TypedVal]{layerEnclosingObject} --- A reference to the directly enclosing object if this object represents an instance inner class, or empty for other types of objects (top-level and static inner).
     \end{itemize}
   \end{itemize}
@@ -74,15 +74,15 @@ The next 4 cells represent the memory model of K-Java:
 
 The following cells represent program I/O:
 \begin{itemize}
-  \item \cellref[List]{in} --- the standard input, represented as pre-parsed list of elements of type Int or String.
-  \item \cellref[List]{out} --- the standard output.
+  \item \cellref[List]{in} --- The standard input, represented as pre-parsed list of elements of type Int or String.
+  \item \cellref[List]{out} --- The standard output.
 \end{itemize}
 
 The next row contains global cells related to multithreading:
 \begin{itemize}
-  \item \cellref[ Set{[} ObjLocation:Int {]} ]{busy} --- the set of busy objects. E.g. monitor objects for which there is a thread holding the monitor.
+  \item \cellref[ Set{[} ObjLocation:Int {]} ]{busy} --- The set of busy objects. E.g. monitor objects for which there is a thread holding the monitor.
   \item \cellref[ Map{[} ThreadId:Int \mapsto OL:Int {]} ]{waitingThreads} --- The map from threads to monitor objects on which respective threads are blocked in a call to \verb|wait()|. Used by the methods \verb|Object.wait()|, \verb|Object.notify()|, \verb|Object.notifyAll()|.
-  \item \cellref[Set{[}ThreadId:Int{]}]{terminated} --- the set of identifiers of terminated threads.
+  \item \cellref[Set{[}ThreadId:Int{]}]{terminated} --- The set of identifiers of terminated threads.
 \end{itemize}
 
 The rest of the global cells are used for debugging purposes.
@@ -233,7 +233,7 @@ configuration
       //Initial cells, loaded by krun and initial configuration.
 
       //The initial program loaded by krun. For full mode and preprocessing this is
-      //the initial java program, for execution mode it is the folded java program.
+      //the initial Java program, for execution mode it is the folded Java program.
       <program color="LightSteelBlue"> $PGM:K </program>
 
       //Main class, passed as krun argument. We need it from the outside, just like JDK Java.

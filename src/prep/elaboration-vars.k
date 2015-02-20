@@ -2,7 +2,7 @@ module ELABORATION-VARS
     imports CORE-SORTS
     imports ELABORATION-CORE
 
-//@ Elaboration of rules in java-var-lookup
+//@ Elaboration of terms defined in var-lookup.k
 //@ Both unqualified and qualified AmbName.
 rule [elabEnd-AmbName]:
     elabEnd('AmbName(Ks:KList)) => elabEnd('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName([Ks])

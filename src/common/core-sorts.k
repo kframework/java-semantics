@@ -105,7 +105,7 @@ syntax KResult ::= ContextType
 
 //@ \subsection{Values}
 
-/*  Represents a java value. May be either primitive --- int, float, bool, of reference. The values nothing and undefined
+/*  Represents a Java value. May be either primitive --- int, float, bool, of reference. The values nothing and undefined
     are special cases required by the semantics. The value nothing is associated with the return type void. The value
     undefined is the initial value of uninitialized local variables, before the first assignment.
 */

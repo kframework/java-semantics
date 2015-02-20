@@ -3,7 +3,7 @@ module CONFIGURATION-PREP
     imports CORE-FUNCTIONS
 
 /*@
-The Static semantics consists of several phases that analyze the input program, distribute it from the AST form to a set of cells and finally assembles it back to an AST, this time containing just a subset of features of Java. Each phase digs deeper into a program strucutre, and most phases also store their result into new cells. Below is the list of global phases, in their execution order:
+The Static semantics consists of several phases that analyze the input program, distribute it from the AST form to a set of cells and finally assembles it back to an AST, this time containing just a subset of features of Java. Each phase digs deeper into a program structure, and most phases also store their result into new cells. Below is the list of global phases, in their execution order:
 
 \begin{itemize}
 	\item Process Type Names
@@ -27,19 +27,19 @@ In the remaining of this section are documented all cells of the configuration, 
 
 \paragraph{Process Type Names} During this phase, one global cell is computed:
 \begin{itemize}
-	\item \cellref[Map{[}PackageId\mapsto{}Map{[}Id\mapsto{}ClassType{]}{]}]{namesToClasses} A two-level map. First level is a map from package names to second-level maps. Second-level maps are from simple class names to fully qualified class names within the package. This cell is extensively used through the semantics. The map contains both top-level and inner classes. For inner classes, their enclosing package is the fully qualified class name of the directly enclosing class.
+	\item \cellref[Map{[}PackageId \mapsto Map{[}Id\mapsto{}ClassType{]}{]}]{namesToClasses} --- A two-level map. First level is a map from package names to second-level maps. Second-level maps are from simple class names to fully qualified class names within the package. This cell is extensively used through the semantics. The map contains both top-level and inner classes. For inner classes, their enclosing package is the fully qualified class name of the directly enclosing class.
 \end{itemize}
 
 Also during Process Type Names classes are first registered. Again, both top-level and inner classes are covered. In a newly created \cellref[]{class} just a few sub-cells are initialized with data:
 
 \begin{itemize}
 	\item \cellref[ClassType]{classType} --- The fully qualified class name. The identifier of the class.
-	\item \cellref[ClassMetaType]{classMetaType} --- Whether the type stored in this cell is class or interface. To avoid terminology superfluousness, we will refer hereafter to both classes and interfaces as "classes", making distinctions only when necessary.
+	\item \cellref[ClassMetaType]{classMetaType} --- Represents whether the type stored in this cell is class or interface. To avoid terminology superfluousness, we will refer hereafter to both classes and interfaces as "classes", making distinctions only when necessary.
 	\item \cellref[ClassAccessMode]{classAccessMode} --- The access modifier of the class, either public or package.
-	\item \cellref[ClassPhase]{classPhase} --- represents the state of this class. In addition to the global computation phase, each class has its own lifecycle phase. Class phases are required to keep track which classes were processed in the current global phase and which were not. During each global phase all classes should transition to a certain class phase. However, as we shall see, not all global phases change the state of the class. The class phases are:
+	\item \cellref[ClassPhase]{classPhase} --- Represents the state of this class. In addition to the global computation phase, each class has its own lifecycle phase. Class phases are required to keep track which classes were processed in the current global phase and which were not. During each global phase all classes should transition to a certain class phase. However, as we shall see, not all global phases change the state of the class. The class phases are:
 
 	\begin{itemize}
-		\item Discovered --- the initial phase. At the end of Process Type Names all classes are in the state "Discovered".
+		\item Discovered --- The initial phase. At the end of Process Type Names all classes are in the state "Discovered".
 		\item Stored
 		\item Bases Resolved
 		\item Declaration Processed
@@ -52,11 +52,11 @@ Also during Process Type Names classes are first registered. Again, both top-lev
 \paragraph{Process Compilation Units} At the beginning of this phase computation is again initialized with the initial AST from \cellref{program}. The following new cells are filled in inside each \cellref{class}:
 
 \begin{itemize}
-	\item \cellref[ClassType]{enclosingClass} --- the directly enclosing class, for inner classes, or no value for top-level classes.
+	\item \cellref[ClassType]{enclosingClass} --- The directly enclosing class, for inner classes, or no value for top-level classes.
 	\item \cellref[K]{rawExtends} --- The extends clause of this class, in its raw (AST) form.
 	\item \cellref[K]{rawImplements} --- The implements clause, in AST form.
 	\item \cellref[K]{rawDeclarations} --- The class body, in AST form.
-	\item \cellref[Map{[}Id\mapsto{}ClassType{]}]{cuImports} --- A map from names accessible inside this class to fully qualified class names they represent. Only computed for top-level classes at this phase. For inner classes this cell remains empty.
+	\item \cellref[Map{[}Id \mapsto ClassType{]}]{cuImports} --- A map from names accessible inside this class to fully qualified class names they represent. Only computed for top-level classes at this phase. For inner classes this cell remains empty.
 	\item \cellref[ContextType]{classContextType} --- Either static or instance, for inner classes. Always static for top-level classes.
 \end{itemize}
 
@@ -66,7 +66,7 @@ The class phase changes from Discovered to Stored. As we can see, the cells comp
 Also during Process Compilation Units the following global cell is used:
 
 \begin{itemize}
-	\item \cellref[Map{[}Id\mapsto{}ClassType{]}]{compUnitImports} A map from all type names accessible in the current compilation unit (Java file) to their respective fully qualified class names. This includes both classes accessible through imports declarations and classes declared in the package of the current compilation unit. Used to compute \cellref{cuImports} of top-level classes.
+	\item \cellref[Map{[}Id \mapsto ClassType{]}]{compUnitImports} --- A map from all type names accessible in the current compilation unit (Java file) to their respective fully qualified class names. This includes both classes accessible through imports declarations and classes declared in the package of the current compilation unit. Used to compute \cellref{cuImports} of top-level classes.
 \end{itemize}
 
 \paragraph{Process Class Declarations} Here each class passes through two more class phases: Bases Processed and Declarations Processed. First, for each class the semantics attempts to resolve its extends/implements clauses into fully qualified class names. The order in which dependencies are resolved depends on both class inheritance relationships as well as nesting relationships. Once the dependencies of a class are resolved, they are stored into a temporary cell:
@@ -80,7 +80,7 @@ Once the content of \cellref[K]{unprocessedBases} is created, the class enters i
 \begin{itemize}
 \item \cellref[ClassType]{extends} --- The base class, fully qualified.
 \item \cellref[Set{[}ClassType{]}]{implements} --- The list of directly implemented interfaces, fully qualified.
-\item \cellref[Map{[}Id\mapsto{}ClassType{]}]{imports} --- The map of classes accessible by simple name within the body of this class. The rules for computing this map are complex and include the following sources:
+\item \cellref[Map{[}Id \mapsto ClassType{]}]{imports} --- The map of classes accessible by simple name within the body of this class. The rules for computing this map are complex and include the following sources:
 
 \begin{itemize}
 \item Imports declarations of the current compilation unit.
@@ -114,16 +114,16 @@ The following new class cells are produced:
 \begin{itemize}
 	\item \cellref[Set{[}ClassType{]}]{implTrans} --- The transitive closure of implemented interfaces. In the remaining phases this set is used by the subtyping relationship.
   \item \cellref[ Map {[} Signature \mapsto ClassType {]} ]{methods} --- The map of accessible methods. Keys are method signatures, values are classes where methods are defined. Includes both methods declared within this class as well as methods inherited from base classes/ base interfaces.
-  \item \cellref[Bag]{methodDecs} --- the collection of method declarations (\cellref{methodDec} cells)in the current class. This cell contains only a subset of methods from \cellref{methods}, as the set of accessible methods from \cellref{methods} also includes methods inherited from base classes/interfaces. Hence the need of two separate collections. Each \cellref[Bag]{methodDec} contains the following data:
+  \item \cellref[Bag]{methodDecs} --- The collection of method declarations (\cellref{methodDec} cells)in the current class. This cell contains only a subset of methods from \cellref{methods}, as the set of accessible methods from \cellref{methods} also includes methods inherited from base classes/interfaces. Hence the need of two separate collections. Each \cellref[Bag]{methodDec} contains the following data:
   \begin{itemize}
-    \item \cellref[Signature]{methodSignature} --- The method signature, acting as identifier of the \cellref{methodDec}
-		\item \cellref[Type]{methodReturnType} --- Method return type
-    \item \cellref[ List{[} Param {]} ]{methodParams} --- method parameters
+    \item \cellref[Signature]{methodSignature} --- The method signature, acting as identifier of the \cellref{methodDec}.
+		\item \cellref[Type]{methodReturnType} --- The method return type.
+    \item \cellref[ List{[} Param {]} ]{methodParams} --- The method parameters.
     \item \cellref[K]{methodConstrFirstLine} --- the first line of a constructor (if this method is indeed a constructor, for other classes than \verb|Object|). It contains a call to another constructor: either \verb|super()| or \verb|this()|.
-		\item \cellref[K]{methodBody} --- method body
-    \item \cellref[AccessMode]{methodAccessMode} --- method access mode
-    \item \cellref[ContextType]{methodContextType} --- either static or instance
-		\item \cellref[MethodMetaType]{methodMetaType} --- either method or constructor
+		\item \cellref[K]{methodBody} --- The method body.
+    \item \cellref[AccessMode]{methodAccessMode} --- The method access mode.
+    \item \cellref[ContextType]{methodContextType} --- May be either static or instance.
+		\item \cellref[MethodMetaType]{methodMetaType} --- May be either method or constructor.
   \end{itemize}
   \item \cellref[K]{instanceFields} --- The list of instance field declarations, stored as a list of local variable declaration statements, without initializers. Used during object instantiation.
 	\item \cellref[K]{instanceInit} --- The list of instance initializers of the class combined into one big instance initializer. Instance field initializers are also concatenated into this cell in their textual order.
@@ -137,7 +137,7 @@ Once all the cells above are computed the class proceeds into the phase Members 
 \paragraph{Elaboration} Here all the code blocks are processed --- method and constructor bodies, static and instance initializers. Most of the information traditionally inferred by the compiler is computed at this phase. More precisely the elaboration performs the following transformations:
 
 \begin{itemize}
-\item Each name is resolved into local variable, field, method, class or package. While a method may be distinguished from other cathegories purely syntactically, resolving to other categories requires knowledge of the names existing in the current context.
+\item Each name is resolved into local variable, field, method, class or package. While a method may be distinguished from other categories purely syntactically, resolving to other categories requires knowledge of the names existing in the current context.
 \item Simple class names are resolved into fully qualified class names. Hereafter all the class names in the code are fully qualified.
 \item The compile-time type of each expression is inferred. Thus, when the code reaches execution phase, expressions are no longer in their initial form. The expressions are annotated with their types.
 \item For each method call the precise signature in inferred.
@@ -156,13 +156,13 @@ Among global cells the following new cells are added:
 	\item \cellref[List[mapWrap(Map[Id \mapsto Type])]]{elabEnv} --- A stack where each layer is a map of local variables. Each layer of the stack represents a code block, in the blocks nesting order. Inside each layer, the map is from local variables accessible in that layer to variable types.
 	\item \cellref[Int]{contextType} --- The context type of the currently elaborated class. Either static or instance.
 	\item \cellref[List[mapWrap(Map[Id \mapsto ClassType])]]{localTypes} --- A cell similar in structure to \cellref{elabEnv}. This time it contains stack layers which are maps from local class names to local class types.
-	\item \cellref[Int]{nextLocalId} --- a number used to generate unique fully-qualified class names for local classes.
-	\item \cellref[K]{elabBuffer} --- a temporary cell used during elaboration of local classes.
+	\item \cellref[Int]{nextLocalId} --- A number used to generate unique fully-qualified class names for local classes.
+	\item \cellref[K]{elabBuffer} --- A temporary cell used during elaboration of local classes.
 \end{itemize}
 
 During the elaboration phase no cells are consumed. Instead, the code blocks stored inside \cellref[]{methodDecs}, \cellref[]{instanceInit}, \cellref[]{staticInit} are processed and stored back into the same cell. After elaboration the classes remain in the same state --- Members Processed. The state Members Processed is in fact the final state of the cell \cellref[]{class}.
 
-\paragraph{Folding} During the last phase of static semantics the program is assembled from \cellref{classes} back into the AST form. First the content of each class is assembled into \cellref[K]{folded} of the respective class, and the class phase changes to Folded. Second, the AST representation of each class is appended into \cellref{program}. When this phase ends, the content of \cellref{program} is printed to the standart output.
+\paragraph{Folding} During the last phase of static semantics the program is assembled from \cellref{classes} back into the AST form. First the content of each class is assembled into \cellref[K]{folded} of the respective class, and the class phase changes to Folded. Second, the AST representation of each class is appended into \cellref{program}. When this phase ends, the content of \cellref{program} is printed to the standard output.
 */
 
 configuration
@@ -172,7 +172,7 @@ configuration
       <k color="Green"> $PGM:K </k>
 
       //The initial program loaded by krun. For full mode and preprocessing this is
-      //the initial java program, for execution mode it is the folded java program.
+      //the initial Java program, for execution mode it is the folded Java program.
       <program color="LightSteelBlue"> $PGM:K </program>
 
       <globalPhase color="YellowGreen"> ProcTypeNamesPhase </globalPhase>

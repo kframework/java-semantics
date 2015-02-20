@@ -213,7 +213,7 @@ rule defaultElabHeating('stmtAndExp) => true
   Those are literals, types and packages. They are heated "as is", without being wrapped into \verb|elab()|.
   An exception is the class literal that is not executed during elaboration.
 
-  Some auxiliary functions are also included in this cathegory in order to reduce the usage of elaboration wrappers.
+  Some auxiliary functions are also included in this category in order to reduce the usage of elaboration wrappers.
 */
 syntax KItem ::= isElabNaked ( K )                            [function]
 rule isElabNaked(RV:RawVal) => true
@@ -235,7 +235,7 @@ Terms that should use custom elaboration rules. For those terms:
   - They will not be automatically passed to \verb|elabDispose()| state. Instead, those terms should have custom rules for elaboration start (heating) and elaboration end (cooling).
 
 Since all the automatic elaboration-related rules are an incredible mess, we have to put all the AST terms into this
-    cathegory one by one, and eliminate automatic elaboration heating/cooling rules altogether.
+    category one by one, and eliminate automatic elaboration heating/cooling rules altogether.
 \end{markdown}
 */
 syntax KItem ::= customElabChildren ( KLabel )                [function]

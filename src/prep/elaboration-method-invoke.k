@@ -217,7 +217,7 @@ syntax KItem ::=  methodLookupResult (
 
 /*@ In the past implementation, the non-empty qualifier of a static method call
     was moved to a separate statement in front of a method call using stmtAndExp().
-    But since stmtAndExp() is incompatible with java intermediate form, we keep the non-empty qualifier
+    But since stmtAndExp() is incompatible with Java intermediate form, we keep the non-empty qualifier
     as is even for static methods.
 */
 rule [methodProcessArguments-Invoke-end]:

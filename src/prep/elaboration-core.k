@@ -170,7 +170,7 @@ The default algorithm of transforming the term from elab to elabRes, when the ch
   - term children are completely elaborated --- \verb|isElab(children)|
   - term is not naked. This case should never be true, but there is some weird case that requires it.
 
-When the default algorithm is not appropriate, the respective term should be in the cathegory customElabChildren
+When the default algorithm is not appropriate, the respective term should be in the category customElabChildren
 \end{markdown}
 */
 syntax KItem ::= elabDispose ( K )

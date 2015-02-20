@@ -8,7 +8,7 @@ All the methods defined in this module through invokeImpl are native, their body
   they cannot be matched by rules in METHOD-INVOKE.
 */
 
-/*@ This module contains the minimal part of java API required to perform console read/write operations,
+/*@ This module contains the minimal part of Java API required to perform console read/write operations,
 as well as a few other API functions mentioned in JLS.*/
 
 //@system-out-print-convert heat argument
@@ -35,10 +35,10 @@ when
     Class ==K class String2Id("java.io.PrintWriter") andBool Id2String(MethodName) ==String "print"
 
   //With [transition-threading], the time to produce 2 solutions for the test threads_11_two_th_msg is 14s.
-  //But with [transition-strictness], the same test takes 3m52s, with java heap = 16GB.
+  //But with [transition-strictness], the same test takes 3m52s, with Java heap = 16GB.
         [transition-threading]
 
-//@Is only used for primitive type arguments. Object arguments are converted by java code inside the class PrintWriter.
+//@Is only used for primitive type arguments. Object arguments are converted by Java code inside the class PrintWriter.
 rule [system-out-print-convert]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType), _,
@@ -113,7 +113,7 @@ rule [object-getClass-on-array]:
 when
     Class ==K classObject andBool Id2String(MethodName) ==String "getClass"
 
-/*@ \verb|String.toString()|. For \verb|Object.toString()| the implementation is in the library java code.*/
+/*@ \verb|String.toString()|. For \verb|Object.toString()| the implementation is in the library Java code.*/
 rule [object-toString-on-String]:
     invokeImpl(
       methodRef(sig(MethodName:Id, _), Class:ClassType), Str:String::_,
