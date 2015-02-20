@@ -210,13 +210,13 @@ During the second step of the method invocation the second argument of the produ
   structure \verb|methodInfo()|. This data structure contains the information required to choose the right method lookup
   strategy at the next step. The production \verb|methodInfo()| contains the following arguments:
 
-  - Method signature Sig
-  - Qualifying class QualC of the method invocation, e.g. the compile-time type of the qualifier.
-  - The meta type of QualC --- MetaT. It may have one of the two values - class or interface.
-  - DecC --- declaring class, the class where the method was actually declared, as observed by QualT.
-    E.g. the most derived class in QualC hierarchy where there is a declaration of a method with signature Sig.
-  - ContextT --- the context type of the method. Either static, for static methods, or instance for non-static methods.
-  - Acc --- access modifier (private, package, protected or public). For the purpose of uniformity we use the modifier
+  - Method signature \verb|Sig|
+  - Qualifying class \verb|QualC| of the method invocation, e.g. the compile-time type of the qualifier.
+  - The meta type of \verb|QualC| --- \verb|MetaT|. It may have one of the two values - class or interface.
+  - \verb|DecC| --- declaring class, the class where the method was actually declared, as observed by \verb|QualT|.
+    E.g. the most derived class in \verb|QualC| hierarchy where there is a declaration of a method with signature \verb|Sig|.
+  - \verb|ContextT| --- the context type of the method. Either static, for static methods, or instance for non-static methods.
+  - \verb|Acc| --- access modifier (private, package, protected or public). For the purpose of uniformity we use the modifier
     package when no access modifier is provided.
 
 All the information stored in \verb|methodInfo()| is static. In K-Java we already have
@@ -268,7 +268,7 @@ Because TypedVal is subsorted to KResult, TypedVals being a list of KResult is i
     to keep the core part of method invocation separate from the non object-related part. */
 
 /*@
-The second rule for method invocation loads MetaT and DecC. It requires Sig and QualC computed by the previous rule.
+The second rule for method invocation loads \verb|MetaT| and \verb|DecC|. It requires \verb|Sig| and \verb|QualC| computed by the previous rule.
 
 */
 rule [Invoke-compute-methodInfo-DecC]:
@@ -282,14 +282,14 @@ rule [Invoke-compute-methodInfo-DecC]:
 
 /*@ \begin{markdown}
 There is one case that is not covered by the previous rule --- the case when the cell \cellref[]{methods} does not have a key
-  equal to Sig. This is possible in one of the following situations:
+  equal to \verb|Sig|. This is possible in one of the following situations:
 
   - Qualifying type is an interface.
   - Qualifying type is an abstract class. The called method is inherited from an interface but is not declared neither
     in this class nor in its base classes.
 
-In both cases the method is an abstract method in the class QualT. For this case DecC cannot be computed, but we know
-  for sure that ContextT for an abstract method is instance. Also, because the method was declared in an interface,
+In both cases the method is an abstract method in the class \verb|QualT|. For this case \verb|DecC| cannot be computed, but we know
+  for sure that \verb|ContextT| for an abstract method is instance. Also, because the method was declared in an interface,
   it is certainly public.
 \end{markdown} */
 rule [Invoke-compute-methodInfo-unmapped-method-ContextType]:
@@ -304,7 +304,7 @@ when
     notBool Sig in keys(Methods)
 
 /*@
-The last rule of step 3 loads ContextT and Acc. It requires DecC, so this rule may only match after the second rule for \verb|methodInfo()|.
+The last rule of step 3 loads \verb|ContextT| and \verb|Acc|. It requires \verb|DecC|, so this rule may only match after the second rule for \verb|methodInfo()|.
 */
 rule [Invoke-compute-methodInfo-ContextType]:
     <k>
@@ -322,7 +322,7 @@ rule [Invoke-compute-methodInfo-ContextType]:
 In the third step of the method invocation algorithm, the actual method declaration is chosen. This step starts once all
   the fields of \verb|methodInfo()| were filled in (where possible). The rules of this step rewrite \verb|methodInfo()| into
   \verb|methodRef()| --- another auxiliary data structure.
-The production \verb|methodRef()| is a reference to a method declaration. It contains two fields --- Sig and DecC --- the
+The production \verb|methodRef()| is a reference to a method declaration. It contains two fields --- \verb|Sig| and \verb|DecC| --- the
   signature and the declaration class. The implementation class is the class that contains the actual method
   declaration to be invoked.
 
@@ -331,7 +331,7 @@ The production \verb|methodRef()| is a reference to a method declaration. It con
 \end{syntaxBlock}
 
 \begin{markdown}
-Since we already know the signature, this phase amounts to computing DecC. This step contains different rules for the following cases:
+Since we already know the signature, this phase amounts to computing \verb|DecC|. This step contains different rules for the following cases:
 
   - Static method (JLS \S15.12.4.4 paragraph 2)
   - Instance method with target being null (JLS \S15.12.4.4 paragraph 3)
@@ -342,7 +342,7 @@ Since we already know the signature, this phase amounts to computing DecC. This 
 
 <!--- - Target value is array or string. -->
 
-The method below is for the first case. If the method is static, then the declaring type DecC is the qualifying type.
+The method below is for the first case. If the method is static, then the declaring type \verb|DecC| is the qualifying type.
   The qualifier is discarded by rewriting it into \dotCt{K} .
 \end{markdown}
 */
@@ -352,9 +352,9 @@ rule [Invoke-methodInfo-static]:
       (_)
 
 /*@
-If the qualifier value is null and ContextT is instance, then NullPointerException is thrown and method invocation
+If the qualifier value is null and \verb|ContextT| is instance, then NullPointerException is thrown and method invocation
   expression is discarded. It is only at this point that we should check the qualifier whether it is null or not.
-  If ContextT is static, then the previous rule will match, and no exception will be thrown.
+  If \verb|ContextT| is static, then the previous rule will match, and no exception will be thrown.
 */
 rule [Invoke-methodInfo-instance-on-null]:
 /*  [Impl] Qualifier type could be either object or array.
@@ -374,13 +374,13 @@ rule [Invoke-methodInfo-instance-private]:
 
 /*@
 If the method is protected or public, then we should call the version of the method visible to the runtime type of
-  the qualifying object (ObjC). Recall that the runtime type of an object is stored in the second argument of
+  the qualifying object (\verb|ObjC|). Recall that the runtime type of an object is stored in the second argument of
   \verb|objectRef()|.
   This case also covers qualifying type interface, since interface methods are always public.
-  The right method will always be the one referred by the signature Sig in the cell \cellref[]{methods} associated with the
+  The right method will always be the one referred by the signature \verb|Sig| in the cell \cellref[]{methods} associated with the
   actual object class. This is because the unfolding phase populates \cellref[]{methods} with the union of methods inherited
   from the base class and methods declared in the current class, the latter overriding the former.
-  The variable DecC is the class where the right method version is declared.
+  The variable \verb|DecC| is the class where the right method version is declared.
 */
 rule [Invoke-methodInfo-instance-protected-or-public]:
     <k>
@@ -458,8 +458,8 @@ In contrast, the K-Java algorithm starts the search with the qualifying type (e.
 The rule for package access mode delegates searching for the right method declaration to the auxiliary function
   \verb|lookupPackageMethod()|. The function takes 3 arguments:
 
-  - method signature Sig
-  - the list of classes in the inheritance chain between the qualifying class QualC and the actual object class ObjC.
+  - method signature \verb|Sig|
+  - the list of classes in the inheritance chain between the qualifying class \verb|QualC| and the actual object class \verb|ObjC|.
     This list is produced by \verb|classChain()|
   - the third argument represents the declaring class of the best method found so far.
     It is initialized with \dotCt{K}.
@@ -516,11 +516,11 @@ syntax KItem ::=  lookupPackageMethod (
 \begin{markdown}
 The rules for \verb|lookupPackageMethod()| are based on the following two properties of the configuration:
 
-  - if the cell \cellref[]{methods} for a particular class contains a key Sig, then \cellref[]{methods} for all classes derived from it
-    will contain the key Sig.
-  - if a particular class contain a method declaration with signature Sig access mode Acc, then all declarations
-    of Sig in derived classes (that are not necessarily overriding!) will have the access mode equal to either Acc or a
-    value wider than Acc.
+  - if the cell \cellref[]{methods} for a particular class contains a key \verb|Sig|, then \cellref[]{methods} for all classes derived from it
+    will contain the key \verb|Sig|.
+  - if a particular class contain a method declaration with signature \verb|Sig| access mode \verb|Acc|, then all declarations
+    of \verb|Sig| in derived classes (that are not necessarily overriding!) will have the access mode equal to either \verb|Acc| or a
+    value wider than \verb|Acc|.
 
 The first property is ensured by the unfolding algorithm. Because \cellref[]{methods} of a derived class inherit all the \cellref[]{methods}
   of the direct base class, the map \cellref[]{methods} may only grow from base classes to derived. The second property is ensured
@@ -528,7 +528,7 @@ The first property is ensured by the unfolding algorithm. Because \cellref[]{met
   method must provide at least as much access as the overridden or hidden method".
 
 The search for the right package method declaration is performed from the base-most class in the chain (the left-most
-  one) to the most derived one. Every rule matches and deletes the leftmost class in the class chain (CurrentC),
+  one) to the most derived one. Every rule matches and deletes the leftmost class in the class chain (\verb|CurrentC|),
   and possibly rewrites the third argument into the current class.
 The first rule matches when there is no declaring class yet (third argument is \dotCt{K}, the initial case).
 \end{markdown}
@@ -546,16 +546,16 @@ rule [lookupPackageMethod-layer-first-dec-found]:
     <methods>... Sig |-> DecC:ClassType ...</methods>
 
 /*@
-The second rule matches when we already found a declaring class (OldDecC) and the current class CurrentC has another
-  method declaration with the right signature. The presence of a declaration with signature  Sig inside CurrentC is identified by the
+The second rule matches when we already found a declaring class (\verb|OldDecC|) and the current class \verb|CurrentC| has another
+  method declaration with the right signature. The presence of a declaration with signature  \verb|Sig| inside \verb|CurrentC| is identified by the
   match $\kall{class}{\kall{classType}{ CurrentC } \mathrel{} \kmiddle{methods}{ Sig \mapsto CurrentC } }$,
   according to the definition of \cellref[]{methods}.
 
-If the method in CurrentC directly overrides the method in OldDecC, the declaring class is updated to CurrentC. Otherwise the declaring class stays unchanged. The rules for direct overriding (case 1a above) are defined in the auxiliary function \verb|isOverridden()|. The function takes three arguments:
+If the method in \verb|CurrentC| directly overrides the method in \verb|OldDecC|, the declaring class is updated to \verb|CurrentC|. Otherwise the declaring class stays unchanged. The rules for direct overriding (case 1a above) are defined in the auxiliary function \verb|isOverridden()|. The function takes three arguments:
 \begin{markdown}
-  - The base class OldDecC
-  - The derived class CurrentC
-  - The access mode Acc of the definition of Sig in OldDecC.
+  - The base class \verb|OldDecC|
+  - The derived class \verb|CurrentC|
+  - The access mode \verb|Acc| of the definition of \verb|Sig| in \verb|OldDecC|.
 \end{markdown}
 */
 rule [lookupPackageMethod-new-method]:
@@ -581,13 +581,13 @@ rule [lookupPackageMethod-new-method]:
 
 /*@
 \begin{markdown}
-Tests if a method declared in class BaseC with access mode Acc is overridden by a method
-  with the same signature declared in a subclass SubC.
+Tests if a method declared in class \verb|BaseC| with access mode \verb|Acc| is overridden by a method
+  with the same signature declared in a subclass \verb|SubC|.
 
 The method is overridden if either:
 
-  - Acc is protected or public
-  - Acc is package and BaseC and SubC are declared in the same package (JLS \S6.6)
+  - \verb|Acc| is protected or public
+  - \verb|Acc| is package and \verb|BaseC| and \verb|SubC| are declared in the same package (JLS \S6.6)
 
 \end{markdown}
 */
@@ -607,9 +607,9 @@ rule isOverridden(BaseC:ClassType, package, SubC:ClassType)
 rule isOverridden(_, private, _) => false
 
 /*@
-The third rule represents the case when CurrentC chain does not contain method declarations with signature
-  Sig. This case is identified by the side condition CurrentC =/=K DecC. Indeed, the two classes are different only
-  when the entry Sig $\mapsto$ DecC in \cellref[]{methods} was inherited rather than produced by a method in CurrentC.
+The third rule represents the case when \verb|CurrentC| chain does not contain method declarations with signature
+  \verb|Sig|. This case is identified by the side condition \verb|CurrentC| =/=K \verb|DecC|. Indeed, the two classes are different only
+  when the entry \verb|Sig| $\mapsto$ \verb|DecC| in \cellref[]{methods} was inherited rather than produced by a method in \verb|CurrentC|.
 */
 rule [lookupPackageMethod-no-new-method]:
     <k>
@@ -700,7 +700,7 @@ When the term \verb|lookupPackageMethod()| is first produced it takes as argumen
 The central rule of method invocation is matched when the second argument of method call expression reaches the form
   \verb|methodRef()|. This rule performs the following operations:
 
-  - saves the rest of computation (RestK) and the content of \cellref[]{methodContext} as a new entry of the cell \cellref[]{stack}
+  - saves the rest of computation (\verb|RestK|) and the content of \cellref[]{methodContext} as a new entry of the cell \cellref[]{stack}
     This data is restored back by the rules for return statement.
   - Initializes the new method context.
     - The local variable environment \cellref[]{env} is emptied
@@ -826,7 +826,7 @@ module METHOD-INVOKE-REST
 
 /*@
 The next rule for method invocation is applied when the qualifier type is array. This array type is rewritten
-  into the auxiliary class ArrayImpl, that is used in K-Java to simulate method invocations over array objects.
+  into the auxiliary class \verb|ArrayImpl|, that is used in K-Java to simulate method invocations over array objects.
   This rule is required in order to minimize the number of particular cases involving arrays in the rules that follow.
 */
 rule [Invoke-compute-methodInfo-arrays]:
