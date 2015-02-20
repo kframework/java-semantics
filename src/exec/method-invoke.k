@@ -88,8 +88,6 @@ The cell \cellref[]{methodDec} represents a method declared inside the current c
 In order for strictness and context rules to work we have to define some K productions
   as KResult. The most common forms of KResult in Java are the following:
 
-\vspace{3ex}
-
 \begin{syntaxBlock}{\nonTerminal{\sort{KResult}}}
 \syntax{{\nonTerminal{\sort{ClassType}}}}{}
 \syntaxCont{{\nonTerminal{\sort{TypedVal}}}}{}
@@ -97,8 +95,6 @@ In order for strictness and context rules to work we have to define some K produ
 
 The first represents a class. Second is a typed value, the result of evaluation of any
   expression. The forms of typed values relevant for method invocation are object reference and null:
-
-\vspace{3ex}
 
 \begin{syntaxBlock}{\nonTerminal{\sort{TypedVal}}}\syntax{{}\terminal{objectRef}
   ({{\nonTerminal{\sort{Int}}}},{{\nonTerminal{\sort{ClassType}}}}){}
@@ -180,8 +176,6 @@ While there are two sections dedicated to this logic (\S15.12.4.1, \S15.12.4.2),
   for it. Instead, subexpressions evaluation ensured by strictness annotations
   that accompany the following syntax definitions:
 
-\vspace{3ex}
-
 \begin{syntaxBlock}{
   \nonTerminal{\sort{Exp}}}\syntax{{{\nonTerminal{\sort{K}}}}\terminal{.}{{\nonTerminal{\sort{MethodName}}}}
   ({{\nonTerminal{\sort{Exps}}}})}{\kattribute{seqstrict}(1,3)}
@@ -259,8 +253,6 @@ Note that in this rule variable Args is defined of type TypedVals instead of Exp
   arguments (and consequently the qualifier) are already evaluated at the moment when this rule is invoked.
   The sort TypedVals represents a list of typed values, the evaluation result of Exps. It is defined as following:
 
-\vspace{3ex}
-
 \begin{syntaxBlock}{
 	\nonTerminal{\sort{TypedVals}}}\syntax{List\{{\nonTerminal{\sort{TypedVal}}}, \mbox{``},\mbox{''}\}}{}
 \end{syntaxBlock}
@@ -333,8 +325,6 @@ In the third step of the method invocation algorithm, the actual method declarat
 The production \verb|methodRef()| is a reference to a method declaration. It contains two fields --- Sig and DecC --- the
   signature and the declaration class. The implementation class is the class that contains the actual method
   declaration to be invoked.
-
-\vspace{3ex}
 
 \begin{syntaxBlock}{
   \nonTerminal{\sort{MethodName}}}\syntax{{}\terminal{methodRef}({{\nonTerminal{\sort{Signature}}}},{{\nonTerminal{\sort{RefType}}}})}{}
@@ -645,6 +635,7 @@ rule [lookupPackageMethod-end]:
 /*@
 For the code example above, the term \verb|lookupPackageMethod()| will pass through the following forms during evaluation:
 
+\vspace{3ex}
 \begin{tabular}{ | l | l | }
   \hline
   $\mathrel{}\kall{k}{ lookupPackageMethod(f(), (a.A, a.B, b.C), \dotCt{K}) ...}$ &\\
