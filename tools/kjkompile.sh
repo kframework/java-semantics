@@ -199,7 +199,7 @@ case "$OPTION" in
 "--prep-latex")
     $KOMPILE_CMD -d prep --backend latex --doc-style "style=math,modulesAsSections" prep/java-prep.k
     remove-kblock.sh prep/java-prep.tex > java-prep.tex
-    rm prep/java-prep.tex .
+    rm prep/java-prep.tex
     mv prep/k.sty .
     ;;
 "--exec-latex")

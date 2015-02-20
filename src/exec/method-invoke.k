@@ -439,7 +439,7 @@ public class C extends B {
   protected void f(int a) { ... }
 }
 
-((A) new \verb|C()|).f();
+((A) new C()).f();
 \end{lstlisting}
 \end{minipage}
 

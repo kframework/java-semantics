@@ -123,7 +123,7 @@ The object closure has the following structure:
 \begin{verbatim}
   ListItem(layer(
     Class,
-    \verb|<env>|Env</env>,
+    <env>Env</env>,
     enclosingObjClosure::T
   ))
   ...
