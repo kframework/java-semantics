@@ -8,8 +8,7 @@ module NEW-INSTANCE
 /*@
 \subsection{Background}
 
-In this subsection we present the fragment of configuration used by runtime method
-  invocation. The figure below contains the cells and their sorts.
+In this subsection we present the fragment of configuration used by runtime method invocation. The figure below contains the cells and their sorts.
 
 \vspace{3ex}
 
@@ -68,31 +67,13 @@ In this subsection we present the fragment of configuration used by runtime meth
 
 \vspace{3ex}
 
-The cell \cellref[]{k} stores the current computation. Inside \cellref[]{env} we store the local environment --- a map
-  from variable names to their locations in the store. The cell \cellref[]{methodContext} store information about the
-  current object --- the one accessible through the keyword this. Both \cellref[]{env} and \cellref[]{methodContext} play
-  a special role in object instantiation.
+The cell \cellref[]{k} stores the current computation. Inside \cellref[]{env} we store the local environment --- a map from variable names to their locations in the store. The cell \cellref[]{methodContext} store information about the current object --- the one accessible through the keyword this. Both \cellref[]{env} and \cellref[]{methodContext} play a special role in object instantiation.
 
-The cell \cellref[]{class} contains various sub-cells holding the content of that class. The
-  first cell in \cellref[]{classType} of sort ClassType that holds the fully qualified class name.
-  This cell is a unique identifier of a class, and is used as a key to access other cells inside a \cellref[]{class}.
-  Next relevant cells inside \cellref[]{class} are \cellref[]{enclosingClass} --- the directly enclosing class in case
-  this class is an inner class. The vase class is stored inside \cellref[]{extends} and the list of declarations of
-  instance fields without identifiers is stored in \cellref[]{instanceFields}.
+The cell \cellref[]{class} contains various sub-cells holding the content of that class. The first cell in \cellref[]{classType} of sort ClassType that holds the fully qualified class name. This cell is a unique identifier of a class, and is used as a key to access other cells inside a \cellref[]{class}. Next relevant cells inside \cellref[]{class} are \cellref[]{enclosingClass} --- the directly enclosing class in case this class is an inner class. The vase class is stored inside \cellref[]{extends} and the list of declarations of instance fields without identifiers is stored in \cellref[]{instanceFields}.
 
-The next two cells are related to the store. The cell \cellref[]{store} has a central role in the semantics --- it is
-  the map from object locations (values in the cell \cellref[]{env}) to their actual typed values.
-  The cell \cellref[]{nextLoc} is the counter of store locations.
+The next two cells are related to the store. The cell \cellref[]{store} has a central role in the semantics --- it is the map from object locations (values in the cell \cellref[]{env}) to their actual typed values. The cell \cellref[]{nextLoc} is the counter of store locations.
 
-The remaining big group of cells --- \cellref[]{objectStore} contains the inner structure of objects.
-  The \cellref[]{objectId} is an unique identifier of the object. Every reference to this object in the store is
-  a reference to this id. Inside \cellref[]{objectType} is the actual runtime type of the object. Next we have a list
-  of \cellref[]{layer} cells, each of them representing an inheritance layer of the object. Starting from class
-  Object and ending with the actual object type. Inside each layer \cellref[]{layerClass} stores its
-  associated class, \cellref[]{layerEnv} --- the fields and \cellref[]{layerEnclosingObject} --- the enclosing object,
-  in the case when \cellref[]{layerClass} is a non-static inner class. The complex rules for Java inner classes
-  allow each layer to have its distinctive enclosing object, and we have tests that specifically target this
-  requirement.
+The remaining big group of cells --- \cellref[]{objectStore} contains the inner structure of objects. The \cellref[]{objectId} is an unique identifier of the object. Every reference to this object in the store is a reference to this id. Inside \cellref[]{objectType} is the actual runtime type of the object. Next we have a list of \cellref[]{layer} cells, each of them representing an inheritance layer of the object. Starting from class Object and ending with the actual object type. Inside each layer \cellref[]{layerClass} stores its associated class, \cellref[]{layerEnv} --- the fields and \cellref[]{layerEnclosingObject} --- the enclosing object, in the case when \cellref[]{layerClass} is a non-static inner class. The complex rules for Java inner classes allow each layer to have its distinctive enclosing object, and we have tests that specifically target this requirement.
 */
 
 /*@ \subsection{New instance creation}*/
