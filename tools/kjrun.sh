@@ -64,7 +64,7 @@ TIMEOUT=$((30 * $TIMEOUT_FACTOR))
 SEARCH_TIMEOUT_FACTOR=2
 
 MODE=run-exec
-PREP_OUTPUT=raw
+PREP_OUTPUT=kast
 OUTPUT=pretty
 PREP_INPUT=java
 INPUT=kast
@@ -105,7 +105,7 @@ while [[ ${1:0:1} == - ]]; do
       PREP_FIRST=false
       MODE=run-prep-ast
       CMD_SUFFIX=${PREP_AST_CMD_SUFFIX}
-      OUTPUT=raw
+      OUTPUT=kast
       INPUT=java
       ;;
     "--prep-pretty")
@@ -116,7 +116,7 @@ while [[ ${1:0:1} == - ]]; do
     "--prep-raw")
       PREP_FIRST=false
       MODE=run-prep-config
-      OUTPUT=raw
+      OUTPUT=kast
       INPUT=java
       ;;
     "--exec-pretty")

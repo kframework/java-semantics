@@ -11,5 +11,5 @@ JAVA_FILE=$(cross-path-native.sh $1)
 TOOLS_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
 #PARSER_JAR=$(cross-path-native.sh ${TOOLS_DIR}/../parser/JavaParser.jar)
-PARSER_JAR=$(cross-path-native.sh ${TOOLS_DIR}/../parser/javafrontparser.jar)
+PARSER_JAR=$(cross-path-native.sh ${TOOLS_DIR}/../parser/javafrontparserNew.jar)
 java -jar ${PARSER_JAR} ${JAVA_FILE}

@@ -25,7 +25,7 @@ Usage: `basename $0` [OPTIONS] <javaFile>
          | symbolic
          | debug
          >
-  --output=<none|raw|pretty>
+  --output=<pretty|kast|none>
   --input=<java|kast|kast-cache>
   --pattern=<pattern>
   --ltlmc=<LTL formula>
@@ -158,11 +158,9 @@ fi
 KRUN_CMD="$KRUN_CMD $(cross-k.sh krun)"
 
 KRUN_CMD="$KRUN_CMD \
-                      --debug-info \
-                      --color extended \
-                      --directory=\"$SEMANTICS_DIR\" \
-                      --main-module=\"$MAIN_MODULE\" \
-                      -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
+                      --debug \
+                      --directory \"$SEMANTICS_DIR\" \
+                      "
 
 case "$MODE" in
 "run-prep-config" | "run-prep-ast")
@@ -173,13 +171,23 @@ case "$MODE" in
 "run-exec")
     KRUN_CMD="$KRUN_CMD -cCOMMAND=\"'unfoldingPhase(.KList)\" \
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
-                        -cENDPHASE=\"'ExecutionPhase(.KList)\""
+                        -cENDPHASE=\"'ExecutionPhase(.KList)\"
+                        -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
+if [[ ${PATTERN} != "" || ${LTLMC} != "" || ${CONFIG} == "true" ]];
+  then KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"false\""
+  else KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\""
+fi
     ;;
 "search")
     KRUN_CMD="$KRUN_CMD --search-final \
                         -cCOMMAND=\"'unfoldingPhase(.KList)\" \
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
-                        -cENDPHASE=\"'ExecutionPhase(.KList)\""
+                        -cENDPHASE=\"'ExecutionPhase(.KList)\"
+                        -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
+if [[ ${PATTERN} != "" || ${LTLMC} != "" || ${CONFIG} == "true" ]];
+  then KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"false\""
+  else KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\""
+fi
     ;;
 "symbolic")
     IN_FILE=${JAVA_FILE%.java}.cIN.in
@@ -187,13 +195,23 @@ case "$MODE" in
     KRUN_CMD="$KRUN_CMD --search -cPC=true -cIN=\"$IN_VALUE\" \
                         -cCOMMAND=\"'unfoldingPhase(.KList)\" \
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
-                        -cENDPHASE=\"'ExecutionPhase(.KList)\""
+                        -cENDPHASE=\"'ExecutionPhase(.KList)\"
+                        -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
+if [[ ${PATTERN} != "" || ${LTLMC} != "" || ${CONFIG} == "true" ]];
+  then KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"false\""
+  else KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\""
+fi
     ;;
 "debug")
     KRUN_CMD="$KRUN_CMD --debug \
                         -cCOMMAND=\"'unfoldingPhase(.KList)\" \
                         -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
-                        -cENDPHASE=\"'ExecutionPhase(.KList)\""
+                        -cENDPHASE=\"'ExecutionPhase(.KList)\"
+                        -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
+if [[ ${PATTERN} != "" || ${LTLMC} != "" || ${CONFIG} == "true" ]];
+  then KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"false\""
+  else KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\""
+fi
     ;;
 *)
     echo "Invalid MODE: ${MODE}"
@@ -201,12 +219,8 @@ case "$MODE" in
     ;;
 esac
 
-if [[ ${PATTERN} != "" || ${LTLMC} != "" || ${CONFIG} == "true" ]];
-  then KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"false\""
-  else KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\""
-fi
 
-KRUN_CMD="$KRUN_CMD --output=$OUTPUT"
+KRUN_CMD="$KRUN_CMD --output $OUTPUT"
 
 if [[ ${PATTERN} != "" ]]; then
   KRUN_CMD="$KRUN_CMD --pattern \"$PATTERN\""
@@ -219,13 +233,13 @@ fi
 case "$INPUT" in
 "java")
     # OS-dependent selection of the parser.
-    KRUN_CMD="$KRUN_CMD --parser=\"$(cross-sh.sh kj-parse-aggreg.sh)\""
+    KRUN_CMD="$KRUN_CMD --parser \"$(cross-sh.sh kj-parse-aggreg.sh)\""
 
     KRUN_CMD="$KRUN_CMD $JAVA_FILE"
     ;;
 "kast")
     # OS-dependent selection of the parser.
-    KRUN_CMD="$KRUN_CMD --parser=\"cat\""
+    KRUN_CMD="$KRUN_CMD --parser \"cat\""
 
     KRUN_CMD="$KRUN_CMD $JAVA_FILE"
     ;;
@@ -233,7 +247,7 @@ case "$INPUT" in
     KAST_FILE=${WORK_DIR}/${BASE_JAVA_FILE}.kast
     PARSER_CMD="kj-parse-cache.sh $WORK_DIR $(cross-path-unix.sh ${JAVA_FILE})"
 
-    KRUN_CMD="$KRUN_CMD --parser=cat"
+    KRUN_CMD="$KRUN_CMD --parser cat"
     KRUN_CMD="$KRUN_CMD $KAST_FILE"
 
     if [[ ${VERBOSE} == true ]]; then
