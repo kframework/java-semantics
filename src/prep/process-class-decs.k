@@ -70,7 +70,7 @@ syntax KItem ::=  resolveBases (
               )
 
 context resolveBases(_, HOLE, _)        //Heat extends declaration
-context resolveBases(_,_, [_,,HOLE,,_]) //Heat implements declarations
+context resolveBases(_,_, [HOLE]) //Heat implements declarations
 
 rule [resolveBases]:
     <k> resolveBases(Class:ClassType, BaseClass:ClassType, [ImplTypes:KList]) => . ...</k>
