@@ -232,7 +232,7 @@ the only difference is the addition of the types.  */
 context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _),, _)
 
 //Resolve parameter types
-context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, [_,, 'Param(_:K,, HOLE,,_:K),, _],, _:K),, _:K)
+context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, [_:KList,, 'Param(_:K,, HOLE,,_:K),, _:KList],, _:K),, _:K)
 
 rule [MethodDec]:
     <k>
@@ -252,8 +252,9 @@ when
     paramTypesResolved([Params])                            [structural]
 
 syntax KItem ::= paramTypesResolved( KListWrap )              [function]
-rule paramTypesResolved([('Param(_:K,, T:Type,, _:Id) => .KList),, _])
+rule paramTypesResolved(['Param(_:K,, T:Type,, _:Id),, L:KList]) => paramTypesResolved([L])
 rule paramTypesResolved([.KList]) => true
+rule paramTypesResolved([_]) => false [owise]
 
 rule [AbstractMethodDec]:
     'AbstractMethodDec(_:K,, Ks:KList)
