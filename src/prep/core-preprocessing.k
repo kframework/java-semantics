@@ -46,7 +46,7 @@ rule [getTopLevelClasses-start2]:
 
 rule [getTopLevelClasses-top-level]:
     <k>
-      getTopLevelClasses((ListItem(Class:ClassType) => .List) _, _ (.Set => SetItem(Class)))
+      getTopLevelClasses((ListItem(Class:ClassType) => .List) _, (S:Set => S SetItem(Class)))
       ...
     </k>
     <classType> Class </classType>
@@ -79,7 +79,7 @@ rule [getInnerClasses-start-have-inner]:
     <k> getInnerClasses(class Class:Id) => getInnerClasses(InnerClassesMap, .Set) ...</k>
     <namesToClasses>... packageId(Class) |-> mapWrap(InnerClassesMap:Map) ...</namesToClasses>
 
-rule getInnerClasses( (_ |-> Class:ClassType => .Map) _, (.Set => SetItem(Class)) _)
+rule getInnerClasses( (_ |-> Class:ClassType => .Map) _, (S:Set => S SetItem(Class)))
 rule getInnerClasses(.Map, ClassesSet:Set) => setWrap(ClassesSet)
 
 rule [getInnerClasses-no-inners]:
