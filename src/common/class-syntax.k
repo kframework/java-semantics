@@ -36,7 +36,7 @@ syntax SemiColon ::= ";"                                                [klabel(
 
 //@ \subsection{ConstructorDeclarations.sdf}
 syntax ConstrHead ::=
-    AnnoConstrModList OptionalTypeParams Type Id "(" Params ")" OptionalThrows
+    AnnoConstrModList OptionalTypeParams Id "(" Params ")" OptionalThrows
                                                                         [klabel('ConstrDecHead)]
 syntax ConstrBody ::= "{" OptionalConstrInv BlockStmList "}"            [klabel('ConstrBody)]
 
