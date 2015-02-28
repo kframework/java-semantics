@@ -388,33 +388,22 @@ rule [Throw-CausesThreadTermination]:
 //@ \subsection{Try statement}
 
 rule [Try-Catch-Finally-Desugar]:
-    try TryS:K (K:CatchClause Ks:CatchClauses) finally FinallyS:K
-    => try 'Block(try TryS (K Ks)) .CatchClauses finally FinallyS
+    try TryS:K Catches finally FinallyS:K
+    => try 'Block(try TryS Catches) .CatchClauses finally FinallyS
+    when Catches =/=K .CatchClauses
         [structural]
 
 /*@ \subsubsection{Execution of try-catch} JLS \$14.20.1
 */
-//macro
-rule 'Try(Trys:K,,([Catches:KList] => toCatchClauses([Catches])),,FinallyS:K)   [anywhere]
-rule 'Try(Trys:K,,([Catches:KList] => toCatchClauses([Catches])))               [anywhere]
-
-syntax CatchClauses ::= toCatchClauses( KListWrap )                             [function]
-                      | toCatchClauses( KListWrap , CatchClauses )              [function]
-
-rule toCatchClauses([KLCatchClauses:KList]) => toCatchClauses([KLCatchClauses],.CatchClauses)
-rule toCatchClauses([KLCatchClauses:KList,, C:CatchClause], CatchClauses:CatchClauses) => toCatchClauses([KLCatchClauses], (C CatchClauses))
-rule toCatchClauses([.KList], CatchClauses:CatchClauses) => CatchClauses
-
 //resolve the catch clauses of try statement
-context try _:K HOLE
+context try _ HOLE
 
-syntax CatchClause ::= "catch" "(" K ")" K          [klabel('Catch)]
 //resolve 'Param term of the catch clause
 context catch(HOLE)_                                [result(ExtKResult)]
 
 rule 'Param(_,, K:Type,, X:Id) => K X               [structural]
 
-rule catch(KR:ExtKResult)S:K => catchImpl(KR,S)
+rule catch(KR:ParamImpl)S => catchImpl(KR,S)
 
 /*@ Extended K Result.
   Represents KLabels that should be treated as KResult during execution phase, but not during elaboration phase.
