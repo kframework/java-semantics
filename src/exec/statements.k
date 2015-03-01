@@ -176,38 +176,42 @@ rule [do-while]:
     do S:Stmt while(E:Exp); => S ~> whileImpl(E, S)                     [structural]
 
 //@ \subsection{For statement}
-//wrapper of certain clauses of for statement
-syntax KItem ::= stm ( KListWrap )
+//macros
+rule 'For(_,,_,,([Exps:KList] => toExps([Exps])),,_)   [macro]
+rule 'For(([Exps:KList] => toExps([Exps])),,_)         [macro]
 
-rule [stm-KListWrap-empty]:
-    stm([.KList]) => .                                                   [structural]
+//wrapper of certain clauses of for statement, adds ; to cast expressions
+syntax Exps ::= stm (Exps)
 
-rule [stm-KListWrap-exp]:
-    stm([E:Exp,, Es:KList]) => E; ~> stm([Es])
-    when getKLabel(E) ==KLabel 'cast                                     [structural]
+rule [stm-empty]:
+    stm(.Exps) => .                                                         [structural]
 
-rule [stm-KListWrap-LocalVarDec]:
-    stm([K:K,,Ks:KList]) => [K,,Ks]
-    when notBool ( getKLabel(K) ==KLabel 'cast )                         [structural]
+rule [stm-exp]:
+    stm(E,Es) => E; ~> stm(Es)
+when
+    getKLabel(E) ==KLabel 'cast                                             [structural]
+
+rule [stm-LocalVarDec]:
+    stm(K,Ks) => K ~> stm(Ks)
+when
+    notBool ( getKLabel(K) ==KLabel 'cast )                                 [structural]
 
 rule [For-FirstArgV1Red]:
-    'For(([InitExps:KList] => stm([InitExps])),,_:KList)                 [structural]
+    for((InitExps => stm(InitExps));_;_) _
+    when notBool ( getKLabel(InitExps) ==KLabel 'stm )                      [structural]
 
-//Works also in elaboration phase
-rule [For-FirstArgV2Red]:
-    'For(('LocalVarDec(Ks:KList) => stm(['LocalVarDec(Ks)])),,_:KList)   [structural]
 
 rule [For-SecondArgRed]:
-    'For(_:K,,('None(.KList) => 'Some(true)),,_:KList)                   [structural]
+    for(stm(_);('None(.KList) => 'Some(true));_) _                          [structural]
 
 rule [For-ThirdArgRed]:
-    'For(_:K,,_:K,,([UpdExps:KList] => stm([UpdExps])),,_:K)             [structural]
+    for(stm(_);_;(UpdExps => stm(UpdExps))) _
+    when notBool ( getKLabel(UpdExps) ==KLabel 'stm )                       [structural]
 
-//this form of resulting while is required for compatibility with continue statement
 rule [For]:
-    'For(stm(InitClause:KListWrap),, 'Some(TestExp:K),, stm(UpdClause:KListWrap),, S:K)
+    for(stm(InitClause); 'Some(TestExp); stm(UpdClause)) S
     => 'Block(stm(InitClause)
-    ~> ifAux(TestExp, ('Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp,S)), .K)) [structural]
+    ~> ifAux(TestExp, ('Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp,S)), .)) [structural]
 
 //totest model check - the argument of 'return and 'Throw must be evaluated. Otherwise some side effects during
 // evaluation might be evaluated too late
