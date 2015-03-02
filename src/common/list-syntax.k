@@ -40,7 +40,7 @@ syntax Dims         ::= List{Dim,""} // [klabel('DimList)]
 syntax DimExps      ::= List{DimExp,""} [strict]
 syntax VarInits     ::= List{VarInit, ","} // [klabel('VarInitList)]
 syntax CatchClauses ::= List{CatchClause,""} [klabel('CatchClauseList), strict]
-syntax Params       ::= List{Param, ","}   // [klabel('FormalParamList)]
+syntax Params       ::= List{Param, ","}   [strict, klabel('FormalParamList)]
 
 //context 'FormalParamList(HOLE,,_) [result(ExtKResult)]
 //context 'FormalParamList(_,,HOLE) [result(ExtKResult)]
@@ -156,8 +156,8 @@ rule    'ClassBody(('.List`{""`}(.KList) => [.KList])) [macro]
 //AnnoMethodModList TypeParams? ResultType Id "(" FormalParamList ")" Throws?  -> MethodDecHead {cons("MethodDecHead")}
 rule    'MethodDecHead(('AnnoMethodModList(A) => toKListWrap('AnnoMethodModList(A))),,_) [macro]
 rule    'MethodDecHead(('.List`{""`}(.KList) => [.KList]),,_) [macro]
-rule    'MethodDecHead(_,,('FormalParamList(Params) => toKListWrap('FormalParamList(Params))),,_) [macro]
-rule    'MethodDecHead(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [macro]
+//rule    'MethodDecHead(_,,('FormalParamList(Params) => toKListWrap('FormalParamList(Params))),,_) [macro]
+//rule    'MethodDecHead(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [macro]
 
 //"{" BlockStmList "}" -> Block {cons("Block")}
 rule    'Block('BlockStmList(B) => toKListWrap('BlockStmList(B))) [macro]
@@ -204,8 +204,8 @@ rule    'For(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [macro]
 // AnnoConstrModList TypeParams? Id "(" FormalParamList ")" Throws? -> ConstrHead {cons("ConstrDecHead")}
 rule    'ConstrDecHead(('AnnoConstrModList(A) => toKListWrap('AnnoConstrModList(A))),,_) [macro]
 rule    'ConstrDecHead(('.List`{""`}(.KList) => [.KList]),,_) [macro]
-rule    'ConstrDecHead(_,,('FormalParamList(Params) => toKListWrap('FormalParamList(Params))),,_) [macro]
-rule    'ConstrDecHead(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [macro]
+//rule    'ConstrDecHead(_,,('FormalParamList(Params) => toKListWrap('FormalParamList(Params))),,_) [macro]
+//rule    'ConstrDecHead(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [macro]
 
 //"{" ConstrInv? BlockStmList "}" -> ConstrBody {cons("ConstrBody")}
 rule    'ConstrBody(_,,('BlockStmList(B) => toKListWrap('BlockStmList(B)))) [macro]
@@ -311,8 +311,8 @@ rule    'ConstantDec(_,,('VarDecList(V) => toKListWrap('VarDecList(V)))) [macro]
 //AnnoAbstractMethodModList TypeParams? ResultType Id "(" FormalParamList ")" Throws? ";" -> AbstractMethodDec {cons("AbstractMethodDec")}
 rule    'AbstractMethodDec(('AnnoAbstractMethodModList(A) => toKListWrap('AnnoAbstractMethodModList(A))),,_) [macro]
 rule    'AbstractMethodDec(('.List`{""`}(.KList) => [.KList]),,_) [macro]
-rule    'AbstractMethodDec(_,,('FormalParamList(Params) => toKListWrap('FormalParamList(Params))),,_) [macro]
-rule    'AbstractMethodDec(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [macro]
+//rule    'AbstractMethodDec(_,,('FormalParamList(Params) => toKListWrap('FormalParamList(Params))),,_) [macro]
+//rule    'AbstractMethodDec(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [macro]
 
 //    "@" TypeName "(" ElemValPairList ")" 	-> Anno {cons("Anno")}
 rule    'Anno(_,,('ElemValPairList(E) => toKListWrap('ElemValPairList(E)))) [macro]
