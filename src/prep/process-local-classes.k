@@ -281,7 +281,7 @@ rule [localClassAugmentConsParams-augment]:
     <classType> LocalClass </classType>
     <methods> sig(ConsName:Id, types(TList:KList,, (.KList => LocalEnvClass))) |-> _ ...</methods>
     <methodSignature> sig(ConsName:Id, types(TList:KList,, (.KList => LocalEnvClass))) </methodSignature>
-    <methodParams> [_:KList,, (.KList => 'Param(.K,, LocalEnvClass,, String2Id("$local_env")))] </methodParams>
+    <methodParams> (P:Params => 'Param(.AnnoVarModList,, LocalEnvClass,, String2Id("$local_env")), P) </methodParams>
     <methodBody>
       Body:K => [
         'ExprStm('Assign(

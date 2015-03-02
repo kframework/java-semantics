@@ -1,7 +1,7 @@
 module CORE-FUNCTIONS
     imports CORE-SORTS
     imports CORE-CLASSES
-
+    imports JAVA-SYNTAX
 /*@ Returns the type associated with various K terms. The implementation is scattered among various K files.
   For a type - the type itself. For a typed expression - the type component. For some raw values - their most common
     type.
@@ -59,6 +59,12 @@ when
 rule getTypes([Ts:KList]) => types(Ts)
 when
     isKResult(Ts)
+
+syntax KItem ::= getTypes ( Params ) [function]
+               | getTypes ( Types , Params ) [function]
+rule getTypes( Ps:Params ) => getTypes(types(.KList), Ps)
+rule getTypes( types(Ts:KList), (_:AnnoVarModList T:Type _:Id , Ps:Params) ) => getTypes( types(Ts,,T), Ps )
+rule getTypes( types(Ts:KList), .Params) => types(Ts)
 
 //@ \subsubsection{Other auxiliary constructs}
 

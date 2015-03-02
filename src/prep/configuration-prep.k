@@ -320,7 +320,7 @@ configuration
               <methodReturnType> .K </methodReturnType>
 
               //Method params
-              <methodParams> [.KList] </methodParams>
+              <methodParams> .Params </methodParams>
 
               // first line, constructors only. Either of:
               //   'SuperInv - superclass constructor invocation

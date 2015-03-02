@@ -179,7 +179,7 @@ configuration
               <methodSignature color="Blue"> .K </methodSignature>
 
               //Method params
-              <methodParams color="Blue"> [.KList] </methodParams>
+              <methodParams color="Blue"> .Params </methodParams>
 
               //Method body
               <methodBody color="Blue"> .K </methodBody>

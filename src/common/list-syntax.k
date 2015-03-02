@@ -40,7 +40,10 @@ syntax Dims         ::= List{Dim,""} // [klabel('DimList)]
 syntax DimExps      ::= List{DimExp,""} [strict]
 syntax VarInits     ::= List{VarInit, ","} // [klabel('VarInitList)]
 syntax CatchClauses ::= List{CatchClause,""} [klabel('CatchClauseList), strict]
-syntax Params       ::= List{Param, ","}
+syntax Params       ::= List{Param, ","}   // [klabel('FormalParamList)]
+
+//context 'FormalParamList(HOLE,,_) [result(ExtKResult)]
+//context 'FormalParamList(_,,HOLE) [result(ExtKResult)]
 
 syntax KLabel::= "'DimList"
                | "'DimExprList"
@@ -169,17 +172,17 @@ rule    'String(('StringPartList(S) => toKListWrap('StringPartList(S)))) [macro]
 rule    'String(('.List`{""`}(.KList) => [.KList])) [macro]
 
 //AnnoVarModList Type       VarDecId -> FormalParam {cons("Param")}
-rule    'Param(('AnnoVarModList(A) => toKListWrap('AnnoVarModList(A))),,_) [macro]
-rule    'Param(('.List`{""`}(.KList) => [.KList]),,_) [macro]
+//rule    'Param(('AnnoVarModList(A) => toKListWrap('AnnoVarModList(A))),,_) [macro]
+//rule    'Param(('.List`{""`}(.KList) => [.KList]),,_) [macro]
 
 //AnnoVarModList Type   "..."    VarDecId -> FormalParam {cons("VarArityParam")}
-rule    'VarArityParam(('AnnoVarModList(A) => toKListWrap('AnnoVarModList(A))),,_) [macro]
-rule    'VarArityParam(('.List`{""`}(.KList) => [.KList]),,_) [macro]
+//rule    'VarArityParam(('AnnoVarModList(A) => toKListWrap('AnnoVarModList(A))),,_) [macro]
+//rule    'VarArityParam(('.List`{""`}(.KList) => [.KList]),,_) [macro]
 
 
 //AnnoVarModList Type VarDecList -> LocalVarDec {prefer, cons("LocalVarDec")}
-rule    'LocalVarDec(('AnnoVarModList(A) => toKListWrap('AnnoVarModList(A))),,_) [macro]
-rule    'LocalVarDec(('.List`{""`}(.KList) => [.KList]),,_) [macro]
+//rule    'LocalVarDec(('AnnoVarModList(A) => toKListWrap('AnnoVarModList(A))),,_) [macro]
+//rule    'LocalVarDec(('.List`{""`}(.KList) => [.KList]),,_) [macro]
 rule    'LocalVarDec(_,,('VarDecList(A) => toKListWrap('VarDecList(A)))) [macro]
 
 //"new" ArrayBaseType DimExpr+ Dim*  -> ArrayCreationExpr {cons("NewArray")}

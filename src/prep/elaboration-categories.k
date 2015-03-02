@@ -209,6 +209,7 @@ rule defaultElabHeating('Id) => true*/
 //Auxiliary functions that should be default-heated
 rule defaultElabHeating('stmtAndExp) => true
 rule defaultElabHeating('CatchClauseList) => true
+rule defaultElabHeating('FormalParamList) => true
 
 /*@ Naked terms are those that should be computed directly into KResult during elaboration.
   Those are literals, types and packages. They are heated "as is", without being wrapped into elab().
