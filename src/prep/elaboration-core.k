@@ -110,7 +110,7 @@ context  elab('Param(_:K,, HOLE,, _:Id))
 */
 rule [elab-Param]:
     <k> elab('Param(K1:K,, T:Type,, X:Id)) => elabRes('Param(K1:K,, T:Type,, X:Id)) ...</k>
-    <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv> [bug]
+    <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv>
 
 //@Removes the last layer from <elabEnv>
 syntax KItem ::= "removeLastElabEnv"
