@@ -40,10 +40,10 @@ syntax Dims         ::= List{Dim,""} // [klabel('DimList)]
 syntax DimExps      ::= List{DimExp,""} [strict]
 syntax VarInits     ::= List{VarInit, ","} // [klabel('VarInitList)]
 syntax CatchClauses ::= List{CatchClause,""} [klabel('CatchClauseList), strict]
-syntax Params       ::= List{Param, ","}   [strict, klabel('FormalParamList)]
+syntax Params       ::= List{Param, ","}   [klabel('FormalParamList)]
 
-//context 'FormalParamList(HOLE,,_) [result(ExtKResult)]
-//context 'FormalParamList(_,,HOLE) [result(ExtKResult)]
+context 'FormalParamList(HOLE,,_) [result(Param)]
+context 'FormalParamList(_,,HOLE) [result(Params)]
 
 syntax KLabel::= "'DimList"
                | "'DimExprList"

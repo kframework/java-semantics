@@ -103,7 +103,7 @@ rule [methodLookupResult-Invoke-QSuperMethod-instance-end]:
 rule [elabEnd-Invoke-to-lookupMethod]:
     ( . => lookupMethod(getLookupTargetType(typeOf(Qual)),
                         isCastOfQThis(Qual) ==K true, Name, [ArgExps]) )
-    ~> elabEnd('Invoke( 'Method('MethodName(Qual:K,, Name:Id)),, [ArgExps:KList] ))
+    ~> elabEnd('Invoke( 'Method('MethodName(Qual:K,, Name:Id)),, [ArgExps:KList] )) [bug]
 
 //@ Returnts the same type for classes, arrayImplClass for arrays.
 syntax KItem ::= getLookupTargetType ( RefType )    [function]
