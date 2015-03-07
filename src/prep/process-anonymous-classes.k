@@ -2,6 +2,7 @@ module PROCESS-ANONYMOUS-CLASSES
     imports CORE-SORTS
     imports CORE-CLASSES
     imports ELABORATION-CORE
+    imports PROCESS-LOCAL-CLASSES
 
 /*Case one - anonymous class implementing an interface. The class body has nothing else
 but the members provided in the anonymous class definition block.
@@ -19,7 +20,7 @@ rule [elab-NewInstance-anonymous-implements-interface]:
         Arg1,
         [ActualArgs],
         [AnonClassDecs],
-        kr[.KList],
+        .Params,
         kr[.KList]
       )
       ...
@@ -41,7 +42,7 @@ rule [elab-NewInstance-anonymous-extends-class]:
         Arg1,
         [ActualArgs],
         [AnonClassDecs],
-        buildConstructorFormalParams([ActualArgs], [.KList], 0),
+        buildConstructorFormalParams([ActualArgs], .Params, 0),
         buildConstructorFirstLineArgs([ActualArgs], [.KList], 0)
       )
       ...
@@ -57,10 +58,10 @@ syntax KItem ::=  processAnonymousClass (
                 K,         //'NewInstance Arg1
                 KListWrap, //ActualArgs
                 KListWrap, //Anonymous class block decs
-                K,         //To be processed into kr[constructor formal params]
+                K,         //To be processed into formal params
                 K          //To be processed into kr[constructor first line arguments]
               )
-              [strict(7,8)]
+              [strict(8)]
 
 /*@ In the current approach stmtAndExp cannot be elliminated from here. The local class declaration
     will be transformed into the instantiation and initialziation of the parameter object.
@@ -78,7 +79,7 @@ rule [processAnonymousClass]:
       Arg1:K,
       [ActualArgs:KList],
       [AnonClassDecs:KList],
-      kr[ConstructorFormalParams:KList],
+      ConstructorFormalParams:Params,
       kr[ConstructorFirstLineArgs:KList]
     )
     => elab(
@@ -101,7 +102,7 @@ rule [processAnonymousClass]:
                   ['Public(.KList)],,
                   'None(.KList),,
                   Name,,
-                  [ConstructorFormalParams],,
+                  ConstructorFormalParams,,
                   'None(.KList)
                 ),,
                 'ConstrBody(
@@ -122,16 +123,16 @@ First KList - list of actual arguments
 Second KList - the result
 Third arg - a counter used to generate var names
 */
-syntax KItem ::= buildConstructorFormalParams ( KListWrap, KListWrap, Int )
-           | buildConstructorFirstLineArgs ( KListWrap, KListWrap, Int )
+syntax KItem ::= buildConstructorFormalParams ( KListWrap, Params, Int ) [function]
+               | buildConstructorFirstLineArgs ( KListWrap, KListWrap, Int )
 
 rule buildConstructorFormalParams(
-      [(ActualParam:K => .KList),, _],
-      [_,, (.KList => 'Param([.KList],, typeOf(ActualParam),, String2Id("$" +String Int2String(Num) )))],
+      [(ActualParam:K => .KList),,_],
+      (P:Params => addElementToParamsEnd(P, .AnnoVarModList typeOf(ActualParam) String2Id("$" +String Int2String(Num)))),
       Num:Int => Num +Int 1
     )
 
-rule buildConstructorFormalParams([.KList], [Ks:KList], _) => kr[Ks]
+rule buildConstructorFormalParams([.KList], P:Params, _) => P
 
 rule buildConstructorFirstLineArgs(
       [(_:K => .KList),, _],
@@ -154,7 +155,7 @@ rule [elab-QNewInstance-anonymous-extends-class]:
         Arg2,
         [ActualArgs],
         [AnonClassDecs],
-        buildConstructorFormalParams([TypedQual,,ActualArgs], [.KList], 0),
+        buildConstructorFormalParams([TypedQual,,ActualArgs], .Params, 0),
         buildConstructorFirstLineArgs([TypedQual,,ActualArgs], [.KList], 0)
       )
       ...
@@ -171,10 +172,10 @@ syntax KItem ::=  processQAnonymousClass (
                 K,         //'NewInstance Arg2
                 KListWrap, //ActualArgs
                 KListWrap, //Anonymous class block decs
-                K,         //To be processed into kr[constructor formal params]
+                K,         //To be processed into formal params
                 K          //To be processed into kr[constructor first line arguments]
               )
-              [strict(7,8)]
+              [strict(8)]
 
 rule [processQAnonymousClass]:
     processQAnonymousClass(
@@ -184,7 +185,7 @@ rule [processQAnonymousClass]:
       Arg2:K,
       [ActualArgs:KList],
       [AnonClassDecs:KList],
-      kr[ConstructorFormalParams:KList],
+      ConstructorFormalParams:Params,
       kr[ConstrQual:K,, ConstructorFirstLineArgs:KList]
     )
     => elab(
@@ -207,7 +208,7 @@ rule [processQAnonymousClass]:
                   ['Public(.KList)],,
                   'None(.KList),,
                   Name,,
-                  [ConstructorFormalParams],,
+                  ConstructorFormalParams,,
                   'None(.KList)
                 ),,
                 'ConstrBody(

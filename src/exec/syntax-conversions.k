@@ -7,20 +7,6 @@ module SYNTAX-CONVERSIONS
 /*@ Defining the syntax for key portions of the semantics, and converting AST terms back int otheir syntactiv form.
 */
 
-/*@ \subsection{Method parameter}*/
-
-// 'Param(\_:K,, T:Type,, X:Id). Consumed by initParams().
-
-syntax KItem ::= toParams( KListWrap )          [function]
-           | toParams( KListWrap , Params ) [function]
-
-rule toParams([KLParams:KList]) => toParams([KLParams], .Params)
-rule toParams([KLParams:KList,, 'Param(_,, K:K,, X:Id)], Params:Params) => toParams([KLParams], (K X,Params))
-rule toParams([.KList], Params:Params) => Params
-
-// Required for getTypes()
-rule typeOf('ParamImpl(T:Type,, _:Id)) => T
-
 /*@ \subsection{Method invocation}*/
 
 /*
@@ -98,9 +84,9 @@ rule [NewInstance-to-QNewInstance-unpack]:
 syntax KItem ::= toExps( KListWrap )        [function]
            | toExps( KListWrap , Exps ) [function]
 
-rule toExps([Args:KList]) => toExps([Args], .Exps)
-rule toExps([Args:KList,, Arg:Exp], Es:Exps) => toExps([Args], (Arg,Es))
-rule toExps([.KList], Es:Exps) => Es
+rule toExps([Args]) => toExps([Args], .Exps)
+rule toExps([Args,, Arg], Es) => toExps([Args], (Arg,Es))
+rule toExps([.KList], Es) => Es
 
 syntax KItem ::= toKListWrap( Exps )              [function]
            | toKListWrap( KListWrap , Exps )  [function]

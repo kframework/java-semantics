@@ -275,13 +275,16 @@ syntax KItem ::=  localClassAugmentConsParams (
                 Id,         // ConsName - constructor name
                 ClassType   // LocalEnvClass
               )
+syntax Params ::= addElementToParamsEnd (Params, Param) [function]
+rule addElementToParamsEnd(.Params, P:Param) => P,.Params
+rule addElementToParamsEnd((Hd:Param, Tl:Params), P:Param) => Hd,addElementToParamsEnd(Tl,P)
 
 rule [localClassAugmentConsParams-augment]:
     <k> localClassAugmentConsParams(LocalClass:ClassType, ConsName:Id, LocalEnvClass:ClassType) ...</k>
     <classType> LocalClass </classType>
     <methods> sig(ConsName:Id, types(TList:KList,, (.KList => LocalEnvClass))) |-> _ ...</methods>
     <methodSignature> sig(ConsName:Id, types(TList:KList,, (.KList => LocalEnvClass))) </methodSignature>
-    <methodParams> [_:KList,, (.KList => 'Param(.K,, LocalEnvClass,, String2Id("$local_env")))] </methodParams>
+    <methodParams> Ps:Params => addElementToParamsEnd(Ps, (.AnnoVarModList LocalEnvClass String2Id("$local_env"))) </methodParams>
     <methodBody>
       Body:K => [
         'ExprStm('Assign(

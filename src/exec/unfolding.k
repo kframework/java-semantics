@@ -152,8 +152,8 @@ rule [unfolding-MethodDec]:
     <classType> Class:ClassType </classType>
     <methodDecs>
       (.Bag =>  <methodDec>
-                  <methodSignature> sig(Name:Id, getTypes([Params])) </methodSignature>
-                  <methodParams> toParams([Params:KList]) </methodParams>
+                  <methodSignature> sig(Name:Id, getTypes(Params)) </methodSignature>
+                  <methodParams> Params </methodParams>
                   <methodBody> MethodBody:K </methodBody>
                   <methodAccessMode> Acc:AccessMode </methodAccessMode>
                   <methodContextType> CT:ContextType </methodContextType>
@@ -162,7 +162,7 @@ rule [unfolding-MethodDec]:
       )
       ...
     </methodDecs>
-    <methods> Env:Map => Env[Class / sig(Name:Id, getTypes([Params]))] </methods>
+    <methods> Env:Map => Env[Class / sig(Name:Id, getTypes(Params))] </methods>
     <folded>
       _:KLabel(
         'ClassDecHead(_),,
@@ -173,7 +173,7 @@ rule [unfolding-MethodDec]:
               'None(.KList),,//don't know what should be here
               ReturnType:Type,,
               Name:Id,,
-              [Params:KList],,
+              Params,,
               'None(.KList) //don't know what should be here
             ),,
             MethodBody:K
