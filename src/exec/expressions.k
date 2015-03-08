@@ -1,5 +1,3 @@
-//@ \section{Module EXPRESSIONS}
-
 module EXPRESSIONS
     imports CORE-SORTS
     imports CORE-CLASSES
@@ -158,7 +156,7 @@ rule [Assign]:
   - in the RHS of => it is referred twice
   - at elaboration phase we would have to rewrite the original expresion that produces L
       from one occurence to two occuences.
-  - if operator LHS expression have side effects, we would end up with the side effect twice.
+  - if operator LHS expression has side effects, we would end up with the side effect twice.
   - Example: v[i++] += 1*/
 
 rule loc(L:Int) :: T:Type *= Exp2:K => loc(L)::T = cast(T, lookup(L, T) * Exp2)

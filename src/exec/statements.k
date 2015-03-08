@@ -1,6 +1,3 @@
-
-//@ \section{Module STATEMENTS}
-
 module STATEMENTS
     imports CORE-SORTS
     imports SUBTYPING
@@ -180,38 +177,42 @@ rule [do-while]:
     do S:Stmt while(E:Exp); => S ~> whileImpl(E, S)                     [structural]
 
 //@ \subsection{For statement}
-//wrapper of certain clauses of for statement
-syntax KItem ::= stm ( KListWrap )
+//macros
+rule 'For(_,,_,,([Exps:KList] => toExps([Exps])),,_)   [macro]
+rule 'For(([Exps:KList] => toExps([Exps])),,_)         [macro]
 
-rule [stm-KListWrap-empty]:
-    stm([.KList]) => .                                                   [structural]
+//wrapper of certain clauses of for statement, adds ; to cast expressions
+syntax Exps ::= stm (Exps)
 
-rule [stm-KListWrap-exp]:
-    stm([E:Exp,, Es:KList]) => E; ~> stm([Es])
-    when getKLabel(E) ==KLabel 'cast                                     [structural]
+rule [stm-empty]:
+    stm(.Exps) => .                                                         [structural]
 
-rule [stm-KListWrap-LocalVarDec]:
-    stm([K:K,,Ks:KList]) => [K,,Ks]
-    when notBool ( getKLabel(K) ==KLabel 'cast )                         [structural]
+rule [stm-exp]:
+    stm(E,Es) => E; ~> stm(Es)
+when
+    getKLabel(E) ==KLabel 'cast                                             [structural]
+
+rule [stm-LocalVarDec]:
+    stm(K,Ks) => K ~> stm(Ks)
+when
+    notBool ( getKLabel(K) ==KLabel 'cast )                                 [structural]
 
 rule [For-FirstArgV1Red]:
-    'For(([InitExps:KList] => stm([InitExps])),,_:KList)                 [structural]
+    for((InitExps => stm(InitExps));_;_) _
+    when notBool ( getKLabel(InitExps) ==KLabel 'stm )                      [structural]
 
-//Works also in elaboration phase
-rule [For-FirstArgV2Red]:
-    'For(('LocalVarDec(Ks:KList) => stm(['LocalVarDec(Ks)])),,_:KList)   [structural]
 
 rule [For-SecondArgRed]:
-    'For(_:K,,('None(.KList) => 'Some(true)),,_:KList)                   [structural]
+    for(stm(_);('None(.KList) => 'Some(true));_) _                          [structural]
 
 rule [For-ThirdArgRed]:
-    'For(_:K,,_:K,,([UpdExps:KList] => stm([UpdExps])),,_:K)             [structural]
+    for(stm(_);_;(UpdExps => stm(UpdExps))) _
+    when notBool ( getKLabel(UpdExps) ==KLabel 'stm )                       [structural]
 
-//this form of resulting while is required for compatibility with continue statement
 rule [For]:
-    'For(stm(InitClause:KListWrap),, 'Some(TestExp:K),, stm(UpdClause:KListWrap),, S:K)
+    for(stm(InitClause); 'Some(TestExp); stm(UpdClause)) S
     => 'Block(stm(InitClause)
-    ~> ifAux(TestExp, ('Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp,S)), .K)) [structural]
+    ~> ifAux(TestExp, ('Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp,S)), .)) [structural]
 
 //totest model check - the argument of 'return and 'Throw must be evaluated. Otherwise some side effects during
 // evaluation might be evaluated too late
@@ -335,10 +336,10 @@ rule [Return-MethodEnd]:
 Exceptions are propagated now until a catch that can bind them is
 encountered. */
 rule [Throw]:
-    (.K => checkCatch(subtype(typeOf(TV), T)))
+    (. => checkCatch(subtype(typeOf(TV), T)))
 //    ~> 'Throw(TV:TypedVal)
     ~> throw TV:TypedVal;
-    ~> catchBlocks(catchImpl('ParamImpl(T:Type,, X:Id),_) _:CatchClauses)
+    ~> catchBlocks(catchImpl(_ T:Type X:Id,_) _:CatchClauses)
 
 syntax KItem ::= checkCatch ( K )
 context checkCatch(HOLE)
@@ -392,29 +393,17 @@ rule [Throw-CausesThreadTermination]:
 //@ \subsection{Try statement}
 
 rule [Try-Catch-Finally-Desugar]:
-    try TryS:K (K:CatchClause Ks:CatchClauses) finally FinallyS:K
-    => try 'Block(try TryS (K Ks)) .CatchClauses finally FinallyS
+    try TryS:K Catches finally FinallyS:K
+    => try 'Block(try TryS Catches) .CatchClauses finally FinallyS
+    when Catches =/=K .CatchClauses
         [structural]
 
 /*@ \subsubsection{Execution of try-catch} JLS \$14.20.1
 */
-//macro
-rule 'Try(Trys:K,,([Catches:KList] => toCatchClauses([Catches])),,FinallyS:K)   [anywhere]
-rule 'Try(Trys:K,,([Catches:KList] => toCatchClauses([Catches])))               [anywhere]
-
-syntax CatchClauses ::= toCatchClauses( KListWrap )                             [function]
-                      | toCatchClauses( KListWrap , CatchClauses )              [function]
-
-rule toCatchClauses([KLCatchClauses:KList]) => toCatchClauses([KLCatchClauses],.CatchClauses)
-rule toCatchClauses([KLCatchClauses:KList,, C:CatchClause], CatchClauses:CatchClauses) => toCatchClauses([KLCatchClauses], (C CatchClauses))
-rule toCatchClauses([.KList], CatchClauses:CatchClauses) => CatchClauses
-
 //resolve the catch clauses of try statement
-context try _:K HOLE
+context try _ HOLE
 
-syntax CatchClause ::= "catch" "(" K ")" K          [klabel('Catch)]
-//resolve 'Param term of the catch clause
-context catch(HOLE)_                                [result(ExtKResult)]
+rule catch(KR:Param)S => catchImpl(KR,S)
 
 rule 'Param(_,, K:Type,, X:Id) => K X               [structural]
 
@@ -423,14 +412,15 @@ rule catch(KR:ExtKResult)S:K => catchImpl(KR,S)
 /*@ Extended K Result.
   Represents KLabels that should be treated as KResult during execution phase, but not during elaboration phase.
 */
-syntax ExtKResult ::= ParamImpl
+syntax ExtKResult ::= "dummy"
 
 rule isExtKResult(KR:KResult) => true
 
+rule isExtKResult('ParamImpl(T:Type,, _:Id)) => true
 
 //@ Internal representation of a preprocessed catch clause
 syntax CatchImpl ::=  catchImpl (
-                      K,  //'Param(...),
+                      Param,  //'Param(...),
                       K   //the code block
                     )
 syntax KResult ::= CatchImpl

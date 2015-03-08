@@ -1,5 +1,3 @@
-//@ \section{Module CORE-EXEC}
-
 module CORE-EXEC
     imports CORE-SORTS
 

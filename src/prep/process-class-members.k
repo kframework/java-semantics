@@ -1,5 +1,3 @@
-//@ \section{Module PROCESS-CLASS-MEMBERS}
-
 module PROCESS-CLASS-MEMBERS
     imports CORE-SORTS
     imports CORE-CLASSES
@@ -10,7 +8,7 @@ module PROCESS-CLASS-MEMBERS
 /*@ We need to process Object first. Thus when we will process any interfaces,
     Object class will already be processed.*/
 rule [Start-ProcClassMembersPhase]:
-    <k> .K => processTypeWithDepends(classObject) ~> processClasses(getTopLevelClasses) </k>
+    <k> . => processTypeWithDepends(classObject) ~> processClasses(getTopLevelClasses) </k>
     <globalPhase> ProcClassDecsPhase => ProcClassMembersPhase  </globalPhase>
 
 syntax KItem ::=  processClasses (
@@ -23,7 +21,7 @@ rule [processClasses]:
     ~>  processClasses(setWrap( (SetItem(Class:ClassType) => .Set) _:Set))
 
 rule [processClasses-Discard]:
-    processClasses(setWrap(.Set)) => .K
+    processClasses(setWrap(.)) => .
 
 syntax KItem ::=  processTypeWithDepends (
                 ClassType  //the class to be processed,
@@ -43,7 +41,7 @@ rule [processTypeWithDepends]:
     <classPhase> DecsProcessedCPhase </classPhase>
 
 rule [processTypeWithDepends-Discard]:
-    <k> processTypeWithDepends(Class:ClassType) => .K ...</k>
+    <k> processTypeWithDepends(Class:ClassType) => . ...</k>
     <classType> Class </classType>
     <classPhase> MembersProcessedCPhase </classPhase>
 
@@ -100,7 +98,7 @@ rule [processType]:
 
 //Could happen when hierarchies of inheritance and that of enclosing get messed up.
 rule [processType-discard]:
-    <k> processType(Class:ClassType) => .K ...</k>
+    <k> processType(Class:ClassType) => . ...</k>
     <classType> Class </classType>
     <classPhase> MembersProcessedCPhase </classPhase>
 
@@ -128,7 +126,7 @@ syntax KItem ::=  saveImplTrans (
               )
               [strict]
 
-rule <k> saveImplTrans(setWrap(S1:Set)) => .K ...</k>
+rule <k> saveImplTrans(setWrap(S1:Set)) => . ...</k>
      <crntClass> Class:ClassType </crntClass>
      <classType> Class </classType>
      <implTrans> _ => S1 </implTrans>
@@ -155,7 +153,6 @@ rule [tryInherit]:
 rule [tryInherit-Discard]:
     tryInherit(noClass) => .K
 
-//todo mapItem/solution
 rule [tryInheritImpl-Unfold]:
     (.K => tryInheritImpl(M, I)) ~> tryInheritImpl((M:K |-> I:K => .Map) _:Map)
 
@@ -214,7 +211,7 @@ closures, so that their type contract can be checked at invocation
 time.  The rule below is conceptually similar to that of untyped KOOL;
 the only difference is the addition of the types.  */
 
-/*@
+/*
 'MethodDec(
   'MethodDecHead(
     Modifiers:KListWrap,,
@@ -232,29 +229,21 @@ the only difference is the addition of the types.  */
 context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _),, _)
 
 //Resolve parameter types
-context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, [_:KList,, 'Param(_:K,, HOLE,,_:K),, _:KList],, _:K),, _:K)
+context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, HOLE,, _:K),, _:K) [result(Params)]
 
 rule [MethodDec]:
     <k>
       'MethodDec(
-        'MethodDecHead(Modifiers:KListWrap,, _:K,, ReturnType:Type,, Name:Id,,
-            [Params:KList],, _:K
+        'MethodDecHead(Modifiers:KListWrap,, _:K,, ReturnType:Type,, Name:Id,,Params:Params,, _:K
         ),,
         Body:K //could be 'Block([...]) or 'NoMethodBody
       )
-      => storeMethod([Params],
+      => storeMethod(Params,
             getContextType(Modifiers), getAccessMode(Modifiers), isSynchronizedModifiers(Modifiers), methodMMT, noValue, Body,
-            sig(Name, getTypes([Params])), ReturnType)
+            sig(Name, getTypes(Params)), ReturnType)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-when
-    paramTypesResolved([Params])                            [structural]
-
-syntax KItem ::= paramTypesResolved( KListWrap )              [function]
-rule paramTypesResolved(['Param(_:K,, T:Type,, _:Id),, L:KList]) => paramTypesResolved([L])
-rule paramTypesResolved([.KList]) => true
-rule paramTypesResolved([_]) => false [owise]
 
 rule [AbstractMethodDec]:
     'AbstractMethodDec(_:K,, Ks:KList)
@@ -264,7 +253,7 @@ rule [AbstractMethodDec]:
         )
 
 syntax KItem ::=  storeMethod (
-                KListWrap,   //[Params]
+                Params,   //[Params]
                 ContextType, //will evaluate to ContextType - staticCT or instanceCT
                 AccessMode,  //will evaluate to AccessMode
                 TypedVal,    //IsSync:bool - whether method is synchronized or not
@@ -291,7 +280,7 @@ rule [storeMethod-Synchronized-method-static-desugar]:
 
 rule [storeMethod]:
     <k>
-      storeMethod([Params:KList], CT:ContextType, Acc:AccessMode, false::bool, MMT:MethodMetaType, FirstLine:K,
+      storeMethod(Params, CT:ContextType, Acc:AccessMode, false::bool, MMT:MethodMetaType, FirstLine:K,
                   Body:K, Sig:Signature, ReturnType:Type) => .
       ...
     </k>
@@ -301,7 +290,7 @@ rule [storeMethod]:
     ( .Bag => <methodDec>
                      <methodSignature> Sig </methodSignature>
                      <methodReturnType> ReturnType </methodReturnType>
-                     <methodParams> [Params] </methodParams>
+                     <methodParams> Params </methodParams>
                      <methodConstrFirstLine> FirstLine </methodConstrFirstLine>
                      <methodBody> Body </methodBody>
                      <methodAccessMode> Acc </methodAccessMode>
@@ -313,11 +302,11 @@ when
     notBool (Sig in keys(Env) andBool MMT ==K constructorMMT)
 
 /*@ Discard the default consturctor that was added by the rule [processTypeDecsInPCUPhase-ClassDec]
-    if this class already have a default constructor.
+    if this class already has a default constructor.
 */
 rule [storeMethod-discard-default-constructor]:
     <k>
-      storeMethod([.KList],_,_,_, constructorMMT, _,_, Sig:Signature, _) => .
+      storeMethod(.Params,_,_,_, constructorMMT, _,_, Sig:Signature, _) => .
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -361,14 +350,14 @@ when
     Class ==K classObject
 
 //Resolve parameter types
-context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, [_,, 'Param(_:K,, HOLE,,_:K),, _],, _),, _:K)
+context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, HOLE,, _),, _:K)   [result(Params)]
 
 rule [ConstrDec]:
     <k>
-      'ConstrDec('ConstrDecHead(Modifiers:KListWrap,, _:K,, Name:Id,, [Params:KList],, _),,
+      'ConstrDec('ConstrDecHead(Modifiers:KListWrap,, _:K,, Name:Id,, Params:Params,, _),,
           'ConstrBody(
         'Some(FirstLine:K) ,,[BodyKs:KList]))
-      => storeMethod([Params],
+      => storeMethod(Params,
           instanceCT, getAccessMode(Modifiers), isSynchronizedModifiers(Modifiers), constructorMMT, FirstLine,
           'Block([
 
@@ -380,13 +369,12 @@ rule [ConstrDec]:
             #fi,,
             BodyKs
           ]),
-          sig(getConsName(Class), getTypes([Params])), void)
+          sig(getConsName(Class), getTypes(Params)), void)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-when paramTypesResolved([Params])
 
-//@ 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, InitExp:K),, _])
+// 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, InitExp:K),, _])
 
 //resolve field declaration type
 context 'FieldDec(_:K,, HOLE,, _)
@@ -496,7 +484,7 @@ syntax KItem ::= "convertInstanceInitIntoMethod"
 rule [convertInstanceInitIntoMethod]:
     <k>
       convertInstanceInitIntoMethod
-      => storeMethod([.KList], instanceCT, private, false::bool, methodMMT, noValue, 'Block([InstanceInitKs]),
+      => storeMethod(.Params, instanceCT, private, false::bool, methodMMT, noValue, 'Block([InstanceInitKs]),
                       sig(String2Id("$instance_init"), types(.KList)), void)
       ...
     </k>

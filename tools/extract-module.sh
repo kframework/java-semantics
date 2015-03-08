@@ -33,26 +33,32 @@ shift
 # End of command args parsing
 
 
-# Save to BEGIN_DOC_LINE_NUM the line number of \begin{document} in the original doc-methods-main.tex
-BEGIN_DOC_LINE_NUM=$(grep -n -m 1 \begin{document} ${IN_FILE} | sed -n 's/^\([0-9]*\)[:].*/\1/p')
+# Save to BEGIN_DOC_LINE_NUM the line number of \begin{document} in $IN_FILE
+BEGIN_DOC_LINE_NUM=$( \
+    grep -n -m 1 \begin{document} ${IN_FILE} | \
+    sed -n 's/^\([0-9]*\)[:].*/\1/p' \
+  )
 
-# save into final.tex the beginning of the document up to \begin{document} inclusively
+# save into $OUT_FILE the beginning of the document up to \begin{document} inclusively
 head -n ${BEGIN_DOC_LINE_NUM} ${IN_FILE} > ${OUT_FILE}
 
 # Append one more line
 echo "" >> ${OUT_FILE}
 
-# Save to START_LINE_NUM just the line number where moduleName{METHOD-INVOKE} is located:
+# Save to START_LINE_NUM just the line number where \begin{module}{$MODULE} is located:
 START_LINE_NUM=$( \
-    grep -n \begin{module}{\\\\moduleName{${MODULE}}} ${IN_FILE} | \
+    grep -n \begin{module}{${MODULE}} ${IN_FILE} | \
     sed -n 's/^\([0-9]*\)[:].*/\1/p' \
   )
 
-# Delete the beginnign ofthe file up to the line with moduleName{METHOD-INVOKE} inclusively
+# Delete the beginning of the file up to the line with \begin{module}{$MODULE} inclusively
 sed "1,${START_LINE_NUM}d" ${IN_FILE} > ${AUX_FILE}
 
 # Save to END_LINE_NUM just the line number where the first end{module} is located in the new cut.tex:
-END_LINE_NUM=$(grep -n -m 1 \end{module} ${AUX_FILE} | sed -n 's/^\([0-9]*\)[:].*/\1/p')
+END_LINE_NUM=$( \
+    grep -n -m 1 \end{module} ${AUX_FILE} | \
+    sed -n 's/^\([0-9]*\)[:].*/\1/p' \
+  )
 
 # Make END_LINE_NUM to point to the line prior to end{module}
 END_LINE_NUM=`expr ${END_LINE_NUM} - 1`

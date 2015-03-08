@@ -1,5 +1,3 @@
-//@ \section{Module ARRAYS}
-
 module ARRAYS
     imports CORE-SORTS
     imports SUBTYPING

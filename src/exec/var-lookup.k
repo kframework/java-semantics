@@ -1,5 +1,3 @@
-//@ \section{Module VAR-LOOKUP}
-
 module VAR-LOOKUP
     imports CORE-SORTS
     imports SUBTYPING
@@ -7,7 +5,7 @@ module VAR-LOOKUP
 
 //@ \subsection{Local variable access}
 
-/*@ Local variable access. At runtime may have one form:
+/* Local variable access. At runtime may have one form:
     - 'ExprName(X:Id) - local variable
 */
 
@@ -24,7 +22,7 @@ rule [lvalue-ExprName-local]:
 
 /*@ \subsection{QThis - Self reference} */
 
-//@ 'QThis(Class:ClassType)
+// 'QThis(Class:ClassType)
 rule [QThis]:
     <k>
       'QThis(Class:ClassType) => lookupQThis(Class, RV::CrntClass)

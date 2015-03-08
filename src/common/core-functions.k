@@ -2,6 +2,7 @@
 module CORE-FUNCTIONS
     imports CORE-SORTS
     imports AUX-STRINGS
+    imports JAVA-SYNTAX
 
 //@ \subsection{Shortcuts for the most frequently used classes within the semantics}
 
@@ -91,6 +92,12 @@ rule getTypes([Ts:KList]) => types(Ts)
 when
     isKResult(Ts)
 
+syntax KItem ::= getTypes ( Params ) [function]
+               | getTypes ( Types , Params ) [function]
+rule getTypes( Ps:Params ) => getTypes(types(.KList), Ps)
+rule getTypes( types(Ts:KList), (_:AnnoVarModList T:Type _:Id , Ps:Params) ) => getTypes( types(Ts,,T), Ps )
+rule getTypes( types(Ts:KList), .Params) => types(Ts)
+
 //@ \subsubsection{Other auxiliary constructs}
 
 /*@ Generalized equality with strictness, suitable to compare not only TypedVal-s but any K terms.
@@ -130,13 +137,15 @@ syntax KItem ::=  mapUnion (
               )
               [strict]
 
-rule mapUnion(mapWrap( M1:Map => M1[K1 <- K2] ), mapWrap( _:Map (K1:K |-> K2:K => .Map) ))
+rule mapUnion(mapWrap( M1:Map => M1[K2/K1] ), mapWrap( _:Map (K1:K |-> K2:K => .Map) ))
 rule mapUnion(mapWrap(M1:Map), mapWrap(.Map)) => mapWrap(M1)
 
-//@ Substracts from the given map the value given (match is on the value)
-syntax KItem ::= removeMapItemsByValue (Map,K)             [function]
-               | removeMapItemsByValue (Map,K,Map)         [function]
-               | removeMapItemsByValue (K,K,Map,K,Map)     [function]
+//@ Substracts fron the given map the keys found in the given set
+syntax KItem ::=  mapDiff(
+                K,  //mapWrap(Map)
+                K   //setWrap(Set)
+              )
+              [strict]
 
 rule removeMapItemsByValue(M:Map, V:K) => removeMapItemsByValue(M, V, .Map)
 rule removeMapItemsByValue((Key:K |-> Value:K) Remains:Map, V:K, M:Map) => removeMapItemsByValue(Key, Value, Remains, V, M)
@@ -201,7 +210,7 @@ rule getSimpleName(class ClassId:Id)
 
 /*@ \subsection{Identifiers}*/
 
-//@ 'Id(Str:String)
+// 'Id(Str:String)
 
 /*@Convert the AST representation of an Id into a K Id.*/
 rule 'Id(Str:String) => String2Id(Str)                [structural, anywhere]
@@ -221,15 +230,14 @@ rule true::bool ~> true? => .  [structural]
 syntax KLabel ::= "'ListWrap"
 rule 'ListWrap(Ks:KList) => [Ks]                  [structural, anywhere]
 //todo: both 'KListWrap and 'ListWrap are associted with the same production, so how to get rid of it
-syntax KListWrap ::= "[" KList "]" [klabel('KListWrap)]
-syntax UserList ::= KListWrap
+syntax KListWrap ::= "[" KList "]" [klabel('KListWrap), latex(\terminal{[} {#1} \terminal{]})]
 
 //@ Sequence of terms and of any other statements. The first term is moved to the top of computation.
 rule [S1:K,, Stmts:KList] => S1 ~> [Stmts]        [structural]
 rule [.KList] => .K                               [structural]
 
 //@ A wrapper over an arbitrary KList, wrapper being of type KResult.
-syntax KRListWrap ::= "kr" "[" KList "]"
+syntax KRListWrap ::= "kr" "[" KList "]"          [latex(\terminal{kr[} {#1} \terminal{]})]
 syntax KResult ::= KRListWrap
 
 endmodule

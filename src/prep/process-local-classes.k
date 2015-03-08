@@ -1,5 +1,3 @@
-//@ \section{Module PROCESS-LOCAL-CLASSES}
-
 module PROCESS-LOCAL-CLASSES
     imports CORE-SORTS
     imports CORE-CLASSES
@@ -8,8 +6,7 @@ module PROCESS-LOCAL-CLASSES
     imports PROCESS-CLASS-MEMBERS //for processTypeWithDepends
     imports ELABORATION-VARS   //for elabLookup
 
-/*@ ClassDecStm('ClassDec(...))
-*/
+// ClassDecStm('ClassDec(...))
 
 rule [elab-ClassDecStm]:
     elab('ClassDecStm(ClassDec:K)) => processLocalClassDec( ClassDec, generateLocalClassType(ClassDec), false )
@@ -31,7 +28,7 @@ rule [generateLocalClassType]:
 //@ Register a local class in the given generated package and fully process it.
 syntax KItem ::=  processLocalClassDec (
                 K,          //the 'ClassDec term
-                ClassType,  //GeneratedClass:ClassType at substep 1, .K when generated name have been registered.
+                ClassType,  //GeneratedClass:ClassType at substep 1, .K when generated name has been registered.
                 Bool        //ClassRegistered - false for substep 1, true for substep 2.
               )
               [strict(2)]
@@ -91,7 +88,7 @@ rule [registerClass]:
                                                  // will be elaborated by getInnerClasses(Encloser) that follows.
 
 /*@ Computes the accessible outer local environment for the given local class.
-  {Accessible outer env} = (the whole outer env} - {all names X that could be resolved by elabLookup(Class, X)}
+  \{Accessible outer env\} = \{the whole outer env\} - \{all names X that could be resolved by elabLookup(Class, X)\}
   elabLookup don't search the var in otuer classes. Just in this class and base classes.
 */
 syntax KItem ::=  localClassGetAccessibleOuterEnv( ClassType )
@@ -157,8 +154,8 @@ rule [localClassTransformIntoInner]:
          #else .K
        #fi
 
-/*@ Same as localClassTransformIntoInner but AccessibleLocalEnv have one more entry
-    - the field LocaClass@LocalEnv_obj that will be created later, a self reference required when a local class
+/*@ Same as localClassTransformIntoInner but AccessibleLocalEnv has one more entry
+    - the field LocaClass@LocalEnv\_obj that will be created later, a self reference required when a local class
     instantiates either itself or an enclosing local class. See tests 957, 958.
 */
 syntax KItem ::=  localClassTransformIntoInnerImpl (
@@ -278,13 +275,16 @@ syntax KItem ::=  localClassAugmentConsParams (
                 Id,         // ConsName - constructor name
                 ClassType   // LocalEnvClass
               )
+syntax Params ::= addElementToParamsEnd (Params, Param) [function]
+rule addElementToParamsEnd(.Params, P:Param) => P,.Params
+rule addElementToParamsEnd((Hd:Param, Tl:Params), P:Param) => Hd,addElementToParamsEnd(Tl,P)
 
 rule [localClassAugmentConsParams-augment]:
     <k> localClassAugmentConsParams(LocalClass:ClassType, ConsName:Id, LocalEnvClass:ClassType) ...</k>
     <classType> LocalClass </classType>
     <methods> sig(ConsName:Id, types(TList:KList,, (.KList => LocalEnvClass))) |-> _ ...</methods>
     <methodSignature> sig(ConsName:Id, types(TList:KList,, (.KList => LocalEnvClass))) </methodSignature>
-    <methodParams> [_:KList,, (.KList => 'Param(.K,, LocalEnvClass,, String2Id("$local_env")))] </methodParams>
+    <methodParams> Ps:Params => addElementToParamsEnd(Ps, (.AnnoVarModList LocalEnvClass String2Id("$local_env"))) </methodParams>
     <methodBody>
       Body:K => [
         'ExprStm('Assign(
@@ -340,7 +340,7 @@ rule [loadElabBuffer]:
     <k> loadElabBuffer => elabRes(ElabBuffer) ...</k>
     <elabBuffer> ElabBuffer:K => [.KList] </elabBuffer>
 
-//@\section{Utility functions for other modules}
+//@\subsection{Utility functions for other modules}
 
 syntax KItem ::= localClassGetExtraArgs( ClassType )
 

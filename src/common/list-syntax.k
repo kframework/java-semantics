@@ -39,8 +39,17 @@ syntax Exps         ::= List{Exp, ","} [seqstrict]
 syntax Dims         ::= List{Dim,""} // [klabel('DimList)]
 syntax DimExps      ::= List{DimExp,""} [strict]
 syntax VarInits     ::= List{VarInit, ","} // [klabel('VarInitList)]
-syntax CatchClauses ::= List{CatchClause,""} [strict]
-syntax Params       ::= List{Param, ","}
+syntax CatchClauses ::= List{CatchClause,""} [klabel('CatchClauseList), strict]
+syntax Params       ::= List{Param, ","}   [klabel('FormalParamList)]
+
+context 'FormalParamList(HOLE,,_) [result(Param)]
+context 'FormalParamList(_,,HOLE) [result(Params)]
+
+syntax KLabel::= "'DimList"
+               | "'DimExprList"
+               | "'ExprList"
+               | "'VarInitList"
+
 
 syntax UserList     ::= BlockStmList
                       | SwitchGroupList
@@ -71,8 +80,6 @@ syntax UserList     ::= BlockStmList
                       | StringPartList
                       | EnumConstList
                       | ClassBodyDecList
-                      | Params
-
 
 
 endmodule
@@ -95,7 +102,6 @@ rule '.List`{"'TypeParamList"`}(.KList)   => [.KList]                           
 rule '.List`{"'AbstractMethodModList"`}(.KList)   => [.KList]                       [macro]
 rule '.List`{"'AnnoAbstractMethodModList"`}(.KList)   => [.KList]                   [macro]
 rule '.List`{"'AnnoMethodModList"`}(.KList)   => [.KList]                           [macro]
-rule '.List`{"'AnnoVarModList"`}(.KList)   => [.KList]                              [macro]
 rule '.List`{"'AnnoClassModList"`}(.KList)   => [.KList]                            [macro]
 rule '.List`{"'AnnoConstrModList"`}(.KList)   => [.KList]                           [macro]
 rule '.List`{"'AnnoFieldModList"`}(.KList)   => [.KList]                            [macro]
@@ -111,8 +117,6 @@ rule '.List`{"'DimList"`}(.KList)   => [.KList]                                 
 rule '.List`{"'DimExprList"`}(.KList)   => [.KList]                                 [macro]
 rule '.List`{"'ExprList"`}(.KList)   => [.KList]                                    [macro]
 rule '.List`{"'VarInitList"`}(.KList)   => [.KList]                                 [macro]
-rule '.List`{"'CatchClauseList"`}(.KList)   => [.KList]                             [macro]
-rule '.List`{"'FormalParamList"`}(.KList)   => [.KList]                             [macro]
 
 rule 'SwitchLabelList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
 rule 'SwitchGroupList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
@@ -129,7 +133,6 @@ rule 'TypeParamList(Hd,,[Tl:KList])             => [Hd,,Tl]         [macro]
 rule 'AbstractMethodModList(Hd,,[Tl:KList])     => [Hd,,Tl]         [macro]
 rule 'AnnoAbstractMethodModList(Hd,,[Tl:KList]) => [Hd,,Tl]         [macro]
 rule 'AnnoMethodModList(Hd,,[Tl:KList])         => [Hd,,Tl]         [macro]
-rule 'AnnoVarModList(Hd,,[Tl:KList])            => [Hd,,Tl]         [macro]
 rule 'AnnoClassModList(Hd,,[Tl:KList])          => [Hd,,Tl]         [macro]
 rule 'AnnoConstrModList(Hd,,[Tl:KList])         => [Hd,,Tl]         [macro]
 rule 'AnnoConstantModList(Hd,,[Tl:KList])       => [Hd,,Tl]         [macro]
@@ -142,19 +145,9 @@ rule 'ElemValPairList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
 rule 'ElemValList(Hd,,[Tl:KList])               => [Hd,,Tl]         [macro]
 rule 'StringPartList(Hd,,[Tl:KList])            => [Hd,,Tl]         [macro]
 rule 'ClassBodyDecList(Hd,,[Tl:KList])          => [Hd,,Tl]         [macro]
-
-syntax KLabel::= "'DimList"
-               | "'DimExprList"
-               | "'ExprList"
-               | "'VarInitList"
-               | "'CatchClauseList"
-               | "'FormalParamList"
-
 rule 'DimList(Hd,,[Tl:KList])         => [Hd,,Tl]    [macro]
 rule 'DimExprList(Hd,,[Tl:KList])     => [Hd,,Tl]    [macro]
 rule 'ExprList(Hd,,[Tl:KList])        => [Hd,,Tl]    [macro]
 rule 'VarInitList(Hd,,[Tl:KList])     => [Hd,,Tl]    [macro]
-rule 'CatchClauseList(Hd,,[Tl:KList]) => [Hd,,Tl]    [macro]
-rule 'FormalParamList(Hd,,[Tl:KList]) => [Hd,,Tl]    [macro]
 
 endmodule

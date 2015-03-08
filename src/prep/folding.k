@@ -67,7 +67,7 @@ rule [folding-MethodDec]:
     ( <methodDec>
         <methodSignature> sig(Name:Id, _) </methodSignature>
         <methodReturnType> ReturnType:Type </methodReturnType>
-        <methodParams> [Params:KList] </methodParams>
+        <methodParams> Params </methodParams>
         <methodBody> MethodBody:K </methodBody>
         <methodAccessMode> Acc:AccessMode </methodAccessMode>
         <methodContextType> CT:ContextType </methodContextType>
@@ -85,7 +85,7 @@ rule [folding-MethodDec]:
                         'None(.KList),,//don't know what should be here
                         ReturnType,,
                         Name,,
-                        [Params],,
+                        Params,,
                         'None(.KList) //don't know what should be here
                       ),,
                       MethodBody

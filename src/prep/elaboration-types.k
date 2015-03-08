@@ -15,14 +15,14 @@ rule 'ClassType(TypeK:K,, _) => TypeK            [structural]
 /*@ Resolving fully qualified type names. A name like pack.p2.A is represented as:
     'TypeName('PackageOrTypeName('PackageOrTypeName(pack),,p2),,A)
 */
-//@ 'PackageOrTypeName(Qual,, Name)
+// 'PackageOrTypeName(Qual,, Name)
 rule 'PackageOrTypeName(KRs:KList,, K:K) => 'TypeName(KRs,,K) ?? 'PackageName([KRs,,K])
 when isKResult(KRs)                              [structural]
 
 /*@ When we search for a class qualified by another class, we simply convert
     the qualifier into a package.*/
 
-//@ 'TypeName(Qual,, X:Id)
+// 'TypeName(Qual,, X:Id)
 rule [TypeName-QualifiedClass]:
     'TypeName(ClassQ:ClassType,, X:Id) => 'TypeName(toPackage(ClassQ),, X)            [structural]
 

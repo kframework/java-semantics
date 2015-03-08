@@ -1,4 +1,3 @@
-//@ \section{Module SUBTYPING}
 module SUBTYPING
     imports CORE-SORTS
     imports CORE-CLASSES

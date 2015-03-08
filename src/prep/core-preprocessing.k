@@ -1,10 +1,8 @@
-/*@ \section{Module CORE-PREPROCESSING}
-    Auxiliary functions related to preprocessing phases only.
-*/
-
 module CORE-PREPROCESSING
     imports CORE-SORTS
     imports CORE-CLASSES
+
+//@ Auxiliary functions related to preprocessing phases only.
 
 //@ \subsection{Auxiliary constructs for retrieving a set of classes}
 

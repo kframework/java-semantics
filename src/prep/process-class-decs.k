@@ -1,5 +1,3 @@
-//@ \section{Module PROCESS-CLASS-DECS}
-
 module PROCESS-CLASS-DECS
     imports CORE-SORTS
     imports CORE-PREPROCESSING

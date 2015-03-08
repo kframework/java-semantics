@@ -31,3 +31,8 @@
 /scrapebook.txt
 /commands.txt
 /src/.latex
+/src/.modules
+/src/sty/.project
+/src/sty/*.pdf
+/src/sty/*.synctex
+/src/sty/.latex

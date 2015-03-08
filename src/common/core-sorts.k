@@ -111,7 +111,7 @@ syntax RawVal ::= Int | Float | Bool | RawRefVal
 /*@ A reference value, in its four forms - as regular object, array, null or String. As mentioned previously
     String values have special treatment in this semantics and are implemented as regular strings.
 
-The object closure have the following structure:
+The object closure has the following structure:
 \begin{itemize}
 \item OL:Int -- the object location
 \item List -- the object content, of the form
@@ -131,7 +131,7 @@ syntax ObjectRef ::=  objectRef (
                                   // implementation, or actual object class if there are no restrictions.
                       )
 
-/*@ The arrayRef have the following structure:
+/*@ The arrayRef has the following structure:
 \begin{itemize}
 \item Type -- type of the array
 \item Int -- location of the first element
@@ -199,9 +199,7 @@ syntax ClassInstanceCreationExp ::= "new" ClassType "(" Exps ")"
 syntax ClassOrName ::= Id | ClassType
 //Denis' syntax
 syntax ClassType ::= "class" Id | "noClass"                     [latex({\dotCt{K}})]
-//Denis' syntax
-syntax ParamImpl ::= Type Id                                            [klabel('ParamImpl)]
-syntax Param ::= ParamImpl
+
 /* Denis' syntax: A reference type is either a class type, an array type, the null type or a String type.
 The null type is specified by the JLS although inaccessible to the programmer. String objects and
 types are not threated as regular objects in the present semantics for performance reasons.

@@ -1,28 +1,20 @@
-/*@ \section{Module PROCESS-TYPE-NAMES}
-First pass - collecting globally accessible names in the program. This includes packages,
-top-level classes and inner classes. In each compilation unit just class declarations
-(both global and inner) are processed. Results are stored in the cell <namesToClasses>.*/
-
 module PROCESS-TYPE-NAMES
     imports CORE-SORTS
     imports CORE-CLASSES
     imports AUX-STRINGS // for retainTail
     imports CORE-PREPROCESSING
 
+/*@
+First pass - collecting globally accessible names in the program. This includes packages,
+top-level classes and inner classes. In each compilation unit just class declarations
+(both global and inner) are processed. Results are stored in the cell <namesToClasses>.
 
-/*@ \subsection{Start of the phase ProcTypeNamesPhase}*/
-
-//Initial command for the preprocessing semantics
-syntax KItem ::= "procTypeNames"
-
-rule [ProcTypeNamesPhase-start]:
-    <k> procTypeNames => Program </k>
-    <program> Program:K </program>
-    <globalPhase> ProcTypeNamesPhase </globalPhase>
+The initial configuration contains the initial program in cells <k> and <program>, and global phase is ProcTypeNamesPhase.
+*/
 
 /*@ \subsection{Compilation units}*/
 
-//@ 'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _)
+// 'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _)
 rule [CompilationUnit-DefaultPackage-Desugar]:
     'CompilationUnit(
       ( 'None(_) => 'Some('PackageDec(.K,, 'PackageName( [.KList] ))) ),,
@@ -43,7 +35,7 @@ rule [CompilationUnit]:
 
 /*@ \subsection{Packages}*/
 
-//@ 'PackageName([Ks])
+// 'PackageName([Ks])
 
 rule [PackageName-Start]:
     'PackageName([Ks:KList]) => packageNameImpl("", [Ks:KList])                  [structural]
@@ -80,7 +72,7 @@ rule [processTypeNames-AddPackage]:
     <namesToClasses> PackMap:Map => PackMap[PackId <- mapWrap(.Map)] </namesToClasses>
 when notBool PackId in keys(PackMap)
 
-/*@ May be both class or interface name. Anonymous labels will be one of:
+/*@ A type name is either class or interface name. Anonymous labels will be one of:
       - 'ClassDec('ClassDecHead(...))
       - 'InterfaceDec('InterfaceDecHead(...))*/
 rule [processTypeNames]:

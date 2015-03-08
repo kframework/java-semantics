@@ -36,7 +36,7 @@ syntax SemiColon ::= ";"                                                [klabel(
 
 //@ \subsection{ConstructorDeclarations.sdf}
 syntax ConstrHead ::=
-    AnnoConstrModList OptionalTypeParams Type Id "(" Params ")" OptionalThrows
+    AnnoConstrModList OptionalTypeParams Id "(" Params ")" OptionalThrows
                                                                         [klabel('ConstrDecHead)]
 syntax ConstrBody ::= "{" OptionalConstrInv BlockStmList "}"            [klabel('ConstrBody)]
 
@@ -99,7 +99,7 @@ syntax MethodDecHead ::=
 syntax MethodBody ::= Block | ";"                                       [klabel('NoMethodBody)]
 syntax MethodDec ::= MethodDecHead MethodBody                           [klabel('MethodDec)]
 
-syntax Param ::= AnnoVarModList Type VarDecId                           [klabel('Param)]
+syntax Param ::= AnnoVarModList Type VarDecId                           [strict(2), klabel('Param)]
 syntax Param ::= AnnoVarModList Type "..." VarDecId                     [klabel('VarArityParam)]
 
 syntax Throws ::= "throws" ExceptionTypeList                            [klabel('ThrowsDec)]

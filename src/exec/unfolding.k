@@ -3,7 +3,6 @@ module UNFOLDING
     imports CORE-FUNCTIONS
     imports SYNTAX-CONVERSIONS
 
-
 rule [UnfoldingPhase-start]:
     <k> . => unfoldingPhase </k>
     <globalPhase> FoldingPhase => UnfoldingPhase </globalPhase>
@@ -12,6 +11,14 @@ rule [UnfoldingPhase-start]:
 /*@ The sole content of <k> cell during UnfoldingPhase
 */
 syntax KItem ::= "unfoldingPhase"
+
+//@In the initial configuration the cell <threads> is empty, global phase is UnfoldingPhase, <program> is non-empty.
+rule [UnfoldingPhase-start]:
+    <threads>
+      . => <thread> <k> unfoldingPhase </k> ...</thread>
+    </threads>
+    <globalPhase> UnfoldingPhase </globalPhase>
+    <program> [_:K,, _] </program>
 
 rule [unfolding-class-unfold-top-level]:
     <k> unfoldingPhase </k>
@@ -45,7 +52,7 @@ rule [unfolding-class-unfold-inner]:
       </folded>
 
       /*It is ok to unfold inner classes only after this class entered UnfoldingStartedCPhase,
-        e.g. after it's base class have been completely unfolded.
+        e.g. after it's base class has been completely unfolded.
         This is always possible, because a Java class cannot depend on itself (JLS7 $8.1.4 p.192)
       */
       <classPhase> UnfoldingStartedCPhase </classPhase>
@@ -125,7 +132,7 @@ syntax KItem ::= getClassMetaType ( KLabel )      [function]
 rule getClassMetaType('ClassDec) => classCMT
 rule getClassMetaType('InterfaceDec) => interfaceCMT
 
-//@ True if given KListWrap contains a 'MethodDec(\_) term
+// True if given KListWrap contains a 'MethodDec(\_) term
 syntax KItem ::= containsMethodDecs(  KListWrap )  [function]
 rule containsMethodDecs([_,, 'MethodDec(_),, _]) => true
 
@@ -149,8 +156,8 @@ rule [unfolding-MethodDec]:
     <classType> Class:ClassType </classType>
     <methodDecs>
       (.Bag =>  <methodDec>
-                  <methodSignature> sig(Name:Id, getTypes([Params])) </methodSignature>
-                  <methodParams> toParams([Params:KList]) </methodParams>
+                  <methodSignature> sig(Name:Id, getTypes(Params)) </methodSignature>
+                  <methodParams> Params </methodParams>
                   <methodBody> MethodBody:K </methodBody>
                   <methodAccessMode> Acc:AccessMode </methodAccessMode>
                   <methodContextType> CT:ContextType </methodContextType>
@@ -159,8 +166,7 @@ rule [unfolding-MethodDec]:
       )
       ...
     </methodDecs>
-    //todo
-    <methods> Env:Map => Env[sig(Name:Id, getTypes([Params])) <- Class] </methods>
+    <methods> Env:Map => Env[sig(Name:Id, getTypes(Params)) <- Class] </methods>
     <folded>
       _:KLabel(
         'ClassDecHead(_),,
@@ -171,7 +177,7 @@ rule [unfolding-MethodDec]:
               'None(.KList),,//don't know what should be here
               ReturnType:Type,,
               Name:Id,,
-              [Params:KList],,
+              Params,,
               'None(.KList) //don't know what should be here
             ),,
             MethodBody:K
@@ -205,7 +211,7 @@ when
 syntax KItem ::= containsFoldedClasses ( Bag ) [function]
 rule containsFoldedClasses(
       <class>
-        <cphDiscovered> <classPhase> ClassPhase:ClassPhase </classPhase> ...</cphDiscovered>
+        <classPhase> ClassPhase:ClassPhase </classPhase>
         ...
       </class>
       _:Bag

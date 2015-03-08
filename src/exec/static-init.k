@@ -1,5 +1,3 @@
-//@ \section{Module STATIC-INIT}
-
 module STATIC-INIT
     imports CORE-SORTS
     imports CORE-CLASSES          //for objectClass
@@ -19,7 +17,7 @@ Initialization status of a class may have 3 states: StaticUninitialized, StaticI
 2. status = StaticInitializing(TId), TId = this thread => this is a recursive initialization request, discard the term.
 3. status = StaticInitializing(TId), IID = another thread => we should wait until the initialization is completed
   by another thread. Do not match this case.
-4. status = StaticInitialized => the class have been already initialized. Discard the term.
+4. status = StaticInitialized => the class has already been initialized. Discard the term.
 */
 syntax KItem ::=  staticInit (
                 ClassType // Class - the ClassType to be initialized,
@@ -37,11 +35,13 @@ rule [staticInit]:
             StaticInit,,
 
             //catch clause of 'Try
-              [
-                'Catch('ParamImpl(classObject,, String2Id("e") ),,
+
+                catch(.AnnoVarModList classObject String2Id("e"))
+      //because currently there is no rule for executing BlcokStmList, we have to use 'Block for now
                 'Block(throw new class String2Id("java.lang.ExceptionInInitializerError")
-                (((class String2Id("java.lang.Object")) String2Id("e")));))
-              ]
+                (((classObject) String2Id("e")));)
+                .CatchClauses
+
             ,,
 
             //finally clause of 'Try

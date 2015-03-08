@@ -4,7 +4,7 @@ In order to use Java Semantics you need the following prerequisites:
 
 - A computer with at least 1GB of memory
 - Linux, OSX or Windows + Cygwin. Installation instructions below are written for Linux.
-- Java 7 or later, added to PATH.
+- Java 8 or later, added to PATH.
 - K Framework (See <http://kframework.org>). The directory k-framework/dist/bin should be added to $PATH.
 - Notice that the latest version of K Framework does not suit our java semantics. We are using https://github.com/kframework/k/releases/tag/v3.4 (K-framework version 3.4. Git Revision: 08c9271)
 
@@ -26,7 +26,6 @@ $ kjrun.sh ../tests/01_smoke_tests/helloWorld.java
 ```
 
 Now you can test the execution of multiple programs at once using bundled tool kjtest.
-(Make sure you run some program with kjrun.sh first, it needs to perform some initializations.)
 
 ```
 $ kjtest.sh --t1 ../tests/01_smoke_tests/
@@ -39,3 +38,5 @@ This tool executes each program in the given directory with both Java Semantics 
 Directory docs contains two technical reports: the complete documented semantics of module METHOD_INVOKE and
   the documentation of the main rule for new instance creation with all the prerequisites.
 
+## POPL 15' : K-Java: A Complete Semantics of Java
+http://fsl.cs.illinois.edu/index.php/K-Java:_A_Complete_Semantics_of_Java

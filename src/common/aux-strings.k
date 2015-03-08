@@ -1,7 +1,5 @@
-/*@ \section{Module AUX-STRINGS}
-Auxiliary constructs related to Strings. Extension to string.k.*/
-
 module AUX-STRINGS
+/*@ Auxiliary constructs related to Strings. Extension to string.k.*/
 
 //@Retain the first Count chars in the string
 syntax KItem ::= retainHead ( String, Int )                         [function]
