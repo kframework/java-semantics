@@ -1,7 +1,5 @@
 module SUBTYPING
-    imports CORE-SORTS
     imports CORE-CLASSES
-    imports CORE-FUNCTIONS
 
 //@ Checks whether first type is a subtype of the second
 syntax KItem ::=  subtype (

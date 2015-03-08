@@ -405,19 +405,6 @@ context try _ HOLE
 
 rule catch(KR:Param)S => catchImpl(KR,S)
 
-rule 'Param(_,, K:Type,, X:Id) => K X               [structural]
-
-rule catch(KR:ExtKResult)S:K => catchImpl(KR,S)
-
-/*@ Extended K Result.
-  Represents KLabels that should be treated as KResult during execution phase, but not during elaboration phase.
-*/
-syntax ExtKResult ::= "dummy"
-
-rule isExtKResult(KR:KResult) => true
-
-rule isExtKResult('ParamImpl(T:Type,, _:Id)) => true
-
 //@ Internal representation of a preprocessed catch clause
 syntax CatchImpl ::=  catchImpl (
                       Param,  //'Param(...),

@@ -1,5 +1,3 @@
-//@ \section{Module PRIMITIVE-TYPES}
-
 module PRIMITIVE-TYPES
     imports SUBTYPING
 

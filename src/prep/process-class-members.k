@@ -21,7 +21,7 @@ rule [processClasses]:
     ~>  processClasses(setWrap( (SetItem(Class:ClassType) => .Set) _:Set))
 
 rule [processClasses-Discard]:
-    processClasses(setWrap(.)) => .
+    processClasses(setWrap(.Set)) => .
 
 syntax KItem ::=  processTypeWithDepends (
                 ClassType  //the class to be processed,

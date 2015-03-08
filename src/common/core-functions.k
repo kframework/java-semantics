@@ -1,4 +1,3 @@
-/*@ \section{Module CORE-FUNCTIONS} */
 module CORE-FUNCTIONS
     imports CORE-SORTS
     imports AUX-STRINGS
@@ -6,19 +5,19 @@ module CORE-FUNCTIONS
 
 //@ \subsection{Shortcuts for the most frequently used classes within the semantics}
 
-syntax KItem ::= "classObject"
+syntax ClassType ::= "classObject"
     [function, latex(\terminal{Object})]
 rule classObject => class String2Id("java.lang.Object")
 
-syntax KItem ::= "classString"
+syntax ClassType ::= "classString"
     [function, latex(\terminal{String})]
 rule classString => class String2Id("java.lang.String")
 
-syntax KItem ::= "classNullPointerException"
+syntax ClassType ::= "classNullPointerException"
     [function, latex(\terminal{NullPointerException})]
 rule classNullPointerException => class String2Id("java.lang.NullPointerException")
 
-syntax KItem ::= "classArrayImpl"                   [function]
+syntax ClassType ::= "classArrayImpl"                   [function]
 rule classArrayImpl => class String2Id("java.lang.ArrayImpl")
 
 //@ \subsubsection{Computation terms produced during elaboration}
@@ -137,15 +136,13 @@ syntax KItem ::=  mapUnion (
               )
               [strict]
 
-rule mapUnion(mapWrap( M1:Map => M1[K2/K1] ), mapWrap( _:Map (K1:K |-> K2:K => .Map) ))
+rule mapUnion(mapWrap( M1:Map => M1[K1 <- K2] ), mapWrap( _:Map (K1:K |-> K2:K => .Map) ))
 rule mapUnion(mapWrap(M1:Map), mapWrap(.Map)) => mapWrap(M1)
 
-//@ Substracts fron the given map the keys found in the given set
-syntax KItem ::=  mapDiff(
-                K,  //mapWrap(Map)
-                K   //setWrap(Set)
-              )
-              [strict]
+//@ Substracts from the given map the value given (match is on the value)
+syntax KItem ::= removeMapItemsByValue (Map,K)             [function]
+               | removeMapItemsByValue (Map,K,Map)         [function]
+               | removeMapItemsByValue (K,K,Map,K,Map)     [function]
 
 rule removeMapItemsByValue(M:Map, V:K) => removeMapItemsByValue(M, V, .Map)
 rule removeMapItemsByValue((Key:K |-> Value:K) Remains:Map, V:K, M:Map) => removeMapItemsByValue(Key, Value, Remains, V, M)
@@ -229,8 +226,8 @@ rule true::bool ~> true? => .  [structural]
 /*@ Represent a parser form for a sequence of terms. Is desugared into the pretty form [...]*/
 syntax KLabel ::= "'ListWrap"
 rule 'ListWrap(Ks:KList) => [Ks]                  [structural, anywhere]
-//todo: both 'KListWrap and 'ListWrap are associted with the same production, so how to get rid of it
 syntax KListWrap ::= "[" KList "]" [klabel('KListWrap), latex(\terminal{[} {#1} \terminal{]})]
+
 
 //@ Sequence of terms and of any other statements. The first term is moved to the top of computation.
 rule [S1:K,, Stmts:KList] => S1 ~> [Stmts]        [structural]
