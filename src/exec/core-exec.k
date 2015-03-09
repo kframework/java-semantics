@@ -19,7 +19,7 @@ rule [restoreMethContext]:
     <k> restoreMethContext(MethContext:Bag) => . ...</k>
     <methodContext> _ => MethContext </methodContext>
 
-/*@ \subsection{lvalue and loc syntax} */
+/*@ \subsection{Syntax for lvalue and loc} */
 
 syntax KItem ::= lvalue ( K )
 syntax RawVal ::= loc ( Int )

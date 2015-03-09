@@ -229,6 +229,8 @@ module NEW-INSTANCE-REST
     imports VAR-LOOKUP  //for typedLookup()
     imports NEW-INSTANCE
 
+/*@Additional cases of new instance creation. */
+
 //@\subsection{Instance field declarations}
 
 rule [FieldDec-instance]:

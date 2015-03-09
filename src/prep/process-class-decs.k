@@ -3,8 +3,6 @@ module PROCESS-CLASS-DECS
     imports CORE-PREPROCESSING
     imports PROCESS-TYPE-NAMES
 
-/*@ \subsection{Third pass --- processing class dependencies and imports} */
-
 rule [ProcClassDecsPhase-start]:
     <k> . => processClassDecs(getTopLevelClasses) </k>
     <globalPhase> ProcCompUnitsPhase => ProcClassDecsPhase  </globalPhase>

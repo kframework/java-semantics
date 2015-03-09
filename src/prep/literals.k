@@ -94,7 +94,7 @@ rule [Lit-Octa]:
           #else normalize(octaToInt(trimHead(Str,              1)) :: int )
         #fi
 
-//@ \subsection{float literals}
+//@ \subsection{Float literals}
 
 rule [Lit-FFloat]:
     'Lit('Float(Str:String))
@@ -106,7 +106,7 @@ rule [Lit-FFloat]:
                 #fi
         #fi
 
-//@ \subsection{bool literals}
+//@ \subsection{Boolean literals}
 
 /*  'Lit('Bool('True(.KList)))
     'Lit('Bool('False(.KList)))
@@ -116,7 +116,7 @@ rule 'Lit('Bool('True(.KList))) => true
 
 rule 'Lit('Bool('False(.KList))) => false
 
-//@ \subsection{char literals}
+//@ \subsection{Char literals}
 //@ Chars are represented as int values, as described in Java specification.
 
 //   'Lit('Char('Single( I:Int )))

@@ -8,13 +8,13 @@ module EXPRESSIONS-CLASSES
 /*@ Expressions that operate over objects.
 */
 
-/*@ \subsection{Instance Of} */
+/*@ \subsection{Operator instanceof} */
 
 rule [InstanceOf]:
     V:RawVal::_ instanceof RT2:RefType
     =>  (V =/=K null) && subtype(typeOf(V), RT2)
 
-/*@ \subsection{Cast} */
+/*@ \subsection{Cast for references} */
 rule [cast-RefType]:
     cast(RT1:RefType, V:RawVal :: RT2:RefType)
     =>  ifAux ( subtype(typeOf(V), RT1) ,

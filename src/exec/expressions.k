@@ -173,21 +173,21 @@ rule loc(L:Int) :: T:Type &= Exp2:K => loc(L)::T = cast(T, lookup(L, T) & Exp2)
 rule loc(L:Int) :: T:Type ^= Exp2:K => loc(L)::T = cast(T, lookup(L, T) ^ Exp2)
 rule loc(L:Int) :: T:Type |= Exp2:K => loc(L)::T = cast(T, lookup(L, T) | Exp2)
 
-/*@ \subsection{primitive types cast} */
+/*@ \subsection{Cast expression --- primitive types} */
 
 //@ The type of RV could either be NumericType or tempType. This rule matches both.
 rule [cast-Number]: cast(NT:NumericType, RV:RawVal::_) => normalize(RV::NT)
 
 rule [cast-Bool]: cast(bool, B:Bool::bool) => B::bool
 
-/*@ \subsubsection{artificial cases of cast, arised during semantics separation} */
+/*@ \subsubsection{Artificial cases of cast, arised during semantics separation} */
 
 rule [cast-void]: cast(void, RV:RawVal::void) => RV::void
 
 //Happens for the qualifier of a static method call
 rule [cast-noValue]: cast(_, noValue) => noValue
 
-/*@ \subsection{lvalue semantics} */
+/*@ \subsection{Heating/cooling rules for lvalue} */
 
 /* We cannot use context rules here because of wrapper-related limitations. If a term is wrapped into lvalue
   during heating by a context rule, it will be cooled also from lvalue by the cooling rule. This is unacceptable
@@ -245,6 +245,8 @@ rule [lvalue-Throw-desugar]:
     lvalue( throw E:Exp; ) => throw E;
         [structural]
 
+/*@ \subsection{Auxiliary functions for store} */
+
 syntax KItem ::=  store (
                 Int,  //OL - the store location
                 K     //evaluates to TypedVal - the value to be stored
@@ -263,7 +265,7 @@ rule [storeImpl]:
     <k> storeImpl(L:Int, V:RawVal :: T:Type) => . ...</k>
     <store>... L |-> (_ => V) :: T ...</store>
 
-/*@ \subsection{auxiliary terms produced during elaboration} */
+/*@ \subsection{Auxiliary constructs produced during elaboration} */
 
 rule stmtAndExp(Stmt:K, Exp:K) => Stmt ~> Exp
 

@@ -6,6 +6,8 @@ module PROCESS-LOCAL-CLASSES
     imports PROCESS-CLASS-MEMBERS //for processTypeWithDepends
     imports ELABORATION-VARS   //for elabLookup
 
+//@\subsection{Main rules}
+
 // ClassDecStm('ClassDec(...))
 
 rule [elab-ClassDecStm]:
@@ -325,7 +327,7 @@ rule [loadElabBuffer]:
     <k> loadElabBuffer => elabRes(ElabBuffer) ...</k>
     <elabBuffer> ElabBuffer:K => [.KList] </elabBuffer>
 
-//@\subsection{Utility functions for other modules}
+//@\subsection{Auxiliary functions for other modules}
 
 syntax KItem ::= localClassGetExtraArgs( ClassType )
 

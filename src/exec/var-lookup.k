@@ -136,7 +136,7 @@ rule [lvalue-Field-static]:
     <classType> TargetClass </classType>
     <staticEnv>... X |-> L:Int ...</staticEnv>
 
-/*@ \subsection{lvalue and loc} */
+/*@ \subsection{Functions typedLookup and typedLoc} */
 
 //@ Typed version of lookup and loc
 syntax KItem ::= typedLookup ( Int )
@@ -157,7 +157,7 @@ rule [typedLoc]:
 rule [lvalue-typedLoc]:
     lvalue(typedLoc(L:Int)) => typedLoc(L)
 
-/*@ \subsection{lookup} */
+/*@ \subsection{Function lookup} */
 
 /*@ Retrieve a value from the store based on its location and the given compile-time type.
   May be wrapped inside lvalue. If lookup is unwrapped, it evaluates to TypedVal --- the store value,

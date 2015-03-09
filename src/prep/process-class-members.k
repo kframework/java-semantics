@@ -3,7 +3,7 @@ module PROCESS-CLASS-MEMBERS
     imports CORE-CLASSES
     imports CORE-PREPROCESSING
 
-/*@ \subsection{Third pass --- processing class members} */
+/*@ \subsection{General rules} */
 
 /*@ We need to process Object first. Thus when we will process any interfaces,
     Object class will already be processed.*/
@@ -208,7 +208,7 @@ rule [inherit]:
     <classType> Class </classType>
     <methods> Env:Map => Env[DecClass/Sig] </methods>
 
-/*@ \subsection{Method declaration}
+/*@ \subsection{Method declarations}
 Methods are now typed and we need to store their types in their
 closures, so that their type contract can be checked at invocation
 time.  The rule below is conceptually similar to that of untyped KOOL;
@@ -385,6 +385,8 @@ rule [ConstrDec]:
     <crntClass> Class:ClassType </crntClass>
 when paramTypesResolved([Params])
 
+//@ \subsection{Fields and initializers}
+
 // 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, InitExp:K),, _])
 
 //resolve field declaration type
@@ -463,7 +465,7 @@ rule [ConstantDec-Desugar]:
           TypeK,, VarDecs
         )
 
-/*@Subsection compile-time constants*/
+/*@\subsection{Compile-time constants}*/
 
 //compute the value of a compile-time constant
 context 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, HOLE) ])
