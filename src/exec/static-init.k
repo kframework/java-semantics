@@ -3,21 +3,23 @@ module STATIC-INIT
     imports CORE-CLASSES          //for objectClass
     imports CORE-EXEC             //for restoreMethContext
 
-/*@ Triggers static initialization of a class.
-
-Detailed initialization procedure is described in JLS \$12.4.2. Here we implement an approximation of that algorithm,
-that does not use the traditional Java synchronization mechanism, but instead relies on term rewriting
+/*@
+Triggers the static initialization of a class.
+The detailed initialization procedure is described in JLS \$12.4.2. Here we implement an approximation of that algorithm,
+one that does not use the traditional Java synchronization mechanism, but relies instead on term rewriting
 capabilities to implement locks. This algorithm is required to avoid multithreaded issues during static initialization.
 This may happen when two threads access an uninitialized class at the same time.
 
-Initialization status of a class may have 3 states: StaticUninitialized, StaticInitializing(TId), StaticInitialized.
-//Here TId is the id of the thread that initiated the initializing process.
-//Now when we reach staticInit(Class), depending on the initialization status of class we should do the following:
-1. status = StaticUninitialized => perform the initialization
-2. status = StaticInitializing(TId), TId = this thread => this is a recursive initialization request, discard the term.
-3. status = StaticInitializing(TId), IID = another thread => we should wait until the initialization is completed
-  by another thread. Do not match this case.
-4. status = StaticInitialized => the class has already been initialized. Discard the term.
+Initialization status of a class may have one of the following 3 states: StaticUninitialized, StaticInitializing(TId), StaticInitialized.
+Here TId is the identifier of the thread that initiated the initialization process.
+When we reach staticInit(Class), depending on the initialization status of the class (stored in \cellref{staticInitStatus}), we should do one of the following:
+
+\begin{markdown}
+  - \verb|status = StaticUninitialized| --- Perform the initialization.
+  - \verb|status = StaticInitializing(TId), TId = this thread| --- This is a recursive initialization request, discard the term.
+  - \verb|status = StaticInitializing(TId), TId = another thread| --- We should wait until the initialization is completed by another thread. Do not match this case.
+  -  \verb|status = StaticInitialized| --- The class has already been initialized. Discard the term.
+\end{markdown}
 */
 syntax KItem ::=  staticInit (
                 ClassType // Class - the ClassType to be initialized,
