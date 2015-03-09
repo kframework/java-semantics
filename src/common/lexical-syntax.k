@@ -6,9 +6,7 @@ syntax ID ::= Token{[A-Za-z\_\$][A-Za-z0-9\_\$]*}   [onlyLabel]
 
 //@ \paragraph{LineTerminators}
 
-syntax CarriageReturn ::= Token{[\r]}               [onlyLabel]
-syntax LineTerminator ::= EndOfFile
-                        | CarriageReturn
+syntax LineTerminator ::= Token{[\r]}               [onlyLabel]
                         | Token{[\n]}               [onlyLabel]
                         | Token{[\r][\n]}           [onlyLabel]
 
