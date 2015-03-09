@@ -15,6 +15,7 @@ syntax CharContent ::= SingleChar                       [klabel('Single)]
                      | EscapeSeq
 
 syntax SingleChar
+syntax CharLiteral //::= "'" CharContent "'"  [klabel('Char)]
 
 //@ \paragraph{EscapeSequences}
 syntax EscapeSeq ::= OctaEscape | NamedEscape
