@@ -14,6 +14,8 @@ syntax CharContent ::= SingleChar                       [klabel('Single)]
                      | UnicodeEscape
                      | EscapeSeq
 
+syntax SingleChar
+
 //@ \paragraph{EscapeSequences}
 syntax EscapeSeq ::= OctaEscape | NamedEscape
 
