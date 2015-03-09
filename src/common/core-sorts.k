@@ -203,6 +203,8 @@ syntax ClassInstanceCreationExp ::= "new" ClassType "(" Exps ")"
 //Denis' syntax
 syntax ClassOrName ::= Id | ClassType
 //Denis' syntax
+
+/*@ A fully qualified class name, or noClass where no valid class exists in the current context.*/
 syntax ClassType ::= "class" Id | "noClass"                     [latex({\dotCt{K}})]
 //Denis' syntax
 syntax Param ::= Type Id                                            [klabel('ParamImpl)]

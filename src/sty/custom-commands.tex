@@ -2,12 +2,22 @@
 %\documentclass[a4paper, landscape]{article}
 %\usepackage[style=bubble, tight]{k}
 
-% Reduces page borders, now we can put more characters in one line
-%\usepackage{fullpage}
-
 
 %Font set latin modern is not compatible with large angular brackets (package yhmath), so we cannot use it.
 %\usepackage{lmodern}
+
+%For TOC fix
+\usepackage{etoolbox}
+
+%%% Adding TOC to PDF bookmarks.
+% Source: http://tex.stackexchange.com/questions/1820/contents-in-pdf-bookmarks
+\makeatletter
+\pretocmd{\tableofcontents}{%
+  \if@openright\cleardoublepage\else\clearpage\fi
+  \pdfbookmark[0]{\contentsname}{toc}%
+}{}{}%
+\makeatother
+
 
 %%% MARKDOWN ENV
 
@@ -23,6 +33,7 @@
         \input{.latex\string\\tmp\theMarkdownId.tex}%
     }
 
+%%% JAVA LSTLISTINGS SETUP
 \lstset{language=Java,captionpos=t,tabsize=3,frame=no,keywordstyle=\color{blue},
         commentstyle=\color{gray},stringstyle=\color{red},
         breaklines=true,showstringspaces=false,emph={label},

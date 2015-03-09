@@ -5,7 +5,7 @@ module EXP-SYNTAX
 syntax Exp ::= StmtExp
 syntax StmtExp ::= PrefixPostfixExp | AssignExp | MethodInvokeExp | ClassInstanceCreationExp
 
-//@ \subsection{MethodInvocation.sdf}
+//@ \paragraph{MethodInvocation}
 syntax MethodInvokeExp ::= MethodSpec "(" Exps ")"                      [klabel('Invoke)]
 syntax MethodSpec ::= MethodName                                        [klabel('Method)]
                     | Exp "." OptionalTypeArgs Id                       [klabel('Method)]
@@ -14,7 +14,7 @@ syntax MethodSpec ::= MethodName                                        [klabel(
                     | AmbName "." TypeArgs Id                           [klabel('GenericMethod)]
 
 
-//@ \subsection{ClassInstanceCreation.sdf}
+//@ \paragraph{ClassInstanceCreation}
 syntax ClassInstanceCreationExp ::=
     "new" OptionalTypeArgs ClassOrInterfaceType "(" Exps ")" OptionalClassBody
                                                                         [klabel('NewInstance)]
@@ -23,7 +23,7 @@ syntax ClassInstanceCreationExp ::=
                                                                         [klabel('QNewInstance)]
 
 
-//@ \subsection{AssignmentOperators.sdf}
+//@ \paragraph{AssignmentOperators}
 syntax LHS ::= ExprName | FieldAccess | ArrayAccess
 
 syntax AssignExp ::= LHS "=" Exp                                       [klabel('Assign)]
@@ -42,7 +42,7 @@ syntax CompoundAssignExp ::=  LHS "*=" Exp                             [klabel('
                             | LHS "|=" Exp                             [klabel('AssignOr)]
 
 
-//@ \subsection{UnaryOperators.sdf}
+//@ \paragraph{UnaryOperators}
 syntax Exp ::= "(" PrimType ")" Exp                                    [klabel('CastPrim)]
 syntax Exp ::= "(" RefType ")" Exp                                     [klabel('CastRef)]
 
@@ -51,17 +51,16 @@ syntax Exp ::= "~" Exp      [strict, klabel('Complement)]
              | "+" Exp      [strict, klabel('Plus)]
              | "-" Exp      [strict, klabel('Minus)]
 
-//@ Operators with side effects --- prefix, postfix ++/--
 syntax PrefixPostfixExp ::= "++" Exp    [klabel('PreIncr)]
                           | "--" Exp    [klabel('PreDecr)]
 
 
-//@ \subsection{Postfix.sdf}
+//@ \paragraph{Postfix}
 syntax PrefixPostfixExp ::= Exp "++"    [klabel('PostIncr)]
                           | Exp "--"    [klabel('PostDecr)]
 
 
-//@ \subsection{BinaryOperators.sdf}
+//@ \paragraph{BinaryOperators}
 syntax Exp ::= Exp "*" Exp      [seqstrict, klabel('Mul)]
 		     | Exp "/" Exp      [seqstrict, klabel('Div)]
 		     | Exp "%" Exp      [seqstrict, klabel('Remain)]
@@ -87,20 +86,20 @@ syntax Exp ::= Exp "?" Exp ":" Exp                      [klabel('Cond)]
 syntax Exp ::= Exp "instanceof" RefType                 [strict, klabel('InstanceOf)]
 
 
-//@ \subsection{FieldAccess.sdf}
+//@ \paragraph{FieldAccess}
 syntax Exp ::= FieldAccess
 syntax FieldAccess ::= Exp "." Id                       [klabel('Field)]
                      | "super" "." Id                   [klabel('SuperField)]
                      | TypeName "." "super" "." Id      [klabel('QSuperField)]
 
 
-//@ \subsection{ArrayAccess.sdf}
+//@ \paragraph{ArrayAccess}
 syntax Exp ::= ArrayAccess
 //syntax ArraySubscript ::= "[" Exp "]"                 [bracket]
 syntax ArrayAccess ::= Exp "[" Exp "]"                  [seqstrict, klabel('ArrayAccess)]
 
 
-//@ \subsection{ArrayCreation.sdf}
+//@ \paragraph{ArrayCreation}
 /*  Either 'NewArray( T:ElemType,, ['Dim(N1),,'Dim('N2),, ...],, [...,, 'Dim(.KList),, ...] )
     Or     'NewArray( T:ElemType,, [...,, 'Dim(.KList),, ...],, 'ArrayInit(_) )
 */
@@ -118,12 +117,12 @@ syntax Dim ::= "[" "]"                                              [klabel('Dim
 syntax DimExp ::= "[" Exp "]"                                       [strict, hybrid, klabel('Dim)]
 
 
-//@ \subsection{ArrayInitializers.sdf}
+//@ \paragraph{ArrayInitializers}
 syntax ArrayInit ::= "{" VarInits "}" [klabel('ArrayInit)]
 syntax ArrayInit ::= "{" VarInits "," "}" [klabel('ArrayInit)]
 
 
-//@ \subsection{Primary.sdf}
+//@ \paragraph{Primary}
 syntax Exp ::= Literal                                              [klabel('Lit)]
 syntax Literal ::= IntLiteral
                  | FloatLiteral

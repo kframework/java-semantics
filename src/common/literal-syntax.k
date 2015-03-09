@@ -2,23 +2,19 @@ module LITERAL-SYNTAX
     imports LEXICAL-SYNTAX
     imports LIST-SYNTAX
 
-//@ \subsection{BooleanLiterals.sdf}
+//@ \paragraph{BooleanLiterals}
 syntax BoolLiteral ::= Boolean                          [klabel('Bool)]
 syntax Boolean ::= "true"                               [onlyLabel, klabel('True)]
 syntax Boolean ::= "false"                              [onlyLabel, klabel('False)]
 
 
-//@ \subsection{CharacterLiterals.sdf} todo
-syntax SingleChar// ::= Token{[\r\n\'\\]}//don't understand ^?
+//@ \paragraph{CharacterLiterals}
 
 syntax CharContent ::= SingleChar                       [klabel('Single)]
                      | UnicodeEscape
                      | EscapeSeq
-//Problem: Multiple lookahead not fully supported (does not appear when tested in small language)
-syntax CharLiteral //::= "'" CharContent "'"  [klabel('Char)]
 
-
-//@ \subsection{EscapeSequences.sdf}
+//@ \paragraph{EscapeSequences}
 syntax EscapeSeq ::= OctaEscape | NamedEscape
 
 syntax NamedEscape ::= Token{"\\" [btnfr\"\'\\]}         [onlyLabel, klabel('NamedEscape)]
@@ -28,11 +24,11 @@ syntax OctaEscape ::= Token{"\\" [0-7]}                  [onlyLabel, klabel('Oct
                     | Token{"\\" [0-3][0-7][0-7]}        [onlyLabel, klabel('OctaEscape3)]
 
 
-//@ \subsection{FloatingPointLiterals.sdf} todo
+//@ \paragraph{FloatingPointLiterals}
 syntax FloatLiteral ::= Float                            [klabel('Float)]
 
 
-//@ \subsection{IntegerLiterals.sdf}
+//@ \paragraph{IntegerLiterals}
 syntax DeciLiteral ::= Token{[1-9][0-9]* [lL]?}         [onlyLabel]
 syntax HexaLiteral ::= Token{[0][xX][0-9a-fA-F]+ [lL]?} [onlyLabel]
 syntax OctaLiteral ::= Token{[0][0-7]+ [lL]?}           [onlyLabel]
@@ -42,11 +38,11 @@ syntax IntLiteral ::= DeciLiteral [klabel('Deci)]
                     | OctaLiteral [klabel('Octa)]
 
 
-//@ \subsection{NullLiteral.sdf}
+//@ \paragraph{NullLiteral}
 syntax NullLiteral ::= "null"     [klabel('Null)]
 
 
-//@ \subsection{StringLiterals.sdf} todo
+//@ \paragraph{StringLiterals}
 syntax StringLiteral ::= "\"" StringPartList "\""       [klabel('String)]
 
 syntax StringPart ::= StringChars                       [klabel('Chars)]
@@ -54,5 +50,10 @@ syntax StringPart ::= StringChars                       [klabel('Chars)]
                     | EscapeSeq
 
 syntax StringChars //::= Token {~[\"\\\n\13]}
+
+
+//@ \subsection{UnicodeEscape.sdf}
+syntax UnicodeEscape ::= Token {[\\][u]+ [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]}
+                                                    [onlyLabel, klabel('UnicodeEscape)]
 
 endmodule

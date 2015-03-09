@@ -1,7 +1,7 @@
 module INTERFACE-SYNTAX
     imports CLASS-SYNTAX
 
-//@ \subsection{AbstractMethodDeclarations.sdf}
+//@ \paragraph{AbstractMethodDeclarations}
 syntax AbstractMethodDec ::=
     AnnoAbstractMethodModList OptionalTypeParams Type Id "(" Params ")" OptionalThrows ";"
                                                         [klabel('AbstractMethodDec)]
@@ -10,7 +10,7 @@ syntax AbstractMethodMod ::= Public | Abstract
 syntax AnnoAbstractMethodMod ::= Anno | AbstractMethodMod
 
 
-//@ \subsection{Annotations.sdf}
+//@ \paragraph{Annotations}
 syntax Anno ::= "@" TypeName "(" ElemValPairList ")" 	[klabel('Anno)]
               | "@" TypeName "(" ElemVal ")"            [klabel('SingleElemAnno)]
               | "@" TypeName                            [klabel('MarkerAnno)]
@@ -23,7 +23,7 @@ syntax ElemVal ::= Exp
 syntax ElemValPair ::= Id "=" ElemVal                   [klabel('ElemValPair)]
 
 
-//@ \subsection{AnnotationTypes.sdf}
+//@ \paragraph{AnnotationTypes}
 syntax AnnoDecHead ::= AnnoInterfaceModList "@" "interface" Id      [klabel('AnnoDecHead)]
 
 syntax AnnoDec ::= AnnoDecHead "{" AnnoElemDecList "}"              [klabel('AnnoDec)]
@@ -35,7 +35,7 @@ syntax AnnoElemDec ::= AbstractMethodModList Type Id "(" ")" OptionalDefaultVal 
 syntax DefaultVal ::= "default" ElemVal                             [klabel('DefaultVal)]
 
 
-//@ \subsection{ConstantDeclarations.sdf}
+//@ \paragraph{ConstantDeclarations}
 syntax ConstantDec ::= AnnoConstantModList Type VarDecList ";"      [klabel('ConstantDec)]
 
 syntax ConstantMod ::= Public
@@ -45,7 +45,7 @@ syntax ConstantMod ::= Public
 syntax AnnoConstantMod ::= Anno | ConstantMod
 
 
-//@ \subsection{InterfaceDeclarations.sdf}
+//@ \paragraph{InterfaceDeclarations}
 syntax InterfaceDecHead ::=
     AnnoInterfaceModList "interface" Id OptionalTypeParams OptionalExtendsInterfaces
                                                                        [klabel('InterfaceDecHead)]

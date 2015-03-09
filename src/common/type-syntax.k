@@ -2,14 +2,13 @@ module TYPE-SYNTAX
     imports NAME-SYNTAX
     imports OPTIONAL-SYNTAX
 
-//@ \subsection{Main.sdf}
 syntax Type ::= PrimType
               | RefType
 /*Denis' syntax: actually in sdf "void" together with Type compose ResultType,
 since now "void" is Type, there is no need for another syntax of ResultType.*/
               | "void"                                  [klabel('Void)]
 
-//@ \subsection{ParameterizedTypes.sdf}
+//@ \paragraph{ParameterizedTypes}
 syntax TypeArgs ::= "<" ActualTypeArgList ">"           [klabel('TypeArgs)]
 
 syntax ActualTypeArg ::= Type
@@ -19,7 +18,7 @@ syntax WildcardBound ::= "extends" RefType              [klabel('WildcardUpperBo
                        | "super"   RefType              [klabel('WildcardLowerBound)]
 
 
-//@ \subsection{PrimitiveTypes.sdf}
+//@ \paragraph{PrimitiveTypes}
 syntax IntOrLongType ::= "int"                          [klabel('Int)]
                        | "long"                         [klabel('Long)]
 syntax IntType ::= "byte"                               [klabel('Byte)]
@@ -34,8 +33,8 @@ syntax NumericType ::= IntType | FloatType
 syntax PrimType ::= NumericType | "bool"                [klabel('Boolean)] //sdf "boolean"
 
 
-//@ \subsection{ReferenceTypes.sdf}
-    /*@ A fully qualified class name, or noClass where no valid class could be computed.*/
+//@ \paragraph{ReferenceTypes}
+
 syntax ClassOrInterfaceType ::= TypeDecSpec OptionalTypeArgs    [klabel('ClassOrInterfaceType)]
 
 syntax InterfaceType ::= TypeDecSpec OptionalTypeArgs           [klabel('InterfaceType)]
@@ -51,7 +50,7 @@ syntax ArrayType ::= Type "[" "]"                               [strict, klabel(
 syntax RefType ::= ClassOrInterfaceType | ArrayType
 
 
-//@ \subsection{TypeVariables.sdf}
+//@ \paragraph{TypeVariables}
 syntax TypeVarId ::= Id
 
 syntax TypeBound ::= "extends" ClassOrInterfaceTypeList         [klabel('TypeBound)]
