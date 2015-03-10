@@ -33,17 +33,26 @@ rule [staticInit]:
         StaticFields,, //Static fields have to be allocated before base class is statically initialized,
                        // because during base class initialization those fields might be accessed.
         staticInit(BaseClass),,
-        try
-            { StaticInit }
 
-            catch ( 'ParamImpl(classObject,, String2Id("e")) ) {
-              throw new class String2Id("java.lang.ExceptionInInitializerError")
-                (((classObject) String2Id("e")));
-            }
+        //Cannot write this statement syntactically,
+        // because the body of the finally clause cannot be a block.
+        'Try(
+            StaticInit,,
 
-            finally {
-              [restoreMethContext(MethContext),, staticInitDone(Class)]
-            } //end of try
+            //catch clause of 'Try
+              [
+                'Catch('ParamImpl(classObject,, String2Id("e") ),,
+                'Block(throw new class String2Id("java.lang.ExceptionInInitializerError")
+                (((classObject) String2Id("e")));))
+              ]
+            ,,
+
+            //finally clause of 'Try
+            [
+              restoreMethContext(MethContext),,
+              staticInitDone(Class)
+            ]
+        )
       ]
       ...
     </k>

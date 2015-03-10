@@ -73,7 +73,7 @@ rule _:TypedVal; => .K
 
 //@ \subsection{If statement}
 rule [If-Then-Desugar]:
-    if (E<:Exp) S<:Stmt => if (E) S else { .K }<:Block
+    if (E<:Exp) S<:Stmt => if (E) S else ( .K )<:Stmt
 
 rule [If-True]:
     if (true::bool) S<:Stmt else _<:Stmt => S
@@ -158,7 +158,7 @@ syntax Stmt ::=  whileImpl (
               )
 
 rule [whileImpl]:
-    whileImpl(E:K, S:K) => if (E) {S ~> whileImpl(E, S)}                     [structural]
+    whileImpl(E:K, S:K) => if (E) (S ~> whileImpl(E, S))<:Stmt           [structural]
 
 //@ \subsection{Do statement}
 rule [do-while]:
