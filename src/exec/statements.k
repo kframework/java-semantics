@@ -25,9 +25,12 @@ rule [ExecutionPhase-Start]:
 //@ \subsection{Blocks} JLS \$14.2
 
 rule [Block]:
-    <k> { S<:BlockStmList } => S ~> env(Env:Map) ...</k>
+    <k> { S:BlockStmList } => S ~> env(Env:Map) ...</k>
     <env> Env </env>
         [structural]
+
+rule [BlockStmList]:
+    S:Stmt SL:BlockStmList => S ~> SL
 
 //@ \texttt{env} Restore the env cell content from \verb|env(...)| statement argument
 syntax KItem ::= env ( Map )
@@ -72,20 +75,15 @@ rule [labeledImpl-Discard]:
 rule _:TypedVal; => .K
 
 //@ \subsection{If statement}
+rule [If-Then-Desugar]:
+    if (E<:Exp) S<:Stmt => if (E) S else {}
+
 rule [If-True]:
     if (true::bool) S<:Stmt else _<:Stmt => S
         [symbolic-rule]
 
 rule [If-False]:
     if (false::bool) _<:Stmt else S<:Stmt => S
-        [symbolic-rule]
-
-rule [If-True]:
-    if (true::bool) S<:Stmt => S
-        [symbolic-rule]
-
-rule [If-False]:
-    if (false::bool) _<:Stmt => .
         [symbolic-rule]
 
 //@ \subsection{Assert statement}
@@ -157,13 +155,13 @@ rule [switchEnd-Discard]:
 rule [while]:
     while (E:Exp) S<:Stmt => whileImpl(E, S)                              [structural]
 
-syntax KItem ::=  whileImpl (
+syntax Stmt ::=  whileImpl (
                 K,  // E - test expression. In For loop, it is UpdClause ~> testExp
                 K   // S - while body
               )
 
 rule [whileImpl]:
-    whileImpl(E:K, S:K) => ifAux(E, S ~> whileImpl(E, S), .K)           [structural]
+    whileImpl(E:K, S:K) => if(E) {S whileImpl(E, S)}                     [structural]
 
 //@ \subsection{Do statement}
 rule [do-while]:
@@ -171,7 +169,7 @@ rule [do-while]:
 
 //@ \subsection{For statement}
 //wrapper of certain clauses of for statement
-syntax KItem ::= stm ( KListWrap )
+syntax Stmt ::= stm ( KListWrap )
 
 rule [stm-KListWrap-empty]:
     stm([.KList]) => .                                                   [structural]

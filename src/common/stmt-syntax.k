@@ -32,7 +32,7 @@ syntax StmtWithoutTrailing ::= Block
 syntax StackConsumerStmt ::= ThrowStmt | ContinueStmt | BreakStmt | ReturnStmt
 
 syntax IfThenElseStmt ::= "if" "(" Exp ")" Stmt "else" Stmt        [strict(1), klabel('If)]
-syntax IfThenStmt ::= "if" "(" Exp ")" Stmt                        [prefer, strict(1), klabel('If)]
+syntax IfThenStmt ::= "if" "(" Exp ")" Stmt                        [prefer, klabel('If)]
 
 syntax WhileStmt ::= "while" "(" Exp ")" Stmt                      [strict(1),klabel('While)]
 

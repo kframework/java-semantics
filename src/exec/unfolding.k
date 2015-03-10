@@ -153,7 +153,7 @@ rule [unfolding-MethodDec]:
     <methodDecs>
       (.Bag =>  <methodDec>
                   <methodSignature> sig(Name:Id, getTypes([Params])) </methodSignature>
-                  <methodParams> toParams([Params:KList]) </methodParams>
+                  <methodParams> toParams([Params:KList], .Params) </methodParams>
                   <methodBody> MethodBody:K </methodBody>
                   <methodAccessMode> Acc:AccessMode </methodAccessMode>
                   <methodContextType> CT:ContextType </methodContextType>

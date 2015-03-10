@@ -11,12 +11,16 @@ module SYNTAX-CONVERSIONS
 
 // 'Param(\_:K,, T:Type,, X:Id). Consumed by initParams().
 
-syntax KItem ::= toParams( KListWrap )          [function]
-           | toParams( KListWrap , Params ) [function]
+syntax KItem ::= toParams( KListWrap , Params ) [function]
 
-rule toParams([KLParams:KList]) => toParams([KLParams], .Params)
 rule toParams([KLParams:KList,, 'Param(_,, K:K,, X:Id)], Params:Params) => toParams([KLParams], (K X,Params))
 rule toParams([.KList], Params:Params) => Params
+
+rule 'Block([Ks:KList]) => toBlockStmList(.BlockStmList, [Ks])
+syntax KItem ::= toBlockStmList( KListWrap , BlockStmList ) [function]
+
+rule toBlockStmList([KL:KList,, S<:BlockStmt], L:BlockStmList) => toBlockStmList([KL], (S L))
+rule toBlockStmList([.KList], S<:BlockStmt) => S
 
 //@ Required for getTypes()
 rule typeOf('ParamImpl(T:Type,, _:Id)) => T
