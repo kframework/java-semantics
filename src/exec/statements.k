@@ -25,7 +25,7 @@ rule [ExecutionPhase-Start]:
 //@ \subsection{Blocks} JLS \$14.2
 
 rule [Block]:
-    <k> { S<:BlockStmtList } => S ~> env(Env:Map) ...</k>
+    <k> { S<:BlockStmList } => S ~> env(Env:Map) ...</k>
     <env> Env </env>
         [structural]
 
