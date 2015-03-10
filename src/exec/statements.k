@@ -25,7 +25,7 @@ rule [ExecutionPhase-Start]:
 //@ \subsection{Blocks} JLS \$14.2
 
 rule [Block]:
-    <k> 'Block(S:K) => S ~> env(Env:Map) ...</k>
+    <k> { S<:BlockStmtList } => S ~> env(Env:Map) ...</k>
     <env> Env </env>
         [structural]
 
@@ -413,7 +413,8 @@ rule catch(KR:ResultOrParam) S:K => catchImpl(KR,S)
 /*@ Extended K Result.
   Represents KLabels that should be treated as KResult during execution phase, but not during elaboration phase.
 */
-syntax ResultOrParam ::= KResult | Param
+syntax ResultOrParam ::= Param //| KResult - not allowed
+rule isResultOrParam(_:KResult) => true // Because KResult cannot be used in a sort definition above.
 
 //@ Internal representation of a preprocessed catch clause
 syntax CatchImpl ::=  catchImpl (
