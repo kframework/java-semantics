@@ -6,11 +6,6 @@ module STATEMENTS
     imports METHOD-INVOKE // for initParams
     imports STMT-SYNTAX
 
-//@ \subsection{isStmt}
-rule isStmt('For(_)) => true
-rule isStmt('Switch(_)) => true
-rule isStmt('Block(_)) => true
-
 //@ \subsection{Call of main method}
 
 //For now main class may only be placed in the default package.
@@ -113,7 +108,6 @@ rule [AssertStm-FirstFalse]:
         => throw new class String2Id("java.lang.AssertionError") (toString(TV));
 
 //@ \subsection{Switch statement}
-
 
 syntax KItem ::= switchImpl (
              TypedVal, // TV - switch argument

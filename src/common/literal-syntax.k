@@ -55,7 +55,6 @@ syntax StringPart ::= StringChars                       [klabel('Chars)]
 syntax StringChars //::= Token {~[\"\\\n\13]}
 
 
-//@ \subsection{UnicodeEscape.sdf}
 syntax UnicodeEscape ::= Token {[\\][u]+ [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]}
                                                     [onlyLabel, klabel('UnicodeEscape)]
 
