@@ -3,7 +3,7 @@ module STMT-SYNTAX
 
 //@ \paragraph{Blocks}
 syntax BlockStmt ::= Stmt | LocalVarDecStmt | ClassDec  [klabel('ClassDecStm)]
-syntax Block ::= "{" BlockStmList "}"                   [klabel('Block)]
+syntax Block ::= "{" K "}"                   [klabel('Block)] //was BlockStmList before
 
 
 //@ \paragraph{LocalVariableDeclaraions}

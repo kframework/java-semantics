@@ -25,12 +25,9 @@ rule [ExecutionPhase-Start]:
 //@ \subsection{Blocks} JLS \$14.2
 
 rule [Block]:
-    <k> { S:BlockStmList } => S ~> env(Env:Map) ...</k>
+    <k> { S:K } => S ~> env(Env:Map) ...</k>
     <env> Env </env>
         [structural]
-
-rule [BlockStmList]:
-    S:Stmt SL:BlockStmList => S ~> SL
 
 //@ \texttt{env} Restore the env cell content from \verb|env(...)| statement argument
 syntax KItem ::= env ( Map )
@@ -76,7 +73,7 @@ rule _:TypedVal; => .K
 
 //@ \subsection{If statement}
 rule [If-Then-Desugar]:
-    if (E<:Exp) S<:Stmt => if (E) S else {}
+    if (E<:Exp) S<:Stmt => if (E) S else { .K }<:Block
 
 rule [If-True]:
     if (true::bool) S<:Stmt else _<:Stmt => S
@@ -381,7 +378,7 @@ rule [Throw-CausesThreadTermination]:
 
 rule [Try-Catch-Finally-Desugar]:
     try TryS:K (K:CatchClause Ks:CatchClauses) finally FinallyS:K
-    => try 'Block(try TryS (K Ks)) .CatchClauses finally FinallyS
+    => try { try TryS (K Ks) } .CatchClauses finally FinallyS
         [structural]
 
 /*@ \subsubsection{Execution of try-catch} JLS \$14.20.1

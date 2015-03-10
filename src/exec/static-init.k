@@ -33,23 +33,17 @@ rule [staticInit]:
         StaticFields,, //Static fields have to be allocated before base class is statically initialized,
                        // because during base class initialization those fields might be accessed.
         staticInit(BaseClass),,
-        'Try(
-            StaticInit,,
+        try
+            { StaticInit }
 
-            //catch clause of 'Try
-              [
-                'Catch('ParamImpl(classObject,, String2Id("e") ),,
-                'Block(throw new class String2Id("java.lang.ExceptionInInitializerError")
-                (((classObject) String2Id("e")));))
-              ]
-            ,,
+            catch ( 'ParamImpl(classObject,, String2Id("e")) ) {
+              throw new class String2Id("java.lang.ExceptionInInitializerError")
+                (((classObject) String2Id("e")));
+            }
 
-            //finally clause of 'Try
-            [
-              restoreMethContext(MethContext),,
-              staticInitDone(Class)
-            ]
-        )
+            finally {
+              [restoreMethContext(MethContext),, staticInitDone(Class)]
+            } //end of try
       ]
       ...
     </k>
@@ -65,7 +59,7 @@ rule [staticInit]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
     <staticFields> StaticFields:KListWrap </staticFields>
-    <staticInit> StaticInit:KListWrap </staticInit>
+    <staticInit> StaticInit </staticInit>
     <staticInitStatus> StaticUninitialized => StaticInitializing(TId) </staticInitStatus>
 
 rule [staticInit-already-initialized-discard]:
