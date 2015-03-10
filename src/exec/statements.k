@@ -158,7 +158,7 @@ syntax Stmt ::=  whileImpl (
               )
 
 rule [whileImpl]:
-    whileImpl(E:K, S:K) => if(E) {S whileImpl(E, S)}                     [structural]
+    whileImpl(E:K, S:K) => if (E) {S ~> whileImpl(E, S)}                     [structural]
 
 //@ \subsection{Do statement}
 rule [do-while]:
