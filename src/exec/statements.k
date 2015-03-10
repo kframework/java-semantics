@@ -404,20 +404,16 @@ context try _:K HOLE
 
 syntax CatchClause ::= "catch" "(" K ")" K          [klabel('Catch)]
 //resolve 'Param term of the catch clause
-context catch(HOLE)_                                [result(ExtKResult)]
+context catch(HOLE) _                               [result(ResultOrParam)]
 
 rule 'Param(_,, K:Type,, X:Id) => K X               [structural]
 
-rule catch(KR:ExtKResult)S:K => catchImpl(KR,S)
+rule catch(KR:ResultOrParam) S:K => catchImpl(KR,S)
 
 /*@ Extended K Result.
   Represents KLabels that should be treated as KResult during execution phase, but not during elaboration phase.
 */
-syntax ExtKResult ::= "dummy"
-
-rule isExtKResult(KR:KResult) => true
-
-rule isExtKResult('ParamImpl(T:Type,, _:Id)) => true
+syntax ResultOrParam ::= KResult | Param
 
 //@ Internal representation of a preprocessed catch clause
 syntax CatchImpl ::=  catchImpl (
