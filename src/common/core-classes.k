@@ -5,10 +5,12 @@ module CORE-CLASSES
     imports EXP-SYNTAX //for definitions of sort Exp
     imports STMT-SYNTAX //for definitions of sort Stmt
 
-/*@ Auxiliary functions related to classes and packages.
+/*@ This module is a collection of auxiliary functions related to classes and packages.
 */
 
-//@ \subsection{Shortcuts for the most frequently used classes within the semantics}
+//@ \subsection{Shortcuts for frequently used classes}
+
+//@Shortcuts for the most frequently used classes that need special treatment within the semantics.
 
 syntax KItem ::= "classObject"
     [function, latex(\terminal{Object})]
@@ -25,7 +27,7 @@ rule classNullPointerException => class String2Id("java.lang.NullPointerExceptio
 syntax KItem ::= "classArrayImpl"                   [function]
 rule classArrayImpl => class String2Id("java.lang.ArrayImpl")
 
-//@ \subsection{Packages}
+//@ \subsection{Auxiliary functions for packages}
 
 /*@A Java package.*/
 syntax PackageId ::= packageId ( Id )
@@ -45,7 +47,7 @@ rule getPackage(class ClassId:Id)
       rfindString(Id2String(ClassId), ".", lengthString(Id2String(ClassId)))
     )) )
 
-//@ \subsection{Classes}
+//@ \subsection{Auxiliary functions for classes}
 
 //@ Converts a pair of PackagId, Id into a fully qualified class name
 syntax ClassType ::= getClassType (
@@ -89,30 +91,6 @@ rule [restoreAfterProcessLocalClass]:
 //@ Get the internal constructor name for a given class
 syntax KItem ::= getConsName ( ClassType )                               [function]
 rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(ClassId))
-
-//@ \subsection{Expressions and their subsorts}
-syntax Exp ::= NonNumericExp
-syntax NonNumericExp ::= "dummyNonNumericExp"
-
-rule isNonNumericExp('ArrayAccess(_)) => true
-rule isNonNumericExp('NewInstance(_)) => true    // also in customElabChildren
-rule isNonNumericExp('QNewInstance(_)) => true   // also in customElabChildren
-rule isNonNumericExp('InstanceOf(_)) => true
-rule isNonNumericExp('Invoke(_)) => true
-rule isNonNumericExp('This(_)) => true
-rule isNonNumericExp('QThis(_)) => true
-rule isNonNumericExp('AmbName(_)) => true
-rule isNonNumericExp('ExprName(_)) => true
-rule isNonNumericExp('Field(_)) => true
-rule isNonNumericExp('SuperField(_)) => true
-rule isNonNumericExp('QSuperField(_)) => true
-rule isNonNumericExp('NewArray(_)) => true
-rule isNonNumericExp('CastPrim(_)) => true
-rule isNonNumericExp('CastRef(_)) => true
-
-
-//@ Since RawVal terms can easily be converted into TypedVal, they are also of sort Exp.
-syntax Exp ::= TypedVal | RawVal
 
 //@ \subsubsection{Computation terms produced during elaboration}
 

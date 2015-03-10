@@ -156,6 +156,9 @@ syntax RawRefVal ::= ObjectRef | ArrayRef | String | NullLiteral
 */
 syntax TypedVal ::= RawVal "::" Type
 
+//@ Since RawVal terms can easily be converted into TypedVal, they are also of sort Exp.
+syntax Exp ::= TypedVal | RawVal
+
 /*@ The three most common forms of computation result are Typed value or Type. Those are most common results
     we will encounter during elaboration. Other result types are more context-specific.
 */

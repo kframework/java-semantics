@@ -25,6 +25,7 @@ syntax ClassInstanceCreationExp ::=
 
 //@ \paragraph{AssignmentOperators}
 syntax LHS ::= ExprName | FieldAccess | ArrayAccess
+syntax Exp ::= LHS
 
 syntax AssignExp ::= LHS "=" Exp                                       [klabel('Assign)]
 syntax AssignExp ::= CompoundAssignExp
@@ -87,14 +88,12 @@ syntax Exp ::= Exp "instanceof" RefType                 [strict, klabel('Instanc
 
 
 //@ \paragraph{FieldAccess}
-syntax Exp ::= FieldAccess
 syntax FieldAccess ::= Exp "." Id                       [klabel('Field)]
                      | "super" "." Id                   [klabel('SuperField)]
                      | TypeName "." "super" "." Id      [klabel('QSuperField)]
 
 
 //@ \paragraph{ArrayAccess}
-syntax Exp ::= ArrayAccess
 //syntax ArraySubscript ::= "[" Exp "]"                 [bracket]
 syntax ArrayAccess ::= Exp "[" Exp "]"                  [seqstrict, klabel('ArrayAccess)]
 
