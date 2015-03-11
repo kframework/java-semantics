@@ -1,5 +1,5 @@
 require "builtins/model-checker.k"
-require "../common/shared-syntax.k"
+require "../common/java-syntax.k"
 
 module LTL-SUPPORT-SYNTAX
     imports SYNTAX-CONVERSIONS

@@ -9,7 +9,7 @@ require "interface-syntax.k"
 require "package-syntax.k"
 require "optional-syntax.k"
 require "type-syntax.k"
-require "shared-syntax.k"
+
 module JAVA-SYNTAX
     imports LIST-SYNTAX
     imports STMT-SYNTAX
