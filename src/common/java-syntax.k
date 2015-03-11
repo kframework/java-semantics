@@ -22,5 +22,4 @@ module JAVA-SYNTAX
     imports PACKAGE-SYNTAX
     imports OPTIONAL-SYNTAX
     imports TYPE-SYNTAX
-    imports SHARED-SYNTAX
 endmodule

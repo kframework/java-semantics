@@ -3,7 +3,7 @@ require "../common/shared-syntax.k"
 
 module LTL-SUPPORT-SYNTAX
     imports SYNTAX-CONVERSIONS
-    imports SHARED-SYNTAX
+    imports JAVA-SYNTAX
 
 syntax Prop ::= Exp
 

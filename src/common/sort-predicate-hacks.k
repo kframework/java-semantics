@@ -33,4 +33,31 @@ rule isExp('NewArray(_)) => true
 rule isExp('CastPrim(_)) => true
 rule isExp('CastRef(_)) => true
 
+
+//@ Used to define statements syntactically
+rule isStmt(_:K) => true
+//rule isStmt('ClassDecStm(_)) => true
+//rule isStmt('Block(_)) => true
+//rule isStmt('LocalVarDecStm(_)) => true
+//rule isStmt('LocalVarDec(_)) => true
+//rule isStmt('If(_)) => true
+//rule isStmt('While(_)) => true
+//rule isStmt('For(_)) => true
+//rule isStmt('ForEach(_)) => true
+//rule isStmt('Labeled(_)) => true
+//rule isStmt('Empty(_)) => true
+//rule isStmt('ExprStm(_)) => true
+//rule isStmt('AssertStm(_)) => true
+//rule isStmt('Switch(_)) => true
+//rule isStmt('DoWhile(_)) => true
+//rule isStmt('Try(_)) => true
+//rule isStmt('Throw(_)) => true
+//rule isStmt('Continue(_)) => true
+//rule isStmt('Break(_)) => true
+//rule isStmt('Return(_)) => true
+//rule isStmt('Synchronized(_)) => true
+//
+//// Special case, a sequence of statements. Might not be needed, we'll better add it to be sure.
+//rule isStmt('ListWrap(_)) => true
+
 endmodule

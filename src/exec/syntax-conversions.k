@@ -124,4 +124,40 @@ rule getTypes(types(Ts:KList), .TypedVals) => types(Ts)
 syntax KResult ::= ClassTypes
 syntax ClassTypes ::= List{ClassType, ","}
 
+//@ /subsubsection{Try -- syntax conversion macros}
+rule 'Try(Trys:K,, ([Catches:KList] => toCatchClauses([Catches])),, _:KList)    [anywhere]
+
+syntax CatchClauses ::= toCatchClauses( KListWrap )                             [function]
+                      | toCatchClauses( KListWrap , CatchClauses )              [function]
+
+rule toCatchClauses([KLCatchClauses:KList]) => toCatchClauses([KLCatchClauses],.CatchClauses)
+rule toCatchClauses([KLCatchClauses:KList,, C:CatchClause], CatchClauses:CatchClauses)
+     => toCatchClauses([KLCatchClauses], (C CatchClauses))
+rule toCatchClauses([.KList], CatchClauses:CatchClauses) => CatchClauses
+
+//resolve the catch clauses of try statement
+context try _:K HOLE
+
+syntax CatchClause ::= "catch" "(" K ")" K          [klabel('Catch)]
+//resolve 'Param term of the catch clause
+context catch(HOLE) _                               [result(ResultOrParam)]
+
+rule 'Param(_,, K:Type,, X:Id) => K X               [structural]
+
+rule catch(KR:ResultOrParam) S:K => catchImpl(KR,S)
+
+/*@ Extended K Result.
+  Represents KLabels that should be treated as KResult during execution phase, but not during elaboration phase.
+*/
+syntax ResultOrParam ::= Param //| KResult - not allowed
+rule isResultOrParam(_:KResult) => true // Because KResult cannot be used in a sort definition above.
+
+//@ Internal representation of a preprocessed catch clause
+syntax CatchImpl ::=  catchImpl (
+                      K,  //'Param(...),
+                      K   //the code block
+                    )
+syntax KResult ::= CatchImpl
+syntax CatchClause ::= CatchImpl
+
 endmodule

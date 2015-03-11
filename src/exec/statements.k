@@ -54,12 +54,12 @@ rule [LocalVarDec]:
 //@ \subsection{Empty statement} JLS \$14.6
 
 rule [Empty]:
-    ;<:EmptyStmt => .
+    ; :EmptyStmt => .
 
 //@ \subsection{Labeled statements} JLS \$14.7
 
 rule [Labeled]:
-    X:Id : S<:Stmt => S ~> labeledImpl(X)
+    X:Id : S:Stmt => S ~> labeledImpl(X)
 
 //@ Processed version of the labeled statement
 syntax KItem ::= labeledImpl ( Id )
@@ -73,34 +73,34 @@ rule _:TypedVal; => .K
 
 //@ \subsection{If statement}
 rule [If-Then-Desugar]:
-    if (E<:Exp) S<:Stmt => if (E) S else ( .K )<:Stmt
+    if (E:Exp) S:Stmt => if (E) S else ( ; )
 
 rule [If-True]:
-    if (true::bool) S<:Stmt else _<:Stmt => S
+    if (true::bool) S:Stmt else _:Stmt => S
         [symbolic-rule]
 
 rule [If-False]:
-    if (false::bool) _<:Stmt else S<:Stmt => S
+    if (false::bool) _:Stmt else S:Stmt => S
         [symbolic-rule]
 
 //@ \subsection{Assert statement}
 //short version:    assert exp1;
 rule [AssertStm-True-OneArg]:
-        assert true::bool; => .
+    assert true::bool; => .
 
 rule [AssertStm-False-OneArg]:
-        assert false::bool;
-        => throw new class String2Id("java.lang.AssertionError") (null::classString);
+    assert false::bool;
+    => throw new class String2Id("java.lang.AssertionError") (null::classString);
 
 //full version:    assert exp1:exp2;
 rule [AssertStm-FirstTrue-SecondDiscarded]:
-        assert true::bool : _ ; => .
+    assert true::bool : _ ; => .
 
 context assert false::bool : HOLE;
 
 rule [AssertStm-FirstFalse]:
-        assert (false::bool) : (TV:TypedVal);
-        => throw new class String2Id("java.lang.AssertionError") (toString(TV));
+    assert (false::bool) : (TV:TypedVal);
+    => throw new class String2Id("java.lang.AssertionError") (toString(TV));
 
 //@ \subsection{Switch statement}
 
@@ -150,7 +150,7 @@ rule [switchEnd-Discard]:
 //@ \subsection{While statement} and loop infrastructure.
 
 rule [while]:
-    while (E:Exp) S<:Stmt => whileImpl(E, S)                              [structural]
+    while (E:Exp) S:Stmt => whileImpl(E, S)                              [structural]
 
 syntax Stmt ::=  whileImpl (
                 K,  // E - test expression. In For loop, it is UpdClause ~> testExp
@@ -158,11 +158,11 @@ syntax Stmt ::=  whileImpl (
               )
 
 rule [whileImpl]:
-    whileImpl(E:K, S:K) => if (E) (S ~> whileImpl(E, S))<:Stmt           [structural]
+    whileImpl(E:K, S:K) => if (E) {S ~> whileImpl(E, S)}                [structural]
 
 //@ \subsection{Do statement}
 rule [do-while]:
-    do S<:Stmt while(E:Exp); => S ~> whileImpl(E, S)                     [structural]
+    do S:Stmt while(E:Exp); => S ~> whileImpl(E, S)                     [structural]
 
 //@ \subsection{For statement}
 //wrapper of certain clauses of for statement
@@ -333,10 +333,7 @@ rule [Throw-checkCatch-True]:
 //    ~> 'Throw(TV:TypedVal)
     ~> throw TV:TypedVal;
     ~> catchBlocks(catchImpl(Param:Param, CatchS:K) _:CatchClauses)
-    => 'Block([
-          initParams(Param, TV),,
-          CatchS
-        ])
+    => { initParams(Param, TV) ~> CatchS }
 
 rule [Throw-checkCatch-False]:
     (checkCatch(false::bool) => .)
@@ -380,44 +377,6 @@ rule [Try-Catch-Finally-Desugar]:
     try TryS:K (K:CatchClause Ks:CatchClauses) finally FinallyS:K
     => try { try TryS (K Ks) } .CatchClauses finally FinallyS
         [structural]
-
-/*@ \subsubsection{Execution of try-catch} JLS \$14.20.1
-*/
-//macro
-rule 'Try(Trys:K,,([Catches:KList] => toCatchClauses([Catches])),,FinallyS:K)   [anywhere]
-rule 'Try(Trys:K,,([Catches:KList] => toCatchClauses([Catches])))               [anywhere]
-
-syntax CatchClauses ::= toCatchClauses( KListWrap )                             [function]
-                      | toCatchClauses( KListWrap , CatchClauses )              [function]
-
-rule toCatchClauses([KLCatchClauses:KList]) => toCatchClauses([KLCatchClauses],.CatchClauses)
-rule toCatchClauses([KLCatchClauses:KList,, C:CatchClause], CatchClauses:CatchClauses) => toCatchClauses([KLCatchClauses], (C CatchClauses))
-rule toCatchClauses([.KList], CatchClauses:CatchClauses) => CatchClauses
-
-//resolve the catch clauses of try statement
-context try _:K HOLE
-
-syntax CatchClause ::= "catch" "(" K ")" K          [klabel('Catch)]
-//resolve 'Param term of the catch clause
-context catch(HOLE) _                               [result(ResultOrParam)]
-
-rule 'Param(_,, K:Type,, X:Id) => K X               [structural]
-
-rule catch(KR:ResultOrParam) S:K => catchImpl(KR,S)
-
-/*@ Extended K Result.
-  Represents KLabels that should be treated as KResult during execution phase, but not during elaboration phase.
-*/
-syntax ResultOrParam ::= Param //| KResult - not allowed
-rule isResultOrParam(_:KResult) => true // Because KResult cannot be used in a sort definition above.
-
-//@ Internal representation of a preprocessed catch clause
-syntax CatchImpl ::=  catchImpl (
-                      K,  //'Param(...),
-                      K   //the code block
-                    )
-syntax KResult ::= CatchImpl
-syntax CatchClause ::= CatchImpl
 
 rule [Try-Catch]:
     (try TryS:K KRs:CatchClauses => TryS ~> catchBlocks(KRs))
