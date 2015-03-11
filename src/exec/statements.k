@@ -211,6 +211,11 @@ rule [StackConsumerStmt-RestoreEnv]:
 
 //@ \subsection{Break statement}
 
+/*K limitation: Looks like neither 'None nor 'Some can be expressed syntactically.
+  Attempts to replace them with syntax, in rules for break, give either compile-time or runtime errors.
+  This is definitely a K limitation, as such syntax was not used in K before.
+*/
+
 rule [Break-UnlabeledPropagate]:
     break 'None(_); ~> (KL:KLabel(_) => .)
 when
@@ -323,8 +328,7 @@ rule [Throw]:
     ~> throw TV:TypedVal;
     ~> catchBlocks(catchImpl('ParamImpl(T:Type,, X:Id),_) _:CatchClauses)
 
-syntax KItem ::= checkCatch ( K )
-context checkCatch(HOLE)
+syntax KItem ::= checkCatch ( K )     [strict]
 
 rule [Throw-checkCatch-True]:
     checkCatch(true::bool)
