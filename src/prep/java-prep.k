@@ -7,6 +7,7 @@ require "../common/aux-strings.k"
 require "../common/primitive-types.k"
 require "../common/subtyping.k"
 require "../common/java-syntax.k"
+require "../common/sort-predicate-hacks.k"
 require "core-preprocessing.k"
 require "process-type-names.k"
 require "process-comp-units.k"
@@ -54,6 +55,7 @@ module JAVA-PREP
 
     imports JAVA-SYNTAX
     imports LIST-MACRO
+    imports SORT-PREDICATE-HACKS
 
 endmodule
 

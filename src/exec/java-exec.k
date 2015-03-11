@@ -7,6 +7,7 @@ require "../common/core-functions.k"
 require "../common/primitive-types.k"
 require "../common/subtyping.k"
 require "../common/java-syntax.k"
+require "../common/sort-predicate-hacks.k"
 require "core-exec.k"
 require "syntax-conversions.k"
 require "to-string.k"
@@ -44,5 +45,6 @@ module JAVA-EXEC
     imports API-THREADS
    // imports LTL-SUPPORT
     imports JAVA-SYNTAX
+    imports SORT-PREDICATE-HACKS
 
 endmodule
