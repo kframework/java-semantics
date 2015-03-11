@@ -1,12 +1,12 @@
 module SORT-PREDICATE-HACKS
 
-/*@
-  The rules in this module are designed to extend the predicates for basic syntactic sorts like Exp or Stmt, and to
-  ease the restrictions imposed by those predicates.
-  For example, the syntactic definition of plus : syntax Exp ::= Exp + Exp, will return true for
-  isExp('Plus(K1,,K2)) only when both K1 and K2 are valid Exp terms, while a rule isExp('Plus(_)) => true
-  will produce true for any term whose root node has the label 'Plus. This allows us to use variable subsorting inside
-  rules, to define more rules syntactically.
+/*
+The rules in this module are designed to extend the predicates for basic syntactic sorts like Exp or Stmt, and to
+ease the restrictions imposed by those predicates.
+For example, the syntactic definition of plus : syntax Exp ::= Exp + Exp, will return true for
+isExp('Plus(K1,,K2)) only when both K1 and K2 are valid Exp terms, while a rule isExp('Plus(_)) => true
+will produce true for any term whose root node has the label 'Plus. This allows us to use variable subsorting inside
+rules, to define more rules syntactically.
 */
 
 /*
@@ -34,7 +34,7 @@ rule isExp('CastPrim(_)) => true
 rule isExp('CastRef(_)) => true
 
 
-//@ Used to define statements syntactically
+// Used to define statements syntactically.
 rule isStmt(_:K) => true
 //rule isStmt('ClassDecStm(_)) => true
 //rule isStmt('Block(_)) => true
