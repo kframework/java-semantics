@@ -73,7 +73,7 @@ rule _:TypedVal; => .K
 
 //@ \subsection{If statement}
 rule [If-Then-Desugar]:
-    if (E:Exp) S:Stmt => if (E) S else ( ; )
+    if (E<:Exp) S:Stmt => if (E) S else ( ; )
 
 rule [If-True]:
     if (true::bool) S:Stmt else _:Stmt => S
@@ -212,7 +212,6 @@ rule [StackConsumerStmt-RestoreEnv]:
 //@ \subsection{Break statement}
 
 rule [Break-UnlabeledPropagate]:
-   // 'Break('None(_)) ~> (KL:KLabel(_) => .)
     break 'None(_); ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
@@ -221,7 +220,6 @@ when
     andBool KL =/=KLabel 'switchEnd
 
 rule [Break-Unlabeled]:
-    //'Break('None(_)) ~> KL:KLabel(_) => .
     break 'None(_); ~> KL:KLabel(_) => .
 when
            KL ==KLabel 'whileImpl

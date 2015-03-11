@@ -34,7 +34,7 @@ syntax StackConsumerStmt ::= ThrowStmt | ContinueStmt | BreakStmt | ReturnStmt
 syntax IfThenElseStmt ::= "if" "(" Exp ")" Stmt "else" Stmt        [strict(1), klabel('If)]
 syntax IfThenStmt ::= "if" "(" Exp ")" Stmt                        [prefer, klabel('If)]
 
-syntax WhileStmt ::= "while" "(" Exp ")" Stmt                      [strict(1),klabel('While)]
+syntax WhileStmt ::= "while" "(" Exp ")" Stmt                      [klabel('While)]
 
 syntax ForStmt ::= "for" "(" LocalVarDec ";" OptionalExp ";" Exps ")" Stmt      [klabel('For)]
 syntax ForStmt ::= "for" "(" Exps ";" OptionalExp ";" Exps ")" Stmt             [klabel('For)]
