@@ -2,9 +2,11 @@ module CORE-PREPROCESSING
     imports CORE-SORTS
     imports CORE-FUNCTIONS
 
-//@ Auxiliary functions related to preprocessing phases only.
+/*@ Most commonly used auxiliary functions related to preprocessing semantics only.
+This module is designed to be included in most other modules of preprocessing.
+*/
 
-//@ \subsection{Auxiliary constructs for retrieving a set of classes}
+//@ \subsection{Class-related functions}
 
 /*@ Returns a \verb|setWrap(Set[ClassType])|, containing all top level classes in the program.
     Uses \verb|<namesToClasses>| to compute the result. Used by the starting rule of several preprocessing phases.
@@ -55,6 +57,8 @@ rule [getInnerClasses-no-inners]:
     <namesToClasses> TypeNamesMap:Map </namesToClasses>
 when
     notBool toPackage(Class) in keys(TypeNamesMap)
+
+//@ \subsection{Method-related functions}
 
 //@ Returns the access mode of a method closure given as argument
 syntax KItem ::= getMethodAccessMode ( MethodRef )   [strict]

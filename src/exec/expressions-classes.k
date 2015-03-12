@@ -8,13 +8,13 @@ module EXPRESSIONS-CLASSES
 /*@ Expressions that operate over objects.
 */
 
-/*@ \subsection{Operator instanceof} */
+/*@ \subsection{Instanceof operator} */
 
 rule [InstanceOf]:
     V:RawVal::_ instanceof RT2:RefType
     =>  (V =/=K null) && subtype(typeOf(V), RT2)
 
-/*@ \subsection{Cast for references} */
+/*@ \subsection{Cast operator --- reference types} */
 rule [cast-RefType]:
     cast(RT1:RefType, V:RawVal :: RT2:RefType)
     =>  ifAux ( subtype(typeOf(V), RT1) ,
@@ -24,5 +24,9 @@ rule [cast-RefType]:
             toExps([(toString(typeOf(V)) + " cannot be cast to ") + toString(RT1)])
           );
         )
+
+/*@ \subsection{Auxiliary constructs produced during elaboration} */
+
+rule stmtAndExp(Stmt:K, Exp:K) => Stmt ~> Exp
 
 endmodule

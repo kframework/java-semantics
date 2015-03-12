@@ -16,7 +16,7 @@ rule [lvalue-ExprName-local]:
     <k> lvalue('ExprName(X:Id)) => typedLoc(L) ...</k>
     <env>... X |-> L:Int ...</env>
 
-/*@ \subsection{QThis --- Self reference} */
+/*@ \subsection{Qualified \texttt{this} --- self reference} */
 
 // 'QThis(Class:ClassType)
 rule [QThis]:
@@ -136,7 +136,7 @@ rule [lvalue-Field-static]:
     <classType> TargetClass </classType>
     <staticEnv>... X |-> L:Int ...</staticEnv>
 
-/*@ \subsection{Functions typedLookup and typedLoc} */
+/*@ \subsection{Functions for accessing the store} */
 
 //@ Typed version of lookup and loc
 syntax KItem ::= typedLookup ( Int )
@@ -156,8 +156,6 @@ rule [typedLoc]:
 
 rule [lvalue-typedLoc]:
     lvalue(typedLoc(L:Int)) => typedLoc(L)
-
-/*@ \subsection{Function lookup} */
 
 /*@ Retrieve a value from the store based on its location and the given compile-time type.
   May be wrapped inside lvalue. If lookup is unwrapped, it evaluates to TypedVal --- the store value,
@@ -190,5 +188,18 @@ rule [fieldAccessCheckpoint-Field]:
     <k> fieldAccessCheckpoint(L:Int) => . ...</k>
     <storeMetadata>... L |-> FieldLocMetadata ...</storeMetadata>
          [transition-threading]
+
+//@ Synchronization checkpoint have to be before the actual assignment, like for lookup.
+rule [store]:
+    store(L:Int, V:RawVal :: T:Type) => fieldAccessCheckpoint(L) ~> storeImpl(L, V::T)
+
+syntax KItem ::=  storeImpl (
+                Int,  //OL - the store location
+                K     //TypedVal - the value to be stored
+              )
+
+rule [storeImpl]:
+    <k> storeImpl(L:Int, V:RawVal :: T:Type) => . ...</k>
+    <store>... L |-> (_ => V) :: T ...</store>
 
 endmodule

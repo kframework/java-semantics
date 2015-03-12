@@ -23,7 +23,7 @@ rule [ProcCompUnitsPhase-start]:
     (<program> Program:K </program> => .)
      <globalPhase> ProcTypeNamesPhase => ProcCompUnitsPhase  </globalPhase>
 
-//ImpDecs will be processed in the module PROCESS-IMPORTS
+//@ Import declarations are processed in the module PROCESS-IMPORTS
 rule [CompilationUnit]:
     <k>
       'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),,
@@ -53,8 +53,6 @@ rule [processTypeDecsInPCUPhase-Discard]:
 rule [processTypeDecsInPCUPhase-ElemDiscard]:
     processTypeDecsInPCUPhase([Label:KLabel(_)], _,_) => .
 when notBool( Label ==KLabel 'ClassDec orBool Label ==KLabel 'InterfaceDec )
-
-/*@ \subsection{Class declaration processing}*/
 
 rule [processTypeDecsInPCUPhase-typeDec-ComputeFullName]:
     processTypeDecsInPCUPhase(

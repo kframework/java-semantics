@@ -2,8 +2,11 @@ module ARRAYS
     imports CORE-SORTS
     imports SUBTYPING
     imports EXPRESSIONS
+    imports VAR-LOOKUP
     imports SYNTAX-CONVERSIONS
     imports JAVA-SYNTAX
+
+//@ \subsection{Array access}
 
 /*@ The value in store that corresponds to an array element. The consturction "elem" Type is meant to
   distinguish between regular memory locations and array elements. Array elements need to be represented separately
@@ -47,12 +50,29 @@ rule [Field-array-length]:
 when
     Id2String(X) ==String "length"
 
-//@ \subsection{New array allocation}
-/*@ The dynamic semantics of typed array declarations is
-similar to that in untyped SIMPLE, but we have to enforce that the
-type of an array declaration be of the form \texttt{arrayOf $T$}
-and assign the right type ($T$) to the allocated array locations. */
+//@ \subsection{Assignment to array elements}
 
+rule [storeImpl-array-elem]:
+    <k> storeImpl(L:Int, V:RawVal :: T:Type) => . ...</k>
+    <store>... L |-> (_ => V) :: elem T:Type ...</store>
+
+rule [storeImpl-array-location-check-type]:
+    <k>
+      storeImpl(L:Int, V:RawVal::T:Type)
+      =>  ifAux(subtype(typeOf(V), StoreType),
+             storeImpl(L, V::StoreType),
+             throw new class String2Id("java.lang.ArrayStoreException") (
+                //the ArrayStoreException argument is the assigned object type
+                (V::T .((String2Id("getClass")):>MethodName) (.TypedVals)) .((String2Id("getName")):>MethodName) (.TypedVals)
+            );
+          )
+      ...
+    </k>
+    <store>... L |-> _ :: elem StoreType:Type ...</store>
+when
+    T =/=K StoreType
+
+//@ \subsection{Array allocation}
 
 /* For multi-dimensions arrays, it is expanded from the last DimExp, but currently, the tail element(s)
  matching is unavailable for user defined lists, so we reverse list for easier matching
@@ -83,6 +103,7 @@ rule [NewArray-ArrayInit]:
     new arrayOf T:Type .Dims {InitContent:VarInits}
     => arrayInitAlloc((new T [length(InitContent)::int] .Dims), {InitContent})
 
+//@Length of an array initializer.
 syntax Int ::= length (VarInits)                                  [function]
 rule length(V:VarInit, Vs:VarInits) => length(Vs)+Int 1
 rule length(.VarInits) => 0
@@ -135,13 +156,6 @@ rule [allocAndInitArray]:
     </k>
     <nextLoc> LI:Int => LI +Int 1 </nextLoc>
 
-//@ Maximum of two numbers
-syntax KItem ::=  max ( Int, Int )          [function]
-rule max(I1:Int, I2:Int) => #if I1 >=Int I2
-                              #then I1
-                              #else I2
-                            #fi
-
 /*@ Allocates the given number of elements in the store of the given Type. Used by array instantiation logic.
 */
 syntax KItem ::=  allocArray (
@@ -179,28 +193,6 @@ when
         [structural]
 
 rule initArray(_, 0, _) => .K       [structural]
-
-//@ \subsection{Array element assignment}
-
-rule [storeImpl-array-elem]:
-    <k> storeImpl(L:Int, V:RawVal :: T:Type) => . ...</k>
-    <store>... L |-> (_ => V) :: elem T:Type ...</store>
-
-rule [storeImpl-array-location-check-type]:
-    <k>
-      storeImpl(L:Int, V:RawVal::T:Type)
-      =>  ifAux(subtype(typeOf(V), StoreType),
-             storeImpl(L, V::StoreType),
-             throw new class String2Id("java.lang.ArrayStoreException") (
-                //the ArrayStoreException argument is the assigned object type
-                (V::T .((String2Id("getClass")):>MethodName) (.TypedVals)) .((String2Id("getName")):>MethodName) (.TypedVals)
-            );
-          )
-      ...
-    </k>
-    <store>... L |-> _ :: elem StoreType:Type ...</store>
-when
-    T =/=K StoreType
 
 //@ \subsection{Array initializer}
 

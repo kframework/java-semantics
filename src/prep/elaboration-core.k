@@ -6,7 +6,10 @@ module ELABORATION-CORE
 
 /*@
 \begin{markdown}
-Elaborate the composition of code blocks of a class --- the last step of preprocessing (besides Folding).
+\subsection{Elaboration phase --- introduction}
+
+In this phase we elaborate the content of code blocks inside a class --- the last step of preprocessing
+(besides Folding).
 During this phase we inspect the contents of method bodies, instance initializers and
 static initializers of a class and perform the following transformations:
 \begin{itemize}
@@ -60,7 +63,11 @@ During elaboration an expression transition through 6 phases:
   7. Elaboration cooling. Once the top K Item was wrapped into elabRes, it is ready to be cooled back into its original context:
       elab('CastRef(\_,, elabRes('Minus(cast(int,cast(int, localVar(X)))))))
 \end{markdown}
+
+Module ELABORATION-CORE contains the backbone of elaboration phase.
 */
+
+/*@ \subsection{Core auxiliary definitions}*/
 
 /*@Custom hole used for custom heating/cooling rules in the elaboration phase.*/
 syntax KItem ::= "CHOLE"
@@ -71,59 +78,6 @@ syntax KItem ::= elab ( K )
 //@ Wraps the elaboration result. Since elaboration may happen at both ElaborationPhase and ExecutionPhase, it cannot be KResult. Actually it is not KResult for HOLE, but is for CHOLE.
 syntax ElabKResult ::= elabRes ( K )
 rule isElabKResult(KR:KResult) => true
-
-/*@ \subsection{Operator ??}*/
-
-/*@ Chain of responsibility pattern.
-Evaluate the first argument. if it is KResult (except noValue) or \verb|elabRes()|, the result of the ?? expression is
-the result of the first argument. Otherwise, if the first argument evaluates to noValue, the result of the
-?? expression is the result of the second argument.
-*/
-syntax KItem ::= K "??" K [right]
-
-rule [chainOfResponsibility-Heat]:
-    (. => Arg1) ~> (Arg1:K => CHOLE) ?? _
-when
-    notBool isElabKResult(Arg1) ==K true
-
-rule [chainOfResponsibility-Result1]:
-    ElabRes:ElabKResult ~> (CHOLE ?? _) => ElabRes
-when ElabRes =/=K noValue
-
-rule [chainOfResponsibility-Result2]:
-    noValue ~> (CHOLE ?? K:K) => K
-
-/*@
-\begin{markdown}
-Computes to true if the given argument is a list of elaboration results, false otherwise.
-An elaborated result is either:
-
-  - KResult
-  - \verb|elabRes(...)|
-
-  It is notably NOT a \verb|cast()| expression. This, together with the fact that \verb|cast()| has no elaboration heatig rules,
-  makes the whole elaboration phase non-reentrant.
-\end{markdown}
-*/
-syntax KItem ::= isElabKList ( KListWrap )                 [function]
-rule isElabKList([ElabKR:ElabKResult,, Ks:KList]) => isElabKList([Ks])
-rule isElabKList([.KList]) => true
-
-//@ Elaborate parameter type, if not elaborated yet. For catch clause.
-context  elab('Param(_:K,, HOLE,, _:Id))
-
-/*@Adds params to the \verb|<elabEnv>|. Used in both ELABORATION-TOP-BLOCKS and ELABORATION-BLOCKS
-*/
-rule [elab-Param]:
-    <k> elab('Param(K1:K,, T:Type,, X:Id)) => elabRes('Param(K1:K,, T:Type,, X:Id)) ...</k>
-    <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv>
-
-//@Removes the last layer from \verb|<elabEnv>|
-syntax KItem ::= "removeLastElabEnv"
-rule [removeLastElabEnv]:
-    <k> removeLastElabEnv => . ...</k>
-    <elabEnv> ListItem(_) => . ...</elabEnv>
-    <localTypes> ListItem(_) => . ...</localTypes>
 
 /*@ \subsection{Elaboration of code blocks} */
 
@@ -240,7 +194,23 @@ rule [elabEnd-findQualifierOfType-top-level]:
 rule [elabEnd-findQualifierOfType-static]:
     findQualifierOfType(noClass, K:K) => noValue
 
-/*@ \subsection{Elaboration of statements --- step elabEnd} */
+/*@
+\begin{markdown}
+Computes to true if the given argument is a list of elaboration results, false otherwise.
+An elaborated result is either:
+
+  - KResult
+  - \verb|elabRes(...)|
+
+  It is notably NOT a \verb|cast()| expression. This, together with the fact that \verb|cast()| has no elaboration heatig rules,
+  makes the whole elaboration phase non-reentrant.
+\end{markdown}
+*/
+syntax KItem ::= isElabKList ( KListWrap )                 [function]
+rule isElabKList([ElabKR:ElabKResult,, Ks:KList]) => isElabKList([Ks])
+rule isElabKList([.KList]) => true
+
+/*@ \subsection{Elaboration of statements --- the step elabEnd} */
 
 /*@ Applies to all nodes that are not expressions --- statements and non-expression auxiliary functions
 */
@@ -290,5 +260,35 @@ when
 
 rule [elab-to-elabRes-KListWrap-empty]:
     elab([.KList]) => elabRes([.KList])
+
+/*@ \subsection{Auxiliary functions for other modules}*/
+
+//@Removes the last layer from \verb|<elabEnv>|
+syntax KItem ::= "removeLastElabEnv"
+rule [removeLastElabEnv]:
+    <k> removeLastElabEnv => . ...</k>
+    <elabEnv> ListItem(_) => . ...</elabEnv>
+    <localTypes> ListItem(_) => . ...</localTypes>
+
+/*@ \subsubsection{Operator ??}*/
+
+/*@ Chain of responsibility pattern.
+Evaluate the first argument. if it is KResult (except noValue) or \verb|elabRes()|, the result of the ?? expression is
+the result of the first argument. Otherwise, if the first argument evaluates to noValue, the result of the
+?? expression is the result of the second argument.
+*/
+syntax KItem ::= K "??" K [right]
+
+rule [chainOfResponsibility-Heat]:
+    (. => Arg1) ~> (Arg1:K => CHOLE) ?? _
+when
+    notBool isElabKResult(Arg1) ==K true
+
+rule [chainOfResponsibility-Result1]:
+    ElabRes:ElabKResult ~> (CHOLE ?? _) => ElabRes
+when ElabRes =/=K noValue
+
+rule [chainOfResponsibility-Result2]:
+    noValue ~> (CHOLE ?? K:K) => K
 
 endmodule

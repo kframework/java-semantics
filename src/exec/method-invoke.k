@@ -681,6 +681,9 @@ module METHOD-INVOKE-REST
     imports CORE-FUNCTIONS
     imports SYNTAX-CONVERSIONS
     imports METHOD-INVOKE
+//@ The module contains additional semantics related to method invocation.
+
+//@ \subsection{Method information for arrays and strings}
 
 /*@
 The next rule for method invocation is applied when the qualifier type is array. This array type is rewritten into the auxiliary class \verb|ArrayImpl|, that is used in K-Java to simulate method invocations over array objects. This rule is required in order to minimize the number of particular cases involving arrays in the rules that follow.
@@ -697,6 +700,8 @@ rule [Invoke-methodInfo-on-array-or-string]:
     => invokeImpl( methodRef(Sig, DecC), QualRV::QualC, toKListWrap(Args) )
 when
     isArrayRef(QualRV) ==K true orBool isString(QualRV) ==K true
+
+//@ \subsection{Superclass method access --- \texttt{A.super(...)}}
 
 // 'QSuperMethod(Class:ClassType,, _:K,, Name:Id)
 rule [Invoke-QSuperMethod]:
@@ -726,6 +731,8 @@ rule [superMethodImpl]:
     </k>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
+
+//@ \subsection{Auxiliary functions}
 
 rule [getClassChain-process]:
     <k>

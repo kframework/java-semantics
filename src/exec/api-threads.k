@@ -2,7 +2,6 @@ module API-THREADS
     imports CORE-SORTS
     imports METHOD-INVOKE-REST  //for invokeImpl
     imports VAR-LOOKUP          //for typedLookup
-    imports API-THREADS-SELECTION
 
 /*@Java API related to threads and locks. Just the core part.*/
 
@@ -120,7 +119,91 @@ when
     Class ==K class String2Id("java.lang.Thread") andBool Id2String(MethodName) ==String "joinImpl"
         [transition-threading, transition-sync]
 
-//@ \subsection{\texttt{Object.wait()}}
+//@ \subsection{Methods \texttt{wait()} and \texttt{notify()} --- core rules}
+
+/*@
+When \verb|object.wait()| is called the method call expression is replaced by \verb|waitImpl()|
+--- an auxiliary function that is used later to exit from the waiting state.
+The id of the current thread (\verb|TId|) has to be registered in the set inside \cellref[]{waitingThreads}.
+  The cell \cellref[]{holds} attached to each thread stores the number of times the current thread
+  acquired the lock on each object. Here we use it to make sure that the current thread acquired the lock at least once
+  (see the side condition). Otherwise calling the method \verb|wait()| is illegal and we have to throw an exception, according
+  to Java API. The exceptional case is covered by other rules. Another cell matched here is \cellref[]{busy}. It stores
+  the set of objects that serve as synchronization monitors --- arguments of blocks \verb|synchronized|. When
+  an object enters the waiting state it have to release the ownership of this monitor, this is reflected by deleting
+  the entry \verb|OL| from the set. In this rule the cell \cellref[]{thread} is used solely for clarity, to separate
+  the cells that are attached to a thread from global cells. In fact, if we would delete \cellref[]{thread} here and
+  keep just what is inside, the semantics of the rule would not change. This is because configuration abstraction
+  mechanism of \K would infer the surrounding context for each of \cellref[]{k} \cellref[]{tid} and \cellref[]{holds}.
+  It would know to match them under the same \cellref[]{thread}, even if there are multiple \cellref[]{thread} cells.
+*/
+rule [object-wait]:
+    <thread> //added just for clarity, to illustrate the distinctive context of <holds> and <busy>
+      <k>
+        objectRef(OId:Int, _)::_ . methodRef(sig(Method:Id, _), Class:ClassType) (.TypedVals)
+        => waitImpl(OId)
+        ...
+      </k>
+      <tid> TId:Int </tid>
+      <holds>... OId |-> HoldLevel:Int ...</holds>
+      ...
+    </thread>
+    <busy>... (SetItem(OId) => .) ...</busy>
+    <waitingThreads>... (. => TId |-> OId ) ...</waitingThreads>
+when
+            Class ==K classObject
+    andBool Id2String(Method) ==String "wait"
+    andBool HoldLevel >=Int 1
+        [transition-threading]
+
+/*@
+When another thread calls \verb|notify()| we have to make sure that the thread holds the monitor on the target object
+  (the side condition). Otherwise we have to throw an exception. The actual logic of \verb|notify()| is delegated
+  to \verb|notifyImpl()|, in order to avoid duplication. The construct \verb|notifyImpl()| requires two rules for two
+  cases --- the case when there is at least one thread waiting on the target object, and the case when there is no one.
+*/
+rule [object-notify]:
+    <k>
+      objectRef(OId:Int, _)::_ . methodRef(sig(Method:Id, _), Class:ClassType) (.TypedVals)
+      => notifyImpl(OId)
+      ...
+    </k>
+    <holds>... OId |-> HoldLevel:Int ...</holds>
+when
+            Class ==K classObject
+    andBool Id2String(Method) ==String "notify"
+    andBool HoldLevel >=Int 1
+
+/*@
+Here we present the rule for the first case. If there is a thread waiting on the current object, then the object
+  identifier \verb|OId| will be present among the map values of \cellref[]{waitingThreads}. By deleting the whole entry
+  associated to that value we enable the waiting thread to proceed. If there is no thread waiting for this object then
+  the term \verb|notifyImpl()| is simply consumed.
+*/
+rule [notifyImpl-someone-waiting]:
+    <k> notifyImpl(OId:Int) => nothing::void ...</k>
+    <waitingThreads>... (_ |-> OId => .Map) ...</waitingThreads>
+        [transition-threading]
+
+/*@
+At this stage the rule for \verb|waitImpl()| could match. The rule checks in its side conditions that the current
+  thread id \verb|TId| is not among the waiting threads anymore. It also checks that the target object, represented by
+  \verb|OId| is not busy. This is required because the thread exiting from waiting state have to reacquire the monitor
+  on the target object. Finally, the rule have to make sure that the thread was not interrupted while it was waiting.
+  Otherwise another rule will match and will throw the appropriate exception.
+*/
+rule [waitImpl-main]:
+    <k> waitImpl(OId:Int) => nothing::void ...</k>
+    <tid> TId:Int </tid>
+    <busy> Busy:Set (. => SetItem(OId)) </busy>
+    <interrupted> false </interrupted>
+    <waitingThreads> WT:Map </waitingThreads>
+when
+            (notBool TId in keys(WT))
+    andBool (notBool OId in Busy)
+        [transition-threading, transition-sync]
+
+//@ \subsection{\texttt{Object.wait()} --- additional}
 
 rule [object-wait-notify-notifyAll-without-sync]:
     <k>
@@ -157,7 +240,7 @@ when
       notBool OL in Busy
         [transition-threading, transition-sync]
 
-//@ \subsection{\texttt{Object.notify()}, \texttt{Object.notifyAll()}}
+//@ \subsection{\texttt{Object.notify()}, \texttt{Object.notifyAll()} --- additional}
 
 /*@Implementation of \verb|Object.notify()|, extracted here to avoid rule superfluousness*/
 syntax KItem ::=  notifyImpl (
@@ -283,94 +366,5 @@ rule [DissolveAllExceptOut]:
       ...
     </T>
     => <T> <out> Out </out> </T>
-
-endmodule
-
-module API-THREADS-SELECTION
-    imports API-THREADS
-
-//@ \subsection{Methods \texttt{wait()} and \texttt{notify()}}
-
-/*@
-When \verb|object.wait()| is called the method call expression is replaced by \verb|waitImpl()|
---- an auxiliary function that is used later to exit from the waiting state.
-The id of the current thread (\verb|TId|) has to be registered in the set inside \cellref[]{waitingThreads}.
-  The cell \cellref[]{holds} attached to each thread stores the number of times the current thread
-  acquired the lock on each object. Here we use it to make sure that the current thread acquired the lock at least once
-  (see the side condition). Otherwise calling the method \verb|wait()| is illegal and we have to throw an exception, according
-  to Java API. The exceptional case is covered by other rules. Another cell matched here is \cellref[]{busy}. It stores
-  the set of objects that serve as synchronization monitors --- arguments of blocks \verb|synchronized|. When
-  an object enters the waiting state it have to release the ownership of this monitor, this is reflected by deleting
-  the entry \verb|OL| from the set. In this rule the cell \cellref[]{thread} is used solely for clarity, to separate
-  the cells that are attached to a thread from global cells. In fact, if we would delete \cellref[]{thread} here and
-  keep just what is inside, the semantics of the rule would not change. This is because configuration abstraction
-  mechanism of \K would infer the surrounding context for each of \cellref[]{k} \cellref[]{tid} and \cellref[]{holds}.
-  It would know to match them under the same \cellref[]{thread}, even if there are multiple \cellref[]{thread} cells.
-*/
-rule [object-wait]:
-    <thread> //added just for clarity, to illustrate the distinctive context of <holds> and <busy>
-      <k>
-        objectRef(OId:Int, _)::_ . methodRef(sig(Method:Id, _), Class:ClassType) (.TypedVals)
-        => waitImpl(OId)
-        ...
-      </k>
-      <tid> TId:Int </tid>
-      <holds>... OId |-> HoldLevel:Int ...</holds>
-      ...
-    </thread>
-    <busy>... (SetItem(OId) => .) ...</busy>
-    <waitingThreads>... (. => TId |-> OId ) ...</waitingThreads>
-when
-            Class ==K classObject
-    andBool Id2String(Method) ==String "wait"
-    andBool HoldLevel >=Int 1
-        [transition-threading]
-
-/*@
-When another thread calls \verb|notify()| we have to make sure that the thread holds the monitor on the target object
-  (the side condition). Otherwise we have to throw an exception. The actual logic of \verb|notify()| is delegated
-  to \verb|notifyImpl()|, in order to avoid duplication. The construct \verb|notifyImpl()| requires two rules for two
-  cases --- the case when there is at least one thread waiting on the target object, and the case when there is no one.
-*/
-rule [object-notify]:
-    <k>
-      objectRef(OId:Int, _)::_ . methodRef(sig(Method:Id, _), Class:ClassType) (.TypedVals)
-      => notifyImpl(OId)
-      ...
-    </k>
-    <holds>... OId |-> HoldLevel:Int ...</holds>
-when
-            Class ==K classObject
-    andBool Id2String(Method) ==String "notify"
-    andBool HoldLevel >=Int 1
-
-/*@
-Here we present the rule for the first case. If there is a thread waiting on the current object, then the object
-  identifier \verb|OId| will be present among the map values of \cellref[]{waitingThreads}. By deleting the whole entry
-  associated to that value we enable the waiting thread to proceed. If there is no thread waiting for this object then
-  the term \verb|notifyImpl()| is simply consumed.
-*/
-rule [notifyImpl-someone-waiting]:
-    <k> notifyImpl(OId:Int) => nothing::void ...</k>
-    <waitingThreads>... (_ |-> OId => .Map) ...</waitingThreads>
-        [transition-threading]
-
-/*@
-At this stage the rule for \verb|waitImpl()| could match. The rule checks in its side conditions that the current
-  thread id \verb|TId| is not among the waiting threads anymore. It also checks that the target object, represented by
-  \verb|OId| is not busy. This is required because the thread exiting from waiting state have to reacquire the monitor
-  on the target object. Finally, the rule have to make sure that the thread was not interrupted while it was waiting.
-  Otherwise another rule will match and will throw the appropriate exception.
-*/
-rule [waitImpl-main]:
-    <k> waitImpl(OId:Int) => nothing::void ...</k>
-    <tid> TId:Int </tid>
-    <busy> Busy:Set (. => SetItem(OId)) </busy>
-    <interrupted> false </interrupted>
-    <waitingThreads> WT:Map </waitingThreads>
-when
-            (notBool TId in keys(WT))
-    andBool (notBool OId in Busy)
-        [transition-threading, transition-sync]
 
 endmodule

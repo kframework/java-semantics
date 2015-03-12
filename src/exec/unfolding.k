@@ -3,7 +3,11 @@ module UNFOLDING
     imports CORE-FUNCTIONS
     imports SYNTAX-CONVERSIONS
 
-/*@At the beginning of execution semantics \verb|<k>| contains the term unfoldingPhase, \verb|<program>| is non-empty and the global phase is UnfoldingPhase.
+/*@
+The Unfolding phase of the execution semantics, opposite ot the folding phase of the preprocessing semantics.
+In this phase the preprocessed program stored in <program> cell is distributed into various cells inside <classes>.
+
+At the beginning of execution semantics \verb|<k>| contains the term unfoldingPhase, \verb|<program>| is non-empty and the global phase is UnfoldingPhase.
 */
 
 syntax KItem ::= "unfoldingPhase"

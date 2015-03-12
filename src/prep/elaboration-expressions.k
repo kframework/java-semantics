@@ -4,12 +4,17 @@ module ELABORATION-EXPRESSIONS
     imports ELABORATION-CORE
     imports PRIMITIVE-TYPES
 
-/*@ \subsection{Elaboration of numeric expressions}
+/*@ \subsection{Numeric, boolean and String operators}
 
 Expression labels are not converted by the default rule in the phase \verb|elabDispose()| => \verb|elabRes(...)|
   Each expression needs a specialized rule for disposing, that will compute, among others,
   the type of the expression.
 */
+
+rule [elabEnd-BoolResultBinaryExp]:
+    elabEnd(KL:KLabel(TE1:K,, TE2:K)) => elabRes(cast(bool, KL(TE1,,TE2)))
+when
+    isBoolResultBinaryExpLabel(KL) ==K true
 
 syntax KItem ::= isBoolResultBinaryExpLabel ( KLabel )  [function]
 rule isBoolResultBinaryExpLabel('LazyOr) => true
@@ -20,11 +25,6 @@ rule isBoolResultBinaryExpLabel('Lt) => true
 rule isBoolResultBinaryExpLabel('Gt) => true
 rule isBoolResultBinaryExpLabel('LtEq) => true
 rule isBoolResultBinaryExpLabel('GtEq) => true
-
-rule [elabEnd-BoolResultBinaryExp]:
-    elabEnd(KL:KLabel(TE1:K,, TE2:K)) => elabRes(cast(bool, KL(TE1,,TE2)))
-when
-    isBoolResultBinaryExpLabel(KL) ==K true
 
 rule [elabEnd-BoolOnlyResultExp-unary]:
     elabEnd('Not(TE:K)) => elabRes(cast(bool,'Not(TE)))
@@ -71,6 +71,15 @@ rule [elabEnd-StringPlusAny]:
 when
     typeOf(TE1) ==K classString orBool typeOf(TE2) ==K classString
 
+/*@ Heats the second argument, that is reduced into a type.
+    The whole expression is then rewritten into elabRes(cast(SecondArgAsType, FirstArg))
+    We cannot eliminate this wrapper because the second argument in all usage places is not a function.
+*/
+syntax KItem ::= elabExpAndType ( K, K )  [strict(2)]
+rule elabExpAndType(K:K, T:Type) => elabRes(cast(T, K))
+
+/*@ \subsection{Conditional operator}*/
+
 rule [elabEnd-Cond]:
     elabEnd('Cond(CondTE:K,, TE1:K,, TE2:K))
     => elabExpAndType('Cond(CondTE,, TE1,, TE2), condType(typeOf(TE1), typeOf(TE2)))
@@ -93,12 +102,7 @@ when
 rule [condType-FirstChar]:
     condType(char, T2:Type) => ifAux(subtype(char, T2), T2, int)
 
-/*@ Heats the second argument, that is reduced into a type.
-    The whole expression is then rewritten into elabRes(cast(SecondArgAsType, FirstArg))
-    We cannot eliminate this wrapper because the second argument in all usage places is not a function.
-*/
-syntax KItem ::= elabExpAndType ( K, K )  [strict(2)]
-rule elabExpAndType(K:K, T:Type) => elabRes(cast(T, K))
+/*@ \subsection{Assignment operator}*/
 
 rule [elabEnd-Assign-SameType]:
     elabEnd('Assign(cast(T1:Type, Exp1:K),, TExp2:K)) => elabRes(cast(T1, 'Assign(Exp1,, TExp2)))
@@ -114,6 +118,9 @@ when
 //    elabEnd(KL:KLabel(cast(T1:Type, Exp1:K),, TE2:K)) => elabRes(cast(T1, KL(Exp1,, TE2)))
 //when
 //    isCompoundAssignExp(KL(.KList)) ==K true
+
+/*@ \subsection{Cast operator} */
+
 rule elabEnd(cast(T1:Type, Exp1:K) *= TE2:K) => elabRes(cast(T1, Exp1 *= TE2))
 rule elabEnd(cast(T1:Type, Exp1:K) /= TE2:K) => elabRes(cast(T1, Exp1 /= TE2))
 rule elabEnd(cast(T1:Type, Exp1:K) %= TE2:K) => elabRes(cast(T1, Exp1 %= TE2))
@@ -126,8 +133,6 @@ rule elabEnd(cast(T1:Type, Exp1:K) &= TE2:K) => elabRes(cast(T1, Exp1 &= TE2))
 rule elabEnd(cast(T1:Type, Exp1:K) ^= TE2:K) => elabRes(cast(T1, Exp1 ^= TE2))
 rule elabEnd(cast(T1:Type, Exp1:K) |= TE2:K) => elabRes(cast(T1, Exp1 |= TE2))
 
-/*@ \subsection{Elaboration of non-numeric expressions} */
-
 //@ elab cast
 rule elabEnd('CastPrim(T:Type,, TExp:K) => cast(T, TExp))      [structural]
 rule elabEnd('CastRef(T:Type,, TExp:K)  => cast(T, TExp))      [structural]
@@ -135,12 +140,10 @@ rule elabEnd('CastRef(T:Type,, TExp:K)  => cast(T, TExp))      [structural]
 rule [elabEnd-cast]:
     elabEnd(cast(T1:Type, TExp:K)) => elabRes(cast(T1, TExp))
 
-/*@ \subsubsection{Elaboration of class instanceof} */
+/*@ \subsection{Expressions over reference types} */
 
 rule [elabEnd-InstanceOf]:
     elabEnd('InstanceOf(TExp:K,, RT2:RefType)) => elabRes(cast(bool, 'InstanceOf(TExp,, RT2)))
-
-/*@ \subsubsection{Elaboration of class literals} */
 
 //@ Class literal types are heated by this rule.
 context elab('Lit('Class(HOLE)))

@@ -3,8 +3,6 @@ module PROCESS-CLASS-MEMBERS
     imports CORE-CLASSES
     imports CORE-PREPROCESSING
 
-/*@ \subsection{General rules} */
-
 /*@ We need to process Object first. Thus when we will process any interfaces,
     Object class will already be processed.*/
 rule [Start-ProcClassMembersPhase]:
@@ -15,6 +13,8 @@ syntax KItem ::=  processClasses (
                 K //setWrap(Set) - the set of all classes
               )
               [strict]
+
+/*@ \subsection{Triggering the processing of depending types} */
 
 rule [processClasses]:
     (. => processTypeWithDepends(Class))
@@ -47,6 +47,8 @@ rule [processTypeWithDepends-Discard]:
 
 rule [processTypeWithDepends-Discard2]:
     processTypeWithDepends(noClass) => .K
+
+/*@ \subsection{Initiating class processing} */
 
 /*@
 \begin{markdown}
@@ -105,6 +107,8 @@ rule [processType-discard]:
     <k> processType(Class:ClassType) => . ...</k>
     <classType> Class </classType>
     <classPhase> MembersProcessedCPhase </classPhase>
+
+/*@ \subsection{Inheriting base types} */
 
 //@ Compute \verb|<implTrans>| cell --- interfaces transitively implemented
 syntax KItem ::= computeImplTrans ( Set )
@@ -323,6 +327,7 @@ rule [storeMethod-discard-default-constructor]:
     <classType> Class </classType>
     <methods>... Sig |-> _ ...</methods>
 
+/*@ \subsection{Constructor declarations}*/
 
 rule [ConstrDec-SuperCall-Desugar]:
     <k>
@@ -385,7 +390,7 @@ rule [ConstrDec]:
     <crntClass> Class:ClassType </crntClass>
 when paramTypesResolved([Params])
 
-//@ \subsection{Fields and initializers}
+//@ \subsection{Instance fields and instance initializers}
 
 // 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, InitExp:K),, _])
 
@@ -420,6 +425,21 @@ rule [InstanceInit]:
     <classType> Class </classType>
     <instanceInit> [_,,(.KList => K)] </instanceInit>
         [structural]
+
+syntax KItem ::= "convertInstanceInitIntoMethod"
+
+rule [convertInstanceInitIntoMethod]:
+    <k>
+      convertInstanceInitIntoMethod
+      => storeMethod([.KList], instanceCT, private, false::bool, methodMMT, noValue, 'Block([InstanceInitKs]),
+                      sig(String2Id("$instance_init"), types(.KList)), void)
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    (<instanceInit> [InstanceInitKs:KList] </instanceInit> => .Bag)
+
+//@ \subsection{Static fields and static initializers}
 
 /*@ Desugaring a static field declaration with initializer into a declaration without initializer.
 Followed by a static initializer block, if this field is not a compile-time constant.*/
@@ -486,26 +506,15 @@ when
             getContextType(Modifiers) ==K staticCT
     andBool isFinalModifiers(Modifiers)
 
+/*@\subsection{Other members}*/
+
 /*@ Discard inner class declarations at this phase. They are processed when their
     respective \verb|<class>| tag is encountered as part of processClasses.
 */
 rule [ClassDec-discard]: 'ClassDec(_) => .
 rule [InterfaceDec-discard]: 'InterfaceDec(_) => .
 
-syntax KItem ::= "convertInstanceInitIntoMethod"
-
-rule [convertInstanceInitIntoMethod]:
-    <k>
-      convertInstanceInitIntoMethod
-      => storeMethod([.KList], instanceCT, private, false::bool, methodMMT, noValue, 'Block([InstanceInitKs]),
-                      sig(String2Id("$instance_init"), types(.KList)), void)
-      ...
-    </k>
-    <crntClass> Class:ClassType </crntClass>
-    <classType> Class </classType>
-    (<instanceInit> [InstanceInitKs:KList] </instanceInit> => .Bag)
-
-//@ \subsection{Auxiliary functions}
+//@ \subsection{Functions for acceessing member modifiers}
 
 //@ Evaluates to true::bool if synchronized is among modifiers, false otherwise
 syntax KItem ::=  isSynchronizedModifiers (

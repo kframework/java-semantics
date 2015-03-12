@@ -1,10 +1,11 @@
-/*@ This module initialtes the elaboration phase. It is responsible for elaborating all top-level code blocks
-  in the program: methods, constructors, static and instance initializers.
-*/
 module ELABORATION-TOP-BLOCKS
     imports CORE-SORTS
     imports CORE-PREPROCESSING
     imports ELABORATION-CORE
+
+/*@ This module initiates the elaboration phase. It is responsible for elaborating all top-level code blocks
+  in the program: methods, constructors, static and instance initializers.
+*/
 
 rule [ElaborationPhase-start]:
     <k> . => elaborateBlocks(getTopLevelClasses) </k>

@@ -4,7 +4,9 @@ module SYNTAX-CONVERSIONS
     imports CORE-CLASSES    //for cast
     imports CORE-EXEC
 
-/*@ Defining the syntax for key portions of the semantics, and converting AST terms back int otheir syntactiv form.
+/*@ Defining the syntax for key portions of the semantics, and converting AST terms back into their syntactic form.
+This whole module is auxiliary, its purpose is to allow defining some portions of the semantics syntactically.
+It will disappear once the main syntax of K-Java will be used instead.
 */
 
 /*@ \subsection{Method parameter}*/
@@ -87,7 +89,7 @@ rule [NewInstance-to-QNewInstance-unpack]:
     new Class:ClassType(ArgExps:Exps)
     => noValue . new Class:ClassType(ArgExps:Exps)
 
-/*@ \subsection{Syntactic lists --- Exps, TypedVals, ClassTypes}*/
+/*@ \subsection{Syntactic lists}*/
 
 /*@
   A list of expressions, usually a list of arguments of a method or constructor.
@@ -124,7 +126,7 @@ rule getTypes(types(Ts:KList), .TypedVals) => types(Ts)
 syntax KResult ::= ClassTypes
 syntax ClassTypes ::= List{ClassType, ","}
 
-//@ /subsubsection{Try -- syntax conversion macros}
+//@ \subsubsection{Try/catch}
 rule 'Try(Trys:K,, ([Catches:KList] => toCatchClauses([Catches])),, _:KList)    [anywhere]
 
 syntax CatchClauses ::= toCatchClauses( KListWrap )                             [function]

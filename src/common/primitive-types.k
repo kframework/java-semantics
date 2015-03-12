@@ -2,7 +2,7 @@ module PRIMITIVE-TYPES
     imports CORE-SORTS
     imports SUBTYPING
 
-//@ \subsection{Integer types normalization}
+//@ \subsection{Integer value normalization}
 
 syntax Int ::= bitCount ( Type ) [function]
 rule bitCount(byte) => 8
@@ -76,6 +76,8 @@ rule toUnsigned(I:Int :: T:Type)
           I :: T,
           I +Int (1 <<Int bitCount(T)) :: T
         )
+
+//@ \subsection{Type normalization}
 
 syntax KItem ::= normalizeType ( Type )           [function]
 rule normalizeType(ILT:IntOrLongType) => ILT

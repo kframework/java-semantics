@@ -229,7 +229,7 @@ module NEW-INSTANCE-REST
     imports VAR-LOOKUP  //for typedLookup()
     imports NEW-INSTANCE
 
-/*@Additional cases of new instance creation. */
+/*@Additional semantics of new instance creation. */
 
 //@\subsection{Instance field declarations}
 
@@ -240,7 +240,7 @@ rule [FieldDec-instance]:
     <storeMetadata>... . => L |-> FieldLocMetadata ...</storeMetadata>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 
-//@\subsection{Execution of QSuperConstrInv, AltConstrInv}
+//@\subsection{Explicit constructor invocation --- \texttt{this()} and \texttt{super()}}
 
 // 'QSuperConstrInv( Qual:K,, _:K,, [ Args:KList ] )
 rule [QSuperConstrInv]:

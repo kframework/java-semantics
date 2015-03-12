@@ -3,9 +3,12 @@ module ELABORATION-VARS
     imports ELABORATION-CORE
 
 //@ Elaboration of terms defined in var-lookup.k
+//@
 //@ Both unqualified and qualified AmbName.
 rule [elabEnd-AmbName]:
     elabEnd('AmbName(Ks:KList)) => elabEnd('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName([Ks])
+
+//@ \subsection{Unqualified variable references}
 
 rule [elabEnd-ExprName-localVar-ok]:
     <k> elabEnd('ExprName(X:Id)) => elabRes(cast(T, 'ExprName(X))) ...</k>
@@ -70,6 +73,22 @@ rule [elabOuterLocalVar-not-found]:
 when
     notBool X in keys(EnclosingLocalEnv)
 
+//@ \subsection{Self-references: \texttt{this} and \texttt{A.this}}
+
+rule [elabEnd-This]:
+    <k> elabEnd('This(.KList) => 'QThis(Class)) ...</k>
+    <crntClass> Class:ClassType </crntClass>
+
+rule [elabEnd-QThis-InstanceCT]:
+    <k> elabEnd('QThis(Class:ClassType)) => elabRes(cast(Class, 'QThis(Class))) ...</k>
+    <contextType> instanceCT </contextType>
+
+rule [elabEnd-QThis-StaticCT]:
+    <k> elabEnd('QThis(_)) => noValue ...</k>
+    <contextType> staticCT </contextType>
+
+//@ \subsection{Fields}
+
 rule [elabEnd-ExprName-qualified]:
     elabEnd('ExprName(QualK:K,,X:Id)) => elabEnd('Field(QualK,,X))
 
@@ -79,7 +98,13 @@ rule [elabEnd-Field-of-package]:
 rule [elabEnd-Field-of-noValue]:
     elabEnd('Field( noValue,, _:Id )) => noValue      [structural]
 
-//@Computation of instance and static environment of a class, e.g. set of fields
+rule [elabEnd-Field-QualRef]:
+    elabEnd('Field(cast(Class:ClassType, Qual:K),, X:Id))
+    => elabFieldImpl(cast(Class, Qual), elabLookup(X, Class))
+
+rule [elabEnd-Field-QualClass]:
+    elabEnd('Field(Class:ClassType,, X:Id))
+    => elabFieldImpl(noValue, elabLookup(X, Class))
 
 /*@ Searches the given field name in the given type (set of types), both static and instance context.
 
@@ -149,26 +174,6 @@ syntax KItem ::=  nameInVarDecs(
               [function]
 
 rule nameInVarDecs(X:Id, [_,, _:KLabel(.K,, T:Type,, ['VarDec(X)]),, _]) => true
-
-rule [elabEnd-This]:
-    <k> elabEnd('This(.KList) => 'QThis(Class)) ...</k>
-    <crntClass> Class:ClassType </crntClass>
-
-rule [elabEnd-QThis-InstanceCT]:
-    <k> elabEnd('QThis(Class:ClassType)) => elabRes(cast(Class, 'QThis(Class))) ...</k>
-    <contextType> instanceCT </contextType>
-
-rule [elabEnd-QThis-StaticCT]:
-    <k> elabEnd('QThis(_)) => noValue ...</k>
-    <contextType> staticCT </contextType>
-
-rule [elabEnd-Field-QualRef]:
-    elabEnd('Field(cast(Class:ClassType, Qual:K),, X:Id))
-    => elabFieldImpl(cast(Class, Qual), elabLookup(X, Class))
-
-rule [elabEnd-Field-QualClass]:
-    elabEnd('Field(Class:ClassType,, X:Id))
-    => elabFieldImpl(noValue, elabLookup(X, Class))
 
 // 'SuperField(X:Id)
 

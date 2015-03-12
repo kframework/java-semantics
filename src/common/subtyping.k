@@ -10,13 +10,6 @@ syntax KItem ::=  subtype (
               )
               [strict]
 
-/*@ Checks whether the each type in the first list of types is a subtype
-of the type at the same position in the second list.
-If lists have different size, the function will evaluate to false.
-Used in method call overloading resolution.
-*/
-syntax KItem ::=  subtypeList ( Types, Types )
-
 rule [subtype-same-type-True]:
     subtype( T:Type, T ) => true
         [structural]
@@ -142,6 +135,13 @@ rule [subtype-OfNoClass]:
     subtype( _, noClass ) => false
 
 /*@ \subsection{Subtyping lists of types}*/
+
+/*@ Checks whether the each type in the first list of types is a subtype
+of the type at the same position in the second list.
+If lists have different size, the function will evaluate to false.
+Used in method call overloading resolution.
+*/
+syntax KItem ::=  subtypeList ( Types, Types )
 
 rule [subtypeList]:
     subtypeList(types(T1:Type,,Ts:KList), types(Tp1:Type,,Tps:KList))

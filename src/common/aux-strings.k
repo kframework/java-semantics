@@ -1,5 +1,5 @@
 module AUX-STRINGS
-/*@ Auxiliary constructs related to Strings. Extension to string.k.*/
+/*@ Utility functions for string manipulation. No dependencies on other K-Java modules. Extension to string.k.*/
 
 //@Retain the first Count chars in the string
 syntax KItem ::= retainHead ( String, Int )                         [function]

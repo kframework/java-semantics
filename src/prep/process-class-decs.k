@@ -13,6 +13,8 @@ syntax KItem ::=  processClassDecs (
               )
               [strict]
 
+/*@ \subsection{Initiate the resolving of class bases}*/
+
 /*@ Question: how do we know if bases were already resolved for this class or not?
   Answer: When \verb|resolveBases(Class)| is consumed by the rule [resolveBasesEnd], the class
   changes its state: StoredCPhase => BasesResolvedCPhase
@@ -58,7 +60,9 @@ rule [processClassDecs-resolveBases-Inner-Start]:
 when
     OuterClassPhase ==K DecsProcessedCPhase orBool OuterClassPhase ==K MembersProcessedCPhase
 
-//@ Process the given class from StoredCPhase to BasesResolvedCPhase.
+/*@ \subsection{Resolve bases}*/
+
+//@ Process the given class from StoredCPhase to BasesResolvedCPhase. Resolve the base class (arg 2) and interfaces (arg 3) of a class (arg 1).
 syntax KItem ::=  resolveBases (
                 ClassType,  //The class for which we resolve bases
                 K,          //Base class
@@ -76,6 +80,8 @@ rule [resolveBases]:
     <unprocessedBases> .K => [BaseClass,,ImplTypes] </unprocessedBases>
     <classPhase> StoredCPhase => BasesResolvedCPhase </classPhase>
 when isKResult(ImplTypes)
+
+/*@ \subsection{Processing after bases were resolved}*/
 
 rule [processClassDecs-mark-Base-Processed]:
     <k> processClassDecs(_) ...</k>
@@ -132,6 +138,8 @@ rule [saveImplements]:
     <k> saveImplements(Class:ClassType, setWrap(ImplSet:Set)) => . ...</k>
     <classType> Class </classType>
     <implements> .Set => ImplSet </implements>
+
+/*@ \subsection{Computing imports map}*/
 
 /*@ Computes the full names map used to resolve
     classes by simple name inside the class specified by the arg 4,

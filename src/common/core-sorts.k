@@ -7,6 +7,12 @@ module CORE-SORTS
     imports LEXICAL-SYNTAX
     imports LITERAL-SYNTAX
 
+/*@This module contains general-purpose utilities for the whole K-Java, both preprocessing and execution.
+  This is the lowest-level module of the whole semantics, imported by almost all other modules.
+  Because if its high accessibility status, it was somewhat abused, in a sense that I placed here some random
+  stuff for the lack of better place.
+*/
+
 //@ \subsection{Computation phases}
 
 /*@ The computation Global Phase. See configuration documentation for details.
@@ -92,17 +98,6 @@ syntax StaticInitStatus ::= "StaticUninitialized"
                           | StaticInitializing ( Int )
                           | "StaticInitialized"
 
-
-/*@ A method signature. Required to be KResult by rules in METHOD-INVOKE.*/
-syntax Signature ::= sig ( Id, Types )
-syntax KResult ::= Signature
-
-
-/*@ The member accessibility context of the current method --- either static or instance.*/
-syntax ContextType ::=  "staticCT"    [latex(\terminal{static})]
-                      | "instanceCT"  [latex(\terminal{instance})]
-syntax KResult ::= ContextType
-
 //@ \subsection{Values}
 
 /*  Represents a Java value. May be either primitive --- int, float, bool, of reference. The values nothing and undefined
@@ -164,6 +159,20 @@ syntax Exp ::= TypedVal | RawVal
 */
 syntax KResult ::= TypedVal | Type
 
+syntax KResult ::= "noValue"  [latex({\dotCt{K}})]
+
+//@ \subsection{Class and member attributes}
+
+/*@ A method signature. Required to be KResult by rules in METHOD-INVOKE.*/
+syntax Signature ::= sig ( Id, Types )
+syntax KResult ::= Signature
+
+
+/*@ The member accessibility context of the current method --- either static or instance.*/
+syntax ContextType ::=  "staticCT"    [latex(\terminal{static})]
+                      | "instanceCT"  [latex(\terminal{instance})]
+syntax KResult ::= ContextType
+
 /*@ Member access modes*/
 syntax AccessMode ::= Public | Protected  | Private | "package"
 syntax KResult ::= AccessMode
@@ -175,7 +184,7 @@ syntax MethodMetaType ::= "methodMMT" | "constructorMMT"
 syntax ClassMetaType ::=  "classCMT"      [latex(\terminal{class})]
                         | "interfaceCMT"  [latex(\terminal{interface})]
 
-syntax KResult ::= "noValue"  [latex({\dotCt{K}})]
+//@ \subsection{Misc definitions}
 
 /*@ Represents a reference to a method or constructor. */
 syntax MethodRef ::=   methodRef(
@@ -209,6 +218,9 @@ syntax ClassOrName ::= Id | ClassType
 
 /*@ A fully qualified class name, or noClass where no valid class exists in the current context.*/
 syntax ClassType ::= "class" Id | "noClass"                     [latex({\dotCt{K}})]
+
+/*@ \subsection{Random unsorted content, syntax converters}*/
+
 //Denis' syntax
 syntax Param ::= Type Id                                            [klabel('ParamImpl)]
 
@@ -221,4 +233,38 @@ syntax RefType ::= ClassType | "nullType" | "arrayOf" Type
 rule 'ArrayType(T:Type) => arrayOf T                            [anywhere]
 
 rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK                [anywhere]
+
+/*@Convert the AST representation of an Id into a K Id.*/
+rule 'Id(Str:String) => String2Id(Str)                [structural, anywhere]
+
+//@ \subsubsection{ListWrap and KListWrap}
+
+/*@ Represent a parser form for a sequence of terms. Is desugared into the pretty form [...]*/
+syntax KLabel ::= "'ListWrap"
+rule 'ListWrap(Ks:KList) => [Ks]                  [structural, anywhere]
+//todo: both 'KListWrap and 'ListWrap are associted with the same production, so how to get rid of it
+syntax KListWrap ::= "[" KList "]" [klabel('KListWrap), latex(\terminal{[} {#1} \terminal{]})]
+
+//@ Sequence of terms and of any other statements. The first term is moved to the top of computation.
+rule [S1:K,, Stmts:KList] => S1 ~> [Stmts]        [structural]
+rule [.KList] => .K                               [structural]
+
+//@ A wrapper over an arbitrary KList, wrapper being of type KResult.
+syntax KRListWrap ::= "kr" "[" KList "]"          [latex(\terminal{kr[} {#1} \terminal{]})]
+syntax KResult ::= KRListWrap
+
+//@ \subsubsection{Computation terms produced during elaboration}
+
+/*@ These auxiliary terms functions that should be threated as expressions in the elaboration phase.
+*/
+syntax Exp ::= AuxTermExp
+syntax LHS ::= AuxTermExp
+/*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
+such as an anonymous class declaration. Is typed with the type of the expression.
+At runtime is rewritten into the statement, that should evaluate into .K, followed by the expression,
+that should evaluate to value.*/
+syntax AuxTermExp ::= stmtAndExp ( K, K )
+
+syntax AuxTermExp ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
+
 endmodule

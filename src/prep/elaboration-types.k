@@ -6,8 +6,6 @@ module ELABORATION-TYPES
     imports ELABORATION-CORE
     imports PROCESS-TYPE-NAMES        // for getNamesMap()
 
-/*@ \subsection{Elaboration of types} */
-
 rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK [structural]
 rule 'InterfaceType(TypeK:K,, _) => TypeK        [structural]
 rule 'ClassType(TypeK:K,, _) => TypeK            [structural]

@@ -2,6 +2,8 @@ module CORE-FUNCTIONS
     imports CORE-SORTS
     imports CORE-CLASSES
 
+//@ \subsection{Core utility functions}
+
 /*@ Returns the type associated with various K terms. The implementation is scattered among various K files.
   For a type --- the type itself. For a typed expression - the type component. For some raw values - their most common
     type.
@@ -60,7 +62,7 @@ rule getTypes([Ts:KList]) => types(Ts)
 when
     isKResult(Ts)
 
-//@ \subsubsection{Other auxiliary constructs}
+//@ \subsection{Utilities for general-purpose programming}
 
 /*@ Generalized equality with strictness, suitable to compare not only TypedVal-s but any K terms.
 */
@@ -154,6 +156,15 @@ rule length([Ks:KList]) => length(0, [Ks])
 rule length(I:Int, [K:K,, Ks:KList]) => length(I +Int 1, [Ks])
 rule length(I:Int, [.KList]) => I
 
+/*@ \subsubsection{Other auxiliary constructs} */
+
+/*@ \texttt{Generic guard.}
+    A generic computational guard (should be builtin): it allows the computation to continue only if a prefix
+    guard evaluates to true.
+*/
+syntax KItem ::= "true?"
+rule true::bool ~> true? => .  [structural]
+
 /*@ \subsection{ClassType functions} */
 
 //@ Converts a fully qualified class type into a simple name (Id)
@@ -163,35 +174,5 @@ rule getSimpleName(class ClassId:Id)
       Id2String(ClassId),
       rfindString(Id2String(ClassId), ".", lengthString(Id2String(ClassId))) +Int 1
     ))
-
-/*@ \subsection{Identifiers}*/
-
-/*@Convert the AST representation of an Id into a K Id.*/
-rule 'Id(Str:String) => String2Id(Str)                [structural, anywhere]
-
-/*@ \subsection{Other auxiliary constructs} */
-
-/*@ \texttt{Generic guard.}
-    A generic computational guard (should be builtin): it allows the computation to continue only if a prefix
-    guard evaluates to true.
-*/
-syntax KItem ::= "true?"
-rule true::bool ~> true? => .  [structural]
-
-//@ \subsection{Definition-wide rules}
-
-/*@ Represent a parser form for a sequence of terms. Is desugared into the pretty form [...]*/
-syntax KLabel ::= "'ListWrap"
-rule 'ListWrap(Ks:KList) => [Ks]                  [structural, anywhere]
-//todo: both 'KListWrap and 'ListWrap are associted with the same production, so how to get rid of it
-syntax KListWrap ::= "[" KList "]" [klabel('KListWrap), latex(\terminal{[} {#1} \terminal{]})]
-
-//@ Sequence of terms and of any other statements. The first term is moved to the top of computation.
-rule [S1:K,, Stmts:KList] => S1 ~> [Stmts]        [structural]
-rule [.KList] => .K                               [structural]
-
-//@ A wrapper over an arbitrary KList, wrapper being of type KResult.
-syntax KRListWrap ::= "kr" "[" KList "]"          [latex(\terminal{kr[} {#1} \terminal{]})]
-syntax KResult ::= KRListWrap
 
 endmodule

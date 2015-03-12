@@ -5,12 +5,17 @@ module EXPRESSIONS
     imports PRIMITIVE-TYPES // for normalizeType
     imports TO-STRING
     imports VAR-LOOKUP  // for lookup
+/*@ The module defines expressions operating over primitive types and String.
+*/
 
-
-/*@ Used to denote a temporary type of an expression. Such an expression should always be wrapped inside a cast
+/*@ Used to denote a placeholder for an expression type, until the proper, normalized type of an expression
+  is computed. Never referred in the semantics.
+  An expression containing a placeholder type should always be wrapped inside a cast
   expression. The cast will then replace tempType with the proper compile-time type.
 */
 syntax Type ::= "tempType"
+
+/*@ \subsection{Boolean operators} */
 
 rule /* true  || _ */ true :: bool || _ => true
 
@@ -43,6 +48,8 @@ rule                F1:Float :: _ <= F2:Float :: _ => (F1 <=Float F2)::bool
 rule /* I1 >= I2 */ I1:Int :: _ >= I2:Int :: _ => (I1 >=Int I2)::bool
 rule                F1:Float :: _ >= F2:Float :: _ => (F1 >=Float F2)::bool
 
+/*@ \subsection{Numeric operators} */
+
 rule /* I1 <<  I2 */ I1:Int :: NT1:Type << I2:Int :: _
     => (I1 <<Int (I2 &Int (bitCount(normalizeType(NT1)) -Int 1))) :: tempType //JLS \$15.19
 rule /* I1 >>  I2 */ I1:Int :: NT1:Type >> I2:Int :: _
@@ -52,15 +59,6 @@ rule /* I1 >>> I2 */ I1:Int :: NT1:Type >>> I2:Int :: NT2:NumericType
 
 rule /* I1 + I2     */ I1:Int::_ + I2:Int::_ => (I1 +Int I2) :: tempType
 rule /* F1 + F2 */ F1:Float :: _ + F2:Float :: _ => (F1 +Float F2) :: tempType
-rule /* Str1 + Str2 */ Str1:String :: _ + Str2:String :: _   => (Str1 +String Str2) :: classString
-rule /* Str + KR    */ Str:String :: Class:ClassType + ( KR:KResult => toString(KR) )
-when       ((typeOf(KR) =/=K classString)
-           andBool Class ==K classString)
-    orBool (KR ==K (null::classString))
-rule /* KR + Str    */ ( KR:KResult => toString(KR) ) + Str:String :: Class:ClassType
-when       ((typeOf(KR) =/=K classString)
-           andBool Class ==K classString)
-    orBool (KR ==K (null::classString))
 
 rule /* I1 - I2 */ I1:Int :: _ - I2:Int :: _ => (I1 -Int I2) :: tempType
 rule /* F1 - F2 */ F1:Float :: _ - F2:Float :: _ => (F1 -Float F2) :: tempType
@@ -133,13 +131,27 @@ syntax KItem ::= rightTypedNumber ( Int, NumericType )             [function]
 rule rightTypedNumber(I:Int, IntT:IntType) => I::IntT
 rule rightTypedNumber(I:Int, FloatT:FloatType) => Int2Float(I)::FloatT
 
+/*@ \subsection{String operators} */
+
+rule /* Str1 + Str2 */ Str1:String :: _ + Str2:String :: _   => (Str1 +String Str2) :: classString
+rule /* Str + KR    */ Str:String :: Class:ClassType + ( KR:KResult => toString(KR) )
+when       ((typeOf(KR) =/=K classString)
+           andBool Class ==K classString)
+    orBool (KR ==K (null::classString))
+rule /* KR + Str    */ ( KR:KResult => toString(KR) ) + Str:String :: Class:ClassType
+when       ((typeOf(KR) =/=K classString)
+           andBool Class ==K classString)
+    orBool (KR ==K (null::classString))
+
+/*@ \subsection{Conditional operator} */
+
 /*@ Conditional expression : ?: . Desugared into an if with cast.
 The biggest difficulty is computing the expression type, according to JLS1 \$15.24
 The whole expression should always come wrapped into a cast, from elaboration.
 Thus we don't have to worry about proper type conversion here.*/
 rule CondExp:Exp ? TrueExp:Exp : FalseExp:Exp => ifAux(CondExp,TrueExp,FalseExp)
 
-/*@ \subsubsection{Assignment operators}
+/*@ \subsection{Assignment operators}
 Both basic assignment and compound assignments like +=, -=, etc. */
 
 context (_:KResult = HOLE)<:AssignExp
@@ -173,7 +185,7 @@ rule loc(L:Int) :: T:Type &= Exp2:K => loc(L)::T = cast(T, lookup(L, T) & Exp2)
 rule loc(L:Int) :: T:Type ^= Exp2:K => loc(L)::T = cast(T, lookup(L, T) ^ Exp2)
 rule loc(L:Int) :: T:Type |= Exp2:K => loc(L)::T = cast(T, lookup(L, T) | Exp2)
 
-/*@ \subsection{Cast expression --- primitive types} */
+/*@ \subsection{Cast operator --- primitive types} */
 
 //@ The type of RV could either be NumericType or tempType. This rule matches both.
 rule [cast-Number]: cast(NT:NumericType, RV:RawVal::_) => normalize(RV::NT)
@@ -244,29 +256,5 @@ rule     (KR:KResult => .) ~> (HOLE => KR)--
 rule [lvalue-Throw-desugar]:
     lvalue( throw E:Exp; ) => throw E;
         [structural]
-
-/*@ \subsection{Auxiliary functions for store} */
-
-syntax KItem ::=  store (
-                Int,  //OL - the store location
-                K     //evaluates to TypedVal - the value to be stored
-              ) [strict(2)]
-
-//@ Synchronization checkpoint have to be before the actual assignment, like for lookup.
-rule [store]:
-    store(L:Int, V:RawVal :: T:Type) => fieldAccessCheckpoint(L) ~> storeImpl(L, V::T)
-
-syntax KItem ::=  storeImpl (
-                Int,  //OL - the store location
-                K     //TypedVal - the value to be stored
-              )
-
-rule [storeImpl]:
-    <k> storeImpl(L:Int, V:RawVal :: T:Type) => . ...</k>
-    <store>... L |-> (_ => V) :: T ...</store>
-
-/*@ \subsection{Auxiliary constructs produced during elaboration} */
-
-rule stmtAndExp(Stmt:K, Exp:K) => Stmt ~> Exp
 
 endmodule

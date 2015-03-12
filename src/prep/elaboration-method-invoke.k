@@ -4,6 +4,8 @@ module ELABORATION-METHOD-INVOKE
     imports SUBTYPING
     imports ELABORATION-CORE
 
+//@ \subsection{Regular method calls}
+
 rule customElabEnd('Method) => true
 
 rule elabEnd('Method(Qual:K,, _:K,, Name:Id))  => elabEnd('Method('MethodName(Qual,, Name)))  [structural]
@@ -56,7 +58,7 @@ rule containsName((sig(Name, _) |-> _) _:Map, Name:Id) => true
 rule [elabEnd-findQualifierForName-static]:
     findQualifierForName(noClass, K:K) => noValue
 
-// 'SuperMethod(_:K,, Name:Id)
+//@ \subsection{Superclass method calls: \texttt{super.m()}}
 
 rule customElabEnd('SuperMethod) => true
 
@@ -113,6 +115,8 @@ rule getLookupTargetType(arrayOf _) => classArrayImpl
 // True for cast(T,'QThis(\_)), false otherwise
 syntax KItem ::= isCastOfQThis ( K )                                      [function]
 rule isCastOfQThis(cast(_, 'QThis(_))) => true
+
+//@ \subsection{Method reference lookup}
 
 /*@ Lookup the right methodRef() based on supplied parameters.
 If the method is not found in the supplied class list, we should search for it in the
@@ -240,6 +244,8 @@ rule [methodProcessArguments-Invoke-end]:
           )
         )
 
+//@ \subsection{Method signature lookup}
+
 /*Search for the correct method signature to use
 when calling a given MethodName with the given argument types.
 computes mapWrap(Sig -> MethodTV)*/
@@ -304,8 +310,12 @@ when
 rule [lookupSignature-End]:
     lookupSignature(_,_, .Map,_, MethodRef:MethodRef, _) => MethodRef
 
+//@ \subsection{Method accessibility check}
+//@ Interaction between overloading and access modes.
+//@
+
 /*@ Tests whether a method from a given class with a given AccessMode and ContextType
-may be called from the current object environment*/
+may be called from the current object environment.*/
 syntax KItem ::=  isAccessible (
                 AccessMode, //the method access mode
                 K,          //evaluates to ContextType - staticCT or instanceCT

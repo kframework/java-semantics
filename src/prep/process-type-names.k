@@ -33,7 +33,7 @@ rule [CompilationUnit]:
     </k>
     <globalPhase> ProcTypeNamesPhase </globalPhase>
 
-/*@ \subsection{Packages}*/
+/*@ \subsection{Package declarations}*/
 
 // 'PackageName([Ks])
 

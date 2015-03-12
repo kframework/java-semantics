@@ -2,7 +2,7 @@ module ELABORATION-ARRAYS
     imports CORE-SORTS
     imports ELABORATION-CORE
 
-//@ \subsection{Desugaring of array declarators with c-style dimensions and initializers}
+//@ \subsection{Desugaring of c-style array declarators}
 
 /*@ C-style array declaration
     Applied in both elaboration and execution phase
@@ -73,7 +73,7 @@ rule [Param-ArrayVarDecId-Discard]:
       ( 'ArrayVarDecId( X:Id,, [.KList] ) => X )
     )                                                   [structural, anywhere]
 
-/*@ \subsection{Elaboration of array-related expressions} */
+/*@ \subsection{Main array-related expressions} */
 
 rule [elabEnd-ArrayAccess]:
     elabEnd('ArrayAccess(cast(arrayOf T:Type, TargetExp:K),, IndexTE:K))

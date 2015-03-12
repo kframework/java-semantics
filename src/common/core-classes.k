@@ -92,18 +92,4 @@ rule [restoreAfterProcessLocalClass]:
 syntax KItem ::= getConsName ( ClassType )                               [function]
 rule getConsName(class ClassId:Id) => String2Id("$cons$" +String Id2String(ClassId))
 
-//@ \subsubsection{Computation terms produced during elaboration}
-
-/*@ These auxiliary terms functions that should be threated as expressions in the elaboration phase.
-*/
-syntax Exp ::= AuxTermExp
-syntax LHS ::= AuxTermExp
-/*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
-such as an anonymous class declaration. Is typed with the type of the expression.
-At runtime is rewritten into the statement, that should evaluate into .K, followed by the expression,
-that should evaluate to value.*/
-syntax AuxTermExp ::= stmtAndExp ( K, K )
-
-syntax AuxTermExp ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
-
 endmodule

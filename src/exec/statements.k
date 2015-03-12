@@ -6,7 +6,7 @@ module STATEMENTS
     imports METHOD-INVOKE // for initParams
     imports STMT-SYNTAX
 
-//@ \subsection{Call of main method}
+//@ \subsection{Call of the main method}
 
 //For now main class may only be placed in the default package.
 rule [ExecutionPhase-Start]:
@@ -41,7 +41,7 @@ rule [env-double-Discard]:
     (env(_) => .) ~> env(_)
         [structural]
 
-/*@ \subsection{Local Variable Declaration Statements} JLS \$14.4
+/*@ \subsection{Local Variable Declarations} JLS \$14.4
     Not only local but fields also*/
 
 rule [LocalVarDec]:
@@ -292,11 +292,7 @@ when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'labeledImpl
 
-/*@\subsection{Return} At method return, we have to check that the type
-of the returned
-value is a subtype of the expected return type.  Moreover, if that is
-the case, then we also up-cast the returned value to one of the
-expected type. */
+/*@\subsection{Return statement}*/
 
 //context 'Return('Some(HOLE))
 context return 'Some(HOLE);
@@ -320,7 +316,7 @@ rule [Return-MethodEnd]:
     <methodContext> _:Bag => MethContext </methodContext>
 
 /*@ \subsection{Throw statement}
-Exceptions are propagated now until a catch that can bind them is
+Exceptions are propagated until a catch compatible with them is
 encountered. */
 rule [Throw]:
     (. => checkCatch(subtype(typeOf(TV), T)))
@@ -393,9 +389,6 @@ syntax KItem ::= catchBlocks ( CatchClauses ) //arg - list of catchImpl
 */
 rule [catchBlocks-Discard]:
     catchBlocks(_) => .K
-
-/*@ \subsubsection{Execution of try-finally} JLS \$14.20.2
-*/
 
 rule [Try-Finally]:
     try TryS:K .CatchClauses finally FinallyS:K => TryS ~> finallyBlock(FinallyS)

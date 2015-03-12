@@ -4,12 +4,14 @@ module API-CORE
     imports ARRAYS        // for allocAndInitArray()
 
 /*@
+This module contains the minimal part of Java API required to perform console read/write operations,
+as well as a few other API functions mentioned in JLS.
+
 All the methods defined in this module through invokeImpl are native, their body is \verb|'NoMethodBody(\_)|, thus
   they cannot be matched by rules in METHOD-INVOKE.
 */
 
-/*@ This module contains the minimal part of Java API required to perform console read/write operations,
-as well as a few other API functions mentioned in JLS.*/
+//@ \subsection{\texttt{System.in}, \texttt{System.out}, \texttt{Scanner}}
 
 //@system-out-print-convert heat argument
 context
@@ -78,6 +80,8 @@ rule [readString]:
     <k> readString => Str :: classString ...</k>
     <in> ListItem(Str:String) => . ...</in>
 
+//@ \subsection{Class \texttt{Object}}
+
 /*@ \verb|object.getClass()|*/
 rule [object-getClass-on-object]:
     <k>
@@ -139,7 +143,7 @@ rule [object-hashCode]:
 when
     Class ==K classObject andBool Id2String(MethodName) ==String "hashCode"
 
-//@\subsection{String methods}
+//@ \subsection{Class \texttt{String}}
 
 //@ int \verb|String.length()|
 rule [String-length]:
@@ -256,7 +260,7 @@ when
 rule [storeCopy-discard]:
     storeCopy(_, _, 0) => .
 
-//@\subsection{Class literal --- <Class>.class}
+//@\subsection{Class literal operator --- \texttt{A.class}}
 
 /*@ We need to synchronize access to class literals to avoid instantiation of the came .class by multiple threads.
   This is done by the term temp in \verb|<classLiteralsMap>|. We cannot use 'Synchronized because it required an

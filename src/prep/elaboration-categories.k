@@ -1,5 +1,10 @@
 module ELABORATION-CATEGORIES
 
+/*@
+This module contains a few auxiliary functions governing what AST labels should be processed by default
+rules for elaboration, and which ones need custom rules.
+
+*/
 /*@ Java KLabels that are processed by default heating/cooling rules of elaboration.
 All KLabels that can be part of a code block during elaboration phase,
 except those members of customElabChildren or isElabNaked groups.

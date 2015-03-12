@@ -7,8 +7,6 @@ module ELABORATION-NEW-INSTANCE
     imports ELABORATION-METHOD-INVOKE   // for lookupMethod, methodLookupResult
     imports PROCESS-LOCAL-CLASSES //for localClassGetExtraArgs
 
-/*@ \subsubsection{Elaboration of 'NewInstance and 'QNewInstance} */
-
 /*@ elab('NewInstance()) is strict in arguments 2 and 3 --- class name and constrctor arguments.
     Constrctor arguments have to be heated if this class is anonymous.
 */

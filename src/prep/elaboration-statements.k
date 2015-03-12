@@ -4,6 +4,12 @@ module ELABORATION-STATEMENTS
     imports ELABORATION-METHOD-INVOKE //for lookupMethod
     imports PROCESS-LOCAL-CLASSES //for localClassGetExtraArgs
 
+/*@ Only statements that need custom treatment during elaboration are included here. Most statements are elaborated by
+generic rules.
+*/
+
+//@ \subsection{Statements for, block and catch}
+
 //@ Elaboration of 'KListWrap, 'Block, 'For or 'Catch --- nodes that may contain variable declarations.
 
 //K bug: support for KListWrap. This rule was replaced by a special section for elaboration of KListWrap.
@@ -42,7 +48,18 @@ rule [elabEnd-Block-For-Catch]:
 when
     isVarDecHolderLabel(KL) ==K true
 
-//@ Local var declarations desugaring
+/*@ \subsection{Elaboration of catch parameters}*/
+
+//@ Elaborate parameter type, if not elaborated yet. For catch clause.
+context  elab('Param(_:K,, HOLE,, _:Id))
+
+/*@Adds params to the \verb|<elabEnv>|. Used in both ELABORATION-TOP-BLOCKS and ELABORATION-BLOCKS
+*/
+rule [elab-Param]:
+    <k> elab('Param(K1:K,, T:Type,, X:Id)) => elabRes('Param(K1:K,, T:Type,, X:Id)) ...</k>
+    <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv>
+
+//@ \subsection{Local variable declarations}
 
 rule [elab-LocalVarDecStm-desugar]:
     elab('LocalVarDecStm('LocalVarDec(Ks:KList))
@@ -74,7 +91,7 @@ rule [elab-LocalVarDec]:
     </k>
     <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv>
 
-//@\subsection{Elaboration of SuperConstrInv, QSuperConstrInv, AltConstrInv}
+//@\subsection{Explicit constructor invocations --- \texttt{this()}, \texttt{super()}, \texttt{A.super()}}
 
 // 'SuperConstrInv( _:K,, [ Args:KList ] )
 //@ Desugaring unqualified superclass constructor invocation into a qualified one
