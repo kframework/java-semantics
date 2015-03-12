@@ -28,8 +28,9 @@ syntax StmtWithoutTrailing ::= Block
                              | TryStmt
                              | StackConsumerStmt
                              | SynchronizedStmt
+                             | ThrowStmt
 
-syntax StackConsumerStmt ::= ThrowStmt | ContinueStmt | BreakStmt | ReturnStmt
+syntax StackConsumerStmt ::= ContinueStmt | BreakStmt | ReturnStmt
 
 syntax IfThenElseStmt ::= "if" "(" Exp ")" Stmt "else" Stmt        [strict(1), klabel('If)]
 syntax IfThenStmt ::= "if" "(" Exp ")" Stmt                        [prefer, klabel('If)]

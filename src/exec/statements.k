@@ -198,17 +198,6 @@ rule [For]:
     => 'Block(stm(InitClause)
     ~> ifAux(TestExp, ('Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp,S)), .K)) [structural]
 
-//totest model check - the argument of 'return and 'Throw must be evaluated. Otherwise some side effects during
-// evaluation might be evaluated too late
-/*@ Stack consumer stm - Return, Throw, Break or Continue reaches tryFinallySL layer*/
-rule [StackConsumerStmt-in-TryFinally]:
-    StackCons:StackConsumerStmt ~> finallyBlock(FinallyS:K)
-    => FinallyS ~> StackCons
-
-rule [StackConsumerStmt-RestoreEnv]:
-    StackCons:StackConsumerStmt ~> env(Env:Map)
-    => env(Env:Map) ~> StackCons
-
 //@ \subsection{Break statement}
 
 /*K limitation: Looks like neither 'None nor 'Some can be expressed syntactically.
@@ -399,5 +388,22 @@ syntax KItem ::= finallyBlock ( K )      //arg - finally block
 
 rule [finallyBlock-NormalEnd]:
     finallyBlock(FinallyS:K) => FinallyS
+
+/*@ Only a throw with its value computed is stack consumer, not any throw. If we'll define any throw to be
+StackConsumerStmt, then we'll get rare problems with ExceptionInInitializerError.
+Other values for StackConsumerStmt are defined in the syntax.
+*/
+rule isStackConsumerStmt(throw _:TypedVal;) => true
+
+//totest model check - the argument of 'return and 'Throw must be evaluated. Otherwise some side effects during
+// evaluation might be evaluated too late
+/*@ Stack consumer stm - Return, Throw, Break or Continue reaches tryFinallySL layer*/
+rule [StackConsumerStmt-in-TryFinally]:
+    StackCons:StackConsumerStmt ~> finallyBlock(FinallyS:K)
+    => FinallyS ~> StackCons
+
+rule [StackConsumerStmt-RestoreEnv]:
+    StackCons:StackConsumerStmt ~> env(Env:Map)
+    => env(Env:Map) ~> StackCons
 
 endmodule
