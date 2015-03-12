@@ -101,6 +101,7 @@ rule [chainOfResponsibility-Result2]:
 syntax KItem ::= isElabKList ( KListWrap )                 [function]
 rule isElabKList([ElabKR:ElabKResult,, Ks:KList]) => isElabKList([Ks])
 rule isElabKList([.KList]) => true
+rule isElabKList([_]) => false [owise]
 
 //@ Elaborate parameter type, if not elaborated yet. For catch clause.
 context  elab('Param(_:K,, HOLE,, _:Id))
@@ -180,7 +181,9 @@ when
 
 //@ True if given KList has no terms of the form elabRes(...), false otherwise.
 syntax KItem ::= haveElabRes ( KListWrap )          [function]
-rule haveElabRes([_,, elabRes(_),, _]) => true
+rule haveElabRes([elabRes(_),, _]) => true
+rule haveElabRes([.KList]) => false
+rule haveElabRes([_,, Rest]) => haveElabRes([Rest]) [owise]
 
 //K bug additional rule required since we introduced KListWrap? todo (Shijiao)
 //rule haveElabRes([_,, KList2KLabel _,, elabRes(_),, _ (_),, _]) => true
@@ -239,6 +242,7 @@ when
 
 //@ The implementation is scattered across elaboration-related modules
 syntax KItem ::= customElabEnd ( KLabel )                       [function]
+rule customElabEnd(_) => false [owise]
 
 //@ Eliminate stmtAndExp if the first argument is empty, otherwise keep it for execution phase.
 rule elabEnd( stmtAndExp(Stmt:K, cast(T:Type, Exp:K)) )
