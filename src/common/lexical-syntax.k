@@ -1,16 +1,16 @@
 module LEXICAL-SYNTAX
 
-//@ \paragraph{Identifiers}
+//@ \subsubsection{Identifiers}
 syntax Id ::= ID [klabel('Id)]
 syntax ID ::= Token{[A-Za-z\_\$][A-Za-z0-9\_\$]*}   [onlyLabel]
 
-//@ \paragraph{LineTerminators}
+//@ \subsubsection{LineTerminators}
 
 syntax LineTerminator ::= Token{[\r]}               [onlyLabel]
                         | Token{[\n]}               [onlyLabel]
                         | Token{[\r][\n]}           [onlyLabel]
 
-//@ \paragraph{Modifiers}
+//@ \subsubsection{Modifiers}
 syntax Public ::= "public"                          [klabel('Public)]
 syntax Private ::= "private"                        [klabel('Private)]
 syntax Protected ::= "protected"                    [klabel('Protected)]

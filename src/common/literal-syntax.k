@@ -2,13 +2,13 @@ module LITERAL-SYNTAX
     imports LEXICAL-SYNTAX
     imports LIST-SYNTAX
 
-//@ \paragraph{BooleanLiterals}
+//@ \subsubsection{BooleanLiterals}
 syntax BoolLiteral ::= Boolean                          [klabel('Bool)]
 syntax Boolean ::= "true"                               [onlyLabel, klabel('True)]
 syntax Boolean ::= "false"                              [onlyLabel, klabel('False)]
 
 
-//@ \paragraph{CharacterLiterals}
+//@ \subsubsection{CharacterLiterals}
 
 syntax CharContent ::= SingleChar                       [klabel('Single)]
                      | UnicodeEscape
@@ -17,7 +17,7 @@ syntax CharContent ::= SingleChar                       [klabel('Single)]
 syntax SingleChar
 syntax CharLiteral //::= "'" CharContent "'"  [klabel('Char)]
 
-//@ \paragraph{EscapeSequences}
+//@ \subsubsection{EscapeSequences}
 syntax EscapeSeq ::= OctaEscape | NamedEscape
 
 syntax NamedEscape ::= Token{"\\" [btnfr\"\'\\]}         [onlyLabel, klabel('NamedEscape)]
@@ -27,11 +27,11 @@ syntax OctaEscape ::= Token{"\\" [0-7]}                  [onlyLabel, klabel('Oct
                     | Token{"\\" [0-3][0-7][0-7]}        [onlyLabel, klabel('OctaEscape3)]
 
 
-//@ \paragraph{FloatingPointLiterals}
+//@ \subsubsection{FloatingPointLiterals}
 syntax FloatLiteral ::= Float                            [klabel('Float)]
 
 
-//@ \paragraph{IntegerLiterals}
+//@ \subsubsection{IntegerLiterals}
 syntax DeciLiteral ::= Token{[1-9][0-9]* [lL]?}         [onlyLabel]
 syntax HexaLiteral ::= Token{[0][xX][0-9a-fA-F]+ [lL]?} [onlyLabel]
 syntax OctaLiteral ::= Token{[0][0-7]+ [lL]?}           [onlyLabel]
@@ -41,11 +41,11 @@ syntax IntLiteral ::= DeciLiteral [klabel('Deci)]
                     | OctaLiteral [klabel('Octa)]
 
 
-//@ \paragraph{NullLiteral}
+//@ \subsubsection{NullLiteral}
 syntax NullLiteral ::= "null"     [klabel('Null)]
 
 
-//@ \paragraph{StringLiterals}
+//@ \subsubsection{StringLiterals}
 syntax StringLiteral ::= "\"" StringPartList "\""       [klabel('String)]
 
 syntax StringPart ::= StringChars                       [klabel('Chars)]

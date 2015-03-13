@@ -1,17 +1,17 @@
 module STMT-SYNTAX
     imports CLASS-SYNTAX
 
-//@ \paragraph{Blocks}
+//@ \subsubsection{Blocks}
 syntax BlockStmt ::= Stmt | LocalVarDecStmt | ClassDec  [klabel('ClassDecStm)]
 syntax Block ::= "{" K "}"                   [klabel('Block)] //was BlockStmList before
 
 
-//@ \paragraph{LocalVariableDeclaraions}
+//@ \subsubsection{LocalVariableDeclaraions}
 syntax LocalVarDecStmt ::= LocalVarDec ";"              [prefer, klabel('LocalVarDecStm)]
 syntax LocalVarDec ::= AnnoVarModList Type VarDecList   [prefer, klabel('LocalVarDec)]
 
 
-//@ \paragraph{Statements}
+//@ \subsubsection{Statements}
 syntax Stmt ::= StmtWithoutTrailing
               | LabeledStmt
               | IfThenElseStmt

@@ -1,7 +1,7 @@
 module CLASS-SYNTAX
     imports EXP-SYNTAX
 
-//@ \paragraph{ClassDeclarations}
+//@ \subsubsection{ClassDeclarations}
 syntax ClassDecHead ::=
     AnnoClassModList "class" Id OptionalTypeParams OptionalSuper OptionalInterfaces
                                                                         [klabel('ClassDecHead)]
@@ -34,7 +34,7 @@ syntax InterfaceDec
 
 syntax SemiColon ::= ";"                                                [klabel('SemiColon)]
 
-//@ \paragraph{ConstructorDeclarations}
+//@ \subsubsection{ConstructorDeclarations}
 syntax ConstrHead ::=
     AnnoConstrModList OptionalTypeParams Type Id "(" Params ")" OptionalThrows
                                                                         [klabel('ConstrDecHead)]
@@ -53,7 +53,7 @@ syntax ConstrMod ::= Public
 syntax AnnoConstrMod ::= Anno | ConstrMod
 
 
-//@ \paragraph{EnumDeclarations}
+//@ \subsubsection{EnumDeclarations}
 syntax EnumDecHead ::= AnnoClassModList "enum" Id OptionalInterfaces    [klabel('EnumDecHead)]
 /*
 Java allows , at the end of List.
@@ -71,7 +71,7 @@ syntax EnumConstArgs ::= "(" Exps ")"                                   [bracket
 syntax EnumBodyDecs ::= ";" ClassBodyDecList                            [klabel('EnumBodyDecs)]
 
 
-//@ \paragraph{FieldDeclarations}
+//@ \subsubsection{FieldDeclarations}
 syntax FieldDec ::= AnnoFieldModList Type VarDecList ";"                [klabel('FieldDec)]
 
 syntax VarDec ::= VarDecId                                              [klabel('VarDec)]
@@ -92,7 +92,7 @@ syntax FieldMod ::= Public
 syntax AnnoFieldMod ::= Anno | FieldMod
 
 
-//@ \paragraph{MethodDeclarations}
+//@ \subsubsection{MethodDeclarations}
 syntax MethodDecHead ::=
     AnnoMethodModList OptionalTypeParams Type Id "(" Params ")" OptionalThrows
                                                                         [klabel('MethodDecHead)]
@@ -123,11 +123,11 @@ syntax VarMod ::= Final
 syntax AnnoVarMod ::= Anno | VarMod
 
 
-//@ \paragraph{InstanceInitializers}
+//@ \subsubsection{InstanceInitializers}
 syntax InstanceInit ::= Block                                           [klabel('InstanceInit)]
 
 
-//@ \paragraph{StaticInitializers}
+//@ \subsubsection{StaticInitializers}
 syntax StaticInit ::= "static" Block                                    [klabel('StaticInit)]
 syntax Block
 

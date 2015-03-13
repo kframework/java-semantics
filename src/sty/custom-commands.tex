@@ -63,5 +63,21 @@
 
 % Environment "kdefinition" have effect only in poster style, thus in math style may be safely deleted.
 
-%Disable text justification, will eliminate overfulls inside text.
-\raggedright
+
+%%% Rendering the paragraphs without overfull hbox-es.
+
+% v1. \raggedright, no parskip, vspace between paragraphs.
+%Terrible solution. Both wanted and unwanted vertical spaces are increased. Empty pages appear.
+%Document size increased by from 214 to 234 pages!
+%\usepackage{parskip} %with \raggedright
+
+% v2. \raggedright + parindent. Zero bad boxes.
+%\raggedright
+
+% Better than without. Just paragraph indentation.
+%\setlength{\parindent}{2em}
+
+% v3. Best solution: \sloppy. Is enough for 0 bad boxes.
+% Source: http://tex.stackexchange.com/questions/10377/texttt-overfull-hbox-problem
+\setlength{\parindent}{2em}
+\sloppy

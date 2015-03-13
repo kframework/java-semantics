@@ -319,7 +319,7 @@ An instance method derivedM declared in a class Derived overrides another method
 The transitive rule for overriding relation (2b) is required specifically for package access mode. Consider the following example:
 \end{markdown}
 
-\begin{minipage}{\textwidth}
+\begin{minipage}{\textwidth-\parindent}
 \begin{lstlisting}
 package a;
 public class A {

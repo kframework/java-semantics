@@ -8,7 +8,7 @@ syntax Type ::= PrimType
 since now "void" is Type, there is no need for another syntax of ResultType.*/
               | "void"                                  [klabel('Void)]
 
-//@ \paragraph{ParameterizedTypes}
+//@ \subsubsection{ParameterizedTypes}
 syntax TypeArgs ::= "<" ActualTypeArgList ">"           [klabel('TypeArgs)]
 
 syntax ActualTypeArg ::= Type
@@ -18,7 +18,7 @@ syntax WildcardBound ::= "extends" RefType              [klabel('WildcardUpperBo
                        | "super"   RefType              [klabel('WildcardLowerBound)]
 
 
-//@ \paragraph{PrimitiveTypes}
+//@ \subsubsection{PrimitiveTypes}
 syntax IntOrLongType ::= "int"                          [klabel('Int)]
                        | "long"                         [klabel('Long)]
 syntax IntType ::= "byte"                               [klabel('Byte)]
@@ -33,7 +33,7 @@ syntax NumericType ::= IntType | FloatType
 syntax PrimType ::= NumericType | "bool"                [klabel('Boolean)] //sdf "boolean"
 
 
-//@ \paragraph{ReferenceTypes}
+//@ \subsubsection{ReferenceTypes}
 
 syntax ClassOrInterfaceType ::= TypeDecSpec OptionalTypeArgs    [klabel('ClassOrInterfaceType)]
 
@@ -50,7 +50,7 @@ syntax ArrayType ::= Type "[" "]"                               [strict, klabel(
 syntax RefType ::= ClassOrInterfaceType | ArrayType
 
 
-//@ \paragraph{TypeVariables}
+//@ \subsubsection{TypeVariables}
 syntax TypeVarId ::= Id
 
 syntax TypeBound ::= "extends" ClassOrInterfaceTypeList         [klabel('TypeBound)]

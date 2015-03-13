@@ -4,7 +4,7 @@ module EXP-SYNTAX
 syntax Exp ::= StmtExp
 syntax StmtExp ::= PrefixPostfixExp | AssignExp | MethodInvokeExp | ClassInstanceCreationExp
 
-//@ \paragraph{MethodInvocation}
+//@ \subsubsection{MethodInvocation}
 syntax MethodInvokeExp ::= MethodSpec "(" Exps ")"                      [klabel('Invoke)]
 syntax MethodSpec ::= MethodName                                        [klabel('Method)]
                     | Exp "." OptionalTypeArgs Id                       [klabel('Method)]
@@ -13,7 +13,7 @@ syntax MethodSpec ::= MethodName                                        [klabel(
                     | AmbName "." TypeArgs Id                           [klabel('GenericMethod)]
 
 
-//@ \paragraph{ClassInstanceCreation}
+//@ \subsubsection{ClassInstanceCreation}
 syntax ClassInstanceCreationExp ::=
     "new" OptionalTypeArgs ClassOrInterfaceType "(" Exps ")" OptionalClassBody
                                                                         [klabel('NewInstance)]
@@ -22,7 +22,7 @@ syntax ClassInstanceCreationExp ::=
                                                                         [klabel('QNewInstance)]
 
 
-//@ \paragraph{AssignmentOperators}
+//@ \subsubsection{AssignmentOperators}
 syntax LHS ::= ExprName | FieldAccess | ArrayAccess
 syntax Exp ::= LHS
 
@@ -42,7 +42,7 @@ syntax CompoundAssignExp ::=  LHS "*=" Exp                             [klabel('
                             | LHS "|=" Exp                             [klabel('AssignOr)]
 
 
-//@ \paragraph{UnaryOperators}
+//@ \subsubsection{UnaryOperators}
 syntax Exp ::= "(" PrimType ")" Exp                                    [klabel('CastPrim)]
 syntax Exp ::= "(" RefType ")" Exp                                     [klabel('CastRef)]
 
@@ -55,12 +55,12 @@ syntax PrefixPostfixExp ::= "++" Exp    [klabel('PreIncr)]
                           | "--" Exp    [klabel('PreDecr)]
 
 
-//@ \paragraph{Postfix}
+//@ \subsubsection{Postfix}
 syntax PrefixPostfixExp ::= Exp "++"    [klabel('PostIncr)]
                           | Exp "--"    [klabel('PostDecr)]
 
 
-//@ \paragraph{BinaryOperators}
+//@ \subsubsection{BinaryOperators}
 syntax Exp ::= Exp "*" Exp      [seqstrict, klabel('Mul)]
 		     | Exp "/" Exp      [seqstrict, klabel('Div)]
 		     | Exp "%" Exp      [seqstrict, klabel('Remain)]
@@ -86,18 +86,18 @@ syntax Exp ::= Exp "?" Exp ":" Exp                      [klabel('Cond)]
 syntax Exp ::= Exp "instanceof" RefType                 [strict, klabel('InstanceOf)]
 
 
-//@ \paragraph{FieldAccess}
+//@ \subsubsection{FieldAccess}
 syntax FieldAccess ::= Exp "." Id                       [klabel('Field)]
                      | "super" "." Id                   [klabel('SuperField)]
                      | TypeName "." "super" "." Id      [klabel('QSuperField)]
 
 
-//@ \paragraph{ArrayAccess}
+//@ \subsubsection{ArrayAccess}
 //syntax ArraySubscript ::= "[" Exp "]"                 [bracket]
 syntax ArrayAccess ::= Exp "[" Exp "]"                  [seqstrict, klabel('ArrayAccess)]
 
 
-//@ \paragraph{ArrayCreation}
+//@ \subsubsection{ArrayCreation}
 /*  Either 'NewArray( T:ElemType,, ['Dim(N1),,'Dim('N2),, ...],, [...,, 'Dim(.KList),, ...] )
     Or     'NewArray( T:ElemType,, [...,, 'Dim(.KList),, ...],, 'ArrayInit(_) )
 */
@@ -115,12 +115,12 @@ syntax Dim ::= "[" "]"                                              [klabel('Dim
 syntax DimExp ::= "[" Exp "]"                                       [strict, hybrid, klabel('Dim)]
 
 
-//@ \paragraph{ArrayInitializers}
+//@ \subsubsection{ArrayInitializers}
 syntax ArrayInit ::= "{" VarInits "}" [klabel('ArrayInit)]
 syntax ArrayInit ::= "{" VarInits "," "}" [klabel('ArrayInit)]
 
 
-//@ \paragraph{Primary}
+//@ \subsubsection{Primary}
 syntax Exp ::= Literal                                              [klabel('Lit)]
 syntax Literal ::= IntLiteral
                  | FloatLiteral
