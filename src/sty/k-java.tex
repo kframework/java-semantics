@@ -14,22 +14,13 @@
 
 \tableofcontents
 
-\chapter{K-Java Common modules}
-
-\input{../.modules/core-sorts.tex}
-\input{../.modules/core-functions.tex}
-\input{../.modules/core-classes.tex}
-\input{../.modules/primitive-types.tex}
-\input{../.modules/subtyping.tex}
-\input{../.modules/aux-strings.tex}
-
 \chapter{K-Java Dynamic semantics}
 
 \input{../.modules/configuration-exec.tex}
-\input{../.modules/core-exec.tex}
 \input{../.modules/expressions.tex}
 \input{../.modules/expressions-classes.tex}
 \input{../.modules/statements.tex}
+\input{../.modules/core-exec.tex}
 \input{../.modules/var-lookup.tex}
 \input{../.modules/arrays.tex}
 \input{../.modules/new-instance.tex}
@@ -43,15 +34,24 @@
 \input{../.modules/to-string.tex}
 \input{../.modules/syntax-conversions.tex}
 
+\chapter{K-Java Common modules}
+
+\input{../.modules/core-sorts.tex}
+\input{../.modules/core-functions.tex}
+\input{../.modules/core-classes.tex}
+\input{../.modules/primitive-types.tex}
+\input{../.modules/subtyping.tex}
+\input{../.modules/aux-strings.tex}
+
 \chapter{K-Java Static semantics}
 
 \input{../.modules/configuration-prep.tex}
-\input{../.modules/core-preprocessing.tex}
 \input{../.modules/process-type-names.tex}
 \input{../.modules/process-comp-units.tex}
 \input{../.modules/process-imports.tex}
 \input{../.modules/process-class-decs.tex}
 \input{../.modules/process-class-members.tex}
+\input{../.modules/core-preprocessing.tex}
 \input{../.modules/elaboration-core.tex}
 \input{../.modules/elaboration-top-blocks.tex}
 \input{../.modules/elaboration-statements.tex}
