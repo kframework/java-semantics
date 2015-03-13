@@ -119,7 +119,7 @@ rule [Switch]:
 context switchImpl( _,[ 'SwitchGroup(['Case(HOLE),,_:KList],,_),, _:KList ], _)
 /*@ The type associated to V and V2 is not important for match, only the value.
 JLS3 \$14.11, page 377: Every case constant expression associated with
-a switch statement must be assignable (�5.2) to the type of the switch Expression.*/
+a switch statement must be assignable (\$5.2) to the type of the switch Expression.*/
 rule [switchImpl-CaseNotMatch]:
     switchImpl(V:RawVal :: _,[ 'SwitchGroup([ ( 'Case(V2:RawVal :: _) => .KList ),, _:KList ],,_),, _],_)
     when V =/=K V2
