@@ -226,10 +226,10 @@ the only difference is the addition of the types.  */
 */
 
 //resolving the return type
-context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _),, _)
+context 'MethodDec('MethodDecHead(_,, _,, HOLE,, _,, _,, _),, _)
 
 //Resolve parameter types
-context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, HOLE,, _:K),, _:K) [result(Params)]
+context 'MethodDec('MethodDecHead(_,, _,, _:Type,, _:Id,, HOLE,, _),, _) [result(Params)]
 
 rule [MethodDec]:
     <k>
@@ -350,7 +350,7 @@ when
     Class ==K classObject
 
 //Resolve parameter types
-context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, HOLE,, _),, _:K)   [result(Params)]
+context 'ConstrDec('ConstrDecHead(_,, _,, _:Id,, HOLE,, _),, _)   [result(Params)]
 
 rule [ConstrDec]:
     <k>
