@@ -65,7 +65,8 @@ syntax KItem ::= "CHOLE"
 //@Elaborates the given statement/expression. The first step of elaboration.
 syntax KItem ::= elab ( K )
 
-//@ Wraps the elaboration result. Since elaboration may happen at both ElaborationPhase and ExecutionPhase, it cannot be KResult. Actually it is not KResult for HOLE, but is for CHOLE.
+/*@ Wraps the elaboration result. Since elaboration may happen at both ElaborationPhase and
+ExecutionPhase, it cannot be KResult. Actually it is not KResult for HOLE, but is for CHOLE.*/
 syntax ElabKResult ::= elabRes ( K )
 rule isElabKResult(KR:KResult) => true
 
@@ -128,6 +129,7 @@ In order to expose incorrect nondeterminism we need to model-check a program tha
 
 Labels that are "naked" should be heated in their pure form. Other terms should be heated wrapped into elab().
 */
+//todo A matching
 rule [elab-heat-default]:
     (. => #if isElabNaked(K) ==K true
             #then K
@@ -163,30 +165,28 @@ syntax KItem ::= customElabHeating ( KLabel, KListWrap )          [function]
   When the default algorithm is not appropriate, the respective term should be in the cathegory customElabChildren
 */
 syntax KItem ::= elabDispose ( K )
+               | elabDispose ( K, K)
+//due to the lack of associate matching, we need another argument to enable looping and hold the result
 
 /*@ This rule is universal for all forms of terms, both instructions and statements.
+but KL doesn't include KListWrap because of k bug, same rules for KListWrap can be found in the last subsection.
 */
 rule [elab-to-elabDispose]:
-    elab(KL:KLabel(ElabResL:KList)) => elabDispose(KL(ElabResL))
+    elab(KL:KLabel(ElabResL:KList)) => elabDispose(KL(ElabResL), KL(.KList))
 when
     isElabKList([ElabResL]) ==K true
 
-rule [elabDispose-process]:
-    elabDispose(KL:KLabel(_,, (elabRes(K:K) => K),, _))
+rule [elabDispose-process-strip]:
+    elabDispose(KL:KLabel((elabRes(K) => .KList),, _:KList), KL(_:KList,, (.KList => K)))
+when KL =/=KLabel 'KListWrap
+
+rule [elabDispose-process-keep]:
+    elabDispose(KL:KLabel((K:K => .KList),, _:KList), KL(_:KList,, (.KList => K)))
+when
+    getKLabel(K) =/=KLabel 'elabRes andBool KL =/=KLabel 'KListWrap
 
 rule [elabDispose-to-elabEnd]:
-    elabDispose(KL:KLabel(Ks:KList)) => elabEnd(KL(Ks))
-when
-    notBool haveElabRes([Ks]) ==K true
-
-//@ True if given KList has no terms of the form elabRes(...), false otherwise.
-syntax KItem ::= haveElabRes ( KListWrap )          [function]
-rule haveElabRes([elabRes(_),, _]) => true
-rule haveElabRes([.KList]) => false
-rule haveElabRes([_,, Rest]) => haveElabRes([Rest]) [owise]
-
-//K bug additional rule required since we introduced KListWrap? todo (Shijiao)
-//rule haveElabRes([_,, KList2KLabel _,, elabRes(_),, _ (_),, _]) => true
+    elabDispose(KL:KLabel(.KList), KL(Ks)) => elabEnd(KL(Ks)) when KL =/=KLabel 'KListWrap
 
 /*@ The 3rd elaboration-phase wrapper for expressions. Represents the case when children are completely elaborated and
 unwrapped from elabRes(), but root node might not be elaborated yet. The implementation is scattered across all modules
@@ -267,20 +267,19 @@ when
 rule [elab-cool-KListWrap]:
     (ElabK:ElabKResult => .) ~> elab([_,, (CHOLE => ElabK),, _])
 
+
 rule [elab-to-elabDispose-KListWrap]:
-    elab([K1:K,,ElabResL:KList]) => elabDispose([K1,,ElabResL])
+    elab([ElabResL:KList]) => elabDispose([ElabResL], [.KList])
 when
-    isElabKList([K1,,ElabResL]) ==K true
+    isElabKList([ElabResL]) ==K true
 
-rule [elabDispose-process-KListWrap]:
-    elabDispose([_,, (elabRes(K:K) => K),, _])
+rule [elabDispose-process-strip-KListWrap]:
+    elabDispose([(elabRes(K) => .KList),, _:KList], [_:KList,,(.KList => K)])
 
-rule [elabDispose-to-elabEnd-KListWrap]:
-    elabDispose([K1:K,,Ks:KList]) => elabRes([K1,,Ks])
-when
-    notBool haveElabRes([Ks]) ==K true
+rule [elabDispose-process-keep-KListWrap]:
+    elabDispose([(K:K => .KList),, _:KList], [_:KList,,(.KList => K)]) when getKLabel(K) =/=KLabel 'elabRes
 
-rule [elab-to-elabRes-KListWrap-empty]:
-    elab([.KList]) => elabRes([.KList])
+rule [elabDispose-to-elabRes-KListWrap]:
+    elabDispose([.KList], K:K) => elabRes(K)
 
 endmodule

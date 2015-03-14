@@ -20,6 +20,7 @@ rule isBoolResultBinaryExpLabel('Lt) => true
 rule isBoolResultBinaryExpLabel('Gt) => true
 rule isBoolResultBinaryExpLabel('LtEq) => true
 rule isBoolResultBinaryExpLabel('GtEq) => true
+rule isBoolResultBinaryExpLabel(_) => false [owise]
 
 rule [elabEnd-BoolResultBinaryExp]:
     elabEnd(KL:KLabel(TE1:K,, TE2:K)) => elabRes(cast(bool, KL(TE1,,TE2)))
