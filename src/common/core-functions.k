@@ -66,7 +66,7 @@ rule Val:RawVal => toTypedVal(Val)                                              
 
     Have to be [function] for LTL
 */
-syntax KItem ::= toTypedVal ( RawVal )                                                  [function]
+syntax KItem ::= toTypedVal ( RawVal )                                               [function]
 rule toTypedVal(I:Int) => I :: int                                                  [structural]
 rule toTypedVal(B:Bool) => B :: bool                                                [structural]
 rule toTypedVal(Str:String) => Str :: classString                                   [structural]
@@ -75,6 +75,7 @@ rule toTypedVal( objectRef(OL:Int, Class:ClassType) )
     => objectRef(OL:Int, Class:ClassType) :: Class                                  [structural]
 
 rule toTypedVal(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T           [structural]
+rule toTypedVal(_) => .K [owise] //this case should never happen for valid java programs
 
 //@ Converts a KList of terms to Types. Uses typeOf underneath.
 syntax KItem ::=  getTypes (

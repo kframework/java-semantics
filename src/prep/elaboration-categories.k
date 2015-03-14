@@ -228,6 +228,7 @@ rule isElabNaked('PackageName(_)) => true
 rule isElabNaked('PackageOrTypeName(_)) => true
 rule isElabNaked('Id(_)) => true
 rule isElabNaked('Lit(InnerKL:KLabel(_))) => InnerKL =/=KLabel 'Class
+rule isElabNaked(_) => false [owise]
 
 /*@ Terms that should use custom elaboration rules. For those terms:
     - They will not be automatically heated from their parents into the elab() state.
