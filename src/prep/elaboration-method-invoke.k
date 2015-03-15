@@ -53,7 +53,6 @@ rule [elabEnd-findQualifierForName]:
 syntax KItem ::= containsName ( Map , Id )                      [function]
                | containsName ( Signature, Map , Id )           [function]
 
-//todo mapItem/solution
 rule containsName((S:Signature |-> _) Remains:Map, Name:Id) => containsName(S, Remains, Name)
 rule containsName(sig(Name,_), _, Name:Id) => true
 rule containsName(sig(Name1:Id,_), Remains:Map, Name:Id) => containsName(Remains, Name) when Name1 =/=K Name
@@ -153,7 +152,8 @@ rule lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, [ArgExps:
   term to be heated. This is not a final KResult in its surrounding context. Basically, this term is used to cheat
   K heating rules.
 */
-syntax KResult ::= "tempKResult"
+syntax TmpKR ::= "tempKResult"
+syntax KResult ::= TmpKR
 
 //All cases
 rule [lookupMethod-to-lookupSignature]:
@@ -261,33 +261,70 @@ syntax KItem ::=  lookupSignature (
               )
               [strict(2,5)]
 
+syntax KItem ::=  lookupSignature (
+                Id,       // MethodName
+                K,        // Computes into Types - argument types
+                Signature,
+                ClassType,
+                Map,        // methods environment - Map[sig -> Class]
+                Bool,     // IsQ - whether the original method call was qualified
+                MethodRef, // The best signature found so far
+                              // or noValue if none found
+                ClassType // QualClass - target type.
+              )
+
+rule [lookupSignature-Expand]:
+        lookupSignature(
+                       MethodName:Id,
+                       CallTs:Types,
+                       (Key |-> Value) M:Map,
+                       IsQ,
+                       OldMethodRef,
+                       QualClass)
+        => lookupSignature(
+                             MethodName,
+                             CallTs,
+                             Key, Value,
+                             M,
+                             IsQ,
+                             OldMethodRef,
+                             QualClass)
+
 rule [lookupSignature-Main]:
     <k>
       lookupSignature(
         MethodName:Id,
         CallTs:Types,
-        (sig(MethodName, SigTs:Types) |-> NewDecClass:ClassType => .Map) _:Map,
+        sig(MethodName, SigTs:Types), NewDecClass:ClassType,
+        M:Map,
         IsQ:Bool,
-        OldMethodRef:MethodRef
-        => ifAux(
-            andAux(
-              andAux(
-                subtypeList(CallTs, SigTs),
-                #if OldMethodRef ==K noMethodRef
-                  #then true
-
-                  //An aux function here is required because OldMethodRef could be noMethodRef as well,
-                  //for which there are no arg types
-                  #else subtypeList(SigTs, getMethodRefArgTypes(OldMethodRef))
-                #fi
-              ),
-              isAccessible( NewAccMode, NewCT, NewDecClass, IsQ, QualClass )
-            ),
-            methodRef(sig(MethodName, SigTs), NewDecClass),
-            OldMethodRef
-          ),
+        OldMethodRef:MethodRef,
         QualClass:ClassType
-      )
+      ) =>
+      lookupSignature(
+              MethodName,
+              CallTs,
+              M,
+              IsQ,
+              (ifAux(
+                  andAux(
+                    andAux(
+                      subtypeList(CallTs, SigTs),
+                      #if OldMethodRef ==K noMethodRef
+                        #then true
+
+                        //An aux function here is required because OldMethodRef could be noMethodRef as well,
+                        //for which there are no arg types
+                        #else subtypeList(SigTs, getMethodRefArgTypes(OldMethodRef))
+                      #fi
+                    ),
+                    isAccessible( NewAccMode, NewCT, NewDecClass, IsQ, QualClass )
+                  ),
+                  methodRef(sig(MethodName, SigTs), NewDecClass),
+                  OldMethodRef
+                )),
+              QualClass
+            )
       ...
     </k>
     <classType> NewDecClass </classType>
@@ -297,14 +334,25 @@ rule [lookupSignature-Main]:
 
 syntax KItem ::= getMethodRefArgTypes ( MethodRef )   [function]
 rule getMethodRefArgTypes( methodRef(sig(_, Ts:Types), _) ) => Ts
-//todo mapItem/solution
+
 rule [lookupSignature-SigDiscard]:
     lookupSignature(
-      MethodName:Id,
-      _,
-      (M:Map => mapItemsByPartialKey(M,MethodName)),
-      _,_,_
-    )
+            MethodName:Id,
+            CallTs:Types,
+            sig(Name:Id, _), _,
+            M:Map,
+            IsQ:Bool,
+            OldMethodRef:MethodRef,
+            QualClass:ClassType
+          ) =>
+          lookupSignature(
+                  MethodName,
+                  CallTs,
+                  M,
+                  IsQ,
+                  OldMethodRef,
+                  QualClass)
+    when Name =/=K MethodName
 
 rule [lookupSignature-End]:
     lookupSignature(_,_, .Map,_, MethodRef:MethodRef, _) => MethodRef

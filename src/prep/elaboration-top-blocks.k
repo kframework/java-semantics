@@ -40,12 +40,14 @@ rule [elaborateBlocks-discard]:
 When a class elaboration starts, the map is initialized with the contet of <methods> - all the methods accessible in
 the current class. Only methods declared in the current class are elaborated. The rest are discarded from the map.
 */
-syntax KItem ::= elabMethods ( Map )
+syntax KItem ::= elabMethods ( Map ) | elabMethods (Signature, ClassType, Map)
+
+rule [elabMethods-Expand]:
+    elabMethods( Key:Signature |-> Value:ClassType M:Map) => elabMethods(Key, Value, M)
 
 rule [elabMethods-Heat-MethodParams]:
     <k>
-      (. => addElabEnv ~> elab(ParamsList))
-      ~> elabMethods( (Sig:Signature |-> Class => .Map) _)
+      (elabMethods(Sig:Signature, Class, M:Map) => addElabEnv ~> elab(ParamsList) ~> elabMethods(M))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -102,10 +104,12 @@ rule [elabMethods-Cool-Constructor]:
     (<methodConstrFirstLine> FirstLine:K </methodConstrFirstLine> => .Bag)
     <methodBody> CHOLE => [FirstLine,, Body] </methodBody>
     <methodMetaType> constructorMMT => methodMMT </methodMetaType>
-//todo mapItemByValue/solution
+
 rule [elabMethods-discard-method]:
-    <k> elabMethods(M:Map => M -Map removeMapItemsByValue(M,Class) ) ... </k>
+    <k> elabMethods(_, DeclClass:ClassType, M:Map) => elabMethods(M) ... </k>
     <crntClass> Class:ClassType </crntClass>
+when
+    DeclClass =/=K Class
 
 rule [elabMethods-End]:
     elabMethods( .Map ) => .

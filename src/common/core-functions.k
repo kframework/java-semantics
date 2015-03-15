@@ -140,7 +140,7 @@ syntax KItem ::=  mapUnion (
 rule mapUnion(mapWrap( M1:Map => M1[K1 <- K2] ), mapWrap( _:Map (K1:K |-> K2:K => .Map) ))
 rule mapUnion(mapWrap(M1:Map), mapWrap(.Map)) => mapWrap(M1)
 
-//@ Substracts from the given map the value given (match is on the value)
+//@ Substracts from the given map the value given (match is on the value), may cause infinite loop if not used in the right place
 syntax KItem ::= removeMapItemsByValue (Map,K)             [function]
                | removeMapItemsByValue (Map,K,Map)         [function]
                | removeMapItemsByValue (K,K,Map,K,Map)     [function]
@@ -152,6 +152,7 @@ rule removeMapItemsByValue(Key:K, Value:K, Remains:Map, V:K, M:Map) => removeMap
 when Value =/=K V
 rule removeMapItemsByValue(.Map, V:K, M:Map) => M
 
+//@ Find map items by partial key, not used now
 syntax KItem ::= mapItemsByPartialKey (Map,K)             [function]
                | mapItemsByPartialKey (Map,K,Map)         [function]
                | mapItemsByPartialKey (K,K,Map,K,Map)     [function]

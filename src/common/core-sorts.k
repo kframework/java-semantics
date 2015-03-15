@@ -92,7 +92,6 @@ syntax StaticInitStatus ::= "StaticUninitialized"
 syntax Signature ::= sig ( Id, Types )
 syntax KResult ::= Signature
 
-
 /*@ The member accessibility context of the current method - either static or instance.*/
 syntax ContextType ::=  "staticCT"    [latex(\terminal{static})]
                       | "instanceCT"  [latex(\terminal{instance})]

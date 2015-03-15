@@ -228,6 +228,7 @@ rule isElabNaked('PackageName(_)) => true
 rule isElabNaked('PackageOrTypeName(_)) => true
 rule isElabNaked('Id(_)) => true
 rule isElabNaked('Lit(InnerKL:KLabel(_))) => InnerKL =/=KLabel 'Class
+rule isElabNaked(_:Id) => true //e.g. #token("Id", "XXX")(.KList)
 rule isElabNaked(_) => false [owise]
 
 /*@ Terms that should use custom elaboration rules. For those terms:
