@@ -129,21 +129,48 @@ In order to expose incorrect nondeterminism we need to model-check a program tha
 
 Labels that are "naked" should be heated in their pure form. Other terms should be heated wrapped into elab().
 */
-//todo A matching
-rule [elab-heat-default]:
-    (. => #if isElabNaked(K) ==K true
-            #then K
-            #else elab(K)
-          #fi
-    )
-    ~> elab(KL:KLabel(HeadKs:KList,, (K:K => CHOLE),, _:KList))
-when
-    (defaultElabHeating(KL) ==K true orBool customElabHeating(KL, [HeadKs,,K]) ==K true)
-    andBool notBool isElabKResult(K) ==K true
-        [transition-strictness]
+//todo A matching case 2
+//rule [elab-heat-default]:
+//    (. => #if isElabNaked(K) ==K true
+//            #then K
+//            #else elab(K)
+//          #fi
+//    )
+//    ~> elab(KL:KLabel(HeadKs:KList,, (K:K => CHOLE),, _:KList))
+//when
+//    (defaultElabHeating(KL) ==K true orBool customElabHeating(KL, [HeadKs,,K]) ==K true)
+//    andBool notBool isElabKResult(K) ==K true
+//        [transition-strictness]
+
+rule [elab-heat-default-case1]:
+    elab(KL:KLabel(L:KList)) =>  elabFirstNotElabedChild(KL(L), KL(.KList))
+when defaultElabHeating(KL) ==K true andBool isElabKList([L]) ==K false andBool KL =/=KLabel 'KListWrap
+
+syntax KItem ::= elabFirstNotElabedChild( K, K )
+
+rule elabFirstNotElabedChild(KL:KLabel((Hd:ElabKResult => .KList),, _:KList), KL(_:KList,, (.KList => Hd)))
+rule elabFirstNotElabedChild(KL:KLabel(K:K,, Tl:KList), KL(Hd:KList))
+        => (#if isElabNaked(K) ==K true
+               #then K
+               #else elab(K)
+            #fi) ~> elab(KL(Hd,,CHOLE,,Tl))
+when notBool isElabKResult(K) ==K true
 
 rule [elab-cool-default]:
-    (ElabK:ElabKResult => .) ~> elab(_:KLabel(_,, (CHOLE => ElabK),, _))
+   // (ElabK:ElabKResult => .) ~> elab(_:KLabel(HeadKs:KList,, (CHOLE => ElabK),, _:KList))
+    (ElabK:ElabKResult ~> elab(K:KLabel(L:KList))) => coolElabedChild(ElabK, elab(K(L)), elab(K(.KList)))
+when hasCHOLE([L]) andBool K =/=KLabel 'KListWrap
+
+syntax KItem ::= hasCHOLE(KListWrap) [function]
+rule hasCHOLE([.KList]) => false
+rule hasCHOLE([CHOLE,,_]) => true
+rule hasCHOLE([Hd:K,,Tl:KList]) => hasCHOLE([Tl]) when Hd =/=K CHOLE
+
+syntax KItem ::= coolElabedChild(ElabKResult, K, K)
+rule coolElabedChild(_, elab(_:KLabel(.KList)), R) => R
+rule coolElabedChild(ElabK:ElabKResult, elab(K:KLabel((CHOLE => .KList),,_:KList)), elab(K(_:KList,, (.KList => ElabK))))
+rule coolElabedChild(_, elab(K:KLabel((Hd => .KList),,_:KList)), elab(K(_:KList,, (.KList => Hd))))
+when Hd =/=K CHOLE
 
 /*@ Must be true for AST nodes that require elaboration heating of their children. For the arguments KL, Ks,
 the original node is of he form KL(KS,,\_) and the heated child is always the last element of Ks.
@@ -156,6 +183,7 @@ defaultElabHeating.
 
 The predicate definition is scattered across modules related to elaboration.*/
 syntax KItem ::= customElabHeating ( KLabel, KListWrap )          [function]
+rule customElabHeating(_,_) => false [owise]
 
 /*@ The default algorithm of transforming the term from elab to elabRes, when the children were completely elaborated.
   Deletes elabRes wrappers from children. This algorithm is activated when the following conditions apply:
@@ -253,20 +281,20 @@ rule elabEnd( stmtAndExp(Stmt:K, cast(T:Type, Exp:K)) )
 
 /*@ \subsection{Elaboration of KListWrap - the list of terms} */
 //K bug: this section is a workaround t a serious K' bug that prevents [...] to be properly heated and cooled
-
-rule [elab-heat-KListWrap]:
-    (. => #if isElabNaked(K) ==K true
-            #then K
-            #else elab(K)
-          #fi
-    )
-    ~> elab([HeadKs:KList,, (K:K => CHOLE),, _:KList])
-when
-    isElabKList([HeadKs]) andBool notBool isElabKResult(K) ==K true
-
-rule [elab-cool-KListWrap]:
-    (ElabK:ElabKResult => .) ~> elab([_,, (CHOLE => ElabK),, _])
-
+//todo A matching
+//rule [elab-heat-KListWrap]:
+//    (. => #if isElabNaked(K) ==K true
+//            #then K
+//            #else elab(K)
+//          #fi
+//    )
+//    ~> elab([HeadKs:KList,, (K:K => CHOLE),, _:KList])
+//when
+//    isElabKList([HeadKs]) andBool notBool isElabKResult(K) ==K true
+//
+//rule [elab-cool-KListWrap]:
+//    (ElabK:ElabKResult => .) ~> elab([HeadKs:KList,, (CHOLE => ElabK),, _:KList])
+//when isElabKList([HeadKs])
 
 rule [elab-to-elabDispose-KListWrap]:
     elab([ElabResL:KList]) => elabDispose([ElabResL], [.KList])
