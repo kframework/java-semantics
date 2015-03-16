@@ -132,7 +132,7 @@ In order to expose incorrect nondeterminism we need to model-check a program tha
 
 Labels that are "naked" should be heated in their pure form. Other terms should be heated wrapped into elab().
 */
-//todo A matching case 2
+//todo A matching case 2, customElabHeating:'For, 'Catch, '(Q)NewInstance
 //rule [elab-heat-default]:
 //    (. => #if isElabNaked(K) ==K true
 //            #then K
@@ -215,7 +215,7 @@ but KL doesn't include KListWrap because of k bug, same rules for KListWrap can 
 rule [elab-to-elabDispose]:
     elab(KL:KLabel(ElabResL:KList)) => elabDispose(KL(ElabResL), KL(.KList))
 when
-    isElabKList([ElabResL]) ==K true
+    isElabKList([ElabResL]) ==K true andBool KL =/=KLabel 'KListWrap
 
 rule [elabDispose-process-strip]:
     elabDispose(KL:KLabel((elabRes(K) => .KList),, _:KList), KL(_:KList,, (.KList => K)))
@@ -228,6 +228,11 @@ when
 
 rule [elabDispose-to-elabEnd]:
     elabDispose(KL:KLabel(.KList), KL(Ks)) => elabEnd(KL(Ks)) when KL =/=KLabel 'KListWrap
+
+/* This rule is added because #token("Id","$id")(.KList) is no longer considered as KL:KLabel(.KList),
+so the default elab rules don't work. */
+rule [elabtokenId-to-elabRes]:
+    elab(I:Id) => elabRes(I)
 
 /*@ The 3rd elaboration-phase wrapper for expressions. Represents the case when children are completely elaborated and
 unwrapped from elabRes(), but root node might not be elaborated yet. The implementation is scattered across all modules
