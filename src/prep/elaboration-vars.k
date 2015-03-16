@@ -148,7 +148,9 @@ syntax KItem ::=  nameInVarDecs(
               )
               [function]
 
-rule nameInVarDecs(X:Id, [_,, _:KLabel(.K,, T:Type,, ['VarDec(X)]),, _]) => true
+rule nameInVarDecs(X:Id, [_:KLabel(.K,, T:Type,, ['VarDec(X)]),, _]) => true
+rule nameInVarDecs(X:Id, [_:K,, Tl:KList]) => nameInVarDecs(X,[Tl]) [owise]
+rule nameInVarDecs(X:Id, [.KList]) => false
 
 rule [elabEnd-This]:
     <k> elabEnd('This(.KList) => 'QThis(Class)) ...</k>
