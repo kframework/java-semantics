@@ -34,7 +34,7 @@ rule [elaborateBlocks]:
     <methods> Methods:Map </methods>
 
 rule [elaborateBlocks-discard]:
-    elaborateBlocks(setWrap(.)) => .
+    elaborateBlocks(setWrap( .Set )) => .
 
 /*@ Elaborates the methods of the current class. The map contains the methods that were not elaborated yet.
 When a class elaboration starts, the map is initialized with the contet of <methods> - all the methods accessible in

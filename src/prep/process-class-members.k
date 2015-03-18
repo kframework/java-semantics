@@ -360,13 +360,11 @@ rule [ConstrDec]:
       => storeMethod(Params,
           instanceCT, getAccessMode(Modifiers), isSynchronizedModifiers(Modifiers), constructorMMT, FirstLine,
           'Block([
-
             //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
             //Invocation of instance initializer converted into a method.
-            #if getKLabel(FirstLine) ==KLabel 'SuperConstrInv orBool getKLabel(FirstLine) ==KLabel 'QSuperConstrInv
-              #then 'ExprStm('Invoke('Method('MethodName( String2Id("$instance_init") )),, [.KList]))
-              #else [.KList] //vacuous
-            #fi,,
+            if(getKLabel(FirstLine) ==KLabel 'SuperConstrInv orBool getKLabel(FirstLine) ==KLabel 'QSuperConstrInv)
+              'ExprStm('Invoke('Method('MethodName( String2Id("$instance_init") )),, [.KList]))
+            ,,
             BodyKs
           ]),
           sig(getConsName(Class), getTypes(Params)), void)

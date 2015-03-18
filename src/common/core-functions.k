@@ -78,22 +78,24 @@ rule toTypedVal(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T       
 rule toTypedVal(_) => .K [owise] //this case should never happen for valid java programs
 
 //@ Converts a KList of terms to Types. Uses typeOf underneath.
-syntax KItem ::=  getTypes (
-                KListWrap     //[...,, KResult,, ...] - a list of source expressions
-              )
-              [function]
+syntax KItem ::= getTypes ( KListWrap )           [function]     //[...,, KResult,, ...] - a list of source expressions
+               | getTypes ( Types, KListWrap )    [function]
 
-// Without the second side condition it would be an infinite loop
-rule getTypes([_,, (K:K => typeOf(K)),, _])
-when
-    isType(K) =/=K true andBool getKLabel(K) =/=KLabel 'typeOf
+rule getTypes( [Ps:KList] ) => getTypes(types(.KList), [Ps])
+rule getTypes( types(Ts:KList), [T:K,, Ps:KList] ) => getTypes( types(Ts,,typeOf(T)), [Ps] )
+rule getTypes( types(Ts:KList), [.KList]) => types(Ts)
 
-rule getTypes([Ts:KList]) => types(Ts)
-when
-    isKResult(Ts)
+//@ Converts a TypedVals term to Types. Uses typeOf underneath.
+syntax KItem ::= getTypes ( TypedVals )          [function]    // a list of source values
+               | getTypes ( Types, TypedVals )   [function]
 
-syntax KItem ::= getTypes ( Params ) [function]
-               | getTypes ( Types , Params ) [function]
+rule getTypes(TVs:TypedVals) => getTypes(types(.KList), TVs)
+rule getTypes( types(Ts:KList), (_ :: T:Type, TVs:TypedVals) ) => getTypes( types(Ts,,T), TVs )
+rule getTypes(types(Ts:KList), .TypedVals) => types(Ts)
+
+syntax KItem ::= getTypes ( Params )            [function]
+               | getTypes ( Types , Params )    [function]
+
 rule getTypes( Ps:Params ) => getTypes(types(.KList), Ps)
 rule getTypes( types(Ts:KList), (_:AnnoVarModList T:Type _:Id , Ps:Params) ) => getTypes( types(Ts,,T), Ps )
 rule getTypes( types(Ts:KList), .Params) => types(Ts)

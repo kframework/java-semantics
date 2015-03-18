@@ -73,7 +73,7 @@ rule 'QNewInstance( Qual:Exp,, _:K,, ClassOrName:ClassOrName,, _:K,, [Args:KList
 */
 rule [NewInstance-to-QNewInstance-unpack]:
     new Class:ClassType(ArgExps:Exps)
-    => noValue . new Class:ClassType(ArgExps:Exps)
+    => (noValue):>Exp . new Class:ClassType(ArgExps:Exps)
 
 /*@ \subsection{Syntactic lists - Exps, TypedVals, ClassTypes}*/
 
@@ -96,18 +96,6 @@ rule toKListWrap([Args:KList], (Arg:Exp, Es:Exps)) => toKListWrap([Args,, Arg], 
 rule toKListWrap([Args:KList], .Exps) => [Args]
 
 syntax Exps ::= TypedVals
-syntax TypedVals ::= List{TypedVal, ","}
-
-//@ Converts a TypedVals term to Types. Uses typeOf underneath.
-syntax KItem ::=  getTypes (
-                TypedVals     // a list of source values
-              )
-              [function]
-            | getTypes(Types, TypedVals)  [function]
-
-rule getTypes(TVs:TypedVals) => getTypes(types(.KList), TVs)
-rule getTypes( types(Ts:KList), (_ :: T:Type, TVs:TypedVals) ) => getTypes( types(Ts,,T), TVs )
-rule getTypes(types(Ts:KList), .TypedVals) => types(Ts)
 
 syntax KResult ::= ClassTypes
 syntax ClassTypes ::= List{ClassType, ","}
