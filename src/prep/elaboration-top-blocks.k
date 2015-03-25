@@ -94,7 +94,7 @@ rule [elabMethods-Cool-Method]:
     <methodBody> CHOLE => Body </methodBody>
     <methodMetaType> methodMMT </methodMetaType>
 
-rule [elabMethods-Cool-Constructor]:
+rule [elabMethods-Cool-Constructor-nonEmpty]:
     <k>
       (elabRes(Body:K) => removeLastElabEnv) ~> elabMethods(_:Map)
       ...
@@ -103,6 +103,18 @@ rule [elabMethods-Cool-Constructor]:
     <classType> Class </classType>
     (<methodConstrFirstLine> FirstLine:K </methodConstrFirstLine> => .Bag)
     <methodBody> CHOLE => [FirstLine,, Body] </methodBody>
+    <methodMetaType> constructorMMT => methodMMT </methodMetaType>
+    when FirstLine =/=K .K
+
+rule [elabMethods-Cool-Constructor-empty]:
+    <k>
+      (elabRes(Body:K) => removeLastElabEnv) ~> elabMethods(_:Map)
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    (<methodConstrFirstLine> .K </methodConstrFirstLine> => .Bag)
+    <methodBody> CHOLE => [Body] </methodBody>
     <methodMetaType> constructorMMT => methodMMT </methodMetaType>
 
 rule [elabMethods-discard-method]:

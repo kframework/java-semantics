@@ -332,17 +332,20 @@ rule [ConstrDec-SuperCall-Desugar]:
 when
     Class =/=K classObject
 
-rule [ConstrDec-Object-Desugar]:
+rule [ConstrDec-Object]:
     <k>
       'ConstrDec(
-        'ConstrDecHead(_:K,, _:K,, Name:Id,, _:KList),,
+        'ConstrDecHead(Modifiers,, _:K,, Name:Id,, Params:Params,, _),,
         'ConstrBody(
           (
-            'None(_) => 'Some(.K)
+            'None(_)
           ),,
-          _:K
+          [BodyKs:KList]
         )
       )
+      => storeMethod(Params,
+                instanceCT, getAccessMode(Modifiers), isSynchronizedModifiers(Modifiers), constructorMMT, .K,
+                'Block([BodyKs]), sig(getConsName(Class), getTypes(Params)), void)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
