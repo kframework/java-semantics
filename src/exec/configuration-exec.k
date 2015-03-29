@@ -128,7 +128,7 @@ configuration
       <br/>
       <br/>
       //Configuration part 2: classes
-
+      <NumOfClassesToUnfold> 0 </NumOfClassesToUnfold>
       <classes color="Red">
         <class multiplicity="*" color="Red">
 
