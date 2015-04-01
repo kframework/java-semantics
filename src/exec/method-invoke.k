@@ -490,8 +490,7 @@ Before the evaluation of lookupPackageMethod() may begin, the term lookupPackage
   such as the method name or methodInfo(), it won't be heated.
 */
 context _:K . HOLE (_)
-when
-    getKLabel(HOLE) ==KLabel 'lookupPackageMethod
+when (notBool isId(HOLE) ) andBool getKLabel HOLE ==KLabel 'lookupPackageMethod
 
 /*
 Returns the list of classes representing the layer of the given object (by OId),

@@ -37,7 +37,7 @@ syntax SwitchLabelList           ::= List{SwitchLabel, ""}           [klabel('Sw
 
 syntax Exps         ::= List{Exp, ","} [seqstrict]
 syntax Dims         ::= List{Dim,""} // [klabel('DimList)]
-syntax DimExps      ::= List{DimExp,""} [strict]
+syntax DimExps      ::= List{DimExp,""} [seqstrict]
 syntax VarInits     ::= List{VarInit, ","} // [klabel('VarInitList)]
 syntax CatchClauses ::= List{CatchClause,""} [klabel('CatchClauseList), strict]
 syntax Params       ::= List{Param, ","}   [klabel('FormalParamList)]

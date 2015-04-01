@@ -216,7 +216,7 @@ rule [array-clone]:
     )
     => arrayCopy(
         arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT,
-        allocAndInitArray(ElemT, [Len::int], undefined :: ElemT)
+        allocAndInitArray(ElemT, [Len::int]:DimInt, undefined :: ElemT)
       )
 when
     Class ==K classArrayImpl andBool Id2String(MethodName) ==String "clone"

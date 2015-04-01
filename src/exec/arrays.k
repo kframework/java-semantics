@@ -57,7 +57,6 @@ and assign the right type ($T$) to the allocated array locations. */
 /* For multi-dimensions arrays, it is expanded from the last DimExp, but currently, the tail element(s)
  matching is unavailable for user defined lists, so we reverse list for easier matching
 */
-
 syntax DimExps ::= reverseDimExps(DimExps, DimExps) [function]
 rule reverseDimExps(D:DimExp Ds:DimExps, Es:DimExps) => reverseDimExps(Ds, (D Es))
 rule reverseDimExps(.DimExps, Es:DimExps) => Es
@@ -81,7 +80,7 @@ rule [NewArray-simple]:
 
 rule [NewArray-ArrayInit]:
     new arrayOf T:Type .Dims {InitContent:VarInits}
-    => arrayInitAlloc((new T [length(InitContent)::int] .Dims), {InitContent})
+    => arrayInitAlloc((new T [length(InitContent)::int]:DimInt .Dims), {InitContent})
 
 syntax Int ::= length (VarInits)                                  [function]
 rule length(V:VarInit, Vs:VarInits) => length(Vs)+Int 1
@@ -92,11 +91,11 @@ checkNonNegative is dissolved. Otherwise NegativeArraySizeException is thrown.
 */
 syntax KItem ::=  checkNonNegative (DimExps)
 
-rule checkNonNegative([NI:Int::_ ] Remainings:DimExps)=> checkNonNegative(Remainings)
+rule checkNonNegative([NI:Int::_ ]:DimInt Remainings:DimExps)=> checkNonNegative(Remainings)
 when NI >=Int 0
 
 rule [checkNonNegative-to-NegativeArraySizeException]:
-    checkNonNegative([NI:Int::_] _)
+    checkNonNegative([NI:Int::_]:DimInt _:DimExps)
     => throw new class String2Id("java.lang.NegativeArraySizeException") (null::classString);
 when
     NI <Int 0
@@ -128,7 +127,7 @@ rule [allocAndInitArray-MultiDim-desugar]:
 */
 rule [allocAndInitArray]:
     <k>
-      allocAndInitArray(T:Type, [NI:Int::_], InitExp:K)
+      allocAndInitArray(T:Type, [NI:Int::_]:DimInt , InitExp:K)
       => allocArray(NI, T) ~> initArray(LI +Int 1, NI, InitExp)
          ~> arrayRef( arrayOf T, LI +Int 1, NI) :: arrayOf T
       ...

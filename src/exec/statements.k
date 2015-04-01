@@ -22,11 +22,14 @@ rule [ExecutionPhase-Start]:
               .String2Id("main")
 
               //workaround: we have to use toExps because 'NewArray is not a native expression but a hacked one
-              ( toExps(['NewArray(classString,, ['Dim(0 :: int)],, [.KList])]) );
+              //( toExps(['NewArray(classString,, ['Dim(0 :: int)],, [.KList])]) );
+              (( new classString ([0] .DimExps)  .Dims), .Exps );
     </k>
-    <env> . </env>
+    <env> .Map </env>
     <mainClass> ListItem(MainClassS:String) </mainClass>
     <globalPhase> UnfoldingPhase => ExecutionPhase  </globalPhase>
+
+
 
 //@ \subsection{Blocks} JLS \$14.2
 

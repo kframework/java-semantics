@@ -211,7 +211,7 @@ rule getClassMetaType('InterfaceDec) => interfaceCMT    [anywhere]
 syntax KItem ::= containsStaticInit(  KListWrap )  [function]
 rule containsStaticInit(['StaticInit(_),, _]) => true
 rule containsStaticInit([.KList]) => false
-rule containsStaticInit([K:K,, Rest]) => containsStaticInit([Rest]) [owise]
+rule containsStaticInit([K:K,, Rest:KList]) => containsStaticInit([Rest:KList]) [owise]
 
 rule [unfolding-ImplementsDec]:
     <k> unfoldingPhase </k>
