@@ -238,6 +238,11 @@ syntax MethodName ::= methodInfo(
                         AccessMode    //Acc - The access mode of the method as seen by the qualifying type
                       )
 
+syntax ClassMetaType ::= "dummyCMT"
+syntax RefType ::= "dummyRT"
+syntax ContextType ::= "dummyCT"
+syntax AccessMode ::= "dummyAC"
+
 /*@
 The first rule from this step rewrites the method name into a methodInfo() term whose first argument is the method
 signature.
@@ -247,7 +252,7 @@ signature.
 */
 rule [Invoke-compute-methodInfo-Signature]:
     Qual:KResult
-      .(Name:Id => methodInfo(sig(Name, getTypes(Args)), typeOf(Qual), .K,.K,.K,.K))
+      .(Name:Id => methodInfo(sig(Name, getTypes(Args)), typeOf(Qual), dummyCMT, dummyRT, dummyCT, dummyAC))
       (Args:TypedVals)
 
 /*@
@@ -277,7 +282,7 @@ The second rule for method invocation loads MetaT and DecC. It requires Sig and 
 */
 rule [Invoke-compute-methodInfo-DecC]:
     <k>
-      _. methodInfo(Sig:Signature, QualC:ClassType, .K => MetaT, .K => DecC, _,_) (_)
+      _. methodInfo(Sig:Signature, QualC:ClassType, (dummyCMT => MetaT), (dummyRT => DecC), _,_) (_)
       ...
     </k>
     <classType> QualC </classType>
@@ -298,7 +303,7 @@ In both cases the method is an abstract method in the class QualT. For this case
 \end{markdown} */
 rule [Invoke-compute-methodInfo-unmapped-method-ContextType]:
     <k>
-      _. methodInfo(Sig:Signature, QualC:ClassType, .K => MetaT, _, .K => instanceCT, .K => public) (_)
+      _. methodInfo(Sig:Signature, QualC:ClassType, (dummyCMT => MetaT), _, (dummyCT => instanceCT), (dummyAC => public)) (_)
       ...
     </k>
     <classType> QualC </classType>
@@ -312,7 +317,7 @@ The last rule of step 3 loads ContextT and Acc. It requires DecC, so this rule m
 */
 rule [Invoke-compute-methodInfo-ContextType]:
     <k>
-      _. methodInfo(Sig:Signature, _,_, DecC:ClassType, .K => ContextT, .K => Acc) (_)
+      _. methodInfo(Sig:Signature, _,_, DecC:ClassType, (dummyCT => ContextT), (dummyAC => Acc)) (_)
       ...
     </k>
     <classType> DecC </classType>
