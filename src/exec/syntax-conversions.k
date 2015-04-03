@@ -85,8 +85,13 @@ syntax KItem ::= toExps( KListWrap )        [function]
            | toExps( KListWrap , Exps ) [function]
 
 rule toExps([Args:KList]) => toExps([Args], .Exps)
-rule toExps([Args:KList,, Arg], Es) => toExps([Args], (Arg,Es))
+rule toExps([Arg:Exp,, Args:KList], Es) => toExps([Args], addElementToExpsEnd(Es, Arg))
 rule toExps([.KList], Es) => Es
+
+//this function is needed because we can no longer match elements in the end of KList
+syntax Exps ::= addElementToExpsEnd (Exps, Exp) [function]
+rule addElementToExpsEnd(.Exps, P:Exp) => P,.Exps
+rule addElementToExpsEnd((Hd:Exp, Tl:Exps), P:Exp) => Hd,addElementToExpsEnd(Tl,P)
 
 syntax KItem ::= toKListWrap( Exps )              [function]
            | toKListWrap( KListWrap , Exps )  [function]
