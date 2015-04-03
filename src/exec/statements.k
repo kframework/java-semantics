@@ -396,7 +396,7 @@ rule [Throw-CausesThreadTermination]:
 //@ \subsection{Try statement}
 
 rule [Try-Catch-Finally-Desugar]:
-    try TryS:K Catches finally FinallyS:K
+    try TryS:K Catches:K finally FinallyS:K
     => try 'Block(try TryS Catches) .CatchClauses finally FinallyS
     when Catches =/=K .CatchClauses
         [structural]
@@ -404,9 +404,9 @@ rule [Try-Catch-Finally-Desugar]:
 /*@ \subsubsection{Execution of try-catch} JLS \$14.20.1
 */
 //resolve the catch clauses of try statement
-context try _ HOLE
+context try _:K HOLE
 
-rule catch(KR:Param)S => catchImpl(KR,S)
+rule catch(KR:Param)S:K => catchImpl(KR,S)
 
 //@ Internal representation of a preprocessed catch clause
 syntax CatchImpl ::=  catchImpl (
@@ -414,11 +414,11 @@ syntax CatchImpl ::=  catchImpl (
                       K   //the code block
                     )
 syntax KResult ::= CatchImpl
+syntax CatchImpls ::= List{CatchImpl,""} [klabel('CatchClauseList)]
 syntax CatchClause ::= CatchImpl
 
 rule [Try-Catch]:
-    (try TryS:K KRs:CatchClauses => TryS ~> catchBlocks(KRs))
-    when isKResult(KRs)
+    try TryS:K KRs:CatchImpls => TryS ~> catchBlocks(KRs)
 
 /*@ The auxiliary construct that holds catch clauses
 after try clause has been moved to the top of computation*/
