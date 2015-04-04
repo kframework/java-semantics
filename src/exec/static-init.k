@@ -108,7 +108,7 @@ rule [FieldDec-static]:
     <k> 'FieldDec(['Static(_)],, T:Type,,['VarDec(X:Id)]) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <staticEnv> Env:Map => Env[L/X] </staticEnv>
+    <staticEnv> Env:Map => Env[X <- L] </staticEnv>
     <store>... .Map => L |-> default(T) ...</store>
     <storeMetadata>... .Map => L |-> FieldLocMetadata ...</storeMetadata>
     <nextLoc> L:Int => L +Int 1 </nextLoc>

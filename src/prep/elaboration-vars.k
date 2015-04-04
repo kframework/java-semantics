@@ -9,7 +9,7 @@ rule [elabEnd-AmbName]:
 
 rule [elabEnd-ExprName-localVar-ok]:
     <k> elabEnd('ExprName(X:Id)) => elabRes(cast(T, 'ExprName(X))) ...</k>
-    <elabEnv> ListItem(mapWrap((X |-> T:Type) _)) ...</elabEnv>
+    <elabEnv> ListItem(mapWrap((X |-> T:Type) _:Map)) ...</elabEnv>
 
 rule [elabEnd-localVar-to-noValue]:
     <k> elabEnd('ExprName(X:Id)) => externalVar(X, Class) ...</k>
@@ -95,15 +95,43 @@ syntax KItem ::=  elabLookup (
                 Set //A set of interfaces under search
               )
 
+syntax KItem ::= foundInstance ( Id, KListWrap )    [function]
+
+rule foundInstance(X:Id, ['FieldDec(_:K,, T:Type,, ['VarDec(X)]),,_]) => true
+rule foundInstance(X:Id, [Hd:K,, Tl:KList]) => foundInstance(X, [Tl])   [owise]
+rule foundInstance(X:Id, [.KList]) => false
+
+syntax KItem ::= foundStatic ( Id, KListWrap )      [function]
+
+rule foundStatic(X:Id, ['FieldDec(['Static(_)],, T:Type,, ['VarDec(X)]),,_]) => true
+rule foundStatic(X:Id, [Hd:K,, Tl:KList]) => foundStatic(X, [Tl])   [owise]
+rule foundStatic(X:Id, [.KList]) => false
+
+syntax Type ::= getInstanceType ( Id, KListWrap )    [function]
+
+rule getInstanceType(X:Id, ['FieldDec(_:K,, T:Type,, ['VarDec(X)]),,_]) => T
+rule getInstanceType(X:Id, [Hd:K,, Tl:KList]) => getInstanceType(X, [Tl])   [owise]
+//rule foundInstance(X:Id, [.KList]) => false
+
+syntax Type ::= getStaticType ( Id, KListWrap )      [function]
+
+rule getStaticType(X:Id, ['FieldDec(['Static(_)],, T:Type,, ['VarDec(X)]),,_]) => T
+rule getStaticType(X:Id, [Hd:K,, Tl:KList]) => getStaticType(X, [Tl])   [owise]
+//rule foundStatic(X:Id, [.KList]) => false
+
 rule [elabLookup-Found-instance]:
-    <k> elabLookup(X:Id, Class:ClassType) => fieldEntry(Class, X, T, instanceCT) ...</k>
+    <k> elabLookup(X:Id, Class:ClassType) => fieldEntry(Class, X, getInstanceType(X, IF), instanceCT) ...</k>
     <classType> Class </classType>
-    <instanceFields> [_,, 'FieldDec(_:K,, T:Type,, ['VarDec(X)]),, _] </instanceFields>
+    <instanceFields> IF </instanceFields>
+//    <instanceFields> [_,, 'FieldDec(_:K,, T:Type,, ['VarDec(X)]),, _] </instanceFields>
+    when foundInstance(X,IF)
 
 rule [elabLookup-Found-static]:
-    <k> elabLookup(X:Id, Class:ClassType) => fieldEntry(Class, X, T, staticCT) ...</k>
+    <k> elabLookup(X:Id, Class:ClassType) => fieldEntry(Class, X, getStaticType(X, SF), staticCT) ...</k>
     <classType> Class </classType>
-    <staticFields> [_,, 'FieldDec(['Static(_)],, T:Type,, ['VarDec(X)]),, _] </staticFields>
+    <staticFields> SF </staticFields>
+//    <staticFields> [_,, 'FieldDec(['Static(_)],, T:Type,, ['VarDec(X)]),, _] </staticFields>
+    when foundStatic(X,SF)
 
 rule [elabLookup-Found-constant]:
     <k> elabLookup(X:Id, Class:ClassType) => TV ...</k>
