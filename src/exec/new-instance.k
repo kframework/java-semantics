@@ -167,7 +167,7 @@ rule [qualified-new-instance]:
     <methodContext>
       MethContext
       =>  <env> .Map </env>
-          <crntClass> .K </crntClass>
+          <crntClass> noClass </crntClass>
           <location> L </location>
     </methodContext>
     <storeMetadata>... .Map => L |-> LocalLocMetadata ...</storeMetadata>
@@ -200,7 +200,7 @@ syntax KItem ::=  "addEnvLayer"
 
 rule [addEnvLayer]:
     <k> addEnvLayer => . ...</k>
-    <env> Env => . </env>
+    <env> Env => .Map </env>
     <crntClass> Class </crntClass>
     <location> OId </location>
     <object>
