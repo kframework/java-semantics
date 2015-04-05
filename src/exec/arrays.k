@@ -62,8 +62,12 @@ rule reverseDimExps(D:DimExp Ds:DimExps, Es:DimExps) => reverseDimExps(Ds, (D Es
 rule reverseDimExps(.DimExps, Es:DimExps) => Es
 
 syntax DimExps ::= toDimExps( KListWrap , DimExps) [function]
-rule toDimExps([Ds:KList,,D:DimExp], Es:DimExps) => toDimExps([Ds], (D Es))
+rule toDimExps([D:DimExp,, Ds:KList], Es:DimExps) => toDimExps([Ds], addElementToDimExpsEnd(Es, D))
 rule toDimExps([.KList], Es:DimExps) => Es
+
+syntax DimExps ::= addElementToDimExpsEnd (DimExps, DimExp) [function]
+rule addElementToDimExpsEnd(.DimExps, P:DimExp) => P .DimExps
+rule addElementToDimExpsEnd((Hd:DimExp Tl:DimExps), P:DimExp) => Hd addElementToDimExpsEnd(Tl,P)
 
 //todo: move macro
 rule 'NewArray(_,,([D:DimExp,,Ds:KList] => toDimExps([D,,Ds],.DimExps)),,([.KList] => .Dims))
