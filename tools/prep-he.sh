@@ -2,7 +2,7 @@ OUT="$1.pkast"
 
 TMP="tmp1.txt"
 
-krun $1 --directory "../src/prep" --parser "kj-parse-aggreg.sh" --output kast | sed "s/'KListWrap/'ListWrap/g" > $TMP
+krun $1 --directory "../src/prep" --parser "kj-parse-aggreg.sh" --output kast | sed "s/\`'KListWrap/\`'ListWrap/g" > $TMP
 
 tr -d ' ' <$TMP >$OUT
 tr -d '\t' <$OUT >$TMP
