@@ -212,6 +212,7 @@ rule defaultElabHeating('stmtAndExp) => true
 //user lists that should be default-heated, we didn't have this before because we used the heating of KListWrap
 rule defaultElabHeating('CatchClauseList) => true
 rule defaultElabHeating('FormalParamList) => true
+rule defaultElabHeating('VarInitList) => true
 rule defaultElabHeating(_) => false [owise]
 
 /*@ Naked terms are those that should be computed directly into KResult during elaboration.

@@ -244,11 +244,11 @@ rule [arrayInitImpl-inner-ArrayInit-desugar]:
 rule [arrayInitImpl-discard]:
     arrayInitImpl(_, _, {.VarInits}) => .
 
-syntax VarInits ::= toVarInits( KListWrap , VarInits) [function]
-rule toVarInits([Args:KList,, Arg:VarInit], Es:VarInits) => toVarInits([Args], (Arg,Es))
-rule toVarInits([.KList], Es:VarInits) => Es
+//syntax VarInits ::= toVarInits( KListWrap , VarInits) [function]
+//rule toVarInits([Args:KList,, Arg:VarInit], Es:VarInits) => toVarInits([Args], (Arg,Es))
+//rule toVarInits([.KList], Es:VarInits) => Es
 
 //todo: move macro
-rule 'ArrayInit([InitContent:KList] => toVarInits([InitContent], .VarInits)) [anywhere]
+//rule 'ArrayInit([InitContent:KList] => toVarInits([InitContent], .VarInits)) [anywhere]
 
 endmodule

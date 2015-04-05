@@ -38,7 +38,7 @@ syntax SwitchLabelList           ::= List{SwitchLabel, ""}           [klabel('Sw
 syntax Exps         ::= List{Exp, ","} [seqstrict]
 syntax Dims         ::= List{Dim,""} // [klabel('DimList)]
 syntax DimExps      ::= List{DimExp,""} [seqstrict]
-syntax VarInits     ::= List{VarInit, ","} // [klabel('VarInitList)]
+syntax VarInits     ::= List{VarInit, ","}  [klabel('VarInitList)]
 syntax CatchClauses ::= List{CatchClause,""} [klabel('CatchClauseList), strict]
 syntax Params       ::= List{Param, ","}   [klabel('FormalParamList)]
 
@@ -48,7 +48,7 @@ context 'FormalParamList(_,,HOLE) [result(Params)]
 syntax KLabel::= "'DimList"
                | "'DimExprList"
                | "'ExprList"
-               | "'VarInitList"
+//               | "'VarInitList"
 
 
 syntax UserList     ::= BlockStmList
@@ -116,7 +116,7 @@ rule '.List`{"'ClassBodyDecList"`}(.KList)   => [.KList]                        
 rule '.List`{"'DimList"`}(.KList)   => [.KList]                                     [macro]
 rule '.List`{"'DimExprList"`}(.KList)   => [.KList]                                 [macro]
 rule '.List`{"'ExprList"`}(.KList)   => [.KList]                                    [macro]
-rule '.List`{"'VarInitList"`}(.KList)   => [.KList]                                 [macro]
+//rule '.List`{"'VarInitList"`}(.KList)   => [.KList]                                 [macro]
 
 rule 'SwitchLabelList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
 rule 'SwitchGroupList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
@@ -148,6 +148,6 @@ rule 'ClassBodyDecList(Hd,,[Tl:KList])          => [Hd,,Tl]         [macro]
 rule 'DimList(Hd,,[Tl:KList])         => [Hd,,Tl]    [macro]
 rule 'DimExprList(Hd,,[Tl:KList])     => [Hd,,Tl]    [macro]
 rule 'ExprList(Hd,,[Tl:KList])        => [Hd,,Tl]    [macro]
-rule 'VarInitList(Hd,,[Tl:KList])     => [Hd,,Tl]    [macro]
+//rule 'VarInitList(Hd,,[Tl:KList])     => [Hd,,Tl]    [macro]
 
 endmodule
