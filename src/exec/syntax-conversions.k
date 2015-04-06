@@ -82,7 +82,7 @@ rule [NewInstance-to-QNewInstance-unpack]:
 */
 
 syntax KItem ::= toExps( KListWrap )        [function]
-           | toExps( KListWrap , Exps ) [function]
+               | toExps( KListWrap , Exps ) [function]
 
 rule toExps([Args:KList]) => toExps([Args], .Exps)
 rule toExps([Arg:Exp,, Args:KList], Es) => toExps([Args], addElementToExpsEnd(Es, Arg))
@@ -94,7 +94,7 @@ rule addElementToExpsEnd(.Exps, P:Exp) => P,.Exps
 rule addElementToExpsEnd((Hd:Exp, Tl:Exps), P:Exp) => Hd,addElementToExpsEnd(Tl,P)
 
 syntax KItem ::= toKListWrap( Exps )              [function]
-           | toKListWrap( KListWrap , Exps )  [function]
+               | toKListWrap( KListWrap , Exps )  [function]
 
 rule toKListWrap(Args:Exps) => toKListWrap([.KList], Args)
 rule toKListWrap([Args:KList], (Arg:Exp, Es:Exps)) => toKListWrap([Args,, Arg], (Es))

@@ -105,7 +105,7 @@ rule [elabEnd-NewArray-ArrayInit-Preprocess]:
     elabEnd('NewArray((T:Type => arrayOf T),, [('Dim(.KList) => .KList),, _],, 'ArrayInit(_)))
 
 rule [elabEnd-NewArray-ArrayInit]:
-    elabEnd('NewArray(arrayOf T:Type,, [.KList],, 'ArrayInit([InitContent:KList])))
-    => elabRes(cast(arrayOf T, 'NewArray(arrayOf T:Type,, [.KList],, 'ArrayInit([InitContent:KList]))))
+    elabEnd('NewArray(arrayOf T:Type,, [.KList],, 'ArrayInit(InitContent)))
+    => elabRes(cast(arrayOf T, 'NewArray(arrayOf T:Type,, [.KList],, 'ArrayInit(InitContent))))
 
 endmodule

@@ -31,12 +31,23 @@ when
     isVarDecHolderLabel(KL) ==K true andBool notBool isElabKResult(K) ==K true
 
 //Seqstrict starting from 2-nd argument.
-rule [customElabHeating-For-next-children]:
-    customElabHeating('For, [HeadKs:KList,, KPrec:K,, KHole:K]) => isElabKList([HeadKs,,KPrec])
+//rule [customElabHeating-For-next-children]:
+//    customElabHeating('For, [HeadKs:KList,, KPrec:K,, KHole:K]) => isElabKList([HeadKs,,KPrec])
+rule   ( . => elab(Arg2) ) ~> elab('For(Arg1:ElabKResult,,(Arg2:K => CHOLE),,_,,_))
+when notBool isElabKResult(Arg2) ==K true
+
+rule   ( . => elab(Arg3) ) ~> elab('For(Arg1:ElabKResult,,Arg2:ElabKResult,,(Arg3:K => CHOLE),,_))
+when notBool isElabKResult(Arg3) ==K true
+
+rule   ( . => elab(Arg4) ) ~> elab('For(Arg1:ElabKResult,,Arg2:ElabKResult,,Arg3:ElabKResult,,(Arg4:K => CHOLE)))
+when notBool isElabKResult(Arg4) ==K true
 
 //Seqstrict starting from 2-nd argument.
-rule [customElabHeating-For-next-children]:
-    customElabHeating('Catch, [K1:K,, KHole:K]) => isElabKResult(K1)
+//rule [customElabHeating-For-next-children]:
+//    customElabHeating('Catch, [K1:K,, KHole:K]) => isElabKResult(K1)
+rule   ( . => elab(Arg2) ) ~> elab('Catch(Arg1:ElabKResult,,(Arg2:K => CHOLE)))
+when notBool isElabKResult(Arg2) ==K true
+
 
 rule [elabEnd-Block-For-Catch]:
     elabEnd(KL:KLabel(ElabResL:KList)) => removeLastElabEnv ~> elabRes(KL(ElabResL))

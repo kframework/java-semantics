@@ -181,8 +181,8 @@ rule [do-while]:
 
 //@ \subsection{For statement}
 //macros
-rule 'For(_,,_,,([Exps:KList] => toExps([Exps])),,_)   [macro]
-rule 'For(([Exps:KList] => toExps([Exps])),,_)         [macro]
+rule 'For(_:K,,_:K,,([Exps:KList] => toExps([Exps])),,_:K)
+rule 'For(([Exps:KList] => toExps([Exps])),,_:K,,_:K,,_:K)
 
 //wrapper of certain clauses of for statement, adds ; to cast expressions
 syntax Exps ::= stm (Exps)
@@ -214,8 +214,7 @@ rule [For-ThirdArgRed]:
 
 rule [For]:
     for(stm(InitClause); 'Some(TestExp); stm(UpdClause)) S
-    => 'Block(stm(InitClause)
-    ~> ifAux(TestExp, ('Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp,S)), .)) [structural]
+    => 'Block(stm(InitClause) ~> whileImpl(TestExp, S ~> stm(UpdClause)))   [structural]
 
 //totest model check - the argument of 'return and 'Throw must be evaluated. Otherwise some side effects during
 // evaluation might be evaluated too late
