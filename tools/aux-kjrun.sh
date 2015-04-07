@@ -158,21 +158,16 @@ fi
 KRUN_CMD="$KRUN_CMD $(cross-k.sh krun)"
 
 KRUN_CMD="$KRUN_CMD \
-                      --debug \
                       --directory \"$SEMANTICS_DIR\" \
                       "
 
 case "$MODE" in
 "run-prep-config" | "run-prep-ast")
-    KRUN_CMD="$KRUN_CMD -cCOMMAND=\"'procTypeNames(.KList)\" \
-                        -cSTARTPHASE=\"'ProcTypeNamesPhase(.KList)\" \
-                        -cENDPHASE=\"'FoldingPhase(.KList)\""
     ;;
+
 "run-exec")
-    KRUN_CMD="$KRUN_CMD -cCOMMAND=\"'unfoldingPhase(.KList)\" \
-                        -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
-                        -cENDPHASE=\"'ExecutionPhase(.KList)\"
-                        -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
+    KRUN_CMD="$KRUN_CMD -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
+
 if [[ ${PATTERN} != "" || ${LTLMC} != "" || ${CONFIG} == "true" ]];
   then KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"false\""
   else KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\""
@@ -275,4 +270,6 @@ if [[ ${VERBOSE} == true ]]; then
 fi
 
 # Actual command evaluation
+#now=$(date +"%T")
+#echo "final cmd from aux-kjrun is $KRUN_CMD" > "final-AUX-KJRUN$now.txt"
 eval ${KRUN_CMD}
