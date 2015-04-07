@@ -133,7 +133,10 @@ case "$MODE" in
     MAIN_MODULE=JAVA-EXEC
     ;;
 
-
+*)
+    echo "Invalid MODE: ${MODE}"
+    exit 1
+    ;;
 esac
 
 KRUN_CMD="time"
@@ -163,10 +166,8 @@ case "$MODE" in
     ;;
 
 "run-exec")
-    KRUN_CMD="$KRUN_CMD -cCOMMAND=\"'unfoldingPhase(.KList)\" \
-                        -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
-                        -cENDPHASE=\"'ExecutionPhase(.KList)\"
-                        -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
+    KRUN_CMD="$KRUN_CMD -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
+
 if [[ ${PATTERN} != "" || ${LTLMC} != "" || ${CONFIG} == "true" ]];
   then KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"false\""
   else KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\""
@@ -269,6 +270,6 @@ if [[ ${VERBOSE} == true ]]; then
 fi
 
 # Actual command evaluation
-now=$(date +"%T")
-echo "final cmd from aux-kjrun is $KRUN_CMD" > "final-AUX-KJRUN$now.txt"
+#now=$(date +"%T")
+#echo "final cmd from aux-kjrun is $KRUN_CMD" > "final-AUX-KJRUN$now.txt"
 eval ${KRUN_CMD}

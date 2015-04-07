@@ -91,7 +91,7 @@ COUNT_CMD_SUFFIX="| grep \"Solution\" | wc -l"
 PREP_AST_CMD_SUFFIX="| sed 's/\s*\([[:graph:]].*[[:graph:]]\)\s*/\1/g'"
 PREP_AST_CMD_SUFFIX="$PREP_AST_CMD_SUFFIX | tr -d '\n'"
 PREP_AST_CMD_SUFFIX="$PREP_AST_CMD_SUFFIX | sed -r 's/.*<program>//g' | sed -r 's/<\/program>.*//g'"
-PREP_AST_CMD_SUFFIX="$PREP_AST_CMD_SUFFIX |sed 's/KListWrap/ListWrap/g'"
+PREP_AST_CMD_SUFFIX="$PREP_AST_CMD_SUFFIX | sed 's/KListWrap/ListWrap/g'"
 
 while [[ ${1:0:1} == - ]]; do
   PARAM=`echo $1 | awk -F= '{print $1}'`
@@ -108,8 +108,11 @@ while [[ ${1:0:1} == - ]]; do
       PREP_FIRST=false
       MODE=run-prep-ast
       CMD_SUFFIX=${PREP_AST_CMD_SUFFIX}
-      OUTPUT=raw
+      OUTPUT=$PREP_OUTPUT
       INPUT=java
+      TIME=false
+      TIMEOUT=0
+
       ;;
     "--prep-pretty")
       PREP_FIRST=false
@@ -119,7 +122,7 @@ while [[ ${1:0:1} == - ]]; do
     "--prep-raw")
       PREP_FIRST=false
       MODE=run-prep-config
-      OUTPUT=raw
+      OUTPUT=none
       INPUT=java
       ;;
     "--exec-pretty")
@@ -202,8 +205,6 @@ while [[ ${1:0:1} == - ]]; do
   shift
 done
 
-TIMEOUT=120
-
 JAVA_FILE=$(cross-path-unix.sh ${1})
 if [[ ${JAVA_FILE} == "" ]]; then
   echo "Target file missing"
@@ -231,7 +232,6 @@ if [[ ${PREP_FIRST} == true ]]; then
       echo
     fi
 
-echo "cmd of prep is : $CMD" > prepCMD.txt
     eval ${CMD}
   fi
 else
@@ -244,6 +244,8 @@ if [[ ${SILENT} == false ]]; then
   echo
 fi
 
+OUTPUT="none"
+
 CMD="aux-kjrun.sh --time=${TIME} --timeout=${TIMEOUT} --mode=${MODE} --output=${OUTPUT} --input=${INPUT} \
   --pattern=\"${PATTERN}\" --ltlmc=\"${LTLMC}\" --config=\"${CONFIG}\" \
   --verbose=${VERBOSE} --cmd-suffix=\"${CMD_SUFFIX}\" ${PKAST_FILE}"
@@ -254,7 +256,7 @@ if [[ ${VERBOSE} == true ]]; then
 fi
 
 # Actual command evaluation
-echo "final exec cmd is $CMD" > finalCMD.txt
+#echo $CMD > auxInput.txt
 
 eval ${CMD}
 

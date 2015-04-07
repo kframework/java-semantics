@@ -1,5 +1,4 @@
-echo "running my KJ-RUN script now!"
-#!/bin/bash 
+#!/bin/bash
 # Absolute path to this script, e.g. /home/user/bin/foo.sh
 SCRIPT=$(readlink -f "$0")
 # Absolute path this script is in, thus /home/user/bin
@@ -12,8 +11,6 @@ OUT="$CurDir/$Input.pkast"
 
 TMP="$CurDir/tmp.txt"
 
-echo "going to do first krun!"
-
 krun $1 --directory "$SCRIPTPATH/../src/prep" --parser "kj-parse-aggreg.sh" --output kast > $OUT
 
 sed 's/\s*\([[:graph:]].*[[:graph:]]\)\s*/\1/g' < $OUT | tr -d '\n' > $TMP
@@ -24,8 +21,6 @@ sed -r 's/<\/program>.*//g' < $OUT > $TMP
 sed "s/\`'KListWrap/\`'ListWrap/g" < $TMP > $OUT
 
 rm $TMP
-
-echo "going to do second krun!"
 
 ClsName=$(echo $Input | sed -r 's/\.java$//g')
 krun $OUT --directory "$SCRIPTPATH/../src/exec" -cMainClass="ListItem(\"$ClsName\")" -cDissolveAllExceptOut="true" --parser "cat" --output none
