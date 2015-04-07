@@ -1,18 +1,26 @@
-OUT="$1.pkast"
+#!/bin/bash 
+# Absolute path to this script, e.g. /home/user/bin/foo.sh
+SCRIPT=$(readlink -f "$0")
+# Absolute path this script is in, thus /home/user/bin
+SCRIPTPATH=$(dirname "$SCRIPT")
 
-TMP="tmp1.txt"
+CurDir=$(pwd)
 
-krun $1 --directory "../src/prep" --parser "kj-parse-aggreg.sh" --output kast > $TMP
+Input=$(basename $1)
+OUT="$CurDir/$Input.pkast"
 
-tr -d ' ' <$TMP >$OUT
-tr -d '\t' <$OUT >$TMP
-tr -d '\n' <$TMP >$OUT
-tr -d '\r' <$OUT >$TMP
+TMP="$CurDir/tmp.txt"
+
+krun $1 --directory "$SCRIPTPATH/../src/prep" --parser "kj-parse-aggreg.sh" --output kast > $OUT
+
+sed 's/\s*\([[:graph:]].*[[:graph:]]\)\s*/\1/g' < $OUT | tr -d '\n' > $TMP
 
 sed -r 's/.*<program>//g' < $TMP > $OUT
 sed -r 's/<\/program>.*//g' < $OUT > $TMP
 
 sed "s/\`'KListWrap/\`'ListWrap/g" < $TMP > $OUT
 
-ClsName=$(echo $1 | sed -r 's/\.java$//g')
-krun $OUT --directory "../src/exec" -cMainClass="ListItem(\"$ClsName\")" -cDissolveAllExceptOut="true" --parser "cat" --output none
+rm $TMP
+
+ClsName=$(echo $Input | sed -r 's/\.java$//g')
+krun $OUT --directory "$SCRIPTPATH/../src/exec" -cMainClass="ListItem(\"$ClsName\")" -cDissolveAllExceptOut="true" --parser "cat" --output none
