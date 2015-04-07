@@ -2,12 +2,9 @@ OUT="$1.pkast"
 
 TMP="tmp1.txt"
 
-krun $1 --directory "../src/prep" --parser "kj-parse-aggreg.sh" --output kast > $TMP
+krun $1 --directory "../src/prep" --parser "kj-parse-aggreg.sh" --output kast > $OUT
 
-tr -d ' ' <$TMP >$OUT
-tr -d '\t' <$OUT >$TMP
-tr -d '\n' <$TMP >$OUT
-tr -d '\r' <$OUT >$TMP
+sed 's/\s*\([[:graph:]].*[[:graph:]]\)\s*/\1/g' < $OUT | tr -d '\n' > $TMP
 
 sed -r 's/.*<program>//g' < $TMP > $OUT
 sed -r 's/<\/program>.*//g' < $OUT > $TMP
