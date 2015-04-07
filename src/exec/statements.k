@@ -180,7 +180,7 @@ rule [do-while]:
     do S:Stmt while(E:Exp); => S ~> whileImpl(E, S)                     [structural]
 
 //@ \subsection{For statement}
-//macros
+//macros but cannot [macro]
 rule 'For(_:K,,_:K,,([Exps:KList] => toExps([Exps])),,_:K)
 rule 'For(([Exps:KList] => toExps([Exps])),,_:K,,_:K,,_:K)
 
