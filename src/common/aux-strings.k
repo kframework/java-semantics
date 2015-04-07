@@ -14,7 +14,7 @@ syntax KItem ::= trimHead ( String, Int )                           [function]
 rule trimHead(Str:String, Count:Int) => substrString(Str, Count, lengthString(Str))
 
 //@Trim the last Count chars in the string
-syntax KItem ::= trimTail ( String, Int )                           [function]
+syntax String ::= trimTail ( String, Int )                           [function]
 rule trimTail(Str:String, Count:Int) => substrString(Str, 0, lengthString(Str) -Int Count)
 
 syntax KItem ::= lastChar ( String )                                [function]
