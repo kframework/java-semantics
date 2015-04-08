@@ -215,6 +215,7 @@ BASE_JAVA_FILE=`basename ${JAVA_FILE}`  #simple file/dir name
 PKAST_FILE=`echo "$BASE_JAVA_FILE" | sed 's#/*$##'` # remove trailing slashes, important if JAVA_FILE is dir
 PKAST_FILE=${PKAST_FILE}.pkast
 
+VERBOSE=false
 
 #Actual execution
 if [[ ${SILENT} == false ]]; then
@@ -223,7 +224,7 @@ fi
 
 if [[ ${PREP_FIRST} == true ]]; then
   if [ ! -e ${PKAST_FILE} ]; then
-    CMD="aux-kjrun.sh --mode=run-prep-ast --output=${PREP_OUTPUT} \
+    CMD="aux-kjrun.sh --time=${TIME} --timeout=${TIMEOUT} --mode=run-prep-ast --output=${PREP_OUTPUT} \
       --cmd-suffix=\"${PREP_AST_CMD_SUFFIX}\" \
       --input=${PREP_INPUT} --verbose=${VERBOSE} ${JAVA_FILE} > ${PKAST_FILE}"
     if [[ ${VERBOSE} == true ]]; then
