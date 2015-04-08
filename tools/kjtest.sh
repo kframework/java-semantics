@@ -30,7 +30,7 @@ case "$OPTION" in
     aux-kjtest.sh -mode jdk      -threads 12 -timeout  10 -encodeXML false -clean true ${@}
     ;;
 "--t1")
-    aux-kjtest.sh -mode run      -threads  1 -timeout 120 -encodeXML false -clean true ${@}
+    aux-kjtest.sh -mode run      -threads  1 -timeout 240 -encodeXML false -clean true ${@}
     ;;
 "--t2")
     aux-kjtest.sh -mode run      -threads  2 -timeout 120 -encodeXML false -clean true ${@}
