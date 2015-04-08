@@ -40,3 +40,5 @@
 localTest/*
 *~
 *.iml
+.test
+test-results.xml
