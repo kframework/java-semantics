@@ -97,6 +97,8 @@ syntax Modifier ::= Public
 //@ \subsection{UnicodeEscape.sdf}
 syntax UnicodeEscape ::= Token {[\\][u]+ [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]}
                                                     [onlyLabel, klabel('UnicodeEscape)]
+syntax UList ::= List{U,""}  [klabel('UList)]
+syntax U ::= "u"
 
 //@ \subsection{WhiteSpace.sdf}
 //no need to define because K provides fixed layout
