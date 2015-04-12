@@ -181,35 +181,35 @@ rule [do-while]:
 
 //@ \subsection{For statement}
 //macros but cannot [macro]
-rule 'For(_:K,,_:K,,([Exps:KList] => toExps([Exps])),,_:K)
-rule 'For(([Exps:KList] => toExps([Exps])),,_:K,,_:K,,_:K)
+//rule 'For(_:K,,_:K,,([Exps:KList] => toExps([Exps])),,_:K)
+//rule 'For(([Exps:KList] => toExps([Exps])),,_:K,,_:K,,_:K)
 
 //wrapper of certain clauses of for statement, adds ; to cast expressions
-syntax Exps ::= stm (Exps)
+syntax Exps ::= stm ( KListWrap )
 
 rule [stm-empty]:
-    stm(.Exps) => .                                                         [structural]
+    stm([.KList]) => .                                                         [structural]
 
 rule [stm-exp]:
-    stm(E,Es) => E; ~> stm(Es)
+    stm([E:Exp,,Es:KList]) => E; ~> stm([Es])
 when
     getKLabel(E) ==KLabel 'cast                                             [structural]
 
 rule [stm-LocalVarDec]:
-    stm(K,Ks) => K ~> stm(Ks)
+    stm([K:K,,Ks:KList]) => K ~> stm([Ks])
 when
     notBool ( getKLabel(K) ==KLabel 'cast )                                 [structural]
 
 rule [For-FirstArgV1Red]:
-    for((InitExps => stm(InitExps));_;_) _
+    for((InitExps:K => stm(InitExps));_;_:K) _
     when notBool ( getKLabel(InitExps) ==KLabel 'stm )                      [structural]
 
 
 rule [For-SecondArgRed]:
-    for(stm(_);('None(.KList) => 'Some(true));_) _                          [structural]
+    for(stm(_);('None(.KList) => 'Some(true));_:K) _                          [structural]
 
 rule [For-ThirdArgRed]:
-    for(stm(_);_;(UpdExps => stm(UpdExps))) _
+    for(stm(_);_;(UpdExps:K => stm(UpdExps))) _
     when notBool ( getKLabel(UpdExps) ==KLabel 'stm )                       [structural]
 
 rule [For]:
