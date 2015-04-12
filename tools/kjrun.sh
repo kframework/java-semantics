@@ -215,6 +215,7 @@ BASE_JAVA_FILE=`basename ${JAVA_FILE}`  #simple file/dir name
 PKAST_FILE=`echo "$BASE_JAVA_FILE" | sed 's#/*$##'` # remove trailing slashes, important if JAVA_FILE is dir
 PKAST_FILE=${PKAST_FILE}.pkast
 
+VERBOSE=false
 
 #Actual execution
 if [[ ${SILENT} == false ]]; then

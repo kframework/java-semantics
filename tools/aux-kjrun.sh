@@ -163,6 +163,7 @@ KRUN_CMD="$KRUN_CMD \
 
 case "$MODE" in
 "run-prep-config" | "run-prep-ast")
+KRUN_CMD="$KRUN_CMD -w none"
     ;;
 
 "run-exec")
