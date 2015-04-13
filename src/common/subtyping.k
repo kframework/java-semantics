@@ -2,7 +2,7 @@ module SUBTYPING
     imports CORE-CLASSES
 
 //@ Checks whether first type is a subtype of the second
-syntax KItem ::=  subtype (
+syntax Exp ::=  subtype (
                 Type,
                 Type
               )

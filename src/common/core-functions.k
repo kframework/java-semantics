@@ -60,7 +60,7 @@ rule default(RT:RefType) => null :: RT
 
 /*@ Whenever naked RawVal reaches the top of computation, it have to be converted into TypedVal */
 rule Val:RawVal => toTypedVal(Val)                                                  [structural]
-
+rule isKResult(V:Bool) => false
 /*@ Converts a RawVal into a TypedVal, by adding a default type for the given value.
     Greatly simplifies many rules, because now we can use raw values in the RHS, instead of typed values.
 
@@ -75,7 +75,7 @@ rule toTypedVal( objectRef(OL:Int, Class:ClassType) )
     => objectRef(OL:Int, Class:ClassType) :: Class                                  [structural]
 
 rule toTypedVal(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T           [structural]
-rule toTypedVal(_) => .K [owise] //this case should never happen for valid java programs
+rule toTypedVal(F:Float) => F :: float                                              [structural]
 
 //@ Converts a KList of terms to Types. Uses typeOf underneath.
 syntax KItem ::= getTypes ( KListWrap )           [function]     //[...,, KResult,, ...] - a list of source expressions
@@ -128,7 +128,7 @@ rule plusAux(Str1:String :: _, Str2:String :: _) => (Str1 +String Str2) :: class
 /*@ A wrapper for maps. Allows holding maps inside an arbitrary expression where a K term is required.
     Also used as part of mapUnion operation in PROCESS-CLASS-MEMBERS
 */
-syntax KResult ::= mapWrap ( Map )
+syntax MKR ::= mapWrap ( Map )
 
 /*@ The union of two maps. Arguments are of the form mapWrap(Map). In this operation, elements of the second map
     overwrite elements of the first map if they collide.
@@ -171,7 +171,7 @@ syntax KItem ::= isEmpty( Map )   [function]
 rule isEmpty(.Map) => true
 
 /*@A wrapper for sets, similar to the one for maps.*/
-syntax KResult ::= setWrap ( Set )
+syntax MKR ::= setWrap ( Set )
 
 /*The union of two sets. Arguments are of the form setWrap(Set).*/
 syntax KItem ::=  setUnion (
@@ -239,6 +239,6 @@ rule [.KList] => .K                               [structural]
 
 //@ A wrapper over an arbitrary KList, wrapper being of type KResult.
 syntax KRListWrap ::= "kr" "[" KList "]"          [latex(\terminal{kr[} {#1} \terminal{]})]
-syntax KResult ::= KRListWrap
+syntax MKR ::= KRListWrap
 
 endmodule

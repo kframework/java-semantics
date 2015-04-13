@@ -9,7 +9,7 @@ module CORE-CLASSES
 
 /*@A Java package.*/
 syntax PackageId ::= packageId ( Id )
-syntax KResult ::= PackageId
+syntax MKR ::= PackageId
 
 /*@ Converts a term of type ClassType into a term of type PackageId representing this class.
     This is the package for this class' inner classes.

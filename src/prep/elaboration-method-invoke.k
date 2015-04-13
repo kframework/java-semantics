@@ -153,7 +153,7 @@ rule lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, [ArgExps:
   K heating rules.
 */
 syntax TmpKR ::= "tempKResult"
-syntax KResult ::= TmpKR
+syntax MKR ::= TmpKR
 
 //All cases
 rule [lookupMethod-to-lookupSignature]:

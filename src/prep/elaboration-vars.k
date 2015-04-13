@@ -228,7 +228,7 @@ syntax KItem ::=  elabFieldImpl (
               [strict(2)]
 
 /*@ A representation of fields used in elaboration phase. */
-syntax KResult ::=  fieldEntry (
+syntax MKR ::=  fieldEntry (
                       ClassType,  // target class
                       Id,         // X - field name
                       Type,       // Field type
