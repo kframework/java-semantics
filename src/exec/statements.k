@@ -38,6 +38,13 @@ rule [Block]:
     <env> Env </env>
         [structural]
 
+rule <k> {S:BlockStmList} => S ~> env(Env:Map) ...</k>
+                                      <env> Env </env>
+                                          [structural]
+
+rule Hd:BlockStmt Tl:BlockStmList => Hd ~> Tl
+rule .BlockStmList => .
+
 //@ \texttt{env} Restore the env cell content from env(...) statement argument
 syntax KItem ::= env ( Map )
 

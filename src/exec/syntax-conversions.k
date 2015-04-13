@@ -42,9 +42,11 @@ syntax LocalVarDecStmt ::= Type Id ";"
 rule 'LocalVarDec(_:K,, T:Type,,['VarDec(X:Id)]) => T X;  [structural]
 
 /*@ \subsection{Cast}*/
-
+//this might be confused with castprim or castref
 syntax Exp ::= "(" "(" Type ")" K ")" [klabel('CastImpl)]
 rule ((T:Type) K:K) => cast(T, K)
+rule ( T:RefType ) E:Exp => cast(T,E)
+rule ( T:PrimType ) E:Exp => cast(T,E)
 
 /*@ \subsection{Identifier (name) expression}*/
 
