@@ -37,3 +37,5 @@
 /src/sty/*.pdf
 /src/sty/*.synctex
 /src/sty/.latex
+/src/exec/java-exec-kompiled-bk
+/src/prep/java-prep-kompiled-bk

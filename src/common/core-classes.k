@@ -13,15 +13,15 @@ module CORE-CLASSES
 //@Shortcuts for the most frequently used classes that need special treatment within the semantics.
 
 syntax KItem ::= "classObject"
-    [function, latex(\terminal{Object})]
+    [function, latex(\terminal{class} \terminal{Object} )]
 rule classObject => class String2Id("java.lang.Object")
 
 syntax KItem ::= "classString"
-    [function, latex(\terminal{String})]
+    [function, latex(\terminal{class} \terminal{String} )]
 rule classString => class String2Id("java.lang.String")
 
 syntax KItem ::= "classNullPointerException"
-    [function, latex(\terminal{NullPointerException})]
+    [function, latex(\terminal{class} \terminal{NullPointerException} )]
 rule classNullPointerException => class String2Id("java.lang.NullPointerException")
 
 syntax KItem ::= "classArrayImpl"                   [function]

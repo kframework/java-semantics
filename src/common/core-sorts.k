@@ -159,7 +159,7 @@ syntax Exp ::= TypedVal | RawVal
 */
 syntax KResult ::= TypedVal | Type
 
-syntax KResult ::= "noValue"  [latex({\dotCt{K}})]
+syntax KResult ::= "noValue"  [latex(\dotCt{K} )]
 
 //@ \subsection{Class and member attributes}
 
@@ -169,8 +169,8 @@ syntax KResult ::= Signature
 
 
 /*@ The member accessibility context of the current method --- either static or instance.*/
-syntax ContextType ::=  "staticCT"    [latex(\terminal{static})]
-                      | "instanceCT"  [latex(\terminal{instance})]
+syntax ContextType ::=  "staticCT"    [latex(\terminal{static} )]
+                      | "instanceCT"  [latex(\terminal{instance} )]
 syntax KResult ::= ContextType
 
 /*@ Member access modes*/
@@ -181,8 +181,8 @@ syntax KResult ::= AccessMode
 syntax MethodMetaType ::= "methodMMT" | "constructorMMT"
 
 /*@ The two possibilities for a type represented by an objectRef: class or interface.*/
-syntax ClassMetaType ::=  "classCMT"      [latex(\terminal{class})]
-                        | "interfaceCMT"  [latex(\terminal{interface})]
+syntax ClassMetaType ::=  "classCMT"      [latex(\terminal{class} )]
+                        | "interfaceCMT"  [latex(\terminal{interface} )]
 
 //@ \subsection{Misc definitions}
 
@@ -192,7 +192,7 @@ syntax MethodRef ::=   methodRef(
                             RefType     //Usually Class - class defining the method
                                         //  Could also be array type, because we may invoke methods over arrays.
                           )
-                        | "noMethodRef"   [latex({\dotCt{K}})]
+                        | "noMethodRef"   [latex(\dotCt{K} )]
 syntax KResult ::= MethodRef
 syntax MethodName ::= MethodRef
 
@@ -217,7 +217,7 @@ syntax ClassOrName ::= Id | ClassType
 //Denis' syntax
 
 /*@ A fully qualified class name, or noClass where no valid class exists in the current context.*/
-syntax ClassType ::= "class" Id | "noClass"                     [latex({\dotCt{K}})]
+syntax ClassType ::= "class" Id | "noClass"                     [latex(\dotCt{K} )]
 
 /*@ \subsection{Random unsorted content, syntax converters}*/
 
@@ -243,14 +243,14 @@ rule 'Id(Str:String) => String2Id(Str)                [structural, anywhere]
 syntax KLabel ::= "'ListWrap"
 rule 'ListWrap(Ks:KList) => [Ks]                  [structural, anywhere]
 //todo: both 'KListWrap and 'ListWrap are associted with the same production, so how to get rid of it
-syntax KListWrap ::= "[" KList "]" [klabel('KListWrap), latex(\terminal{[} {#1} \terminal{]})]
+syntax KListWrap ::= "[" KList "]" [klabel('KListWrap), latex(\terminal{[} {#1}\terminal{]} )]
 
 //@ Sequence of terms and of any other statements. The first term is moved to the top of computation.
 rule [S1:K,, Stmts:KList] => S1 ~> [Stmts]        [structural]
 rule [.KList] => .K                               [structural]
 
 //@ A wrapper over an arbitrary KList, wrapper being of type KResult.
-syntax KRListWrap ::= "kr" "[" KList "]"          [latex(\terminal{kr[} {#1} \terminal{]})]
+syntax KRListWrap ::= "kr" "[" KList "]"          [latex(\terminal{kr[} {#1}\terminal{]} )]
 syntax KResult ::= KRListWrap
 
 //@ \subsubsection{Computation terms produced during elaboration}
