@@ -70,8 +70,7 @@ rule addElementToDimExpsEnd(.DimExps, P:DimExp) => P .DimExps
 rule addElementToDimExpsEnd((Hd:DimExp Tl:DimExps), P:DimExp) => Hd addElementToDimExpsEnd(Tl,P)
 
 //todo: move macro
-rule 'NewArray(_,,([D:DimExp,,Ds:KList] => toDimExps([D,,Ds],.DimExps)),,([.KList] => .Dims))
-rule 'NewArray(_,,([.KList] => .Dims),,_)
+rule 'NewArray(_,,([D:DimExp,,Ds:KList] => toDimExps([D,,Ds],.DimExps)),,_)
 
 /*@ When all dims were computed, check that dims are positive, and only
     after that begin array allocation

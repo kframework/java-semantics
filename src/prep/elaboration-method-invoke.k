@@ -119,6 +119,7 @@ rule getLookupTargetType(arrayOf _) => classArrayImpl
 // True for cast(T,'QThis(\_)), false otherwise
 syntax KItem ::= isCastOfQThis ( K )                                      [function]
 rule isCastOfQThis(cast(_, 'QThis(_))) => true
+rule isCastOfQThis(_) => false [owise]
 
 /*@ Lookup the right methodRef() based on supplied parameters.
 If the method is not found in the supplied class list, we should search for it in the

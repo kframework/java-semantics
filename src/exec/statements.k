@@ -221,7 +221,10 @@ rule [For-ThirdArgRed]:
 
 rule [For]:
     for(stm(InitClause); 'Some(TestExp); stm(UpdClause)) S
-    => 'Block(stm(InitClause) ~> whileImpl(TestExp, S ~> stm(UpdClause)))   [structural]
+    => 'Block(stm(InitClause)
+    ~> ifAux(TestExp, ('Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S)), .)) [structural]
+
+rule ifAux(stm(S) ~> B:K, S1, S2 ) => stm(S) ~> ifAux(B, S1, S2)
 
 //totest model check - the argument of 'return and 'Throw must be evaluated. Otherwise some side effects during
 // evaluation might be evaluated too late
