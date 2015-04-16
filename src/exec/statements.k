@@ -414,6 +414,9 @@ rule [Try-Catch-Finally-Desugar]:
 */
 //resolve the catch clauses of try statement
 context try _:K HOLE
+context 'CatchClauseList(_:K,, HOLE)
+context 'CatchClauseList(HOLE,, _:K)
+
 
 rule catch(KR:Param)S:K => catchImpl(KR,S)
 
