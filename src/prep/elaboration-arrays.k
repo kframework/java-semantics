@@ -14,20 +14,20 @@ rule [elab-LocalVarDec-ArrayVarDecId-desugar]:
       (T:Type => arrayOf T),,
       ['VarDec('ArrayVarDecId(
           X:Id,,
-          [('Dim(.KList) => .KList) ,,_]
+          ([]:Dim Ds:Dims => Ds)
       ),, _:KList //possible initializer
     )]))                                                [structural]
 
 rule [elab-LocalVarDec-ArrayVarDecId-discard]:
     elab('LocalVarDec(_:K,, T:Type,, ['VarDec(
-        ( 'ArrayVarDecId( X:Id,, [.KList] ) => X ),,
+        ( 'ArrayVarDecId( X:Id,, .Dims ) => X ),,
         _:KList //possible initializer
     )]))                                                [structural]
 
 rule [elab-LocalVarDec-ArrayInit-desugar]:
     elab('LocalVarDec(_:K,, T:Type,, ['VarDec(
       X:Id,,
-      ( 'ArrayInit(InitK:K) => 'NewArray(T,, [.KList],, 'ArrayInit(InitK)) )
+      ( 'ArrayInit(InitK:K) => 'NewArray(T,, .Dims,, 'ArrayInit(InitK)) )
     )]))                                                [structural]
 
 //same three rules for fields
@@ -38,20 +38,20 @@ rule [FieldDec-ArrayVarDecId-desugar]:
       (T:Type => arrayOf T),,
       ['VarDec('ArrayVarDecId(
           X:Id,,
-          [('Dim(.KList) => .KList) ,,_]
+          ([]:Dim Ds:Dims => Ds)
       ),, _:KList //possible initializer
     )])                                                 [structural]
 
 rule [FieldDec-ArrayVarDecId-discard]:
     'FieldDec(_:K,, T:Type,, ['VarDec(
-        ( 'ArrayVarDecId( X:Id,, [.KList] ) => X ),,
+        ( 'ArrayVarDecId( X:Id,, .Dims ) => X ),,
         _:KList //possible initializer
     )])                                                 [structural]
 
 rule [FieldDec-ArrayInit-desugar]:
     'FieldDec(_:K,, T:Type,, ['VarDec(
       X:Id,,
-      ( 'ArrayInit(InitK:K) => 'NewArray(T,, [.KList],, 'ArrayInit(InitK)) )
+      ( 'ArrayInit(InitK:K) => 'NewArray(T,, .Dims,, 'ArrayInit(InitK)) )
     )])                                                 [structural]
 
 //first two rules - desugaring C-like array declarations, for params
@@ -64,14 +64,14 @@ rule [Param-ArrayVarDecId-desugar]:
       (T:Type => arrayOf T),,
       'ArrayVarDecId(
           X:Id,,
-          [('Dim(.KList) => .KList) ,,_]
+          ([]:Dim Ds:Dims => Ds)
       )
     )                                                   [structural, anywhere]
 
 rule [Param-ArrayVarDecId-Discard]:
     'Param(
       _:K,, T:Type,,
-      ( 'ArrayVarDecId( X:Id,, [.KList] ) => X )
+      ( 'ArrayVarDecId( X:Id,, .Dims ) => X )
     )                                                   [structural, anywhere]
 
 /*@ \subsection{Elaboration of array-related expressions} */
@@ -87,13 +87,12 @@ when
     Id2String(X) ==String "length"
 
 rule [elabEnd-NewArray-EmptyDims]:
-    elabEnd('NewArray( (T:Type => arrayOf T),, [_],,
-        [ ( 'Dim(.KList) => .KList ) ,,_:KList] ))
+    elabEnd('NewArray( (T:Type => arrayOf T),, [_:KList],, ([]:Dim Ds:Dims => Ds)))
         [structural]
 
 rule [elabEnd-NewArray]:
-    elabEnd('NewArray(T:Type,, [Dims:KList],, [.KList]))
-    => elabExpAndType('NewArray(T,, [Dims],, [.KList]), getArrayType(T, [Dims]))
+    elabEnd('NewArray(T:Type,, [Dims:KList],, .Dims))
+    => elabExpAndType('NewArray(T,, [Dims],, .Dims), getArrayType(T, [Dims]))
         [structural]
 
 //@ Computes the array type based on allocated elem type and number of allocated dimensions.
@@ -102,10 +101,10 @@ rule getArrayType(T:Type, [K:K,,Dims:KList]) => getArrayType(arrayOf T, [Dims])
 rule getArrayType(T:Type, [.KList]) => T
 
 rule [elabEnd-NewArray-ArrayInit-Preprocess]:
-    elabEnd('NewArray((T:Type => arrayOf T),, [('Dim(.KList) => .KList),, _],, 'ArrayInit(_)))
+    elabEnd('NewArray((T:Type => arrayOf T),, ([]:Dim Ds:Dims => Ds),, 'ArrayInit(_)))
 
 rule [elabEnd-NewArray-ArrayInit]:
-    elabEnd('NewArray(arrayOf T:Type,, [.KList],, 'ArrayInit(InitContent)))
-    => elabRes(cast(arrayOf T, 'NewArray(arrayOf T:Type,, [.KList],, 'ArrayInit(InitContent))))
+    elabEnd('NewArray(arrayOf T:Type,, .Dims,, 'ArrayInit(InitContent)))
+    => elabRes(cast(arrayOf T, 'NewArray(arrayOf T:Type,, .Dims,, 'ArrayInit(InitContent))))
 
 endmodule

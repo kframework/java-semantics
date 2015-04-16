@@ -213,6 +213,7 @@ rule defaultElabHeating('stmtAndExp) => true
 rule defaultElabHeating('CatchClauseList) => true
 rule defaultElabHeating('FormalParamList) => true
 rule defaultElabHeating('VarInitList) => true
+rule defaultElabHeating('DimList) => true
 rule defaultElabHeating(_) => false [owise]
 
 /*@ Naked terms are those that should be computed directly into KResult during elaboration.
