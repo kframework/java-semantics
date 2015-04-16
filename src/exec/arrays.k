@@ -57,18 +57,20 @@ and assign the right type ($T$) to the allocated array locations. */
 /* For multi-dimensions arrays, it is expanded from the last DimExp, but currently, the tail element(s)
  matching is unavailable for user defined lists, so we reverse list for easier matching
 */
-
 syntax DimExps ::= reverseDimExps(DimExps, DimExps) [function]
 rule reverseDimExps(D:DimExp Ds:DimExps, Es:DimExps) => reverseDimExps(Ds, (D Es))
 rule reverseDimExps(.DimExps, Es:DimExps) => Es
 
 syntax DimExps ::= toDimExps( KListWrap , DimExps) [function]
-rule toDimExps([Ds:KList,,D:DimExp], Es:DimExps) => toDimExps([Ds], (D Es))
+rule toDimExps([D:DimExp,, Ds:KList], Es:DimExps) => toDimExps([Ds], addElementToDimExpsEnd(Es, D))
 rule toDimExps([.KList], Es:DimExps) => Es
 
+syntax DimExps ::= addElementToDimExpsEnd (DimExps, DimExp) [function]
+rule addElementToDimExpsEnd(.DimExps, P:DimExp) => P .DimExps
+rule addElementToDimExpsEnd((Hd:DimExp Tl:DimExps), P:DimExp) => Hd addElementToDimExpsEnd(Tl,P)
+
 //todo: move macro
-rule 'NewArray(_,,([D:DimExp,,Ds:KList] => toDimExps([D,,Ds],.DimExps)),,([.KList] => .Dims))
-rule 'NewArray(_,,([.KList] => .Dims),,_)
+rule 'NewArray(_,,([D:DimExp,,Ds:KList] => toDimExps([D,,Ds],.DimExps)),,_)
 
 /*@ When all dims were computed, check that dims are positive, and only
     after that begin array allocation
@@ -81,7 +83,7 @@ rule [NewArray-simple]:
 
 rule [NewArray-ArrayInit]:
     new arrayOf T:Type .Dims {InitContent:VarInits}
-    => arrayInitAlloc((new T [length(InitContent)::int] .Dims), {InitContent})
+    => arrayInitAlloc((new T [length(InitContent)::int]:DimInt .Dims), {InitContent})
 
 syntax Int ::= length (VarInits)                                  [function]
 rule length(V:VarInit, Vs:VarInits) => length(Vs)+Int 1
@@ -92,11 +94,11 @@ checkNonNegative is dissolved. Otherwise NegativeArraySizeException is thrown.
 */
 syntax KItem ::=  checkNonNegative (DimExps)
 
-rule checkNonNegative([NI:Int::_ ] Remainings:DimExps)=> checkNonNegative(Remainings)
+rule checkNonNegative([NI:Int::_ ]:DimInt Remainings:DimExps)=> checkNonNegative(Remainings)
 when NI >=Int 0
 
 rule [checkNonNegative-to-NegativeArraySizeException]:
-    checkNonNegative([NI:Int::_] _)
+    checkNonNegative([NI:Int::_]:DimInt _:DimExps)
     => throw new class String2Id("java.lang.NegativeArraySizeException") (null::classString);
 when
     NI <Int 0
@@ -128,7 +130,7 @@ rule [allocAndInitArray-MultiDim-desugar]:
 */
 rule [allocAndInitArray]:
     <k>
-      allocAndInitArray(T:Type, [NI:Int::_], InitExp:K)
+      allocAndInitArray(T:Type, [NI:Int::_]:DimInt , InitExp:K)
       => allocArray(NI, T) ~> initArray(LI +Int 1, NI, InitExp)
          ~> arrayRef( arrayOf T, LI +Int 1, NI) :: arrayOf T
       ...
@@ -151,8 +153,8 @@ syntax KItem ::=  allocArray (
 
 rule [allocArray]:
     <k> allocArray(N:Int => N -Int 1, T:Type) ...</k>
-    <store>... . => LI |-> (undefined :: elem T) ...</store>
-    <storeMetadata>... . => LI |-> FieldLocMetadata ...</storeMetadata>
+    <store>... .Map => LI |-> (undefined :: elem T) ...</store>
+    <storeMetadata>... .Map => LI |-> FieldLocMetadata ...</storeMetadata>
     <nextLoc> LI:Int => LI +Int 1 </nextLoc>
 when
     N >Int 0
@@ -241,11 +243,11 @@ rule [arrayInitImpl-inner-ArrayInit-desugar]:
 rule [arrayInitImpl-discard]:
     arrayInitImpl(_, _, {.VarInits}) => .
 
-syntax VarInits ::= toVarInits( KListWrap , VarInits) [function]
-rule toVarInits([Args:KList,, Arg:VarInit], Es:VarInits) => toVarInits([Args], (Arg,Es))
-rule toVarInits([.KList], Es:VarInits) => Es
+//syntax VarInits ::= toVarInits( KListWrap , VarInits) [function]
+//rule toVarInits([Args:KList,, Arg:VarInit], Es:VarInits) => toVarInits([Args], (Arg,Es))
+//rule toVarInits([.KList], Es:VarInits) => Es
 
 //todo: move macro
-rule 'ArrayInit([InitContent:KList] => toVarInits([InitContent], .VarInits)) [anywhere]
+//rule 'ArrayInit([InitContent:KList] => toVarInits([InitContent], .VarInits)) [anywhere]
 
 endmodule

@@ -1,6 +1,6 @@
 module CORE-PREPROCESSING
     imports CORE-SORTS
-    imports CORE-FUNCTIONS
+    imports CORE-CLASSES
 
 //@ Auxiliary functions related to preprocessing phases only.
 
@@ -10,15 +10,18 @@ module CORE-PREPROCESSING
     Uses <namesToClasses> to compute the result. Used by the starting rule of several preprocessing phases.
 */
 syntax KItem ::= "getTopLevelClasses"
-           | getTopLevelClasses ( Map, Set )
+               | getTopLevelClasses ( List, Set )
 
-rule [getTopLevelClasses-start]:
-    <k> getTopLevelClasses => getTopLevelClasses(NamesMap, .Set) ...</k>
+rule [getTopLevelClasses-start1]:
+    <k> getTopLevelClasses => getTopLevelClasses(values(NamesMap), .Set) ...</k>
     <namesToClasses> NamesMap:Map </namesToClasses>
+
+rule [getTopLevelClasses-start2]:
+    <k> getTopLevelClasses((ListItem(mapWrap(M:Map)) => values(M)) _, _) ...</k>
 
 rule [getTopLevelClasses-top-level]:
     <k>
-      getTopLevelClasses(_ _ |-> mapWrap(_ (_ |-> Class:ClassType => .Map)), _ (.Set => SetItem(Class)))
+      getTopLevelClasses((ListItem(Class:ClassType) => .List) _, (S:Set => S SetItem(Class)))
       ...
     </k>
     <classType> Class </classType>
@@ -26,28 +29,26 @@ rule [getTopLevelClasses-top-level]:
 
 rule [getTopLevelClasses-not-top-level]:
     <k>
-      getTopLevelClasses(_ _ |-> mapWrap(_ (_ |-> Class:ClassType => .Map)), _)
+      getTopLevelClasses((ListItem(Class:ClassType) => .List) _, _)
       ...
     </k>
     <classType> Class </classType>
     <enclosingClass> class _ </enclosingClass>
 
-rule getTopLevelClasses(_ (_ |-> mapWrap(.Map) => .Map), _)
-rule getTopLevelClasses(.Map, ClassesSet:Set) => setWrap(ClassesSet)
+rule getTopLevelClasses(.List, ClassesSet:Set) => setWrap(ClassesSet)
 
 /*@ Returns a setWrap(Set[ClassType]), containing all direct inner classes of the given class.
     Uses <namesToClasses> to compute the result.
 */
 syntax KItem ::= getInnerClasses ( ClassType )
-           | getInnerClasses ( Map, Set )
+               | getInnerClasses ( Map, Set )
+//todo mapItem/solution
 
 rule [getInnerClasses-start-have-inner]:
-    <k> getInnerClasses(Class:ClassType) => getInnerClasses(InnerClassesMap, .Set) ...</k>
-    <namesToClasses>... Pack:PackageId |-> mapWrap(InnerClassesMap:Map) ...</namesToClasses>
-when
-    Pack ==K toPackage(Class)
+    <k> getInnerClasses(class Class:Id) => getInnerClasses(InnerClassesMap, .Set) ...</k>
+    <namesToClasses>... packageId(Class) |-> mapWrap(InnerClassesMap:Map) ...</namesToClasses>
 
-rule getInnerClasses( (_ |-> Class:ClassType => .Map) _, (.Set => SetItem(Class)) _)
+rule getInnerClasses( (_ |-> Class:ClassType => .Map) _, (S:Set => S SetItem(Class)))
 rule getInnerClasses(.Map, ClassesSet:Set) => setWrap(ClassesSet)
 
 rule [getInnerClasses-no-inners]:

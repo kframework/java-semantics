@@ -2,7 +2,6 @@ module ELABORATION-CORE
     imports CORE-SORTS
     imports SUBTYPING
     imports ELABORATION-CATEGORIES
-    imports ELABORATION-EXPRESSIONS // for isExpressionLabel
 
 /*@
 Elaborate the composition of code blocks of a class - the last step of preprocessing.
@@ -66,9 +65,13 @@ syntax KItem ::= "CHOLE"
 //@Elaborates the given statement/expression. The first step of elaboration.
 syntax KItem ::= elab ( K )
 
-//@ Wraps the elaboration result. Since elaboration may happen at both ElaborationPhase and ExecutionPhase, it cannot be KResult. Actually it is not KResult for HOLE, but is for CHOLE.
+/*@ Wraps the elaboration result. Since elaboration may happen at both ElaborationPhase and
+ExecutionPhase, it cannot be KResult. Actually it is not KResult for HOLE, but is for CHOLE.*/
 syntax ElabKResult ::= elabRes ( K )
-rule isElabKResult(KR:KResult) => true
+
+/*the following rule does not behave the same in k 3.6 as in k 3.4, not helping when
+check _:ElabKResult, since KResult cannot appear in the right hand side of syntax definition,
+had to modified some rules to use isElabKResult rather than _:ElabKResult */
 
 /*@ \subsection{Operator ??}*/
 
@@ -85,8 +88,8 @@ when
     notBool isElabKResult(Arg1) ==K true
 
 rule [chainOfResponsibility-Result1]:
-    ElabRes:ElabKResult ~> (CHOLE ?? _) => ElabRes
-when ElabRes =/=K noValue
+    ElabRes ~> (CHOLE ?? _) => ElabRes
+when ElabRes =/=K noValue andBool isElabKResult(ElabRes) ==K true
 
 rule [chainOfResponsibility-Result2]:
     noValue ~> (CHOLE ?? K:K) => K
@@ -102,6 +105,7 @@ rule [chainOfResponsibility-Result2]:
 syntax KItem ::= isElabKList ( KListWrap )                 [function]
 rule isElabKList([ElabKR:ElabKResult,, Ks:KList]) => isElabKList([Ks])
 rule isElabKList([.KList]) => true
+rule isElabKList([_,,_]) => false [owise]
 
 //@ Elaborate parameter type, if not elaborated yet. For catch clause.
 context  elab('Param(_:K,, HOLE,, _:Id))
@@ -110,14 +114,14 @@ context  elab('Param(_:K,, HOLE,, _:Id))
 */
 rule [elab-Param]:
     <k> elab('Param(K1:K,, T:Type,, X:Id)) => elabRes('Param(K1:K,, T:Type,, X:Id)) ...</k>
-    <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv>
+    <elabEnv> ListItem(mapWrap((.Map => X |-> T) _)) ...</elabEnv>
 
 //@Removes the last layer from <elabEnv>
 syntax KItem ::= "removeLastElabEnv"
 rule [removeLastElabEnv]:
-    <k> removeLastElabEnv => . ...</k>
-    <elabEnv> ListItem(_) => . ...</elabEnv>
-    <localTypes> ListItem(_) => . ...</localTypes>
+    <k> removeLastElabEnv => .K ...</k>
+    <elabEnv> ListItem(_) => .List ...</elabEnv>
+    <localTypes> ListItem(_) => .List ...</localTypes>
 
 /*@ \subsection{Elaboration of code blocks} */
 
@@ -128,20 +132,54 @@ In order to expose incorrect nondeterminism we need to model-check a program tha
 
 Labels that are "naked" should be heated in their pure form. Other terms should be heated wrapped into elab().
 */
+//todo A matching case 2, customElabHeating:'For, 'Catch, '(Q)NewInstance
+//rule [elab-heat-default]:
+//    (. => #if isElabNaked(K) ==K true
+//            #then K
+//            #else elab(K)
+//          #fi
+//    )
+//    ~> elab(KL:KLabel(HeadKs:KList,, (K:K => CHOLE),, _:KList))
+//when
+//    (defaultElabHeating(KL) ==K true orBool customElabHeating(KL, [HeadKs,,K]) ==K true)
+//    andBool notBool isElabKResult(K) ==K true
+//        [transition-strictness]
+
 rule [elab-heat-default]:
-    (. => #if isElabNaked(K) ==K true
-            #then K
-            #else elab(K)
-          #fi
-    )
-    ~> elab(KL:KLabel(HeadKs:KList,, (K:K => CHOLE),, _:KList))
-when
-    (defaultElabHeating(KL) ==K true orBool customElabHeating(KL, [HeadKs,,K]) ==K true)
-    andBool notBool isElabKResult(K) ==K true
-        [transition-strictness]
+    elab(KL:KLabel(L:KList)) =>  elabFirstNotElabedChild(KL(L), KL(.KList))
+when defaultElabHeating(KL) ==K true andBool isElabKList([L]) ==K false
 
 rule [elab-cool-default]:
-    (ElabK:ElabKResult => .) ~> elab(_:KLabel(_,, (CHOLE => ElabK),, _))
+    (ElabK ~> elab(K:KLabel(L:KList))) => coolElabedChild(ElabK, elab(K(L)), elab(K(.KList)))
+when hasCHOLE([L]) andBool K =/=KLabel 'KListWrap andBool isElabKResult(ElabK) ==K true
+
+//aux function
+syntax KItem ::= hasCHOLE(KListWrap) [function]
+
+rule hasCHOLE([.KList]) => false
+rule hasCHOLE([CHOLE,,_]) => true
+rule hasCHOLE([Hd:K,,Tl:KList]) => hasCHOLE([Tl]) when Hd =/=K CHOLE
+
+//elab children one by one for default elaboration
+syntax KItem ::= elabFirstNotElabedChild( K, K )
+
+rule elabFirstNotElabedChild(KL:KLabel((Hd => .KList),, _:KList), KL(_:KList,, (.KList => Hd)))
+when KL =/=KLabel 'KListWrap andBool isElabKResult(Hd) ==K true
+
+rule elabFirstNotElabedChild(KL:KLabel(K:K,, Tl:KList), KL(Hd:KList))
+        => (#if isElabNaked(K) ==K true
+               #then K
+               #else elab(K)
+            #fi) ~> elab(KL(Hd,,CHOLE,,Tl))
+when notBool isElabKResult(K) ==K true andBool KL =/=KLabel 'KListWrap
+
+syntax KItem ::= coolElabedChild( K, K, K )
+
+rule coolElabedChild(_, elab(K:KLabel((Hd => .KList),,_:KList)), elab(K(_:KList,, (.KList => Hd))))
+when Hd =/=K CHOLE andBool K =/=KLabel 'KListWrap
+
+rule coolElabedChild(ElabK, elab(K:KLabel(CHOLE,,Tl:KList)), elab(K(Hd:KList))) => elab(K(Hd,,ElabK,,Tl))
+when K =/=KLabel 'KListWrap
 
 /*@ Must be true for AST nodes that require elaboration heating of their children. For the arguments KL, Ks,
 the original node is of he form KL(KS,,\_) and the heated child is always the last element of Ks.
@@ -154,6 +192,7 @@ defaultElabHeating.
 
 The predicate definition is scattered across modules related to elaboration.*/
 syntax KItem ::= customElabHeating ( KLabel, KListWrap )          [function]
+rule customElabHeating(_,_) => false [owise]
 
 /*@ The default algorithm of transforming the term from elab to elabRes, when the children were completely elaborated.
   Deletes elabRes wrappers from children. This algorithm is activated when the following conditions apply:
@@ -163,28 +202,33 @@ syntax KItem ::= customElabHeating ( KLabel, KListWrap )          [function]
   When the default algorithm is not appropriate, the respective term should be in the cathegory customElabChildren
 */
 syntax KItem ::= elabDispose ( K )
+               | elabDispose ( K, K)
+//due to the lack of associate matching, we need another argument to enable looping and hold the result
 
 /*@ This rule is universal for all forms of terms, both instructions and statements.
+but KL doesn't include KListWrap because of k bug, same rules for KListWrap can be found in the last subsection.
 */
 rule [elab-to-elabDispose]:
-    elab(KL:KLabel(ElabResL:KList)) => elabDispose(KL(ElabResL))
+    elab(KL:KLabel(ElabResL:KList)) => elabDispose(KL(ElabResL), KL(.KList))
 when
-    isElabKList([ElabResL]) ==K true
+    isElabKList([ElabResL]) ==K true andBool KL =/=KLabel 'KListWrap
 
-rule [elabDispose-process]:
-    elabDispose(KL:KLabel(_,, (elabRes(K:K) => K),, _))
+rule [elabDispose-process-strip]:
+    elabDispose(KL:KLabel((elabRes(K) => .KList),, _:KList), KL(_:KList,, (.KList => K)))
+when KL =/=KLabel 'KListWrap
+
+rule [elabDispose-process-keep]:
+    elabDispose(KL:KLabel((K:K => .KList),, _:KList), KL(_:KList,, (.KList => K)))
+when
+    getKLabel(K) =/=KLabel 'elabRes andBool KL =/=KLabel 'KListWrap
 
 rule [elabDispose-to-elabEnd]:
-    elabDispose(KL:KLabel(Ks:KList)) => elabEnd(KL(Ks))
-when
-    notBool haveElabRes([Ks]) ==K true
+    elabDispose(KL:KLabel(.KList), KL(Ks)) => elabEnd(KL(Ks)) when KL =/=KLabel 'KListWrap
 
-//@ True if given KList has no terms of the form elabRes(...), false otherwise.
-syntax KItem ::= haveElabRes ( KListWrap )          [function]
-rule haveElabRes([_,, elabRes(_),, _]) => true
-
-//K bug additional rule required since we introduced KListWrap
-rule haveElabRes([_,, KList2KLabel _,, elabRes(_),, _ (_),, _]) => true
+/* This rule is added because #token("Id","$id")(.KList) is no longer considered as KL:KLabel(.KList),
+so the default elab rules don't work. */
+rule [elabtokenId-to-elabRes]:
+    elab(I:Id) => elabRes(I)
 
 /*@ The 3rd elaboration-phase wrapper for expressions. Represents the case when children are completely elaborated and
 unwrapped from elabRes(), but root node might not be elaborated yet. The implementation is scattered across all modules
@@ -240,6 +284,7 @@ when
 
 //@ The implementation is scattered across elaboration-related modules
 syntax KItem ::= customElabEnd ( KLabel )                       [function]
+rule customElabEnd(_) => false [owise]
 
 //@ Eliminate stmtAndExp if the first argument is empty, otherwise keep it for execution phase.
 rule elabEnd( stmtAndExp(Stmt:K, cast(T:Type, Exp:K)) )
@@ -250,34 +295,41 @@ rule elabEnd( stmtAndExp(Stmt:K, cast(T:Type, Exp:K)) )
 
 /*@ \subsection{Elaboration of KListWrap - the list of terms} */
 //K bug: this section is a workaround t a serious K' bug that prevents [...] to be properly heated and cooled
-
 rule [elab-heat-KListWrap]:
-    (. => #if isElabNaked(K) ==K true
-            #then K
-            #else elab(K)
-          #fi
-    )
-    ~> elab([HeadKs:KList,, (K:K => CHOLE),, _:KList])
-when
-    isElabKList([HeadKs]) andBool notBool isElabKResult(K) ==K true
+    elab([L:KList]) =>  elabFirstNotElabedChild([L], [.KList])
+when isElabKList([L]) ==K false
 
 rule [elab-cool-KListWrap]:
-    (ElabK:ElabKResult => .) ~> elab([_,, (CHOLE => ElabK),, _])
+    (ElabK ~> elab([L:KList])) => coolElabedChild(ElabK, elab([L]), elab([.KList]))
+when hasCHOLE([L]) andBool isElabKResult(ElabK) ==K true
+
+rule elabFirstNotElabedChild([(Hd => .KList),, _:KList], [_:KList,, (.KList => Hd)])
+when isElabKResult(Hd) ==K true
+
+rule elabFirstNotElabedChild([K:K,, Tl:KList], [Hd:KList])
+        => (#if isElabNaked(K) ==K true
+               #then K
+               #else elab(K)
+            #fi) ~> elab([Hd,,CHOLE,,Tl])
+when notBool isElabKResult(K) ==K true
+
+rule coolElabedChild(_, elab([(Hd => .KList),,_:KList]), elab([_:KList,, (.KList => Hd)]))
+when Hd =/=K CHOLE
+
+rule coolElabedChild(ElabK, elab([CHOLE,,Tl:KList]), elab([Hd:KList])) => elab([Hd,,ElabK,,Tl])
 
 rule [elab-to-elabDispose-KListWrap]:
-    elab([K1:K,,ElabResL:KList]) => elabDispose([K1,,ElabResL])
+    elab([ElabResL:KList]) => elabDispose([ElabResL], [.KList])
 when
-    isElabKList([K1,,ElabResL]) ==K true
+    isElabKList([ElabResL]) ==K true
 
-rule [elabDispose-process-KListWrap]:
-    elabDispose([_,, (elabRes(K:K) => K),, _])
+rule [elabDispose-process-strip-KListWrap]:
+    elabDispose([(elabRes(K) => .KList),, _:KList], [_:KList,,(.KList => K)])
 
-rule [elabDispose-to-elabEnd-KListWrap]:
-    elabDispose([K1:K,,Ks:KList]) => elabRes([K1,,Ks])
-when
-    notBool haveElabRes([Ks]) ==K true
+rule [elabDispose-process-keep-KListWrap]:
+    elabDispose([(K:K => .KList),, _:KList], [_:KList,,(.KList => K)]) when getKLabel(K) =/=KLabel 'elabRes
 
-rule [elab-to-elabRes-KListWrap-empty]:
-    elab([.KList]) => elabRes([.KList])
+rule [elabDispose-to-elabRes-KListWrap]:
+    elabDispose([.KList], K:K) => elabRes(K)
 
 endmodule

@@ -18,10 +18,10 @@ syntax KItem ::=  processClasses (
 
 rule [processClasses]:
     (. => processTypeWithDepends(Class))
-    ~>  processClasses(setWrap( (SetItem(Class:ClassType) => .) _:Set))
+    ~>  processClasses(setWrap( (SetItem(Class:ClassType) => .Set) _:Set))
 
 rule [processClasses-Discard]:
-    processClasses(setWrap(.)) => .
+    processClasses(setWrap(.Set)) => .
 
 syntax KItem ::=  processTypeWithDepends (
                 ClassType  //the class to be processed,
@@ -89,7 +89,7 @@ rule [processType]:
       <classType> Class </classType>
       <extends> BaseClass:ClassType </extends>
       <implements> ISet:Set </implements>
-      <implTrans> . => ISet </implTrans>
+      <implTrans> .Set => ISet </implTrans>
       ( <rawDeclarations> Decls:K </rawDeclarations> => .Bag)
       <classMetaType> MetaT:ClassMetaType </classMetaType>
       <classPhase> DecsProcessedCPhase => MembersProcessedCPhase </classPhase>
@@ -108,7 +108,7 @@ syntax KItem ::= computeImplTrans ( Set )
 rule [computeImplTrans]:
     <k>
       (. => saveImplTrans(setUnion(setWrap(ITrans), setWrap(BaseItfITrans))))
-      ~> computeImplTrans( (SetItem(BaseItf:ClassType) => .) _)
+      ~> computeImplTrans( (SetItem(BaseItf:ClassType) => .Set) _)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -117,9 +117,9 @@ rule [computeImplTrans]:
     <classType> BaseItf </classType>
     <implTrans> BaseItfITrans:Set </implTrans>
 
-rule [computeImplTrans-Elem-Discard]: computeImplTrans( (SetItem(noClass) => .) _)
+rule [computeImplTrans-Elem-Discard]: computeImplTrans( (SetItem(noClass) => .Set) _)
 
-rule [computeImplTrans-Discard]: computeImplTrans(.) => .
+rule [computeImplTrans-Discard]: computeImplTrans(.Set) => .K
 
 syntax KItem ::=  saveImplTrans (
                 K //setWrap(ISet) - transitive set of inherited interfaces
@@ -135,11 +135,12 @@ rule <k> saveImplTrans(setWrap(S1:Set)) => . ...</k>
 syntax KItem ::= tryInheritSet ( Set )
            | tryInherit ( ClassType )
            | tryInheritImpl ( Map )
+           | tryInheritImpl ( K , K )
 
 rule [tryInheritSet]:
-    (. => tryInherit(Class:ClassType)) ~> tryInheritSet( (SetItem(Class) => .) _)
+    (.K => tryInherit(Class:ClassType)) ~> tryInheritSet( (SetItem(Class) => .Set) _)
 
-rule [tryInheritSet-Discard]: tryInheritSet(.) => .
+rule [tryInheritSet-Discard]: tryInheritSet(.Set) => .K
 
 rule [tryInherit]:
     <k>
@@ -153,17 +154,17 @@ rule [tryInherit-Discard]:
     tryInherit(noClass) => .K
 
 rule [tryInheritImpl-Unfold]:
-    <k> (. => tryInheritImpl(MI)) ~> tryInheritImpl( (MI:MapItem => .) _:MapItem _) ...</k>
+    (.K => tryInheritImpl(M, I)) ~> tryInheritImpl((M:K |-> I:K => .Map) _:Map)
 
 rule [tryInheritImpl]:
-    tryInheritImpl(Sig:K |-> DecClass:ClassType)
+    tryInheritImpl(Sig:K , DecClass:ClassType)
     => ifAux(
           isInheritable(getMethodAccessMode(methodRef(Sig, DecClass))),
           inherit(methodRef(Sig, DecClass)),
           .K
        )
 
-rule [tryInheritImpl-empty-Discard]: tryInheritImpl(.Map) => .
+rule [tryInheritImpl-empty-Discard]: tryInheritImpl(.Map) => .K
 
 syntax KItem ::= isInheritable ( AccessMode )                        [strict]
 
@@ -202,7 +203,7 @@ rule [inherit]:
     <k> inherit(methodRef(Sig:Signature, DecClass:ClassType)) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <methods> Env:Map => Env[DecClass/Sig] </methods>
+    <methods> Env:Map => Env[Sig <- DecClass] </methods>
 
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
@@ -225,10 +226,10 @@ the only difference is the addition of the types.  */
 */
 
 //resolving the return type
-context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _),, _)
+context 'MethodDec('MethodDecHead(_,, _,, HOLE,, _,, _,, _),, _)
 
 //Resolve parameter types
-context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, HOLE,, _:K),, _:K) [result(Params)]
+context 'MethodDec('MethodDecHead(_,, _,, _:Type,, _:Id,, HOLE,, _),, _) [result(Params)]
 
 rule [MethodDec]:
     <k>
@@ -243,12 +244,6 @@ rule [MethodDec]:
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-//when
-//    paramTypesResolved([Params])                            [structural]
-//
-//syntax KItem ::= paramTypesResolved( KListWrap )              [function]
-//rule paramTypesResolved([('Param(_:K,, T:Type,, _:Id) => .KList),, _])
-//rule paramTypesResolved([.KList]) => true
 
 rule [AbstractMethodDec]:
     'AbstractMethodDec(_:K,, Ks:KList)
@@ -291,7 +286,7 @@ rule [storeMethod]:
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <methods> Env:Map => Env[Class / Sig] </methods>
+    <methods> Env:Map => Env[Sig <- Class] </methods>
     ( .Bag => <methodDec>
                      <methodSignature> Sig </methodSignature>
                      <methodReturnType> ReturnType </methodReturnType>
@@ -337,17 +332,20 @@ rule [ConstrDec-SuperCall-Desugar]:
 when
     Class =/=K classObject
 
-rule [ConstrDec-Object-Desugar]:
+rule [ConstrDec-Object]:
     <k>
       'ConstrDec(
-        'ConstrDecHead(_:K,, _:K,, Name:Id,, _:KList),,
+        'ConstrDecHead(Modifiers,, _:K,, Name:Id,, Params:Params,, _),,
         'ConstrBody(
           (
-            'None(_) => 'Some(.K)
+            'None(_)
           ),,
-          _:K
+          [BodyKs:KList]
         )
       )
+      => storeMethod(Params,
+                instanceCT, getAccessMode(Modifiers), isSynchronizedModifiers(Modifiers), constructorMMT, .K,
+                'Block([BodyKs]), sig(getConsName(Class), getTypes(Params)), void)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -355,7 +353,7 @@ when
     Class ==K classObject
 
 //Resolve parameter types
-context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, HOLE,, _),, _:K)   [result(Params)]
+context 'ConstrDec('ConstrDecHead(_,, _,, _:Id,, HOLE,, _),, _)   [result(Params)]
 
 rule [ConstrDec]:
     <k>
@@ -365,20 +363,17 @@ rule [ConstrDec]:
       => storeMethod(Params,
           instanceCT, getAccessMode(Modifiers), isSynchronizedModifiers(Modifiers), constructorMMT, FirstLine,
           'Block([
-
             //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
             //Invocation of instance initializer converted into a method.
-            #if getKLabel(FirstLine) ==KLabel 'SuperConstrInv orBool getKLabel(FirstLine) ==KLabel 'QSuperConstrInv
-              #then 'ExprStm('Invoke('Method('MethodName( String2Id("$instance_init") )),, [.KList]))
-              #else [.KList] //vacuous
-            #fi,,
+            if(getKLabel(FirstLine) ==KLabel 'SuperConstrInv orBool getKLabel(FirstLine) ==KLabel 'QSuperConstrInv)
+              'ExprStm('Invoke('Method('MethodName( String2Id("$instance_init") )),, [.KList]))
+            ,,
             BodyKs
           ]),
           sig(getConsName(Class), getTypes(Params)), void)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-//when paramTypesResolved([Params])
 
 // 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, InitExp:K),, _])
 
@@ -474,7 +469,7 @@ rule [FieldDec-compile-time-constant]:
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <constantEnv> Env:Map => Env[TV/X] </constantEnv>
+    <constantEnv> Env:Map => Env[X <- TV] </constantEnv>
 when
             getContextType(Modifiers) ==K staticCT
     andBool isFinalModifiers(Modifiers)

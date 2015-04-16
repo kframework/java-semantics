@@ -81,12 +81,12 @@ rule /* F1 % F2 */ F1:Float :: _ % F2:Float :: _ => (F1 %Float F2) :: tempType
 rule _:TypedVal % 0::_ => throw new class String2Id("java.lang.ArithmeticException") ("/ by zero");
 
 rule [NormalizeLeftOperandToFloat]:
-    KL:KLabel((I:Int::_:IntType => Int2Float(I)::float),, _:Float :: _:FloatType)
+    KL:KLabel((I:Int::_:IntType => Int2Float(I,53,11)::float),, _:Float :: _:FloatType)
 when
     isFloatBinaryOp(KL)
 
 rule [NormalizeRightOperandToFloat]:
-    KL:KLabel(_:Float :: _:FloatType,, (I:Int::_:IntType => Int2Float(I)::float))
+    KL:KLabel(_:Float :: _:FloatType,, (I:Int::_:IntType => Int2Float(I,53,11)::float))
 when
     isFloatBinaryOp(KL)
 
@@ -117,7 +117,7 @@ rule /* ~ I    */ ~ I:Int :: _ => (~Int I) :: tempType
 rule /* + I    */ + I:Int :: _ => I :: tempType
 rule /* + F    */ + F:Float :: _ => F :: tempType
 rule /* - I    */ - I:Int :: _ => (0 -Int I) :: tempType
-rule /* - F    */ - F:Float :: _ => (Int2Float(0) -Float F) :: tempType
+rule /* - F    */ - F:Float :: _ => (Int2Float(0,53,11) -Float F) :: tempType
 
 // E++
 rule /* loc(L)++ => (loc(L) = lookup(L) + 1) - 1 */
@@ -131,7 +131,7 @@ rule /* loc(L)-- => (loc(L) = lookup(L) - 1) + 1 */
 Int when NT is IntType, Float when NT is FloatType*/
 syntax KItem ::= rightTypedNumber ( Int, NumericType )             [function]
 rule rightTypedNumber(I:Int, IntT:IntType) => I::IntT
-rule rightTypedNumber(I:Int, FloatT:FloatType) => Int2Float(I)::FloatT
+rule rightTypedNumber(I:Int, FloatT:FloatType) => Int2Float(I,53,11)::FloatT
 
 /*@ Conditional expression : ?: . Desugared into an if with cast.
 The biggest difficulty is computing the expression type, according to JLS1 \$15.24

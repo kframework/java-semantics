@@ -42,9 +42,11 @@ syntax LocalVarDecStmt ::= Type Id ";"
 rule 'LocalVarDec(_:K,, T:Type,,['VarDec(X:Id)]) => T X;  [structural]
 
 /*@ \subsection{Cast}*/
-
+//this might be confused with castprim or castref
 syntax Exp ::= "(" "(" Type ")" K ")" [klabel('CastImpl)]
 rule ((T:Type) K:K) => cast(T, K)
+rule ( T:RefType ) E:Exp => cast(T,E)
+rule ( T:PrimType ) E:Exp => cast(T,E)
 
 /*@ \subsection{Identifier (name) expression}*/
 
@@ -73,7 +75,7 @@ rule 'QNewInstance( Qual:Exp,, _:K,, ClassOrName:ClassOrName,, _:K,, [Args:KList
 */
 rule [NewInstance-to-QNewInstance-unpack]:
     new Class:ClassType(ArgExps:Exps)
-    => noValue . new Class:ClassType(ArgExps:Exps)
+    => (noValue):>Exp . new Class:ClassType(ArgExps:Exps)
 
 /*@ \subsection{Syntactic lists - Exps, TypedVals, ClassTypes}*/
 
@@ -82,32 +84,25 @@ rule [NewInstance-to-QNewInstance-unpack]:
 */
 
 syntax KItem ::= toExps( KListWrap )        [function]
-           | toExps( KListWrap , Exps ) [function]
+               | toExps( KListWrap , Exps ) [function]
 
-rule toExps([Args]) => toExps([Args], .Exps)
-rule toExps([Args,, Arg], Es) => toExps([Args], (Arg,Es))
+rule toExps([Args:KList]) => toExps([Args], .Exps)
+rule toExps([Arg:Exp,, Args:KList], Es) => toExps([Args], addElementToExpsEnd(Es, Arg))
 rule toExps([.KList], Es) => Es
 
+//this function is needed because we can no longer match elements in the end of KList
+syntax Exps ::= addElementToExpsEnd (Exps, Exp) [function]
+rule addElementToExpsEnd(.Exps, P:Exp) => P,.Exps
+rule addElementToExpsEnd((Hd:Exp, Tl:Exps), P:Exp) => Hd,addElementToExpsEnd(Tl,P)
+
 syntax KItem ::= toKListWrap( Exps )              [function]
-           | toKListWrap( KListWrap , Exps )  [function]
+               | toKListWrap( KListWrap , Exps )  [function]
 
 rule toKListWrap(Args:Exps) => toKListWrap([.KList], Args)
 rule toKListWrap([Args:KList], (Arg:Exp, Es:Exps)) => toKListWrap([Args,, Arg], (Es))
 rule toKListWrap([Args:KList], .Exps) => [Args]
 
 syntax Exps ::= TypedVals
-syntax TypedVals ::= List{TypedVal, ","}
-
-//@ Converts a TypedVals term to Types. Uses typeOf underneath.
-syntax KItem ::=  getTypes (
-                TypedVals     // a list of source values
-              )
-              [function]
-            | getTypes(Types, TypedVals)  [function]
-
-rule getTypes(TVs:TypedVals) => getTypes(types(.KList), TVs)
-rule getTypes( types(Ts:KList), (_ :: T:Type, TVs:TypedVals) ) => getTypes( types(Ts,,T), TVs )
-rule getTypes(types(Ts:KList), .TypedVals) => types(Ts)
 
 syntax KResult ::= ClassTypes
 syntax ClassTypes ::= List{ClassType, ","}

@@ -69,7 +69,7 @@ syntax KItem ::=  processTypeNames (
 
 rule [processTypeNames-AddPackage]:
     <k> processTypeNames(_, PackId:PackageId) ...</k>
-    <namesToClasses> PackMap:Map => PackMap[mapWrap(.Map) / PackId] </namesToClasses>
+    <namesToClasses> PackMap:Map => PackMap[PackId <- mapWrap(.Map)] </namesToClasses>
 when notBool PackId in keys(PackMap)
 
 /*@ A type name is either class or interface name. Anonymous labels will be one of:
@@ -87,7 +87,7 @@ rule [processTypeNames]:
     <namesToClasses>
       ...
       PackId |-> mapWrap(
-        ClassesMap:Map => ClassesMap[getClassType(PackId,SimpleClass) / SimpleClass]
+        ClassesMap:Map => ClassesMap[SimpleClass <- getClassType(PackId,SimpleClass)]
       )
       ...
     </namesToClasses>

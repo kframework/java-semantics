@@ -37,9 +37,7 @@ rule [staticInit]:
             //catch clause of 'Try
 
                 catch(.AnnoVarModList classObject String2Id("e"))
-      //because currently there is no rule for executing BlcokStmList, we have to use 'Block for now
-                'Block(throw new class String2Id("java.lang.ExceptionInInitializerError")
-                (((classObject) String2Id("e")));)
+                {throw new (class String2Id("java.lang.ExceptionInInitializerError")) ((classObject) String2Id("e"));}
                 .CatchClauses
 
             ,,
@@ -108,9 +106,9 @@ rule [FieldDec-static]:
     <k> 'FieldDec(['Static(_)],, T:Type,,['VarDec(X:Id)]) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <staticEnv> Env:Map => Env[L/X] </staticEnv>
-    <store>... . => L |-> default(T) ...</store>
-    <storeMetadata>... . => L |-> FieldLocMetadata ...</storeMetadata>
+    <staticEnv> Env:Map => Env[X <- L] </staticEnv>
+    <store>... .Map => L |-> default(T) ...</store>
+    <storeMetadata>... .Map => L |-> FieldLocMetadata ...</storeMetadata>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 
 endmodule

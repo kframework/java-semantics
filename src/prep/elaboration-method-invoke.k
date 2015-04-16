@@ -49,8 +49,14 @@ rule [elabEnd-findQualifierForName]:
     <enclosingClass> QualEncloserClass:ClassType </enclosingClass>
     <methods> Methods:Map </methods>
 
-syntax KItem ::= containsName ( Map , Id )        [function]
-rule containsName((sig(Name, _) |-> _) _:Map, Name:Id) => true
+//@Checks whether a given map contains the given Id in its key:sig(Id,_)
+syntax KItem ::= containsName ( Map , Id )                      [function]
+               | containsName ( Signature, Map , Id )           [function]
+
+rule containsName((S:Signature |-> _) Remains:Map, Name:Id) => containsName(S, Remains, Name)
+rule containsName(sig(Name,_), _, Name:Id) => true
+rule containsName(sig(Name1:Id,_), Remains:Map, Name:Id) => containsName(Remains, Name) when Name1 =/=K Name
+rule containsName(.Map, _) => false
 
 //@Happens for 'NewInstance expressions for static inner classes.
 rule [elabEnd-findQualifierForName-static]:
@@ -113,6 +119,7 @@ rule getLookupTargetType(arrayOf _) => classArrayImpl
 // True for cast(T,'QThis(\_)), false otherwise
 syntax KItem ::= isCastOfQThis ( K )                                      [function]
 rule isCastOfQThis(cast(_, 'QThis(_))) => true
+rule isCastOfQThis(_) => false [owise]
 
 /*@ Lookup the right methodRef() based on supplied parameters.
 If the method is not found in the supplied class list, we should search for it in the
@@ -146,7 +153,8 @@ rule lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, [ArgExps:
   term to be heated. This is not a final KResult in its surrounding context. Basically, this term is used to cheat
   K heating rules.
 */
-syntax KResult ::= "tempKResult"
+syntax TmpKR ::= "tempKResult"
+syntax MKR ::= TmpKR
 
 //All cases
 rule [lookupMethod-to-lookupSignature]:
@@ -254,33 +262,70 @@ syntax KItem ::=  lookupSignature (
               )
               [strict(2,5)]
 
+syntax KItem ::=  lookupSignature (
+                Id,       // MethodName
+                K,        // Computes into Types - argument types
+                Signature,
+                ClassType,
+                Map,        // methods environment - Map[sig -> Class]
+                Bool,     // IsQ - whether the original method call was qualified
+                MethodRef, // The best signature found so far
+                              // or noValue if none found
+                ClassType // QualClass - target type.
+              )
+
+rule [lookupSignature-Expand]:
+        lookupSignature(
+                       MethodName:Id,
+                       CallTs:Types,
+                       (Key |-> Value) M:Map,
+                       IsQ,
+                       OldMethodRef,
+                       QualClass)
+        => lookupSignature(
+                             MethodName,
+                             CallTs,
+                             Key, Value,
+                             M,
+                             IsQ,
+                             OldMethodRef,
+                             QualClass)
+
 rule [lookupSignature-Main]:
     <k>
       lookupSignature(
         MethodName:Id,
         CallTs:Types,
-        (sig(MethodName, SigTs:Types) |-> NewDecClass:ClassType => .) _:Map,
+        sig(MethodName, SigTs:Types), NewDecClass:ClassType,
+        M:Map,
         IsQ:Bool,
-        OldMethodRef:MethodRef
-        => ifAux(
-            andAux(
-              andAux(
-                subtypeList(CallTs, SigTs),
-                #if OldMethodRef ==K noMethodRef
-                  #then true
-
-                  //An aux function here is required because OldMethodRef could be noMethodRef as well,
-                  //for which there are no arg types
-                  #else subtypeList(SigTs, getMethodRefArgTypes(OldMethodRef))
-                #fi
-              ),
-              isAccessible( NewAccMode, NewCT, NewDecClass, IsQ, QualClass )
-            ),
-            methodRef(sig(MethodName, SigTs), NewDecClass),
-            OldMethodRef
-          ),
+        OldMethodRef:MethodRef,
         QualClass:ClassType
-      )
+      ) =>
+      lookupSignature(
+              MethodName,
+              CallTs,
+              M,
+              IsQ,
+              (ifAux(
+                  andAux(
+                    andAux(
+                      subtypeList(CallTs, SigTs),
+                      #if OldMethodRef ==K noMethodRef
+                        #then true
+
+                        //An aux function here is required because OldMethodRef could be noMethodRef as well,
+                        //for which there are no arg types
+                        #else subtypeList(SigTs, getMethodRefArgTypes(OldMethodRef))
+                      #fi
+                    ),
+                    isAccessible( NewAccMode, NewCT, NewDecClass, IsQ, QualClass )
+                  ),
+                  methodRef(sig(MethodName, SigTs), NewDecClass),
+                  OldMethodRef
+                )),
+              QualClass
+            )
       ...
     </k>
     <classType> NewDecClass </classType>
@@ -293,13 +338,22 @@ rule getMethodRefArgTypes( methodRef(sig(_, Ts:Types), _) ) => Ts
 
 rule [lookupSignature-SigDiscard]:
     lookupSignature(
-      MethodName:Id,
-      _,
-      (sig(Name:Id, _) |-> _ => .) _:Map,
-      _,_,_
-    )
-when
-    Name =/=K MethodName
+            MethodName:Id,
+            CallTs:Types,
+            sig(Name:Id, _), _,
+            M:Map,
+            IsQ:Bool,
+            OldMethodRef:MethodRef,
+            QualClass:ClassType
+          ) =>
+          lookupSignature(
+                  MethodName,
+                  CallTs,
+                  M,
+                  IsQ,
+                  OldMethodRef,
+                  QualClass)
+    when Name =/=K MethodName
 
 rule [lookupSignature-End]:
     lookupSignature(_,_, .Map,_, MethodRef:MethodRef, _) => MethodRef

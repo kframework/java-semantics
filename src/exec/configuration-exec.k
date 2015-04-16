@@ -128,7 +128,7 @@ configuration
       <br/>
       <br/>
       //Configuration part 2: classes
-
+      <NumOfClassesToUnfold> 0 </NumOfClassesToUnfold>
       <classes color="Red">
         <class multiplicity="*" color="Red">
 
@@ -285,7 +285,7 @@ configuration
             <layerEnv color="Cyan"> .Map </layerEnv>
 
             //objectRef() ::_ - a reference to the directly enclosing object, or noValue if none.
-            <layerEnclosingObject color="Cyan"> noValue </layerEnclosingObject>
+            <layerEnclosingObject color="Cyan"> noValue:>KItem </layerEnclosingObject>
           </layer>
         </object>
       </objectStore>

@@ -208,8 +208,13 @@ rule defaultElabHeating('Id) => true*/
 
 //Auxiliary functions that should be default-heated
 rule defaultElabHeating('stmtAndExp) => true
+
+//user lists that should be default-heated, we didn't have this before because we used the heating of KListWrap
 rule defaultElabHeating('CatchClauseList) => true
 rule defaultElabHeating('FormalParamList) => true
+rule defaultElabHeating('VarInitList) => true
+rule defaultElabHeating('DimList) => true
+rule defaultElabHeating(_) => false [owise]
 
 /*@ Naked terms are those that should be computed directly into KResult during elaboration.
   Those are literals, types and packages. They are heated "as is", without being wrapped into elab().
@@ -228,6 +233,7 @@ rule isElabNaked('PackageName(_)) => true
 rule isElabNaked('PackageOrTypeName(_)) => true
 rule isElabNaked('Id(_)) => true
 rule isElabNaked('Lit(InnerKL:KLabel(_))) => InnerKL =/=KLabel 'Class
+rule isElabNaked(_) => false [owise]
 
 /*@ Terms that should use custom elaboration rules. For those terms:
     - They will not be automatically heated from their parents into the elab() state.

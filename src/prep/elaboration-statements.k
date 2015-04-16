@@ -17,6 +17,7 @@ syntax KItem ::= isVarDecHolderLabel ( KLabel )                 [function]
 rule isVarDecHolderLabel('Block) => true
 rule isVarDecHolderLabel('For) => true
 rule isVarDecHolderLabel('Catch) => true
+rule isVarDecHolderLabel(_) => false [owise]
 
 /*@ In addition to what defaul elab heating does, when we heat the first argument of 'Block, 'For of 'Catch
 we need to save a copy of elaboration environment - e.g. the last entry of <elabEnv> <localTypes>.
@@ -24,18 +25,29 @@ This is because these statements are blocks that might declare local variables.
 */
 rule [elab-Block-For-Catch-heat-FirstSubterm]:
     <k> elab(KL:KLabel(K:K,, Ks:KList)) => elab(K) ~> elab(KL(CHOLE,, Ks:KList)) ...</k>
-    <elabEnv> (. => ElabEnvLI) ElabEnvLI:ListItem ...</elabEnv>
-    <localTypes> (. => LocalTypesLI) LocalTypesLI:ListItem ...</localTypes>
+    <elabEnv> (.List => ListItem(ElabEnvLI)) ListItem(ElabEnvLI:K) ...</elabEnv>
+    <localTypes> (.List => ListItem(LocalTypesLI)) ListItem(LocalTypesLI:K) ...</localTypes>
 when
     isVarDecHolderLabel(KL) ==K true andBool notBool isElabKResult(K) ==K true
 
 //Seqstrict starting from 2-nd argument.
-rule [customElabHeating-For-next-children]:
-    customElabHeating('For, [HeadKs:KList,, KPrec:K,, KHole:K]) => isElabKList([HeadKs,,KPrec])
+//rule [customElabHeating-For-next-children]:
+//    customElabHeating('For, [HeadKs:KList,, KPrec:K,, KHole:K]) => isElabKList([HeadKs,,KPrec])
+rule   ( . => elab(Arg2) ) ~> elab('For(Arg1:ElabKResult,,(Arg2:K => CHOLE),,_,,_))
+when notBool isElabKResult(Arg2) ==K true
+
+rule   ( . => elab(Arg3) ) ~> elab('For(Arg1:ElabKResult,,Arg2:ElabKResult,,(Arg3:K => CHOLE),,_))
+when notBool isElabKResult(Arg3) ==K true
+
+rule   ( . => elab(Arg4) ) ~> elab('For(Arg1:ElabKResult,,Arg2:ElabKResult,,Arg3:ElabKResult,,(Arg4:K => CHOLE)))
+when notBool isElabKResult(Arg4) ==K true
 
 //Seqstrict starting from 2-nd argument.
-rule [customElabHeating-For-next-children]:
-    customElabHeating('Catch, [K1:K,, KHole:K]) => isElabKResult(K1)
+//rule [customElabHeating-For-next-children]:
+//    customElabHeating('Catch, [K1:K,, KHole:K]) => isElabKResult(K1)
+rule   ( . => elab(Arg2) ) ~> elab('Catch(Arg1:ElabKResult,,(Arg2:K => CHOLE)))
+when notBool isElabKResult(Arg2) ==K true
+
 
 rule [elabEnd-Block-For-Catch]:
     elabEnd(KL:KLabel(ElabResL:KList)) => removeLastElabEnv ~> elabRes(KL(ElabResL))
@@ -72,7 +84,7 @@ rule [elab-LocalVarDec]:
       => elabRes('LocalVarDec(K,, T,, ['VarDec(X)]))
       ...
     </k>
-    <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv>
+    <elabEnv> ListItem(mapWrap((.Map => X |-> T) _)) ...</elabEnv>
 
 //@\subsection{Elaboration of SuperConstrInv, QSuperConstrInv, AltConstrInv}
 

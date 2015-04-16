@@ -36,3 +36,9 @@
 /src/sty/*.pdf
 /src/sty/*.synctex
 /src/sty/.latex
+
+localTest/*
+*~
+*.iml
+.test
+test-results.xml

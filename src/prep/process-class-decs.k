@@ -68,7 +68,7 @@ syntax KItem ::=  resolveBases (
               )
 
 context resolveBases(_, HOLE, _)        //Heat extends declaration
-context resolveBases(_,_, [_,,HOLE,,_]) //Heat implements declarations
+context resolveBases(_,_, [HOLE]) //Heat implements declarations
 
 rule [resolveBases]:
     <k> resolveBases(Class:ClassType, BaseClass:ClassType, [ImplTypes:KList]) => . ...</k>
@@ -117,14 +117,14 @@ rule [processClassDecs-end]:
     ( <unprocessedBases> [.KList] </unprocessedBases> => .Bag)
 
 rule [processClassDecs-discard]:
-    processClassDecs(setWrap(.)) => .K
+    processClassDecs(setWrap(.Set)) => .K
 
 //@ Converts a term of type KList into a Set
 syntax KItem ::= kListToSet ( KListWrap,  //a list of some K Terms
                           Set         //the result set
                           )
 
-rule kListToSet([(K:K => .KList),,_], (_ (.Set => SetItem(K) )))
+rule kListToSet([(K:K => .KList),,_], (S:Set => S SetItem(K)))
 rule kListToSet([.KList], TypeSet:Set) => setWrap(TypeSet)
 
 //@ Receives a kListToSet term ans saves the resulting set into <imports>

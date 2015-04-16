@@ -1,5 +1,4 @@
 module PRIMITIVE-TYPES
-    imports CORE-SORTS
     imports SUBTYPING
 
 //@ \subsection{Integer types normalization}
@@ -29,7 +28,7 @@ rule normalize(I:Int :: char)
           toUnsigned(normalizeImpl(I::char))
         )
 
-rule normalize(I:Int :: FloatT:FloatType) => Int2Float(I)::FloatT
+rule normalize(I:Int :: FloatT:FloatType) => Int2Float(I,53,11)::FloatT
 
 rule normalize(F:Float :: IntT:IntType) => normalize(Float2Int(F) :: IntT:IntType)
 
@@ -87,7 +86,7 @@ when (IT =/=K int) andBool (IT =/=K long)
 
 /*@ Important! Binary normalizeType cannot be function because it uses sybtype in implementation.
 */
-syntax KItem ::= normalizeType ( Type, Type )
+syntax KItem ::= normalizeType ( Type, Type )   [function]
 
 rule normalizeType(NT1:IntType, NT2:IntType) => int
 when (NT1 =/=K long) andBool (NT2 =/=K long)
