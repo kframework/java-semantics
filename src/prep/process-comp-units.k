@@ -101,13 +101,13 @@ rule [ClassDec-NoExtendsDesugar]:
 
 rule [ClassDec-NoImplementsDesugar]:
     processTypeDecsInPCUPhase(['ClassDec('ClassDecHead(_:KListWrap,, Class:ClassType,, _:K,, _:K,,
-        ( 'None(.KList) => 'Some('ImplementsDec([.KList])) )
+        ( 'None(.KList) => 'Some('ImplementsDec(.InterfaceTypeList)) )
       ),, _:K
     )], _,_)                [structural]
 
 rule [InterfaceDec-NoExtendsDesugar]:
     processTypeDecsInPCUPhase(['InterfaceDec('InterfaceDecHead(_:K,, Class:ClassType,, _:K,,
-        ( 'None(.KList) => 'Some('ExtendsInterfaces([.KList])) )
+        ( 'None(.KList) => 'Some('ExtendsInterfaces(.InterfaceTypeList)) )
       ),, _:K
     )], _,_)                [structural]
 
@@ -117,7 +117,7 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
         ['ClassDec(
           'ClassDecHead( Modifiers:KListWrap,, Class:ClassType,, _:K,,
             'Some('SuperDec(BaseClassRaw:K)),,
-            'Some('ImplementsDec(ImplTypesRaw:KListWrap))
+            'Some('ImplementsDec(ImplTypesRaw:InterfaceTypeList))
           ),,
           'ClassBody( [Decls:KList] )
         )],
@@ -162,7 +162,7 @@ rule [processTypeDecsInPCUPhase-IInterfaceDec]:
       processTypeDecsInPCUPhase(
         ['InterfaceDec(
           'InterfaceDecHead( _:K,, Class:ClassType,, _:K,,
-            'Some('ExtendsInterfaces(ImplTypesRaw:K))
+            'Some('ExtendsInterfaces(ImplTypesRaw:InterfaceTypeList))
           ),,
           [Decls:KList]
         )],

@@ -5,7 +5,7 @@ module LIST-SYNTAX
  already defined before, because there is no automatic refactor for rename, and also those
  defined are used in semantic rules, we leave them unchanged.*/
 
-syntax InterfaceTypeList         ::= List{InterfaceType,","}         [klabel('InterfaceTypeList)]
+syntax InterfaceTypeList         ::= List{InterfaceType,","}         [klabel('InterfaceTypeList), strict]
 syntax ExceptionTypeList         ::= List{ExceptionType,","}         [klabel('ExceptionTypeList)]
 syntax IdList                    ::= List{Id,"."}                    [klabel('IdList)]
 syntax TypeDecList               ::= List{TypeDec,""}                [klabel('TypeDecList)]
@@ -87,7 +87,7 @@ imports CORE-FUNCTIONS
 rule '.List`{"'SwitchLabelList"`}(.KList)   => [.KList]                             [macro]
 rule '.List`{"'SwitchGroupList"`}(.KList)   => [.KList]                             [macro]
 rule '.List`{"'BlockStmList"`}(.KList)   => [.KList]                                [macro]
-rule '.List`{"'InterfaceTypeList"`}(.KList)   => [.KList]                           [macro]
+//rule '.List`{"'InterfaceTypeList"`}(.KList)   => [.KList]                           [macro]
 rule '.List`{"'ExceptionTypeList"`}(.KList)   => [.KList]                           [macro]
 rule '.List`{"'IdList"`}(.KList)   => [.KList]                                      [macro]
 rule '.List`{"'TypeDecList"`}(.KList)   => [.KList]                                 [macro]
@@ -118,7 +118,7 @@ rule '.List`{"'ExprList"`}(.KList)   => [.KList]                                
 rule 'SwitchLabelList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
 rule 'SwitchGroupList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
 rule 'BlockStmList(Hd,,[Tl:KList])              => [Hd,,Tl]         [macro]
-rule 'InterfaceTypeList(Hd,,[Tl:KList])         => [Hd,,Tl]         [macro]
+//rule 'InterfaceTypeList(Hd,,[Tl:KList])         => [Hd,,Tl]         [macro]
 rule 'ExceptionTypeList(Hd,,[Tl:KList])         => [Hd,,Tl]         [macro]
 rule 'IdList(Hd,,[Tl:KList])                    => [Hd,,Tl]         [macro]
 rule 'TypeDecList(Hd,,[Tl:KList])               => [Hd,,Tl]         [macro]

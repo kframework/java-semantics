@@ -197,7 +197,7 @@ rule [processQAnonymousClass]:
               Name,,
               'None(.KList),,
               'Some('SuperDec(BaseClass)),,
-              'Some('ImplementsDec([.KList]))
+              'Some('ImplementsDec(.InterfaceTypeList))
             ),,
             'ClassBody([
               AnonClassDecs,,
