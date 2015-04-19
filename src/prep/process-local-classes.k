@@ -114,7 +114,7 @@ rule [localClassGetAccessibleOuterEnv-start-test]:
       Class:ClassType,
       (X:Id |-> T:Type => .Map) _:Map,
       (.Map => X:Id |-> T:Type) _:Map,
-      _ => X,
+      _:K => X,
       noValue => elabLookup(X, Class)
     )
 
@@ -130,7 +130,7 @@ when
     KR =/=K noValue
 
 rule [localClassGetAccessibleOuterEnv-end]:
-    localClassGetAccessibleOuterEnv( Class:ClassType, .Map, NewOuterEnv:Map, _, noValue ) => mapWrap(NewOuterEnv)
+    localClassGetAccessibleOuterEnv( Class:ClassType, .Map, NewOuterEnv:Map, _:K, noValue ) => mapWrap(NewOuterEnv)
 
 /*@ Convert the given local class into an equivalent inner class, with the following transformations:
   - Add a field to the class for each outer local variable

@@ -60,7 +60,7 @@ rule default(RT:RefType) => null :: RT
 
 /*@ Whenever naked RawVal reaches the top of computation, it have to be converted into TypedVal */
 rule Val:RawVal => toTypedVal(Val)                                                  [structural]
-rule isKResult(V:Bool) => false
+
 /*@ Converts a RawVal into a TypedVal, by adding a default type for the given value.
     Greatly simplifies many rules, because now we can use raw values in the RHS, instead of typed values.
 
