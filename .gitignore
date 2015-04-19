@@ -37,6 +37,11 @@
 /src/sty/*.synctex
 /src/sty/.latex
 
+*.class
+*.txt
+*.pkast
+tools/*.java
+
 localTest/*
 *~
 *.iml
