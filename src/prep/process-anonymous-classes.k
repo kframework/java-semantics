@@ -16,7 +16,7 @@ rule [elab-NewInstance-anonymous-implements-interface]:
       => processAnonymousClass(
         String2Id("Anonymous_$" +String Int2String(LocalId)),
         classObject,
-        [Class],
+        (Class, .HeatedInterfaceTypeList),
         Arg1,
         [ActualArgs],
         [AnonClassDecs],
@@ -38,7 +38,7 @@ rule [elab-NewInstance-anonymous-extends-class]:
       => processAnonymousClass(
         String2Id("Anonymous_$" +String Int2String(LocalId)),
         Class,
-        [.KList],
+        .HeatedInterfaceTypeList,
         Arg1,
         [ActualArgs],
         [AnonClassDecs],
@@ -54,7 +54,7 @@ rule [elab-NewInstance-anonymous-extends-class]:
 syntax KItem ::=  processAnonymousClass (
                 Id,        //Class name
                 ClassType, //Base class
-                KListWrap, //Base interfaces, if any. In fact either zero or one interface is possible at this point.
+                HeatedInterfaceTypeList, //Base interfaces, if any. In fact either zero or one interface is possible at this point.
                 K,         //'NewInstance Arg1
                 KListWrap, //ActualArgs
                 KListWrap, //Anonymous class block decs
@@ -75,7 +75,7 @@ rule [processAnonymousClass]:
     processAnonymousClass(
       Name:Id,
       BaseClass:ClassType,
-      [BaseInterfaces:KList],
+      BaseInterfaces:HeatedInterfaceTypeList,
       Arg1:K,
       [ActualArgs:KList],
       [AnonClassDecs:KList],
@@ -91,7 +91,7 @@ rule [processAnonymousClass]:
               Name,,
               'None(.KList),,
               'Some('SuperDec(BaseClass)),,
-              'Some('ImplementsDec([BaseInterfaces]))
+              'Some('ImplementsDec(BaseInterfaces))
             ),,
             'ClassBody([
               AnonClassDecs,,
