@@ -169,6 +169,7 @@ rule mapItemsByPartialKey(.Map, V:K, M:Map) => M
 
 syntax KItem ::= isEmpty( Map )   [function]
 rule isEmpty(.Map) => true
+rule isEmpty(_) => false            [owise]
 
 /*@A wrapper for sets, similar to the one for maps.*/
 syntax MKR ::= setWrap ( Set )
@@ -190,14 +191,17 @@ rule klistConcat(kr[KL1:KList], kr[KL2:KList]) => kr[KL1,,KL2]
 
 //@ Counts the number of elements in the KList list. Evaluates to an Int.
 syntax KItem ::= length ( KListWrap )                                   [function]
-           | length ( Int, KListWrap )                              [function]
-
-syntax KItem ::= getLastKListElement( KListWrap )                       [function]
-rule getLastKListElement([_,, K:K]) => K
+               | length ( Int, KListWrap )                              [function]
 
 rule length([Ks:KList]) => length(0, [Ks])
 rule length(I:Int, [K:K,, Ks:KList]) => length(I +Int 1, [Ks])
 rule length(I:Int, [.KList]) => I
+
+syntax KItem ::= getLastKListElement( KListWrap )                       [function]
+
+rule getLastKListElement([Ho:K,, Hd:K,, Tl:KList]) => getLastKListElement([Hd,,Tl])
+rule getLastKListElement([Hd:K,, .KList]) => Hd
+rule getLastKListElement([.KList]) => .K
 
 /*@ \subsection{ClassType functions} */
 

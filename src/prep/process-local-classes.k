@@ -130,7 +130,7 @@ when
     KR =/=K noValue
 
 rule [localClassGetAccessibleOuterEnv-end]:
-    localClassGetAccessibleOuterEnv( Class:ClassType, .Map, NewOuterEnv:Map, _:K, noValue ) => mapWrap(NewOuterEnv)
+    localClassGetAccessibleOuterEnv( Class:ClassType, .Map, NewOuterEnv:Map, _, noValue ) => mapWrap(NewOuterEnv)
 
 /*@ Convert the given local class into an equivalent inner class, with the following transformations:
   - Add a field to the class for each outer local variable
@@ -320,7 +320,13 @@ rule haveUnaugmentedConstructors(ConsName:Id, LocalEnvClass:ClassType,
                                  sig(ConsName:Id, types(TList:KList)), Remains:Map) =>
      haveUnaugmentedConstructors(ConsName, LocalEnvClass, Remains)
 when
-     getLastKListElement([TList]) ==K LocalEnvClass
+    getLastKListElement([TList]) ==K LocalEnvClass
+
+rule haveUnaugmentedConstructors(ConsName:Id, LocalEnvClass:ClassType,
+                                 sig(ConsName1:Id, _), Remains:Map) =>
+     haveUnaugmentedConstructors(ConsName, LocalEnvClass, Remains)
+when
+    ConsName =/=K ConsName1
 
 rule haveUnaugmentedConstructors(_, _, .Map) => false
 
