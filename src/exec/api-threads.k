@@ -40,6 +40,9 @@ when
     Class ==K class String2Id("java.lang.Thread") andBool Id2String(MethodName) ==String "startImpl"
 
 //@ \subsection{Synchronized statement}
+/*this context is added because strict(1) in syntax definition of synchronized stmt does not apply
+ because second argument Block does not conform to syntax (has KListWrap). Remove later. */
+context synchronized (HOLE) _:K
 
 rule [Synchronized-first-time]:
     <k>
@@ -63,7 +66,7 @@ rule [Synchronized-nested]:
         [transition-threading, transition-sync]
 
 rule [Synchronized-on-null]:
-    synchronized (null::_) _ => throw new classNullPointerException(null::classString);
+    synchronized (null::_) _:K => throw new classNullPointerException(null::classString);
 
 /*@Release one level of lock for the given object.*/
 syntax KItem ::=  releaseLock ( Int )
