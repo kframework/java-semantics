@@ -50,7 +50,10 @@ rule [elab-NewInstance]:
 //        orBool (length([Ks,,KHole]) ==K 6 andBool KHole ==K 'None(.KList))      // KHole =/= 'None(_) => anon. class
 
 rule (. => elab(Arg1)) ~> elab('QNewInstance((Arg1:K => CHOLE),,_,,_,,_,,_,,_))
-when notBool isElabKResult(Arg1) ==K true
+when (notBool isElabKResult(Arg1) ==K true) andBool (notBool isElabNaked(Arg1) ==K true)
+
+rule (. => Arg1) ~> elab('QNewInstance((Arg1:K => CHOLE),,_,,_,,_,,_,,_))
+when (notBool isElabKResult(Arg1) ==K true) andBool isElabNaked(Arg1) ==K true
 
 rule (. => elab(Arg2)) ~> elab('QNewInstance(_,,(Arg2:K => CHOLE),,_,,_,,_,,_))
 when notBool isElabKResult(Arg2) ==K true
