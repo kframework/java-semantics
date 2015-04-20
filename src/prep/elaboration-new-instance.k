@@ -50,22 +50,25 @@ rule [elab-NewInstance]:
 //        orBool (length([Ks,,KHole]) ==K 6 andBool KHole ==K 'None(.KList))      // KHole =/= 'None(_) => anon. class
 
 rule (. => elab(Arg1)) ~> elab('QNewInstance((Arg1:K => CHOLE),,_,,_,,_,,_,,_))
-when (notBool isElabKResult(Arg1) ==K true) andBool (notBool isElabNaked(Arg1) ==K true)
+when (notBool isElabKResult(Arg1)) andBool (notBool isElabNaked(Arg1))
 
 rule (. => Arg1) ~> elab('QNewInstance((Arg1:K => CHOLE),,_,,_,,_,,_,,_))
-when (notBool isElabKResult(Arg1) ==K true) andBool isElabNaked(Arg1) ==K true
+when (notBool isElabKResult(Arg1)) andBool isElabNaked(Arg1)
 
 rule (. => elab(Arg2)) ~> elab('QNewInstance(_,,(Arg2:K => CHOLE),,_,,_,,_,,_))
-when notBool isElabKResult(Arg2) ==K true
+when notBool isElabKResult(Arg2)
 
 rule (. => elab(Arg3)) ~> elab('QNewInstance(_,,_,,(Arg3:K => CHOLE),,_,,_,,_))
-when (notBool isId(Arg3) ==K true) andBool (notBool isElabKResult(Arg3) ==K true)
+when (notBool isId(Arg3)) andBool (notBool isElabKResult(Arg3)) andBool (notBool isElabNaked(Arg3))
+
+rule (. => Arg3) ~> elab('QNewInstance(_,,_,,(Arg3:K => CHOLE),,_,,_,,_))
+when (notBool isId(Arg3)) andBool (notBool isElabKResult(Arg3)) andBool isElabNaked(Arg3)
 
 rule (. => elab(Arg4)) ~> elab('QNewInstance(_,,_,,_,,(Arg4:K => CHOLE),,_,,_))
-when notBool isElabKResult(Arg4) ==K true
+when notBool isElabKResult(Arg4)
 
 rule (. => elab(Arg5)) ~> elab('QNewInstance(_,,_,,_,,_,,(Arg5:K => CHOLE),,_))
-when notBool isElabKResult(Arg5) ==K true
+when notBool isElabKResult(Arg5)
 
 rule (. => elab('None(.KList))) ~> elab('QNewInstance(_,,_,,_,,_,,_,,('None(.KList) => CHOLE)))
 
