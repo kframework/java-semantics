@@ -16,8 +16,9 @@ rule 'ClassType(TypeK:K,, _) => TypeK            [structural]
     'TypeName('PackageOrTypeName('PackageOrTypeName(pack),,p2),,A)
 */
 // 'PackageOrTypeName(Qual,, Name)
-rule 'PackageOrTypeName(KRs:KList,, K:K) => 'TypeName(KRs,,K) ?? 'PackageName([KRs,,K])
-when isKResult(KRs)                              [structural]
+rule 'PackageOrTypeName(KRs:KResult,, K:K) => 'TypeName(KRs,,K) ?? 'PackageName([KRs,,K])  [structural]
+// 'PackageOrTypeName(Name)
+rule 'PackageOrTypeName(K:K) => 'TypeName(K) ?? 'PackageName([K])  [structural]
 
 /*@ When we search for a class qualified by another class, we simply convert
     the qualifier into a package.*/

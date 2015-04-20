@@ -197,6 +197,14 @@ rule length([Ks:KList]) => length(0, [Ks])
 rule length(I:Int, [K:K,, Ks:KList]) => length(I +Int 1, [Ks])
 rule length(I:Int, [.KList]) => I
 
+//syntax KItem ::= getFirstKListElements( KListWrap )                     [function]
+//               | getFirstKListElements( KListWrap, KListWrap )          [function]
+//
+//rule getFirstKListElements([Kl:KList]) => getFirstKListElements([Kl],,[.KList])
+//rule getFirstKListElements([Ho:K,, Hd:K,, Tl:KList], [Kl:KList]) => getFirstKListElements([Hd,,Tl],[Kl,,Ho])
+//rule getFirstKListElements([Hd:K,, .KList],, [Kl:KList]) => Kl
+//rule getFirstKListElements([.KList],, [.KList]) => .KList
+
 syntax KItem ::= getLastKListElement( KListWrap )                       [function]
 
 rule getLastKListElement([Ho:K,, Hd:K,, Tl:KList]) => getLastKListElement([Hd,,Tl])
