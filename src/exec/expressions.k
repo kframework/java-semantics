@@ -75,7 +75,8 @@ rule _:TypedVal / 0::_ => throw new class String2Id("java.lang.ArithmeticExcepti
 
 rule /* I1 % I2 */ I1:Int :: _ % I2:Int :: _ => (I1 %Int I2) :: tempType
     			when I2 =/=Int 0
-rule /* F1 % F2 */ F1:Float :: _ % F2:Float :: _ => (F1 %Float F2) :: tempType
+rule /* F1 % F2 */ F1:Float :: _ % F2:Float :: _ =>
+    #if (F1 %Float F2) >=Float 0.0 #then (F1 %Float F2) :: tempType #else (F1 %Float F2 +Float F2) :: tempType #fi
 
 //totest that the first argument is fully evaluated, right now it may be not evaluated
 rule _:TypedVal % 0::_ => throw new class String2Id("java.lang.ArithmeticException") ("/ by zero");
