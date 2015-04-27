@@ -124,7 +124,8 @@ rule [AssertStm-FirstFalse]:
         => throw new class String2Id("java.lang.AssertionError") (toString(TV));
 
 //@ \subsection{Switch statement}
-
+//context added temporarily, when the second argument conforms to syntax, we can delete this and rely on strictness
+context 'Switch(HOLE,,_:K)
 
 syntax KItem ::= switchImpl (
              TypedVal, // TV - switch argument
