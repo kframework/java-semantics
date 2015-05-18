@@ -160,6 +160,7 @@ KRUN_CMD="$KRUN_CMD $(cross-k.sh krun)"
 KRUN_CMD="$KRUN_CMD \
                       --directory \"$SEMANTICS_DIR\" \
                       "
+KRUN_CMD="$KRUN_CMD --symbolic-execution"
 
 case "$MODE" in
 "run-prep-config" | "run-prep-ast")
