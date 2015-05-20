@@ -87,18 +87,18 @@ when
     Id2String(X) ==String "length"
 
 rule [elabEnd-NewArray-EmptyDims]:
-    elabEnd('NewArray( (T:Type => arrayOf T),, [_:KList],, ([]:Dim Ds:Dims => Ds)))
+    elabEnd('NewArray( (T:Type => arrayOf T),, _,, ([]:Dim Ds:Dims => Ds)))
         [structural]
 
 rule [elabEnd-NewArray]:
-    elabEnd('NewArray(T:Type,, [Dims:KList],, .Dims))
-    => elabExpAndType('NewArray(T,, [Dims],, .Dims), getArrayType(T, [Dims]))
+    elabEnd('NewArray(T:Type,, DimExprs:DimExps,, .Dims))
+    => elabExpAndType('NewArray(T,, DimExprs,, .Dims), getArrayType(T, DimExprs))
         [structural]
 
 //@ Computes the array type based on allocated elem type and number of allocated dimensions.
-syntax KItem ::= getArrayType ( Type, KListWrap )                          [function]
-rule getArrayType(T:Type, [K:K,,Dims:KList]) => getArrayType(arrayOf T, [Dims])
-rule getArrayType(T:Type, [.KList]) => T
+syntax KItem ::= getArrayType ( Type, DimExps )                          [function]
+rule getArrayType(T:Type, [K] DimExprs:DimExps) => getArrayType(arrayOf T, DimExprs)
+rule getArrayType(T:Type, .DimExps) => T
 
 rule [elabEnd-NewArray-ArrayInit-Preprocess]:
     elabEnd('NewArray((T:Type => arrayOf T),, ([]:Dim Ds:Dims => Ds),, 'ArrayInit(_)))

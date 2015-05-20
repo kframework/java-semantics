@@ -37,7 +37,7 @@ syntax SwitchLabelList           ::= List{SwitchLabel, ""}           [klabel('Sw
 
 syntax Exps         ::= List{Exp, ","} [seqstrict]
 syntax Dims         ::= List{Dim,""}  [klabel('DimList)]
-syntax DimExps      ::= List{DimExp,""} [seqstrict]
+syntax DimExps      ::= List{DimExp,""} [klabel('DimExprList), strict]
 syntax VarInits     ::= List{VarInit, ","}  [klabel('VarInitList)]
 syntax CatchClauses ::= List{CatchClause,""} [klabel('CatchClauseList), strict]
 syntax Params       ::= List{Param, ","}   [klabel('FormalParamList)]
@@ -45,8 +45,7 @@ syntax Params       ::= List{Param, ","}   [klabel('FormalParamList)]
 context 'FormalParamList(HOLE,,_) [result(Param)]
 context 'FormalParamList(_,,HOLE) [result(Params)]
 
-syntax KLabel::= "'DimExprList"
-               | "'ExprList"
+syntax KLabel::= "'ExprList"
 
 syntax UserList     ::= BlockStmList
                       | SwitchGroupList
@@ -110,7 +109,7 @@ rule '.List`{"'ElemValPairList"`}(.KList)   => [.KList]                         
 rule '.List`{"'ElemValList"`}(.KList)   => [.KList]                                 [macro]
 rule '.List`{"'StringPartList"`}(.KList)   => [.KList]                              [macro]
 rule '.List`{"'ClassBodyDecList"`}(.KList)   => [.KList]                            [macro]
-rule '.List`{"'DimExprList"`}(.KList)   => [.KList]                                 [macro]
+//rule '.List`{"'DimExprList"`}(.KList)   => [.KList]                                 [macro]
 rule '.List`{"'ExprList"`}(.KList)   => [.KList]                                    [macro]
 
 
@@ -140,7 +139,7 @@ rule 'ElemValPairList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
 rule 'ElemValList(Hd,,[Tl:KList])               => [Hd,,Tl]         [macro]
 rule 'StringPartList(Hd,,[Tl:KList])            => [Hd,,Tl]         [macro]
 rule 'ClassBodyDecList(Hd,,[Tl:KList])          => [Hd,,Tl]         [macro]
-rule 'DimExprList(Hd,,[Tl:KList])               => [Hd,,Tl]         [macro]
+//rule 'DimExprList(Hd,,[Tl:KList])               => [Hd,,Tl]         [macro]
 rule 'ExprList(Hd,,[Tl:KList])                  => [Hd,,Tl]         [macro]
 
 

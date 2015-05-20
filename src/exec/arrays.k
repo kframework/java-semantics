@@ -54,32 +54,24 @@ type of an array declaration be of the form \texttt{arrayOf $T$}
 and assign the right type ($T$) to the allocated array locations. */
 
 
-/* For multi-dimensions arrays, it is expanded from the last DimExp, but currently, the tail element(s)
+/* For multi-dimensions arrays, it is expanded from the last DimInt, but currently, the tail element(s)
  matching is unavailable for user defined lists, so we reverse list for easier matching
 */
-syntax DimExps ::= reverseDimExps(DimExps, DimExps) [function]
-rule reverseDimExps(D:DimExp Ds:DimExps, Es:DimExps) => reverseDimExps(Ds, (D Es))
-rule reverseDimExps(.DimExps, Es:DimExps) => Es
+syntax DimInts ::= reverseDimInts(DimInts, DimInts) [function]
+rule reverseDimInts(D:DimInt Ds:DimInts, Es:DimInts) => reverseDimInts(Ds, (D Es))
+rule reverseDimInts(.DimInts, Es:DimInts) => Es
 
-syntax DimExps ::= toDimExps( KListWrap , DimExps) [function]
-rule toDimExps([D:DimExp,, Ds:KList], Es:DimExps) => toDimExps([Ds], addElementToDimExpsEnd(Es, D))
-rule toDimExps([.KList], Es:DimExps) => Es
-
-syntax DimExps ::= addElementToDimExpsEnd (DimExps, DimExp) [function]
-rule addElementToDimExpsEnd(.DimExps, P:DimExp) => P .DimExps
-rule addElementToDimExpsEnd((Hd:DimExp Tl:DimExps), P:DimExp) => Hd addElementToDimExpsEnd(Tl,P)
-
-//todo: move macro
-rule 'NewArray(_,,([D:DimExp,,Ds:KList] => toDimExps([D,,Ds],.DimExps)),,_)
+syntax DimInt ::= "[" TypedVal "]" [klabel('Dim)]
+syntax DimInts ::= List{DimInt,""} [klabel('DimExprList)]
+syntax DimExp ::= DimInt
+syntax KResult ::= DimInt
 
 /*@ When all dims were computed, check that dims are positive, and only
     after that begin array allocation
 */
 rule [NewArray-simple]:
-    new T:Type Ds:DimExps .Dims
-    => checkNonNegative(Ds) ~> allocAndInitArray(T, reverseDimExps(Ds,.DimExps) , default(T))
-    when isKResult(Ds)
-        [structural]
+    new T:Type Ds:DimInts .Dims
+    => checkNonNegative(Ds) ~> allocAndInitArray(T, reverseDimInts(Ds,.DimInts) , default(T))
 
 rule [NewArray-ArrayInit]:
     new arrayOf T:Type .Dims {InitContent:VarInits}
@@ -92,29 +84,29 @@ rule length(.VarInits) => 0
 /*Computation designed to check that array creation expression dimensions are non-negative. If they are non-negative,
 checkNonNegative is dissolved. Otherwise NegativeArraySizeException is thrown.
 */
-syntax KItem ::=  checkNonNegative (DimExps)
+syntax KItem ::=  checkNonNegative (DimInts)
 
-rule checkNonNegative([NI:Int::_ ]:DimInt Remainings:DimExps)=> checkNonNegative(Remainings)
+rule checkNonNegative([NI:Int::_ ]:DimInt Remainings:DimInts)=> checkNonNegative(Remainings)
 when NI >=Int 0
 
 rule [checkNonNegative-to-NegativeArraySizeException]:
-    checkNonNegative([NI:Int::_]:DimInt _:DimExps)
+    checkNonNegative([NI:Int::_]:DimInt _:DimInts)
     => throw new class String2Id("java.lang.NegativeArraySizeException") (null::classString);
 when
     NI <Int 0
 
-rule checkNonNegative(.DimExps) => .
+rule checkNonNegative(.DimInts) => .
 
-//@ Same as 'NewArray, but after DimExps were computed and checked
+//@ Same as 'NewArray, but after DimInts were computed and checked
 syntax KItem ::=  allocAndInitArray (
                 Type, // T - type of each allocated element. So for new int[1][1][][], T will be "arrayOf arrayOf int".
-                DimExps,  // DimExps:List{DimExp} - array dimensions
+                DimInts,  // DimInts:List{DimInt} - array dimensions
                 K     // InitExp - expression used to initialize each array element
               )
 
-//@ Here we are actually using the reversed DimExps
+//@ Here we are actually using the reversed DimInts
 rule [allocAndInitArray-MultiDim-desugar]:
-    allocAndInitArray(T:Type, Dim1K:DimExp Dim2K:DimExp DEs:DimExps, InitExp:K)
+    allocAndInitArray(T:Type, Dim1K:DimInt Dim2K:DimInt DEs:DimInts, InitExp:K)
     =>  allocAndInitArray(
           arrayOf T,
           Dim2K DEs,
@@ -242,12 +234,5 @@ rule [arrayInitImpl-inner-ArrayInit-desugar]:
 
 rule [arrayInitImpl-discard]:
     arrayInitImpl(_, _, {.VarInits}) => .
-
-//syntax VarInits ::= toVarInits( KListWrap , VarInits) [function]
-//rule toVarInits([Args:KList,, Arg:VarInit], Es:VarInits) => toVarInits([Args], (Arg,Es))
-//rule toVarInits([.KList], Es:VarInits) => Es
-
-//todo: move macro
-//rule 'ArrayInit([InitContent:KList] => toVarInits([InitContent], .VarInits)) [anywhere]
 
 endmodule
