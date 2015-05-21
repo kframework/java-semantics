@@ -234,8 +234,7 @@ context 'MethodDec('MethodDecHead(_,, _,, _:Type,, _:Id,, HOLE,, _),, _) [result
 rule [MethodDec]:
     <k>
       'MethodDec(
-        'MethodDecHead(Modifiers:KListWrap,, _:K,, ReturnType:Type,, Name:Id,,Params:Params,, _:K
-        ),,
+        'MethodDecHead(Modifiers:AnnoMethodModList,, _:K,, ReturnType:Type,, Name:Id,,Params:Params,, _:K),,
         Body:K //could be 'Block([...]) or 'NoMethodBody
       )
       => storeMethod(Params,
@@ -246,9 +245,9 @@ rule [MethodDec]:
     <crntClass> Class:ClassType </crntClass>
 
 rule [AbstractMethodDec]:
-    'AbstractMethodDec(_:K,, Ks:KList)
+    'AbstractMethodDec(_:AnnoAbstractMethodModList,, Ks:KList)
     =>  'MethodDec(
-          'MethodDecHead(['Public(.KList),,'Abstract(.KList)],, Ks),,
+          'MethodDecHead('AnnoMethodModList('Public(.KList),,'AnnoMethodModList('Abstract(.KList),, .AnnoMethodModList)),, Ks),,
           'NoMethodBody(.KList)
         )
 
@@ -507,6 +506,15 @@ rule isSynchronizedModifiers([(KL:KLabel(_) => .KList),, _])
 when        KL =/=KLabel 'Synchronized
 
 rule isSynchronizedModifiers([.KList]) => false::bool
+
+syntax KItem ::=  isSynchronizedModifiers (
+                AnnoMethodModList       //[...] - the list of method attributes
+              )
+              [function]
+
+rule isSynchronizedModifiers(synchronized _) => true::bool
+rule isSynchronizedModifiers(.AnnoMethodModList) => false::bool
+rule isSynchronizedModifiers(Hd Rest) => isSynchronizedModifiers(Rest) when Hd =/=K synchronized
 
 //@ Used to provide an approximate implementation of the distinction between static constant and non-constant fields.
 syntax KItem ::=  isFinalModifiers (

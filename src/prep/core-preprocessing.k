@@ -97,4 +97,27 @@ when        (KL =/=KLabel 'Public)
 
 rule getAccessMode([.KList]) => package
 
+
+
+syntax KItem ::=  getContextType (
+                AnnoMethodModList       //[...] - the list of method attributes
+              )
+              [function]
+
+rule getContextType(static _) => staticCT
+rule getContextType(.AnnoMethodModList)      => instanceCT
+rule getContextType(Hd:AnnoMethodMod Rest:AnnoMethodModList) => getContextType(Rest) when Hd =/=K static
+
+syntax KItem ::=  getAccessMode (
+                AnnoMethodModList //[...] - the list of class/method attributes
+              )
+              [function]
+
+rule getAccessMode(public _)    => public
+rule getAccessMode(protected _) => protected
+rule getAccessMode(private _)   => private
+rule getAccessMode(.AnnoMethodModList) => package
+rule getAccessMode(Hd:AnnoMethodMod Rest:AnnoMethodModList) => getAccessMode(Rest)
+when Hd =/=K public andBool Hd =/=K protected andBool Hd =/=K private
+
 endmodule
