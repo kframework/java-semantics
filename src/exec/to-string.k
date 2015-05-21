@@ -13,7 +13,7 @@ rule toString(Str:String :: _) => Str
 rule toString(I:Int :: char) => chrChar(I)
 rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
-rule toString(Fl:Float :: _) => Float2String(Fl)
+rule toString(Fl:Float :: _) => JavaFloat2String(Fl)
 rule toString(true::_) => "true"
 rule toString(false::_) => "false"
 rule toString(null::_) => "null"
