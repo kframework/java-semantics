@@ -4,6 +4,30 @@ module TO-STRING
     imports AUX-STRINGS
     imports SYNTAX-CONVERSIONS
 
+// the min val of double in java
+syntax Float ::= Double_MinVal | Double_MaxVal
+syntax Float ::= Double_NegInf | Double_PosInf
+syntax Float ::= Double_NaN
+
+rule Double_MinVal => minValueFloat(53, 11)
+rule Double_MaxVal => maxValueFloat(53, 11)
+rule Double_NegInf => minusInfinity(53, 11)
+rule Double_PosInf => plusInfinity(53, 11)
+rule Double_NaN => fpNaN(53, 11)
+
+syntax Float ::= nextUp(Float) [function]
+syntax Float ::= nextDown(Float) [function]
+
+rule nextUp(Double_NaN) = Double_NaN
+rule nextUp(Double_PosInf) = Double_PosInf
+rule nextUp(0) = Double_MinVal
+rule nextUp(Fl:Float) = Fl +Float Double_MinVal [owise]
+
+rule nextDown(Double_NaN) = Double_NaN
+rule nextDown(Double_NegInf) = Double_NegInf
+rule nextDown(0) = --Float Double_MinVal
+rule nextDown(Fl:Float) = Fl -Float Double_MinVal [owise]
+
 /*@ Converts all possible Java values into String. Used mostly for printing and String + operator.
     Conversion for other value forms is defined in other modules.
 */
