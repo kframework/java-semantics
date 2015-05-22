@@ -110,7 +110,7 @@ rule [allocAndInitArray-MultiDim-desugar]:
     =>  allocAndInitArray(
           arrayOf T,
           Dim2K DEs,
-          allocAndInitArray(T, Dim1K, InitExp)
+          allocAndInitArray(T, Dim1K .DimInts, InitExp)
         )
         [structural]
 
@@ -122,7 +122,7 @@ rule [allocAndInitArray-MultiDim-desugar]:
 */
 rule [allocAndInitArray]:
     <k>
-      allocAndInitArray(T:Type, [NI:Int::_]:DimInt , InitExp:K)
+      allocAndInitArray(T:Type, [NI:Int::_] .DimInts, InitExp:K)
       => allocArray(NI, T) ~> initArray(LI +Int 1, NI, InitExp)
          ~> arrayRef( arrayOf T, LI +Int 1, NI) :: arrayOf T
       ...
