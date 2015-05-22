@@ -68,6 +68,7 @@ rule [getMethodAccessMode]:
     <methodSignature> Sig </methodSignature>
     <methodAccessMode> Acc:AccessMode </methodAccessMode>
 
+//repitition
 syntax KItem ::=  getContextType (
                 KListWrap       //[...] - the list of method attributes
               )
@@ -97,16 +98,23 @@ when        (KL =/=KLabel 'Public)
 
 rule getAccessMode([.KList]) => package
 
-
-
 syntax KItem ::=  getContextType (
                 AnnoMethodModList       //[...] - the list of method attributes
               )
               [function]
 
-rule getContextType(static _) => staticCT
-rule getContextType(.AnnoMethodModList)      => instanceCT
+rule getContextType(static _:AnnoMethodModList) => staticCT
+rule getContextType(.AnnoMethodModList) => instanceCT
 rule getContextType(Hd:AnnoMethodMod Rest:AnnoMethodModList) => getContextType(Rest) when Hd =/=K static
+
+syntax KItem ::=  getContextType (
+                AnnoFieldModList       //[...] - the list of method attributes
+              )
+              [function]
+
+rule getContextType(static _:AnnoFieldModList) => staticCT
+rule getContextType(.AnnoFieldModList) => instanceCT
+rule getContextType(Hd:AnnoFieldMod Rest:AnnoFieldModList) => getContextType(Rest) when Hd =/=K static
 
 syntax KItem ::=  getAccessMode (
                 AnnoMethodModList //[...] - the list of class/method attributes

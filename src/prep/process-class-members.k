@@ -374,17 +374,17 @@ rule [ConstrDec]:
     </k>
     <crntClass> Class:ClassType </crntClass>
 
-// 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, InitExp:K),, _])
+// 'FieldDec(Modifiers,, T:Type,, ['VarDec(X:Id,, InitExp:K),, _])
 
-//resolve field declaration type
-context 'FieldDec(_:K,, HOLE,, _)
+//resolve field declaration type todo use strictness instead
+context 'FieldDec(_,, HOLE,, _)
 
 rule [FieldDec-Multi-Desugar]:
     (. => 'FieldDec(SomeK,, T,, [K1])) ~>
     'FieldDec(SomeK:K,, T:Type,, [(K1:K => .KList),, K2:K,, Ks:KList])
 
 rule [FieldDec-with-init-desugar]:
-    'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
+    'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
     ~> (. => 'InstanceInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
@@ -392,10 +392,10 @@ when
         [structural]
 
 rule [FieldDec-Instance]:
-    <k> 'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
+    <k> 'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <instanceFields> [_,, ( .KList => 'FieldDec([.KList],, T,, ['VarDec(X:Id)]) )] </instanceFields>
+    <instanceFields> [_,, ( .KList => 'FieldDec(.AnnoFieldModList,, T,, ['VarDec(X:Id)]) )] </instanceFields>
 when
     getContextType(Modifiers) ==K instanceCT
         [structural]
@@ -411,7 +411,7 @@ rule [InstanceInit]:
 /*@ Desugaring a static field declaration with initializer into a declaration without initializer.
 Followed by a static initializer block, if this field is not a compile-time constant.*/
 rule [FieldDec-StaticInit-Desugar]:
-    'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
+    'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
     ~> (. => 'StaticInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
@@ -424,10 +424,10 @@ when
         [structural]
 
 rule [FieldDec-Static]:
-    <k> 'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
+    <k> 'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <staticFields> [_,, ( .KList => 'FieldDec(['Static(.KList)],, T,, ['VarDec(X)]) )] </staticFields>
+    <staticFields> [_,, ( .KList => 'FieldDec('AnnoFieldModList('Static(.KList),, .AnnoFieldModList),, T,, ['VarDec(X)]) )] </staticFields>
 when
     getContextType(Modifiers) ==K staticCT
         [structural]
@@ -445,17 +445,24 @@ rule [StaticInit-Save]:
   This rule desugars them into 'FieldDec labels and adds the modifiers "public static final".
   Interface fields are not necessarily compile-time constants.
 */
-rule [ConstantDec-Desugar]:
-    'ConstantDec([ModifiersKs:KList],, TypeK:K,, VarDecs:KListWrap)
-    => 'FieldDec(
-          [ModifiersKs,, 'Public(.KList),, 'Static(.KList),, 'Final(.KList)],,
-          TypeK,, VarDecs
-        )
+//rule [ConstantDec-Desugar]:
+//    'ConstantDec(ModifiersKs:AnnoConstantModList,, TypeK:K,, VarDecs:KListWrap)
+//    => 'FieldDec(
+//          'AnnoFieldModList('Public(.KList),, 'AnnoFieldModList('Static(.KList),, 'AnnoFieldModList('Final(.KList),,
+//          ConstantToFieldModifiers(ModifiersKs)))),,
+//          TypeK,, VarDecs
+//        )
+
+syntax AnnoFieldModList ::= ConstantToFieldModifiers ( AnnoConstantModList ) [function]
+                           |ConstantToFieldModifiers ( AnnoConstantModList, AnnoFieldModList ) [function]
+rule ConstantToFieldModifiers(C) => ConstantToFieldModifiers(C, .AnnoFieldModList)
+rule ConstantToFieldModifiers(Hd:AnnoConstantMod Tl:AnnoConstantModList, F) => ConstantToFieldModifiers(Tl, 'AnnoFieldModList(Hd,,F))
+rule ConstantToFieldModifiers(.AnnoConstantModList, F) => F
 
 /*@Subsection compile-time constants*/
 
 //compute the value of a compile-time constant
-context 'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id,, HOLE) ])
+context 'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id,, HOLE) ])
 when
             getContextType(Modifiers) ==K staticCT
     //condition for not being compile-time constant
@@ -463,7 +470,7 @@ when
 
 rule [FieldDec-compile-time-constant]:
     <k>
-      'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id,, TV:TypedVal) ]) => .
+      'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id,, TV:TypedVal) ]) => .
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -506,15 +513,12 @@ rule isSynchronizedModifiers(Hd Rest:AnnoMethodModList) => isSynchronizedModifie
 
 //@ Used to provide an approximate implementation of the distinction between static constant and non-constant fields.
 syntax KItem ::=  isFinalModifiers (
-                KListWrap   //[...] - the list of method attributes
+                AnnoFieldModList   //[...] - the list of method attributes
               )
               [function]
 
-rule isFinalModifiers(['Final(_),,_]) => true
-
-rule isFinalModifiers([(KL:KLabel(_) => .KList),, _])
-when        KL =/=KLabel 'Final
-
-rule isFinalModifiers([.KList])      => false
+rule isFinalModifiers(final _) => true
+rule isFinalModifiers(Hd Rest:AnnoFieldModList) => isFinalModifiers(Rest) when Hd =/=K final
+rule isFinalModifiers(.AnnoFieldModList) => false
 
 endmodule

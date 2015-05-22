@@ -252,7 +252,7 @@ module NEW-INSTANCE-REST
 //@\subsection{Instance field declarations}
 
 rule [FieldDec-instance]:
-    <k> 'FieldDec([.KList],, T:Type,,['VarDec(X:Id)]) => . ...</k>
+    <k> 'FieldDec(.AnnoFieldModList,, T:Type,,['VarDec(X:Id)]) => . ...</k>
     <env> Env:Map => Env[X <- L] </env>
     <store>... .Map => L |-> default(T) ...</store>
     <storeMetadata>... .Map => L |-> FieldLocMetadata ...</storeMetadata>
