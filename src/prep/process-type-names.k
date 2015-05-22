@@ -14,19 +14,19 @@ The initial configuration contains the initial program in cells <k> and <program
 
 /*@ \subsection{Compilation units}*/
 
-// 'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _)
+// 'CompilationUnit('Some('PackageDec(_,, Pack:PackageId)),, _)
 rule [CompilationUnit-DefaultPackage-Desugar]:
     'CompilationUnit(
-      ( 'None(_) => 'Some('PackageDec(.K,, 'PackageName( [.KList] ))) ),,
+      ( 'None(_) => 'Some('PackageDec(.AnnoList,, 'PackageName( [.KList] ))) ),,
       _
     )
 
 //resolve the package name
-context 'CompilationUnit('Some('PackageDec(_:K,, HOLE)),, _)
+context 'CompilationUnit('Some('PackageDec(_,, HOLE)),, _)
 
 rule [CompilationUnit]:
     <k>
-      'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _:K,,
+      'CompilationUnit('Some('PackageDec(_,, Pack:PackageId)),, _:K,,
           [Decs:KList]
       ) => processTypeNames([Decs], Pack)
       ...

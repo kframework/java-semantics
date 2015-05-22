@@ -34,7 +34,7 @@ rule [ProcCompUnitsPhase-start]:
 //ImpDecs will be processed in the module PROCESS-IMPORTS
 rule [CompilationUnit]:
     <k>
-      'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),,
+      'CompilationUnit('Some('PackageDec(_,, Pack:PackageId)),,
           ImpDecs:K,, [Ks:KList]
       )
       => compUnitImportsStart(Pack) ~> ImpDecs ~> processTypeDecsInPCUPhase([Ks], Pack, noClass)
