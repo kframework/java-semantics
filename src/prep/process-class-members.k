@@ -312,6 +312,8 @@ rule [storeMethod-discard-default-constructor]:
     <classType> Class </classType>
     <methods>... Sig |-> _ ...</methods>
 
+//Resolve parameter types
+context 'ConstrDec('ConstrDecHead(_,, _,, _:Id,, HOLE,, _),, _)   [result(Params)]
 
 rule [ConstrDec-SuperCall-Desugar]:
     <k>
@@ -331,10 +333,11 @@ rule [ConstrDec-SuperCall-Desugar]:
 when
     Class =/=K classObject
 
+//We don't have synchorinzed as AnnoConstrMod, the fouth argument for storeMethod can be false directly
 rule [ConstrDec-Object]:
     <k>
       'ConstrDec(
-        'ConstrDecHead(Modifiers,, _:K,, Name:Id,, Params:Params,, _),,
+        'ConstrDecHead(Modifiers:AnnoConstrModList,, _:K,, Name:Id,, Params:Params,, _),,
         'ConstrBody(
           (
             'None(_)
@@ -343,7 +346,7 @@ rule [ConstrDec-Object]:
         )
       )
       => storeMethod(Params,
-                instanceCT, getAccessMode(Modifiers), isSynchronizedModifiers(Modifiers), constructorMMT, .K,
+                instanceCT, getAccessMode(Modifiers), false::bool, constructorMMT, .K,
                 'Block([BodyKs]), sig(getConsName(Class), getTypes(Params)), void)
       ...
     </k>
@@ -351,16 +354,13 @@ rule [ConstrDec-Object]:
 when
     Class ==K classObject
 
-//Resolve parameter types
-context 'ConstrDec('ConstrDecHead(_,, _,, _:Id,, HOLE,, _),, _)   [result(Params)]
-
 rule [ConstrDec]:
     <k>
-      'ConstrDec('ConstrDecHead(Modifiers:KListWrap,, _:K,, Name:Id,, Params:Params,, _),,
+      'ConstrDec('ConstrDecHead(Modifiers:AnnoConstrModList,, _:K,, Name:Id,, Params:Params,, _),,
           'ConstrBody(
         'Some(FirstLine:K) ,,[BodyKs:KList]))
       => storeMethod(Params,
-          instanceCT, getAccessMode(Modifiers), isSynchronizedModifiers(Modifiers), constructorMMT, FirstLine,
+          instanceCT, getAccessMode(Modifiers), false::bool, constructorMMT, FirstLine,
           'Block([
             //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
             //Invocation of instance initializer converted into a method.
@@ -455,7 +455,7 @@ rule [ConstantDec-Desugar]:
 /*@Subsection compile-time constants*/
 
 //compute the value of a compile-time constant
-context 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, HOLE) ])
+context 'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id,, HOLE) ])
 when
             getContextType(Modifiers) ==K staticCT
     //condition for not being compile-time constant
@@ -496,25 +496,13 @@ rule [convertInstanceInitIntoMethod]:
 
 //@ Evaluates to true::bool if synchronized is among modifiers, false otherwise
 syntax KItem ::=  isSynchronizedModifiers (
-                KListWrap       //[...] - the list of method attributes
-              )
-              [function]
-
-rule isSynchronizedModifiers(['Synchronized(_),,_]) => true::bool
-
-rule isSynchronizedModifiers([(KL:KLabel(_) => .KList),, _])
-when        KL =/=KLabel 'Synchronized
-
-rule isSynchronizedModifiers([.KList]) => false::bool
-
-syntax KItem ::=  isSynchronizedModifiers (
                 AnnoMethodModList       //[...] - the list of method attributes
               )
               [function]
 
-rule isSynchronizedModifiers(synchronized _) => true::bool
+rule isSynchronizedModifiers(synchronized _:AnnoMethodModList) => true::bool
 rule isSynchronizedModifiers(.AnnoMethodModList) => false::bool
-rule isSynchronizedModifiers(Hd Rest) => isSynchronizedModifiers(Rest) when Hd =/=K synchronized
+rule isSynchronizedModifiers(Hd Rest:AnnoMethodModList) => isSynchronizedModifiers(Rest) when Hd =/=K synchronized
 
 //@ Used to provide an approximate implementation of the distinction between static constant and non-constant fields.
 syntax KItem ::=  isFinalModifiers (

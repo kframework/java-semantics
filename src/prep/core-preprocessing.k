@@ -113,11 +113,23 @@ syntax KItem ::=  getAccessMode (
               )
               [function]
 
-rule getAccessMode(public _)    => public
-rule getAccessMode(protected _) => protected
-rule getAccessMode(private _)   => private
+rule getAccessMode(public _:AnnoMethodModList)    => public
+rule getAccessMode(protected _:AnnoMethodModList) => protected
+rule getAccessMode(private _:AnnoMethodModList)   => private
 rule getAccessMode(.AnnoMethodModList) => package
 rule getAccessMode(Hd:AnnoMethodMod Rest:AnnoMethodModList) => getAccessMode(Rest)
+when Hd =/=K public andBool Hd =/=K protected andBool Hd =/=K private
+
+syntax KItem ::=  getAccessMode (
+                AnnoConstrModList //[...] - the list of class/method attributes
+              )
+              [function]
+
+rule getAccessMode(public _:AnnoConstrModList)    => public
+rule getAccessMode(protected _:AnnoConstrModList) => protected
+rule getAccessMode(private _:AnnoConstrModList)   => private
+rule getAccessMode(.AnnoConstrModList) => package
+rule getAccessMode(Hd:AnnoConstrMod Rest:AnnoConstrModList) => getAccessMode(Rest)
 when Hd =/=K public andBool Hd =/=K protected andBool Hd =/=K private
 
 endmodule

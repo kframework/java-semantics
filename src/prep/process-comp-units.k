@@ -140,7 +140,7 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
                 //If there is a no-arguments constructor in Decls, this one will be discarded
                 'ConstrDec(
                   'ConstrDecHead(
-                    ['Public(.KList)],,
+                    'AnnoConstrModList('Public(.KList),, .AnnoConstrModList),,
                     'None(.KList),,
                     getSimpleName(Class),,
                     .Params,,

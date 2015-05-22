@@ -99,7 +99,7 @@ rule [processAnonymousClass]:
               //Anonymous class constructor
               'ConstrDec(
                 'ConstrDecHead(
-                  ['Public(.KList)],,
+                  'AnnoConstrModList('Public(.KList),, .AnnoConstrModList),,
                   'None(.KList),,
                   Name,,
                   ConstructorFormalParams,,
@@ -205,7 +205,7 @@ rule [processQAnonymousClass]:
               //Anonymous class constructor
               'ConstrDec(
                 'ConstrDecHead(
-                  ['Public(.KList)],,
+                  'AnnoConstrModList('Public(.KList),, .AnnoConstrModList),,
                   'None(.KList),,
                   Name,,
                   ConstructorFormalParams,,
