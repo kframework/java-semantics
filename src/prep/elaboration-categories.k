@@ -209,12 +209,44 @@ rule defaultElabHeating('Id) => true*/
 //Auxiliary functions that should be default-heated
 rule defaultElabHeating('stmtAndExp) => true
 
-//user lists that should be default-heated, we didn't have this before because we used the heating of KListWrap
+//all user lists should be default-heated, elements were default-heated in KListWrap in the past
 rule defaultElabHeating('CatchClauseList) => true
 rule defaultElabHeating('FormalParamList) => true
 rule defaultElabHeating('VarInitList) => true
 rule defaultElabHeating('DimList) => true
 rule defaultElabHeating('DimExprList) => true
+rule defaultElabHeating('ExprList) => true
+
+rule defaultElabHeating('SwitchLabelList) => true
+rule defaultElabHeating('SwitchGroupList) => true
+rule defaultElabHeating('BlockStmList) => true
+rule defaultElabHeating('InterfaceTypeList) => true
+rule defaultElabHeating('ExceptionTypeList) => true
+rule defaultElabHeating('IdList) => true
+rule defaultElabHeating('TypeDecList) => true
+rule defaultElabHeating('VarDecList) => true
+rule defaultElabHeating('ImportDecList) => true
+rule defaultElabHeating('ActualTypeArgList) => true
+rule defaultElabHeating('ClassOrInterfaceTypeList) => true
+rule defaultElabHeating('TypeParamList) => true
+rule defaultElabHeating('AbstractMethodModList) => true
+rule defaultElabHeating('AnnoAbstractMethodModList) => true
+rule defaultElabHeating('AnnoMethodModList) => true
+rule defaultElabHeating('AnnoVarModList) => true
+rule defaultElabHeating('AnnoClassModList) => true
+rule defaultElabHeating('AnnoConstrModList) => true
+rule defaultElabHeating('AnnoConstantModList) => true
+rule defaultElabHeating('AnnoFieldModList) => true
+rule defaultElabHeating('AnnoInterfaceModList) => true
+rule defaultElabHeating('AnnoList) => true
+rule defaultElabHeating('AnnoElemDecList) => true
+rule defaultElabHeating('InterfaceMemberDecList) => true
+rule defaultElabHeating('ElemValPairList) => true
+rule defaultElabHeating('ElemValList) => true
+rule defaultElabHeating('StringPartList) => true
+rule defaultElabHeating('EnumConstList) => true
+rule defaultElabHeating('ClassBodyDecList) => true
+
 rule defaultElabHeating(_) => false [owise]
 
 /*@ Naked terms are those that should be computed directly into KResult during elaboration.
