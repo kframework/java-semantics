@@ -47,6 +47,7 @@ syntax KLabel ::= getClassDecLabel ( ClassMetaType ) [function]
 rule getClassDecLabel ( classCMT ) => 'ClassDec
 rule getClassDecLabel ( interfaceCMT ) => 'InterfaceDec
 
+//todo change the folding and unfolding usage of KListWrap in ImplemetsList (retrieve from and put back to set implTrans)
 rule [folding-ImplementsDec]:
     <k> foldingPhase </k>
     <classType> Class:ClassType </classType>
