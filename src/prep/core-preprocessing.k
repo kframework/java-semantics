@@ -116,6 +116,15 @@ rule getContextType(static _:AnnoFieldModList) => staticCT
 rule getContextType(.AnnoFieldModList) => instanceCT
 rule getContextType(Hd:AnnoFieldMod Rest:AnnoFieldModList) => getContextType(Rest) when Hd =/=K static
 
+syntax KItem ::=  getContextType (
+                AnnoClassModList       //[...] - the list of method attributes
+              )
+              [function]
+
+rule getContextType(static _:AnnoClassModList) => staticCT
+rule getContextType(.AnnoClassModList) => instanceCT
+rule getContextType(Hd:AnnoClassMod Rest:AnnoClassModList) => getContextType(Rest) when Hd =/=K static
+
 syntax KItem ::=  getAccessMode (
                 AnnoMethodModList //[...] - the list of class/method attributes
               )
@@ -138,6 +147,30 @@ rule getAccessMode(protected _:AnnoConstrModList) => protected
 rule getAccessMode(private _:AnnoConstrModList)   => private
 rule getAccessMode(.AnnoConstrModList) => package
 rule getAccessMode(Hd:AnnoConstrMod Rest:AnnoConstrModList) => getAccessMode(Rest)
+when Hd =/=K public andBool Hd =/=K protected andBool Hd =/=K private
+
+syntax KItem ::=  getAccessMode (
+                AnnoClassModList
+              )
+              [function]
+
+rule getAccessMode(public _:AnnoClassModList)    => public
+rule getAccessMode(protected _:AnnoClassModList) => protected
+rule getAccessMode(private _:AnnoClassModList)   => private
+rule getAccessMode(.AnnoClassModList) => package
+rule getAccessMode(Hd:AnnoClassMod Rest:AnnoClassModList) => getAccessMode(Rest)
+when Hd =/=K public andBool Hd =/=K protected andBool Hd =/=K private
+
+syntax KItem ::=  getAccessMode (
+                AnnoInterfaceModList
+              )
+              [function]
+
+rule getAccessMode(public _:AnnoInterfaceModList)    => public
+rule getAccessMode(protected _:AnnoInterfaceModList) => protected
+rule getAccessMode(private _:AnnoInterfaceModList)   => private
+rule getAccessMode(.AnnoInterfaceModList) => package
+rule getAccessMode(Hd:AnnoInterfaceMod Rest:AnnoInterfaceModList) => getAccessMode(Rest)
 when Hd =/=K public andBool Hd =/=K protected andBool Hd =/=K private
 
 endmodule

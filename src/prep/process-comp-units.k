@@ -88,7 +88,7 @@ rule [processTypeDecsInPCUPhase-typeDec-ComputeFullName]:
 
 rule [ClassDec-NoExtendsDesugar]:
     processTypeDecsInPCUPhase(
-      ['ClassDec('ClassDecHead(_:KListWrap,, Class:ClassType,, _:K,,
+      ['ClassDec('ClassDecHead(_,, Class:ClassType,, _:K,,
         ( 'None(_)
           => 'Some('SuperDec(
                 #if (Class =/=K classObject)
@@ -103,13 +103,13 @@ rule [ClassDec-NoExtendsDesugar]:
     )                [structural]
 
 rule [ClassDec-NoImplementsDesugar]:
-    processTypeDecsInPCUPhase(['ClassDec('ClassDecHead(_:KListWrap,, Class:ClassType,, _:K,, _:K,,
+    processTypeDecsInPCUPhase(['ClassDec('ClassDecHead(_,, Class:ClassType,, _:K,, _:K,,
         ( 'None(.KList) => 'Some('ImplementsDec(.InterfaceTypeList)) )
       ),, _:K
     )], _,_)                [structural]
 
 rule [InterfaceDec-NoExtendsDesugar]:
-    processTypeDecsInPCUPhase(['InterfaceDec('InterfaceDecHead(_:K,, Class:ClassType,, _:K,,
+    processTypeDecsInPCUPhase(['InterfaceDec('InterfaceDecHead(_,, Class:ClassType,, _:K,,
         ( 'None(.KList) => 'Some('ExtendsInterfaces(.InterfaceTypeList)) )
       ),, _:K
     )], _,_)                [structural]
@@ -118,7 +118,7 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
     <k>
       processTypeDecsInPCUPhase(
         ['ClassDec(
-          'ClassDecHead( Modifiers:KListWrap,, Class:ClassType,, _:K,,
+          'ClassDecHead( Modifiers:AnnoClassModList,, Class:ClassType,, _:K,,
             'Some('SuperDec(BaseClassRaw:K)),,
             'Some('ImplementsDec(ImplTypesRaw:InterfaceTypeList))
           ),,

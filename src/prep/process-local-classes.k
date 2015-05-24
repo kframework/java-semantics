@@ -18,7 +18,7 @@ syntax KItem ::=  generateLocalClassType(
 
 rule [generateLocalClassType]:
     <k>
-      generateLocalClassType('ClassDec('ClassDecHead( _:KListWrap,, ClassName:Id,, _:K,, _:K,, _:K ),, _:K))
+      generateLocalClassType('ClassDec('ClassDecHead( _,, ClassName:Id,, _:K,, _:K,, _:K ),, _:K))
       => getClassType(toPackage(CrntClass), String2Id(Id2String(ClassName) +String "$" +String Int2String(LocalId)))
       ...
     </k>
@@ -38,7 +38,7 @@ rule [processLocalClassDec-register-name]:
       processLocalClassDec(
         'ClassDec(
           'ClassDecHead(
-          ( [OldModifiers:KList] => generateLocalClassModifiers( CT, [OldModifiers] ) ),,
+          ( OldModifiers => generateLocalClassModifiers( CT, OldModifiers ) ),,
             (InitName:Id => getSimpleName(GeneratedClass)),,
             _:K,, _:K,, _:K
           ),, _:K
@@ -51,12 +51,9 @@ rule [processLocalClassDec-register-name]:
     <contextType> CT:ContextType </contextType>
 
 //@ The second argument: existing modifiers
-syntax KListWrap ::= generateLocalClassModifiers( ContextType, KListWrap )  [function]
-rule generateLocalClassModifiers( CT:ContextType, [OldModifiers:KList] )
-     => #if CT ==K staticCT
-          #then ['Static(.KList),,OldModifiers]
-          #else [OldModifiers]
-        #fi
+syntax AnnoClassModList ::= generateLocalClassModifiers( ContextType, AnnoClassModList )  [function]
+rule generateLocalClassModifiers( staticCT, OldModifiers:AnnoClassModList ) => static OldModifiers
+rule generateLocalClassModifiers( _, OldModifiers:AnnoClassModList ) => OldModifiers        [owise]
 
 rule [processLocalClassDec-process]:
     <k>
@@ -190,7 +187,7 @@ rule [localEnvObjectBuild]:
       => localEnvClassAddFieldsAndRegister(
             'ClassDec(
               'ClassDecHead(
-                generateLocalClassModifiers( CT, [.KList] ),,
+                generateLocalClassModifiers( CT, .AnnoClassModList ),,
                 getSimpleName(LocalEnvClass),,
                 'None(.KList),,
                 'None(.KList),,

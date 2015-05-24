@@ -61,7 +61,7 @@ rule [folding-ImplementsDec]:
         _
       )
     </folded>
-
+//[Acc,CT] is a pair of info, not AnnoMethodModList
 rule [folding-MethodDec]:
     <k> foldingPhase </k>
     <classType> Class:ClassType </classType>

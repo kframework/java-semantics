@@ -87,7 +87,7 @@ rule [processAnonymousClass]:
         'ClassDecStm(
           'ClassDec(
             'ClassDecHead(
-              [.KList],,
+              .AnnoClassModList,,
               Name,,
               'None(.KList),,
               'Some('SuperDec(BaseClass)),,
@@ -193,7 +193,7 @@ rule [processQAnonymousClass]:
         'ClassDecStm(
           'ClassDec(
             'ClassDecHead(
-              [.KList],,
+              .AnnoClassModList,,
               Name,,
               'None(.KList),,
               'Some('SuperDec(BaseClass)),,

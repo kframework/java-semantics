@@ -94,11 +94,12 @@ when notBool PackId in keys(PackMap)
 
 /*@ A type name is either class or interface name. Anonymous labels will be one of:
       - 'ClassDec('ClassDecHead(...))
-      - 'InterfaceDec('InterfaceDecHead(...))*/
-rule [processTypeNames]:
+      - 'InterfaceDec('InterfaceDecHead(...))
+      todo repitition*/
+rule [processTypeNamesClass]:
     <k>
       processTypeNames(
-        [(DecLabel:KLabel(_:KLabel(Modifiers:KListWrap,, SimpleClass:Id,, _),, CBody:K) => .KList),, _],
+        [('ClassDec('ClassDecHead(Modifiers:AnnoClassModList,, SimpleClass:Id,, _),, CBody:K) => .KList),, _],
         PackId:PackageId
       )
       ~> ( . => processInnerTypes(CBody, toPackage(getClassType(PackId,SimpleClass))) )
@@ -113,12 +114,35 @@ rule [processTypeNames]:
     </namesToClasses>
     ( . =>  <class>
               <classType> getClassType(PackId,SimpleClass) </classType>
-              <classMetaType> getMetaType(DecLabel) </classMetaType>
+              <classMetaType> classCMT </classMetaType>
               <classPhase> DiscoveredCPhase </classPhase>
               <classAccessMode> getAccessMode(Modifiers) </classAccessMode>
               ...
             </class> )
-when DecLabel ==KLabel 'ClassDec orBool DecLabel ==KLabel 'InterfaceDec
+
+rule [processTypeNamesInterface]:
+    <k>
+      processTypeNames(
+        [('InterfaceDec('InterfaceDecHead(Modifiers:AnnoInterfaceModList,, SimpleClass:Id,, _),, CBody:K) => .KList),, _],
+        PackId:PackageId
+      )
+      ~> ( . => processInnerTypes(CBody, toPackage(getClassType(PackId,SimpleClass))) )
+      ...
+    </k>
+    <namesToClasses>
+      ...
+      PackId |-> mapWrap(
+        ClassesMap:Map => ClassesMap[SimpleClass <- getClassType(PackId,SimpleClass)]
+      )
+      ...
+    </namesToClasses>
+    ( . =>  <class>
+              <classType> getClassType(PackId,SimpleClass) </classType>
+              <classMetaType> interfaceCMT </classMetaType>
+              <classPhase> DiscoveredCPhase </classPhase>
+              <classAccessMode> getAccessMode(Modifiers) </classAccessMode>
+              ...
+            </class> )
 
 rule [processTypeNames-ElemDiscard]:
     processTypeNames([(Label:KLabel(_) => .KList),, _], _)
