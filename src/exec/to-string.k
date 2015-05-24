@@ -4,29 +4,60 @@ module TO-STRING
     imports AUX-STRINGS
     imports SYNTAX-CONVERSIONS
 
-// the min val of double in java
-syntax Float ::= Double_MinVal | Double_MaxVal
-syntax Float ::= Double_NegInf | Double_PosInf
-syntax Float ::= Double_NaN
 
-rule Double_MinVal => minValueFloat(53, 11)
-rule Double_MaxVal => maxValueFloat(53, 11)
-rule Double_NegInf => minusInfinity(53, 11)
-rule Double_PosInf => plusInfinity(53, 11)
-rule Double_NaN => fpNaN(53, 11)
+  syntax Int ::= svalueMInt(MInt)     [function, hook(#MINT:svalue)]
+  | uvalueMInt(MInt)     [function, hook(#MINT:uvalue), smtlib(bv2int)]
+
+// the min val of double in java
+syntax Float ::= "DoubleMinVal" | "DoubleMaxVal"
+syntax Float ::= "DoubleNegInf" | "DoublePosInf"
+syntax Float ::= "DoubleNaN"
+
+rule DoubleMinVal => minValueFloat(53, 11)
+rule DoubleMaxVal => maxValueFloat(53, 11)
+rule DoubleNegInf => minusInfinity(53, 11)
+rule DoublePosInf => plusInfinity(53, 11)
+rule DoubleNaN => fpNaN(53, 11)
 
 syntax Float ::= nextUp(Float) [function]
 syntax Float ::= nextDown(Float) [function]
 
-rule nextUp(Double_NaN) = Double_NaN
-rule nextUp(Double_PosInf) = Double_PosInf
-rule nextUp(0) = Double_MinVal
-rule nextUp(Fl:Float) = Fl +Float Double_MinVal [owise]
+//FFFFFFFFFFFFF is eq to 4503599627370495
+//auxiliary functions for computing ajacent double values.
+syntax Float ::= incF0(String, Int) | incF1(String, Int, Int)
 
-rule nextDown(Double_NaN) = Double_NaN
-rule nextDown(Double_NegInf) = Double_NegInf
-rule nextDown(0) = --Float Double_MinVal
-rule nextDown(Fl:Float) = Fl -Float Double_MinVal [owise]
+rule incF0(Fl:String, E:Int) => incF1(substrString(Fl, 0, 1), String2Base(substrString(Fl, 1,
+lengthString(Fl)), 16), E)
+when lengthString(Fl) ==Int 14
+
+rule incF0(Fl:String, E:Int) => -1.0 //should not reach this case.
+when notBool lengthString(Fl) ==Int 14
+
+rule incF1(Prefix:String, Significand:Int, Power:Int) =>
+String2Float("0x" +String Prefix +String ".0" +String "p" +String Int2String(Power +Int 1))
+when Significand ==Int 4503599627370495
+
+rule incF1(Prefix:String, Significand:Int, Power:Int) =>
+String2Float("0x" +String Prefix +String "." +String Int2String(Significand +Int 1) +String "p"
++String Int2String(Power))
+when notBool (Significand ==Int 4503599627370495)
+
+//build the hex string of a float, given its significand's string and exponent.
+//syntax String ::= buildFloatHexStr(String, Int) [function]
+
+rule nextUp(DoubleNaN) => DoubleNaN
+rule nextUp(DoublePosInf) => DoublePosInf
+rule nextUp(0.0) => DoubleMinVal
+rule nextUp(Fl:Float) => incF0(Base2String(uvalueMInt(significandFloat(Fl)), 16),
+                            exponentFloat(Fl)) [owise]
+
+rule nextDown(DoubleNaN) => DoubleNaN
+rule nextDown(DoubleNegInf) => DoubleNegInf
+rule nextDown(0.0) => --Float DoubleMinVal
+rule nextDown(Fl:Float) => 0.0 [owise]
+
+syntax String ::= fst17AfterDot(Float) [function]
+rule fst17AfterDot(Fl) => Float2String(Fl, "%.22Rf")
 
 /*@ Converts all possible Java values into String. Used mostly for printing and String + operator.
     Conversion for other value forms is defined in other modules.
@@ -37,7 +68,22 @@ rule toString(Str:String :: _) => Str
 rule toString(I:Int :: char) => chrChar(I)
 rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
-rule toString(Fl:Float :: _) => Float2String(Fl)
+
+rule toString(Fl:Float :: _) => Float2String(incF1("1", 0, 0), "%Ra")
+
+//Base2String(uvalueMInt(significandFloat(Fl)), 16) +String
+ //  ", expo:" +String Int2String(exponentFloat(Fl)) +String "; " +String Float2String(String2Float
+ //  ("0x1.0p0"))
+
+ //Float2String(nextUp(Fl), "%Ra")
+
+//Base2String(uvalueMInt(significandFloat(Fl)), 16)
+//Float2String(String2Float("0x1.3ae147ae147adp+0"), "%.18Rf") //nextDown
+//+String ";\t" +String Float2String(String2Float("0x1.3ae147ae147aep+0"), "%.18Rf") //target float
+//+String ";\t" +String Float2String(String2Float("0x1.3ae147ae147afp+0"), "%.18Rf") //nextUp
+
+
+
 rule toString(true::_) => "true"
 rule toString(false::_) => "false"
 rule toString(null::_) => "null"
