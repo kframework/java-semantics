@@ -35,12 +35,15 @@ rule [ProcCompUnitsPhase-start]:
 rule [CompilationUnit]:
     <k>
       'CompilationUnit('Some('PackageDec(_,, Pack:PackageId)),,
-          ImpDecs:K,, [Ks:KList]
+          ImpDecs:ImportDecList,, [Ks:KList]
       )
       => compUnitImportsStart(Pack) ~> ImpDecs ~> processTypeDecsInPCUPhase([Ks], Pack, noClass)
       ...
     </k>
     <globalPhase> ProcCompUnitsPhase  </globalPhase>
+
+rule Hd:ImportDec Tl:ImportDecList => Hd ~> Tl
+rule .ImportDecList => .
 
 /*@ Wrapper over a list of type declarations and possible other terms, required to distinguish
 this phase from other preprocessing phases

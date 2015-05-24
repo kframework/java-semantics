@@ -17,7 +17,7 @@ The initial configuration contains the initial program in cells <k> and <program
 // 'CompilationUnit('Some('PackageDec(_,, Pack:PackageId)),, _)
 rule [CompilationUnit-DefaultPackage-Desugar]:
     'CompilationUnit(
-      ( 'None(_) => 'Some('PackageDec(.AnnoList,, 'PackageName( [.KList] ))) ),,
+      ( 'None(_) => 'Some('PackageDec(.AnnoList,, 'PackageName( .IdList ))) ),,
       _
     )
 
@@ -57,6 +57,26 @@ when Str =/=String ""                                                           
 
 rule [packageNameImpl-End]:
     packageNameImpl(Str:String, [.KList]) => packageId(String2Id(Str))                  [structural]
+
+//todo repitition
+
+rule [PackageName-Start]:
+    'PackageName(Ks:IdList) => packageNameImpl("", Ks)                  [structural]
+
+//Aux construct for processing packages
+syntax PackageId ::= packageNameImpl ( String, IdList )             [function]
+
+rule [packageNameImpl-FirstPack]:
+    packageNameImpl("", NextKId:Id . Ks:IdList)
+    => packageNameImpl(Id2String(NextKId), Ks)                                          [structural]
+
+rule [packageNameImpl-NextPack]:
+    packageNameImpl(Str:String, NextKId:Id . Ids:IdList)
+    => packageNameImpl(Str +String "." +String Id2String(NextKId), Ids)
+when Str =/=String ""                                                                   [structural]
+
+rule [packageNameImpl-End]:
+    packageNameImpl(Str:String, .IdList) => packageId(String2Id(Str))                  [structural]
 
 /*@ \subsection{Class declaration}*/
 
