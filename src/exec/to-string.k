@@ -24,14 +24,15 @@ syntax Float ::= nextDown(Float) [function]
 
 //FFFFFFFFFFFFF is eq to 4503599627370495
 //auxiliary functions for computing ajacent double values.
-syntax Float ::= incF0(String, Int) | incF1(String, Int, Int)
+syntax Float ::= incF0(String, Int) [function]
+               | incF1(String, Int, Int) [function]
 
 rule incF0(Fl:String, E:Int) => incF1(substrString(Fl, 0, 1), String2Base(substrString(Fl, 1,
 lengthString(Fl)), 16), E)
 when lengthString(Fl) ==Int 14
 
 rule incF0(Fl:String, E:Int) => -1.0 //should not reach this case.
-when notBool lengthString(Fl) ==Int 14
+when notBool (lengthString(Fl) ==Int 14)
 
 rule incF1(Prefix:String, Significand:Int, Power:Int) =>
 String2Float("0x" +String Prefix +String ".0" +String "p" +String Int2String(Power +Int 1))
@@ -69,8 +70,21 @@ rule toString(I:Int :: char) => chrChar(I)
 rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
 
-rule toString(Fl:Float :: _) => Float2String(incF1("1", 0, 0), "%Ra")
+rule toString(Fl:Float :: _) => Float2String(incF1(substrString("10000000000000", 0, 1), String2Base
+(substrString("10000000000000", 1,
+                                             lengthString("10000000000000")), 16), 0), "%Ra")
 
+//Float2String(incF0("10000000000000",0), "%Ra")
+
+/*
+Float2String(String2Float("0x" +String "1" +String "." +String Int2String(0 +Int 1)
++String "p" +String Int2String(0)), "%Ra")
+
+ //Int2String(String2Base("0000000000000", 16)) +String ";;"
+//+String Int2String(exponentFloat(Fl)) +String ";;len: " +String Int2String(lengthString
+//("10000000000000"))
+
+//Float2String(incF1("1", 0, 0), "%Ra")
 //Base2String(uvalueMInt(significandFloat(Fl)), 16) +String
  //  ", expo:" +String Int2String(exponentFloat(Fl)) +String "; " +String Float2String(String2Float
  //  ("0x1.0p0"))
@@ -81,7 +95,7 @@ rule toString(Fl:Float :: _) => Float2String(incF1("1", 0, 0), "%Ra")
 //Float2String(String2Float("0x1.3ae147ae147adp+0"), "%.18Rf") //nextDown
 //+String ";\t" +String Float2String(String2Float("0x1.3ae147ae147aep+0"), "%.18Rf") //target float
 //+String ";\t" +String Float2String(String2Float("0x1.3ae147ae147afp+0"), "%.18Rf") //nextUp
-
+*/
 
 
 rule toString(true::_) => "true"
