@@ -83,8 +83,8 @@ endmodule
 module LIST-MACRO
 imports CORE-FUNCTIONS
 
-rule '.List`{"'SwitchLabelList"`}(.KList)   => [.KList]                             [macro]
-rule '.List`{"'SwitchGroupList"`}(.KList)   => [.KList]                             [macro]
+//rule '.List`{"'SwitchLabelList"`}(.KList)   => [.KList]                             [macro]
+//rule '.List`{"'SwitchGroupList"`}(.KList)   => [.KList]                             [macro]
 rule '.List`{"'BlockStmList"`}(.KList)   => [.KList]                                [macro]
 //rule '.List`{"'ExceptionTypeList"`}(.KList)   => [.KList]                           [macro]
 //rule '.List`{"'IdList"`}(.KList)   => [.KList]                                      [macro]
@@ -113,8 +113,8 @@ rule '.List`{"'ClassBodyDecList"`}(.KList)   => [.KList]                        
 rule '.List`{"'ExprList"`}(.KList)   => [.KList]                                    [macro]
 
 
-rule 'SwitchLabelList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
-rule 'SwitchGroupList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
+//rule 'SwitchLabelList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
+//rule 'SwitchGroupList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
 rule 'BlockStmList(Hd,,[Tl:KList])              => [Hd,,Tl]         [macro]
 //rule 'ExceptionTypeList(Hd,,[Tl:KList])         => [Hd,,Tl]         [macro]
 //rule 'IdList(Hd,,[Tl:KList])                    => [Hd,,Tl]         [macro]

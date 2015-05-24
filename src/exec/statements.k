@@ -129,41 +129,51 @@ context 'Switch(HOLE,,_:K)
 
 syntax KItem ::= switchImpl (
              TypedVal, // TV - switch argument
-             KListWrap, // switch body - list of 'SwitchGroup labels
+             K, // switch body - list of 'SwitchGroup labels
              K // DefaultStm - default block, if any
              )
 
 //@ The switchEnd in the right-hand side of => is required to properly interact with break.
 rule [Switch]:
-    'Switch(TV:TypedVal,, 'SwitchBlock([Ks:KList],, TrailingLabels:K))
-    => switchImpl(TV, [Ks,, 'SwitchGroup(TrailingLabels,, .K)], .K)
+    'Switch(TV:TypedVal,, 'SwitchBlock(SwitchGroups:K,, TrailingLabels:SwitchLabelList))
+    => switchImpl(TV, appendSwitchGroup(SwitchGroups, 'SwitchGroup(TrailingLabels,, .BlockStmList)), .K)
     ~> switchEnd
 
-context switchImpl( _,[ 'SwitchGroup(['Case(HOLE),,_:KList],,_),, _:KList ], _)
+syntax KItem ::= appendSwitchGroup (K, K)                       [function]
+rule appendSwitchGroup(.SwitchGroupList, S:K) => 'SwitchGroupList(S,, .SwitchGroupList)
+rule appendSwitchGroup('SwitchGroupList(Hd:K,, Tl:K), S:K) => 'SwitchGroupList(Hd,, appendSwitchGroup(Tl, S))
+
+context switchImpl( _,'SwitchGroupList('SwitchGroup('SwitchLabelList('Case(HOLE),,_),,_:K),, _:K), _)
 /*@ The type associated to V and V2 is not important for match, only the value.
 JLS3 \$14.11, page 377: Every case constant expression associated with
 a switch statement must be assignable (�5.2) to the type of the switch Expression.*/
 rule [switchImpl-CaseNotMatch]:
-    switchImpl(V:RawVal :: _,[ 'SwitchGroup([ ( 'Case(V2:RawVal :: _) => .KList ),, _:KList ],,_),, _],_)
+    switchImpl(V:RawVal :: _,'SwitchGroupList('SwitchGroup(('SwitchLabelList('Case(V2:RawVal :: _),, RemainingLabels:SwitchLabelList) => RemainingLabels),,_:K),, _:K),_)
     when V =/=K V2
 
 /*@Once case of first switch group matches, the whole switch is replaced
 by it's block. The execution rules for switch will discard switch-related
 constructs and will execute the statements. */
 rule [switchImpl-CaseMatch]:
-    switchImpl(V:RawVal :: _, ['SwitchGroup(['Case(V :: _),,_:KList],,S:K),, Ks:KList], _) => [S,,Ks]
+    switchImpl(V:RawVal :: _, 'SwitchGroupList('SwitchGroup('SwitchLabelList('Case(V :: _),,_),,S:K),, RemainingGroups:K), _) => S ~> RemainingGroups
 
 rule [switchImpl-DefaultSave]:
-    switchImpl(TV:TypedVal, ['SwitchGroup([('Default(_) => .KList ),, _:KList],, S:K),, Ks:KList],( _:K => [S,, Ks]))
+    switchImpl(TV:TypedVal, 'SwitchGroupList('SwitchGroup(('SwitchLabelList(default:,, RemainingLabels:SwitchLabelList)
+    => RemainingLabels),, S:K),, RemainingGroups:K),( _:K => S ~> RemainingGroups))
 
 rule [switchImpl-SwitchGroup-Discard]:
-    switchImpl( TV:TypedVal, [('SwitchGroup([ .KList ],,_) => .KList ),, _], _)
+    switchImpl(TV:TypedVal, ('SwitchGroupList('SwitchGroup(.SwitchLabelList,,_:K),, RemainingGroups:K) => RemainingGroups), _)
 
 rule [switchImpl-Default-Exec]:
-    switchImpl( _, [.KList], DefaultStm:K) => DefaultStm
+    switchImpl(_, .SwitchGroupList, DefaultStm:K) => DefaultStm
 
 rule [SwitchGroup-Exec]:
     'SwitchGroup(_:K,, S:K) => S
+    
+rule [SwitchGroupList-Exec]:
+    'SwitchGroupList(Hd:K,, Tl:K) => Hd ~> Tl
+    
+rule .SwitchGroupList => .
 
 syntax KItem ::= "switchEnd"
 
