@@ -445,13 +445,13 @@ rule [StaticInit-Save]:
   This rule desugars them into 'FieldDec labels and adds the modifiers "public static final".
   Interface fields are not necessarily compile-time constants.
 */
-//rule [ConstantDec-Desugar]:
-//    'ConstantDec(ModifiersKs:AnnoConstantModList,, TypeK:K,, VarDecs:KListWrap)
-//    => 'FieldDec(
-//          'AnnoFieldModList('Public(.KList),, 'AnnoFieldModList('Static(.KList),, 'AnnoFieldModList('Final(.KList),,
-//          ConstantToFieldModifiers(ModifiersKs)))),,
-//          TypeK,, VarDecs
-//        )
+rule [ConstantDec-Desugar]:
+    'ConstantDec(ModifiersKs:AnnoConstantModList,, TypeK:K,, VarDecs:KListWrap)
+    => 'FieldDec(
+          'AnnoFieldModList('Public(.KList),, 'AnnoFieldModList('Static(.KList),, 'AnnoFieldModList('Final(.KList),,
+          ConstantToFieldModifiers(ModifiersKs)))),,
+          TypeK,, VarDecs
+        )
 
 syntax AnnoFieldModList ::= ConstantToFieldModifiers ( AnnoConstantModList ) [function]
                            |ConstantToFieldModifiers ( AnnoConstantModList, AnnoFieldModList ) [function]

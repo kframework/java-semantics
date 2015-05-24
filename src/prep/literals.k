@@ -162,11 +162,9 @@ rule 'Lit('Char('UnicodeEscape(_,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
 
 //@ \subsection{String literals}
 
-// 'Lit('String(['Chars(Str:String),, 'NamedEscape(_),, _:KList ]))
-
-rule  'Lit('String(K1:StringPart K2:StringPart Ks:StringPartList))
-      => plusAux( 'Lit('String(K1 .StringPartList)),
-                  'Lit('String(K2 Ks))
+rule  'Lit('String('StringPartList(K1:K,, 'StringPartList(K2:K,, Ks:K))))
+      => plusAux( 'Lit('String('StringPartList(K1,, .StringPartList))),
+                  'Lit('String('StringPartList(K2,, Ks)))
          )
 
 rule 'Lit('String('StringPartList('Chars(Str:String),, .StringPartList))) => Str
