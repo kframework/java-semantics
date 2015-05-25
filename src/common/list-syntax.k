@@ -35,7 +35,7 @@ syntax BlockStmList              ::= List{BlockStmt, ""}             [klabel('Bl
 syntax SwitchGroupList           ::= List{SwitchGroup, ""}           [klabel('SwitchGroupList)]
 syntax SwitchLabelList           ::= List{SwitchLabel, ""}           [klabel('SwitchLabelList)]
 
-syntax Exps         ::= List{Exp, ","} [seqstrict]
+syntax Exps         ::= List{Exp, ","} [klabel('ExprList), seqstrict]
 syntax Dims         ::= List{Dim,""}  [klabel('DimList)]
 syntax DimExps      ::= List{DimExp,""} [klabel('DimExprList), strict]
 syntax VarInits     ::= List{VarInit, ","}  [klabel('VarInitList)]
@@ -44,8 +44,6 @@ syntax Params       ::= List{Param, ","}   [klabel('FormalParamList)]
 
 context 'FormalParamList(HOLE,,_) [result(Param)]
 context 'FormalParamList(_,,HOLE) [result(Params)]
-
-syntax KLabel::= "'ExprList"
 
 syntax UserList     ::= BlockStmList
                       | SwitchGroupList

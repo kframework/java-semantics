@@ -149,7 +149,8 @@ syntax RawRefVal ::= ObjectRef | ArrayRef | String | NullLiteral
     into typed values, never into raw values alone.
 */
 syntax TypedVal ::= RawVal "::" Type
-syntax TypedVals ::= List{TypedVal, ","}
+syntax TypedVals ::= List{TypedVal, ","} [klabel('ExprList)]
+syntax Exps ::= TypedVals
 
 /*@ The three most common forms of computation result are Typed value or Type. Those are most common results
     we will encounter during elaboration. Other result types are more context-specific.

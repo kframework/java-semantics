@@ -102,7 +102,6 @@ rule toKListWrap(Args:Exps) => toKListWrap([.KList], Args)
 rule toKListWrap([Args:KList], (Arg:Exp, Es:Exps)) => toKListWrap([Args,, Arg], (Es))
 rule toKListWrap([Args:KList], .Exps) => [Args]
 
-syntax Exps ::= TypedVals
 
 syntax KResult ::= ClassTypes
 syntax ClassTypes ::= List{ClassType, ","}
