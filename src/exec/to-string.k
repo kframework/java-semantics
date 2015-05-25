@@ -12,7 +12,8 @@ syntax String ::=     pad0(String)      [function]
 
 rule pad0(S:String) => pad0(S, 13 -Int lengthString(S))
 
-rule pad0(S:String, 0) => S
+rule pad0(S:String, I:Int) => S
+when I <=Int 0
 
 rule pad0(S:String, I:Int) => pad0("0" +String S, I -Int 1)
 when I >Int 0
@@ -132,9 +133,9 @@ rule numOfDigitsPreserved(Fl:Float) =>
   numOfDigitsPreserved1(nextDown(Fl), Fl, nextUp(Fl))
 
 rule numOfDigitsPreserved1(F0:Float, F1:Float, F2:Float)
-     => numOfDigitsPreserved2(Float2String(F0, "%.17Rf"),
-                              Float2String(F1, "%.17Rf"),
-                              Float2String(F2, "%.17Rf"))
+     => numOfDigitsPreserved2(Float2String(F0, "%.18Rf"),
+                              Float2String(F1, "%.18Rf"),
+                              Float2String(F2, "%.18Rf"))
 
 rule numOfDigitsPreserved2(F0:String, F1:String, F2:String)
     => numOfDigitsPreserved3(getFractionalPart(F0),
@@ -145,6 +146,45 @@ rule numOfDigitsPreserved3(F0:String, F1:String, F2:String)
     => maxInt(diffFromPos(F0, F1), diffFromPos(F1, F2))
 
 
+//Implement the rounding mode of 'N' (round to nearest) manually in order to pass the tests.
+//round(s,i) where s is the target float number in string format and int i is the number of
+//fractional digits after the decimal point;
+syntax String ::= round(String, Int) [function]
+                //use this helper method so that only compute the pos of decimal point one time
+                //the arg in the middle is the pos of "."
+                | round1(String, Int, Int) [function]
+
+ //The method incI analyzes a float string in this format: A.BX, where X is the last digit
+ //and the length of B is the number of preserved fractional digits (denoted by n)
+ //The four args are A, B, X, n
+                | incI(Int, Int, Int, Int)  [function]
+                //helper function to avoid the repetition of computation
+                | incNoOverflow(String, String, Int)  [function]
+
+rule round(S:String, N:Int) => round1(S, findChar(S, ".", 0), N)
+
+rule round1(S:String, Pos:Int, N:Int) => incI(String2Int(substrString(S, 0, Pos)),
+                            String2Int(substrString(S, Pos +Int 1, Pos +Int 1 +Int N)),
+                            String2Int(substrString(S, Pos +Int 1 +Int N, Pos +Int 2 +Int N)),
+                             N)
+
+rule incI(A:Int, B:Int, X:Int, N:Int) =>
+incNoOverflow(Int2String(A), Int2String(B), N)
+when X <Int 5
+
+//inc by one unit, no overflow in fractional part
+rule incI(A:Int, B:Int, X:Int, N:Int) =>
+incNoOverflow(Int2String(A), Int2String(B +Int 1), N)
+when X >=Int 5 andBool (B +Int 1 <Int 10^N)
+
+//inc by one unit, has overflow in fractional part
+rule incI(A:Int, B:Int, X:Int, N:Int) =>
+incNoOverflow(Int2String(A +Int 1), "0", 1)
+when X >=Int 5 andBool (B +Int 1 >=Int 10^N)
+
+
+rule incNoOverflow(A:String, B:String, N:Int) =>
+  A +String "." +String pad0(B, N -Int lengthString(B))
 
 /*@ Converts all possible Java values into String. Used mostly for printing and String + operator.
     Conversion for other value forms is defined in other modules.
@@ -156,18 +196,32 @@ rule toString(I:Int :: char) => chrChar(I)
 rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
 
-rule toString(Fl:Float :: _) => Int2String(diffFromPos("1007","1017"))
- +String "==3 && "
- //+String getFractionalPart("12.527") +String "==527 && "
- //   +String Int2String(numOfDigitsPreserved3("100000", "100011", "100012"))
- //   +String " == 6"
+rule toString(Fl:Float :: _) =>
 
-//Float2String(Fl, "%." +String
-//                      Int2String(numOfDigitsPreserved(Fl)) +String "RNg")
+
+
+/*
+                                Float2String(Fl, "%." +String
+                                Int2String(numOfDigitsPreserved(Fl)) +String "Rg")
+
+
+                             +String ";;\n nextDown: " +String Float2String(nextDown(Fl), "%.28Rf")
+                             +String ";;\tTarget: " +String Float2String(Fl, "%.28Rf")
+                             +String ";;\tnextUp: " +String Float2String(nextUp(Fl), "%.28Rf")
+
+                             +String ";;\tNumOfDigitsPreserved:\t" +String Int2String(numOfDigitsPreserved(Fl))
+                             +String ";;\tTarget in round mode (16RNf): " +String
+                             Float2String(Fl, "%.16RNf")
+      +String ";;\tTarget in round 16 RNg: " +String Float2String(Fl, "%.16RNg")
+
+                      +String ";;\tTarget in round 18 RNf: " +String Float2String(Fl, "%.18RNf")
+                      +String ";;\tTarget in round 18 RNg: " +String Float2String(Fl, "%.18RNg")
+
+
 
 //Float2String(incF0("10000000000000",0), "%Ra")
 
-/*
+
 Float2String(String2Float("0x" +String "1" +String "." +String Int2String(0 +Int 1)
 +String "p" +String Int2String(0)), "%Ra")
 
