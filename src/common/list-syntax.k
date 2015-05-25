@@ -108,7 +108,7 @@ rule '.List`{"'InterfaceMemberDecList"`}(.KList)   => [.KList]                  
 //rule '.List`{"'StringPartList"`}(.KList)   => [.KList]                              [macro]
 rule '.List`{"'ClassBodyDecList"`}(.KList)   => [.KList]                            [macro]
 //rule '.List`{"'DimExprList"`}(.KList)   => [.KList]                                 [macro]
-rule '.List`{"'ExprList"`}(.KList)   => [.KList]                                    [macro]
+//rule '.List`{"'ExprList"`}(.KList)   => [.KList]                                    [macro]
 
 
 //rule 'SwitchLabelList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
@@ -138,7 +138,7 @@ rule 'InterfaceMemberDecList(Hd,,[Tl:KList])    => [Hd,,Tl]         [macro]
 //rule 'StringPartList(Hd,,[Tl:KList])            => [Hd,,Tl]         [macro]
 rule 'ClassBodyDecList(Hd,,[Tl:KList])          => [Hd,,Tl]         [macro]
 //rule 'DimExprList(Hd,,[Tl:KList])               => [Hd,,Tl]         [macro]
-rule 'ExprList(Hd,,[Tl:KList])                  => [Hd,,Tl]         [macro]
+//rule 'ExprList(Hd,,[Tl:KList])                  => [Hd,,Tl]         [macro]
 
 
 endmodule

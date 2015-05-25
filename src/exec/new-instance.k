@@ -260,14 +260,14 @@ rule [FieldDec-instance]:
 
 //@\subsection{Execution of QSuperConstrInv, AltConstrInv}
 
-// 'QSuperConstrInv( Qual:K,, _:K,, [ Args:KList ] )
+// 'QSuperConstrInv( Qual:K,, _:K,,  Args )
 rule [QSuperConstrInv]:
     <k>
-      'QSuperConstrInv(Qual:K,, _,, [ Args:KList ])
+      'QSuperConstrInv(Qual:K,, _,, Args:Exps)
       => setEncloser('QThis(Class), BaseClass, Qual)
          ~> ('Invoke(
               'QSuperMethod(Class,, .K,, getConsName(BaseClass)),,
-              [Args]
+              Args
             );)<:ExprStmt
       ...
     </k>
@@ -275,11 +275,11 @@ rule [QSuperConstrInv]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
-// 'AltConstrInv( _:K,, [ Args:KList ] )
+// 'AltConstrInv( _:K,,  Args )
 rule [AltConstrInv]:
     <k>
-      'AltConstrInv(_,, [ Args:KList ])
-      => 'QThis(Class) .getConsName(Class) (toExps([Args]));
+      'AltConstrInv(_,, Args:Exps)
+      => 'QThis(Class) .getConsName(Class) (Args);
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>

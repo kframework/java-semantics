@@ -201,7 +201,7 @@ rule [localEnvObjectBuild]:
       ~> appendToElabBuffer(elab(
             'LocalVarDec('None(.KList),, LocalEnvClass,, ['VarDec(
               generateLocalEnvVarName(LocalEnvClass),,
-              'NewInstance('None(.KList),, LocalEnvClass,, [.KList],, 'None(.KList) )
+              'NewInstance('None(.KList),, LocalEnvClass,, .Exps,, 'None(.KList) )
             )])
          ))
       ~> localEnvObjectSetFields(

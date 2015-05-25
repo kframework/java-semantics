@@ -88,19 +88,19 @@ rule [elab-LocalVarDec]:
 
 //@\subsection{Elaboration of SuperConstrInv, QSuperConstrInv, AltConstrInv}
 
-// 'SuperConstrInv( _:K,, [ Args:KList ] )
+// 'SuperConstrInv( _:K,,  Args)
 //@ Desugaring unqualified superclass constructor invocation into a qualified one
 rule [elab-SuperConstrInv-desugar]:
     <k>
       elab(
-        'SuperConstrInv(K:K,, [ Args:KList ])
+        'SuperConstrInv(K:K,, Args:Exps)
         =>  'QSuperConstrInv(
               #if CT ==K instanceCT
                 #then findQualifierOfType(EnclosingClass, BaseEnclosingClass)
                 #else noValue
               #fi,,
               K,,
-              [Args]
+              Args
             )
       )
       ...
@@ -124,20 +124,20 @@ rule customElabEnd('QSuperConstrInv) => true
 rule [elabEnd-QSuperConstrInv-local-augment-arguments]:
     <k>
       (. => localClassGetExtraArgs(BaseClass))
-      ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, [ Args:KList ]))
+      ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, Args))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
-
+//todo appendExps
 //@ QSuperConstrInv lookup is always unqualified
 rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
     <k>
-      ( elabRes([ExtraArgs:KList])
-        => lookupMethod(BaseClass, true, getConsName(BaseClass), [Args,,ExtraArgs])
+      ( elabRes(ExtraArgs:Exps)
+        => lookupMethod(BaseClass, true, getConsName(BaseClass), appendExps(Args,,ExtraArgs))
       )
-      ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, [ Args:KList ]))
+      ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, Args))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -145,16 +145,16 @@ rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
     <extends> BaseClass:ClassType </extends>
 
 rule [elabEnd-QSuperConstrInv]:
-    methodLookupResult(_, [ExpectedArgExps:KList], instanceCT)
-    ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, [_]))
-    => elabRes('QSuperConstrInv(Qual,, Arg2,, [ ExpectedArgExps ]))
+    methodLookupResult(_, ExpectedArgExps:Exps, instanceCT)
+    ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, _))
+    => elabRes('QSuperConstrInv(Qual,, Arg2,, ExpectedArgExps ))
 
 rule customElabEnd('AltConstrInv) => true
 
 rule [elabEnd-AltConstrInv-local-augment-arguments]:
     <k>
       (. => localClassGetExtraArgs(Class))
-      ~> elabEnd('AltConstrInv(Arg1:K,, [ Args:KList ]))
+      ~> elabEnd('AltConstrInv(Arg1:K,, Args))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -162,17 +162,17 @@ rule [elabEnd-AltConstrInv-local-augment-arguments]:
 //@ AltConstrInv lookup is always unqualified
 rule [elabEnd-AltConstrInv-to-lookupMethod]:
     <k>
-      ( elabRes([ExtraArgs:KList])
-        => lookupMethod(Class, true, getConsName(Class), [Args,,ExtraArgs])
+      ( elabRes(ExtraArgs:Exps)
+        => lookupMethod(Class, true, getConsName(Class), appendExps(Args,,ExtraArgs))
       )
-      ~> elabEnd('AltConstrInv(Arg1:K,, [ Args:KList ]))
+      ~> elabEnd('AltConstrInv(Arg1:K,, Args))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
 
 rule [elab-AltConstrInv]:
-    methodLookupResult(_, [ExpectedArgExps:KList], instanceCT)
-    ~> elabEnd('AltConstrInv(Arg1:K,, [_]))
-    => elabRes('AltConstrInv(Arg1:K,, [ ExpectedArgExps ]))
+    methodLookupResult(_, ExpectedArgExps:Exps, instanceCT)
+    ~> elabEnd('AltConstrInv(Arg1:K,, _))
+    => elabRes('AltConstrInv(Arg1:K,, ExpectedArgExps))
 
 endmodule

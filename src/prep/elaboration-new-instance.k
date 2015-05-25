@@ -113,16 +113,16 @@ rule [getClassIfExists]:
 
 rule [elab-QNewInstance-local-augment-arguments]:
     (. => localClassGetExtraArgs(Class))
-    ~> elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, [Args:KList],, 'None(.KList) ))
+    ~> elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, Args,, 'None(.KList) ))
 
 /*@ QNewInstance lookup is always qualified (e.g. not this), because the object we are creating
     is different from the current object.
 */
 rule [elabEnd-QNewInstance-to-lookupMethod]:
-    ( elabRes([ExtraArgs:KList])
-      => lookupMethod(Class, false, getConsName(Class), [Args,,ExtraArgs])
+    ( elabRes(ExtraArgs:Exps)
+      => lookupMethod(Class, false, getConsName(Class), appendExps(Args,,ExtraArgs))
     )
-    ~> elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, [Args:KList],, 'None(.KList)))
+    ~> elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, Args:Exps,, 'None(.KList)))
 
 /*@ All new instance creation expressions are converted into qualified ones - 'QNewInstance, during elaboration phase.
   For instance inner classes, the qualifier will be a valid expression for the qualifier. For other classes qualifier
@@ -130,11 +130,10 @@ rule [elabEnd-QNewInstance-to-lookupMethod]:
 */
 rule [elabEnd-QNewInstance-methodLookupResult-qualified-end]:
     <k>
-      methodLookupResult(_, [ExpectedArgExps:KList], instanceCT)
-      ~> elabEnd('QNewInstance( cast(_, QualExp:K),, Arg2:K,, Class:ClassType,, Arg4:K,,
-                                _:KListWrap,, 'None(.KList) ))
+      methodLookupResult(_, ExpectedArgExps:Exps, instanceCT)
+      ~> elabEnd('QNewInstance( cast(_, QualExp:K),, Arg2:K,, Class:ClassType,, Arg4:K,, _,, 'None(.KList)))
       => elabRes(cast(Class, 'QNewInstance( cast(EnclosingClass, QualExp:K),, Arg2,, getSimpleName(Class),,
-                                            Arg4,, [ExpectedArgExps],, 'None(.KList))))
+                                            Arg4,, ExpectedArgExps,, 'None(.KList))))
       ...
     </k>
     <classType> Class </classType>
@@ -144,8 +143,8 @@ rule [elabEnd-QNewInstance-methodLookupResult-qualified-end]:
     It will be desugared again into 'NewInstance at execution phase.
 */
 rule [elabEnd-QNewInstance-methodLookupResult-to-NewInstance]:
-    methodLookupResult(_, [ExpectedArgExps:KList], instanceCT)
-    ~> elabEnd('QNewInstance(noValue,, Arg2:K,, Class:ClassType,, Arg4:K,, _:KListWrap,, 'None(.KList)))
-    => elabRes(cast(Class, 'NewInstance(Arg2,, Class,, [ExpectedArgExps],, 'None(.KList))))
+    methodLookupResult(_, ExpectedArgExps:Exps, instanceCT)
+    ~> elabEnd('QNewInstance(noValue,, Arg2:K,, Class:ClassType,, Arg4:K,, _,, 'None(.KList)))
+    => elabRes(cast(Class, 'NewInstance(Arg2,, Class,, ExpectedArgExps,, 'None(.KList))))
 
 endmodule

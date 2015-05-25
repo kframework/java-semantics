@@ -26,7 +26,7 @@ General structure:
 /* 'Method(Qual:K,, \_:K,, Name:Id)
     'Method('MethodName(Qual:K,, Name:Id))
 */
-rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:KListWrap) => Qual.Name(toExps(ArgList)) [structural]
+rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:Exps) => Qual.Name(ArgList) [structural]
 
 //totest model check - expressions should be evaluated from left to right. A test for this
 //exists, but is unable to expose the problem. This rule have to be made "transition"
@@ -60,13 +60,13 @@ rule lvalue(X:Id) => lvalue('ExprName(X))
     Although we could have just 'QNewInstance at runtime, having runtime semantics for 'NewInstance is preferred
     because we have a lot of 'Throw('NewInstance()) through our runtime semantics.
 */
-rule 'NewInstance( 'None(.KList),, Class:ClassType,, [ Args:KList ],, 'None(.KList) )
-     => new Class( toExps([Args]) )
+rule 'NewInstance( 'None(.KList),, Class:ClassType,, Args:Exps ,, 'None(.KList) )
+     => new Class(Args)
 
 
 // 'QNewInstance( Qual,, _:K,, Class,, _:K,, [Args],, 'None(.KList) )
-rule 'QNewInstance( Qual:Exp,, _:K,, ClassOrName:ClassOrName,, _:K,, [Args:KList],, _:K )
-     => Qual . new ClassOrName( toExps([Args]) )
+rule 'QNewInstance( Qual:Exp,, _:K,, ClassOrName:ClassOrName,, _:K,, Args:Exps,, _:K )
+     => Qual . new ClassOrName(Args)
 
 
 /*@Unpack 'NewInstance back into 'QNewInstance.

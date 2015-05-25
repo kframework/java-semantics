@@ -322,7 +322,7 @@ rule [ConstrDec-SuperCall-Desugar]:
         'ConstrBody(
           (
             'None(_)
-            => 'Some('SuperConstrInv( 'None(.KList),, [.KList] ))
+            => 'Some('SuperConstrInv( 'None(.KList),, .Exps ))
           ),,
           _:K
         )
@@ -365,7 +365,7 @@ rule [ConstrDec]:
             //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
             //Invocation of instance initializer converted into a method.
             if(getKLabel(FirstLine) ==KLabel 'SuperConstrInv orBool getKLabel(FirstLine) ==KLabel 'QSuperConstrInv)
-              'ExprStm('Invoke('Method('MethodName( String2Id("$instance_init") )),, [.KList]))
+              'ExprStm('Invoke('Method('MethodName( String2Id("$instance_init") )),, .Exps))
             ,,
             BodyKs
           ]),
