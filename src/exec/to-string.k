@@ -39,6 +39,10 @@ syntax Float ::= incF0(String, Int) [function]
                    //three args are prefix, significand, and power resp.
                | incF1(String, Int, Int) [function]
 
+               | decF0(String, Int) [function]
+               //three args are prefix, significand, and power resp.
+               | decF1(String, Int, Int) [function]
+
 //there are 14 chars in the hex str, first 1 is either 0 or 1, the remaining 13 are significands.
 rule incF0(Fl:String, E:Int) => incF1(substrString(Fl, 0, 1), String2Base(substrString(Fl, 1,
 lengthString(Fl)), 16), E)
@@ -53,6 +57,22 @@ String2Float("0x" +String Prefix +String "." +String pad0(Base2String(Significan
  "p" +String Int2String(Power))
 when notBool (Significand ==Int 4503599627370495)
 
+
+//=============auxiliary functions for computing next smaller double
+rule decF0(Fl:String, E:Int) => decF1(substrString(Fl, 0, 1), String2Base(substrString(Fl, 1,
+lengthString(Fl)), 16), E)
+
+
+rule decF1(Prefix:String, Significand:Int, Power:Int) =>
+String2Float("0x" +String Prefix +String ".FFFFFFFFFFFFF" +String "p" +String Int2String(Power -Int
+ 1)) when Significand ==Int 0
+
+rule decF1(Prefix:String, Significand:Int, Power:Int) =>
+String2Float("0x" +String Prefix +String "." +String pad0(Base2String(Significand -Int 1, 16))
++String "p" +String Int2String(Power))
+when notBool (Significand ==Int 0)
+
+
 //build the hex string of a float, given its significand's string and exponent.
 //syntax String ::= buildFloatHexStr(String, Int) [function]
 
@@ -65,7 +85,8 @@ rule nextUp(Fl:Float) => incF0(Base2String(uvalueMInt(significandFloat(Fl)), 16)
 rule nextDown(DoubleNaN) => DoubleNaN
 rule nextDown(DoubleNegInf) => DoubleNegInf
 rule nextDown(0.0) => --Float DoubleMinVal
-rule nextDown(Fl:Float) => 0.0 [owise]
+rule nextDown(Fl:Float) => decF0(Base2String(uvalueMInt(significandFloat(Fl)), 16),
+                                                       exponentFloat(Fl)) [owise]
 
 syntax String ::= fst17AfterDot(Float) [function]
 rule fst17AfterDot(Fl) => Float2String(Fl, "%.22Rf")
@@ -80,7 +101,10 @@ rule toString(I:Int :: char) => chrChar(I)
 rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
 
-rule toString(Fl:Float :: _) => Float2String(nextUp(Fl), "%Ra")
+rule toString(Fl:Float :: _) => Float2String(nextUp(Fl), "%Ra") +String ";;\t"
+ +String Float2String(Fl, "%RA") +String ";;\t" +String
+Float2String(nextDown(Fl), "%RA") +String ";;\tone down's Float\t" +String
+                                  Float2String(String2Float("0x1.fffffffffffffp-1"), "%RA")
 
 //Float2String(incF0("10000000000000",0), "%Ra")
 
