@@ -88,8 +88,59 @@ rule nextDown(0.0) => --Float DoubleMinVal
 rule nextDown(Fl:Float) => decF0(Base2String(uvalueMInt(significandFloat(Fl)), 16),
                                                        exponentFloat(Fl)) [owise]
 
-syntax String ::= fst17AfterDot(Float) [function]
-rule fst17AfterDot(Fl) => Float2String(Fl, "%.22Rf")
+/*@auxiliary function for printing Java's double value in default mode.
+//the number of digits preserved after decimal point depend solely on whether
+// that amount of significands can distinguish the target value with its adjacent
+//double values.
+//This function returns the pos at which two strings are distinguishable
+//the two input string are assumed to have equal length.
+*/
+syntax Int ::= diffFromPos(String, String) [function]
+rule diffFromPos(S1:String, S2:String) => 1
+    when substrString(S1, 0, 1) =/=String substrString(S2, 0, 1)
+
+rule diffFromPos(S1:String, S2:String) => 0
+    when S1 ==String "" orBool S2 ==String ""
+
+rule diffFromPos(S1:String, S2:String) =>
+    1 + diffFromPos(substrString(S1, 1, lengthString(S1)),
+                    substrString(S2, 1, lengthString(S2)))
+    when substrString(S1, 0, 1) ==String substrString(S2, 0, 1)
+
+/*@
+1. compute the diffFromPos value for the target doubleVal and its two adjacent values.
+    Say pos1 and pos2 representing the positions at which the target double value
+     can be distinguished with its next lower / next higher double value.
+2. return the larger one between pos1 and pos2.
+*/
+syntax Int ::= numOfDigitsPreserved(Float)  [function]
+            | numOfDigitsPreserved1(Float, Float, Float) [function]
+            //the string representation of the format "%.17Rf"
+            | numOfDigitsPreserved2(String, String, String) [function]
+            //the substr after decimal points: all of them should have 17 chars
+            | numOfDigitsPreserved3(String, String, String) [function]
+
+syntax String ::= getFractionalPart(String)  [function]
+rule getFractionalPart(S:String) =>
+    substrString(S, findChar(S, ".", 0) +Int 1, lengthString(S))
+
+rule numOfDigitsPreserved(Fl:Float) =>
+  numOfDigitsPreserved1(nextDown(Fl), Fl, nextUp(Fl))
+
+rule numOfDigitsPreserved1(F0:Float, F1:Float, F2:Float)
+     => numOfDigitsPreserved2(Float2String(F0, "%.17Rf"),
+                              Float2String(F1, "%.17Rf"),
+                              Float2String(F2, "%.17Rf"))
+
+rule numOfDigitsPreserved2(F0:String, F1:String, F2:String)
+    => numOfDigitsPreserved3(getFractionalPart(F0),
+                         getFractionalPart(F1),
+                         getFractionalPart(F2))
+
+rule numOfDigitsPreserved3(F0:String, F1:String, F2:String)
+    => maxInt(diffFromPos(F0, F1), diffFromPos(F1, F2))
+
+
 
 /*@ Converts all possible Java values into String. Used mostly for printing and String + operator.
     Conversion for other value forms is defined in other modules.
@@ -101,10 +152,8 @@ rule toString(I:Int :: char) => chrChar(I)
 rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
 
-rule toString(Fl:Float :: _) => Float2String(nextUp(Fl), "%Ra") +String ";;\t"
- +String Float2String(Fl, "%RA") +String ";;\t" +String
-Float2String(nextDown(Fl), "%RA") +String ";;\tone down's Float\t" +String
-                                  Float2String(String2Float("0x1.fffffffffffffp-1"), "%RA")
+rule toString(Fl:Float :: _) => Float2String(Fl, "%." +String
+                      Int2String(numOfDigitsPreserved(Fl)) +String "RNg")
 
 //Float2String(incF0("10000000000000",0), "%Ra")
 
@@ -128,7 +177,6 @@ Float2String(String2Float("0x" +String "1" +String "." +String Int2String(0 +Int
 //+String ";\t" +String Float2String(String2Float("0x1.3ae147ae147aep+0"), "%.18Rf") //target float
 //+String ";\t" +String Float2String(String2Float("0x1.3ae147ae147afp+0"), "%.18Rf") //nextUp
 */
-
 
 rule toString(true::_) => "true"
 rule toString(false::_) => "false"
