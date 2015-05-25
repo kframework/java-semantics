@@ -96,16 +96,20 @@ rule nextDown(Fl:Float) => decF0(Base2String(uvalueMInt(significandFloat(Fl)), 1
 //the two input string are assumed to have equal length.
 */
 syntax Int ::= diffFromPos(String, String) [function]
-rule diffFromPos(S1:String, S2:String) => 1
-    when substrString(S1, 0, 1) =/=String substrString(S2, 0, 1)
 
 rule diffFromPos(S1:String, S2:String) => 0
     when S1 ==String "" orBool S2 ==String ""
 
+rule diffFromPos(S1:String, S2:String) => 1
+    when substrString(S1, 0, 1) =/=String substrString(S2, 0, 1)
+
 rule diffFromPos(S1:String, S2:String) =>
-    1 + diffFromPos(substrString(S1, 1, lengthString(S1)),
+    1 +Int diffFromPos(substrString(S1, 1, lengthString(S1)),
                     substrString(S2, 1, lengthString(S2)))
     when substrString(S1, 0, 1) ==String substrString(S2, 0, 1)
+
+rule diffFromPos(S1:String, S2:String) => -1 [owise] //error state
+
 
 /*@
 1. compute the diffFromPos value for the target doubleVal and its two adjacent values.
@@ -152,8 +156,14 @@ rule toString(I:Int :: char) => chrChar(I)
 rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
 
-rule toString(Fl:Float :: _) => Float2String(Fl, "%." +String
-                      Int2String(numOfDigitsPreserved(Fl)) +String "RNg")
+rule toString(Fl:Float :: _) => Int2String(diffFromPos("1007","1017"))
+ +String "==3 && "
+ //+String getFractionalPart("12.527") +String "==527 && "
+ //   +String Int2String(numOfDigitsPreserved3("100000", "100011", "100012"))
+ //   +String " == 6"
+
+//Float2String(Fl, "%." +String
+//                      Int2String(numOfDigitsPreserved(Fl)) +String "RNg")
 
 //Float2String(incF0("10000000000000",0), "%Ra")
 
