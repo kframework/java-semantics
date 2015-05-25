@@ -5,8 +5,19 @@ module TO-STRING
     imports SYNTAX-CONVERSIONS
 
 
-  syntax Int ::= svalueMInt(MInt)     [function, hook(#MINT:svalue)]
-  | uvalueMInt(MInt)     [function, hook(#MINT:uvalue), smtlib(bv2int)]
+//add 0 to the beginning of the hex string to make it 13 digits.
+//the int arg is the number of zero to be added.
+syntax String ::=     pad0(String)      [function]
+                    | pad0(String, Int) [function]
+
+rule pad0(S:String) => pad0(S, 13 -Int lengthString(S))
+
+rule pad0(S:String, 0) => S
+
+rule pad0(S:String, I:Int) => pad0("0" +String S, I -Int 1)
+when I >Int 0
+
+syntax Int ::= uvalueMInt(MInt)     [function, hook(#MINT:uvalue), smtlib(bv2int)]
 
 // the min val of double in java
 syntax Float ::= "DoubleMinVal" | "DoubleMaxVal"
@@ -25,22 +36,21 @@ syntax Float ::= nextDown(Float) [function]
 //FFFFFFFFFFFFF is eq to 4503599627370495
 //auxiliary functions for computing ajacent double values.
 syntax Float ::= incF0(String, Int) [function]
+                   //three args are prefix, significand, and power resp.
                | incF1(String, Int, Int) [function]
 
+//there are 14 chars in the hex str, first 1 is either 0 or 1, the remaining 13 are significands.
 rule incF0(Fl:String, E:Int) => incF1(substrString(Fl, 0, 1), String2Base(substrString(Fl, 1,
 lengthString(Fl)), 16), E)
-when lengthString(Fl) ==Int 14
 
-rule incF0(Fl:String, E:Int) => -1.0 //should not reach this case.
-when notBool (lengthString(Fl) ==Int 14)
 
 rule incF1(Prefix:String, Significand:Int, Power:Int) =>
 String2Float("0x" +String Prefix +String ".0" +String "p" +String Int2String(Power +Int 1))
 when Significand ==Int 4503599627370495
 
 rule incF1(Prefix:String, Significand:Int, Power:Int) =>
-String2Float("0x" +String Prefix +String "." +String Int2String(Significand +Int 1) +String "p"
-+String Int2String(Power))
+String2Float("0x" +String Prefix +String "." +String pad0(Base2String(Significand +Int 1, 16)) +String
+ "p" +String Int2String(Power))
 when notBool (Significand ==Int 4503599627370495)
 
 //build the hex string of a float, given its significand's string and exponent.
@@ -70,9 +80,7 @@ rule toString(I:Int :: char) => chrChar(I)
 rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
 
-rule toString(Fl:Float :: _) => Float2String(incF1(substrString("10000000000000", 0, 1), String2Base
-(substrString("10000000000000", 1,
-                                             lengthString("10000000000000")), 16), 0), "%Ra")
+rule toString(Fl:Float :: _) => Float2String(nextUp(Fl), "%Ra")
 
 //Float2String(incF0("10000000000000",0), "%Ra")
 
