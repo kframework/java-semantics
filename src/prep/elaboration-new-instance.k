@@ -120,7 +120,7 @@ rule [elab-QNewInstance-local-augment-arguments]:
 */
 rule [elabEnd-QNewInstance-to-lookupMethod]:
     ( elabRes(ExtraArgs:Exps)
-      => lookupMethod(Class, false, getConsName(Class), appendExps(Args,,ExtraArgs))
+      => lookupMethod(Class, false, getConsName(Class), appendExps(Args, ExtraArgs))
     )
     ~> elabEnd('QNewInstance(Qual:K,, Arg2:K,, Class:ClassType,, Arg4:K,, Args:Exps,, 'None(.KList)))
 

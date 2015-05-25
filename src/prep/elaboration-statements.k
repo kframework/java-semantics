@@ -93,7 +93,7 @@ rule [elab-LocalVarDec]:
 rule [elab-SuperConstrInv-desugar]:
     <k>
       elab(
-        'SuperConstrInv(K:K,, Args:Exps)
+        'SuperConstrInv(K:K,, Args:K)
         =>  'QSuperConstrInv(
               #if CT ==K instanceCT
                 #then findQualifierOfType(EnclosingClass, BaseEnclosingClass)
@@ -130,12 +130,12 @@ rule [elabEnd-QSuperConstrInv-local-augment-arguments]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
-//todo appendExps
+
 //@ QSuperConstrInv lookup is always unqualified
 rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
     <k>
       ( elabRes(ExtraArgs:Exps)
-        => lookupMethod(BaseClass, true, getConsName(BaseClass), appendExps(Args,,ExtraArgs))
+        => lookupMethod(BaseClass, true, getConsName(BaseClass), appendExps(Args,ExtraArgs))
       )
       ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, Args))
       ...
@@ -163,7 +163,7 @@ rule [elabEnd-AltConstrInv-local-augment-arguments]:
 rule [elabEnd-AltConstrInv-to-lookupMethod]:
     <k>
       ( elabRes(ExtraArgs:Exps)
-        => lookupMethod(Class, true, getConsName(Class), appendExps(Args,,ExtraArgs))
+        => lookupMethod(Class, true, getConsName(Class), appendExps(Args,ExtraArgs))
       )
       ~> elabEnd('AltConstrInv(Arg1:K,, Args))
       ...

@@ -77,21 +77,21 @@ rule toTypedVal( objectRef(OL:Int, Class:ClassType) )
 rule toTypedVal(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T           [structural]
 rule toTypedVal(F:Float) => F :: float                                              [structural]
 
-//@ Converts a KList of terms to Types. Uses typeOf underneath.
-syntax KItem ::= getTypes ( KListWrap )           [function]     //[...,, KResult,, ...] - a list of source expressions
-               | getTypes ( Types, KListWrap )    [function]
+//@ Converts a KList of terms to Types. Uses typeOf underneath.todo repitition
+syntax KItem ::= getTypes ( Exps )              [function]     // a list of source expressions
+               | getTypes ( Types, Exps )       [function]
 
-rule getTypes( [Ps:KList] ) => getTypes(types(.KList), [Ps])
-rule getTypes( types(Ts:KList), [T:K,, Ps:KList] ) => getTypes( types(Ts,,typeOf(T)), [Ps] )
-rule getTypes( types(Ts:KList), [.KList]) => types(Ts)
+rule getTypes( Ps:Exps ) => getTypes(types(.KList), Ps)
+rule getTypes( types(Ts:KList), (T:Exp, Ps:Exps) ) => getTypes( types(Ts,,typeOf(T)), Ps )
+rule getTypes( types(Ts:KList), .Exps) => types(Ts)
 
 //@ Converts a TypedVals term to Types. Uses typeOf underneath.
 syntax KItem ::= getTypes ( TypedVals )          [function]    // a list of source values
                | getTypes ( Types, TypedVals )   [function]
 
-rule getTypes(TVs:TypedVals) => getTypes(types(.KList), TVs)
+rule getTypes( TVs:TypedVals) => getTypes(types(.KList), TVs)
 rule getTypes( types(Ts:KList), (_ :: T:Type, TVs:TypedVals) ) => getTypes( types(Ts,,T), TVs )
-rule getTypes(types(Ts:KList), .TypedVals) => types(Ts)
+rule getTypes( types(Ts:KList), .TypedVals) => types(Ts)
 
 syntax KItem ::= getTypes ( Params )            [function]
                | getTypes ( Types , Params )    [function]
@@ -210,6 +210,14 @@ syntax KItem ::= getLastKListElement( KListWrap )                       [functio
 rule getLastKListElement([Ho:K,, Hd:K,, Tl:KList]) => getLastKListElement([Hd,,Tl])
 rule getLastKListElement([Hd:K,, .KList]) => Hd
 rule getLastKListElement([.KList]) => .K
+
+syntax Exps ::= addElementToExpsEnd (Exps, Exp) [function]
+rule addElementToExpsEnd(.Exps, P:Exp) => P,.Exps
+rule addElementToExpsEnd((Hd:Exp, Tl:Exps), P:Exp) => Hd,addElementToExpsEnd(Tl,P)
+
+syntax Exps ::= appendExps(Exps,Exps) [function]
+rule appendExps(AExps:Exps, (Hd:Exp, Tl:Exps)) => appendExps(addElementToExpsEnd(AExps, Hd), Tl)
+rule appendExps(AExps:Exps, .Exps) => AExps
 
 /*@ \subsection{ClassType functions} */
 

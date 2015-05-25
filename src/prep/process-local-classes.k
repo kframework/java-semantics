@@ -352,10 +352,10 @@ rule [elab-QNewInstance-local-augment-arguments]:
       localClassGetExtraArgs(Class:ClassType)
       => #if notBool isEmpty(EnclosingLocalEnv) ==K true
             #then #if Class ==K CrntClass
-                    #then elab(['ExprName(String2Id("$local_env"))])
-                    #else elab(['ExprName(generateLocalEnvVarName(generateLocalEnvClassType(Class)))])
+                    #then elab('ExprList('ExprName(String2Id("$local_env")),, .Exps))
+                    #else elab('ExprList('ExprName(generateLocalEnvVarName(generateLocalEnvClassType(Class))),,.Exps))
                   #fi
-            #else elab([.KList])
+            #else elab(.Exps)
          #fi
       ...
     </k>

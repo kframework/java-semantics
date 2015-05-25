@@ -21,7 +21,7 @@ rule [cast-RefType]:
         V::RT1,
 
           throw new class String2Id("java.lang.ClassCastException") (
-            toExps([(toString(typeOf(V)) + " cannot be cast to ") + toString(RT1)])
+            (toString(typeOf(V)) + " cannot be cast to ") + toString(RT1)
           );
         )
 
