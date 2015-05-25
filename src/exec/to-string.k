@@ -180,7 +180,7 @@ when X >=Int 5 andBool (B +Int 1 <Int 10^N)
 //inc by one unit, has overflow in fractional part
 rule incI(A:Int, B:Int, X:Int, N:Int) =>
 incNoOverflow(Int2String(A +Int 1), "0", 1)
-when X >=Int 5 andBool (B +Int 1 >=Int 10^N)
+when X >=Int 5 andBool (B +Int 1 >=Int 10 ^Int N)
 
 
 rule incNoOverflow(A:String, B:String, N:Int) =>
@@ -196,7 +196,7 @@ rule toString(I:Int :: char) => chrChar(I)
 rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
 
-rule toString(Fl:Float :: _) =>
+rule toString(Fl:Float :: _) => round(Float2String(Fl, "%.18Rf"), numOfDigitsPreserved(Fl))
 
 
 
