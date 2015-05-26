@@ -272,9 +272,6 @@ syntax KItem ::=  localClassAugmentConsParams (
                 Id,         // ConsName - constructor name
                 ClassType   // LocalEnvClass
               )
-syntax Params ::= addElementToParamsEnd (Params, Param) [function]
-rule addElementToParamsEnd(.Params, P:Param) => P,.Params
-rule addElementToParamsEnd((Hd:Param, Tl:Params), P:Param) => Hd,addElementToParamsEnd(Tl,P)
 
 rule [localClassAugmentConsParams-augment]:
     <k> localClassAugmentConsParams(LocalClass:ClassType, ConsName:Id, LocalEnvClass:ClassType) ...</k>

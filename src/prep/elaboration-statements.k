@@ -63,7 +63,7 @@ rule [elab-LocalVarDecStm-desugar]:
 
 //@ Resolve the local var type, required to register the var in <elabEnv>
 context elab('LocalVarDec(_:K,, HOLE,, _:K))
-
+//todo BlockStmList
 rule [elab-LocalVarDec-multi-desugar]:
     elab('LocalVarDec(K:K,, T:Type,, [Var1:K,, Var2:K,, VarDecs:KList])
       => ['LocalVarDec(K,, T,, [Var1]),,

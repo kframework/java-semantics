@@ -20,6 +20,8 @@ when notBool isElabKResult(Arg2) ==K true
 rule ( . => elab(Arg3) ) ~> elab('NewInstance(_,,_:ElabKResult,,(Arg3 => CHOLE),,_))
 when notBool isElabKResult(Arg3) ==K true
 
+rule elab('NewInstance(_,,_:ElabKResult,,(.Exps => elabRes(.Exps)),,_))
+
 rule [elab-NewInstance]:
     <k>
       elab(
@@ -69,6 +71,8 @@ when notBool isElabKResult(Arg4)
 
 rule (. => elab(Arg5)) ~> elab('QNewInstance(_,,_,,_,,_,,(Arg5:K => CHOLE),,_))
 when notBool isElabKResult(Arg5)
+
+rule elab('QNewInstance(_,,_,,_,,_,,(.Exps => elabRes(.Exps)),,_))
 
 rule (. => elab('None(.KList))) ~> elab('QNewInstance(_,,_,,_,,_,,_,,('None(.KList) => CHOLE)))
 

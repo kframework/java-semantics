@@ -198,44 +198,49 @@ rule [do-while]:
     do S:Stmt while(E:Exp); => S ~> whileImpl(E, S)                     [structural]
 
 //@ \subsection{For statement}
-//macros but cannot [macro]
-//rule 'For(_:K,,_:K,,([Exps:KList] => toExps([Exps])),,_:K)
-//rule 'For(([Exps:KList] => toExps([Exps])),,_:K,,_:K,,_:K)
-
 //wrapper of certain clauses of for statement, adds ; to cast expressions
-syntax Exps ::= stm ( KListWrap )
+syntax Exps ::= stm ( Exps )
+
+//rule [stm-empty]:
+//    stm([.KList]) => .                                                      [structural]
+//
+//rule [stm-exp]:
+//    stm([E:Exp,,Es:KList]) => E; ~> stm([Es])
+//when
+//    getKLabel(E) ==KLabel 'cast                                             [structural]
+//
+//rule [stm-LocalVarDec]:
+//    stm([K:K,,Ks:KList]) => K ~> stm([Ks])
+//when
+//    notBool ( getKLabel(K) ==KLabel 'cast )                                 [structural]
 
 rule [stm-empty]:
-    stm([.KList]) => .                                                         [structural]
+    stm(.Exps) => .                                                         [structural]
 
 rule [stm-exp]:
-    stm([E:Exp,,Es:KList]) => E; ~> stm([Es])
+    stm(E:Exp, Es:Exps) => E; ~> stm(Es)
 when
     getKLabel(E) ==KLabel 'cast                                             [structural]
 
-rule [stm-LocalVarDec]:
-    stm([K:K,,Ks:KList]) => K ~> stm([Ks])
-when
-    notBool ( getKLabel(K) ==KLabel 'cast )                                 [structural]
-
 rule [For-FirstArgV1Red]:
-    for((InitExps:K => stm(InitExps));_;_:K) _
+    for((InitExps:Exps => stm(InitExps));_;_:K) _
     when notBool ( getKLabel(InitExps) ==KLabel 'stm )                      [structural]
 
 
 rule [For-SecondArgRed]:
-    for(stm(_);('None(.KList) => 'Some(true));_:K) _                          [structural]
+    for(_:>Exps;('None(.KList) => 'Some(true));_) _                          [structural]
 
 rule [For-ThirdArgRed]:
-    for(stm(_);_;(UpdExps:K => stm(UpdExps))) _
+    for(_:>Exps;_;(UpdExps:Exps => stm(UpdExps))) _
     when notBool ( getKLabel(UpdExps) ==KLabel 'stm )                       [structural]
 
 rule [For]:
-    for(stm(InitClause); 'Some(TestExp); stm(UpdClause)) S
-    => 'Block(stm(InitClause)
-    ~> ifAux(TestExp, ('Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S)), .)) [structural]
+    for(InitClause:>Exps; 'Some(TestExp); stm(UpdClause:Exps)) S
+    => 'Block(InitClause
+    ~> ifAux(TestExp, ('Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S)), .))
+    when getKLabel(InitClause) ==KLabel 'stm orBool getKLabel(InitClause) ==KLabel 'KListWrap   [structural]
 
-rule ifAux(stm(S) ~> B:K, S1, S2 ) => stm(S) ~> ifAux(B, S1, S2)
+rule ifAux(stm(S:Exps) ~> B:K, S1, S2 ) => stm(S) ~> ifAux(B, S1, S2)
 
 //totest model check - the argument of 'return and 'Throw must be evaluated. Otherwise some side effects during
 // evaluation might be evaluated too late

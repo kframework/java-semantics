@@ -23,7 +23,7 @@ rule classArrayImpl => class String2Id("java.lang.ArrayImpl")
 //@ \subsubsection{Computation terms produced during elaboration}
 /*@ These auxiliary terms functions that should be threated as expressions in the elaboration phase.
 */
-syntax Exp ::= AuxTermExp
+syntax Exp ::= LHS
 syntax LHS ::= AuxTermExp
 /*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
 such as an anonymous class declaration. Is typed with the type of the expression.
@@ -210,6 +210,10 @@ syntax KItem ::= getLastKListElement( KListWrap )                       [functio
 rule getLastKListElement([Ho:K,, Hd:K,, Tl:KList]) => getLastKListElement([Hd,,Tl])
 rule getLastKListElement([Hd:K,, .KList]) => Hd
 rule getLastKListElement([.KList]) => .K
+
+syntax Params ::= addElementToParamsEnd (Params, Param) [function]
+rule addElementToParamsEnd(.Params, P:Param) => P,.Params
+rule addElementToParamsEnd((Hd:Param, Tl:Params), P:Param) => Hd,addElementToParamsEnd(Tl,P)
 
 syntax Exps ::= addElementToExpsEnd (Exps, Exp) [function]
 rule addElementToExpsEnd(.Exps, P:Exp) => P,.Exps
