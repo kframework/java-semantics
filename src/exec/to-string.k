@@ -146,18 +146,10 @@ rule numOfDigitsPreserved3(F0:String, F1:String, F2:String)
     => maxInt(diffFromPos(F0, F1), diffFromPos(F1, F2))
 
 
-
-syntax String ::= incNoOverflow(String, String, Int)  [function]
-                | incI(Int, Int, Int, Int)  [function]
-                | round1(String, Int, Int) [function]
-                | round0(String, Int) [function]
-
-
-/*
 //Implement the rounding mode of 'N' (round to nearest) manually in order to pass the tests.
 //round(s,i) where s is the target float number in string format and int i is the number of
 //fractional digits after the decimal point;
-syntax String ::= round(String, Int) [function]
+syntax String ::= round0(String, Int) [function]
                 //use this helper method so that only compute the pos of decimal point one time
                 //the arg in the middle is the pos of "."
                 | round1(String, Int, Int) [function]
@@ -169,7 +161,7 @@ syntax String ::= round(String, Int) [function]
                 //helper function to avoid the repetition of computation
                 | incNoOverflow(String, String, Int)  [function]
 
-           */
+
 
 rule round0(S:String, N:Int) => round1(S, findChar(S, ".", 0), N)
 
@@ -216,11 +208,12 @@ rule toString(I:Int :: char) => chrChar(I)
 rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
 
-rule toString(Fl:Float :: _) => round0("100.99634", 2)
+rule toString(Fl:Float :: _) =>
+//round0("100.99634", 2)
 //round1("100.99634", 3, 2)
 //"" +String incI(100,99,6,2)
 
-//round(Float2String(Fl, "%.18Rf"), numOfDigitsPreserved(Fl))
+round0(Float2String(Fl, "%.18Rf"), numOfDigitsPreserved(Fl))
 
 
 
