@@ -43,6 +43,8 @@ syntax String ::= javaDouble2String(Float)  [function]
                 //neighbors, if ok then return it, owise return the candidate2
                 | chooseFromCandidateDoubleStr2(Float, Float, String, String) [function]
 
+                | check0(String, Bool) [function]
+
 
 //check whether the string (representing a float) is diff from both of the two floats.
 syntax Bool ::= isDiffFl(Float, String, Float) [function]
@@ -50,7 +52,27 @@ syntax Bool ::= isDiffFl(Float, String, Float) [function]
 rule isDiffFl(F0:Float, F1:String, F2:Float) => isDiff(F0, String2Float(F1), F2)
 rule isDiff(F0:Float, F1:Float, F2:Float) => F1 =/=Float F0 andBool F1 =/=Float F2
 
+rule javaDouble2String(DoubleNegInf) => "-Infinity"
+rule javaDouble2String(DoublePosInf) => "Infinity"
+rule javaDouble2String(DoubleNaN) => "NaN"
+
+
 rule javaDouble2String(Fl:Float) => chooseFromCandidateDoubleStr0(nextDown(Fl), Fl, nextUp(Fl))
+when Fl >=Float 10.0^Float(-3.0) andBool Fl <Float 10.0^Float(7.0)
+
+
+rule javaDouble2String(Fl:Float) => "neg"
+when signFloat(Fl)
+
+rule javaDouble2String(Fl:Float) => "pos"
+when notBool signFloat(Fl)
+
+//check0(Float2String(Fl, "%RE"), )
+
+rule javaDouble2String(Fl:Float) => "Undef"
+[owise]
+rule check0(S:String, B:Bool) => "check0"
+
 
 rule chooseFromCandidateDoubleStr0(F0:Float, F1:Float, F2:Float) =>
     chooseFromCandidateDoubleStr1(F0, F1, F2, numOfDigitsPreserved1(F0, F1, F2))
