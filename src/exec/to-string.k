@@ -196,46 +196,6 @@ rule toString(I:Int :: T:Type) => Int2String(I)
 
 rule toString(Fl:Float :: _) => javaDouble2String(Fl)
 
-
-/*
-                                Float2String(Fl, "%." +String
-                                Int2String(numOfDigitsPreserved(Fl)) +String "Rg")
-
-
-                             +String ";;\n nextDown: " +String Float2String(nextDown(Fl), "%.28Rf")
-                             +String ";;\tTarget: " +String Float2String(Fl, "%.28Rf")
-                             +String ";;\tnextUp: " +String Float2String(nextUp(Fl), "%.28Rf")
-
-                             +String ";;\tNumOfDigitsPreserved:\t" +String Int2String(numOfDigitsPreserved(Fl))
-                             +String ";;\tTarget in round mode (16RNf): " +String
-                             Float2String(Fl, "%.16RNf")
-      +String ";;\tTarget in round 16 RNg: " +String Float2String(Fl, "%.16RNg")
-
-                      +String ";;\tTarget in round 18 RNf: " +String Float2String(Fl, "%.18RNf")
-                      +String ";;\tTarget in round 18 RNg: " +String Float2String(Fl, "%.18RNg")
-
-
-
-Float2String(String2Float("0x" +String "1" +String "." +String Int2String(0 +Int 1)
-+String "p" +String Int2String(0)), "%Ra")
-
- //Int2String(String2Base("0000000000000", 16)) +String ";;"
-//+String Int2String(exponentFloat(Fl)) +String ";;len: " +String Int2String(lengthString
-//("10000000000000"))
-
-//Float2String(incF1("1", 0, 0), "%Ra")
-//Base2String(uvalueMInt(significandFloat(Fl)), 16) +String
- //  ", expo:" +String Int2String(exponentFloat(Fl)) +String "; " +String Float2String(String2Float
- //  ("0x1.0p0"))
-
- //Float2String(nextUp(Fl), "%Ra")
-
-//Base2String(uvalueMInt(significandFloat(Fl)), 16)
-//Float2String(String2Float("0x1.3ae147ae147adp+0"), "%.18Rf") //nextDown
-//+String ";\t" +String Float2String(String2Float("0x1.3ae147ae147aep+0"), "%.18Rf") //target float
-//+String ";\t" +String Float2String(String2Float("0x1.3ae147ae147afp+0"), "%.18Rf") //nextUp
-*/
-
 rule toString(true::_) => "true"
 rule toString(false::_) => "false"
 rule toString(null::_) => "null"
