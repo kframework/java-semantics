@@ -215,7 +215,7 @@ syntax Params ::= addElementToParamsEnd (Params, Param) [function]
 rule addElementToParamsEnd(.Params, P:Param) => P,.Params
 rule addElementToParamsEnd((Hd:Param, Tl:Params), P:Param) => Hd,addElementToParamsEnd(Tl,P)
 
-syntax Params ::= addElementToClassBodyDecListEnd (ClassBodyDecList, ClassBodyDec) [function]
+syntax ClassBodyDecList ::= addElementToClassBodyDecListEnd (ClassBodyDecList, ClassBodyDec) [function]
 rule addElementToClassBodyDecListEnd(.ClassBodyDecList, P:K) => 'ClassBodyDecList(P,, .ClassBodyDecList)
 rule addElementToClassBodyDecListEnd('ClassBodyDecList(Hd:K,,Tl:K), P:K) => 'ClassBodyDecList(Hd,, addElementToClassBodyDecListEnd(Tl,P))
 
