@@ -146,6 +146,14 @@ rule numOfDigitsPreserved3(F0:String, F1:String, F2:String)
     => maxInt(diffFromPos(F0, F1), diffFromPos(F1, F2))
 
 
+
+syntax String ::= incNoOverflow(String, String, Int)  [function]
+                | incI(Int, Int, Int, Int)  [function]
+                | round1(String, Int, Int) [function]
+                | round0(String, Int) [function]
+
+
+/*
 //Implement the rounding mode of 'N' (round to nearest) manually in order to pass the tests.
 //round(s,i) where s is the target float number in string format and int i is the number of
 //fractional digits after the decimal point;
@@ -161,12 +169,17 @@ syntax String ::= round(String, Int) [function]
                 //helper function to avoid the repetition of computation
                 | incNoOverflow(String, String, Int)  [function]
 
-rule round(S:String, N:Int) => round1(S, findChar(S, ".", 0), N)
+           */
+
+rule round0(S:String, N:Int) => round1(S, findChar(S, ".", 0), N)
+
+
 
 rule round1(S:String, Pos:Int, N:Int) => incI(String2Int(substrString(S, 0, Pos)),
                             String2Int(substrString(S, Pos +Int 1, Pos +Int 1 +Int N)),
                             String2Int(substrString(S, Pos +Int 1 +Int N, Pos +Int 2 +Int N)),
                              N)
+
 
 rule incI(A:Int, B:Int, X:Int, N:Int) =>
 incNoOverflow(Int2String(A), Int2String(B), N)
@@ -175,12 +188,18 @@ when X <Int 5
 //inc by one unit, no overflow in fractional part
 rule incI(A:Int, B:Int, X:Int, N:Int) =>
 incNoOverflow(Int2String(A), Int2String(B +Int 1), N)
-when X >=Int 5 andBool (B +Int 1 <Int 10^N)
+when X >=Int 5 andBool (B +Int 1 <Int 10 ^Int N)
 
 //inc by one unit, has overflow in fractional part
 rule incI(A:Int, B:Int, X:Int, N:Int) =>
 incNoOverflow(Int2String(A +Int 1), "0", 1)
 when X >=Int 5 andBool (B +Int 1 >=Int 10 ^Int N)
+
+
+
+rule incI(A:Int, B:Int, X:Int, N:Int) => "Error State!"
+[owise] //error state
+
 
 
 rule incNoOverflow(A:String, B:String, N:Int) =>
@@ -189,6 +208,7 @@ rule incNoOverflow(A:String, B:String, N:Int) =>
 /*@ Converts all possible Java values into String. Used mostly for printing and String + operator.
     Conversion for other value forms is defined in other modules.
 */
+
 syntax Exp ::= toString ( K )   [strict]
 
 rule toString(Str:String :: _) => Str
@@ -196,7 +216,11 @@ rule toString(I:Int :: char) => chrChar(I)
 rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
 
-rule toString(Fl:Float :: _) => round(Float2String(Fl, "%.18Rf"), numOfDigitsPreserved(Fl))
+rule toString(Fl:Float :: _) => round0("100.99634", 2)
+//round1("100.99634", 3, 2)
+//"" +String incI(100,99,6,2)
+
+//round(Float2String(Fl, "%.18Rf"), numOfDigitsPreserved(Fl))
 
 
 
