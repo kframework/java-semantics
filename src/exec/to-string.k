@@ -146,56 +146,42 @@ rule numOfDigitsPreserved3(F0:String, F1:String, F2:String)
     => maxInt(diffFromPos(F0, F1), diffFromPos(F1, F2))
 
 
-//Implement the rounding mode of 'N' (round to nearest) manually in order to pass the tests.
-//round(s,i) where s is the target float number in string format and int i is the number of
-//fractional digits after the decimal point;
-syntax String ::= round0(String, Int) [function]
-                //use this helper method so that only compute the pos of decimal point one time
-                //the arg in the middle is the pos of "."
-                | round1(String, Int, Int) [function]
+syntax String ::= javaDouble2String(Float)  [function]
+//the three args: nextDown, target double, nextUp
+                | chooseFromCandidateDoubleStr0(Float, Float, Float) [function]
 
- //The method incI analyzes a float string in this format: A.BX, where X is the last digit
- //and the length of B is the number of preserved fractional digits (denoted by n)
- //The four args are A, B, X, n
-                | incI(Int, Int, Int, Int)  [function]
-                //helper function to avoid the repetition of computation
-                | incNoOverflow(String, String, Int)  [function]
+//First three args are the same as the above function, the last one is the number at which pos the
+//target double is distinguishable from its adjacent double values
+                | chooseFromCandidateDoubleStr1(Float, Float, Float, Int) [function]
+
+                //the 4 args are: nextDown, nextUp, candidate1, candidate2
+                //At first, the candidate1 is transformed back to float and compare with its
+                //neighbors, if ok then return it, owise return the candidate2
+                | chooseFromCandidateDoubleStr2(Float, Float, String, String) [function]
 
 
+//check whether the string (representing a float) is diff from both of the two floats.
+syntax Bool ::= isDiffFl(Float, String, Float) [function]
+               | isDiff(Float, Float, Float) [function]
+rule isDiffFl(F0:Float, F1:String, F2:Float) => isDiff(F0, String2Float(F1), F2)
+rule isDiff(F0:Float, F1:Float, F2:Float) => F1 =/=Float F0 andBool F1 =/=Float F2
 
-rule round0(S:String, N:Int) => round1(S, findChar(S, ".", 0), N)
+rule javaDouble2String(Fl:Float) => chooseFromCandidateDoubleStr0(nextDown(Fl), Fl, nextUp(Fl))
 
+rule chooseFromCandidateDoubleStr0(F0:Float, F1:Float, F2:Float) =>
+    chooseFromCandidateDoubleStr1(F0, F1, F2, numOfDigitsPreserved1(F0, F1, F2))
 
-
-rule round1(S:String, Pos:Int, N:Int) => incI(String2Int(substrString(S, 0, Pos)),
-                            String2Int(substrString(S, Pos +Int 1, Pos +Int 1 +Int N)),
-                            String2Int(substrString(S, Pos +Int 1 +Int N, Pos +Int 2 +Int N)),
-                             N)
-
-
-rule incI(A:Int, B:Int, X:Int, N:Int) =>
-incNoOverflow(Int2String(A), Int2String(B), N)
-when X <Int 5
-
-//inc by one unit, no overflow in fractional part
-rule incI(A:Int, B:Int, X:Int, N:Int) =>
-incNoOverflow(Int2String(A), Int2String(B +Int 1), N)
-when X >=Int 5 andBool (B +Int 1 <Int 10 ^Int N)
-
-//inc by one unit, has overflow in fractional part
-rule incI(A:Int, B:Int, X:Int, N:Int) =>
-incNoOverflow(Int2String(A +Int 1), "0", 1)
-when X >=Int 5 andBool (B +Int 1 >=Int 10 ^Int N)
+rule chooseFromCandidateDoubleStr1(Lower:Float, Cur:Float, Higher:Float, N:Int) =>
+    chooseFromCandidateDoubleStr2(Lower, Higher,
+                            Float2String(Cur, "%." +String Int2String(N) +String "Rg"),
+                            Float2String(Cur, "%." +String Int2String(N +Int 1) +String "Rg"))
 
 
+rule chooseFromCandidateDoubleStr2(Lower:Float, Higher:Float, Cand1:String, Cand2:String) => Cand1
+when isDiffFl(Lower, Cand1, Higher)
 
-rule incI(A:Int, B:Int, X:Int, N:Int) => "Error State!"
-[owise] //error state
-
-
-
-rule incNoOverflow(A:String, B:String, N:Int) =>
-  A +String "." +String pad0(B, N -Int lengthString(B))
+rule chooseFromCandidateDoubleStr2(Lower:Float, Higher:Float, Cand1:String, Cand2:String) => Cand2
+[owise]
 
 /*@ Converts all possible Java values into String. Used mostly for printing and String + operator.
     Conversion for other value forms is defined in other modules.
@@ -208,13 +194,7 @@ rule toString(I:Int :: char) => chrChar(I)
 rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
 
-rule toString(Fl:Float :: _) =>
-//round0("100.99634", 2)
-//round1("100.99634", 3, 2)
-//"" +String incI(100,99,6,2)
-
-round0(Float2String(Fl, "%.18Rf"), numOfDigitsPreserved(Fl))
-
+rule toString(Fl:Float :: _) => javaDouble2String(Fl)
 
 
 /*
@@ -234,9 +214,6 @@ round0(Float2String(Fl, "%.18Rf"), numOfDigitsPreserved(Fl))
                       +String ";;\tTarget in round 18 RNf: " +String Float2String(Fl, "%.18RNf")
                       +String ";;\tTarget in round 18 RNg: " +String Float2String(Fl, "%.18RNg")
 
-
-
-//Float2String(incF0("10000000000000",0), "%Ra")
 
 
 Float2String(String2Float("0x" +String "1" +String "." +String Int2String(0 +Int 1)
