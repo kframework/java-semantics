@@ -21,14 +21,15 @@ rule isVarDecHolderLabel(_) => false [owise]
 
 /*@ In addition to what defaul elab heating does, when we heat the first argument of 'Block, 'For of 'Catch
 we need to save a copy of elaboration environment - e.g. the last entry of <elabEnv> <localTypes>.
-This is because these statements are blocks that might declare local variables.
+This is because these statements are blocks that might declare local variables. Empty Expressions are KResult and
+therefore ElabKResult, but we should still copy the env because removeLastElabEnv removes indifferently.
 */
 rule [elab-Block-For-Catch-heat-FirstSubterm]:
     <k> elab(KL:KLabel(K:K,, Ks:KList)) => elab(K) ~> elab(KL(CHOLE,, Ks:KList)) ...</k>
     <elabEnv> (.List => ListItem(ElabEnvLI)) ListItem(ElabEnvLI:K) ...</elabEnv>
     <localTypes> (.List => ListItem(LocalTypesLI)) ListItem(LocalTypesLI:K) ...</localTypes>
 when
-    isVarDecHolderLabel(KL) ==K true andBool notBool isElabKResult(K) ==K true
+    isVarDecHolderLabel(KL) ==K true andBool ((notBool isElabKResult(K)) orBool K ==K .Exps)
 
 //Seqstrict starting from 2-nd argument.
 //rule [customElabHeating-For-next-children]:
