@@ -76,9 +76,9 @@ syntax KItem ::=  registerClass(
               )
 
 rule [registerClass]:
-    registerClass(ClassDec:K, Pack:PackageId, Class:ClassType, EnclosingClass:ClassType)
-    =>   processTypeNames([ClassDec], Pack)
-      ~> processTypeDecsInPCUPhase([ClassDec], Pack, EnclosingClass)
+    registerClass(ClassDec, Pack:PackageId, Class:ClassType, EnclosingClass:ClassType)
+    =>   processTypeNames('ClassBodyDecList(ClassDec,, .ClassBodyDecList), Pack)
+      ~> processTypeDecsInPCUPhase('ClassBodyDecList(ClassDec,, .ClassBodyDecList), Pack, EnclosingClass)
       ~> processClassDecs(setWrap(SetItem(Class)))
       ~> processTypeWithDepends(Class)
       //~> elaborateBlocks(setWrap(SetItem(Class))) Now that this class's package = Encloser, it
@@ -193,7 +193,7 @@ rule [localEnvObjectBuild]:
                 'None(.KList),,
                 'None(.KList)
               ),,
-              'ClassBody([.KList])
+              'ClassBody(.ClassBodyDecList)
             ),
             LocalEnvClass,
             AccessibleLocalEnv
@@ -222,7 +222,7 @@ rule [localEnvClassAddFieldsAndRegister-add-field]:
     localEnvClassAddFieldsAndRegister(
       'ClassDec(
         'ClassDecHead(_:KList),,
-        'ClassBody([_,, ( .KList => 'FieldDec(.AnnoFieldModList,, T,, ['VarDec(X)]) )])
+        'ClassBody(BList:K => addElementToClassBodyDecListEnd(BList,'FieldDec(.AnnoFieldModList,, T,, ['VarDec(X)])))
       ), _,
       (X:Id |-> T:Type => .Map) _:Map
     )

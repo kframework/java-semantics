@@ -35,9 +35,9 @@ rule [ProcCompUnitsPhase-start]:
 rule [CompilationUnit]:
     <k>
       'CompilationUnit('Some('PackageDec(_,, Pack:PackageId)),,
-          ImpDecs:ImportDecList,, [Ks:KList]
+          ImpDecs:ImportDecList,, Ks:K
       )
-      => compUnitImportsStart(Pack) ~> ImpDecs ~> processTypeDecsInPCUPhase([Ks], Pack, noClass)
+      => compUnitImportsStart(Pack) ~> ImpDecs ~> processTypeDecsInPCUPhase(Ks, Pack, noClass)
       ...
     </k>
     <globalPhase> ProcCompUnitsPhase  </globalPhase>
@@ -49,27 +49,34 @@ rule .ImportDecList => .
 this phase from other preprocessing phases
 Type declarations are processed in this phase wrapped in a processTypeDecsInPCUPhase*/
 syntax KItem ::=  processTypeDecsInPCUPhase  (
-                KListWrap,  //The list of terms from which we will process just type declarations
+                K,  //The list of terms from which we will process just type declarations
                 PackageId,  //The package of the processed types
                 ClassType   //The outer class of this class, if any, or noClass if this is a top-level class
               )
+              | processTypeDecInPCUPhase  (
+                              K,          //The first single item extracted from List
+                              PackageId,  //The package of the processed types
+                              ClassType   //The outer class of this class, if any, or noClass if this is a top-level class
+                            )
 
 rule [processTypeDecsInPCUPhase-Expand]:
-    (. => processTypeDecsInPCUPhase([K1], Pack, OuterClass))
-    ~> processTypeDecsInPCUPhase([(K1:K => .KList),, _:K,, _], Pack:PackageId, OuterClass:ClassType)
+    processTypeDecsInPCUPhase(KL:KLabel(Hd:K,,Tl:K), Pack:PackageId, OuterClass:ClassType)
+    => processTypeDecInPCUPhase(Hd, Pack, OuterClass) ~> processTypeDecsInPCUPhase(Tl, Pack, OuterClass)
+when KL ==KLabel 'TypeDecList orBool KL ==KLabel 'ClassBodyDecList orBool KL ==KLabel 'InterfaceMemberDecList
 
 rule [processTypeDecsInPCUPhase-Discard]:
-    processTypeDecsInPCUPhase([.KList], _,_) => .K
+    processTypeDecsInPCUPhase(EmptyList, _,_) => .
+when EmptyList ==K .TypeDecList orBool EmptyList ==K .ClassBodyDecList orBool EmptyList ==K .InterfaceMemberDecList
 
-rule [processTypeDecsInPCUPhase-ElemDiscard]:
-    processTypeDecsInPCUPhase([Label:KLabel(_)], _,_) => .
+rule [processTypeDecInPCUPhase-ElemDiscard]:
+    processTypeDecInPCUPhase(Label:KLabel(_), _,_) => .
 when notBool( Label ==KLabel 'ClassDec orBool Label ==KLabel 'InterfaceDec )
 
 /*@ \subsection{Class declaration processing}*/
 
-rule [processTypeDecsInPCUPhase-typeDec-ComputeFullName]:
-    processTypeDecsInPCUPhase(
-      [KL:KLabel(_:KLabel(_:K,, (SimpleClass:Id => getClassType(Pack,SimpleClass)),, _:KList),, _)],
+rule [processTypeDecInPCUPhase-typeDec-ComputeFullName]:
+    processTypeDecInPCUPhase(
+      KL:KLabel(_:KLabel(_:K,, (SimpleClass:Id => getClassType(Pack,SimpleClass)),, _:KList),, _),
       Pack:PackageId, _
     )                [structural]
 
@@ -82,13 +89,13 @@ rule [processTypeDecsInPCUPhase-typeDec-ComputeFullName]:
     'Some('SuperDec( BaseClassRaw - extends declaration )),,
     'Some('ImplementsDec([ ImplTypesRaw - implements declarations ]))
   ),,
-  'ClassBody( [ Decls - member declarations ] )
+  'ClassBody( Decls - member declarations )
 )
 */
 
 rule [ClassDec-NoExtendsDesugar]:
-    processTypeDecsInPCUPhase(
-      ['ClassDec('ClassDecHead(_,, Class:ClassType,, _:K,,
+    processTypeDecInPCUPhase(
+      'ClassDec('ClassDecHead(_,, Class:ClassType,, _:K,,
         ( 'None(_)
           => 'Some('SuperDec(
                 #if (Class =/=K classObject)
@@ -98,36 +105,36 @@ rule [ClassDec-NoExtendsDesugar]:
               ))
         ),,
         _:K),, _:K
-      )],
+      ),
       Pack:PackageId, _
     )                [structural]
 
 rule [ClassDec-NoImplementsDesugar]:
-    processTypeDecsInPCUPhase(['ClassDec('ClassDecHead(_,, Class:ClassType,, _:K,, _:K,,
+    processTypeDecInPCUPhase('ClassDec('ClassDecHead(_,, Class:ClassType,, _:K,, _:K,,
         ( 'None(.KList) => 'Some('ImplementsDec(.InterfaceTypeList)) )
       ),, _:K
-    )], _,_)                [structural]
+    ), _,_)                [structural]
 
 rule [InterfaceDec-NoExtendsDesugar]:
-    processTypeDecsInPCUPhase(['InterfaceDec('InterfaceDecHead(_,, Class:ClassType,, _:K,,
+    processTypeDecInPCUPhase('InterfaceDec('InterfaceDecHead(_,, Class:ClassType,, _:K,,
         ( 'None(.KList) => 'Some('ExtendsInterfaces(.InterfaceTypeList)) )
       ),, _:K
-    )], _,_)                [structural]
+    ), _,_)                [structural]
 
-rule [processTypeDecsInPCUPhase-ClassDec]:
+rule [processTypeDecInPCUPhase-ClassDec]:
     <k>
-      processTypeDecsInPCUPhase(
-        ['ClassDec(
+      processTypeDecInPCUPhase(
+        'ClassDec(
           'ClassDecHead( Modifiers:AnnoClassModList,, Class:ClassType,, _:K,,
             'Some('SuperDec(BaseClassRaw:K)),,
             'Some('ImplementsDec(ImplTypesRaw:InterfaceTypeList))
           ),,
-          'ClassBody( [Decls:KList] )
-        )],
+          'ClassBody(Decls:K)
+        ),
         Pack:PackageId, OuterClass:ClassType
       )
       => saveImportsInPCUPhase(Class)
-      ~> processTypeDecsInPCUPhase([Decls], toPackage(Class), Class)
+      ~> processTypeDecsInPCUPhase(Decls, toPackage(Class), Class)
       ...
     </k>
     <classType> Class </classType>
@@ -136,8 +143,8 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
     <rawExtends> _ => BaseClassRaw </rawExtends>
     <rawImplements> _ => ImplTypesRaw </rawImplements>
     <rawDeclarations>
-      _ => [
-                Decls,,
+      _ => addElementToClassBodyDecListEnd(
+                Decls,
 
                 //Default constructor.
                 //If there is a no-arguments constructor in Decls, this one will be discarded
@@ -151,7 +158,7 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
                   ),,
                   'ConstrBody('None(.KList),, [.KList])
                 )
-            ]
+            )
     </rawDeclarations>
     <classContextType>
       _ =>  #if OuterClass ==K noClass
@@ -160,19 +167,19 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
             #fi
     </classContextType>
 
-rule [processTypeDecsInPCUPhase-IInterfaceDec]:
+rule [processTypeDecInPCUPhase-IInterfaceDec]:
     <k>
-      processTypeDecsInPCUPhase(
-        ['InterfaceDec(
+      processTypeDecInPCUPhase(
+        'InterfaceDec(
           'InterfaceDecHead( _:K,, Class:ClassType,, _:K,,
             'Some('ExtendsInterfaces(ImplTypesRaw:InterfaceTypeList))
           ),,
-          [Decls:KList]
-        )],
+          Decls:K
+        ),
         Pack:PackageId, OuterClass:ClassType
       )
       => saveImportsInPCUPhase(Class)
-      ~> processTypeDecsInPCUPhase([Decls], toPackage(Class), Class)
+      ~> processTypeDecsInPCUPhase(Decls, toPackage(Class), Class)
       ...
     </k>
     <classType> Class </classType>
@@ -180,7 +187,7 @@ rule [processTypeDecsInPCUPhase-IInterfaceDec]:
     <enclosingClass> _ => OuterClass </enclosingClass>
     <rawExtends> _ => noClass </rawExtends>
     <rawImplements> _ => ImplTypesRaw </rawImplements>
-    <rawDeclarations> _ => [Decls] </rawDeclarations>
+    <rawDeclarations> _ => Decls </rawDeclarations>
     <classContextType> _ => staticCT </classContextType>
 
 /*@ If the given type is top-level, then save <imports> from the <compUnitImports> cell.

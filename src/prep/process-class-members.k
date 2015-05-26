@@ -96,6 +96,12 @@ rule [processType]:
       ...
     </class>
 
+rule 'ClassBodyDecList(Hd:K,,Tl:K) => Hd ~> Tl
+rule .ClassBodyDecList => .
+
+rule 'InterfaceMemberDecList(Hd:K,,Tl:K) => Hd ~> Tl
+rule .InterfaceMemberDecList => .
+
 //Could happen when hierarchies of inheritance and that of enclosing get messed up.
 rule [processType-discard]:
     <k> processType(Class:ClassType) => . ...</k>
@@ -342,7 +348,7 @@ rule [ConstrDec-Object]:
           (
             'None(_)
           ),,
-          [BodyKs:KList]
+          [BodyKs:KList]//todo BlockStmList
         )
       )
       => storeMethod(Params,
@@ -354,7 +360,7 @@ rule [ConstrDec-Object]:
 when
     Class ==K classObject
 
-rule [ConstrDec]:
+rule [ConstrDec]: //todo BlockStmList
     <k>
       'ConstrDec('ConstrDecHead(Modifiers:AnnoConstrModList,, _:K,, Name:Id,, Params:Params,, _),,
           'ConstrBody(

@@ -27,8 +27,8 @@ context 'CompilationUnit('Some('PackageDec(_,, HOLE)),, _)
 rule [CompilationUnit]:
     <k>
       'CompilationUnit('Some('PackageDec(_,, Pack:PackageId)),, _:K,,
-          [Decs:KList]
-      ) => processTypeNames([Decs], Pack)
+          Decs:K
+      ) => processTypeNames(Decs, Pack)
       ...
     </k>
     <globalPhase> ProcTypeNamesPhase </globalPhase>
@@ -83,7 +83,7 @@ rule [packageNameImpl-End]:
 /*@ Wrapper of declarations inside a compilation unit. Used to distinguish
 ProcTypeNamesPhase from ProcCompUnitsPhase*/
 syntax KItem ::=  processTypeNames (
-                KListWrap,    //declarations inside a compilation unit
+                K,    //declarations inside a compilation unit
                 PackageId // the package of the processed types
               )
 
@@ -95,14 +95,15 @@ when notBool PackId in keys(PackMap)
 /*@ A type name is either class or interface name. Anonymous labels will be one of:
       - 'ClassDec('ClassDecHead(...))
       - 'InterfaceDec('InterfaceDecHead(...))
-      todo repitition*/
+*/
+
 rule [processTypeNamesClass]:
     <k>
       processTypeNames(
-        [('ClassDec('ClassDecHead(Modifiers:AnnoClassModList,, SimpleClass:Id,, _),, CBody:K) => .KList),, _],
+        (_:KLabel('ClassDec('ClassDecHead(Modifiers:AnnoClassModList,, SimpleClass:Id,, _),, 'ClassBody(Body:K)),, Tl:K) => Tl),
         PackId:PackageId
       )
-      ~> ( . => processInnerTypes(CBody, toPackage(getClassType(PackId,SimpleClass))) )
+      ~> ( . => processTypeNames(Body, toPackage(getClassType(PackId,SimpleClass))) )
       ...
     </k>
     <namesToClasses>
@@ -123,10 +124,10 @@ rule [processTypeNamesClass]:
 rule [processTypeNamesInterface]:
     <k>
       processTypeNames(
-        [('InterfaceDec('InterfaceDecHead(Modifiers:AnnoInterfaceModList,, SimpleClass:Id,, _),, CBody:K) => .KList),, _],
+        (_:KLabel('InterfaceDec('InterfaceDecHead(Modifiers:AnnoInterfaceModList,, SimpleClass:Id,, _),, Body:K),, Tl:K) => Tl),
         PackId:PackageId
       )
-      ~> ( . => processInnerTypes(CBody, toPackage(getClassType(PackId,SimpleClass))) )
+      ~> ( . => processTypeNames(Body, toPackage(getClassType(PackId,SimpleClass))) )
       ...
     </k>
     <namesToClasses>
@@ -145,20 +146,21 @@ rule [processTypeNamesInterface]:
             </class> )
 
 rule [processTypeNames-ElemDiscard]:
-    processTypeNames([(Label:KLabel(_) => .KList),, _], _)
-when notBool( (Label ==KLabel 'ClassDec) orBool (Label ==KLabel 'InterfaceDec) )
+    processTypeNames((_:KLabel(Label:KLabel(_),, Tl:K) => Tl), _)
+when notBool( Label ==KLabel 'ClassDec orBool Label ==KLabel 'InterfaceDec )
 
 //We match PackId in <namesToClasses> just to be sure that the package was added to the map.
 rule [processTypeNames-Discard]:
-    <k> processTypeNames([.KList], PackId:PackageId) => .K ...</k>
+    <k> processTypeNames(EmptyList, PackId:PackageId) => . ...</k>
     <namesToClasses>... PackId |-> _ ...</namesToClasses>
+when EmptyList ==K .TypeDecList orBool EmptyList ==K .ClassBodyDecList orBool EmptyList ==K .InterfaceMemberDecList
 
 /*@ Is converted into a processTypeNames. The first argument is a class/interface body. This function
   have to extract the list of memers from the body and pass them to processTypeNames.
 */
-syntax KItem ::= processInnerTypes ( K , PackageId )
-rule processInnerTypes('ClassBody([Ks:KList]), Pack:PackageId) => processTypeNames([Ks], Pack)
-rule processInnerTypes([Ks:KList], Pack:PackageId) => processTypeNames([Ks], Pack)             //interface body
+//syntax KItem ::= processInnerTypes ( K , PackageId )
+//rule processInnerTypes('ClassBody([Ks:KList]), Pack:PackageId) => processTypeNames([Ks], Pack)
+//rule processInnerTypes([Ks:KList], Pack:PackageId) => processTypeNames([Ks], Pack)             //interface body
 
 /*@ \subsection{Auxiliary constructs}*/
 
