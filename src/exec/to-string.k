@@ -1,3 +1,5 @@
+require "math.k"
+
 module TO-STRING
     imports CORE-SORTS
     imports CORE-FUNCTIONS
@@ -6,41 +8,6 @@ module TO-STRING
     imports JAVA-MATH
 
 
-//add 0 to the beginning of the hex string to make it 13 digits.
-//the int arg is the number of zero to be added.
-syntax String ::=     pad0(String)      [function]
-                    | pad0(String, Int) [function]
-
-rule pad0(S:String) => pad0(S, 13 -Int lengthString(S))
-
-rule pad0(S:String, I:Int) => S
-when I <=Int 0
-
-rule pad0(S:String, I:Int) => pad0("0" +String S, I -Int 1)
-when I >Int 0
-
-
-/*@auxiliary function for printing Java's double value in default mode.
-//the number of digits preserved after decimal point depend solely on whether
-// that amount of significands can distinguish the target value with its adjacent
-//double values.
-//This function returns the pos at which two strings are distinguishable
-//the two input string are assumed to have equal length.
-*/
-syntax Int ::= diffFromPos(String, String) [function]
-
-rule diffFromPos(S1:String, S2:String) => 0
-    when S1 ==String "" orBool S2 ==String ""
-
-rule diffFromPos(S1:String, S2:String) => 1
-    when substrString(S1, 0, 1) =/=String substrString(S2, 0, 1)
-
-rule diffFromPos(S1:String, S2:String) =>
-    1 +Int diffFromPos(substrString(S1, 1, lengthString(S1)),
-                    substrString(S2, 1, lengthString(S2)))
-    when substrString(S1, 0, 1) ==String substrString(S2, 0, 1)
-
-rule diffFromPos(S1:String, S2:String) => -1 [owise] //error state
 
 /*@
 The algorithm for printing a Java's double value is based on the description of Javadoc of Double.
