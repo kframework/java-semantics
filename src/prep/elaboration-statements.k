@@ -66,23 +66,23 @@ rule [elab-LocalVarDecStm-desugar]:
 context elab('LocalVarDec(_:K,, HOLE,, _:K))
 //todo BlockStmList
 rule [elab-LocalVarDec-multi-desugar]:
-    elab('LocalVarDec(K:K,, T:Type,, [Var1:K,, Var2:K,, VarDecs:KList])
-      => ['LocalVarDec(K,, T,, [Var1]),,
-            'LocalVarDec(K,, T,, [Var2,, VarDecs])]
+    elab('LocalVarDec(K:K,, T:Type,, 'VarDecList(Var1:K,, 'VarDecList(Var2:K,, VarDecs:K)))
+      => ['LocalVarDec(K,, T,, 'VarDecList(Var1,, .VarDecList)),,
+            'LocalVarDec(K,, T,, 'VarDecList(Var2,, VarDecs))]
     )                                                   [structural]
 
 rule [elab-LocalVarDec-with-init-desugar]:
     elab(
-      'LocalVarDec(K:K,, T:Type,, ['VarDec(X:Id,,InitExp:K)])
-    => ['LocalVarDec(K,, T,, ['VarDec(X:Id)]),, 'ExprStm('Assign('ExprName(X),, InitExp))]
+      'LocalVarDec(K:K,, T:Type,, 'VarDecList('VarDec(X:Id,,InitExp:K),, .VarDecList))
+    => ['LocalVarDec(K,, T,, 'VarDecList('VarDec(X:Id),, .VarDecList)),, 'ExprStm('Assign('ExprName(X),, InitExp))]
     )
 when
     getKLabel(InitExp) =/=KLabel 'ArrayInit             [structural]
 
 rule [elab-LocalVarDec]:
     <k>
-      elab('LocalVarDec(K:K,, T:Type,, ['VarDec(X:Id)]))
-      => elabRes('LocalVarDec(K,, T,, ['VarDec(X)]))
+      elab('LocalVarDec(K:K,, T:Type,, 'VarDecList('VarDec(X:Id),, .VarDecList)))
+      => elabRes('LocalVarDec(K,, T,, 'VarDecList('VarDec(X),, .VarDecList)))
       ...
     </k>
     <elabEnv> ListItem(mapWrap((.Map => X |-> T) _)) ...</elabEnv>

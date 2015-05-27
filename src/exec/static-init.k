@@ -103,7 +103,7 @@ rule [staticInitDone]:
     <staticInitStatus> StaticInitializing(TId) => StaticInitialized </staticInitStatus>
 
 rule [FieldDec-static]:
-    <k> 'FieldDec(static .AnnoFieldModList,, T:Type,,['VarDec(X:Id)]) => . ...</k>
+    <k> 'FieldDec(static .AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X:Id),, .VarDecList)) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticEnv> Env:Map => Env[X <- L] </staticEnv>

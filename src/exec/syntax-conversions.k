@@ -39,7 +39,7 @@ rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:Exps) => Qual.
 
 /*@ \subsection{Local variable declaration}*/
 syntax LocalVarDecStmt ::= Type Id ";"
-rule 'LocalVarDec(_:K,, T:Type,,['VarDec(X:Id)]) => T X;  [structural]
+rule 'LocalVarDec(_:K,, T:Type,,'VarDecList('VarDec(X:Id),, .VarDecList)) => T X;  [structural]
 
 /*@ \subsection{Cast}*/
 //this might be confused with castprim or castref
