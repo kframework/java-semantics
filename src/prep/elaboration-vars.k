@@ -4,8 +4,11 @@ module ELABORATION-VARS
 
 //@ Elaboration of rules in java-var-lookup
 //@ Both unqualified and qualified AmbName.
-rule [elabEnd-AmbName]:
-    elabEnd('AmbName(Ks:KList)) => elabEnd('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName([Ks])
+rule [elabEnd-AmbName-two]:
+    elabEnd('AmbName(Ks:K,,K:Id)) => elabEnd('ExprName(Ks,,K)) ?? 'TypeName(Ks,,K) ?? 'PackageName('IdList(Ks,,'IdList(K,,.IdList)))
+
+rule [elabEnd-AmbName-one]:
+    elabEnd('AmbName(K:Id)) => elabEnd('ExprName(K)) ?? 'TypeName(K) ?? 'PackageName('IdList(K,,.IdList))
 
 rule [elabEnd-ExprName-localVar-ok]:
     <k> elabEnd('ExprName(X:Id)) => elabRes(cast(T, 'ExprName(X))) ...</k>

@@ -35,48 +35,26 @@ rule [CompilationUnit]:
 
 /*@ \subsection{Packages}*/
 
-// 'PackageName([Ks])
-
 rule [PackageName-Start]:
-    'PackageName([Ks:KList]) => packageNameImpl("", [Ks:KList])                  [structural]
+    'PackageName(Ks:K) => packageNameImpl("", Ks)                                       [structural]
 
-//Aux construct for processing packages
-syntax KItem ::= packageNameImpl ( String, KListWrap )
+syntax KItem ::= packageNameImpl ( String, IdList )
 
+//cannot remove, sometimes the first argument is packageId
 rule [packageNameImpl-FirstInnerDesugar]:
-    packageNameImpl(_:String, [(X:Id => packageId(X)),, Ks:KList])                        [structural]
+    packageNameImpl(_:String, 'IdList((X:Id => packageId(X)),, Ks:K))                   [structural]
 
 rule [packageNameImpl-FirstPack]:
-    packageNameImpl("", [packageId(NextKId:Id),, Ks:KList])
-    => packageNameImpl(Id2String(NextKId), [Ks])                                          [structural]
-
-rule [packageNameImpl-NextPack]:
-    packageNameImpl(Str:String, [packageId(NextKId:Id),, Ks:KList])
-    => packageNameImpl(Str +String "." +String Id2String(NextKId), [Ks])
-when Str =/=String ""                                                                   [structural]
-
-rule [packageNameImpl-End]:
-    packageNameImpl(Str:String, [.KList]) => packageId(String2Id(Str))                  [structural]
-
-//todo repitition
-
-rule [PackageName-Start]:
-    'PackageName(Ks:IdList) => packageNameImpl("", Ks)                  [structural]
-
-//Aux construct for processing packages
-syntax PackageId ::= packageNameImpl ( String, IdList )             [function]
-
-rule [packageNameImpl-FirstPack]:
-    packageNameImpl("", NextKId:Id . Ks:IdList)
+    packageNameImpl("", 'IdList(packageId(NextKId:Id),, Ks:K))
     => packageNameImpl(Id2String(NextKId), Ks)                                          [structural]
 
 rule [packageNameImpl-NextPack]:
-    packageNameImpl(Str:String, NextKId:Id . Ids:IdList)
-    => packageNameImpl(Str +String "." +String Id2String(NextKId), Ids)
+    packageNameImpl(Str:String, 'IdList(packageId(NextKId:Id),, Ks:K))
+    => packageNameImpl(Str +String "." +String Id2String(NextKId), Ks)
 when Str =/=String ""                                                                   [structural]
 
 rule [packageNameImpl-End]:
-    packageNameImpl(Str:String, .IdList) => packageId(String2Id(Str))                  [structural]
+    packageNameImpl(Str:String, .IdList) => packageId(String2Id(Str))                   [structural]
 
 /*@ \subsection{Class declaration}*/
 
