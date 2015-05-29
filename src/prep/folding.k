@@ -102,7 +102,7 @@ rule [folding-class-end]:
     ( <methodDecs> .Bag </methodDecs> => .Bag)
     <folded> _:KLabel(_) </folded>
     <classPhase> MembersProcessedCPhase => FoldedCPhase </classPhase>
-//todo mapItem/solution
+
 rule [folding-class-fold-top-level]:
     <k> foldingPhase </k>
     <namesToClasses>
@@ -118,7 +118,7 @@ rule [folding-class-fold-top-level]:
       </class> => .Bag
     )
     <program> [_,, (.KList => ClassDec)] </program>
-//todo mapItem/solution
+
 rule [folding-class-fold-inner]:
     <k> foldingPhase </k>
     <namesToClasses>

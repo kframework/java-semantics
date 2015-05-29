@@ -42,7 +42,6 @@ rule getTopLevelClasses(.List, ClassesSet:Set) => setWrap(ClassesSet)
 */
 syntax KItem ::= getInnerClasses ( ClassType )
                | getInnerClasses ( Map, Set )
-//todo mapItem/solution
 
 rule [getInnerClasses-start-have-inner]:
     <k> getInnerClasses(class Class:Id) => getInnerClasses(InnerClassesMap, .Set) ...</k>

@@ -132,7 +132,6 @@ In order to expose incorrect nondeterminism we need to model-check a program tha
 
 Labels that are "naked" should be heated in their pure form. Other terms should be heated wrapped into elab().
 */
-//todo A matching case 2, customElabHeating:'For, 'Catch, '(Q)NewInstance
 //rule [elab-heat-default]:
 //    (. => #if isElabNaked(K) ==K true
 //            #then K

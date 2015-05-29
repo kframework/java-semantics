@@ -19,11 +19,7 @@ rule [compUnitImportsStart]:
 
 //Process K-AST terms 'TypeImportDec or 'TypeImportOnDemandDec
 context 'TypeImportDec(HOLE)
-//todo mapItemByValue
-//rule [TypeImportDec]:
-//    <k> 'TypeImportDec(Class:ClassType) => . ...</k>
-//    <namesToClasses>... _ |-> mapWrap((X:Id |-> Class) _) ...</namesToClasses>
-//    <compUnitImports> Imp:Map => Imp[X <- Class] </compUnitImports>
+
 syntax KItem ::= typeImportDecImpl (List, ClassType)
 
 rule [typeImportDecImplConversion]:
@@ -62,17 +58,6 @@ syntax KItem ::= importOnDemandImpl (Id,ClassType,Map)
 
 rule [importOnDemandImplConversion]:
     importOnDemandImpl((Key:Id |-> Value:ClassType) Remains:Map) => importOnDemandImpl(Key,Value,Remains)
-//todo mapItemByValue/ is this solution ok?
-//rule [importOnDemandImpl-public]:
-//    <k> importOnDemandImpl((X:Id |-> Class:ClassType => .Map) _:Map) ...</k>
-//    <compUnitImports> Imp:Map => Imp[X <- Class] </compUnitImports>
-//    <classType> Class </classType>
-//    <classAccessMode> public </classAccessMode>
-
-//rule [importOnDemandImpl-package]:
-//    <k> importOnDemandImpl((X:Id |-> Class:ClassType => .Map) _:Map) ...</k>
-//    <classType> Class </classType>
-//    <classAccessMode> package </classAccessMode>
 
 rule [importOnDemandImpl-public]:
     <k> (importOnDemandImpl(X:Id, Class:ClassType, Remains:Map) => importOnDemandImpl(Remains)) ...</k>
