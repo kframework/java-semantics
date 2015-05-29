@@ -14,7 +14,7 @@ rule [ExecutionPhase-Start]:
     <k>
       //K-AST for new <MainClass>().main(new String[0]);
       . =>  getClassType(packageId(String2Id("")), String2Id(MainClassS))
-              .String2Id("main")
+              .String2Id("main"):Id
 
               //workaround: we have to use toExps because 'NewArray is not a native expression but a hacked one
               //( toExps(['NewArray(classString,, ['Dim(0 :: int)],, [.KList])]) );

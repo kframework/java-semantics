@@ -360,7 +360,7 @@ rule [ConstrDec-Object]:
 when
     Class ==K classObject
 
-rule [ConstrDec]: //todo BlockStmList
+rule [ConstrDec]:
     <k>
       'ConstrDec('ConstrDecHead(Modifiers:AnnoConstrModList,, _:K,, Name:Id,, Params:Params,, _),,
           'ConstrBody(
@@ -369,9 +369,10 @@ rule [ConstrDec]: //todo BlockStmList
           instanceCT, getAccessMode(Modifiers), false::bool, constructorMMT, FirstLine,
           'Block(
             //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
-            //Invocation of instance initializer converted into a method.todo ugly format
-              'BlockStmList(if(getKLabel(FirstLine) ==KLabel 'SuperConstrInv orBool getKLabel(FirstLine) ==KLabel 'QSuperConstrInv)
-              'ExprStm('Invoke('Method('MethodName( String2Id("$instance_init") )),, .Exps)),,
+            //Invocation of instance initializer converted into a method.
+              'BlockStmList(
+              if (getKLabel(FirstLine) ==KLabel 'SuperConstrInv orBool getKLabel(FirstLine) ==KLabel 'QSuperConstrInv)
+              String2Id("$instance_init")(.Exps); ,,
               BodyKs)
           ),
           sig(getConsName(Class), getTypes(Params)), void)
