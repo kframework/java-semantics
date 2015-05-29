@@ -156,7 +156,7 @@ rule [processTypeDecInPCUPhase-ClassDec]:
                     .Params,,
                     'None(.KList)
                   ),,
-                  'ConstrBody('None(.KList),, [.KList])
+                  'ConstrBody('None(.KList),, .BlockStmList)
                 )
             )
     </rawDeclarations>

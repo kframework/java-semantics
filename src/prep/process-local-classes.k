@@ -222,7 +222,7 @@ rule [localEnvClassAddFieldsAndRegister-add-field]:
     localEnvClassAddFieldsAndRegister(
       'ClassDec(
         'ClassDecHead(_:KList),,
-        'ClassBody(BList:K => addElementToClassBodyDecListEnd(BList,'FieldDec(.AnnoFieldModList,, T,, ['VarDec(X)])))
+        'ClassBody(BList:K => addElementToClassBodyDecListEnd(BList, 'FieldDec(.AnnoFieldModList,, T,, 'VarDecList('VarDec(X),, .VarDecList))))
       ), _,
       (X:Id |-> T:Type => .Map) _:Map
     )
@@ -264,7 +264,7 @@ rule [localClassAugmentFields]:
     <k> localClassAugmentFields(LocalClass:ClassType, LocalEnvClass:ClassType) => .K ...</k>
     <classType> LocalClass </classType>
     <instanceFields>
-      [_,, ( .KList => 'FieldDec(.AnnoFieldModList,, LocalEnvClass,, ['VarDec(String2Id("$local_env"))]) ) ]
+      [_,, ( .KList => 'FieldDec(.AnnoFieldModList,, LocalEnvClass,, 'VarDecList('VarDec(String2Id("$local_env")),, .VarDecList)) ) ]
     </instanceFields>
 
 syntax KItem ::=  localClassAugmentConsParams (

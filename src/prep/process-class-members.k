@@ -348,12 +348,12 @@ rule [ConstrDec-Object]:
           (
             'None(_)
           ),,
-          [BodyKs:KList]//todo BlockStmList
+          BodyKs:K
         )
       )
       => storeMethod(Params,
                 instanceCT, getAccessMode(Modifiers), false::bool, constructorMMT, .K,
-                'Block([BodyKs]), sig(getConsName(Class), getTypes(Params)), void)
+                'Block(BodyKs), sig(getConsName(Class), getTypes(Params)), void)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -364,17 +364,16 @@ rule [ConstrDec]: //todo BlockStmList
     <k>
       'ConstrDec('ConstrDecHead(Modifiers:AnnoConstrModList,, _:K,, Name:Id,, Params:Params,, _),,
           'ConstrBody(
-        'Some(FirstLine:K) ,,[BodyKs:KList]))
+        'Some(FirstLine:K) ,,BodyKs:K))
       => storeMethod(Params,
           instanceCT, getAccessMode(Modifiers), false::bool, constructorMMT, FirstLine,
-          'Block([
+          'Block(
             //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
-            //Invocation of instance initializer converted into a method.
-            if(getKLabel(FirstLine) ==KLabel 'SuperConstrInv orBool getKLabel(FirstLine) ==KLabel 'QSuperConstrInv)
-              'ExprStm('Invoke('Method('MethodName( String2Id("$instance_init") )),, .Exps))
-            ,,
-            BodyKs
-          ]),
+            //Invocation of instance initializer converted into a method.todo ugly format
+              'BlockStmList(if(getKLabel(FirstLine) ==KLabel 'SuperConstrInv orBool getKLabel(FirstLine) ==KLabel 'QSuperConstrInv)
+              'ExprStm('Invoke('Method('MethodName( String2Id("$instance_init") )),, .Exps)),,
+              BodyKs)
+          ),
           sig(getConsName(Class), getTypes(Params)), void)
       ...
     </k>
@@ -497,7 +496,7 @@ syntax KItem ::= "convertInstanceInitIntoMethod"
 rule [convertInstanceInitIntoMethod]:
     <k>
       convertInstanceInitIntoMethod
-      => storeMethod(.Params, instanceCT, private, false::bool, methodMMT, noValue, 'Block([InstanceInitKs]),
+      => storeMethod(.Params, instanceCT, private, false::bool, methodMMT, noValue, 'Block([InstanceInitKs]),//todo
                       sig(String2Id("$instance_init"), types(.KList)), void)
       ...
     </k>

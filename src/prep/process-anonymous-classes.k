@@ -106,7 +106,7 @@ rule [processAnonymousClass]:
                 ),,
                 'ConstrBody(
                   'Some('SuperConstrInv('None(.KList),,ConstructorFirstLineArgs)),,
-                  [.KList]
+                  .BlockStmList
                 )
               )
             ))
@@ -205,7 +205,7 @@ rule [processQAnonymousClass]:
                 ),,
                 'ConstrBody(
                   'Some('QSuperConstrInv(ConstrQual,,'None(.KList),, ConstructorFirstLineArgs)),,
-                  [.KList]
+                  .BlockStmList
                 )
               )
             ))

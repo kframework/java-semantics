@@ -7,11 +7,6 @@ module STATEMENTS
     imports STMT-SYNTAX
     imports TO-STRING
 
-//@ \subsection{isStmt}
-rule isStmt('For(_)) => true
-rule isStmt('Switch(_)) => true
-rule isStmt('Block(_)) => true
-
 //@ \subsection{Call of main method}
 
 //For now main class may only be placed in the default package.
@@ -42,7 +37,7 @@ rule <k> {S:BlockStmList} => S ~> env(Env:Map) ...</k>
                                       <env> Env </env>
                                           [structural]
 
-rule Hd:BlockStmt Tl:BlockStmList => Hd ~> Tl
+rule 'BlockStmList(Hd:K,, Tl:K) => Hd ~> Tl
 rule .BlockStmList => .
 
 //@ \texttt{env} Restore the env cell content from env(...) statement argument
@@ -201,19 +196,6 @@ rule [do-while]:
 //wrapper of certain clauses of for statement, adds ; to cast expressions
 syntax Exps ::= stm ( Exps )
 
-//rule [stm-empty]:
-//    stm([.KList]) => .                                                      [structural]
-//
-//rule [stm-exp]:
-//    stm([E:Exp,,Es:KList]) => E; ~> stm([Es])
-//when
-//    getKLabel(E) ==KLabel 'cast                                             [structural]
-//
-//rule [stm-LocalVarDec]:
-//    stm([K:K,,Ks:KList]) => K ~> stm([Ks])
-//when
-//    notBool ( getKLabel(K) ==KLabel 'cast )                                 [structural]
-
 rule [stm-empty]:
     stm(.Exps) => .                                                         [structural]
 
@@ -223,22 +205,23 @@ when
     getKLabel(E) ==KLabel 'cast                                             [structural]
 
 rule [For-FirstArgV1Red]:
-    for((InitExps:Exps => stm(InitExps));_;_:K) _
+    for((InitExps:Exps => stm(InitExps));_;_) _:K
     when notBool ( getKLabel(InitExps) ==KLabel 'stm )                      [structural]
 
 
 rule [For-SecondArgRed]:
-    for(_:>Exps;('None(.KList) => 'Some(true));_) _                          [structural]
+    for(_:>Exps;('None(.KList) => 'Some(true));_) _:K                       [structural]
 
 rule [For-ThirdArgRed]:
-    for(_:>Exps;_;(UpdExps:Exps => stm(UpdExps))) _
+    for(_:>Exps;_;(UpdExps:Exps => stm(UpdExps))) _:K
     when notBool ( getKLabel(UpdExps) ==KLabel 'stm )                       [structural]
 
 rule [For]:
-    for(InitClause:>Exps; 'Some(TestExp); stm(UpdClause:Exps)) S
+    for(InitClause:>Exps; 'Some(TestExp); stm(UpdClause:Exps)) S:K
     => 'Block(InitClause
     ~> ifAux(TestExp, ('Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S)), .))
     when getKLabel(InitClause) ==KLabel 'stm orBool getKLabel(InitClause) ==KLabel 'KListWrap   [structural]
+//todo KListWrap used in the case of LocalVarDec, which has been desugared into [declare,, assign]
 
 rule ifAux(stm(S:Exps) ~> B:K, S1, S2 ) => stm(S) ~> ifAux(B, S1, S2)
 

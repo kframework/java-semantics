@@ -34,7 +34,7 @@ rule [staticInit]:
         'Try(
             StaticInit,,
 
-            //catch clause of 'Try
+            //catch clause of 'Try todo ugly format
 
                 catch(.AnnoVarModList classObject String2Id("e"))
                 {throw new (class String2Id("java.lang.ExceptionInInitializerError")) ((classObject) String2Id("e"):>Id);}
