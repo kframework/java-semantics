@@ -200,6 +200,7 @@ difference between
 syntax MethodName ::= Id    and
 syntax MethodName ::= Id [klabel('MethodName)]
 */
+rule isMethodInvokeExp('MethodImpl(_)) => true
 context 'MethodImpl(HOLE,,_:K,,_:K)
 context 'MethodImpl(_:KResult,,_:K,,HOLE)
 
