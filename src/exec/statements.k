@@ -70,7 +70,7 @@ rule [Empty]:
 //@ \subsection{Labeled statements} JLS \$14.7
 
 rule [Labeled]:
-    X:Id : S:Stmt => S ~> labeledImpl(X)
+    X:Id : S:K => S ~> labeledImpl(X)
 
 //@ Processed version of the labeled statement
 syntax KItem ::= labeledImpl ( Id )
@@ -84,19 +84,19 @@ rule _:TypedVal; => .K
 
 //@ \subsection{If statement}
 rule [If-True]:
-    if (true::bool) S:Stmt else _:Stmt => S
+    if (true::bool) S:K else _:K => S
         [symbolic-rule]
 
 rule [If-False]:
-    if (false::bool) _:Stmt else S:Stmt => S
+    if (false::bool) _:K else S:K => S
         [symbolic-rule]
 
 rule [If-True]:
-    if (true::bool) S:Stmt => S
+    if (true::bool) S:K => S
         [symbolic-rule]
 
 rule [If-False]:
-    if (false::bool) _:Stmt => .
+    if (false::bool) _:K => .
         [symbolic-rule]
 
 //@ \subsection{Assert statement}
@@ -178,7 +178,7 @@ rule [switchEnd-Discard]:
 //@ \subsection{While statement} and loop infrastructure.
 
 rule [while]:
-    while(E:Exp)S:Stmt => whileImpl(E, S)                              [structural]
+    while(E:Exp)S:K => whileImpl(E, S)                              [structural]
 
 syntax KItem ::=  whileImpl (
                 K,  // E - test expression. In For loop, it is UpdClause ~> testExp
@@ -190,7 +190,7 @@ rule [whileImpl]:
 
 //@ \subsection{Do statement}
 rule [do-while]:
-    do S:Stmt while(E:Exp); => S ~> whileImpl(E, S)                     [structural]
+    do S:K while(E:Exp); => S ~> whileImpl(E, S)                     [structural]
 
 //@ \subsection{For statement}
 //wrapper of certain clauses of for statement, adds ; to cast expressions
@@ -393,10 +393,10 @@ rule [Throw-MethodEnd]:
 
 rule [Throw-CausesThreadTermination]:
     <k>
-//      'Throw(TV:TypedVal)
+//todo :Id is added due to the confusion of MethodName(Id)
       throw TV:TypedVal;
       =>  'Field( class String2Id("java.lang.System"),, String2Id("out") )
-            .String2Id("println")
+            .String2Id("println"):Id
             (cast(classObject, 'Plus( "Thread terminated with exception: ",, TV )));
     </k>
     <stack> .List </stack>

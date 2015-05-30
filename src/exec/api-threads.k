@@ -30,7 +30,7 @@ rule [thread-start]:
             ),,
             String2Id("runnable")
           )
-          .String2Id("run") (.TypedVals) ;
+          .String2Id("run"):Id (.TypedVals) ;
         </k>
         <tid> TId </tid>
         ...
