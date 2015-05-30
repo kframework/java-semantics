@@ -31,6 +31,11 @@ http://docs.oracle.com/javase/7/docs/api/java/lang/Double.html#toString(double)
     target double value, otherwise, Candidate 2 will be returned.
 */
 syntax String ::= javaDouble2String(Float)  [function]
+                   //The three args are lower bound low, target float, upper bound high,
+                   //If the absolute value of the target float is inside the range [low,high),
+        //then it will be printed in decimal format, owise, scientific notation will be used.
+                | javaDouble2StringAux(Float, Float, Float)  [function]
+
 //the three args: nextDown, target double, nextUp
                 | chooseFromCandidateDoubleStr0(Float, Float, Float) [function]
 
@@ -56,22 +61,18 @@ rule javaDouble2String(DoubleNegInf) => "-Infinity"
 rule javaDouble2String(DoublePosInf) => "Infinity"
 rule javaDouble2String(DoubleNaN) => "NaN"
 
-
-rule javaDouble2String(Fl:Float) => chooseFromCandidateDoubleStr0(nextDown(Fl), Fl, nextUp(Fl))
-when Fl >=Float 10.0^Float(-3.0) andBool Fl <Float 10.0^Float(7.0)
-
-
-rule javaDouble2String(Fl:Float) => "neg"
-when signFloat(Fl)
-
-rule javaDouble2String(Fl:Float) => "pos"
-when notBool signFloat(Fl)
-
-//check0(Float2String(Fl, "%RE"), )
-
-rule javaDouble2String(Fl:Float) => "Undef"
+rule javaDouble2String(Fl:Float) => javaDouble2StringAux(10.0^Float(-3.0), Fl, 10.0^Float(7.0))
 [owise]
-rule check0(S:String, B:Bool) => "check0"
+
+rule javaDouble2StringAux(Low:Float, Fl:Float, High:Float) => chooseFromCandidateDoubleStr0
+                                                                (nextDown(Fl), Fl, nextUp(Fl))
+when (Fl >=Float Low andBool Fl <Float High) orBool
+     (Fl <Float --Float Low andBool Fl >=Float --Float High)
+
+rule javaDouble2StringAux(_, 0.0, _) => "0.0"
+rule javaDouble2StringAux(_, --Float 0.0, _) => "-0.0"
+
+rule javaDouble2StringAux(Low:Float, Fl:Float, High:Float) => "ScientificNotation" [owise]
 
 
 rule chooseFromCandidateDoubleStr0(F0:Float, F1:Float, F2:Float) =>
@@ -101,6 +102,15 @@ rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
 
 rule toString(Fl:Float :: _) => javaDouble2String(Fl)
+//java: 9.0E-4
+/*
+Float2String(0.0009, "%Re") +String ";\t" +String Float2String(0.0009, "%.15Re")
+ +String ";\t" +String Float2String(0.0009, "%.16Re")
+  +String ";\t" +String Float2String(0.0009, "%.17Re")
+  +String ";\n" +String  chooseFromCandidateDoubleStr0(nextDown(0.0009), 0.0009, nextUp(0.0009))
+*/
+//javaDouble2String(Fl)
+
 
 rule toString(true::_) => "true"
 rule toString(false::_) => "false"
