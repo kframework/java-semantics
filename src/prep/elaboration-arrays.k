@@ -9,26 +9,26 @@ module ELABORATION-ARRAYS
     Applied in both elaboration and execution phase
 */
 rule [elab-LocalVarDec-ArrayVarDecId-desugar]:
-    elab('LocalVarDec(
+    elab('LocalVarDecStm('LocalVarDec(
       _:K,,
       (T:Type => arrayOf T),,
       'VarDecList('VarDec('ArrayVarDecId(
           X:Id,,
           ([]:Dim Ds:Dims => Ds)
       ),, _:KList //possible initializer
-    ),, .VarDecList)))                                                [structural]
+    ),, .VarDecList))))                                                [structural]
 
 rule [elab-LocalVarDec-ArrayVarDecId-discard]:
-    elab('LocalVarDec(_:K,, T:Type,, 'VarDecList('VarDec(
+    elab('LocalVarDecStm('LocalVarDec(_:K,, T:Type,, 'VarDecList('VarDec(
         ( 'ArrayVarDecId( X:Id,, .Dims ) => X ),,
         _:KList //possible initializer
-    ),, .VarDecList)))                                                [structural]
+    ),, .VarDecList))))                                               [structural]
 
 rule [elab-LocalVarDec-ArrayInit-desugar]:
-    elab('LocalVarDec(_:K,, T:Type,, 'VarDecList('VarDec(
+    elab('LocalVarDecStm('LocalVarDec(_:K,, T:Type,, 'VarDecList('VarDec(
       X:Id,,
       ( 'ArrayInit(InitK:K) => 'NewArray(T,, .Dims,, 'ArrayInit(InitK)))
-    ),, .VarDecList)))                                                [structural]
+    ),, .VarDecList))))                                                [structural]
 
 //same three rules for fields
 

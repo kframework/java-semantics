@@ -7,6 +7,10 @@ module STATEMENTS
     imports STMT-SYNTAX
     imports TO-STRING
 
+//@ \subsection{isStmt}
+rule isStmt('For(_)) => true    //first argument
+rule isStmt('Block(_)) => true
+
 //@ \subsection{Call of main method}
 
 //For now main class may only be placed in the default package.
@@ -220,8 +224,8 @@ rule [For]:
     for(InitClause:>Exps; 'Some(TestExp); stm(UpdClause:Exps)) S:K
     => 'Block(InitClause
     ~> ifAux(TestExp, ('Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S)), .))
-    when getKLabel(InitClause) ==KLabel 'stm orBool getKLabel(InitClause) ==KLabel 'KListWrap   [structural]
-//todo KListWrap used in the case of LocalVarDec, which has been desugared into [declare,, assign]
+    when getKLabel(InitClause) ==KLabel 'stm orBool getKLabel(InitClause) ==KLabel 'BlockStmList   [structural]
+//todo ugly format
 
 rule ifAux(stm(S:Exps) ~> B:K, S1, S2 ) => stm(S) ~> ifAux(B, S1, S2)
 
