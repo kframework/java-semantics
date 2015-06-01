@@ -96,6 +96,12 @@ rule [processType]:
       ...
     </class>
 
+rule 'ClassBodyDecList(Hd:K,,Tl:K) => Hd ~> Tl
+rule .ClassBodyDecList => .
+
+rule 'InterfaceMemberDecList(Hd:K,,Tl:K) => Hd ~> Tl
+rule .InterfaceMemberDecList => .
+
 //Could happen when hierarchies of inheritance and that of enclosing get messed up.
 rule [processType-discard]:
     <k> processType(Class:ClassType) => . ...</k>
@@ -342,12 +348,12 @@ rule [ConstrDec-Object]:
           (
             'None(_)
           ),,
-          [BodyKs:KList]
+          BodyKs:K
         )
       )
       => storeMethod(Params,
                 instanceCT, getAccessMode(Modifiers), false::bool, constructorMMT, .K,
-                'Block([BodyKs]), sig(getConsName(Class), getTypes(Params)), void)
+                'Block(BodyKs), sig(getConsName(Class), getTypes(Params)), void)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -358,17 +364,17 @@ rule [ConstrDec]:
     <k>
       'ConstrDec('ConstrDecHead(Modifiers:AnnoConstrModList,, _:K,, Name:Id,, Params:Params,, _),,
           'ConstrBody(
-        'Some(FirstLine:K) ,,[BodyKs:KList]))
+        'Some(FirstLine:K) ,,BodyKs:K))
       => storeMethod(Params,
           instanceCT, getAccessMode(Modifiers), false::bool, constructorMMT, FirstLine,
-          'Block([
+          'Block(
             //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
             //Invocation of instance initializer converted into a method.
-            if(getKLabel(FirstLine) ==KLabel 'SuperConstrInv orBool getKLabel(FirstLine) ==KLabel 'QSuperConstrInv)
-              'ExprStm('Invoke('Method('MethodName( String2Id("$instance_init") )),, .Exps))
-            ,,
-            BodyKs
-          ]),
+              'BlockStmList(
+              if (getKLabel(FirstLine) ==KLabel 'SuperConstrInv orBool getKLabel(FirstLine) ==KLabel 'QSuperConstrInv)
+              String2Id("$instance_init")(.Exps); ,,
+              BodyKs)
+          ),
           sig(getConsName(Class), getTypes(Params)), void)
       ...
     </k>
@@ -380,11 +386,11 @@ rule [ConstrDec]:
 context 'FieldDec(_,, HOLE,, _)
 
 rule [FieldDec-Multi-Desugar]:
-    (. => 'FieldDec(SomeK,, T,, [K1])) ~>
-    'FieldDec(SomeK:K,, T:Type,, [(K1:K => .KList),, K2:K,, Ks:KList])
+    (. => 'FieldDec(SomeK,, T,, 'VarDecList(K1,, .VarDecList))) ~>
+    'FieldDec(SomeK:K,, T:Type,, ('VarDecList(K1:K,, 'VarDecList(K2:K,, Ks:K)) => 'VarDecList(K2,, Ks)))
 
 rule [FieldDec-with-init-desugar]:
-    'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
+    'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X:Id,,(InitExp:K => .KList)),, .VarDecList))
     ~> (. => 'InstanceInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
@@ -392,10 +398,10 @@ when
         [structural]
 
 rule [FieldDec-Instance]:
-    <k> 'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
+    <k> 'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X:Id),, .VarDecList)) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <instanceFields> [_,, ( .KList => 'FieldDec(.AnnoFieldModList,, T,, ['VarDec(X:Id)]) )] </instanceFields>
+    <instanceFields> [_,, ( .KList => 'FieldDec(.AnnoFieldModList,, T,, 'VarDecList('VarDec(X:Id),, .VarDecList)) )] </instanceFields>
 when
     getContextType(Modifiers) ==K instanceCT
         [structural]
@@ -411,7 +417,7 @@ rule [InstanceInit]:
 /*@ Desugaring a static field declaration with initializer into a declaration without initializer.
 Followed by a static initializer block, if this field is not a compile-time constant.*/
 rule [FieldDec-StaticInit-Desugar]:
-    'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
+    'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X:Id,,(InitExp:K => .KList)),, .VarDecList))
     ~> (. => 'StaticInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
@@ -424,10 +430,10 @@ when
         [structural]
 
 rule [FieldDec-Static]:
-    <k> 'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
+    <k> 'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X:Id),, .VarDecList)) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <staticFields> [_,, ( .KList => 'FieldDec('AnnoFieldModList('Static(.KList),, .AnnoFieldModList),, T,, ['VarDec(X)]) )] </staticFields>
+    <staticFields> [_,, ( .KList => 'FieldDec('AnnoFieldModList('Static(.KList),, .AnnoFieldModList),, T,, 'VarDecList('VarDec(X),, .VarDecList)) )] </staticFields>
 when
     getContextType(Modifiers) ==K staticCT
         [structural]
@@ -446,7 +452,7 @@ rule [StaticInit-Save]:
   Interface fields are not necessarily compile-time constants.
 */
 rule [ConstantDec-Desugar]:
-    'ConstantDec(ModifiersKs:AnnoConstantModList,, TypeK:K,, VarDecs:KListWrap)
+    'ConstantDec(ModifiersKs:AnnoConstantModList,, TypeK:K,, VarDecs:K)
     => 'FieldDec(
           'AnnoFieldModList('Public(.KList),, 'AnnoFieldModList('Static(.KList),, 'AnnoFieldModList('Final(.KList),,
           ConstantToFieldModifiers(ModifiersKs)))),,
@@ -462,7 +468,7 @@ rule ConstantToFieldModifiers(.AnnoConstantModList, F) => F
 /*@Subsection compile-time constants*/
 
 //compute the value of a compile-time constant
-context 'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id,, HOLE) ])
+context 'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X:Id,, HOLE),, .VarDecList))
 when
             getContextType(Modifiers) ==K staticCT
     //condition for not being compile-time constant
@@ -470,7 +476,7 @@ when
 
 rule [FieldDec-compile-time-constant]:
     <k>
-      'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id,, TV:TypedVal) ]) => .
+      'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X:Id,, TV:TypedVal),, .VarDecList)) => .
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -491,7 +497,7 @@ syntax KItem ::= "convertInstanceInitIntoMethod"
 rule [convertInstanceInitIntoMethod]:
     <k>
       convertInstanceInitIntoMethod
-      => storeMethod(.Params, instanceCT, private, false::bool, methodMMT, noValue, 'Block([InstanceInitKs]),
+      => storeMethod(.Params, instanceCT, private, false::bool, methodMMT, noValue, 'Block([InstanceInitKs]),//todo
                       sig(String2Id("$instance_init"), types(.KList)), void)
       ...
     </k>

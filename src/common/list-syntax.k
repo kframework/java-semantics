@@ -35,16 +35,17 @@ syntax BlockStmList              ::= List{BlockStmt, ""}             [klabel('Bl
 syntax SwitchGroupList           ::= List{SwitchGroup, ""}           [klabel('SwitchGroupList)]
 syntax SwitchLabelList           ::= List{SwitchLabel, ""}           [klabel('SwitchLabelList)]
 
-syntax Exps         ::= List{Exp, ","} [klabel('ExprList), seqstrict]
-syntax Dims         ::= List{Dim,""}  [klabel('DimList)]
-syntax DimExps      ::= List{DimExp,""} [klabel('DimExprList), strict]
-syntax VarInits     ::= List{VarInit, ","}  [klabel('VarInitList)]
-syntax CatchClauses ::= List{CatchClause,""} [klabel('CatchClauseList), strict]
-syntax Params       ::= List{Param, ","}   [klabel('FormalParamList)]
+syntax Exps                      ::= List{Exp, ","}                  [klabel('ExprList), seqstrict]
+syntax Dims                      ::= List{Dim,""}                    [klabel('DimList)]
+syntax DimExps                   ::= List{DimExp,""}                 [klabel('DimExprList), strict]
+syntax VarInits                  ::= List{VarInit, ","}              [klabel('VarInitList)]
+syntax CatchClauses              ::= List{CatchClause,""}            [klabel('CatchClauseList), strict]
+syntax Params                    ::= List{Param, ","}                [klabel('FormalParamList)]
 
 context 'FormalParamList(HOLE,,_) [result(Param)]
 context 'FormalParamList(_,,HOLE) [result(Params)]
 
+//todo remove below: highly unlikely needed:
 syntax UserList     ::= BlockStmList
                       | SwitchGroupList
                       | SwitchLabelList
@@ -74,71 +75,5 @@ syntax UserList     ::= BlockStmList
                       | StringPartList
                       | EnumConstList
                       | ClassBodyDecList
-
-
-endmodule
-
-module LIST-MACRO
-imports CORE-FUNCTIONS
-
-//rule '.List`{"'SwitchLabelList"`}(.KList)   => [.KList]                             [macro]
-//rule '.List`{"'SwitchGroupList"`}(.KList)   => [.KList]                             [macro]
-rule '.List`{"'BlockStmList"`}(.KList)   => [.KList]                                [macro]
-//rule '.List`{"'ExceptionTypeList"`}(.KList)   => [.KList]                           [macro]
-//rule '.List`{"'IdList"`}(.KList)   => [.KList]                                      [macro]
-rule '.List`{"'TypeDecList"`}(.KList)   => [.KList]                                 [macro]
-rule '.List`{"'VarDecList"`}(.KList)   => [.KList]                                  [macro]
-//rule '.List`{"'ImportDecList"`}(.KList)   => [.KList]                               [macro]
-//rule '.List`{"'ActualTypeArgList"`}(.KList)   => [.KList]                           [macro]
-//rule '.List`{"'ClassOrInterfaceTypeList"`}(.KList)   => [.KList]                    [macro]
-//rule '.List`{"'TypeParamList"`}(.KList)   => [.KList]                               [macro]
-//rule '.List`{"'AbstractMethodModList"`}(.KList)   => [.KList]                       [macro]
-//rule '.List`{"'AnnoAbstractMethodModList"`}(.KList)   => [.KList]                   [macro]
-//rule '.List`{"'AnnoMethodModList"`}(.KList)   => [.KList]                           [macro]
-//rule '.List`{"'AnnoClassModList"`}(.KList)   => [.KList]                            [macro]
-//rule '.List`{"'AnnoConstrModList"`}(.KList)   => [.KList]                           [macro]
-//rule '.List`{"'AnnoConstantModList"`}(.KList)   => [.KList]                         [macro]
-//rule '.List`{"'AnnoFieldModList"`}(.KList)   => [.KList]                            [macro]
-//rule '.List`{"'AnnoInterfaceModList"`}(.KList)   => [.KList]                        [macro]
-//rule '.List`{"'AnnoList"`}(.KList)   => [.KList]                                    [macro]
-//rule '.List`{"'AnnoElemDecList"`}(.KList)   => [.KList]                             [macro]
-rule '.List`{"'InterfaceMemberDecList"`}(.KList)   => [.KList]                      [macro]
-//rule '.List`{"'ElemValPairList"`}(.KList)   => [.KList]                             [macro]
-//rule '.List`{"'ElemValList"`}(.KList)   => [.KList]                                 [macro]
-//rule '.List`{"'StringPartList"`}(.KList)   => [.KList]                              [macro]
-rule '.List`{"'ClassBodyDecList"`}(.KList)   => [.KList]                            [macro]
-//rule '.List`{"'DimExprList"`}(.KList)   => [.KList]                                 [macro]
-//rule '.List`{"'ExprList"`}(.KList)   => [.KList]                                    [macro]
-
-
-//rule 'SwitchLabelList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
-//rule 'SwitchGroupList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
-rule 'BlockStmList(Hd,,[Tl:KList])              => [Hd,,Tl]         [macro]
-//rule 'ExceptionTypeList(Hd,,[Tl:KList])         => [Hd,,Tl]         [macro]
-//rule 'IdList(Hd,,[Tl:KList])                    => [Hd,,Tl]         [macro]
-rule 'TypeDecList(Hd,,[Tl:KList])               => [Hd,,Tl]         [macro]
-rule 'VarDecList(Hd,,[Tl:KList])                => [Hd,,Tl]         [macro]
-//rule 'ImportDecList(Hd,,[Tl:KList])             => [Hd,,Tl]         [macro]
-//rule 'ActualTypeArgList(Hd,,[Tl:KList])         => [Hd,,Tl]         [macro]
-//rule 'ClassOrInterfaceTypeList(Hd,,[Tl:KList])  => [Hd,,Tl]         [macro]
-//rule 'TypeParamList(Hd,,[Tl:KList])             => [Hd,,Tl]         [macro]
-//rule 'AbstractMethodModList(Hd,,[Tl:KList])     => [Hd,,Tl]         [macro]
-//rule 'AnnoAbstractMethodModList(Hd,,[Tl:KList]) => [Hd,,Tl]         [macro]
-//rule 'AnnoMethodModList(Hd,,[Tl:KList])         => [Hd,,Tl]         [macro]
-//rule 'AnnoClassModList(Hd,,[Tl:KList])          => [Hd,,Tl]         [macro]
-//rule 'AnnoConstrModList(Hd,,[Tl:KList])         => [Hd,,Tl]         [macro]
-//rule 'AnnoConstantModList(Hd,,[Tl:KList])       => [Hd,,Tl]         [macro]
-//rule 'AnnoFieldModList(Hd,,[Tl:KList])          => [Hd,,Tl]         [macro]
-//rule 'AnnoInterfaceModList(Hd,,[Tl:KList])      => [Hd,,Tl]         [macro]
-//rule 'AnnoList(Hd,,[Tl:KList])                  => [Hd,,Tl]         [macro]
-//rule 'AnnoElemDecList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
-rule 'InterfaceMemberDecList(Hd,,[Tl:KList])    => [Hd,,Tl]         [macro]
-//rule 'ElemValPairList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
-//rule 'ElemValList(Hd,,[Tl:KList])               => [Hd,,Tl]         [macro]
-//rule 'StringPartList(Hd,,[Tl:KList])            => [Hd,,Tl]         [macro]
-rule 'ClassBodyDecList(Hd,,[Tl:KList])          => [Hd,,Tl]         [macro]
-//rule 'DimExprList(Hd,,[Tl:KList])               => [Hd,,Tl]         [macro]
-//rule 'ExprList(Hd,,[Tl:KList])                  => [Hd,,Tl]         [macro]
-
 
 endmodule

@@ -4,8 +4,11 @@ module ELABORATION-VARS
 
 //@ Elaboration of rules in java-var-lookup
 //@ Both unqualified and qualified AmbName.
-rule [elabEnd-AmbName]:
-    elabEnd('AmbName(Ks:KList)) => elabEnd('ExprName(Ks)) ?? 'TypeName(Ks) ?? 'PackageName([Ks])
+rule [elabEnd-AmbName-two]:
+    elabEnd('AmbName(Ks:K,,K:Id)) => elabEnd('ExprName(Ks,,K)) ?? 'TypeName(Ks,,K) ?? 'PackageName('IdList(Ks,,'IdList(K,,.IdList)))
+
+rule [elabEnd-AmbName-one]:
+    elabEnd('AmbName(K:Id)) => elabEnd('ExprName(K)) ?? 'TypeName(K) ?? 'PackageName('IdList(K,,.IdList))
 
 rule [elabEnd-ExprName-localVar-ok]:
     <k> elabEnd('ExprName(X:Id)) => elabRes(cast(T, 'ExprName(X))) ...</k>
@@ -97,24 +100,24 @@ syntax KItem ::=  elabLookup (
 
 syntax KItem ::= foundInstance ( Id, KListWrap )    [function]
 
-rule foundInstance(X:Id, ['FieldDec(_,, T:Type,, ['VarDec(X)]),,_]) => true
+rule foundInstance(X:Id, ['FieldDec(_,, T:Type,, 'VarDecList('VarDec(X),, .VarDecList)),,_]) => true
 rule foundInstance(X:Id, [Hd:K,, Tl:KList]) => foundInstance(X, [Tl])   [owise]
 rule foundInstance(X:Id, [.KList]) => false
 
 syntax KItem ::= foundStatic ( Id, KListWrap )      [function]
 
-rule foundStatic(X:Id, ['FieldDec(static .AnnoFieldModList,, T:Type,, ['VarDec(X)]),,_]) => true
+rule foundStatic(X:Id, ['FieldDec(static .AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X),, .VarDecList)),,_]) => true
 rule foundStatic(X:Id, [Hd:K,, Tl:KList]) => foundStatic(X, [Tl])   [owise]
 rule foundStatic(X:Id, [.KList]) => false
 
 syntax Type ::= getInstanceType ( Id, KListWrap )    [function]
 
-rule getInstanceType(X:Id, ['FieldDec(_,, T:Type,, ['VarDec(X)]),,_]) => T
+rule getInstanceType(X:Id, ['FieldDec(_,, T:Type,, 'VarDecList('VarDec(X),, .VarDecList)),,_]) => T
 rule getInstanceType(X:Id, [Hd:K,, Tl:KList]) => getInstanceType(X, [Tl])   [owise]
 
 syntax Type ::= getStaticType ( Id, KListWrap )      [function]
 
-rule getStaticType(X:Id, ['FieldDec(static .AnnoFieldModList,, T:Type,, ['VarDec(X)]),,_]) => T
+rule getStaticType(X:Id, ['FieldDec(static .AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X),, .VarDecList)),,_]) => T
 rule getStaticType(X:Id, [Hd:K,, Tl:KList]) => getStaticType(X, [Tl])   [owise]
 
 
@@ -173,7 +176,7 @@ syntax KItem ::=  nameInVarDecs(
               )
               [function]
 
-rule nameInVarDecs(X:Id, [_:KLabel(.K,, T:Type,, ['VarDec(X)]),, _]) => true
+rule nameInVarDecs(X:Id, [_:KLabel(.K,, T:Type,, 'VarDecList('VarDec(X),, .VarDecList)),, _]) => true
 rule nameInVarDecs(X:Id, [_:K,, Tl:KList]) => nameInVarDecs(X,[Tl]) [owise]
 rule nameInVarDecs(X:Id, [.KList]) => false
 

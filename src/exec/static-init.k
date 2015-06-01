@@ -34,7 +34,7 @@ rule [staticInit]:
         'Try(
             StaticInit,,
 
-            //catch clause of 'Try
+            //catch clause of 'Try todo ugly format
 
                 catch(.AnnoVarModList classObject String2Id("e"))
                 {throw new (class String2Id("java.lang.ExceptionInInitializerError")) ((classObject) String2Id("e"):>Id);}
@@ -103,7 +103,7 @@ rule [staticInitDone]:
     <staticInitStatus> StaticInitializing(TId) => StaticInitialized </staticInitStatus>
 
 rule [FieldDec-static]:
-    <k> 'FieldDec(static .AnnoFieldModList,, T:Type,,['VarDec(X:Id)]) => . ...</k>
+    <k> 'FieldDec(static .AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X:Id),, .VarDecList)) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticEnv> Env:Map => Env[X <- L] </staticEnv>

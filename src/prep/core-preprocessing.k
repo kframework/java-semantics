@@ -42,7 +42,6 @@ rule getTopLevelClasses(.List, ClassesSet:Set) => setWrap(ClassesSet)
 */
 syntax KItem ::= getInnerClasses ( ClassType )
                | getInnerClasses ( Map, Set )
-//todo mapItem/solution
 
 rule [getInnerClasses-start-have-inner]:
     <k> getInnerClasses(class Class:Id) => getInnerClasses(InnerClassesMap, .Set) ...</k>
@@ -68,36 +67,7 @@ rule [getMethodAccessMode]:
     <methodSignature> Sig </methodSignature>
     <methodAccessMode> Acc:AccessMode </methodAccessMode>
 
-//repitition
-syntax KItem ::=  getContextType (
-                KListWrap       //[...] - the list of method attributes
-              )
-              [function]
-
-rule getContextType(['Static(_),,_]) => staticCT
-
-rule getContextType([(KL:KLabel(_) => .KList),, _])
-when        KL =/=KLabel 'Static
-
-rule getContextType([.KList])      => instanceCT
-
-/*@Extracts the access mode from the list of modifiers of some Java entity.*/
-syntax KItem ::=  getAccessMode (
-                KListWrap //[...] - the list of class/method attributes
-              )
-              [function]
-
-rule getAccessMode(['Public(_),,_])    => public
-rule getAccessMode(['Protected(_),,_]) => protected
-rule getAccessMode(['Private(_),,_])   => private
-
-rule getAccessMode([(KL:KLabel(_) => .KList),, _])
-when        (KL =/=KLabel 'Public)
-    andBool (KL =/=KLabel 'Protected)
-    andBool (KL =/=KLabel 'Private)
-
-rule getAccessMode([.KList]) => package
-
+//todo repitition
 syntax KItem ::=  getContextType (
                 AnnoMethodModList       //[...] - the list of method attributes
               )

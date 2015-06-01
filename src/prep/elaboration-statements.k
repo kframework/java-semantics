@@ -58,31 +58,31 @@ when
 //@ Local var declarations desugaring
 
 rule [elab-LocalVarDecStm-desugar]:
-    elab('LocalVarDecStm('LocalVarDec(Ks:KList))
-      => 'LocalVarDec(Ks)
+    elab('LocalVarDec(Ks:KList)
+      => 'LocalVarDecStm('LocalVarDec(Ks))
     )                                                   [structural]
 
 //@ Resolve the local var type, required to register the var in <elabEnv>
-context elab('LocalVarDec(_:K,, HOLE,, _:K))
-//todo BlockStmList
+context elab('LocalVarDecStm('LocalVarDec(_:K,, HOLE,, _:K)))
+//todo Problem: BlockStmList is cons list, so the result is not a valid list either
 rule [elab-LocalVarDec-multi-desugar]:
-    elab('LocalVarDec(K:K,, T:Type,, [Var1:K,, Var2:K,, VarDecs:KList])
-      => ['LocalVarDec(K,, T,, [Var1]),,
-            'LocalVarDec(K,, T,, [Var2,, VarDecs])]
+    elab('LocalVarDecStm('LocalVarDec(K:K,, T:Type,, 'VarDecList(Var1:K,, 'VarDecList(Var2:K,, VarDecs:K))))
+      => 'BlockStmList('LocalVarDecStm('LocalVarDec(K,, T,, 'VarDecList(Var1,, .VarDecList))),,
+            'BlockStmList('LocalVarDecStm('LocalVarDec(K,, T,, 'VarDecList(Var2,, VarDecs))),, .BlockStmList))
     )                                                   [structural]
 
 rule [elab-LocalVarDec-with-init-desugar]:
-    elab(
-      'LocalVarDec(K:K,, T:Type,, ['VarDec(X:Id,,InitExp:K)])
-    => ['LocalVarDec(K,, T,, ['VarDec(X:Id)]),, 'ExprStm('Assign('ExprName(X),, InitExp))]
+    elab('LocalVarDecStm('LocalVarDec(K:K,, T:Type,, 'VarDecList('VarDec(X:Id,,InitExp:K),, .VarDecList)))
+    => 'BlockStmList('LocalVarDecStm('LocalVarDec(K,, T,, 'VarDecList('VarDec(X:Id),, .VarDecList))),,
+           'BlockStmList('ExprStm('Assign('ExprName(X),, InitExp)),, .BlockStmList))
     )
 when
     getKLabel(InitExp) =/=KLabel 'ArrayInit             [structural]
 
 rule [elab-LocalVarDec]:
     <k>
-      elab('LocalVarDec(K:K,, T:Type,, ['VarDec(X:Id)]))
-      => elabRes('LocalVarDec(K,, T,, ['VarDec(X)]))
+      elab('LocalVarDecStm('LocalVarDec(K:K,, T:Type,, 'VarDecList('VarDec(X:Id),, .VarDecList))))
+      => elabRes('LocalVarDecStm('LocalVarDec(K,, T,, 'VarDecList('VarDec(X),, .VarDecList))))
       ...
     </k>
     <elabEnv> ListItem(mapWrap((.Map => X |-> T) _)) ...</elabEnv>

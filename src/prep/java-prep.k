@@ -53,7 +53,6 @@ module JAVA-PREP
     imports SUBTYPING
 
     imports JAVA-SYNTAX
-    imports LIST-MACRO
 
 endmodule
 

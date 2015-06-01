@@ -30,7 +30,7 @@ rule [thread-start]:
             ),,
             String2Id("runnable")
           )
-          .String2Id("run") (.TypedVals) ;
+          .String2Id("run"):Id (.TypedVals) ;
         </k>
         <tid> TId </tid>
         ...
@@ -88,10 +88,7 @@ K performance evaluation with the rule below active and commented:
 
   Conclusion: the rule below have no impact on performance.
 */
-//todo mapItemByValue/solution
-//rule [monitor-completely-released]:
-//    <holds>... (OL:Int |-> 0 => .Map) ...</holds>
-//    <busy>... (SetItem(OL) => .Set) ...</busy>
+
 rule [monitor-completely-released]:
     <holds> M:Map => removeMapItemsByValue(M,0) </holds>
     <busy> S:Set => S -Set keys(M -Map removeMapItemsByValue(M,0)) </busy>
@@ -170,7 +167,7 @@ when
 syntax KItem ::=  notifyImpl (
                 Int //store key of the monitor object
               )
-//todo remove one thread instead of all threads having that value
+
 rule [notifyImpl]:
     <k>
       notifyImpl(OL:Int) => nothing::void
@@ -326,18 +323,6 @@ when
             Class ==K classObject
     andBool Id2String(Method) ==String "notify"
     andBool HoldLevel >=Int 1
-
-/*@
-Here we present the rule for the first case. If there is a thread waiting on the current object, then the object
-  identifier \verb|OId| will be present among the map values of \cellref[]{waitingThreads}. By deleting the whole entry
-  associated to that value we enable the waiting thread to proceed. If there is no thread waiting for this object then
-  the term \verb|notifyImpl()| is simply consumed.
-*/
-//todo mapItemByValue/solution repitition
-//rule [notifyImpl-someone-waiting]:
-//    <k> notifyImpl(OId:Int) => nothing::void ...</k>
-//    <waitingThreads> M:Map => removeMapItemsByValue(M,OId) </waitingThreads>
-//        [transition-threading]
 
 /*@
 At this stage the rule for \verb|waitImpl()| could match. The rule checks in its side conditions that the current

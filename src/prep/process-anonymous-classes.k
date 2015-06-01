@@ -11,7 +11,7 @@ rule [elab-NewInstance-anonymous-implements-interface]:
     <k>
       elab('NewInstance(Arg1:K,, Class:ClassType,,
           elabRes(ActualArgs:Exps),,
-          'Some('ClassBody([AnonClassDecs:KList]))
+          'Some('ClassBody(AnonClassDecs:K))
       ))
       => processAnonymousClass(
         String2Id("Anonymous_$" +String Int2String(LocalId)),
@@ -19,7 +19,7 @@ rule [elab-NewInstance-anonymous-implements-interface]:
         (Class, .HeatedInterfaceTypeList),
         Arg1,
         ActualArgs,
-        [AnonClassDecs],
+        AnonClassDecs,
         .Params,
         .Exps
       )
@@ -33,7 +33,7 @@ rule [elab-NewInstance-anonymous-extends-class]:
     <k>
       elab('NewInstance(Arg1:K,, Class:ClassType,,
           elabRes(ActualArgs:Exps),,
-          'Some('ClassBody([AnonClassDecs:KList]))
+          'Some('ClassBody(AnonClassDecs:K))
       ))
       => processAnonymousClass(
         String2Id("Anonymous_$" +String Int2String(LocalId)),
@@ -41,7 +41,7 @@ rule [elab-NewInstance-anonymous-extends-class]:
         .HeatedInterfaceTypeList,
         Arg1,
         ActualArgs,
-        [AnonClassDecs],
+        AnonClassDecs,
         buildConstructorFormalParams(ActualArgs, .Params, 0),
         buildConstructorFirstLineArgs(ActualArgs, .Exps, 0)
       )
@@ -57,7 +57,7 @@ syntax KItem ::=  processAnonymousClass (
                 HeatedInterfaceTypeList, //Base interfaces, if any. In fact either zero or one interface is possible at this point.
                 K,         //'NewInstance Arg1
                 Exps,      //ActualArgs
-                KListWrap, //Anonymous class block decs
+                K,         //Anonymous class block decs
                 K,         //To be processed into formal params
                 K          //To be processed into kr[constructor first line arguments]
               )
@@ -77,7 +77,7 @@ rule [processAnonymousClass]:
       BaseInterfaces:HeatedInterfaceTypeList,
       Arg1:K,
       ActualArgs:Exps,
-      [AnonClassDecs:KList],
+      AnonClassDecs:K,
       ConstructorFormalParams:Params,
       ConstructorFirstLineArgs:Exps
     )
@@ -92,8 +92,8 @@ rule [processAnonymousClass]:
               'Some('SuperDec(BaseClass)),,
               'Some('ImplementsDec(BaseInterfaces))
             ),,
-            'ClassBody([
-              AnonClassDecs,,
+            'ClassBody(addElementToClassBodyDecListEnd(
+              AnonClassDecs,
 
               //Anonymous class constructor
               'ConstrDec(
@@ -106,10 +106,10 @@ rule [processAnonymousClass]:
                 ),,
                 'ConstrBody(
                   'Some('SuperConstrInv('None(.KList),,ConstructorFirstLineArgs)),,
-                  [.KList]
+                  .BlockStmList
                 )
               )
-            ])
+            ))
           )
         ),
         'NewInstance(Arg1,, 'TypeName(Name),, elabRes(ActualArgs),, 'None(.KList))
@@ -139,7 +139,7 @@ rule [elab-QNewInstance-anonymous-extends-class]:
     <k>
       elab('QNewInstance(elabRes(TypedQual:Exp),, elabRes(Arg2:K),, Class:ClassType,, elabRes(Arg4:K),,
           elabRes(ActualArgs:Exps),,
-          'Some('ClassBody([AnonClassDecs:KList]))
+          'Some('ClassBody(AnonClassDecs:K))
       ))
       => processQAnonymousClass(
         String2Id("Anonymous_$" +String Int2String(LocalId)),
@@ -147,7 +147,7 @@ rule [elab-QNewInstance-anonymous-extends-class]:
         TypedQual,
         Arg2,
         ActualArgs,
-        [AnonClassDecs],
+        AnonClassDecs,
         buildConstructorFormalParams((TypedQual, ActualArgs), .Params, 0),
         buildConstructorFirstLineArgs((TypedQual, ActualArgs), .Exps, 0)
       )
@@ -163,8 +163,8 @@ syntax KItem ::=  processQAnonymousClass (
                 ClassType, //Base class
                 K,         //TypedQual - qualifier
                 K,         //'NewInstance Arg2
-                Exps, //ActualArgs
-                KListWrap, //Anonymous class block decs
+                Exps,      //ActualArgs
+                K,         //Anonymous class block decs
                 K,         //To be processed into formal params
                 K          //To be processed into kr[constructor first line arguments]
               )
@@ -176,7 +176,7 @@ rule [processQAnonymousClass]:
       TypedQual:K,
       Arg2:K,
       ActualArgs:Exps,
-      [AnonClassDecs:KList],
+      AnonClassDecs:K,
       ConstructorFormalParams:Params,
       'ExprList(ConstrQual:Exp,, ConstructorFirstLineArgs:Exps)
     )
@@ -191,8 +191,8 @@ rule [processQAnonymousClass]:
               'Some('SuperDec(BaseClass)),,
               'Some('ImplementsDec(.InterfaceTypeList))
             ),,
-            'ClassBody([
-              AnonClassDecs,,
+            'ClassBody(addElementToClassBodyDecListEnd(
+              AnonClassDecs,
 
               //Anonymous class constructor
               'ConstrDec(
@@ -205,10 +205,10 @@ rule [processQAnonymousClass]:
                 ),,
                 'ConstrBody(
                   'Some('QSuperConstrInv(ConstrQual,,'None(.KList),, ConstructorFirstLineArgs)),,
-                  [.KList]
+                  .BlockStmList
                 )
               )
-            ])
+            ))
           )
         ),
         'NewInstance(Arg2,, 'TypeName(Name),, elabRes('ExprList(TypedQual,, ActualArgs)),, 'None(.KList))

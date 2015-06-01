@@ -15,8 +15,7 @@ syntax ExprName::= Id                                   [klabel('ExprName)]
 syntax TypeName ::= Id                                  [klabel('TypeName)]
                   | PackageOrTypeName "." Id            [strict(1), klabel('TypeName)]
 
-syntax KLabel ::= "'MethodName"
-syntax MethodName ::= Id                                //[klabel('MethodName)]
-                    | AmbName "." Id                    //[klabel('MethodName)]
+syntax MethodName ::= Id                                [klabel('MethodName)]
+                    | AmbName "." Id                    [klabel('MethodName)]
 
 endmodule

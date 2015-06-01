@@ -76,9 +76,9 @@ syntax KItem ::=  registerClass(
               )
 
 rule [registerClass]:
-    registerClass(ClassDec:K, Pack:PackageId, Class:ClassType, EnclosingClass:ClassType)
-    =>   processTypeNames([ClassDec], Pack)
-      ~> processTypeDecsInPCUPhase([ClassDec], Pack, EnclosingClass)
+    registerClass(ClassDec, Pack:PackageId, Class:ClassType, EnclosingClass:ClassType)
+    =>   processTypeNames('ClassBodyDecList(ClassDec,, .ClassBodyDecList), Pack)
+      ~> processTypeDecsInPCUPhase('ClassBodyDecList(ClassDec,, .ClassBodyDecList), Pack, EnclosingClass)
       ~> processClassDecs(setWrap(SetItem(Class)))
       ~> processTypeWithDepends(Class)
       //~> elaborateBlocks(setWrap(SetItem(Class))) Now that this class's package = Encloser, it
@@ -193,16 +193,16 @@ rule [localEnvObjectBuild]:
                 'None(.KList),,
                 'None(.KList)
               ),,
-              'ClassBody([.KList])
+              'ClassBody(.ClassBodyDecList)
             ),
             LocalEnvClass,
             AccessibleLocalEnv
          )
       ~> appendToElabBuffer(elab(
-            'LocalVarDec('None(.KList),, LocalEnvClass,, ['VarDec(
+            'LocalVarDec('None(.KList),, LocalEnvClass,, 'VarDecList('VarDec(
               generateLocalEnvVarName(LocalEnvClass),,
-              'NewInstance('None(.KList),, LocalEnvClass,, .Exps,, 'None(.KList) )
-            )])
+              'NewInstance('None(.KList),, LocalEnvClass,, .Exps,, 'None(.KList))
+            ),, .VarDecList))
          ))
       ~> localEnvObjectSetFields(
             generateLocalEnvVarName(LocalEnvClass),
@@ -222,7 +222,7 @@ rule [localEnvClassAddFieldsAndRegister-add-field]:
     localEnvClassAddFieldsAndRegister(
       'ClassDec(
         'ClassDecHead(_:KList),,
-        'ClassBody([_,, ( .KList => 'FieldDec(.AnnoFieldModList,, T,, ['VarDec(X)]) )])
+        'ClassBody(BList:K => addElementToClassBodyDecListEnd(BList, 'FieldDec(.AnnoFieldModList,, T,, 'VarDecList('VarDec(X),, .VarDecList))))
       ), _,
       (X:Id |-> T:Type => .Map) _:Map
     )
@@ -264,7 +264,7 @@ rule [localClassAugmentFields]:
     <k> localClassAugmentFields(LocalClass:ClassType, LocalEnvClass:ClassType) => .K ...</k>
     <classType> LocalClass </classType>
     <instanceFields>
-      [_,, ( .KList => 'FieldDec(.AnnoFieldModList,, LocalEnvClass,, ['VarDec(String2Id("$local_env"))]) ) ]
+      [_,, ( .KList => 'FieldDec(.AnnoFieldModList,, LocalEnvClass,, 'VarDecList('VarDec(String2Id("$local_env")),, .VarDecList)) ) ]
     </instanceFields>
 
 syntax KItem ::=  localClassAugmentConsParams (

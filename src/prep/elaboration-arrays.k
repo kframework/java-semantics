@@ -9,26 +9,26 @@ module ELABORATION-ARRAYS
     Applied in both elaboration and execution phase
 */
 rule [elab-LocalVarDec-ArrayVarDecId-desugar]:
-    elab('LocalVarDec(
+    elab('LocalVarDecStm('LocalVarDec(
       _:K,,
       (T:Type => arrayOf T),,
-      ['VarDec('ArrayVarDecId(
+      'VarDecList('VarDec('ArrayVarDecId(
           X:Id,,
           ([]:Dim Ds:Dims => Ds)
       ),, _:KList //possible initializer
-    )]))                                                [structural]
+    ),, .VarDecList))))                                                [structural]
 
 rule [elab-LocalVarDec-ArrayVarDecId-discard]:
-    elab('LocalVarDec(_:K,, T:Type,, ['VarDec(
+    elab('LocalVarDecStm('LocalVarDec(_:K,, T:Type,, 'VarDecList('VarDec(
         ( 'ArrayVarDecId( X:Id,, .Dims ) => X ),,
         _:KList //possible initializer
-    )]))                                                [structural]
+    ),, .VarDecList))))                                               [structural]
 
 rule [elab-LocalVarDec-ArrayInit-desugar]:
-    elab('LocalVarDec(_:K,, T:Type,, ['VarDec(
+    elab('LocalVarDecStm('LocalVarDec(_:K,, T:Type,, 'VarDecList('VarDec(
       X:Id,,
-      ( 'ArrayInit(InitK:K) => 'NewArray(T,, .Dims,, 'ArrayInit(InitK)) )
-    )]))                                                [structural]
+      ( 'ArrayInit(InitK:K) => 'NewArray(T,, .Dims,, 'ArrayInit(InitK)))
+    ),, .VarDecList))))                                                [structural]
 
 //same three rules for fields
 
@@ -36,23 +36,23 @@ rule [FieldDec-ArrayVarDecId-desugar]:
     'FieldDec(
       _:K,,
       (T:Type => arrayOf T),,
-      ['VarDec('ArrayVarDecId(
+      'VarDecList('VarDec('ArrayVarDecId(
           X:Id,,
           ([]:Dim Ds:Dims => Ds)
       ),, _:KList //possible initializer
-    )])                                                 [structural]
+    ),, .VarDecList))                                                 [structural]
 
 rule [FieldDec-ArrayVarDecId-discard]:
-    'FieldDec(_:K,, T:Type,, ['VarDec(
+    'FieldDec(_:K,, T:Type,, 'VarDecList('VarDec(
         ( 'ArrayVarDecId( X:Id,, .Dims ) => X ),,
         _:KList //possible initializer
-    )])                                                 [structural]
+    ),, .VarDecList))                                                 [structural]
 
 rule [FieldDec-ArrayInit-desugar]:
-    'FieldDec(_:K,, T:Type,, ['VarDec(
+    'FieldDec(_:K,, T:Type,, 'VarDecList('VarDec(
       X:Id,,
-      ( 'ArrayInit(InitK:K) => 'NewArray(T,, .Dims,, 'ArrayInit(InitK)) )
-    )])                                                 [structural]
+      ( 'ArrayInit(InitK:K) => 'NewArray(T,, .Dims,, 'ArrayInit(InitK)))
+    ),, .VarDecList))                                                 [structural]
 
 //first two rules - desugaring C-like array declarations, for params
 

@@ -8,8 +8,7 @@ module STATEMENTS
     imports TO-STRING
 
 //@ \subsection{isStmt}
-rule isStmt('For(_)) => true
-rule isStmt('Switch(_)) => true
+rule isStmt('For(_)) => true    //first argument
 rule isStmt('Block(_)) => true
 
 //@ \subsection{Call of main method}
@@ -19,7 +18,7 @@ rule [ExecutionPhase-Start]:
     <k>
       //K-AST for new <MainClass>().main(new String[0]);
       . =>  getClassType(packageId(String2Id("")), String2Id(MainClassS))
-              .String2Id("main")
+              .String2Id("main"):Id
 
               //workaround: we have to use toExps because 'NewArray is not a native expression but a hacked one
               //( toExps(['NewArray(classString,, ['Dim(0 :: int)],, [.KList])]) );
@@ -42,7 +41,7 @@ rule <k> {S:BlockStmList} => S ~> env(Env:Map) ...</k>
                                       <env> Env </env>
                                           [structural]
 
-rule Hd:BlockStmt Tl:BlockStmList => Hd ~> Tl
+rule 'BlockStmList(Hd:K,, Tl:K) => Hd ~> Tl
 rule .BlockStmList => .
 
 //@ \texttt{env} Restore the env cell content from env(...) statement argument
@@ -75,7 +74,7 @@ rule [Empty]:
 //@ \subsection{Labeled statements} JLS \$14.7
 
 rule [Labeled]:
-    X:Id : S:Stmt => S ~> labeledImpl(X)
+    X:Id : S:K => S ~> labeledImpl(X)
 
 //@ Processed version of the labeled statement
 syntax KItem ::= labeledImpl ( Id )
@@ -89,19 +88,19 @@ rule _:TypedVal; => .K
 
 //@ \subsection{If statement}
 rule [If-True]:
-    if (true::bool) S:Stmt else _:Stmt => S
+    if (true::bool) S:K else _:K => S
         [symbolic-rule]
 
 rule [If-False]:
-    if (false::bool) _:Stmt else S:Stmt => S
+    if (false::bool) _:K else S:K => S
         [symbolic-rule]
 
 rule [If-True]:
-    if (true::bool) S:Stmt => S
+    if (true::bool) S:K => S
         [symbolic-rule]
 
 rule [If-False]:
-    if (false::bool) _:Stmt => .
+    if (false::bool) _:K => .
         [symbolic-rule]
 
 //@ \subsection{Assert statement}
@@ -183,7 +182,7 @@ rule [switchEnd-Discard]:
 //@ \subsection{While statement} and loop infrastructure.
 
 rule [while]:
-    while(E:Exp)S:Stmt => whileImpl(E, S)                              [structural]
+    while(E:Exp)S:K => whileImpl(E, S)                              [structural]
 
 syntax KItem ::=  whileImpl (
                 K,  // E - test expression. In For loop, it is UpdClause ~> testExp
@@ -195,24 +194,11 @@ rule [whileImpl]:
 
 //@ \subsection{Do statement}
 rule [do-while]:
-    do S:Stmt while(E:Exp); => S ~> whileImpl(E, S)                     [structural]
+    do S:K while(E:Exp); => S ~> whileImpl(E, S)                     [structural]
 
 //@ \subsection{For statement}
 //wrapper of certain clauses of for statement, adds ; to cast expressions
 syntax Exps ::= stm ( Exps )
-
-//rule [stm-empty]:
-//    stm([.KList]) => .                                                      [structural]
-//
-//rule [stm-exp]:
-//    stm([E:Exp,,Es:KList]) => E; ~> stm([Es])
-//when
-//    getKLabel(E) ==KLabel 'cast                                             [structural]
-//
-//rule [stm-LocalVarDec]:
-//    stm([K:K,,Ks:KList]) => K ~> stm([Ks])
-//when
-//    notBool ( getKLabel(K) ==KLabel 'cast )                                 [structural]
 
 rule [stm-empty]:
     stm(.Exps) => .                                                         [structural]
@@ -223,22 +209,23 @@ when
     getKLabel(E) ==KLabel 'cast                                             [structural]
 
 rule [For-FirstArgV1Red]:
-    for((InitExps:Exps => stm(InitExps));_;_:K) _
+    for((InitExps:Exps => stm(InitExps));_;_) _:K
     when notBool ( getKLabel(InitExps) ==KLabel 'stm )                      [structural]
 
 
 rule [For-SecondArgRed]:
-    for(_:>Exps;('None(.KList) => 'Some(true));_) _                          [structural]
+    for(_:>Exps;('None(.KList) => 'Some(true));_) _:K                       [structural]
 
 rule [For-ThirdArgRed]:
-    for(_:>Exps;_;(UpdExps:Exps => stm(UpdExps))) _
+    for(_:>Exps;_;(UpdExps:Exps => stm(UpdExps))) _:K
     when notBool ( getKLabel(UpdExps) ==KLabel 'stm )                       [structural]
 
 rule [For]:
-    for(InitClause:>Exps; 'Some(TestExp); stm(UpdClause:Exps)) S
+    for(InitClause:>Exps; 'Some(TestExp); stm(UpdClause:Exps)) S:K
     => 'Block(InitClause
     ~> ifAux(TestExp, ('Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S)), .))
-    when getKLabel(InitClause) ==KLabel 'stm orBool getKLabel(InitClause) ==KLabel 'KListWrap   [structural]
+    when getKLabel(InitClause) ==KLabel 'stm orBool getKLabel(InitClause) ==KLabel 'BlockStmList   [structural]
+//todo ugly format
 
 rule ifAux(stm(S:Exps) ~> B:K, S1, S2 ) => stm(S) ~> ifAux(B, S1, S2)
 
@@ -410,10 +397,10 @@ rule [Throw-MethodEnd]:
 
 rule [Throw-CausesThreadTermination]:
     <k>
-//      'Throw(TV:TypedVal)
+//todo :Id is added due to the confusion of MethodName(Id)
       throw TV:TypedVal;
       =>  'Field( class String2Id("java.lang.System"),, String2Id("out") )
-            .String2Id("println")
+            .String2Id("println"):Id
             (cast(classObject, 'Plus( "Thread terminated with exception: ",, TV )));
     </k>
     <stack> .List </stack>
