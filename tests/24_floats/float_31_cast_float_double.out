@@ -1,5 +1,5 @@
 (float) f1  = 1.23
 (double)f1  = 1.23
-(float) d1  = 1.7000000000000001e-2
-(double)d1  = 1.7000000000000001e-2
+(float) d1  = 0.017
+(double)d1  = 0.017
 Done!

@@ -60,11 +60,11 @@ if [[ $(uname) == *Linux* ]] || [[ $(uname) == *Darwin* ]]
   then TIMEOUT_FACTOR=1
   else TIMEOUT_FACTOR=3
 fi
-TIMEOUT=$((30 * $TIMEOUT_FACTOR))
+TIMEOUT=$((120 * $TIMEOUT_FACTOR))
 SEARCH_TIMEOUT_FACTOR=2
 
 MODE=run-exec
-PREP_OUTPUT=raw
+PREP_OUTPUT=kast
 OUTPUT=pretty
 PREP_INPUT=java
 INPUT=kast
@@ -88,7 +88,10 @@ SILENT=false
 
 CMD_SUFFIX=""
 COUNT_CMD_SUFFIX="| grep \"Solution\" | wc -l"
-PREP_AST_CMD_SUFFIX="| sed -n 's/.*< program > \(.*\) <\/ program >.*/\1/p'"
+PREP_AST_CMD_SUFFIX="| sed 's/\s*\([[:graph:]].*[[:graph:]]\)\s*/\1/g'"
+PREP_AST_CMD_SUFFIX="$PREP_AST_CMD_SUFFIX | tr -d '\n'"
+PREP_AST_CMD_SUFFIX="$PREP_AST_CMD_SUFFIX | sed -r 's/.*<program>//g' | sed -r 's/<\/program>.*//g'"
+PREP_AST_CMD_SUFFIX="$PREP_AST_CMD_SUFFIX | sed 's/KListWrap/ListWrap/g'"
 
 while [[ ${1:0:1} == - ]]; do
   PARAM=`echo $1 | awk -F= '{print $1}'`
@@ -105,8 +108,11 @@ while [[ ${1:0:1} == - ]]; do
       PREP_FIRST=false
       MODE=run-prep-ast
       CMD_SUFFIX=${PREP_AST_CMD_SUFFIX}
-      OUTPUT=raw
+      OUTPUT=$PREP_OUTPUT
       INPUT=java
+      TIME=false
+      TIMEOUT=0
+
       ;;
     "--prep-pretty")
       PREP_FIRST=false
@@ -116,7 +122,7 @@ while [[ ${1:0:1} == - ]]; do
     "--prep-raw")
       PREP_FIRST=false
       MODE=run-prep-config
-      OUTPUT=raw
+      OUTPUT=none
       INPUT=java
       ;;
     "--exec-pretty")
@@ -209,6 +215,7 @@ BASE_JAVA_FILE=`basename ${JAVA_FILE}`  #simple file/dir name
 PKAST_FILE=`echo "$BASE_JAVA_FILE" | sed 's#/*$##'` # remove trailing slashes, important if JAVA_FILE is dir
 PKAST_FILE=${PKAST_FILE}.pkast
 
+VERBOSE=false
 
 #Actual execution
 if [[ ${SILENT} == false ]]; then
@@ -225,6 +232,7 @@ if [[ ${PREP_FIRST} == true ]]; then
       echo ${CMD}
       echo
     fi
+
     eval ${CMD}
   fi
 else
@@ -237,6 +245,8 @@ if [[ ${SILENT} == false ]]; then
   echo
 fi
 
+OUTPUT="none"
+
 CMD="aux-kjrun.sh --time=${TIME} --timeout=${TIMEOUT} --mode=${MODE} --output=${OUTPUT} --input=${INPUT} \
   --pattern=\"${PATTERN}\" --ltlmc=\"${LTLMC}\" --config=\"${CONFIG}\" \
   --verbose=${VERBOSE} --cmd-suffix=\"${CMD_SUFFIX}\" ${PKAST_FILE}"
@@ -247,6 +257,8 @@ if [[ ${VERBOSE} == true ]]; then
 fi
 
 # Actual command evaluation
+#echo $CMD > auxInput.txt
+
 eval ${CMD}
 
 if [[ ${CLEAN} == true ]]; then

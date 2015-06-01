@@ -21,7 +21,7 @@ syntax KItem ::=  processClassDecs (
 */
 rule [processClassDecs-resolveBases-TopLevel-Start]:
     <k>
-      (. => resolveBases(Class, RawExtends, [RawImplements]) ~> restoreCrntClass(OldCrntClass))
+      (. => resolveBases(Class, RawExtends, RawImplements) ~> restoreCrntClass(OldCrntClass))
       ~> processClassDecs(_)
       ...
     </k>
@@ -30,14 +30,14 @@ rule [processClassDecs-resolveBases-TopLevel-Start]:
 
     <classType> Class:ClassType </classType>
     <rawExtends> RawExtends:K </rawExtends>
-    <rawImplements> [RawImplements:KList] </rawImplements>
+    <rawImplements> RawImplements:InterfaceTypeList </rawImplements>
     <enclosingClass> noClass </enclosingClass>
     <cuImports> CuImports:Map </cuImports>
     <classPhase> StoredCPhase </classPhase>
 
 rule [processClassDecs-resolveBases-Inner-Start]:
     <k>
-      (. => resolveBases(Class, RawExtends, [RawImplements]) ~> restoreCrntClass(OldCrntClass))
+      (. => resolveBases(Class, RawExtends, RawImplements) ~> restoreCrntClass(OldCrntClass))
       ~> processClassDecs(_)
       ...
     </k>
@@ -47,7 +47,7 @@ rule [processClassDecs-resolveBases-Inner-Start]:
     <class>
       <classType> Class:ClassType </classType>
       <rawExtends> RawExtends:K </rawExtends>
-      <rawImplements> [RawImplements:KList] </rawImplements>
+      <rawImplements> RawImplements:InterfaceTypeList </rawImplements>
       <enclosingClass> OuterClass:ClassType </enclosingClass>
       <classPhase> StoredCPhase </classPhase>
       ...
@@ -64,25 +64,24 @@ when
 syntax KItem ::=  resolveBases (
                 ClassType,  //The class for which we resolve bases
                 K,          //Base class
-                KListWrap   //Implements clauses
-              )
+                K           //Implements clauses
+              ) [strict(2,3)]
 
-context resolveBases(_, HOLE, _)        //Heat extends declaration
-context resolveBases(_,_, [_,,HOLE,,_]) //Heat implements declarations
+syntax HeatedInterfaceTypeList ::= List{ClassType,","} [klabel('InterfaceTypeList), strict]
+syntax InterfaceTypeList ::= HeatedInterfaceTypeList
 
 rule [resolveBases]:
-    <k> resolveBases(Class:ClassType, BaseClass:ClassType, [ImplTypes:KList]) => . ...</k>
+    <k> resolveBases(Class:ClassType, BaseClass:ClassType, ImplTypes:HeatedInterfaceTypeList) => . ...</k>
     <classType> Class </classType>
     <rawExtends> _ => BaseClass </rawExtends>
-    <rawImplements> _ => [ImplTypes] </rawImplements>
-    <unprocessedBases> .K => [BaseClass,,ImplTypes] </unprocessedBases>
+    <rawImplements> _ => ImplTypes </rawImplements>
+    <unprocessedBases> .K => (BaseClass, ImplTypes):HeatedInterfaceTypeList </unprocessedBases>
     <classPhase> StoredCPhase => BasesResolvedCPhase </classPhase>
-when isKResult(ImplTypes)
 
 rule [processClassDecs-mark-Base-Processed]:
     <k> processClassDecs(_) ...</k>
     <class>
-      <unprocessedBases> [(BaseClass:ClassType => .KList) ,,_] </unprocessedBases>
+      <unprocessedBases> BaseClass:ClassType, Rest:HeatedInterfaceTypeList => Rest </unprocessedBases>
       ...
     </class>
     <class>
@@ -96,13 +95,13 @@ when
 //@ This one is for class Object
 rule [processClassDecs-mark-noClass-Processed]:
     <k> processClassDecs(_) ...</k>
-    <unprocessedBases> [(noClass => .KList) ,,_] </unprocessedBases>
+    <unprocessedBases> noClass, Rest:HeatedInterfaceTypeList => Rest </unprocessedBases>
 
 rule [processClassDecs-end]:
     <k>
       processClassDecs(setWrap( SetItem(Class:ClassType) RestClasses:Set ))
-      =>   saveImplements(Class, kListToSet([ImplTypes], .Set))
-        ~> saveImports(Class, OuterClass, [BaseClass,,ImplTypes], noValue, mapWrap(.Map), noValue)
+      =>   saveImplements(Class, HeatedInterfaceTypeListToSet(ImplTypes, .Set))
+        ~> saveImports(Class, OuterClass, (BaseClass, ImplTypes), noValue, mapWrap(.Map), noValue)
         ~> processClassDecs(setUnion(setWrap(RestClasses), getInnerClasses(Class)))
       ...
     </k>
@@ -113,22 +112,22 @@ rule [processClassDecs-end]:
     <classPhase> BasesResolvedCPhase => DecsProcessedCPhase </classPhase>
     <extends> .K => BaseClass </extends>
     ( <rawExtends> BaseClass:ClassType </rawExtends>
-      <rawImplements> [ImplTypes:KList] </rawImplements> => .Bag)
-    ( <unprocessedBases> [.KList] </unprocessedBases> => .Bag)
+      <rawImplements> ImplTypes:HeatedInterfaceTypeList </rawImplements> => .Bag)
+    ( <unprocessedBases> .HeatedInterfaceTypeList </unprocessedBases> => .Bag)
 
 rule [processClassDecs-discard]:
-    processClassDecs(setWrap(.)) => .K
+    processClassDecs(setWrap(.Set)) => .K
 
 //@ Converts a term of type KList into a Set
-syntax KItem ::= kListToSet ( KListWrap,  //a list of some K Terms
+syntax KItem ::= HeatedInterfaceTypeListToSet ( HeatedInterfaceTypeList,  //a list of class Types
                           Set         //the result set
-                          )
+                          ) [function]
 
-rule kListToSet([(K:K => .KList),,_], (_ (.Set => SetItem(K) )))
-rule kListToSet([.KList], TypeSet:Set) => setWrap(TypeSet)
+rule HeatedInterfaceTypeListToSet((K:ClassType, Rest:HeatedInterfaceTypeList), S:Set) => HeatedInterfaceTypeListToSet(Rest, S SetItem(K))
+rule HeatedInterfaceTypeListToSet(.HeatedInterfaceTypeList, TypeSet:Set) => setWrap(TypeSet)
 
-//@ Receives a kListToSet term ans saves the resulting set into <imports>
-syntax KItem ::= saveImplements ( ClassType, K ) [strict(2)]
+//@ Receives a HeatedInterfaceTypeListToSet term and saves the resulting set into <imports>
+syntax KItem ::= saveImplements ( ClassType, K )
 
 rule [saveImplements]:
     <k> saveImplements(Class:ClassType, setWrap(ImplSet:Set)) => . ...</k>
@@ -142,7 +141,7 @@ syntax KItem ::=  saveImports  (
                 ClassType,  //Class - the actual class
                 ClassType,  //The outer class of this class, if any,
                               //or noClass if this is a top-level class
-                KListWrap,  //The list of base classes
+                HeatedInterfaceTypeList,  //The list of base classes
                 K,          //mapWrap(outer classes), to be computed
                 K,          //mapWrap(inherited classes), to be computed. Starts with mapWrap(.Map)
                 K           //the result map, to be computed
@@ -174,7 +173,7 @@ rule [saveImports-ComputeExternalInner]:
 //Second add names inherited from each base type, but don't override inner classes
 rule [saveImports-InheritTypes]:
     <k>
-      saveImports(_,_, [(BaseClass:ClassType => .KList),, _], _,
+      saveImports(_,_, (BaseClass:ClassType, Rest:HeatedInterfaceTypeList => Rest), _,
         mapWrap(InheritedMap:Map) => mapUnion(mapWrap(InheritedMap), mapWrap(BaseClassMap)),
         _
       )
@@ -184,7 +183,7 @@ rule [saveImports-InheritTypes]:
     <imports> BaseClassMap:Map </imports>
 
 rule [saveImports-Discard-noClass]:
-    saveImports(_,_, [(noClass => .KList),, _], _,_,_)
+    saveImports(_,_, (noClass, Rest:HeatedInterfaceTypeList => Rest), _,_,_)
 
 /*@ Compute the final result - the combined accessible classes map, with this components in order:
   - external names
@@ -194,7 +193,7 @@ rule [saveImports-Discard-noClass]:
 */
 rule [saveImports-ComputeResult]:
     <k>
-      saveImports(Class:ClassType,_, [.KList], mapWrap(ExternalMap:Map), mapWrap(InheritedMap:Map),
+      saveImports(Class:ClassType,_, .HeatedInterfaceTypeList, mapWrap(ExternalMap:Map), mapWrap(InheritedMap:Map),
         noValue => mapUnion(
           mapUnion(
             mapWrap(ExternalMap),

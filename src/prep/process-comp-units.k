@@ -34,13 +34,16 @@ rule [ProcCompUnitsPhase-start]:
 //ImpDecs will be processed in the module PROCESS-IMPORTS
 rule [CompilationUnit]:
     <k>
-      'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),,
-          ImpDecs:K,, [Ks:KList]
+      'CompilationUnit('Some('PackageDec(_,, Pack:PackageId)),,
+          ImpDecs:ImportDecList,, [Ks:KList]
       )
       => compUnitImportsStart(Pack) ~> ImpDecs ~> processTypeDecsInPCUPhase([Ks], Pack, noClass)
       ...
     </k>
     <globalPhase> ProcCompUnitsPhase  </globalPhase>
+
+rule Hd:ImportDec Tl:ImportDecList => Hd ~> Tl
+rule .ImportDecList => .
 
 /*@ Wrapper over a list of type declarations and possible other terms, required to distinguish
 this phase from other preprocessing phases
@@ -85,7 +88,7 @@ rule [processTypeDecsInPCUPhase-typeDec-ComputeFullName]:
 
 rule [ClassDec-NoExtendsDesugar]:
     processTypeDecsInPCUPhase(
-      ['ClassDec('ClassDecHead(_:KListWrap,, Class:ClassType,, _:K,,
+      ['ClassDec('ClassDecHead(_,, Class:ClassType,, _:K,,
         ( 'None(_)
           => 'Some('SuperDec(
                 #if (Class =/=K classObject)
@@ -100,14 +103,14 @@ rule [ClassDec-NoExtendsDesugar]:
     )                [structural]
 
 rule [ClassDec-NoImplementsDesugar]:
-    processTypeDecsInPCUPhase(['ClassDec('ClassDecHead(_:KListWrap,, Class:ClassType,, _:K,, _:K,,
-        ( 'None(.KList) => 'Some('ImplementsDec([.KList])) )
+    processTypeDecsInPCUPhase(['ClassDec('ClassDecHead(_,, Class:ClassType,, _:K,, _:K,,
+        ( 'None(.KList) => 'Some('ImplementsDec(.InterfaceTypeList)) )
       ),, _:K
     )], _,_)                [structural]
 
 rule [InterfaceDec-NoExtendsDesugar]:
-    processTypeDecsInPCUPhase(['InterfaceDec('InterfaceDecHead(_:K,, Class:ClassType,, _:K,,
-        ( 'None(.KList) => 'Some('ExtendsInterfaces([.KList])) )
+    processTypeDecsInPCUPhase(['InterfaceDec('InterfaceDecHead(_,, Class:ClassType,, _:K,,
+        ( 'None(.KList) => 'Some('ExtendsInterfaces(.InterfaceTypeList)) )
       ),, _:K
     )], _,_)                [structural]
 
@@ -115,9 +118,9 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
     <k>
       processTypeDecsInPCUPhase(
         ['ClassDec(
-          'ClassDecHead( Modifiers:KListWrap,, Class:ClassType,, _:K,,
+          'ClassDecHead( Modifiers:AnnoClassModList,, Class:ClassType,, _:K,,
             'Some('SuperDec(BaseClassRaw:K)),,
-            'Some('ImplementsDec(ImplTypesRaw:KListWrap))
+            'Some('ImplementsDec(ImplTypesRaw:InterfaceTypeList))
           ),,
           'ClassBody( [Decls:KList] )
         )],
@@ -140,7 +143,7 @@ rule [processTypeDecsInPCUPhase-ClassDec]:
                 //If there is a no-arguments constructor in Decls, this one will be discarded
                 'ConstrDec(
                   'ConstrDecHead(
-                    ['Public(.KList)],,
+                    'AnnoConstrModList('Public(.KList),, .AnnoConstrModList),,
                     'None(.KList),,
                     getSimpleName(Class),,
                     .Params,,
@@ -162,7 +165,7 @@ rule [processTypeDecsInPCUPhase-IInterfaceDec]:
       processTypeDecsInPCUPhase(
         ['InterfaceDec(
           'InterfaceDecHead( _:K,, Class:ClassType,, _:K,,
-            'Some('ExtendsInterfaces(ImplTypesRaw:K))
+            'Some('ExtendsInterfaces(ImplTypesRaw:InterfaceTypeList))
           ),,
           [Decls:KList]
         )],

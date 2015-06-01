@@ -16,8 +16,9 @@ rule 'ClassType(TypeK:K,, _) => TypeK            [structural]
     'TypeName('PackageOrTypeName('PackageOrTypeName(pack),,p2),,A)
 */
 // 'PackageOrTypeName(Qual,, Name)
-rule 'PackageOrTypeName(KRs:KList,, K:K) => 'TypeName(KRs,,K) ?? 'PackageName([KRs,,K])
-when isKResult(KRs)                              [structural]
+rule 'PackageOrTypeName(KRs:KResult,, K:K) => 'TypeName(KRs,,K) ?? 'PackageName([KRs,,K])  [structural]
+// 'PackageOrTypeName(Name)
+rule 'PackageOrTypeName(K:K) => 'TypeName(K) ?? 'PackageName([K])  [structural]
 
 /*@ When we search for a class qualified by another class, we simply convert
     the qualifier into a package.*/
@@ -33,7 +34,7 @@ rule [TypeName-QualifiedPackage]:
 syntax KItem ::= typeNameQualifiedImpl ( K, Id ) [strict(1)]
 
 rule [typeNameQualifiedImpl-Found]:
-    typeNameQualifiedImpl(mapWrap(X |-> Class:ClassType _), X:Id) => Class
+    typeNameQualifiedImpl(mapWrap((X |-> Class:ClassType) _), X:Id) => Class
 
 rule [typeNameQualifiedImpl-NotFound]:
     typeNameQualifiedImpl(mapWrap(NamesMap:Map), X:Id) => noValue
@@ -41,7 +42,7 @@ when notBool X in keys(NamesMap)
 
 rule [TypeName-local-in-any-Phase]:
     <k> 'TypeName(X:Id) => Class ...</k>
-    <localTypes> ListItem(mapWrap(X |-> Class:ClassType _)) ...</localTypes>
+    <localTypes> ListItem(mapWrap((X |-> Class:ClassType) _)) ...</localTypes>
 
 rule [TypeName-global]:
     <k> 'TypeName(X:Id) => Class ...</k>

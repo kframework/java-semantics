@@ -18,7 +18,7 @@ syntax KItem ::=  generateLocalClassType(
 
 rule [generateLocalClassType]:
     <k>
-      generateLocalClassType('ClassDec('ClassDecHead( _:KListWrap,, ClassName:Id,, _:K,, _:K,, _:K ),, _:K))
+      generateLocalClassType('ClassDec('ClassDecHead( _,, ClassName:Id,, _:K,, _:K,, _:K ),, _:K))
       => getClassType(toPackage(CrntClass), String2Id(Id2String(ClassName) +String "$" +String Int2String(LocalId)))
       ...
     </k>
@@ -38,7 +38,7 @@ rule [processLocalClassDec-register-name]:
       processLocalClassDec(
         'ClassDec(
           'ClassDecHead(
-          ( [OldModifiers:KList] => generateLocalClassModifiers( CT, [OldModifiers] ) ),,
+          ( OldModifiers => generateLocalClassModifiers( CT, OldModifiers ) ),,
             (InitName:Id => getSimpleName(GeneratedClass)),,
             _:K,, _:K,, _:K
           ),, _:K
@@ -47,16 +47,13 @@ rule [processLocalClassDec-register-name]:
       )
       ...
     </k>
-    <localTypes> ListItem(mapWrap(LocalTypes:Map => LocalTypes[GeneratedClass / InitName])) ...</localTypes>
+    <localTypes> ListItem(mapWrap(LocalTypes:Map => LocalTypes[InitName <- GeneratedClass])) ...</localTypes>
     <contextType> CT:ContextType </contextType>
 
 //@ The second argument: existing modifiers
-syntax KListWrap ::= generateLocalClassModifiers( ContextType, KListWrap )  [function]
-rule generateLocalClassModifiers( CT:ContextType, [OldModifiers:KList] )
-     => #if CT ==K staticCT
-          #then ['Static(.KList),,OldModifiers]
-          #else [OldModifiers]
-        #fi
+syntax AnnoClassModList ::= generateLocalClassModifiers( ContextType, AnnoClassModList )  [function]
+rule generateLocalClassModifiers( staticCT, OldModifiers:AnnoClassModList ) => static OldModifiers
+rule generateLocalClassModifiers( _, OldModifiers:AnnoClassModList ) => OldModifiers        [owise]
 
 rule [processLocalClassDec-process]:
     <k>
@@ -114,7 +111,7 @@ rule [localClassGetAccessibleOuterEnv-start-test]:
       Class:ClassType,
       (X:Id |-> T:Type => .Map) _:Map,
       (.Map => X:Id |-> T:Type) _:Map,
-      _ => X,
+      _:K => X,
       noValue => elabLookup(X, Class)
     )
 
@@ -130,7 +127,7 @@ when
     KR =/=K noValue
 
 rule [localClassGetAccessibleOuterEnv-end]:
-    localClassGetAccessibleOuterEnv( Class:ClassType, .Map, NewOuterEnv:Map, _, noValue ) => mapWrap(NewOuterEnv)
+    localClassGetAccessibleOuterEnv( Class:ClassType, .Map, NewOuterEnv:Map, _:K, noValue ) => mapWrap(NewOuterEnv)
 
 /*@ Convert the given local class into an equivalent inner class, with the following transformations:
   - Add a field to the class for each outer local variable
@@ -190,7 +187,7 @@ rule [localEnvObjectBuild]:
       => localEnvClassAddFieldsAndRegister(
             'ClassDec(
               'ClassDecHead(
-                generateLocalClassModifiers( CT, [.KList] ),,
+                generateLocalClassModifiers( CT, .AnnoClassModList ),,
                 getSimpleName(LocalEnvClass),,
                 'None(.KList),,
                 'None(.KList),,
@@ -204,7 +201,7 @@ rule [localEnvObjectBuild]:
       ~> appendToElabBuffer(elab(
             'LocalVarDec('None(.KList),, LocalEnvClass,, ['VarDec(
               generateLocalEnvVarName(LocalEnvClass),,
-              'NewInstance('None(.KList),, LocalEnvClass,, [.KList],, 'None(.KList) )
+              'NewInstance('None(.KList),, LocalEnvClass,, .Exps,, 'None(.KList) )
             )])
          ))
       ~> localEnvObjectSetFields(
@@ -225,7 +222,7 @@ rule [localEnvClassAddFieldsAndRegister-add-field]:
     localEnvClassAddFieldsAndRegister(
       'ClassDec(
         'ClassDecHead(_:KList),,
-        'ClassBody([_,, ( .KList => 'FieldDec([.KList],, T,, ['VarDec(X)]) )])
+        'ClassBody([_,, ( .KList => 'FieldDec(.AnnoFieldModList,, T,, ['VarDec(X)]) )])
       ), _,
       (X:Id |-> T:Type => .Map) _:Map
     )
@@ -267,7 +264,7 @@ rule [localClassAugmentFields]:
     <k> localClassAugmentFields(LocalClass:ClassType, LocalEnvClass:ClassType) => .K ...</k>
     <classType> LocalClass </classType>
     <instanceFields>
-      [_,, ( .KList => 'FieldDec([ .KList ],, LocalEnvClass,, ['VarDec(String2Id("$local_env"))]) ) ]
+      [_,, ( .KList => 'FieldDec(.AnnoFieldModList,, LocalEnvClass,, ['VarDec(String2Id("$local_env"))]) ) ]
     </instanceFields>
 
 syntax KItem ::=  localClassAugmentConsParams (
@@ -275,9 +272,6 @@ syntax KItem ::=  localClassAugmentConsParams (
                 Id,         // ConsName - constructor name
                 ClassType   // LocalEnvClass
               )
-syntax Params ::= addElementToParamsEnd (Params, Param) [function]
-rule addElementToParamsEnd(.Params, P:Param) => P,.Params
-rule addElementToParamsEnd((Hd:Param, Tl:Params), P:Param) => Hd,addElementToParamsEnd(Tl,P)
 
 rule [localClassAugmentConsParams-augment]:
     <k> localClassAugmentConsParams(LocalClass:ClassType, ConsName:Id, LocalEnvClass:ClassType) ...</k>
@@ -305,10 +299,30 @@ when
     notBool haveUnaugmentedConstructors(ConsName, LocalEnvClass, Methods) ==K true
 
 syntax KItem ::= haveUnaugmentedConstructors( Id, ClassType, Map )                [function]
+syntax KItem ::= haveUnaugmentedConstructors( Id, ClassType, Signature, Map )     [function]
+
+rule [haveUnaugmentedConstructorsConversion]:
+    haveUnaugmentedConstructors(I:Id, C:ClassType, (Key:Signature |-> _) Remains:Map) =>
+    haveUnaugmentedConstructors(I, C, Key, Remains)
+
 rule haveUnaugmentedConstructors(ConsName:Id, LocalEnvClass:ClassType,
-                                 (sig(ConsName:Id, types(TList:KList)) |-> _) _:Map) => true
+                                 sig(ConsName:Id, types(TList:KList)), _:Map) => true
 when
     notBool getLastKListElement([TList]) ==K LocalEnvClass
+
+rule haveUnaugmentedConstructors(ConsName:Id, LocalEnvClass:ClassType,
+                                 sig(ConsName:Id, types(TList:KList)), Remains:Map) =>
+     haveUnaugmentedConstructors(ConsName, LocalEnvClass, Remains)
+when
+    getLastKListElement([TList]) ==K LocalEnvClass
+
+rule haveUnaugmentedConstructors(ConsName:Id, LocalEnvClass:ClassType,
+                                 sig(ConsName1:Id, _), Remains:Map) =>
+     haveUnaugmentedConstructors(ConsName, LocalEnvClass, Remains)
+when
+    ConsName =/=K ConsName1
+
+rule haveUnaugmentedConstructors(_, _, .Map) => false
 
 //@ Elaborates the given node and saves it to <elabBuffer>
 syntax KItem ::= appendToElabBuffer ( K ) //[strict, context(result(ElabKResult))] //K bug generalized strictness
@@ -335,10 +349,10 @@ rule [elab-QNewInstance-local-augment-arguments]:
       localClassGetExtraArgs(Class:ClassType)
       => #if notBool isEmpty(EnclosingLocalEnv) ==K true
             #then #if Class ==K CrntClass
-                    #then elab(['ExprName(String2Id("$local_env"))])
-                    #else elab(['ExprName(generateLocalEnvVarName(generateLocalEnvClassType(Class)))])
+                    #then elab('ExprList('ExprName(String2Id("$local_env")),, .Exps))
+                    #else elab('ExprList('ExprName(generateLocalEnvVarName(generateLocalEnvClassType(Class))),,.Exps))
                   #fi
-            #else elab([.KList])
+            #else elab(.Exps)
          #fi
       ...
     </k>

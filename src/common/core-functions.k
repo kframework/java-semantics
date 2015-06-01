@@ -1,7 +1,38 @@
 module CORE-FUNCTIONS
     imports CORE-SORTS
-    imports CORE-CLASSES
+    imports AUX-STRINGS
     imports JAVA-SYNTAX
+
+//@ \subsection{Shortcuts for the most frequently used classes within the semantics}
+
+syntax ClassType ::= "classObject"
+    [function, latex(\terminal{Object})]
+rule classObject => class String2Id("java.lang.Object")
+
+syntax ClassType ::= "classString"
+    [function, latex(\terminal{String})]
+rule classString => class String2Id("java.lang.String")
+
+syntax ClassType ::= "classNullPointerException"
+    [function, latex(\terminal{NullPointerException})]
+rule classNullPointerException => class String2Id("java.lang.NullPointerException")
+
+syntax ClassType ::= "classArrayImpl"                   [function]
+rule classArrayImpl => class String2Id("java.lang.ArrayImpl")
+
+//@ \subsubsection{Computation terms produced during elaboration}
+/*@ These auxiliary terms functions that should be threated as expressions in the elaboration phase.
+*/
+syntax Exp ::= LHS
+syntax LHS ::= AuxTermExp
+/*@ Wrapper of a statement followed by an expression, to be used in a place where an expression is expected,
+such as an anonymous class declaration. Is typed with the type of the expression.
+At runtime is rewritten into the statement, that should evaluate into .K, followed by the expression,
+that should evaluate to value.*/
+syntax AuxTermExp ::= stmtAndExp ( K, K )
+
+syntax AuxTermExp ::= cast ( Type, K ) [strict] //strictness on 1-st arcument - for runtime produced terms
+
 /*@ Returns the type associated with various K terms. The implementation is scattered among various K files.
   For a type - the type itself. For a typed expression - the type component. For some raw values - their most common
     type.
@@ -35,7 +66,7 @@ rule Val:RawVal => toTypedVal(Val)                                              
 
     Have to be [function] for LTL
 */
-syntax KItem ::= toTypedVal ( RawVal )                                                  [function]
+syntax KItem ::= toTypedVal ( RawVal )                                               [function]
 rule toTypedVal(I:Int) => I :: int                                                  [structural]
 rule toTypedVal(B:Bool) => B :: bool                                                [structural]
 rule toTypedVal(Str:String) => Str :: classString                                   [structural]
@@ -44,24 +75,27 @@ rule toTypedVal( objectRef(OL:Int, Class:ClassType) )
     => objectRef(OL:Int, Class:ClassType) :: Class                                  [structural]
 
 rule toTypedVal(arrayRef(T:Type, L:Int, M:Int)) => arrayRef(T, L, M) :: T           [structural]
+rule toTypedVal(F:Float) => F :: float                                              [structural]
 
-//@ Converts a KList of terms to Types. Uses typeOf underneath.
-syntax KItem ::=  getTypes (
-                KListWrap     //[...,, KResult,, ...] - a list of source expressions
-              )
-              [function]
+//@ Converts a KList of terms to Types. Uses typeOf underneath.todo repitition
+syntax KItem ::= getTypes ( Exps )              [function]     // a list of source expressions
+               | getTypes ( Types, Exps )       [function]
 
-// Without the second side condition it would be an infinite loop
-rule getTypes([_,, (K:K => typeOf(K)),, _])
-when
-    isType(K) =/=K true andBool getKLabel(K) =/=KLabel 'typeOf
+rule getTypes( Ps:Exps ) => getTypes(types(.KList), Ps)
+rule getTypes( types(Ts:KList), (T:Exp, Ps:Exps) ) => getTypes( types(Ts,,typeOf(T)), Ps )
+rule getTypes( types(Ts:KList), .Exps) => types(Ts)
 
-rule getTypes([Ts:KList]) => types(Ts)
-when
-    isKResult(Ts)
+//@ Converts a TypedVals term to Types. Uses typeOf underneath.
+syntax KItem ::= getTypes ( TypedVals )          [function]    // a list of source values
+               | getTypes ( Types, TypedVals )   [function]
 
-syntax KItem ::= getTypes ( Params ) [function]
-               | getTypes ( Types , Params ) [function]
+rule getTypes( TVs:TypedVals) => getTypes(types(.KList), TVs)
+rule getTypes( types(Ts:KList), (_ :: T:Type, TVs:TypedVals) ) => getTypes( types(Ts,,T), TVs )
+rule getTypes( types(Ts:KList), .TypedVals) => types(Ts)
+
+syntax KItem ::= getTypes ( Params )            [function]
+               | getTypes ( Types , Params )    [function]
+
 rule getTypes( Ps:Params ) => getTypes(types(.KList), Ps)
 rule getTypes( types(Ts:KList), (_:AnnoVarModList T:Type _:Id , Ps:Params) ) => getTypes( types(Ts,,T), Ps )
 rule getTypes( types(Ts:KList), .Params) => types(Ts)
@@ -94,7 +128,7 @@ rule plusAux(Str1:String :: _, Str2:String :: _) => (Str1 +String Str2) :: class
 /*@ A wrapper for maps. Allows holding maps inside an arbitrary expression where a K term is required.
     Also used as part of mapUnion operation in PROCESS-CLASS-MEMBERS
 */
-syntax KResult ::= mapWrap ( Map )
+syntax MKR ::= mapWrap ( Map )
 
 /*@ The union of two maps. Arguments are of the form mapWrap(Map). In this operation, elements of the second map
     overwrite elements of the first map if they collide.
@@ -105,29 +139,40 @@ syntax KItem ::=  mapUnion (
               )
               [strict]
 
-rule mapUnion(mapWrap( M1:Map => M1[K2/K1] ), mapWrap( _:Map (K1:K |-> K2:K => .Map) ))
+rule mapUnion(mapWrap( M1:Map => M1[K1 <- K2] ), mapWrap( _:Map (K1:K |-> K2:K => .Map) ))
 rule mapUnion(mapWrap(M1:Map), mapWrap(.Map)) => mapWrap(M1)
 
-//@ Substracts fron the given map the keys found in the given set
-syntax KItem ::=  mapDiff(
-                K,  //mapWrap(Map)
-                K   //setWrap(Set)
-              )
-              [strict]
+//@ Substracts from the given map the value given (match is on the value), may cause infinite loop if not used in the right place
+syntax KItem ::= removeMapItemsByValue (Map,K)             [function]
+               | removeMapItemsByValue (Map,K,Map)         [function]
+               | removeMapItemsByValue (K,K,Map,K,Map)     [function]
 
-rule mapDiff( mapWrap( (Key:K |-> _ => .Map) _), setWrap( (SetItem(Key) => .Set) _) )
+rule removeMapItemsByValue(M:Map, V:K) => removeMapItemsByValue(M, V, .Map)
+rule removeMapItemsByValue((Key:K |-> Value:K) Remains:Map, V:K, M:Map) => removeMapItemsByValue(Key, Value, Remains, V, M)
+rule removeMapItemsByValue(Key:K, V, Remains:Map, V:K, M:Map) => removeMapItemsByValue(Remains, V, M)
+rule removeMapItemsByValue(Key:K, Value:K, Remains:Map, V:K, M:Map) => removeMapItemsByValue(Remains, V, M (Key |-> Value))
+when Value =/=K V
+rule removeMapItemsByValue(.Map, V:K, M:Map) => M
 
-rule mapDiff( mapWrap( MyMap:Map ), setWrap( (SetItem(Key:K) => .Set) _) )
-when
-    notBool Key in keys(MyMap)
+//@ Find map items by partial key, not used now
+syntax KItem ::= mapItemsByPartialKey (Map,K)             [function]
+               | mapItemsByPartialKey (Map,K,Map)         [function]
+               | mapItemsByPartialKey (K,K,Map,K,Map)     [function]
 
-rule mapDiff(mapWrap( MyMap:Map ), setWrap(.Set)) => mapWrap(MyMap)
+rule mapItemsByPartialKey(M:Map, V:K) => mapItemsByPartialKey(M, V, .Map)
+rule mapItemsByPartialKey((Key:K |-> Value:K) Remains:Map, V:K, M:Map) => mapItemsByPartialKey(Key, Value, Remains, V, M)
+rule mapItemsByPartialKey(sig(I:Id, T:Types), Value:K, Remains:Map, I, M:Map)
+     => mapItemsByPartialKey(Remains, I, M (sig(I,T) |-> Value))
+rule mapItemsByPartialKey(sig(I:Id, T:Types), Value:K, Remains:Map, V:K, M:Map) => mapItemsByPartialKey(Remains, V, M)
+when I =/=K V
+rule mapItemsByPartialKey(.Map, V:K, M:Map) => M
 
 syntax KItem ::= isEmpty( Map )   [function]
 rule isEmpty(.Map) => true
+rule isEmpty(_) => false            [owise]
 
 /*@A wrapper for sets, similar to the one for maps.*/
-syntax KResult ::= setWrap ( Set )
+syntax MKR ::= setWrap ( Set )
 
 /*The union of two sets. Arguments are of the form setWrap(Set).*/
 syntax KItem ::=  setUnion (
@@ -135,12 +180,7 @@ syntax KItem ::=  setUnion (
                 K   //setWrap(Set)
               )
               [strict]
-
-rule setUnion(setWrap( S1:Set (. => SetItem(K)) ), setWrap( S2:Set (SetItem(K:K) => .) ))
-when
-    notBool(K in S1)
-rule setUnion(setWrap( S1:Set SetItem(K) ), setWrap( S2:Set (SetItem(K:K) => .) ))
-rule setUnion(setWrap(S1:Set), setWrap(.Set)) => setWrap(S1)
+rule setUnion(setWrap(S1:Set), setWrap(S2:Set)) => setWrap(S1 S2)
 
 syntax Set ::= getSet ( K )           [function]
 rule getSet(setWrap(S1:Set)) => S1
@@ -151,14 +191,37 @@ rule klistConcat(kr[KL1:KList], kr[KL2:KList]) => kr[KL1,,KL2]
 
 //@ Counts the number of elements in the KList list. Evaluates to an Int.
 syntax KItem ::= length ( KListWrap )                                   [function]
-           | length ( Int, KListWrap )                              [function]
-
-syntax KItem ::= getLastKListElement( KListWrap )                       [function]
-rule getLastKListElement([_,, K:K]) => K
+               | length ( Int, KListWrap )                              [function]
 
 rule length([Ks:KList]) => length(0, [Ks])
 rule length(I:Int, [K:K,, Ks:KList]) => length(I +Int 1, [Ks])
 rule length(I:Int, [.KList]) => I
+
+//syntax KItem ::= getFirstKListElements( KListWrap )                     [function]
+//               | getFirstKListElements( KListWrap, KListWrap )          [function]
+//
+//rule getFirstKListElements([Kl:KList]) => getFirstKListElements([Kl],,[.KList])
+//rule getFirstKListElements([Ho:K,, Hd:K,, Tl:KList], [Kl:KList]) => getFirstKListElements([Hd,,Tl],[Kl,,Ho])
+//rule getFirstKListElements([Hd:K,, .KList],, [Kl:KList]) => Kl
+//rule getFirstKListElements([.KList],, [.KList]) => .KList
+
+syntax KItem ::= getLastKListElement( KListWrap )                       [function]
+
+rule getLastKListElement([Ho:K,, Hd:K,, Tl:KList]) => getLastKListElement([Hd,,Tl])
+rule getLastKListElement([Hd:K,, .KList]) => Hd
+rule getLastKListElement([.KList]) => .K
+
+syntax Params ::= addElementToParamsEnd (Params, Param) [function]
+rule addElementToParamsEnd(.Params, P:Param) => P,.Params
+rule addElementToParamsEnd((Hd:Param, Tl:Params), P:Param) => Hd,addElementToParamsEnd(Tl,P)
+
+syntax Exps ::= addElementToExpsEnd (Exps, Exp) [function]
+rule addElementToExpsEnd(.Exps, P:Exp) => P,.Exps
+rule addElementToExpsEnd((Hd:Exp, Tl:Exps), P:Exp) => Hd,addElementToExpsEnd(Tl,P)
+
+syntax Exps ::= appendExps(Exps,Exps) [function]
+rule appendExps(AExps:Exps, (Hd:Exp, Tl:Exps)) => appendExps(addElementToExpsEnd(AExps, Hd), Tl)
+rule appendExps(AExps:Exps, .Exps) => AExps
 
 /*@ \subsection{ClassType functions} */
 
@@ -191,8 +254,8 @@ rule true::bool ~> true? => .  [structural]
 /*@ Represent a parser form for a sequence of terms. Is desugared into the pretty form [...]*/
 syntax KLabel ::= "'ListWrap"
 rule 'ListWrap(Ks:KList) => [Ks]                  [structural, anywhere]
-//todo: both 'KListWrap and 'ListWrap are associted with the same production, so how to get rid of it
 syntax KListWrap ::= "[" KList "]" [klabel('KListWrap), latex(\terminal{[} {#1} \terminal{]})]
+
 
 //@ Sequence of terms and of any other statements. The first term is moved to the top of computation.
 rule [S1:K,, Stmts:KList] => S1 ~> [Stmts]        [structural]
@@ -200,6 +263,6 @@ rule [.KList] => .K                               [structural]
 
 //@ A wrapper over an arbitrary KList, wrapper being of type KResult.
 syntax KRListWrap ::= "kr" "[" KList "]"          [latex(\terminal{kr[} {#1} \terminal{]})]
-syntax KResult ::= KRListWrap
+syntax MKR ::= KRListWrap
 
 endmodule

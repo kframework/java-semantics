@@ -109,14 +109,12 @@ syntax Exp ::= ArrayCreationExp
 syntax ArrayCreationExp ::= "new" Type DimExps Dims                 [strict(2), klabel('NewArray)]
 syntax ArrayCreationExp ::= "new" Type Dims ArrayInit               [klabel('NewArray)]
 
-
 syntax ArrayBaseType ::= PrimType
                        | TypeName
                        | TypeName "<" "?" ">"                       [klabel('UnboundWld)]
 
 syntax Dim ::= "[" "]"                                              [klabel('Dim)]
-syntax DimExp ::= "[" Exp "]"                                       [strict, hybrid, klabel('Dim)]
-
+syntax DimExp ::= "[" Exp "]"                                       [strict, klabel('Dim)]
 
 //@ \subsection{ArrayInitializers.sdf}
 syntax ArrayInit ::= "{" VarInits "}" [klabel('ArrayInit)]

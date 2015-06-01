@@ -162,19 +162,17 @@ rule 'Lit('Char('UnicodeEscape(_,, I1:Int,, I2:Int,, I3:Int,, I4:Int)))
 
 //@ \subsection{String literals}
 
-// 'Lit('String(['Chars(Str:String),, 'NamedEscape(_),, _:KList ]))
-
-rule  'Lit('String([K1:K,, K2:K,, Ks:KList]))
-      => plusAux( 'Lit('String([K1])),
-                  'Lit('String([K2,, Ks]))
+rule  'Lit('String('StringPartList(K1:K,, 'StringPartList(K2:K,, Ks:K))))
+      => plusAux( 'Lit('String('StringPartList(K1,, .StringPartList))),
+                  'Lit('String('StringPartList(K2,, Ks)))
          )
 
-rule 'Lit('String(['Chars(Str:String)])) => Str
+rule 'Lit('String('StringPartList('Chars(Str:String),, .StringPartList))) => Str
 
-rule 'Lit('String([K:K])) => charToString('Lit('Char(K)))
+rule 'Lit('String('StringPartList(K:K,, .StringPartList))) => charToString('Lit('Char(K)))
 when getKLabel(K) =/=KLabel 'Chars
 
-rule 'Lit('String([.KList])) => ""
+rule 'Lit('String(.StringPartList)) => ""
 
 syntax KItem ::= charToString ( K ) [strict]
 rule charToString(I:Int :: char) => chrChar(I)

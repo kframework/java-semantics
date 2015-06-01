@@ -2,7 +2,6 @@ module API-THREADS
     imports CORE-SORTS
     imports METHOD-INVOKE-REST  //for invokeImpl
     imports VAR-LOOKUP          //for typedLookup
-    imports API-THREADS-SELECTION
 
 /*@Java API related to threads and locks. Just the core part.*/
 
@@ -41,6 +40,9 @@ when
     Class ==K class String2Id("java.lang.Thread") andBool Id2String(MethodName) ==String "startImpl"
 
 //@ \subsection{Synchronized statement}
+/*this context is added because strict(1) in syntax definition of synchronized stmt does not apply
+ because second argument Block does not conform to syntax (has KListWrap). Remove later. */
+context synchronized (HOLE) _:K
 
 rule [Synchronized-first-time]:
     <k>
@@ -48,8 +50,8 @@ rule [Synchronized-first-time]:
           => try Block .CatchClauses finally releaseLock(OId)
           ...
     </k>
-    <holds>... (. => OId |-> 1) ...</holds>
-    <busy> Busy:Set (. => SetItem(OId)) </busy>
+    <holds>... (.Map => OId |-> 1) ...</holds>
+    <busy> Busy:Set (.Set => SetItem(OId)) </busy>
 when
     notBool (OId in Busy)
         [transition-threading, transition-sync]
@@ -64,7 +66,7 @@ rule [Synchronized-nested]:
         [transition-threading, transition-sync]
 
 rule [Synchronized-on-null]:
-    synchronized (null::_) _ => throw new classNullPointerException(null::classString);
+    synchronized (null::_) _:K => throw new classNullPointerException(null::classString);
 
 /*@Release one level of lock for the given object.*/
 syntax KItem ::=  releaseLock ( Int )
@@ -86,9 +88,14 @@ K performance evaluation with the rule below active and commented:
 
   Conclusion: the rule below have no impact on performance.
 */
+//todo mapItemByValue/solution
+//rule [monitor-completely-released]:
+//    <holds>... (OL:Int |-> 0 => .Map) ...</holds>
+//    <busy>... (SetItem(OL) => .Set) ...</busy>
 rule [monitor-completely-released]:
-    <holds>... (OL:Int |-> 0 => .) ...</holds>
-    <busy>... (SetItem(OL) => .) ...</busy>
+    <holds> M:Map => removeMapItemsByValue(M,0) </holds>
+    <busy> S:Set => S -Set keys(M -Map removeMapItemsByValue(M,0)) </busy>
+    when 0 in values(M)
 
 //@ \subsection{Thread.join()}
 
@@ -151,7 +158,7 @@ rule [waitImpl-interrupted]:
       ...
     </k>
     <tid> TId:Int </tid>
-    <busy> Busy:Set (. => SetItem(OL)) </busy>
+    <busy> Busy:Set (.Set => SetItem(OL)) </busy>
     <interrupted> true => false </interrupted>
 when
       notBool OL in Busy
@@ -163,23 +170,13 @@ when
 syntax KItem ::=  notifyImpl (
                 Int //store key of the monitor object
               )
-
-rule [notifyImpl-someone-waiting]:
+//todo remove one thread instead of all threads having that value
+rule [notifyImpl]:
     <k>
       notifyImpl(OL:Int) => nothing::void
       ...
     </k>
-    <waitingThreads>... (_ |-> OL => .Map) ...</waitingThreads>
-        [transition-threading]
-
-rule [notifyImpl-no-one-waiting]:
-    <k>
-      notifyImpl(OL:Int) => nothing::void
-      ...
-    </k>
-    <waitingThreads> WT:Map </waitingThreads>
-when
-    notBool OL in values(WT)
+    <waitingThreads> M:Map => removeMapItemsByValue(M,OL) </waitingThreads>
         [transition-threading]
 
 rule [object-notifyAll]:
@@ -199,22 +196,12 @@ syntax KItem ::=  objectNotifyAllImpl (
                 Int //store key of the monitor object
               )
 
-rule [objectNotifyAllImpl-someone-waiting]:
-    <k>
-      objectNotifyAllImpl(OL:Int)
-      ...
-    </k>
-    <waitingThreads>... (_ |-> OL => .Map) ...</waitingThreads>
-        [transition-threading]
-
-rule [objectNotifyAllImpl-no-one-waiting]:
+rule [objectNotifyAllImpl]:
     <k>
       objectNotifyAllImpl(OL:Int) => nothing::void
       ...
     </k>
-    <waitingThreads> WT:Map </waitingThreads>
-when
-    notBool OL in values(WT)
+    <waitingThreads> M:Map => removeMapItemsByValue(M,OL) </waitingThreads>
         [transition-threading]
 
 //@ \subsection{Thread.interrupt()}
@@ -266,7 +253,7 @@ rule [ThreadTermination]:
       </thread>
     => .)
     <busy> Busy:Set => Busy -Set keys(H) </busy>
-    <terminated>... . => SetItem(TId) ...</terminated>
+    <terminated>... .Set => SetItem(TId) ...</terminated>
     <globalPhase> ExecutionPhase </globalPhase>
     <dissolveEmptyK> false </dissolveEmptyK>
 
@@ -284,10 +271,6 @@ rule [DissolveAllExceptOut]:
     </T>
     => <T> <out> Out </out> </T>
 
-endmodule
-
-module API-THREADS-SELECTION
-    imports API-THREADS
 
 //@ \subsection{Methods wait() and notify()}
 
@@ -318,8 +301,8 @@ rule [object-wait]:
       <holds>... OId |-> HoldLevel:Int ...</holds>
       ...
     </thread>
-    <busy>... (SetItem(OId) => .) ...</busy>
-    <waitingThreads>... (. => TId |-> OId ) ...</waitingThreads>
+    <busy>... (SetItem(OId) => .Set) ...</busy>
+    <waitingThreads>... (.Map => TId |-> OId ) ...</waitingThreads>
 when
             Class ==K classObject
     andBool Id2String(Method) ==String "wait"
@@ -350,10 +333,11 @@ Here we present the rule for the first case. If there is a thread waiting on the
   associated to that value we enable the waiting thread to proceed. If there is no thread waiting for this object then
   the term \verb|notifyImpl()| is simply consumed.
 */
-rule [notifyImpl-someone-waiting]:
-    <k> notifyImpl(OId:Int) => nothing::void ...</k>
-    <waitingThreads>... (_ |-> OId => .Map) ...</waitingThreads>
-        [transition-threading]
+//todo mapItemByValue/solution repitition
+//rule [notifyImpl-someone-waiting]:
+//    <k> notifyImpl(OId:Int) => nothing::void ...</k>
+//    <waitingThreads> M:Map => removeMapItemsByValue(M,OId) </waitingThreads>
+//        [transition-threading]
 
 /*@
 At this stage the rule for \verb|waitImpl()| could match. The rule checks in its side conditions that the current
@@ -365,7 +349,7 @@ At this stage the rule for \verb|waitImpl()| could match. The rule checks in its
 rule [waitImpl-main]:
     <k> waitImpl(OId:Int) => nothing::void ...</k>
     <tid> TId:Int </tid>
-    <busy> Busy:Set (. => SetItem(OId)) </busy>
+    <busy> Busy:Set (.Set => SetItem(OId)) </busy>
     <interrupted> false </interrupted>
     <waitingThreads> WT:Map </waitingThreads>
 when

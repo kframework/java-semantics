@@ -26,7 +26,7 @@ General structure:
 /* 'Method(Qual:K,, \_:K,, Name:Id)
     'Method('MethodName(Qual:K,, Name:Id))
 */
-rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:KListWrap) => Qual.Name(toExps(ArgList)) [structural]
+rule 'Invoke('Method( 'MethodName( Qual:K,, Name:Id ) ),, ArgList:Exps) => Qual.Name(ArgList) [structural]
 
 //totest model check - expressions should be evaluated from left to right. A test for this
 //exists, but is unable to expose the problem. This rule have to be made "transition"
@@ -42,9 +42,11 @@ syntax LocalVarDecStmt ::= Type Id ";"
 rule 'LocalVarDec(_:K,, T:Type,,['VarDec(X:Id)]) => T X;  [structural]
 
 /*@ \subsection{Cast}*/
-
+//this might be confused with castprim or castref
 syntax Exp ::= "(" "(" Type ")" K ")" [klabel('CastImpl)]
 rule ((T:Type) K:K) => cast(T, K)
+rule ( T:RefType ) E:Exp => cast(T,E)
+rule ( T:PrimType ) E:Exp => cast(T,E)
 
 /*@ \subsection{Identifier (name) expression}*/
 
@@ -58,13 +60,13 @@ rule lvalue(X:Id) => lvalue('ExprName(X))
     Although we could have just 'QNewInstance at runtime, having runtime semantics for 'NewInstance is preferred
     because we have a lot of 'Throw('NewInstance()) through our runtime semantics.
 */
-rule 'NewInstance( 'None(.KList),, Class:ClassType,, [ Args:KList ],, 'None(.KList) )
-     => new Class( toExps([Args]) )
+rule 'NewInstance( 'None(.KList),, Class:ClassType,, Args:Exps ,, 'None(.KList) )
+     => new Class(Args)
 
 
 // 'QNewInstance( Qual,, _:K,, Class,, _:K,, [Args],, 'None(.KList) )
-rule 'QNewInstance( Qual:Exp,, _:K,, ClassOrName:ClassOrName,, _:K,, [Args:KList],, _:K )
-     => Qual . new ClassOrName( toExps([Args]) )
+rule 'QNewInstance( Qual:Exp,, _:K,, ClassOrName:ClassOrName,, _:K,, Args:Exps,, _:K )
+     => Qual . new ClassOrName(Args)
 
 
 /*@Unpack 'NewInstance back into 'QNewInstance.
@@ -73,41 +75,17 @@ rule 'QNewInstance( Qual:Exp,, _:K,, ClassOrName:ClassOrName,, _:K,, [Args:KList
 */
 rule [NewInstance-to-QNewInstance-unpack]:
     new Class:ClassType(ArgExps:Exps)
-    => noValue . new Class:ClassType(ArgExps:Exps)
+    => (noValue):>Exp . new Class:ClassType(ArgExps:Exps)
 
 /*@ \subsection{Syntactic lists - Exps, TypedVals, ClassTypes}*/
 
-/*@
-  A list of expressions, usually a list of arguments of a method or constructor.
-*/
-
-syntax KItem ::= toExps( KListWrap )        [function]
-           | toExps( KListWrap , Exps ) [function]
-
-rule toExps([Args]) => toExps([Args], .Exps)
-rule toExps([Args,, Arg], Es) => toExps([Args], (Arg,Es))
-rule toExps([.KList], Es) => Es
-
 syntax KItem ::= toKListWrap( Exps )              [function]
-           | toKListWrap( KListWrap , Exps )  [function]
+               | toKListWrap( KListWrap , Exps )  [function]
 
 rule toKListWrap(Args:Exps) => toKListWrap([.KList], Args)
 rule toKListWrap([Args:KList], (Arg:Exp, Es:Exps)) => toKListWrap([Args,, Arg], (Es))
 rule toKListWrap([Args:KList], .Exps) => [Args]
 
-syntax Exps ::= TypedVals
-syntax TypedVals ::= List{TypedVal, ","}
-
-//@ Converts a TypedVals term to Types. Uses typeOf underneath.
-syntax KItem ::=  getTypes (
-                TypedVals     // a list of source values
-              )
-              [function]
-            | getTypes(Types, TypedVals)  [function]
-
-rule getTypes(TVs:TypedVals) => getTypes(types(.KList), TVs)
-rule getTypes( types(Ts:KList), (_ :: T:Type, TVs:TypedVals) ) => getTypes( types(Ts,,T), TVs )
-rule getTypes(types(Ts:KList), .TypedVals) => types(Ts)
 
 syntax KResult ::= ClassTypes
 syntax ClassTypes ::= List{ClassType, ","}

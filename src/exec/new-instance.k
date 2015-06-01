@@ -4,6 +4,7 @@ module NEW-INSTANCE
     imports CORE-EXEC   //for sl, restoreMethContext
     imports STATIC-INIT // for staticInit
     imports VAR-LOOKUP  //for typedLookup()
+    imports SYNTAX-CONVERSIONS  //for toExps()
 
 /*@
 \subsection{Background}
@@ -156,7 +157,7 @@ rule [qualified-new-instance]:
         ~> typedLookup(L)
       ...
     </k>
-    <store>... . => L |-> objectRef(L, Class) :: Class ...</store>
+    <store>... .Map => L |-> objectRef(L, Class) :: Class ...</store>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
     (.Bag =>  <object>
                 <objectId> L </objectId>
@@ -166,10 +167,10 @@ rule [qualified-new-instance]:
     <methodContext>
       MethContext
       =>  <env> .Map </env>
-          <crntClass> .K </crntClass>
+          <crntClass> noClass </crntClass>
           <location> L </location>
     </methodContext>
-    <storeMetadata>... . => L |-> LocalLocMetadata ...</storeMetadata>
+    <storeMetadata>... .Map => L |-> LocalLocMetadata ...</storeMetadata>
 
 syntax KItem ::=  create ( ClassType )
 
@@ -199,7 +200,7 @@ syntax KItem ::=  "addEnvLayer"
 
 rule [addEnvLayer]:
     <k> addEnvLayer => . ...</k>
-    <env> Env => . </env>
+    <env> Env => .Map </env>
     <crntClass> Class </crntClass>
     <location> OId </location>
     <object>
@@ -251,22 +252,22 @@ module NEW-INSTANCE-REST
 //@\subsection{Instance field declarations}
 
 rule [FieldDec-instance]:
-    <k> 'FieldDec([.KList],, T:Type,,['VarDec(X:Id)]) => . ...</k>
-    <env> Env:Map => Env[L/X] </env>
-    <store>... . => L |-> default(T) ...</store>
-    <storeMetadata>... . => L |-> FieldLocMetadata ...</storeMetadata>
+    <k> 'FieldDec(.AnnoFieldModList,, T:Type,,['VarDec(X:Id)]) => . ...</k>
+    <env> Env:Map => Env[X <- L] </env>
+    <store>... .Map => L |-> default(T) ...</store>
+    <storeMetadata>... .Map => L |-> FieldLocMetadata ...</storeMetadata>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 
 //@\subsection{Execution of QSuperConstrInv, AltConstrInv}
 
-// 'QSuperConstrInv( Qual:K,, _:K,, [ Args:KList ] )
+// 'QSuperConstrInv( Qual:K,, _:K,,  Args )
 rule [QSuperConstrInv]:
     <k>
-      'QSuperConstrInv(Qual:K,, _,, [ Args:KList ])
+      'QSuperConstrInv(Qual:K,, _,, Args:Exps)
       => setEncloser('QThis(Class), BaseClass, Qual)
          ~> ('Invoke(
               'QSuperMethod(Class,, .K,, getConsName(BaseClass)),,
-              [Args]
+              Args
             );)<:ExprStmt
       ...
     </k>
@@ -274,11 +275,11 @@ rule [QSuperConstrInv]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
-// 'AltConstrInv( _:K,, [ Args:KList ] )
+// 'AltConstrInv( _:K,,  Args )
 rule [AltConstrInv]:
     <k>
-      'AltConstrInv(_,, [ Args:KList ])
-      => 'QThis(Class) .getConsName(Class) (toExps([Args]));
+      'AltConstrInv(_,, Args:Exps)
+      => 'QThis(Class) .getConsName(Class) (Args);
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>

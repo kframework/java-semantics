@@ -22,11 +22,11 @@ syntax KItem ::= elaborateBlocks ( K ) [strict]
 */
 rule [elaborateBlocks]:
     <k>
-      (. => elabMethods(Methods) ~> elabStaticInit
+      (.K => elabMethods(Methods) ~> elabStaticInit
         ~> elaborateBlocks(getInnerClasses(Class))
         ~> restoreCrntClass(OldCrntClass)
       )
-      ~> elaborateBlocks(setWrap((SetItem(Class:ClassType) => .) _:Set))
+      ~> elaborateBlocks(setWrap((SetItem(Class:ClassType) => .Set) _:Set))
       ...
     </k>
     <crntClass> OldCrntClass:ClassType => Class </crntClass>
@@ -34,18 +34,20 @@ rule [elaborateBlocks]:
     <methods> Methods:Map </methods>
 
 rule [elaborateBlocks-discard]:
-    elaborateBlocks(setWrap(.)) => .
+    elaborateBlocks(setWrap( .Set )) => .
 
 /*@ Elaborates the methods of the current class. The map contains the methods that were not elaborated yet.
 When a class elaboration starts, the map is initialized with the contet of <methods> - all the methods accessible in
 the current class. Only methods declared in the current class are elaborated. The rest are discarded from the map.
 */
-syntax KItem ::= elabMethods ( Map )
+syntax KItem ::= elabMethods ( Map ) | elabMethods (Signature, ClassType, Map)
+
+rule [elabMethods-Expand]:
+    elabMethods( Key:Signature |-> Value:ClassType M:Map) => elabMethods(Key, Value, M)
 
 rule [elabMethods-Heat-MethodParams]:
     <k>
-      (. => addElabEnv ~> elab(ParamsList))
-      ~> elabMethods( (Sig:Signature |-> Class => .Map) _)
+      (elabMethods(Sig:Signature, Class, M:Map) => addElabEnv ~> elab(ParamsList) ~> elabMethods(M))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -92,7 +94,7 @@ rule [elabMethods-Cool-Method]:
     <methodBody> CHOLE => Body </methodBody>
     <methodMetaType> methodMMT </methodMetaType>
 
-rule [elabMethods-Cool-Constructor]:
+rule [elabMethods-Cool-Constructor-nonEmpty]:
     <k>
       (elabRes(Body:K) => removeLastElabEnv) ~> elabMethods(_:Map)
       ...
@@ -102,9 +104,21 @@ rule [elabMethods-Cool-Constructor]:
     (<methodConstrFirstLine> FirstLine:K </methodConstrFirstLine> => .Bag)
     <methodBody> CHOLE => [FirstLine,, Body] </methodBody>
     <methodMetaType> constructorMMT => methodMMT </methodMetaType>
+    when FirstLine =/=K .K
+
+rule [elabMethods-Cool-Constructor-empty]:
+    <k>
+      (elabRes(Body:K) => removeLastElabEnv) ~> elabMethods(_:Map)
+      ...
+    </k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
+    (<methodConstrFirstLine> .K </methodConstrFirstLine> => .Bag)
+    <methodBody> CHOLE => [Body] </methodBody>
+    <methodMetaType> constructorMMT => methodMMT </methodMetaType>
 
 rule [elabMethods-discard-method]:
-    <k> elabMethods( (Sig:Signature |-> DeclClass:ClassType => .Map) _) ... </k>
+    <k> elabMethods(_, DeclClass:ClassType, M:Map) => elabMethods(M) ... </k>
     <crntClass> Class:ClassType </crntClass>
 when
     DeclClass =/=K Class
@@ -131,8 +145,8 @@ rule [elabStaticInit-End]:
 //@Adds a new empty layer to <elabEnv>
 syntax KItem ::= "addElabEnv"
 rule [addElabEnv]:
-    <k> addElabEnv => . ...</k>
-    <elabEnv> . => ListItem(mapWrap(.Map)) ...</elabEnv>
-    <localTypes> . => ListItem(mapWrap(.Map)) ...</localTypes>
+    <k> addElabEnv => .K ...</k>
+    <elabEnv> .List => ListItem(mapWrap(.Map)) ...</elabEnv>
+    <localTypes> .List => ListItem(mapWrap(.Map)) ...</localTypes>
 
 endmodule

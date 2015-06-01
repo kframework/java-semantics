@@ -18,10 +18,10 @@ syntax KItem ::=  processClasses (
 
 rule [processClasses]:
     (. => processTypeWithDepends(Class))
-    ~>  processClasses(setWrap( (SetItem(Class:ClassType) => .) _:Set))
+    ~>  processClasses(setWrap( (SetItem(Class:ClassType) => .Set) _:Set))
 
 rule [processClasses-Discard]:
-    processClasses(setWrap(.)) => .
+    processClasses(setWrap(.Set)) => .
 
 syntax KItem ::=  processTypeWithDepends (
                 ClassType  //the class to be processed,
@@ -89,7 +89,7 @@ rule [processType]:
       <classType> Class </classType>
       <extends> BaseClass:ClassType </extends>
       <implements> ISet:Set </implements>
-      <implTrans> . => ISet </implTrans>
+      <implTrans> .Set => ISet </implTrans>
       ( <rawDeclarations> Decls:K </rawDeclarations> => .Bag)
       <classMetaType> MetaT:ClassMetaType </classMetaType>
       <classPhase> DecsProcessedCPhase => MembersProcessedCPhase </classPhase>
@@ -108,7 +108,7 @@ syntax KItem ::= computeImplTrans ( Set )
 rule [computeImplTrans]:
     <k>
       (. => saveImplTrans(setUnion(setWrap(ITrans), setWrap(BaseItfITrans))))
-      ~> computeImplTrans( (SetItem(BaseItf:ClassType) => .) _)
+      ~> computeImplTrans( (SetItem(BaseItf:ClassType) => .Set) _)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -117,9 +117,9 @@ rule [computeImplTrans]:
     <classType> BaseItf </classType>
     <implTrans> BaseItfITrans:Set </implTrans>
 
-rule [computeImplTrans-Elem-Discard]: computeImplTrans( (SetItem(noClass) => .) _)
+rule [computeImplTrans-Elem-Discard]: computeImplTrans( (SetItem(noClass) => .Set) _)
 
-rule [computeImplTrans-Discard]: computeImplTrans(.) => .
+rule [computeImplTrans-Discard]: computeImplTrans(.Set) => .K
 
 syntax KItem ::=  saveImplTrans (
                 K //setWrap(ISet) - transitive set of inherited interfaces
@@ -135,11 +135,12 @@ rule <k> saveImplTrans(setWrap(S1:Set)) => . ...</k>
 syntax KItem ::= tryInheritSet ( Set )
            | tryInherit ( ClassType )
            | tryInheritImpl ( Map )
+           | tryInheritImpl ( K , K )
 
 rule [tryInheritSet]:
-    (. => tryInherit(Class:ClassType)) ~> tryInheritSet( (SetItem(Class) => .) _)
+    (.K => tryInherit(Class:ClassType)) ~> tryInheritSet( (SetItem(Class) => .Set) _)
 
-rule [tryInheritSet-Discard]: tryInheritSet(.) => .
+rule [tryInheritSet-Discard]: tryInheritSet(.Set) => .K
 
 rule [tryInherit]:
     <k>
@@ -153,17 +154,17 @@ rule [tryInherit-Discard]:
     tryInherit(noClass) => .K
 
 rule [tryInheritImpl-Unfold]:
-    <k> (. => tryInheritImpl(MI)) ~> tryInheritImpl( (MI:MapItem => .) _:MapItem _) ...</k>
+    (.K => tryInheritImpl(M, I)) ~> tryInheritImpl((M:K |-> I:K => .Map) _:Map)
 
 rule [tryInheritImpl]:
-    tryInheritImpl(Sig:K |-> DecClass:ClassType)
+    tryInheritImpl(Sig:K , DecClass:ClassType)
     => ifAux(
           isInheritable(getMethodAccessMode(methodRef(Sig, DecClass))),
           inherit(methodRef(Sig, DecClass)),
           .K
        )
 
-rule [tryInheritImpl-empty-Discard]: tryInheritImpl(.Map) => .
+rule [tryInheritImpl-empty-Discard]: tryInheritImpl(.Map) => .K
 
 syntax KItem ::= isInheritable ( AccessMode )                        [strict]
 
@@ -202,7 +203,7 @@ rule [inherit]:
     <k> inherit(methodRef(Sig:Signature, DecClass:ClassType)) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <methods> Env:Map => Env[DecClass/Sig] </methods>
+    <methods> Env:Map => Env[Sig <- DecClass] </methods>
 
 /*@ \subsection{Method declaration}
 Methods are now typed and we need to store their types in their
@@ -225,16 +226,15 @@ the only difference is the addition of the types.  */
 */
 
 //resolving the return type
-context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _),, _)
+context 'MethodDec('MethodDecHead(_,, _,, HOLE,, _,, _,, _),, _)
 
 //Resolve parameter types
-context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, HOLE,, _:K),, _:K) [result(Params)]
+context 'MethodDec('MethodDecHead(_,, _,, _:Type,, _:Id,, HOLE,, _),, _) [result(Params)]
 
 rule [MethodDec]:
     <k>
       'MethodDec(
-        'MethodDecHead(Modifiers:KListWrap,, _:K,, ReturnType:Type,, Name:Id,,Params:Params,, _:K
-        ),,
+        'MethodDecHead(Modifiers:AnnoMethodModList,, _:K,, ReturnType:Type,, Name:Id,,Params:Params,, _:K),,
         Body:K //could be 'Block([...]) or 'NoMethodBody
       )
       => storeMethod(Params,
@@ -243,17 +243,11 @@ rule [MethodDec]:
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-//when
-//    paramTypesResolved([Params])                            [structural]
-//
-//syntax KItem ::= paramTypesResolved( KListWrap )              [function]
-//rule paramTypesResolved([('Param(_:K,, T:Type,, _:Id) => .KList),, _])
-//rule paramTypesResolved([.KList]) => true
 
 rule [AbstractMethodDec]:
-    'AbstractMethodDec(_:K,, Ks:KList)
+    'AbstractMethodDec(_:AnnoAbstractMethodModList,, Ks:KList)
     =>  'MethodDec(
-          'MethodDecHead(['Public(.KList),,'Abstract(.KList)],, Ks),,
+          'MethodDecHead('AnnoMethodModList('Public(.KList),,'AnnoMethodModList('Abstract(.KList),, .AnnoMethodModList)),, Ks),,
           'NoMethodBody(.KList)
         )
 
@@ -291,7 +285,7 @@ rule [storeMethod]:
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <methods> Env:Map => Env[Class / Sig] </methods>
+    <methods> Env:Map => Env[Sig <- Class] </methods>
     ( .Bag => <methodDec>
                      <methodSignature> Sig </methodSignature>
                      <methodReturnType> ReturnType </methodReturnType>
@@ -318,6 +312,8 @@ rule [storeMethod-discard-default-constructor]:
     <classType> Class </classType>
     <methods>... Sig |-> _ ...</methods>
 
+//Resolve parameter types
+context 'ConstrDec('ConstrDecHead(_,, _,, _:Id,, HOLE,, _),, _)   [result(Params)]
 
 rule [ConstrDec-SuperCall-Desugar]:
     <k>
@@ -326,7 +322,7 @@ rule [ConstrDec-SuperCall-Desugar]:
         'ConstrBody(
           (
             'None(_)
-            => 'Some('SuperConstrInv( 'None(.KList),, [.KList] ))
+            => 'Some('SuperConstrInv( 'None(.KList),, .Exps ))
           ),,
           _:K
         )
@@ -337,60 +333,58 @@ rule [ConstrDec-SuperCall-Desugar]:
 when
     Class =/=K classObject
 
-rule [ConstrDec-Object-Desugar]:
+//We don't have synchorinzed as AnnoConstrMod, the fouth argument for storeMethod can be false directly
+rule [ConstrDec-Object]:
     <k>
       'ConstrDec(
-        'ConstrDecHead(_:K,, _:K,, Name:Id,, _:KList),,
+        'ConstrDecHead(Modifiers:AnnoConstrModList,, _:K,, Name:Id,, Params:Params,, _),,
         'ConstrBody(
           (
-            'None(_) => 'Some(.K)
+            'None(_)
           ),,
-          _:K
+          [BodyKs:KList]
         )
       )
+      => storeMethod(Params,
+                instanceCT, getAccessMode(Modifiers), false::bool, constructorMMT, .K,
+                'Block([BodyKs]), sig(getConsName(Class), getTypes(Params)), void)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
 when
     Class ==K classObject
 
-//Resolve parameter types
-context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, HOLE,, _),, _:K)   [result(Params)]
-
 rule [ConstrDec]:
     <k>
-      'ConstrDec('ConstrDecHead(Modifiers:KListWrap,, _:K,, Name:Id,, Params:Params,, _),,
+      'ConstrDec('ConstrDecHead(Modifiers:AnnoConstrModList,, _:K,, Name:Id,, Params:Params,, _),,
           'ConstrBody(
         'Some(FirstLine:K) ,,[BodyKs:KList]))
       => storeMethod(Params,
-          instanceCT, getAccessMode(Modifiers), isSynchronizedModifiers(Modifiers), constructorMMT, FirstLine,
+          instanceCT, getAccessMode(Modifiers), false::bool, constructorMMT, FirstLine,
           'Block([
-
             //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
             //Invocation of instance initializer converted into a method.
-            #if getKLabel(FirstLine) ==KLabel 'SuperConstrInv orBool getKLabel(FirstLine) ==KLabel 'QSuperConstrInv
-              #then 'ExprStm('Invoke('Method('MethodName( String2Id("$instance_init") )),, [.KList]))
-              #else [.KList] //vacuous
-            #fi,,
+            if(getKLabel(FirstLine) ==KLabel 'SuperConstrInv orBool getKLabel(FirstLine) ==KLabel 'QSuperConstrInv)
+              'ExprStm('Invoke('Method('MethodName( String2Id("$instance_init") )),, .Exps))
+            ,,
             BodyKs
           ]),
           sig(getConsName(Class), getTypes(Params)), void)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-//when paramTypesResolved([Params])
 
-// 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, InitExp:K),, _])
+// 'FieldDec(Modifiers,, T:Type,, ['VarDec(X:Id,, InitExp:K),, _])
 
-//resolve field declaration type
-context 'FieldDec(_:K,, HOLE,, _)
+//resolve field declaration type todo use strictness instead
+context 'FieldDec(_,, HOLE,, _)
 
 rule [FieldDec-Multi-Desugar]:
     (. => 'FieldDec(SomeK,, T,, [K1])) ~>
     'FieldDec(SomeK:K,, T:Type,, [(K1:K => .KList),, K2:K,, Ks:KList])
 
 rule [FieldDec-with-init-desugar]:
-    'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
+    'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
     ~> (. => 'InstanceInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
@@ -398,10 +392,10 @@ when
         [structural]
 
 rule [FieldDec-Instance]:
-    <k> 'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
+    <k> 'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <instanceFields> [_,, ( .KList => 'FieldDec([.KList],, T,, ['VarDec(X:Id)]) )] </instanceFields>
+    <instanceFields> [_,, ( .KList => 'FieldDec(.AnnoFieldModList,, T,, ['VarDec(X:Id)]) )] </instanceFields>
 when
     getContextType(Modifiers) ==K instanceCT
         [structural]
@@ -417,7 +411,7 @@ rule [InstanceInit]:
 /*@ Desugaring a static field declaration with initializer into a declaration without initializer.
 Followed by a static initializer block, if this field is not a compile-time constant.*/
 rule [FieldDec-StaticInit-Desugar]:
-    'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
+    'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
     ~> (. => 'StaticInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
@@ -430,10 +424,10 @@ when
         [structural]
 
 rule [FieldDec-Static]:
-    <k> 'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
+    <k> 'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id)]) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <staticFields> [_,, ( .KList => 'FieldDec(['Static(.KList)],, T,, ['VarDec(X)]) )] </staticFields>
+    <staticFields> [_,, ( .KList => 'FieldDec('AnnoFieldModList('Static(.KList),, .AnnoFieldModList),, T,, ['VarDec(X)]) )] </staticFields>
 when
     getContextType(Modifiers) ==K staticCT
         [structural]
@@ -452,16 +446,23 @@ rule [StaticInit-Save]:
   Interface fields are not necessarily compile-time constants.
 */
 rule [ConstantDec-Desugar]:
-    'ConstantDec([ModifiersKs:KList],, TypeK:K,, VarDecs:KListWrap)
+    'ConstantDec(ModifiersKs:AnnoConstantModList,, TypeK:K,, VarDecs:KListWrap)
     => 'FieldDec(
-          [ModifiersKs,, 'Public(.KList),, 'Static(.KList),, 'Final(.KList)],,
+          'AnnoFieldModList('Public(.KList),, 'AnnoFieldModList('Static(.KList),, 'AnnoFieldModList('Final(.KList),,
+          ConstantToFieldModifiers(ModifiersKs)))),,
           TypeK,, VarDecs
         )
+
+syntax AnnoFieldModList ::= ConstantToFieldModifiers ( AnnoConstantModList ) [function]
+                           |ConstantToFieldModifiers ( AnnoConstantModList, AnnoFieldModList ) [function]
+rule ConstantToFieldModifiers(C) => ConstantToFieldModifiers(C, .AnnoFieldModList)
+rule ConstantToFieldModifiers(Hd:AnnoConstantMod Tl:AnnoConstantModList, F) => ConstantToFieldModifiers(Tl, 'AnnoFieldModList(Hd,,F))
+rule ConstantToFieldModifiers(.AnnoConstantModList, F) => F
 
 /*@Subsection compile-time constants*/
 
 //compute the value of a compile-time constant
-context 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, HOLE) ])
+context 'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id,, HOLE) ])
 when
             getContextType(Modifiers) ==K staticCT
     //condition for not being compile-time constant
@@ -469,12 +470,12 @@ when
 
 rule [FieldDec-compile-time-constant]:
     <k>
-      'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id,, TV:TypedVal) ]) => .
+      'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, ['VarDec(X:Id,, TV:TypedVal) ]) => .
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <constantEnv> Env:Map => Env[TV/X] </constantEnv>
+    <constantEnv> Env:Map => Env[X <- TV] </constantEnv>
 when
             getContextType(Modifiers) ==K staticCT
     andBool isFinalModifiers(Modifiers)
@@ -502,28 +503,22 @@ rule [convertInstanceInitIntoMethod]:
 
 //@ Evaluates to true::bool if synchronized is among modifiers, false otherwise
 syntax KItem ::=  isSynchronizedModifiers (
-                KListWrap       //[...] - the list of method attributes
+                AnnoMethodModList       //[...] - the list of method attributes
               )
               [function]
 
-rule isSynchronizedModifiers(['Synchronized(_),,_]) => true::bool
-
-rule isSynchronizedModifiers([(KL:KLabel(_) => .KList),, _])
-when        KL =/=KLabel 'Synchronized
-
-rule isSynchronizedModifiers([.KList]) => false::bool
+rule isSynchronizedModifiers(synchronized _:AnnoMethodModList) => true::bool
+rule isSynchronizedModifiers(.AnnoMethodModList) => false::bool
+rule isSynchronizedModifiers(Hd Rest:AnnoMethodModList) => isSynchronizedModifiers(Rest) when Hd =/=K synchronized
 
 //@ Used to provide an approximate implementation of the distinction between static constant and non-constant fields.
 syntax KItem ::=  isFinalModifiers (
-                KListWrap   //[...] - the list of method attributes
+                AnnoFieldModList   //[...] - the list of method attributes
               )
               [function]
 
-rule isFinalModifiers(['Final(_),,_]) => true
-
-rule isFinalModifiers([(KL:KLabel(_) => .KList),, _])
-when        KL =/=KLabel 'Final
-
-rule isFinalModifiers([.KList])      => false
+rule isFinalModifiers(final _) => true
+rule isFinalModifiers(Hd Rest:AnnoFieldModList) => isFinalModifiers(Rest) when Hd =/=K final
+rule isFinalModifiers(.AnnoFieldModList) => false
 
 endmodule

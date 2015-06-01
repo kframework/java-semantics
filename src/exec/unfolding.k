@@ -27,9 +27,11 @@ rule [unfolding-class-unfold-top-level]:
               </class>
     )
     <program> [(ClassDec:K => .KList),, _] </program>
+    <NumOfClassesToUnfold> I:Int => I +Int 1 </NumOfClassesToUnfold>
 
 rule [unfolding-class-unfold-inner]:
     <k> unfoldingPhase </k>
+    <NumOfClassesToUnfold> I:Int => I +Int 1 </NumOfClassesToUnfold>
     (.Bag =>  <class>
                 <classType> getClassFromClassDec(ClassDecKL(ClassDecKs)) </classType>
                 <enclosingClass> EnclosingClass </enclosingClass>
@@ -92,14 +94,44 @@ rule [unfolding-class-inherit-methods-object-and-interfaces]:
     </folded>
     <classPhase> FoldedCPhase => UnfoldingStartedCPhase </classPhase>
 
-rule [unfolding-class-members-except-methods]:
+//rule [unfolding-class-members-except-methods]:
+//    <k> unfoldingPhase </k>
+//    <classType> Class:ClassType </classType>
+//    <classMetaType> _ => getClassMetaType(KL) </classMetaType>
+//    <extends> _ => BaseClass </extends>
+//    <instanceFields> [_ => InstanceFields] </instanceFields>
+//    <staticFields> [_ => StaticFields] </staticFields>
+//    <staticInit> [_ => StaticInit] </staticInit>
+//    <folded>
+//      KL:KLabel(
+//        'ClassDecHead(
+//          AccessMode:AccessMode,,
+//          Class,,
+//          'None(.KList),,
+//          'Some('SuperDec( BaseClass:ClassType )),,
+//          'Some('ImplementsDec( [_] ))
+//        ),,
+//        'ClassBody( [
+//            ( StaticFields:KList,,
+//              'StaticInit('Block(StaticInit:KList)),, //this particular construct assures that
+//                                                      //this rule will match in the right moment
+//Shijiao: due to the absence of associative matching, I changed this rule into the following 3 rules
+//              InstanceFields:KList
+//              => .KList
+//            ),,
+//            'MethodDec(_),,_:KList
+//        ] )
+//      )
+//    </folded>
+//    <classPhase> UnfoldingStartedCPhase </classPhase>
+//when
+//    notBool containsMethodDecs([InstanceFields]) ==K true
+
+
+rule [unfolding-class-members-staticFields]:
     <k> unfoldingPhase </k>
     <classType> Class:ClassType </classType>
-    <classMetaType> _ => getClassMetaType(KL) </classMetaType>
-    <extends> _ => BaseClass:ClassType </extends>
-    <instanceFields> [_ => InstanceFields:KList] </instanceFields>
-    <staticFields> [_ => StaticFields:KList] </staticFields>
-    <staticInit> [_ => StaticInit:KList] </staticInit>
+    <staticFields> [_,, (.KList => StaticField)] </staticFields>
     <folded>
       KL:KLabel(
         'ClassDecHead(
@@ -110,37 +142,86 @@ rule [unfolding-class-members-except-methods]:
           'Some('ImplementsDec( [_] ))
         ),,
         'ClassBody( [
-            ( StaticFields:KList,,
-              'StaticInit('Block(StaticInit:KList)),, //this particular construct assures that
-                                                      //this rule will match in the right moment
-              InstanceFields:KList
-              => .KList
-            ),,
-            'MethodDec(_),,_:KList
+            ( StaticField:K => .KList ),,
+            Rest:KList
         ] )
       )
     </folded>
     <classPhase> UnfoldingStartedCPhase </classPhase>
 when
-    notBool containsMethodDecs([InstanceFields]) ==K true
+    containsStaticInit([Rest])
 
-syntax KItem ::= getClassMetaType ( KLabel )      [function]
-rule getClassMetaType('ClassDec) => classCMT
-rule getClassMetaType('InterfaceDec) => interfaceCMT
+rule [unfolding-class-members-StaticInit-classMetaType-extends]:
+    <k> unfoldingPhase </k>
+    <classType> Class:ClassType </classType>
+    <classMetaType> _ => getClassMetaType(KL) </classMetaType>
+    <extends> _ => BaseClass </extends>
+    <staticInit> [_ => StaticInit] </staticInit>
+    <folded>
+      KL:KLabel(
+        'ClassDecHead(
+          AccessMode:AccessMode,,
+          Class,,
+          'None(.KList),,
+          'Some('SuperDec( BaseClass:ClassType )),,
+          'Some('ImplementsDec( [_] ))
+        ),,
+        'ClassBody( [
+            ( 'StaticInit('Block(StaticInit:KList)) => .KList )
+            ,,_:KList
+        ] )
+      )
+    </folded>
+    <classPhase> UnfoldingStartedCPhase </classPhase>
+
+rule [unfolding-class-members-instanceFields]:
+    <k> unfoldingPhase </k>
+    <classType> Class:ClassType </classType>
+    <instanceFields> [_,, (.KList => InstanceField)] </instanceFields>
+    <folded>
+      KL:KLabel(
+        'ClassDecHead(
+          AccessMode:AccessMode,,
+          Class,,
+          'None(.KList),,
+          'Some('SuperDec( BaseClass:ClassType )),,
+          'Some('ImplementsDec( [_] ))
+        ),,
+        'ClassBody( [
+            ( InstanceField:K => .KList ),,
+            Rest:KList
+        ] )
+      )
+    </folded>
+    <classPhase> UnfoldingStartedCPhase </classPhase>
+when
+    (notBool containsStaticInit([Rest])) andBool getKLabel(InstanceField) =/=KLabel 'MethodDec
+
+syntax KItem ::= getClassMetaType ( KLabel )
+rule getClassMetaType('ClassDec) => classCMT            [anywhere]
+rule getClassMetaType('InterfaceDec) => interfaceCMT    [anywhere]
 
 // True if given KListWrap contains a 'MethodDec(\_) term
-syntax KItem ::= containsMethodDecs(  KListWrap )  [function]
-rule containsMethodDecs([_,, 'MethodDec(_),, _]) => true
+//syntax KItem ::= containsMethodDecs(  KListWrap )  [function]
+//rule containsMethodDecs(['MethodDec(_),, _]) => true
+//rule containsMethodDecs([.KList]) => false
+//rule containsMethodDecs([K:K,, Rest]) => containsMethodDecs([Rest]) [owise]
+
+// True if given KListWrap contains a 'StaticInit(\_) term
+syntax KItem ::= containsStaticInit(  KListWrap )  [function]
+rule containsStaticInit(['StaticInit(_),, _]) => true
+rule containsStaticInit([.KList]) => false
+rule containsStaticInit([K:K,, Rest:KList]) => containsStaticInit([Rest:KList]) [owise]
 
 rule [unfolding-ImplementsDec]:
     <k> unfoldingPhase </k>
     <classType> Class:ClassType </classType>
-    <implTrans>... .Set => SetItem(BaseInterface:ClassType) ...</implTrans>
+    <implTrans>... .Set => SetItem(BaseInterface) ...</implTrans>
     <folded>
       _:KLabel(
         'ClassDecHead(
           _:K,, _:K,, _:K,, _:K,,
-          'Some('ImplementsDec([_,, (BaseInterface => .KList)]))
+          'Some('ImplementsDec([(BaseInterface:ClassType => .KList),,_]))
         ),,
         _
       )
@@ -162,7 +243,7 @@ rule [unfolding-MethodDec]:
       )
       ...
     </methodDecs>
-    <methods> Env:Map => Env[Class / sig(Name:Id, getTypes(Params))] </methods>
+    <methods> Env:Map => Env[sig(Name:Id, getTypes(Params)) <- Class] </methods>
     <folded>
       _:KLabel(
         'ClassDecHead(_),,
@@ -195,24 +276,13 @@ rule [unfolding-class-end]:
       </folded> => .Bag
     )
     <classPhase> UnfoldingStartedCPhase => UnfoldedCPhase </classPhase>
+    <NumOfClassesToUnfold> I:Int => I -Int 1 </NumOfClassesToUnfold>
 
 rule [UnfoldingPhase-end]:
     <k> unfoldingPhase => . </k>
     <globalPhase> UnfoldingPhase </globalPhase>
     <program> [.KList] </program>
     <classes> ClassesBag:Bag </classes>
-when
-    notBool containsFoldedClasses(ClassesBag) ==K true
-
-syntax KItem ::= containsFoldedClasses ( Bag ) [function]
-rule containsFoldedClasses(
-      <class>
-        <classPhase> ClassPhase:ClassPhase </classPhase>
-        ...
-      </class>
-      _:Bag
-     ) => true
-when
-    ClassPhase =/=K UnfoldedCPhase
+    <NumOfClassesToUnfold> 0 </NumOfClassesToUnfold>
 
 endmodule

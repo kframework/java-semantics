@@ -30,7 +30,7 @@ rule [system-out-print-string]:
       ) => nothing::void
       ...
     </k>
-    <out>... . => ListItem(Str) </out>
+    <out>... .List => ListItem(Str) </out>
 when
     Class ==K class String2Id("java.io.PrintWriter") andBool Id2String(MethodName) ==String "print"
 
@@ -72,11 +72,11 @@ syntax KItem ::=  "readInt"
 
 rule [readInt]:
     <k> readInt => I :: int ...</k>
-    <in> ListItem(I:Int) => . ...</in>
+    <in> ListItem(I:Int) => .List ...</in>
 
 rule [readString]:
     <k> readString => Str :: classString ...</k>
-    <in> ListItem(Str:String) => . ...</in>
+    <in> ListItem(Str:String) => .List ...</in>
 
 /*@ object.getClass()*/
 rule [object-getClass-on-object]:
@@ -216,7 +216,7 @@ rule [array-clone]:
     )
     => arrayCopy(
         arrayRef(arrayOf ElemT:Type, Loc:Int, Len:Int)::CompileT,
-        allocAndInitArray(ElemT, [Len::int], undefined :: ElemT)
+        allocAndInitArray(ElemT, [Len::int]:DimInt, undefined :: ElemT)
       )
 when
     Class ==K classArrayImpl andBool Id2String(MethodName) ==String "clone"
@@ -264,11 +264,11 @@ rule [storeCopy-discard]:
 */
 rule [Lit-Class-Instantiate]:
     <k>
-        (. => saveClassLiteral(T, new class String2Id("java.lang.Class") (toString(T)) ) )
+        (.K => saveClassLiteral(T, new class String2Id("java.lang.Class") (toString(T)) ) )
         ~> 'Lit('Class(T:Type))
       ...
     </k>
-    <classLiteralsMap> CLMap:Map (. => T |-> temp) </classLiteralsMap>
+    <classLiteralsMap> CLMap:Map (.Map => T |-> temp) </classLiteralsMap>
 when notBool T in keys(CLMap)
         [transition-threading]
 

@@ -11,17 +11,17 @@ fi
 JAVA_FILE=$1
 TOOLS_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
-echo "'ListWrap("
+echo "\`'ListWrap\`("
 
 if [ -f ${JAVA_FILE} ];
 then
   kjparse.sh ${JAVA_FILE}
-  echo ",,"
+  echo ","
 else
   find -P ${JAVA_FILE} -name "*.java" -type f |
   while read FILE; do
     kjparse.sh ${FILE}
-    echo ",,"
+    echo ","
   done
 fi
 
@@ -42,8 +42,8 @@ find ${TOOLS_DIR}/../class-lib -type f \( -name "*java" \) |
 
     # $KAST_FILE
     cat ${KAST_FILE}
-    echo ",,"
+    echo ","
   done
 
-echo ".K"
+echo ".::K"
 echo ")"

@@ -49,8 +49,14 @@ rule [elabEnd-findQualifierForName]:
     <enclosingClass> QualEncloserClass:ClassType </enclosingClass>
     <methods> Methods:Map </methods>
 
-syntax KItem ::= containsName ( Map , Id )        [function]
-rule containsName((sig(Name, _) |-> _) _:Map, Name:Id) => true
+//@Checks whether a given map contains the given Id in its key:sig(Id,_)
+syntax KItem ::= containsName ( Map , Id )                      [function]
+               | containsName ( Signature, Map , Id )           [function]
+
+rule containsName((S:Signature |-> _) Remains:Map, Name:Id) => containsName(S, Remains, Name)
+rule containsName(sig(Name,_), _, Name:Id) => true
+rule containsName(sig(Name1:Id,_), Remains:Map, Name:Id) => containsName(Remains, Name) when Name1 =/=K Name
+rule containsName(.Map, _) => false
 
 //@Happens for 'NewInstance expressions for static inner classes.
 rule [elabEnd-findQualifierForName-static]:
@@ -70,8 +76,8 @@ rule [SuperMethod-desugar]:
 
 rule [elabEnd-Invoke-QSuperMethod-to-lookupMethod]:
     <k>
-      ( . => lookupMethod(BaseClass, true, Name, [ArgExps]) )
-      ~> elabEnd('Invoke( 'QSuperMethod(Class:ClassType,, _:K,, Name:Id),, [ArgExps:KList] ))
+      ( . => lookupMethod(BaseClass, true, Name, ArgExps) )
+      ~> elabEnd('Invoke( 'QSuperMethod(Class:ClassType,, _:K,, Name:Id),, ArgExps:Exps ))
       ...
     </k>
     <classType> Class </classType>
@@ -79,10 +85,10 @@ rule [elabEnd-Invoke-QSuperMethod-to-lookupMethod]:
 
 rule [methodLookupResult-Invoke-QSuperMethod-static-end]:
     <k>
-      methodLookupResult(RetT:Type, [ExpectedArgExps:KList], staticCT)
+      methodLookupResult(RetT:Type, ExpectedArgExps:Exps, staticCT)
       ~>  elabEnd('Invoke( 'QSuperMethod(Class:ClassType,, _:K,, Name:Id),, _ ))
       =>  elabEnd(cast(RetT,
-                  'Invoke( 'Method( 'MethodName( BaseClass,, Name:Id ) ),, [ExpectedArgExps] )
+                  'Invoke( 'Method( 'MethodName( BaseClass,, Name:Id ) ),, ExpectedArgExps )
           ))
       ...
     </k>
@@ -90,20 +96,20 @@ rule [methodLookupResult-Invoke-QSuperMethod-static-end]:
     <extends> BaseClass:ClassType </extends>
 
 rule [methodLookupResult-Invoke-QSuperMethod-instance-end]:
-    methodLookupResult(RetT:Type, [ExpectedArgExps:KList], instanceCT)
+    methodLookupResult(RetT:Type, ExpectedArgExps:Exps, instanceCT)
     ~>  elabEnd('Invoke( 'QSuperMethod(Class:ClassType,, K2:K,, Name:Id),, _ ))
     =>  elabEnd(cast(RetT,
             'Invoke(
               'QSuperMethod(Class:ClassType,, K2:K,, Name:Id),,
-              [ExpectedArgExps]
+               ExpectedArgExps
             )
           )
         )
 
 rule [elabEnd-Invoke-to-lookupMethod]:
     ( . => lookupMethod(getLookupTargetType(typeOf(Qual)),
-                        isCastOfQThis(Qual) ==K true, Name, [ArgExps]) )
-    ~> elabEnd('Invoke( 'Method('MethodName(Qual:K,, Name:Id)),, [ArgExps:KList] ))
+                        isCastOfQThis(Qual) ==K true, Name, ArgExps) )
+    ~> elabEnd('Invoke( 'Method('MethodName(Qual:K,, Name:Id)),, ArgExps:Exps))
 
 //@ Returnts the same type for classes, arrayImplClass for arrays.
 syntax KItem ::= getLookupTargetType ( RefType )    [function]
@@ -113,6 +119,7 @@ rule getLookupTargetType(arrayOf _) => classArrayImpl
 // True for cast(T,'QThis(\_)), false otherwise
 syntax KItem ::= isCastOfQThis ( K )                                      [function]
 rule isCastOfQThis(cast(_, 'QThis(_))) => true
+rule isCastOfQThis(_) => false [owise]
 
 /*@ Lookup the right methodRef() based on supplied parameters.
 If the method is not found in the supplied class list, we should search for it in the
@@ -123,14 +130,14 @@ syntax KItem ::=  lookupMethod (
                 ClassType,//target class, even for arrays.
                 Bool,     //QualIsThis - true if qualifier is cast(_, 'QThis(_)) or cast(_, superMethod(_))
                 Id,       //method name
-                KListWrap //[ArgExps] - parameter expressions of type Cast
+                Exps //[ArgExps] - parameter expressions of type Cast
               )
 
 syntax KItem ::=  lookupMethod (
                 ClassType,//target class, even for arrays.
                 Bool,     //QualIsThis - true if qualifier is cast(_, 'QThis(_)) or cast(_, superMethod(_))
                 Id,       //method name
-                KListWrap,//[ArgExps] - parameter expressions of type Cast
+                Exps,//[ArgExps] - parameter expressions of type Cast
                 MethodRef,//Evaluates to the signature to be called, or noMethodRef if no signature was found yet
                             // Sig format: mapWrap(Sig |-> MethodTV)
                             // Initialized with noMethodRef
@@ -139,14 +146,15 @@ syntax KItem ::=  lookupMethod (
               )
               [strict(5, 6)]
 
-rule lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, [ArgExps:KList])
-     => lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, [ArgExps], noMethodRef, tempKResult)
+rule lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, ArgExps:Exps)
+     => lookupMethod(QualClass:ClassType, QualIsThis:Bool, MethodName:Id, ArgExps, noMethodRef, tempKResult)
 
 /*@ A Temporary KResult that prevents this term to be heated before it is transformed by another rule int a proper
   term to be heated. This is not a final KResult in its surrounding context. Basically, this term is used to cheat
   K heating rules.
 */
-syntax KResult ::= "tempKResult"
+syntax TmpKR ::= "tempKResult"
+syntax MKR ::= TmpKR
 
 //All cases
 rule [lookupMethod-to-lookupSignature]:
@@ -155,8 +163,8 @@ rule [lookupMethod-to-lookupSignature]:
         QualClass:ClassType,
         QualIsThis:Bool,
         MethodName:Id,
-        [ArgExps:KList],
-        noMethodRef => lookupSignature(MethodName, getTypes([ArgExps]), Methods,
+        ArgExps:Exps,
+        noMethodRef => lookupSignature(MethodName, getTypes(ArgExps), Methods,
                                     notBool QualIsThis, noMethodRef, QualClass),
         tempKResult
       )
@@ -170,35 +178,32 @@ because this body might not be elaborated.*/
 rule [lookupMethod-SigFound]:
     lookupMethod(
       _,_,_,
-      [ArgExps:KList],
+      ArgExps:Exps,
       methodRef(sig( Name:Id, ArgTypes:Types ), _),
-      tempKResult => methodCastArguments(ArgTypes, [ArgExps], [.KList])
+      tempKResult => methodCastArguments(ArgTypes, ArgExps, .Exps)
     )
 
 syntax KItem ::=  methodCastArguments (
                 Types,      //ArgTypes - argument types
-                KListWrap,  //ArgExps - actual parameters
-                KListWrap   //Result of parameter casting. Initialized with .KList
-              )
+                Exps,  //ArgExps - actual parameters
+                Exps   //Result of parameter casting. Initialized with .Exp
+              )     [function]
 
 rule [methodCastArguments-process]:
-    methodCastArguments(
-      types(((ArgType:Type) => .KList),, _),
-      [(ParamExp:K => .KList),, _],
-      [_,, (.KList => cast(ArgType, ParamExp))]
-    )
+    methodCastArguments(types(ArgType:Type,, Types:KList), (ParamExp:Exp,Tl:Exps), E:Exps)
+    => methodCastArguments(types(Types), Tl, addElementToExpsEnd(E, cast(ArgType, ParamExp)))
 
 rule [methodCastArguments-end]:
-    methodCastArguments(types(.KList), [.KList], [ExpectedArgExps:KList]) => kr[ExpectedArgExps]
+    methodCastArguments(types(.KList), .Exps, ExpectedArgExps:Exps) => ExpectedArgExps
 
 rule [lookupMethod-end]:
     <k>
       lookupMethod(
         _,_,_,_,
-         methodRef(Sig:Signature, Class:ClassType),
-        kr[ExpectedArgExps:KList]
+        methodRef(Sig:Signature, Class:ClassType),
+        ExpectedArgExps:Exps
       )
-      => methodLookupResult(RetT, [ExpectedArgExps], CT)
+      => methodLookupResult(RetT, ExpectedArgExps, CT)
       ...
     </k>
     <classType> Class </classType>
@@ -211,7 +216,7 @@ rule [lookupMethod-end]:
 */
 syntax KItem ::=  methodLookupResult (
                 Type ,      // Return type
-                KListWrap , // ExpectedArgExps
+                Exps , // ExpectedArgExps
                 ContextType // Called method context type
               )
 
@@ -221,7 +226,7 @@ syntax KItem ::=  methodLookupResult (
     as is even for static methods.
 */
 rule [methodProcessArguments-Invoke-end]:
-    methodLookupResult(RetT:Type, [ExpectedArgExps:KList], CT:ContextType)
+    methodLookupResult(RetT:Type, ExpectedArgExps:Exps, CT:ContextType)
     ~>  elabEnd('Invoke( 'Method('MethodName(QualK:K,, Name:Id)),, _ ))
     =>  elabEnd(
           cast(RetT,
@@ -235,7 +240,7 @@ rule [methodProcessArguments-Invoke-end]:
                   Name:Id
                 )
               ),,
-              [ExpectedArgExps]
+              ExpectedArgExps
             )
           )
         )
@@ -254,33 +259,70 @@ syntax KItem ::=  lookupSignature (
               )
               [strict(2,5)]
 
+syntax KItem ::=  lookupSignature (
+                Id,       // MethodName
+                K,        // Computes into Types - argument types
+                Signature,
+                ClassType,
+                Map,        // methods environment - Map[sig -> Class]
+                Bool,     // IsQ - whether the original method call was qualified
+                MethodRef, // The best signature found so far
+                              // or noValue if none found
+                ClassType // QualClass - target type.
+              )
+
+rule [lookupSignature-Expand]:
+        lookupSignature(
+                       MethodName:Id,
+                       CallTs:Types,
+                       (Key |-> Value) M:Map,
+                       IsQ,
+                       OldMethodRef,
+                       QualClass)
+        => lookupSignature(
+                             MethodName,
+                             CallTs,
+                             Key, Value,
+                             M,
+                             IsQ,
+                             OldMethodRef,
+                             QualClass)
+
 rule [lookupSignature-Main]:
     <k>
       lookupSignature(
         MethodName:Id,
         CallTs:Types,
-        (sig(MethodName, SigTs:Types) |-> NewDecClass:ClassType => .) _:Map,
+        sig(MethodName, SigTs:Types), NewDecClass:ClassType,
+        M:Map,
         IsQ:Bool,
-        OldMethodRef:MethodRef
-        => ifAux(
-            andAux(
-              andAux(
-                subtypeList(CallTs, SigTs),
-                #if OldMethodRef ==K noMethodRef
-                  #then true
-
-                  //An aux function here is required because OldMethodRef could be noMethodRef as well,
-                  //for which there are no arg types
-                  #else subtypeList(SigTs, getMethodRefArgTypes(OldMethodRef))
-                #fi
-              ),
-              isAccessible( NewAccMode, NewCT, NewDecClass, IsQ, QualClass )
-            ),
-            methodRef(sig(MethodName, SigTs), NewDecClass),
-            OldMethodRef
-          ),
+        OldMethodRef:MethodRef,
         QualClass:ClassType
-      )
+      ) =>
+      lookupSignature(
+              MethodName,
+              CallTs,
+              M,
+              IsQ,
+              (ifAux(
+                  andAux(
+                    andAux(
+                      subtypeList(CallTs, SigTs),
+                      #if OldMethodRef ==K noMethodRef
+                        #then true
+
+                        //An aux function here is required because OldMethodRef could be noMethodRef as well,
+                        //for which there are no arg types
+                        #else subtypeList(SigTs, getMethodRefArgTypes(OldMethodRef))
+                      #fi
+                    ),
+                    isAccessible( NewAccMode, NewCT, NewDecClass, IsQ, QualClass )
+                  ),
+                  methodRef(sig(MethodName, SigTs), NewDecClass),
+                  OldMethodRef
+                )),
+              QualClass
+            )
       ...
     </k>
     <classType> NewDecClass </classType>
@@ -293,13 +335,22 @@ rule getMethodRefArgTypes( methodRef(sig(_, Ts:Types), _) ) => Ts
 
 rule [lookupSignature-SigDiscard]:
     lookupSignature(
-      MethodName:Id,
-      _,
-      (sig(Name:Id, _) |-> _ => .) _:Map,
-      _,_,_
-    )
-when
-    Name =/=K MethodName
+            MethodName:Id,
+            CallTs:Types,
+            sig(Name:Id, _), _,
+            M:Map,
+            IsQ:Bool,
+            OldMethodRef:MethodRef,
+            QualClass:ClassType
+          ) =>
+          lookupSignature(
+                  MethodName,
+                  CallTs,
+                  M,
+                  IsQ,
+                  OldMethodRef,
+                  QualClass)
+    when Name =/=K MethodName
 
 rule [lookupSignature-End]:
     lookupSignature(_,_, .Map,_, MethodRef:MethodRef, _) => MethodRef

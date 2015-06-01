@@ -14,19 +14,19 @@ The initial configuration contains the initial program in cells <k> and <program
 
 /*@ \subsection{Compilation units}*/
 
-// 'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _)
+// 'CompilationUnit('Some('PackageDec(_,, Pack:PackageId)),, _)
 rule [CompilationUnit-DefaultPackage-Desugar]:
     'CompilationUnit(
-      ( 'None(_) => 'Some('PackageDec(.K,, 'PackageName( [.KList] ))) ),,
+      ( 'None(_) => 'Some('PackageDec(.AnnoList,, 'PackageName( .IdList ))) ),,
       _
     )
 
 //resolve the package name
-context 'CompilationUnit('Some('PackageDec(_:K,, HOLE)),, _)
+context 'CompilationUnit('Some('PackageDec(_,, HOLE)),, _)
 
 rule [CompilationUnit]:
     <k>
-      'CompilationUnit('Some('PackageDec(_:K,, Pack:PackageId)),, _:K,,
+      'CompilationUnit('Some('PackageDec(_,, Pack:PackageId)),, _:K,,
           [Decs:KList]
       ) => processTypeNames([Decs], Pack)
       ...
@@ -58,6 +58,26 @@ when Str =/=String ""                                                           
 rule [packageNameImpl-End]:
     packageNameImpl(Str:String, [.KList]) => packageId(String2Id(Str))                  [structural]
 
+//todo repitition
+
+rule [PackageName-Start]:
+    'PackageName(Ks:IdList) => packageNameImpl("", Ks)                  [structural]
+
+//Aux construct for processing packages
+syntax PackageId ::= packageNameImpl ( String, IdList )             [function]
+
+rule [packageNameImpl-FirstPack]:
+    packageNameImpl("", NextKId:Id . Ks:IdList)
+    => packageNameImpl(Id2String(NextKId), Ks)                                          [structural]
+
+rule [packageNameImpl-NextPack]:
+    packageNameImpl(Str:String, NextKId:Id . Ids:IdList)
+    => packageNameImpl(Str +String "." +String Id2String(NextKId), Ids)
+when Str =/=String ""                                                                   [structural]
+
+rule [packageNameImpl-End]:
+    packageNameImpl(Str:String, .IdList) => packageId(String2Id(Str))                  [structural]
+
 /*@ \subsection{Class declaration}*/
 
 /*@ Wrapper of declarations inside a compilation unit. Used to distinguish
@@ -69,16 +89,17 @@ syntax KItem ::=  processTypeNames (
 
 rule [processTypeNames-AddPackage]:
     <k> processTypeNames(_, PackId:PackageId) ...</k>
-    <namesToClasses> PackMap:Map => PackMap[mapWrap(.Map) / PackId] </namesToClasses>
+    <namesToClasses> PackMap:Map => PackMap[PackId <- mapWrap(.Map)] </namesToClasses>
 when notBool PackId in keys(PackMap)
 
 /*@ A type name is either class or interface name. Anonymous labels will be one of:
       - 'ClassDec('ClassDecHead(...))
-      - 'InterfaceDec('InterfaceDecHead(...))*/
-rule [processTypeNames]:
+      - 'InterfaceDec('InterfaceDecHead(...))
+      todo repitition*/
+rule [processTypeNamesClass]:
     <k>
       processTypeNames(
-        [(DecLabel:KLabel(_:KLabel(Modifiers:KListWrap,, SimpleClass:Id,, _),, CBody:K) => .KList),, _],
+        [('ClassDec('ClassDecHead(Modifiers:AnnoClassModList,, SimpleClass:Id,, _),, CBody:K) => .KList),, _],
         PackId:PackageId
       )
       ~> ( . => processInnerTypes(CBody, toPackage(getClassType(PackId,SimpleClass))) )
@@ -87,18 +108,41 @@ rule [processTypeNames]:
     <namesToClasses>
       ...
       PackId |-> mapWrap(
-        ClassesMap:Map => ClassesMap[getClassType(PackId,SimpleClass) / SimpleClass]
+        ClassesMap:Map => ClassesMap[SimpleClass <- getClassType(PackId,SimpleClass)]
       )
       ...
     </namesToClasses>
     ( . =>  <class>
               <classType> getClassType(PackId,SimpleClass) </classType>
-              <classMetaType> getMetaType(DecLabel) </classMetaType>
+              <classMetaType> classCMT </classMetaType>
               <classPhase> DiscoveredCPhase </classPhase>
               <classAccessMode> getAccessMode(Modifiers) </classAccessMode>
               ...
             </class> )
-when DecLabel ==KLabel 'ClassDec orBool DecLabel ==KLabel 'InterfaceDec
+
+rule [processTypeNamesInterface]:
+    <k>
+      processTypeNames(
+        [('InterfaceDec('InterfaceDecHead(Modifiers:AnnoInterfaceModList,, SimpleClass:Id,, _),, CBody:K) => .KList),, _],
+        PackId:PackageId
+      )
+      ~> ( . => processInnerTypes(CBody, toPackage(getClassType(PackId,SimpleClass))) )
+      ...
+    </k>
+    <namesToClasses>
+      ...
+      PackId |-> mapWrap(
+        ClassesMap:Map => ClassesMap[SimpleClass <- getClassType(PackId,SimpleClass)]
+      )
+      ...
+    </namesToClasses>
+    ( . =>  <class>
+              <classType> getClassType(PackId,SimpleClass) </classType>
+              <classMetaType> interfaceCMT </classMetaType>
+              <classPhase> DiscoveredCPhase </classPhase>
+              <classAccessMode> getAccessMode(Modifiers) </classAccessMode>
+              ...
+            </class> )
 
 rule [processTypeNames-ElemDiscard]:
     processTypeNames([(Label:KLabel(_) => .KList),, _], _)

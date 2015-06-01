@@ -1,9 +1,0 @@
-byte + double: double a = 1.01e+2
-short + double: double a = 1.01e+2
-int + double: double a = 1.01e+2
-long + double: double a = 1.01e+2
-char + double: double a = 1.01e+2
-float + double: double a = 1.01e+2
-double + double: double a = 1.01e+2
-double + int: double a = 1.01e+2
-Done!

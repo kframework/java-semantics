@@ -1,11 +1,6 @@
-require "lexical-syntax.k"
-require "literal-syntax.k"
-require "type-syntax.k"
-
+//@ \section{Module CORE-SORTS}
 module CORE-SORTS
     imports TYPE-SYNTAX
-    imports LEXICAL-SYNTAX
-    imports LITERAL-SYNTAX
 
 //@ \subsection{Computation phases}
 
@@ -95,13 +90,12 @@ syntax StaticInitStatus ::= "StaticUninitialized"
 
 /*@ A method signature. Required to be KResult by rules in METHOD-INVOKE.*/
 syntax Signature ::= sig ( Id, Types )
-syntax KResult ::= Signature
-
+syntax MKR ::= Signature
 
 /*@ The member accessibility context of the current method - either static or instance.*/
 syntax ContextType ::=  "staticCT"    [latex(\terminal{static})]
                       | "instanceCT"  [latex(\terminal{instance})]
-syntax KResult ::= ContextType
+syntax MKR ::= ContextType
 
 //@ \subsection{Values}
 
@@ -155,15 +149,17 @@ syntax RawRefVal ::= ObjectRef | ArrayRef | String | NullLiteral
     into typed values, never into raw values alone.
 */
 syntax TypedVal ::= RawVal "::" Type
+syntax TypedVals ::= List{TypedVal, ","} [klabel('ExprList)]
+syntax Exps ::= TypedVals
 
 /*@ The three most common forms of computation result are Typed value or Type. Those are most common results
     we will encounter during elaboration. Other result types are more context-specific.
 */
-syntax KResult ::= TypedVal | Type
+syntax MKR ::= TypedVal | Type
 
 /*@ Member access modes*/
 syntax AccessMode ::= Public | Protected  | Private | "package"
-syntax KResult ::= AccessMode
+syntax MKR ::= AccessMode
 
 /*@ Types of routines represented by a method closure*/
 syntax MethodMetaType ::= "methodMMT" | "constructorMMT"
@@ -172,7 +168,10 @@ syntax MethodMetaType ::= "methodMMT" | "constructorMMT"
 syntax ClassMetaType ::=  "classCMT"      [latex(\terminal{class})]
                         | "interfaceCMT"  [latex(\terminal{interface})]
 
-syntax KResult ::= "noValue"  [latex({\dotCt{K}})]
+syntax NoValue ::= "noValue"  [latex({\dotCt{K}})]
+syntax MKR ::= NoValue
+syntax KResult ::= MKR
+syntax ElabKResult ::= MKR
 
 /*@ Represents a reference to a method or constructor. */
 syntax MethodRef ::=   methodRef(
@@ -181,14 +180,14 @@ syntax MethodRef ::=   methodRef(
                                         //  Could also be array type, because we may invoke methods over arrays.
                           )
                         | "noMethodRef"   [latex({\dotCt{K}})]
-syntax KResult ::= MethodRef
+syntax MKR ::= MethodRef
 syntax MethodName ::= MethodRef
 
 /*@ A list of types. Elements are of sort Type. Used especially to denote argument types of a method.*/
 syntax Types ::=  types (
                     KList // List of Type elements, when processed
                   )
-syntax KResult ::= Types
+syntax MKR ::= Types
 
 //Location type of each store location - either local variable or field
 syntax LocMetadata ::= "LocalLocMetadata"   [latex(\terminal{Local})]

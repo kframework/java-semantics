@@ -17,25 +17,38 @@ syntax KItem ::= isVarDecHolderLabel ( KLabel )                 [function]
 rule isVarDecHolderLabel('Block) => true
 rule isVarDecHolderLabel('For) => true
 rule isVarDecHolderLabel('Catch) => true
+rule isVarDecHolderLabel(_) => false [owise]
 
 /*@ In addition to what defaul elab heating does, when we heat the first argument of 'Block, 'For of 'Catch
 we need to save a copy of elaboration environment - e.g. the last entry of <elabEnv> <localTypes>.
-This is because these statements are blocks that might declare local variables.
+This is because these statements are blocks that might declare local variables. Empty Expressions are KResult and
+therefore ElabKResult, but we should still copy the env because removeLastElabEnv removes indifferently.
 */
 rule [elab-Block-For-Catch-heat-FirstSubterm]:
     <k> elab(KL:KLabel(K:K,, Ks:KList)) => elab(K) ~> elab(KL(CHOLE,, Ks:KList)) ...</k>
-    <elabEnv> (. => ElabEnvLI) ElabEnvLI:ListItem ...</elabEnv>
-    <localTypes> (. => LocalTypesLI) LocalTypesLI:ListItem ...</localTypes>
+    <elabEnv> (.List => ListItem(ElabEnvLI)) ListItem(ElabEnvLI:K) ...</elabEnv>
+    <localTypes> (.List => ListItem(LocalTypesLI)) ListItem(LocalTypesLI:K) ...</localTypes>
 when
-    isVarDecHolderLabel(KL) ==K true andBool notBool isElabKResult(K) ==K true
+    isVarDecHolderLabel(KL) ==K true andBool ((notBool isElabKResult(K)) orBool K ==K .Exps)
 
 //Seqstrict starting from 2-nd argument.
-rule [customElabHeating-For-next-children]:
-    customElabHeating('For, [HeadKs:KList,, KPrec:K,, KHole:K]) => isElabKList([HeadKs,,KPrec])
+//rule [customElabHeating-For-next-children]:
+//    customElabHeating('For, [HeadKs:KList,, KPrec:K,, KHole:K]) => isElabKList([HeadKs,,KPrec])
+rule   ( . => elab(Arg2) ) ~> elab('For(Arg1:ElabKResult,,(Arg2:K => CHOLE),,_,,_))
+when notBool isElabKResult(Arg2) ==K true
+
+rule   ( . => elab(Arg3) ) ~> elab('For(Arg1:ElabKResult,,Arg2:ElabKResult,,(Arg3:K => CHOLE),,_))
+when notBool isElabKResult(Arg3) ==K true
+
+rule   ( . => elab(Arg4) ) ~> elab('For(Arg1:ElabKResult,,Arg2:ElabKResult,,Arg3:ElabKResult,,(Arg4:K => CHOLE)))
+when notBool isElabKResult(Arg4) ==K true
 
 //Seqstrict starting from 2-nd argument.
-rule [customElabHeating-For-next-children]:
-    customElabHeating('Catch, [K1:K,, KHole:K]) => isElabKResult(K1)
+//rule [customElabHeating-For-next-children]:
+//    customElabHeating('Catch, [K1:K,, KHole:K]) => isElabKResult(K1)
+rule   ( . => elab(Arg2) ) ~> elab('Catch(Arg1:ElabKResult,,(Arg2:K => CHOLE)))
+when notBool isElabKResult(Arg2) ==K true
+
 
 rule [elabEnd-Block-For-Catch]:
     elabEnd(KL:KLabel(ElabResL:KList)) => removeLastElabEnv ~> elabRes(KL(ElabResL))
@@ -51,7 +64,7 @@ rule [elab-LocalVarDecStm-desugar]:
 
 //@ Resolve the local var type, required to register the var in <elabEnv>
 context elab('LocalVarDec(_:K,, HOLE,, _:K))
-
+//todo BlockStmList
 rule [elab-LocalVarDec-multi-desugar]:
     elab('LocalVarDec(K:K,, T:Type,, [Var1:K,, Var2:K,, VarDecs:KList])
       => ['LocalVarDec(K,, T,, [Var1]),,
@@ -72,23 +85,23 @@ rule [elab-LocalVarDec]:
       => elabRes('LocalVarDec(K,, T,, ['VarDec(X)]))
       ...
     </k>
-    <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv>
+    <elabEnv> ListItem(mapWrap((.Map => X |-> T) _)) ...</elabEnv>
 
 //@\subsection{Elaboration of SuperConstrInv, QSuperConstrInv, AltConstrInv}
 
-// 'SuperConstrInv( _:K,, [ Args:KList ] )
+// 'SuperConstrInv( _:K,,  Args)
 //@ Desugaring unqualified superclass constructor invocation into a qualified one
 rule [elab-SuperConstrInv-desugar]:
     <k>
       elab(
-        'SuperConstrInv(K:K,, [ Args:KList ])
+        'SuperConstrInv(K:K,, Args:K)
         =>  'QSuperConstrInv(
               #if CT ==K instanceCT
                 #then findQualifierOfType(EnclosingClass, BaseEnclosingClass)
                 #else noValue
               #fi,,
               K,,
-              [Args]
+              Args
             )
       )
       ...
@@ -112,7 +125,7 @@ rule customElabEnd('QSuperConstrInv) => true
 rule [elabEnd-QSuperConstrInv-local-augment-arguments]:
     <k>
       (. => localClassGetExtraArgs(BaseClass))
-      ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, [ Args:KList ]))
+      ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, Args))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -122,10 +135,10 @@ rule [elabEnd-QSuperConstrInv-local-augment-arguments]:
 //@ QSuperConstrInv lookup is always unqualified
 rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
     <k>
-      ( elabRes([ExtraArgs:KList])
-        => lookupMethod(BaseClass, true, getConsName(BaseClass), [Args,,ExtraArgs])
+      ( elabRes(ExtraArgs:Exps)
+        => lookupMethod(BaseClass, true, getConsName(BaseClass), appendExps(Args,ExtraArgs))
       )
-      ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, [ Args:KList ]))
+      ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, Args))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -133,16 +146,16 @@ rule [elabEnd-QSuperConstrInv-to-lookupMethod]:
     <extends> BaseClass:ClassType </extends>
 
 rule [elabEnd-QSuperConstrInv]:
-    methodLookupResult(_, [ExpectedArgExps:KList], instanceCT)
-    ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, [_]))
-    => elabRes('QSuperConstrInv(Qual,, Arg2,, [ ExpectedArgExps ]))
+    methodLookupResult(_, ExpectedArgExps:Exps, instanceCT)
+    ~> elabEnd('QSuperConstrInv(Qual:K,, Arg2:K,, _))
+    => elabRes('QSuperConstrInv(Qual,, Arg2,, ExpectedArgExps ))
 
 rule customElabEnd('AltConstrInv) => true
 
 rule [elabEnd-AltConstrInv-local-augment-arguments]:
     <k>
       (. => localClassGetExtraArgs(Class))
-      ~> elabEnd('AltConstrInv(Arg1:K,, [ Args:KList ]))
+      ~> elabEnd('AltConstrInv(Arg1:K,, Args))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -150,17 +163,17 @@ rule [elabEnd-AltConstrInv-local-augment-arguments]:
 //@ AltConstrInv lookup is always unqualified
 rule [elabEnd-AltConstrInv-to-lookupMethod]:
     <k>
-      ( elabRes([ExtraArgs:KList])
-        => lookupMethod(Class, true, getConsName(Class), [Args,,ExtraArgs])
+      ( elabRes(ExtraArgs:Exps)
+        => lookupMethod(Class, true, getConsName(Class), appendExps(Args,ExtraArgs))
       )
-      ~> elabEnd('AltConstrInv(Arg1:K,, [ Args:KList ]))
+      ~> elabEnd('AltConstrInv(Arg1:K,, Args))
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
 
 rule [elab-AltConstrInv]:
-    methodLookupResult(_, [ExpectedArgExps:KList], instanceCT)
-    ~> elabEnd('AltConstrInv(Arg1:K,, [_]))
-    => elabRes('AltConstrInv(Arg1:K,, [ ExpectedArgExps ]))
+    methodLookupResult(_, ExpectedArgExps:Exps, instanceCT)
+    ~> elabEnd('AltConstrInv(Arg1:K,, _))
+    => elabRes('AltConstrInv(Arg1:K,, ExpectedArgExps))
 
 endmodule

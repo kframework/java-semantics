@@ -1,8 +1,0 @@
-(double) (byte) 100  = 1.0e+2
-(double) (short)100  = 1.0e+2
-(double)        100  = 1.0e+2
-(double)       100L  = 1.0e+2
-(double)        'c'  = 9.9e+1
-(double)       1.23  = 1.23
-(double)      1.23d  = 1.23
-Done!
