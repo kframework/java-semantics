@@ -108,7 +108,7 @@ while [[ ${1:0:1} == - ]]; do
       PREP_FIRST=false
       MODE=run-prep-ast
       CMD_SUFFIX=${PREP_AST_CMD_SUFFIX}
-      OUTPUT=$PREP_OUTPUT
+      OUTPUT=kast
       INPUT=java
       TIME=false
       TIMEOUT=0
@@ -122,7 +122,7 @@ while [[ ${1:0:1} == - ]]; do
     "--prep-raw")
       PREP_FIRST=false
       MODE=run-prep-config
-      OUTPUT=none
+      OUTPUT=kast
       INPUT=java
       ;;
     "--exec-pretty")
@@ -215,7 +215,6 @@ BASE_JAVA_FILE=`basename ${JAVA_FILE}`  #simple file/dir name
 PKAST_FILE=`echo "$BASE_JAVA_FILE" | sed 's#/*$##'` # remove trailing slashes, important if JAVA_FILE is dir
 PKAST_FILE=${PKAST_FILE}.pkast
 
-VERBOSE=false
 
 #Actual execution
 if [[ ${SILENT} == false ]]; then
@@ -232,7 +231,6 @@ if [[ ${PREP_FIRST} == true ]]; then
       echo ${CMD}
       echo
     fi
-
     eval ${CMD}
   fi
 else
@@ -245,8 +243,6 @@ if [[ ${SILENT} == false ]]; then
   echo
 fi
 
-OUTPUT="none"
-
 CMD="aux-kjrun.sh --time=${TIME} --timeout=${TIMEOUT} --mode=${MODE} --output=${OUTPUT} --input=${INPUT} \
   --pattern=\"${PATTERN}\" --ltlmc=\"${LTLMC}\" --config=\"${CONFIG}\" \
   --verbose=${VERBOSE} --cmd-suffix=\"${CMD_SUFFIX}\" ${PKAST_FILE}"
@@ -257,8 +253,6 @@ if [[ ${VERBOSE} == true ]]; then
 fi
 
 # Actual command evaluation
-#echo $CMD > auxInput.txt
-
 eval ${CMD}
 
 if [[ ${CLEAN} == true ]]; then

@@ -157,65 +157,31 @@ fi
 # OS-dependent selection of krun.
 KRUN_CMD="$KRUN_CMD $(cross-k.sh krun)"
 
-KRUN_CMD="$KRUN_CMD \
-                      --directory \"$SEMANTICS_DIR\" \
-                      "
-KRUN_CMD="$KRUN_CMD --symbolic-execution"
+KRUN_CMD="$KRUN_CMD --directory \"$SEMANTICS_DIR\""
+
+KRUN_CMD="$KRUN_CMD -w none --symbolic-execution"
 
 case "$MODE" in
 "run-prep-config" | "run-prep-ast")
-KRUN_CMD="$KRUN_CMD -w none"
     ;;
-
 "run-exec")
-    KRUN_CMD="$KRUN_CMD -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
-
-if [[ ${PATTERN} != "" || ${LTLMC} != "" || ${CONFIG} == "true" ]];
-  then KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"false\""
-  else KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\""
-fi
     ;;
 "search")
-    KRUN_CMD="$KRUN_CMD --search-final \
-                        -cCOMMAND=\"'unfoldingPhase(.KList)\" \
-                        -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
-                        -cENDPHASE=\"'ExecutionPhase(.KList)\"
-                        -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
-if [[ ${PATTERN} != "" || ${LTLMC} != "" || ${CONFIG} == "true" ]];
-  then KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"false\""
-  else KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\""
-fi
+    KRUN_CMD="$KRUN_CMD --search-final"
     ;;
 "symbolic")
     IN_FILE=${JAVA_FILE%.java}.cIN.in
     IN_VALUE=$(<${IN_FILE})
-    KRUN_CMD="$KRUN_CMD --search -cPC=true -cIN=\"$IN_VALUE\" \
-                        -cCOMMAND=\"'unfoldingPhase(.KList)\" \
-                        -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
-                        -cENDPHASE=\"'ExecutionPhase(.KList)\"
-                        -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
-if [[ ${PATTERN} != "" || ${LTLMC} != "" || ${CONFIG} == "true" ]];
-  then KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"false\""
-  else KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\""
-fi
+    KRUN_CMD="$KRUN_CMD --search -cPC=true -cIN=\"$IN_VALUE\""
     ;;
 "debug")
-    KRUN_CMD="$KRUN_CMD --debug \
-                        -cCOMMAND=\"'unfoldingPhase(.KList)\" \
-                        -cSTARTPHASE=\"'UnfoldingPhase(.KList)\" \
-                        -cENDPHASE=\"'ExecutionPhase(.KList)\"
-                        -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
-if [[ ${PATTERN} != "" || ${LTLMC} != "" || ${CONFIG} == "true" ]];
-  then KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"false\""
-  else KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\""
-fi
+    KRUN_CMD="$KRUN_CMD --debug"
     ;;
 *)
     echo "Invalid MODE: ${MODE}"
     exit 1
     ;;
 esac
-
 
 KRUN_CMD="$KRUN_CMD --output $OUTPUT"
 
@@ -236,7 +202,13 @@ case "$INPUT" in
     ;;
 "kast")
     # OS-dependent selection of the parser.
-    KRUN_CMD="$KRUN_CMD --parser \"cat\""
+    KRUN_CMD="$KRUN_CMD --parser cat"
+    KRUN_CMD="$KRUN_CMD -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
+
+if [[ ${PATTERN} != "" || ${LTLMC} != "" || ${CONFIG} == "true" ]];
+  then KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"false\""
+  else KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\""
+fi
 
     KRUN_CMD="$KRUN_CMD $JAVA_FILE"
     ;;
@@ -272,6 +244,4 @@ if [[ ${VERBOSE} == true ]]; then
 fi
 
 # Actual command evaluation
-#now=$(date +"%T")
-#echo "final cmd from aux-kjrun is $KRUN_CMD" > "final-AUX-KJRUN$now.txt"
 eval ${KRUN_CMD}
