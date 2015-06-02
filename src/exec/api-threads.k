@@ -167,13 +167,23 @@ when
 syntax KItem ::=  notifyImpl (
                 Int //store key of the monitor object
               )
-
-rule [notifyImpl]:
+//todo how to realise non-determinism: remove an arbitrary item with that value
+rule [notifyImpl-someone-waiting]:
     <k>
       notifyImpl(OL:Int) => nothing::void
       ...
     </k>
-    <waitingThreads> M:Map => removeMapItemsByValue(M,OL) </waitingThreads>
+    <waitingThreads> WT:Map => removeOneMapItemByValue(WT,OL) </waitingThreads>
+when OL in values(WT)
+        [transition-threading]
+
+rule [notifyImpl-no-one-waiting]:
+    <k>
+      notifyImpl(OL:Int) => nothing::void
+      ...
+    </k>
+    <waitingThreads> WT:Map </waitingThreads>
+when notBool OL in values(WT)
         [transition-threading]
 
 rule [object-notifyAll]:
@@ -192,13 +202,23 @@ when
 syntax KItem ::=  objectNotifyAllImpl (
                 Int //store key of the monitor object
               )
+//todo how to realise non-determinism: remove an arbitrary item with that value
+rule [objectNotifyAllImpl-someone-waiting]:
+    <k>
+      objectNotifyAllImpl(OL:Int)
+      ...
+    </k>
+    <waitingThreads> WT:Map => removeOneMapItemByValue(WT,OL) </waitingThreads>
+when OL in values(WT)
+        [transition-threading]
 
-rule [objectNotifyAllImpl]:
+rule [objectNotifyAllImpl-no-one-waiting]:
     <k>
       objectNotifyAllImpl(OL:Int) => nothing::void
       ...
     </k>
-    <waitingThreads> M:Map => removeMapItemsByValue(M,OL) </waitingThreads>
+    <waitingThreads> WT:Map </waitingThreads>
+when notBool OL in values(WT)
         [transition-threading]
 
 //@ \subsection{Thread.interrupt()}

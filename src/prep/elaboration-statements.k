@@ -64,7 +64,8 @@ rule [elab-LocalVarDecStm-desugar]:
 
 //@ Resolve the local var type, required to register the var in <elabEnv>
 context elab('LocalVarDecStm('LocalVarDec(_:K,, HOLE,, _:K)))
-//todo Problem: BlockStmList is cons list, so the result is not a valid list either
+//todo Problem: BlockStmList is cons list, so the result is not a valid list either,
+//can use a wrapper around and say that the wrapper is a BlockStmt, heavyweight.
 rule [elab-LocalVarDec-multi-desugar]:
     elab('LocalVarDecStm('LocalVarDec(K:K,, T:Type,, 'VarDecList(Var1:K,, 'VarDecList(Var2:K,, VarDecs:K))))
       => 'BlockStmList('LocalVarDecStm('LocalVarDec(K,, T,, 'VarDecList(Var1,, .VarDecList))),,
