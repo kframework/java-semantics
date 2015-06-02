@@ -160,7 +160,7 @@ syntax KItem ::= removeOneMapItemByValue (Map,K)             [function]
                | removeOneMapItemByValue (K,K,Map,K,Map)     [function]
 
 rule removeOneMapItemByValue(M:Map, V:K) => removeOneMapItemByValue(M, V, .Map)
-rule removeOneMapItemByValue((Key:K |-> Value:K) Remains:Map, V:K, M:Map) => removeOneMapItemByValue(Key, Value, Remains, V, M) [transition-threading]
+rule removeOneMapItemByValue((Key:K |-> Value:K) Remains:Map, V:K, M:Map) => removeOneMapItemByValue(Key, Value, Remains, V, M)
 rule removeOneMapItemByValue(Key:K, V, Remains:Map, V:K, M:Map) => Remains M
 rule removeOneMapItemByValue(Key:K, Value:K, Remains:Map, V:K, M:Map) => removeOneMapItemByValue(Remains, V, M (Key |-> Value))
 when Value =/=K V

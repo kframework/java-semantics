@@ -354,7 +354,7 @@ configuration
             At the end of class processing in the ProcClassMembersPhase the content of this cell is converted into
             the method $instance_init and the cell is deleted. This conversion is required for local classes,
             see test local_cl_955. */
-          <instanceInit color="Indigo"> [.KList] </instanceInit>
+          <instanceInit color="Indigo"> .BlockStmList </instanceInit>
 
           //[...,, 'FieldDec('Static(_),,T,,_),, ...] - Static field declarations. Used during class instantiation.
           <staticFields color="DarkSlateGray"> [.KList] </staticFields>

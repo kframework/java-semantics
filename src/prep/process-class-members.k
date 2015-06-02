@@ -391,7 +391,7 @@ rule [FieldDec-Multi-Desugar]:
 
 rule [FieldDec-with-init-desugar]:
     'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X:Id,,(InitExp:K => .KList)),, .VarDecList))
-    ~> (. => 'InstanceInit('ExprStm('Assign('ExprName(X),, InitExp))))
+    ~> (. => 'InstanceInit('Block('BlockStmList('ExprStm('Assign('ExprName(X),, InitExp)),, .BlockStmList))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
     andBool (getContextType(Modifiers) ==K instanceCT)
@@ -408,10 +408,10 @@ when
 
 
 rule [InstanceInit]:
-    <k> 'InstanceInit(K:K) => . ...</k>
+    <k> 'InstanceInit(K:Block) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <instanceInit> [_,,(.KList => K)] </instanceInit>
+    <instanceInit> S:BlockStmList => 'BlockStmList(K,,S) </instanceInit>
         [structural]
 
 /*@ Desugaring a static field declaration with initializer into a declaration without initializer.
@@ -497,13 +497,13 @@ syntax KItem ::= "convertInstanceInitIntoMethod"
 rule [convertInstanceInitIntoMethod]:
     <k>
       convertInstanceInitIntoMethod
-      => storeMethod(.Params, instanceCT, private, false::bool, methodMMT, noValue, 'Block([InstanceInitKs]),//todo
+      => storeMethod(.Params, instanceCT, private, false::bool, methodMMT, noValue, 'Block(InstanceInitKs),
                       sig(String2Id("$instance_init"), types(.KList)), void)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    (<instanceInit> [InstanceInitKs:KList] </instanceInit> => .Bag)
+    (<instanceInit> InstanceInitKs:BlockStmList </instanceInit> => .Bag)
 
 //@ \subsection{Auxiliary functions}
 
