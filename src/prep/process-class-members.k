@@ -411,7 +411,7 @@ rule [InstanceInit]:
     <k> 'InstanceInit(K:Block) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <instanceInit> S:BlockStmList => 'BlockStmList(K,,S) </instanceInit>
+    <instanceInit> S:BlockStmList => addElementToBlockStmListEnd(S, K) </instanceInit>
         [structural]
 
 /*@ Desugaring a static field declaration with initializer into a declaration without initializer.

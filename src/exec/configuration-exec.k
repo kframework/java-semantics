@@ -266,11 +266,11 @@ configuration
 
       //Represents the storage of objects. Since objects have a complex inner structure,
       //we need to hold them separately if we want to represent that structure as a cell tree.
-      <objectStore color="Cyan">
+      <objectStore color="Cyan" map="" >
         <object color="Cyan" multiplicity="*">
 
           //The id of this object. Same as store location for the newly created object reference.
-          <objectId color="Cyan"> .K </objectId>
+          <objectId color="Cyan" key="" > .K </objectId>
 
           //The actual object class
           <objectType color="Cyan"> .K </objectType>

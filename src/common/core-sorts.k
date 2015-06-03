@@ -207,4 +207,6 @@ syntax RefType ::= ClassType | "nullType" | "arrayOf" Type
 rule 'ArrayType(T:Type) => arrayOf T                            [anywhere]
 
 rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK                [anywhere]
+
+rule isBlock('Block(_)) => true
 endmodule
