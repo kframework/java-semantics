@@ -81,29 +81,31 @@ rule /* F1 % F2 */ F1:Float :: _ % F2:Float :: _ =>
 //totest that the first argument is fully evaluated, right now it may be not evaluated
 rule _:TypedVal % 0::_ => throw new class String2Id("java.lang.ArithmeticException") ("/ by zero");
 
-rule [NormalizeLeftOperandToFloat]:
-    KL:KLabel((I:Int::_:IntType => Int2Float(I,53,11)::float),, _:Float :: _:FloatType)
-when
-    isFloatBinaryOp(KL)
+//[NormalizeLeftOperandToFloat]:
+rule (I:Int::_:IntType => Int2Float(I,53,11)::float) +  _:Float :: _:FloatType
+rule (I:Int::_:IntType => Int2Float(I,53,11)::float) -  _:Float :: _:FloatType
+rule (I:Int::_:IntType => Int2Float(I,53,11)::float) *  _:Float :: _:FloatType
+rule (I:Int::_:IntType => Int2Float(I,53,11)::float) /  _:Float :: _:FloatType
+rule (I:Int::_:IntType => Int2Float(I,53,11)::float) %  _:Float :: _:FloatType
+rule (I:Int::_:IntType => Int2Float(I,53,11)::float) <  _:Float :: _:FloatType
+rule (I:Int::_:IntType => Int2Float(I,53,11)::float) <=  _:Float :: _:FloatType
+rule (I:Int::_:IntType => Int2Float(I,53,11)::float) >  _:Float :: _:FloatType
+rule (I:Int::_:IntType => Int2Float(I,53,11)::float) >=  _:Float :: _:FloatType
+rule (I:Int::_:IntType => Int2Float(I,53,11)::float) ==  _:Float :: _:FloatType
+rule (I:Int::_:IntType => Int2Float(I,53,11)::float) !=  _:Float :: _:FloatType
 
-rule [NormalizeRightOperandToFloat]:
-    KL:KLabel(_:Float :: _:FloatType,, (I:Int::_:IntType => Int2Float(I,53,11)::float))
-when
-    isFloatBinaryOp(KL)
-
-syntax KItem ::= isFloatBinaryOp ( KLabel )       [function]
-rule isFloatBinaryOp(KL:KLabel)
-    =>     KL ==KLabel 'Plus
-    orBool KL ==KLabel 'Minus
-    orBool KL ==KLabel 'Mul
-    orBool KL ==KLabel 'Div
-    orBool KL ==KLabel 'Remain
-    orBool KL ==KLabel 'Lt
-    orBool KL ==KLabel 'LtEq
-    orBool KL ==KLabel 'Gt
-    orBool KL ==KLabel 'GtEq
-    orBool KL ==KLabel 'Eq
-    orBool KL ==KLabel 'NotEq
+//[NormalizeRightOperandToFloat]:
+rule _:Float :: _:FloatType + (I:Int::_:IntType => Int2Float(I,53,11)::float)
+rule _:Float :: _:FloatType - (I:Int::_:IntType => Int2Float(I,53,11)::float)
+rule _:Float :: _:FloatType * (I:Int::_:IntType => Int2Float(I,53,11)::float)
+rule _:Float :: _:FloatType / (I:Int::_:IntType => Int2Float(I,53,11)::float)
+rule _:Float :: _:FloatType % (I:Int::_:IntType => Int2Float(I,53,11)::float)
+rule _:Float :: _:FloatType < (I:Int::_:IntType => Int2Float(I,53,11)::float)
+rule _:Float :: _:FloatType <= (I:Int::_:IntType => Int2Float(I,53,11)::float)
+rule _:Float :: _:FloatType > (I:Int::_:IntType => Int2Float(I,53,11)::float)
+rule _:Float :: _:FloatType >= (I:Int::_:IntType => Int2Float(I,53,11)::float)
+rule _:Float :: _:FloatType == (I:Int::_:IntType => Int2Float(I,53,11)::float)
+rule _:Float :: _:FloatType != (I:Int::_:IntType => Int2Float(I,53,11)::float)
 
 // ++E
 rule /* ++loc(L) => loc(L) = lookup(L) + 1 */

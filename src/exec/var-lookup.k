@@ -77,24 +77,29 @@ rule [Field-instance]:
       'Field(
         objectRef(OId:Int, _ ) :: TargetClass:ClassType,,
         X:Id
-      ) => typedLookup(L)
+      ) => L
       ...
     </k>
     <objectId> OId </objectId>
     <layerClass> TargetClass </layerClass>
-    <layerEnv>... X |-> L:Int ...</layerEnv>
+    <layerEnv>... X |-> L ...</layerEnv>
 
 rule [lvalue-Field-instance]:
     <k>
       lvalue('Field(
         objectRef(OId:Int, _ ) :: TargetClass:ClassType,,
         X:Id
-      )) => lvalue(typedLookup(L))
+      )) => fieldloc(OId, X) :: T
       ...
     </k>
     <objectId> OId </objectId>
     <layerClass> TargetClass </layerClass>
-    <layerEnv>... X |-> L:Int ...</layerEnv>
+    <layerEnv>... X |-> _ :: T:Type ...</layerEnv>
+
+rule [Field-instance-assignment]:
+     <k> fieldloc(OId:Int, X) :: T:Type = V:RawVal :: T =>  V::T ... </k>
+     <objectId> OId </objectId>
+     <layerEnv> ... X |-> (_ => V) :: T ... </layerEnv>
 
 rule [Field-instance-OfNull]:
     'Field(null::_,, _) => throw new classNullPointerException(null::classString);
