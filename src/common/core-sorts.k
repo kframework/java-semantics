@@ -128,7 +128,7 @@ syntax ObjectRef ::=  objectRef (
                         Int,      //OL - object location
                         ClassType //LowestClass - the lowest class where we are allowed to search for method
                                   // implementation, or actual object class if there are no restrictions.
-                      )
+                      ) [smtlib(smt_object_ref)]
 
 /*@ The arrayRef has the following structure:
 \begin{itemize}

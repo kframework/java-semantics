@@ -43,7 +43,7 @@ syntax IntLiteral ::= DeciLiteral [klabel('Deci)]
 
 
 //@ \subsection{NullLiteral.sdf}
-syntax NullLiteral ::= "null"     [klabel('Null)]
+syntax NullLiteral ::= "null"     [klabel('Null), smtlib(smt_null)]
 
 
 //@ \subsection{StringLiterals.sdf} todo
