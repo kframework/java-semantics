@@ -89,7 +89,7 @@ rule [lvalue-Field-instance]:
       lvalue('Field(
         objectRef(OId:Int, _ ) :: TargetClass:ClassType,,
         X:Id
-      )) => fieldloc(OId, X) :: T
+      )) => fieldloc(OId, TargetClass, X) :: T
       ...
     </k>
     <objectId> OId </objectId>
@@ -97,8 +97,9 @@ rule [lvalue-Field-instance]:
     <layerEnv>... X |-> _ :: T:Type ...</layerEnv>
 
 rule [Field-instance-assignment]:
-     <k> fieldloc(OId:Int, X) :: T:Type = V:RawVal :: T =>  V::T ... </k>
+     <k> fieldloc(OId:Int, TargetClass:ClassType, X:Id) :: T:Type = V:RawVal :: T =>  V::T ... </k>
      <objectId> OId </objectId>
+     <layerClass> TargetClass </layerClass>
      <layerEnv> ... X |-> (_ => V) :: T ... </layerEnv>
 
 rule [Field-instance-OfNull]:

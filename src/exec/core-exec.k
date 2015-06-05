@@ -21,6 +21,6 @@ rule [restoreMethContext]:
 /*@ \subsection{lvalue and loc syntax} */
 
 syntax KItem ::= lvalue ( K )
-syntax RawVal ::= loc ( Int ) | fieldloc (K, K)
+syntax RawVal ::= loc ( Int ) | fieldloc (K, K, K)
 
 endmodule
