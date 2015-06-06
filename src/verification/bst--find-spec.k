@@ -1,6 +1,6 @@
 require "java-verification.k"
 
-module BST-SPEC
+module BST-FIND-SPEC
   imports JAVA-VERIFICATION
 
 rule
@@ -18,7 +18,7 @@ rule
 </thread>
 </threads>
 
-<classes> CLASSES:Bag => ?_:Bag </classes>
+<classes> CLASSES:Bag </classes>
 <NumOfClassesToUnfold> 0 </NumOfClassesToUnfold>
 <program> .K </program>
  <globalPhase> ExecutionPhase </globalPhase>

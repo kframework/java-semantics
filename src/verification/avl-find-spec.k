@@ -1,6 +1,6 @@
 require "java-verification.k"
 
-module MIN-SPEC
+module AVL-FIND-SPEC
   imports JAVA-VERIFICATION
 
 rule
@@ -8,9 +8,10 @@ rule
 <threads>
 <thread>
   <k>
- (class String2Id(".min")).String2Id("min"):Id(X:Int::int, Y:Int::int)
-  =>
-    minInt(X,Y)::int
+	(class String2Id(".avl")).String2Id("find"):Id(V:Int::int, (TP:RawRefVal)::(class String2Id(".avl")))
+
+        =>
+        ?B:Bool::bool
   ...</k>
 <holds> .Map </holds>
 ...
@@ -25,9 +26,9 @@ rule
 <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
 <busy> .Set </busy>
 <nextLoc> I:Int => ?_:Int </nextLoc>
-requires X >=Int -2147483648 andBool X <=Int 2147483647 andBool Y >=Int -2147483648 andBool Y <=Int 2147483647
 
+  <objectStore>... htree(TP)(T:Tree) ...</objectStore>
+requires avl(T) andBool V >=Int -2147483648 andBool V <=Int 2147483647
+ensures (?B) ==K (V inIntSet tree_keys(T))
 endmodule
-
-
 

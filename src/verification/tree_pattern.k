@@ -68,17 +68,51 @@ module TREE-PATTERN
        andBool bst(TL) andBool bst(TR)
   rule bst(leaf) => true
 
-/*  syntax Map ::= "htree" "(" Pointer ")" "(" Tree ")"   [pattern(1)]
-  rule htree(object(P:Int))(node(I:Int, TL:Tree, TR:Tree))
-    => object(P) |-> (
-          value  |-> tv(int, I)
-          height |-> tv(int, tree_height(node(I:Int, TL:Tree, TR:Tree)))
-          left   |-> tv(struct node *, ?PL:Pointer)
-          right  |-> tv(struct node *, ?PR:Pointer))
+  syntax Bag ::= "htree" "(" RawRefVal ")" "(" Tree ")"   [pattern(1)]
+  rule <objectStore> ...
+  htree(objectRef(P:Int, C:ClassType))(node(I:Int, TL:Tree, TR:Tree))
+    =>         <object>
+                   <objectId>
+                       P
+                   </objectId>
+                   <objectType>
+                       C
+                   </objectType>
+                   <layer>
+                       <layerClass>
+                           C
+                       </layerClass>
+                       <layerEnv>
+                           String2Id("value") |-> I :: int
+                           String2Id("height") |-> tree_height(node(I, TL, TR)) :: int
+                           String2Id("left") |-> ?PL:RawRefVal :: C
+                           String2Id("right") |-> ?PR:RawRefVal :: C
+                       </layerEnv>
+                       <layerEnclosingObject>
+                           noValue
+                       </layerEnclosingObject>
+                   </layer>
+                   <layer>
+                       <layerClass>
+                           class String2Id("java.lang.Object")
+                       </layerClass>
+                       <layerEnv>
+                           .Map
+                       </layerEnv>
+                       <layerEnclosingObject>
+                           noValue
+                       </layerEnclosingObject>
+                   </layer>
+               </object>
        htree(?PL)(TL)
        htree(?PR)(TR)
+       ...
+        </objectStore>
+        ensures I >=Int -2147483648 andBool I <=Int 2147483647 andBool
+
+        tree_height(node(I, TL, TR)) >=Int -2147483648 andBool tree_height(node(I, TL, TR)) <=Int 2147483647
     [pattern]
-  rule htree(null)(leaf) => .Map   [pattern] */
+  rule <objectStore> ... htree(null)(leaf) => .Bag ... </objectStore>   [pattern]
 
   syntax Bool ::= avl(Tree)   [function, smtlib(smt_avl)]
   rule avl(node(I:Int, TL:Tree, TR:Tree))
