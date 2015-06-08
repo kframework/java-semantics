@@ -60,7 +60,7 @@ static boolean find(int v, bst t)
         int min;
 
         if (t == null)
-            return t;
+            return null;
 
         if (v == t.value) {
             if (t.left == null) {

@@ -102,6 +102,12 @@ rule [Field-instance-assignment]:
      <layerClass> TargetClass </layerClass>
      <layerEnv> ... X |-> (_ => V) :: T ... </layerEnv>
 
+rule [Field-instance-plus-assignment]:
+     <k> fieldloc(OId:Int, TargetClass:ClassType, X:Id)::T:Type += Exp2 => fieldloc(OId, TargetClass, X)::T = cast(T, (V::T) + Exp2) ... </k>
+     <objectId> OId </objectId>
+     <layerClass> TargetClass </layerClass>
+     <layerEnv> ... X |-> V :: T ... </layerEnv>
+
 rule [Field-instance-OfNull]:
     'Field(null::_,, _) => throw new classNullPointerException(null::classString);
         [anywhere]

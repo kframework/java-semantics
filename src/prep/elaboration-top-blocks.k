@@ -126,6 +126,13 @@ when
 rule [elabMethods-End]:
     elabMethods( .Map ) => .
 
+rule customElabEnd('Return) => true
+
+rule [elabEnd-Return]:
+    <k> elabEnd('Return('Some(E:Exp))) => subtype(typeOf(E), RetT) ~> true? ~> elabRes('Return('Some(cast(RetT, E)))) ... </k>
+    <methodBody> CHOLE </methodBody>
+    <methodReturnType> RetT:Type </methodReturnType>
+
 syntax KItem ::= "elabStaticInit"
 
 rule [elabStaticInit-Heat]:
