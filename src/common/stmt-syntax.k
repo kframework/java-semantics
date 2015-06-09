@@ -34,7 +34,7 @@ syntax StackConsumerStmt ::= ThrowStmt | ContinueStmt | BreakStmt | ReturnStmt
 syntax IfThenElseStmt ::= "if" "(" Exp ")" Stmt "else" Stmt        [strict(1), klabel('If)]
 syntax IfThenStmt ::= "if" "(" Exp ")" Stmt                        [prefer, strict(1), klabel('If)]
 
-syntax WhileStmt ::= "while" "(" Exp ")" Stmt                      [strict(1),klabel('While)]
+syntax WhileStmt ::= "while" "(" Exp ")" Stmt                      [klabel('While)]
 
 syntax ForStmt ::= "for" "(" LocalVarDec ";" OptionalExp ";" Exps ")" Stmt      [klabel('For)]
 syntax ForStmt ::= "for" "(" Exps ";" OptionalExp ";" Exps ")" Stmt             [klabel('For)]
@@ -55,7 +55,7 @@ syntax SwitchGroup ::= SwitchLabelList BlockStmList                 [klabel('Swi
 syntax SwitchLabel ::= "case" Exp ":"                               [klabel('Case)]
 		             | "default"  ":"                               [klabel('Default)]
 
-syntax DoStmt ::= "do" Stmt "while" "(" Exp ")" ";"                 [strict(2), klabel('DoWhile)]
+syntax DoStmt ::= "do" Stmt "while" "(" Exp ")" ";"                 [klabel('DoWhile)]
 
 syntax CatchClause ::= "catch" "(" Param ")" Block                  [klabel('Catch)]
 syntax TryStmt ::= "try" Block CatchClauses "finally" Block         [klabel('Try)]
