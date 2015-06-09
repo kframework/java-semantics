@@ -128,10 +128,13 @@ rule [elabMethods-End]:
 
 rule customElabEnd('Return) => true
 
-rule [elabEnd-Return]:
+rule [elabEnd-Return-Some]:
     <k> elabEnd('Return('Some(E:Exp))) => subtype(typeOf(E), RetT) ~> true? ~> elabRes('Return('Some(cast(RetT, E)))) ... </k>
     <methodBody> CHOLE </methodBody>
     <methodReturnType> RetT:Type </methodReturnType>
+
+rule [elabEnd-Return-None]:
+    elabEnd('Return('None(.KList))) => elabRes('Return('None(.KList)))
 
 syntax KItem ::= "elabStaticInit"
 
