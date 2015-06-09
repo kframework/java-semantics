@@ -139,7 +139,7 @@ rule [unfolding-class-members-staticFields]:
           Class,,
           'None(.KList),,
           'Some('SuperDec( BaseClass:ClassType )),,
-          'Some('ImplementsDec( [_] ))
+          'Some('ImplementsDec( _ ))
         ),,
         'ClassBody( [
             ( StaticField:K => .KList ),,
@@ -164,7 +164,7 @@ rule [unfolding-class-members-StaticInit-classMetaType-extends]:
           Class,,
           'None(.KList),,
           'Some('SuperDec( BaseClass:ClassType )),,
-          'Some('ImplementsDec( [_] ))
+          'Some('ImplementsDec( _ ))
         ),,
         'ClassBody( [
             ( 'StaticInit('Block(StaticInit:KList)) => .KList )
@@ -185,7 +185,7 @@ rule [unfolding-class-members-instanceFields]:
           Class,,
           'None(.KList),,
           'Some('SuperDec( BaseClass:ClassType )),,
-          'Some('ImplementsDec( [_] ))
+          'Some('ImplementsDec( _ ))
         ),,
         'ClassBody( [
             ( InstanceField:K => .KList ),,
@@ -221,7 +221,7 @@ rule [unfolding-ImplementsDec]:
       _:KLabel(
         'ClassDecHead(
           _:K,, _:K,, _:K,, _:K,,
-          'Some('ImplementsDec([(BaseInterface:ClassType => .KList),,_]))
+          'Some('ImplementsDec(BaseInterface:ClassType, IL:HeatedInterfaceTypeList => IL))
         ),,
         _
       )
@@ -270,7 +270,7 @@ rule [unfolding-class-end]:
     <classMetaType> _ </classMetaType>  //checking that the rule [unfolding-class-start] was executed
     ( <folded>
         _:KLabel(
-          'ClassDecHead( _:K,, Class,, _:K,, _:K,, 'Some('ImplementsDec( [.KList] )) ),,
+          'ClassDecHead( _:K,, Class,, _:K,, _:K,, 'Some('ImplementsDec( .HeatedInterfaceTypeList )) ),,
           'ClassBody( [ .KList ] )
         )
       </folded> => .Bag
