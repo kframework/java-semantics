@@ -3,41 +3,74 @@ module REVERSE-SPEC
     imports JAVA-VERIFICATION
 
 rule [loop-inv]:
-  <struct>... STRUCT:Map ...</struct>
+  <threads>
+      <thread>
   <k>
-    // if (x != NULL) { // TODO(YilongL): this rule is still provable after changing `while` to `if` (note that `LP1:Pointer => null`); is it a bug in ConstrainedTerm#matchImplies?
-    while (x != NULL) {
-      struct listNode *y;
-
-      y = x->next;
-      x->next = p;
-      p = x;
-      x = y;
-    }
+                    whileImpl ( cast ( bool , cast ( class String2Id(".listNode") , 'ExprName(String2Id("x")) ) !=
+                      null :: nullType ) , { .AnnoVarModList class String2Id(".listNode") String2Id("y") ;
+                      cast ( class String2Id(".listNode") , ('ExprName(String2Id("y")) =
+                      cast ( class String2Id(".listNode") , cast ( class String2Id(".listNode") ,
+                      cast ( class String2Id(".listNode") , 'ExprName(String2Id("x")) ) ) . String2Id("next") ))::AssignExp ) ;
+                      cast ( class String2Id(".listNode") , ((cast ( class String2Id(".listNode") ,
+                      cast ( class String2Id(".listNode") , 'ExprName(String2Id("x")) ) ) . String2Id("next")) =
+                      cast ( class String2Id(".listNode") , 'ExprName(String2Id("p")) ))::AssignExp ) ;
+                      cast ( class String2Id(".listNode") , ('ExprName(String2Id("p")) =
+                      cast ( class String2Id(".listNode") , 'ExprName(String2Id("x")) ))::AssignExp ) ;
+                      cast ( class String2Id(".listNode") , ('ExprName(String2Id("x")) =
+                      cast ( class String2Id(".listNode") , 'ExprName(String2Id("y")) ))::AssignExp ) ; } )
   =>
     .K
   ...</k>
-  <env>...
-    x |-> tv(struct listNode * *, object(P1:Int))
-    p |-> tv(struct listNode * *, object(P2:Int))
-  ...</env>
-  <heap>...
-    object(P1) |-> tv (struct listNode *, LP1:Pointer => null)
-    object(P2) |-> tv (struct listNode *, LP2:Pointer => ?LP2:Pointer)
+  <env>... (.Map => ?_:Map)
+        String2Id("x") |-> P1:Int
+        String2Id("p") |-> P2:Int
+      ...</env>
+      <holds> .Map </holds>
+          ...
+          </thread>
+          </threads>
+
+          <classes> CLASSES:Bag </classes>
+          <NumOfClassesToUnfold> 0 </NumOfClassesToUnfold>
+          <program> .K </program>
+           <globalPhase> ExecutionPhase </globalPhase>
+            <store>... (.Map => ?_:Map)
+            P1 |-> (LP1:RawRefVal => null):: class String2Id(".listNode")
+            P2 |-> (LP2:RawRefVal => ?LP2:RawRefVal) :: class String2Id(".listNode")
+                ...</store>
+          <storeMetadata> ... (.Map => ?_:Map)
+            P1 |-> LocalLocMetadata
+            P2 |-> LocalLocMetadata
+             ... </storeMetadata>
+          <busy> .Set </busy>
+          <nextLoc> I:Int => ?_:Int </nextLoc>
+
+            <objectStore>... (.Bag => ?_:Bag)
     (list(LP1)(B:List) list(LP2)(C:List) => list(?LP2)(?A:List))
-  ...</heap>
+  ...</objectStore>
 ensures ?A ==K rev(B) C
 
 rule [func-spec]:
-  <struct>... STRUCT:Map ...</struct>
-  <fun>... FUN:Map ...</fun>
-  <k>
-    reverse(tv(struct listNode *, LP:Pointer))
-  =>
-    tv(struct listNode *, ?LP:Pointer)
-  ...</k>
-  <heap>...
-    list(LP)(A:List) => list(?LP)(rev(A))
-  ...</heap>
+  <threads>
+  <thread>
+    <k>
+  	(class String2Id(".listNode")).String2Id("reverse"):Id((LP:RawRefVal)::(class String2Id(".listNode")))
+          =>
+          ?LP:RawRefVal::(class String2Id(".listNode"))
+    ...</k>
+  <holds> .Map </holds>
+  ...
+  </thread>
+  </threads>
+
+  <classes> CLASSES:Bag </classes>
+  <NumOfClassesToUnfold> 0 </NumOfClassesToUnfold>
+  <program> .K </program>
+  <globalPhase> ExecutionPhase </globalPhase>
+  <store>... .Map => ?_:Map ...</store>
+  <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
+  <busy> .Set </busy>
+  <nextLoc> I:Int => ?_:Int </nextLoc>
+  <objectStore>... (list(LP)(A:List) => list(?LP)(rev(A))) (.Bag => ?_:Bag)...</objectStore>
 
 endmodule

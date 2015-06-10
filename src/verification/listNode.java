@@ -14,6 +14,7 @@ public class listNode {
         listNode node2 = new listNode (2);
         listNode node3 = new listNode (3);
         node1.next = node2;
+        reverse(node1);
         append(node1, node3);
     }
     

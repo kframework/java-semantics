@@ -8,13 +8,13 @@ rule [loop-inv]:
   <k>
                     whileImpl ( cast ( bool , cast ( class String2Id(".listNode") , cast (
                       class String2Id(".listNode") , cast ( class String2Id(".listNode") , 'ExprName(String2Id("p")) ) ) . String2Id("next") )
-                      != null :: nullType ) , { cast ( class String2Id(".listNode") , 'ExprName(String2Id("p")) =
+                      != null :: nullType ) , { cast ( class String2Id(".listNode") , ('ExprName(String2Id("p")) =
                       cast ( class String2Id(".listNode") , cast ( class String2Id(".listNode") , cast (
-                      class String2Id(".listNode") , 'ExprName(String2Id("p")) ) ) . String2Id("next") ) ) ; } )
+                      class String2Id(".listNode") , 'ExprName(String2Id("p")) ) ) . String2Id("next") ))::AssignExp ) ; } )
   =>
     .K
   ...</k>
-  <env>...
+  <env>... (.Map => ?_:Map)
       String2Id("x") |-> LX:Int
       String2Id("p") |-> LP:Int
     ...</env>
@@ -27,29 +27,28 @@ rule [loop-inv]:
     <NumOfClassesToUnfold> 0 </NumOfClassesToUnfold>
     <program> .K </program>
      <globalPhase> ExecutionPhase </globalPhase>
-      <store>... .Map => ?_:Map
-      LX |-> X:RawRefVal :: C:ClassType
-      LP |-> (objectRef(P1:Int, C) => objectRef(?P2:Int, C)) :: C
+      <store>... (.Map => ?_:Map)
+      LX |-> X:RawRefVal :: class String2Id(".listNode")
+      LP |-> (objectRef(P1:Int, class String2Id(".listNode")) => objectRef(?P2:Int, class String2Id(".listNode"))) :: class String2Id(".listNode")
           ...</store>
-    <storeMetadata> ... .Map => ?_:Map 
+    <storeMetadata> ... (.Map => ?_:Map)
       LX |-> LocalLocMetadata
       LP |-> LocalLocMetadata
        ... </storeMetadata>
     <busy> .Set </busy>
     <nextLoc> I:Int => ?_:Int </nextLoc>
 
-      <objectStore>...
-
+      <objectStore>... (.Bag => ?_:Bag)
     (lseg(X, objectRef(P1, C))(A:List)
      lseg(objectRef(P1, C), null)(B:List)
      =>
-     lseg(X, objectRef(?P2, C))(?C:List)
+     lseg(X, objectRef(?P2, C))(?AB:List)
      <object>
                             <objectId>
                                 ?P2
                             </objectId>
                             <objectType>
-                                C
+                                C:ClassType
                             </objectType>
                             <layer>
                                 <layerClass>
@@ -57,7 +56,7 @@ rule [loop-inv]:
                                 </layerClass>
                                 <layerEnv>
                    String2Id("val") |-> ?E:Int :: int
-                   String2Id("next") |-> null :: C
+                   String2Id("next") |-> null :: class String2Id(".listNode")
                    </layerEnv>
                                    <layerEnclosingObject>
                                        noValue
@@ -74,9 +73,9 @@ rule [loop-inv]:
                                        noValue
                                    </layerEnclosingObject>
                                </layer>
-                           </object>
+                           </object>)
   ...</objectStore>
-ensures A B ==K ?C ListItem(?E) andBool ?E >=Int -2147483648 andBool ?E <=Int 2147483647
+ensures A B ==K ?AB ListItem(?E) andBool ?E >=Int -2147483648 andBool ?E <=Int 2147483647
 
 //rule [func-spec]:
 //  <threads>
@@ -100,6 +99,6 @@ ensures A B ==K ?C ListItem(?E) andBool ?E >=Int -2147483648 andBool ?E <=Int 21
 //  <busy> .Set </busy>
 //  <nextLoc> I:Int => ?_:Int </nextLoc>
 //
-//    <objectStore>... lseg(X, null)(A:List) lseg(Y, null)(B:List) => lseg(?P, null)(A B) ...</objectStore>
+//    <objectStore>... (lseg(X, null)(A:List) lseg(Y, null)(B:List) => lseg(?P, null)(A B)) (.Bag => ?_:Bag)...</objectStore>
 endmodule
 
