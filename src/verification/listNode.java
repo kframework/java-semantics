@@ -56,6 +56,205 @@ static listNode reverse(listNode x)
 
   return p;
 }
+    static listNode bubble_sort(listNode x)
+/*@ rule <k> $ => return ?x; ...</k>
+         <heap>... list(x)(A) => list(?x)(?A) ...</heap>
+    if isSorted(?A) /\ seq2mset(A) = seq2mset(?A) */
+    {
+        int change;
+
+        if (x == null || x.next == null)
+            return x;
+
+        change = 1 ;
+  /*@ inv <heap>... list(x)(?A) ...</heap>
+          /\ ~(x = 0) /\ seq2mset(A) = seq2mset(?A)
+          /\ (isSorted(?A) \/ ~(change = 0)) */
+        while (change == 1) {
+            listNode y;
+
+            change = 0;
+            y = x;
+    /*@ inv <heap>... lseg(x, y)(?B), y |. [?v, ?n], list(?n)(?C) ...</heap>
+            /\ ~(x = 0) /\ seq2mset(A) = seq2mset(?B @ [?v] @ ?C)
+            /\ (isSorted(?B @ [?v]) \/ ~(change = 0)) */
+            while (y.next != null) {
+                if (y.val > y.next.val) {
+                    int temp;
+
+                    change = 1;
+                    temp = y.val;
+                    y.val = y.next.val;
+                    y.next.val = temp;
+                }
+                y = y.next;
+            }
+        }
+
+        return x;
+    }
+
+
+    static listNode insertion_sort(listNode x)
+/*@ rule <k> $ => return ?x; ...</k>
+         <heap>... list(x)(A) => list(?x)(?A) ...</heap>
+    if isSorted(?A) /\ seq2mset(A) = seq2mset(?A) */
+    {
+        listNode y;
+
+        y = null;
+  /*@ inv <heap>... list(y)(?B), list(x)(?C) ...</heap>
+          /\ isSorted(?B) /\ seq2mset(A) = seq2mset(?B) U seq2mset(?C) */
+        while (x != null) {
+            listNode n;
+
+            n = x;
+            x = x.next;
+            n.next = null;
+            if (y != null) {
+                if (y.val < n.val) {
+                    listNode z;
+
+                    z = y;
+        /*@ inv <heap>... lseg(y,z)(?B), z |. [?v,?n],
+                          list(?n)(?C), n |. [nval,0] ...</heap>
+                /\ D = ?B @ [?v] @ ?C /\ ?v < nval */
+                    while (z.next != null && z.next.val < n.val) {
+                        z = z.next;
+                    }
+
+                    n.next = z.next;
+                    z.next = n;
+                }
+                else {
+                    n.next = y;
+                    y = n;
+                }
+            }
+            else {
+                y = n;
+            }
+        }
+
+        return y;
+    }
+
+
+
+    static listNode merge_sort(listNode x)
+/*@ rule <k> $ => return ?x; ...</k>
+         <heap>... list(x)(A) => list(?x)(?A) ...</heap>
+    if isSorted(?A) /\ seq2mset(A) = seq2mset(?A) */
+    {
+        listNode p;
+        listNode y;
+        listNode z;
+
+        if (x == null || x.next == null)
+            return x;
+
+        y = null;
+        z = null;
+  /*@ inv <heap>... list(x)(?A), list(y)(?B), list(z)(?C) ...</heap>
+          /\ seq2mset(A) = seq2mset(?A) U seq2mset(?B) U seq2mset(?C)
+          /\ (len(?B) = len(?C) \/ len(?B) = len(?C) + 1 /\ x = 0) */
+        while (x != null) {
+            listNode t;
+
+            t = x;
+            x = x.next;
+            t.next = y;
+            y = t;
+
+            if (x != null) {
+                t = x;
+                x = x.next;
+                t.next = z;
+                z = t;
+            }
+        }
+
+        y = merge_sort(y);
+        z = merge_sort(z);
+
+        if (y.val < z.val) {
+            x = y;
+            p = y;
+            y = y.next;
+        }
+        else {
+            x = z;
+            p = z;
+            z = z.next;
+        }
+  /*@ inv <heap>...lseg(x,p)(?A1),p|.[?v,?n],list(y)(?B),list(z)(?C) ...</heap>
+          /\ seq2mset(A) = seq2mset(?A1 @ [?v]) U seq2mset(?B) U seq2mset(?C)
+          /\ leq(seq2mset(?A1 @ [?v]), seq2mset(?B))
+          /\ leq(seq2mset(?A1 @ [?v]), seq2mset(?C))
+          /\ isSorted(?A1 @ [?v]) /\ isSorted(?B) /\ isSorted(?C) */
+        while (y != null && z != null) {
+            if (y.val < z.val) {
+                p.next = y;
+                y = y.next;
+            }
+            else {
+                p.next = z;
+                z = z.next;
+            }
+
+            p = p.next;
+        }
+
+        if (y != null)
+            p.next = y;
+        else
+            p.next = z;
+
+        return x;
+    }
+
+
+    static listNode quicksort(listNode x)
+/*@ rule <k> $ => return ?x; ...</k>
+         <heap>... list(x)(A) => list(?x)(?A) ...</heap>
+    if isSorted(?A) /\ seq2mset(A) = seq2mset(?A) */
+    {
+        listNode p;
+        listNode y;
+        listNode z;
+
+        if (x == null || x.next == null)
+            return x;
+
+        p = x;
+        x = x.next;
+        p.next = null;
+        y = null;
+        z = null;
+  /*@ inv <heap>... p|.[v,0], list(x)(?A), list(y)(?B), list(z)(?C) ...</heap>
+          /\ seq2mset(A) = {v} U seq2mset(?A) U seq2mset(?B) U seq2mset(?C)
+          /\ leq(seq2mset(?B), {v}) /\ leq({v}, seq2mset(?C)) */
+        while(x != null) {
+            listNode t;
+
+            t = x;
+            x = x.next;
+            if (t.val < p.val) {
+                t.next = y;
+                y = t;
+            }
+            else {
+                t.next = z;
+                z = t;
+            }
+        }
+
+        y = quicksort(y);
+        z = quicksort(z);
+        x = append(y, append(p, z));
+
+        return x;
+    }
 
 }
 

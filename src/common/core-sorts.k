@@ -196,7 +196,7 @@ syntax LocMetadata ::= "LocalLocMetadata"   [latex(\terminal{Local})]
 //Denis' syntax
 syntax ClassOrName ::= Id | ClassType
 //Denis' syntax
-syntax ClassType ::= "class" Id | "noClass"                     [latex({\dotCt{K}})]
+syntax ClassType ::= "class" Id [smtlib(smt_classtype)] | "noClass"                     [latex({\dotCt{K}})]
 
 /* Denis' syntax: A reference type is either a class type, an array type, the null type or a String type.
 The null type is specified by the JLS although inaccessible to the programmer. String objects and

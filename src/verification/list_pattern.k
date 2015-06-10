@@ -5,6 +5,7 @@ module LIST-PATTERN
   imports JAVA-EXEC
   imports INT-LIST
 
+  syntax Id ::= "val" | "next" | "java.lang.Object"
   /* list pattern */
   syntax Bag ::= "list" "(" RawRefVal ")" "(" List ")"    [pattern(1)]
   rule <objectStore> ...
@@ -21,8 +22,8 @@ module LIST-PATTERN
                          C
                      </layerClass>
                      <layerEnv>
-        String2Id("val") |-> I :: int
-        String2Id("next") |-> ?PNext:RawRefVal :: C
+        val |-> I :: int
+        next |-> ?PNext:RawRefVal :: C
         </layerEnv>
                         <layerEnclosingObject>
                             noValue
@@ -30,7 +31,7 @@ module LIST-PATTERN
                     </layer>
                     <layer>
                         <layerClass>
-                            class String2Id("java.lang.Object")
+                            class java.lang.Object
                         </layerClass>
                         <layerEnv>
                             .Map
@@ -64,8 +65,8 @@ module LIST-PATTERN
                              C
                          </layerClass>
                          <layerEnv>
-            String2Id("val") |-> I :: int
-            String2Id("next") |-> ?PNext:RawRefVal :: C
+            val |-> I :: int
+            next |-> ?PNext:RawRefVal :: C
             </layerEnv>
                             <layerEnclosingObject>
                                 noValue
@@ -73,7 +74,7 @@ module LIST-PATTERN
                         </layer>
                         <layer>
                             <layerClass>
-                                class String2Id("java.lang.Object")
+                                class java.lang.Object
                             </layerClass>
                             <layerEnv>
                                 .Map
@@ -106,8 +107,8 @@ module LIST-PATTERN
                                C
                            </layerClass>
                            <layerEnv>
-              String2Id("val") |-> I:Int :: int
-              String2Id("next") |-> null :: C
+              val |-> I:Int :: int
+              next |-> null :: C
               </layerEnv>
                               <layerEnclosingObject>
                                   noValue
@@ -115,7 +116,7 @@ module LIST-PATTERN
                           </layer>
                           <layer>
                               <layerClass>
-                                  class String2Id("java.lang.Object")
+                                  class java.lang.Object
                               </layerClass>
                               <layerEnv>
                                   .Map
@@ -142,8 +143,8 @@ module LIST-PATTERN
                                       C
                                   </layerClass>
                                   <layerEnv>
-                     String2Id("val") |-> I:Int :: int
-                     String2Id("next") |-> objectRef(Q:Int, C) :: C
+                     val |-> I:Int :: int
+                     next |-> objectRef(Q:Int, C) :: C
                      </layerEnv>
                                      <layerEnclosingObject>
                                          noValue
@@ -151,7 +152,7 @@ module LIST-PATTERN
                                  </layer>
                                  <layer>
                                      <layerClass>
-                                         class String2Id("java.lang.Object")
+                                         class java.lang.Object
                                      </layerClass>
                                      <layerEnv>
                                          .Map
@@ -182,7 +183,7 @@ module LIST-PATTERN
                                    </layer>
                                    <layer>
                                        <layerClass>
-                                           class String2Id("java.lang.Object")
+                                           class java.lang.Object
                                        </layerClass>
                                        <layerEnv>
                                            .Map
@@ -208,8 +209,8 @@ module LIST-PATTERN
                                              C
                                          </layerClass>
                                          <layerEnv>
-                            String2Id("val") |-> I:Int :: int
-                            String2Id("next") |-> Q:RawRefVal :: C
+                            val |-> I:Int :: int
+                            next |-> Q:RawRefVal :: C
                             </layerEnv>
                                             <layerEnclosingObject>
                                                 noValue
@@ -217,7 +218,7 @@ module LIST-PATTERN
                                         </layer>
                                         <layer>
                                             <layerClass>
-                                                class String2Id("java.lang.Object")
+                                                class java.lang.Object
                                             </layerClass>
                                             <layerEnv>
                                                 .Map
@@ -244,8 +245,8 @@ module LIST-PATTERN
                                                                   C
                                                               </layerClass>
                                                               <layerEnv>
-                                                 String2Id("val") |-> I:Int :: int
-                                                 String2Id("next") |-> Q:RawRefVal :: C
+                                                 val |-> I:Int :: int
+                                                 next |-> Q:RawRefVal :: C
                                                  </layerEnv>
                                                                  <layerEnclosingObject>
                                                                      noValue
@@ -253,7 +254,7 @@ module LIST-PATTERN
                                                              </layer>
                                                              <layer>
                                                                  <layerClass>
-                                                                     class String2Id("java.lang.Object")
+                                                                     class java.lang.Object
                                                                  </layerClass>
                                                                  <layerEnv>
                                                                      .Map
@@ -285,7 +286,7 @@ module LIST-PATTERN
                                           </layer>
                                           <layer>
                                               <layerClass>
-                                                  class String2Id("java.lang.Object")
+                                                  class java.lang.Object
                                               </layerClass>
                                               <layerEnv>
                                                   .Map
@@ -327,7 +328,7 @@ module LIST-PATTERN
                                    </layer>
                                    <layer>
                                        <layerClass>
-                                           class String2Id("java.lang.Object")
+                                           class java.lang.Object
                                        </layerClass>
                                        <layerEnv>
                                            .Map

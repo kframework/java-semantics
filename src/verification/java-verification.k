@@ -9,5 +9,4 @@ module JAVA-VERIFICATION
   imports TREE-PATTERN
   imports LIST-PATTERN
 
-syntax Id ::= "min" | ".min"
 endmodule

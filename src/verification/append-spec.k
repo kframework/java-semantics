@@ -39,24 +39,24 @@ rule [loop-inv]:
     <nextLoc> I:Int => ?_:Int </nextLoc>
 
       <objectStore>... (.Bag => ?_:Bag)
-    (lseg(X, objectRef(P1, C))(A:List)
-     lseg(objectRef(P1, C), null)(B:List)
+    (lseg(X, objectRef(P1, class String2Id(".listNode")))(A:List)
+     lseg(objectRef(P1, class String2Id(".listNode")), null)(B:List)
      =>
-     lseg(X, objectRef(?P2, C))(?AB:List)
+     lseg(X, objectRef(?P2, class String2Id(".listNode")))(?AB:List)
      <object>
                             <objectId>
                                 ?P2
                             </objectId>
                             <objectType>
-                                C:ClassType
+                                class String2Id(".listNode")
                             </objectType>
                             <layer>
                                 <layerClass>
-                                    C
+                                    class String2Id(".listNode")
                                 </layerClass>
                                 <layerEnv>
-                   String2Id("val") |-> ?E:Int :: int
-                   String2Id("next") |-> null :: class String2Id(".listNode")
+                   val |-> ?E:Int :: int
+                   next |-> null :: class String2Id(".listNode")
                    </layerEnv>
                                    <layerEnclosingObject>
                                        noValue
