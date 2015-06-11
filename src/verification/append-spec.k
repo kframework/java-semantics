@@ -77,28 +77,28 @@ rule [loop-inv]:
   ...</objectStore>
 ensures A B ==K ?AB ListItem(?E) andBool ?E >=Int -2147483648 andBool ?E <=Int 2147483647
 
-//rule [func-spec]:
-//  <threads>
-//  <thread>
-//    <k>
-//  	(class String2Id(".listNode")).String2Id("append"):Id((X:RawRefVal)::(class String2Id(".listNode")), (Y:RawRefVal)::(class String2Id(".listNode")))
-//          =>
-//          ?P:RawRefVal::(class String2Id(".listNode"))
-//    ...</k>
-//  <holds> .Map </holds>
-//  ...
-//  </thread>
-//  </threads>
-//
-//  <classes> CLASSES:Bag </classes>
-//  <NumOfClassesToUnfold> 0 </NumOfClassesToUnfold>
-//  <program> .K </program>
-//   <globalPhase> ExecutionPhase </globalPhase>
-//    <store>... .Map => ?_:Map ...</store>
-//  <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
-//  <busy> .Set </busy>
-//  <nextLoc> I:Int => ?_:Int </nextLoc>
-//
-//    <objectStore>... (lseg(X, null)(A:List) lseg(Y, null)(B:List) => lseg(?P, null)(A B)) (.Bag => ?_:Bag)...</objectStore>
+rule [func-spec]:
+  <threads>
+  <thread>
+    <k>
+  	(class String2Id(".listNode")).String2Id("append"):Id((X:RawRefVal)::(class String2Id(".listNode")), (Y:RawRefVal)::(class String2Id(".listNode")))
+          =>
+          ?P:RawRefVal::(class String2Id(".listNode"))
+    ...</k>
+  <holds> .Map </holds>
+  ...
+  </thread>
+  </threads>
+
+  <classes> CLASSES:Bag </classes>
+  <NumOfClassesToUnfold> 0 </NumOfClassesToUnfold>
+  <program> .K </program>
+   <globalPhase> ExecutionPhase </globalPhase>
+    <store>... .Map => ?_:Map ...</store>
+  <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
+  <busy> .Set </busy>
+  <nextLoc> I:Int => ?_:Int </nextLoc>
+
+    <objectStore>... (lseg(X, null)(A:List) lseg(Y, null)(B:List) => lseg(?P, null)(A B)) (.Bag => ?_:Bag)...</objectStore>
 endmodule
 

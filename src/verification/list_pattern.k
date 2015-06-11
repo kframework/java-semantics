@@ -5,25 +5,25 @@ module LIST-PATTERN
   imports JAVA-EXEC
   imports INT-LIST
 
-  syntax Id ::= "val" | "next" | "java.lang.Object"
+  syntax Id ::= "val" | "next" | "java.lang.Object" | ".listNode"
   /* list pattern */
   syntax Bag ::= "list" "(" RawRefVal ")" "(" List ")"    [pattern(1)]
   rule <objectStore> ...
-    list(objectRef(P:Int, C:ClassType))(ListItem(I:Int) L:List)
+    list(objectRef(P:Int, class .listNode))(ListItem(I:Int) L:List)
   => <object>
                  <objectId>
                      P
                  </objectId>
                  <objectType>
-                     C
+                     class .listNode
                  </objectType>
                  <layer>
                      <layerClass>
-                         C
+                         class .listNode
                      </layerClass>
                      <layerEnv>
         val |-> I :: int
-        next |-> ?PNext:RawRefVal :: C
+        next |-> ?PNext:RawRefVal :: class .listNode
         </layerEnv>
                         <layerEnclosingObject>
                             noValue
@@ -52,21 +52,21 @@ module LIST-PATTERN
   /* lseg pattern */
   syntax Bag ::= "lseg" "(" RawRefVal "," RawRefVal ")" "(" List ")"    [pattern(2)]
   rule <objectStore> ...
-  lseg(objectRef(P:Int, C:ClassType), Q:RawRefVal)(ListItem(I:Int) L:List)
+  lseg(objectRef(P:Int, class .listNode), Q:RawRefVal)(ListItem(I:Int) L:List)
     => <object>
                      <objectId>
                          P
                      </objectId>
                      <objectType>
-                         C
+                         class .listNode
                      </objectType>
                      <layer>
                          <layerClass>
-                             C
+                             class .listNode
                          </layerClass>
                          <layerEnv>
             val |-> I :: int
-            next |-> ?PNext:RawRefVal :: C
+            next |-> ?PNext:RawRefVal :: class .listNode
             </layerEnv>
                             <layerEnclosingObject>
                                 noValue
@@ -88,7 +88,7 @@ module LIST-PATTERN
         ...
                </objectStore>
 
-    requires objectRef(P, C) =/=K Q
+    requires objectRef(P, class .listNode) =/=K Q
     ensures I >=Int -2147483648 andBool I <=Int 2147483647
     [pattern]
   rule <objectStore> ... lseg(P:RawRefVal, P)(.List) => .Bag ... </objectStore>
@@ -100,15 +100,15 @@ module LIST-PATTERN
                            P
                        </objectId>
                        <objectType>
-                           C
+                           class .listNode
                        </objectType>
                        <layer>
                            <layerClass>
-                               C
+                               class .listNode
                            </layerClass>
                            <layerEnv>
               val |-> I:Int :: int
-              next |-> null :: C
+              next |-> null :: class .listNode
               </layerEnv>
                               <layerEnclosingObject>
                                   noValue
@@ -126,7 +126,7 @@ module LIST-PATTERN
                               </layerEnclosingObject>
                           </layer>
                       </object>
-       => lseg(objectRef(P:Int, C:ClassType), null)(ListItem(I)))
+       => lseg(objectRef(P:Int, class .listNode), null)(ListItem(I)))
        F:Bag </objectStore>
     [pattern-folding]
 
@@ -136,15 +136,15 @@ module LIST-PATTERN
                                   P:Int
                               </objectId>
                               <objectType>
-                                  C:ClassType
+                                  class .listNode
                               </objectType>
                               <layer>
                                   <layerClass>
-                                      C
+                                      class .listNode
                                   </layerClass>
                                   <layerEnv>
                      val |-> I:Int :: int
-                     next |-> objectRef(Q:Int, C) :: C
+                     next |-> objectRef(Q:Int, class .listNode) :: class .listNode
                      </layerEnv>
                                      <layerEnclosingObject>
                                          noValue
@@ -162,17 +162,17 @@ module LIST-PATTERN
                                      </layerEnclosingObject>
                                  </layer>
                              </object>
-    => lseg(objectRef(P, C), objectRef(Q, C))(ListItem(I)))
+    => lseg(objectRef(P, class .listNode), objectRef(Q, class .listNode))(ListItem(I)))
        <object>
                                 <objectId>
                                     Q
                                 </objectId>
                                 <objectType>
-                                    C
+                                    class .listNode
                                 </objectType>
                                 <layer>
                                     <layerClass>
-                                        C
+                                        class .listNode
                                     </layerClass>
                                     <layerEnv>
                        M:Map
@@ -202,15 +202,15 @@ module LIST-PATTERN
                                          P
                                      </objectId>
                                      <objectType>
-                                         C
+                                         class .listNode
                                      </objectType>
                                      <layer>
                                          <layerClass>
-                                             C
+                                             class .listNode
                                          </layerClass>
                                          <layerEnv>
                             val |-> I:Int :: int
-                            next |-> Q:RawRefVal :: C
+                            next |-> Q:RawRefVal :: class .listNode
                             </layerEnv>
                                             <layerEnclosingObject>
                                                 noValue
@@ -228,7 +228,7 @@ module LIST-PATTERN
                                             </layerEnclosingObject>
                                         </layer>
                                     </object>
-    => lseg(objectRef(P:Int, C:ClassType), Q)(ListItem(I)))
+    => lseg(objectRef(P:Int, class .listNode), Q)(ListItem(I)))
        lseg(Q, null)(L:List)
        F:Bag </objectStore>
     [pattern-folding]
@@ -238,15 +238,15 @@ module LIST-PATTERN
                                                               P:Int
                                                           </objectId>
                                                           <objectType>
-                                                              C:ClassType
+                                                              class .listNode
                                                           </objectType>
                                                           <layer>
                                                               <layerClass>
-                                                                  C
+                                                                  class .listNode
                                                               </layerClass>
                                                               <layerEnv>
                                                  val |-> I:Int :: int
-                                                 next |-> Q:RawRefVal :: C
+                                                 next |-> Q:RawRefVal :: class .listNode
                                                  </layerEnv>
                                                                  <layerEnclosingObject>
                                                                      noValue
@@ -264,18 +264,18 @@ module LIST-PATTERN
                                                                  </layerEnclosingObject>
                                                              </layer>
                                                          </object>
-    => lseg(objectRef(P, C), Q)(ListItem(I)))
-       lseg(Q, objectRef(R:Int, C))(L:List)
+    => lseg(objectRef(P, class .listNode), Q)(ListItem(I)))
+       lseg(Q, objectRef(R:Int, class .listNode))(L:List)
        <object>
                                        <objectId>
                                            R
                                        </objectId>
                                        <objectType>
-                                           C
+                                           class .listNode
                                        </objectType>
                                        <layer>
                                            <layerClass>
-                                               C
+                                               class .listNode
                                            </layerClass>
                                            <layerEnv>
                               M:Map
@@ -306,18 +306,18 @@ module LIST-PATTERN
     [pattern-folding]
 
   rule <objectStore> (lseg(P:RawRefVal, R:RawRefVal)(L1:List)
-       lseg(R, objectRef(Q:Int, C:ClassType))(L2:List)
-    => lseg(P, objectRef(Q, C))(L1 L2))
+       lseg(R, objectRef(Q:Int, class .listNode))(L2:List)
+    => lseg(P, objectRef(Q, class .listNode))(L1 L2))
        <object>
                                 <objectId>
                                     Q
                                 </objectId>
                                 <objectType>
-                                    C
+                                    class .listNode
                                 </objectType>
                                 <layer>
                                     <layerClass>
-                                        C
+                                        class .listNode
                                     </layerClass>
                                     <layerEnv>
                        M:Map
