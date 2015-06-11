@@ -35,28 +35,8 @@ syntax String ::= javaDouble2String(Float)  [function]
                    //If the absolute value of the target float is inside the range [low,high),
         //then it will be printed in decimal format, owise, scientific notation will be used.
                 | javaDouble2StringAux(Float, Float, Float)  [function]
-
-//the three args: nextDown, target double, nextUp
-                | chooseFromCandidateDoubleStr0(Float, Float, Float) [function]
-
-//First three args are the same as the above function, the last one is the number at which pos the
-//target double is distinguishable from its adjacent double values
-                | chooseFromCandidateDoubleStr1(Float, Float, Float, Int) [function]
-
-                //the 4 args are: nextDown, nextUp, candidate1, candidate2
-                //At first, the candidate1 is transformed back to float and compare with its
-                //neighbors, if ok then return it, owise tries the candidate2, then candidate3...
-                | chooseFromCandidateDoubleStr2(Float, Float, String, String, String) [function]
-                | chooseFromCandidateDoubleStr3(Float, Float, String, String) [function]
-
                 | check0(String, Bool) [function]
 
-
-//check whether the string (representing a float) is diff from both of the two floats.
-syntax Bool ::= isDiffFl(Float, String, Float) [function]
-               | isDiff(Float, Float, Float) [function]
-rule isDiffFl(F0:Float, F1:String, F2:Float) => isDiff(F0, String2Float(F1), F2)
-rule isDiff(F0:Float, F1:Float, F2:Float) => F1 =/=Float F0 andBool F1 =/=Float F2
 
 rule javaDouble2String(DoubleNegInf) => "-Infinity"
 rule javaDouble2String(DoublePosInf) => "Infinity"
@@ -65,8 +45,8 @@ rule javaDouble2String(DoubleNaN) => "NaN"
 rule javaDouble2String(Fl:Float) => javaDouble2StringAux(10.0^Float(-3.0), Fl, 10.0^Float(7.0))
 [owise]
 
-rule javaDouble2StringAux(Low:Float, Fl:Float, High:Float) => chooseFromCandidateDoubleStr0
-                                                                (nextDown(Fl), Fl, nextUp(Fl))
+rule javaDouble2StringAux(Low:Float, Fl:Float, High:Float) =>
+Float2String(Fl, "%." +String Int2String(numOfDigitsPreserved(Fl)) +String "Rg")
 when (Fl >=Float Low andBool Fl <Float High) orBool
      (Fl <Float --Float Low andBool Fl >=Float --Float High)
 
@@ -75,31 +55,6 @@ rule javaDouble2StringAux(_, --Float 0.0, _) => "-0.0"
 
 //The other double numbers should be printed in "ScientificNotation".
 rule javaDouble2StringAux(Low:Float, Fl:Float, High:Float) => Float2String(Fl, "%Re") [owise]
-
-
-rule chooseFromCandidateDoubleStr0(F0:Float, F1:Float, F2:Float) =>
-    chooseFromCandidateDoubleStr1(F0, F1, F2, numOfDigitsPreserved1(F0, F1, F2))
-
-rule chooseFromCandidateDoubleStr1(Lower:Float, Cur:Float, Higher:Float, N:Int) =>
-    chooseFromCandidateDoubleStr2(Lower, Higher,
-                            Float2String(Cur, "%." +String Int2String(N -Int 1) +String "Rg"),
-                            Float2String(Cur, "%." +String Int2String(N) +String "Rg"),
-                            Float2String(Cur, "%." +String Int2String(N +Int 1) +String "Rg"))
-
-
-rule chooseFromCandidateDoubleStr2(Lower:Float, Higher:Float, Cand1:String, Cand2:String,
-Cand3:String) => Cand1
-when isDiffFl(Lower, Cand1, Higher)
-
-rule chooseFromCandidateDoubleStr2(Lower:Float, Higher:Float, Cand1:String, Cand2:String,
-Cand3:String) => chooseFromCandidateDoubleStr3(Lower:Float, Higher:Float, Cand2, Cand3)
-[owise]
-
-rule chooseFromCandidateDoubleStr3(Lower:Float, Higher:Float, Cand2:String, Cand3:String) => Cand2
-when isDiffFl(Lower, Cand2, Higher)
-
-rule chooseFromCandidateDoubleStr3(Lower:Float, Higher:Float, Cand2:String, Cand3:String) => Cand3
-[owise]
 
 /*@ Converts all possible Java values into String. Used mostly for printing and String + operator.
     Conversion for other value forms is defined in other modules.
@@ -113,23 +68,12 @@ rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
 
 rule toString(Fl:Float :: _) => javaDouble2String(Fl)
+
+//toString(isDiffFl(nextDown(7.0 /Float 1.2), "5.83333333333333", nextUp(7.0 /Float 1.2)))
+
 //toString(isDiffFl(nextDown(0.017), "0.017000000000000001", nextUp(0.017)))
 
 //javaDouble2String(Fl)
-/*
-"0.017 in hex str: " +String
-Float2String(0.017, "%Re") +String ";\n0.017 in 18 digits:" +String Float2String(0.017, "%.18Rf")
- +String ";\n0.017's next down:" +String Float2String(nextDown(0.017), "%.18Rf")
- +String ";\n0.017's next up:" +String Float2String(nextUp(0.017), "%.18Rf")
- +String ";\n0.017 my out: " +String javaDouble2String(0.017)
- +String ";\nNumOfDigitsPreserved is " +String Int2String(numOfDigitsPreserved(0.017))
- +String ";\nString2Float: " +String Float2String(String2Float("0.017000000000000001"))
- +String ";\nString2Float: " +String Float2String(String2Float("1.7000000000000001e-02"))
- +String ";\nString of nextUp: " +String Float2String(String2Float("0.017000000000000005"))
- +String "\n=? "
- //when (( (nextDown(0.017)) =/=Float (String2Float("0.017000000000000001")) ))
- // (( (nextUp(0.017)) =/=Float (String2Float("0.017000000000000001")) ))
-*/
 
 //java: 9.0E-4
 /*

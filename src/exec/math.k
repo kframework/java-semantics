@@ -80,30 +80,37 @@ rule nextDown(Fl:Float) => decF0(Base2String(uvalueMInt(significandFloat(Fl)), 1
 2. return the larger one between pos1 and pos2.
 */
 syntax Int ::= numOfDigitsPreserved(Float)  [function]
-            | numOfDigitsPreserved1(Float, Float, Float) [function]
-            //the string representation of the format "%.17Rf"
-            | numOfDigitsPreserved2(String, String, String) [function]
-            //the substr after decimal points: all of them should have 17 chars
-            | numOfDigitsPreserved3(String, String, String) [function]
+syntax Int ::= numOfDigitsPreserved2(Float, Int)  [function]
 
-rule numOfDigitsPreserved(Fl:Float) =>
-  numOfDigitsPreserved1(nextDown(Fl), Fl, nextUp(Fl))
+//The string arg in the middle is the string representation a float.
+syntax Bool ::= inTheRange(Float, String, Float)  [function]
+syntax Bool ::= inTheRange2(Float, Float, Float)  [function]
 
-rule numOfDigitsPreserved1(F0:Float, F1:Float, F2:Float)
-     => numOfDigitsPreserved2(Float2String(F0, "%.18Rf"),
-                              Float2String(F1, "%.18Rf"),
-                              Float2String(F2, "%.18Rf"))
+//check whether it is ok to use the format str "%." +String Int2String(N) +String "Rg"
+//to print the float F so that the float F' (transformed back from the printed string)
+//has the property:  nextDown(F) < F' < nextUp(F)
+syntax Bool ::= ok2PrintFloat(Float, Int) [function]
 
-rule numOfDigitsPreserved2(F0:String, F1:String, F2:String)
-    => numOfDigitsPreserved3(getFractionalPart(F0),
-                         getFractionalPart(F1),
-                         getFractionalPart(F2))
+rule inTheRange(F1:Float, F2:String, F3:Float) => inTheRange2(F1, String2Float(F2), F3)
 
-rule numOfDigitsPreserved3(F0:String, F1:String, F2:String)
-    => minInt(17, maxInt(diffFromPos(F0, F1), diffFromPos(F1, F2)))
+rule inTheRange2(F1:Float, F2:Float, F3:Float) => true
+when F1 <Float F2 andBool F2 <Float F3
+
+rule inTheRange2(F1:Float, F2:Float, F3:Float) => false
+[owise]
+
+rule ok2PrintFloat(F:Float, N:Int) => inTheRange(nextDown(F), Float2String(F,
+            "%." +String Int2String(N) +String "Rg") , nextUp(F))
 
 
 
+rule numOfDigitsPreserved(Fl:Float) => numOfDigitsPreserved2(Fl, 17)
+
+rule numOfDigitsPreserved2(Fl:Float, N:Int) => numOfDigitsPreserved2(Fl, N -Int 1)
+ when ok2PrintFloat(Fl, N)
+
+rule numOfDigitsPreserved2(Fl:Float, N:Int) => N +Int 1
+[owise]
 
 //add 0 to the beginning of the hex string to make it 13 digits.
 //the int arg is the number of zero to be added.
