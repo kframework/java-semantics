@@ -39,7 +39,7 @@ rule [append-loop-inv]:
     <busy> .Set </busy>
     <nextLoc> I:Int => ?_:Int </nextLoc>
 
-      <objectStore>... (.Bag => ?_:Bag)
+      <objectStore>...
     (lseg(X, objectRef(P1, class String2Id(".listNode")))(A:List)
      lseg(objectRef(P1, class String2Id(".listNode")), null)(B:List)
      =>
@@ -100,7 +100,7 @@ rule [append-func-spec]:
   <busy> .Set </busy>
   <nextLoc> I:Int => ?_:Int </nextLoc>
 
-    <objectStore>... (lseg(X, null)(A:List) lseg(Y, null)(B:List) => lseg(?P, null)(A B)) (.Bag => ?_:Bag)...</objectStore>
+    <objectStore>... (lseg(X, null)(A:List) lseg(Y, null)(B:List) => lseg(?P, null)(A B)) ...</objectStore>
 
 rule [quick-loop-inv]:
   <threads>
@@ -153,7 +153,7 @@ rule [quick-loop-inv]:
       <busy> .Set </busy>
       <nextLoc> I:Int => ?_:Int </nextLoc>
 
-        <objectStore>... (.Bag => ?_:Bag)
+        <objectStore>...
         <object>
                                     <objectId>
                                         P
@@ -218,7 +218,7 @@ rule [quicksort-func-spec]:
   <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
   <busy> .Set </busy>
   <nextLoc> I:Int => ?_:Int </nextLoc>
-    <objectStore>... (lseg(X1, null)(A1:List) => lseg(?X2, null)(?A2:List)) (.Bag => ?_:Bag)...</objectStore>
+    <objectStore>... (lseg(X1, null)(A1:List) => lseg(?X2, null)(?A2:List)) ...</objectStore>
 ensures sorted(?A2) andBool list2set(A1) ==K list2set(?A2)
 
 endmodule

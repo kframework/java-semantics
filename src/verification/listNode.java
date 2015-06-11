@@ -14,8 +14,10 @@ public class listNode {
         listNode node2 = new listNode (2);
         listNode node3 = new listNode (3);
         node1.next = node2;
-        reverse(node1);
-        append(node1, node3);
+        insertion_sort(node1);
+//        bubble_sort(node1);
+//        reverse(node1);
+//        append(node1, node3);
     }
     
 static listNode append(listNode x, listNode y)
@@ -61,19 +63,19 @@ static listNode reverse(listNode x)
          <heap>... list(x)(A) => list(?x)(?A) ...</heap>
     if isSorted(?A) /\ seq2mset(A) = seq2mset(?A) */
     {
-        int change;
+        boolean change;
 
         if (x == null || x.next == null)
             return x;
 
-        change = 1 ;
+        change = true ;
   /*@ inv <heap>... list(x)(?A) ...</heap>
           /\ ~(x = 0) /\ seq2mset(A) = seq2mset(?A)
           /\ (isSorted(?A) \/ ~(change = 0)) */
-        while (change == 1) {
+        while (change) {
             listNode y;
 
-            change = 0;
+            change = false;
             y = x;
     /*@ inv <heap>... lseg(x, y)(?B), y |. [?v, ?n], list(?n)(?C) ...</heap>
             /\ ~(x = 0) /\ seq2mset(A) = seq2mset(?B @ [?v] @ ?C)
@@ -82,7 +84,7 @@ static listNode reverse(listNode x)
                 if (y.val > y.next.val) {
                     int temp;
 
-                    change = 1;
+                    change = true;
                     temp = y.val;
                     y.val = y.next.val;
                     y.next.val = temp;

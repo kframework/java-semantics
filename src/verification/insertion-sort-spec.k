@@ -6,40 +6,47 @@ rule [insertion-sort-loop-inv1]:
   <threads>
           <thread>
   <k>
-    while (x != NULL) {
-      struct listNode* n;
-
-      n = x;
-      x = x->next;
-      n->next = NULL;
-      if (y != NULL) {
-        if (y->val < n->val) {
-          struct listNode* z;
-
-          z = y;
-          while (z->next != NULL && z->next->val < n->val) {
-            z = z->next;
-          }
-
-          n->next = z->next;
-          z->next = n;
-        }
-        else {
-          n->next = y;
-          y = n;
-        }
-      }
-      else {
-        y = n;
-      }
-    }
+                    whileImpl ( cast ( bool , cast ( class .listNode , 'ExprName(String2Id("x")) ) !=
+                      null :: nullType ) , { .AnnoVarModList class .listNode String2Id("n") ;
+                       cast ( class .listNode , ('ExprName(String2Id("n")) = cast ( class .listNode , 'ExprName(String2Id("x")) ))::AssignExp
+                       ) ; cast ( class .listNode , ('ExprName(String2Id("x")) = cast ( class .listNode ,
+                       cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("x")) ) ) .
+                       next ))::AssignExp ) ; cast ( class .listNode , ((cast ( class
+                      .listNode , cast ( class .listNode , 'ExprName(String2Id("n")) ) ) . next) = cast
+                      ( class .listNode , null :: nullType ))::AssignExp ) ; if ( cast (
+                      bool , cast ( class .listNode , 'ExprName(String2Id("y")) ) != null :: nullType )
+                      ) { if ( cast ( bool , cast ( int , cast ( class .listNode
+                       , cast ( class .listNode , 'ExprName(String2Id("y")) ) ) . val ) < cast ( int ,
+                      cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("n")) ) ) .
+                      val ) ) ) { .AnnoVarModList class .listNode String2Id("z") ; cast (
+                      class .listNode , ('ExprName(String2Id("z")) = cast ( class .listNode , 'ExprName(String2Id("y")) ))::AssignExp ) ;
+                      while ( cast ( bool , cast ( bool , cast ( class .listNode
+                       , cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("z")) ) )
+                       . next ) != null :: nullType ) && cast ( bool , cast (
+                      int , cast ( class .listNode , cast ( class .listNode ,
+                      cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("z")) ) ) .
+                      next ) ) . val ) < cast ( int , cast ( class .listNode ,
+                      cast ( class .listNode , 'ExprName(String2Id("n")) ) ) . val ) ) ) ) { cast (
+                      class .listNode , ('ExprName(String2Id("z")) = cast ( class .listNode , cast (
+                      class .listNode , cast ( class .listNode , 'ExprName(String2Id("z")) ) ) . next ))::AssignExp
+                      ) ; } cast ( class .listNode , ((cast ( class .listNode ,
+                      cast ( class .listNode , 'ExprName(String2Id("n")) ) ) . next) = cast ( class
+                      .listNode , cast ( class .listNode , cast ( class
+                      .listNode , 'ExprName(String2Id("z")) ) ) . next ))::AssignExp ) ; cast ( class .listNode , ((
+                      cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("z")) ) ) .
+                      next) = cast ( class .listNode , 'ExprName(String2Id("n")) ))::AssignExp ) ; } else { cast (
+                      class .listNode , ((cast ( class .listNode , cast ( class
+                      .listNode , 'ExprName(String2Id("n")) ) ) . next) = cast ( class .listNode , 'ExprName(String2Id("y")) ))::AssignExp )
+                       ; cast ( class .listNode , ('ExprName(String2Id("y")) = cast ( class .listNode , 'ExprName(String2Id("n"))
+                       ))::AssignExp ) ; } } else { cast ( class .listNode , ('ExprName(String2Id("y")) = cast (
+                      class .listNode , 'ExprName(String2Id("n")) ))::AssignExp ) ; } } )
   =>
     .K
   ...</k>
-  <env> ... (.Map => ?_:Map)
+  <env>
       String2Id("x") |-> LX:Int
       String2Id("y") |-> LY:Int
-    ... </env>
+  </env>
     <holds> .Map </holds>
         ...
         </thread>
@@ -50,10 +57,8 @@ rule [insertion-sort-loop-inv1]:
         <program> .K </program>
          <globalPhase> ExecutionPhase </globalPhase>
           <store>... (.Map => ?_:Map)
-                        LX |-> ( X:RawRefVal => null ) :: class String2Id(".listNode")
-
+                      LX |-> ( X:RawRefVal => null ) :: class String2Id(".listNode")
                       LY |-> (Y1:RawRefVal => ?Y2:RawRefVal) :: class String2Id(".listNode")
-
             ...</store>
             <storeMetadata> ... (.Map => ?_:Map)
                     LX |-> LocalLocMetadata
@@ -62,12 +67,12 @@ rule [insertion-sort-loop-inv1]:
                   <busy> .Set </busy>
                   <nextLoc> I:Int => ?_:Int </nextLoc>
 
-                    <objectStore>... (.Bag => ?_:Bag)
+                    <objectStore>...
       (lseg(Y1, null)(A1:List)
      lseg(X, null)(B:List)
      =>
      lseg(?Y2, null)(?A2:List))
- ...</objectStore>
+...</objectStore>
 requires sorted(A1)
 ensures sorted(?A2) andBool list2set(A1) U list2set(B) ==K list2set(?A2)
 
@@ -75,22 +80,31 @@ rule [insertion-sort-loop-inv2]:
   <threads>
           <thread>
     <k>
-    while (z->next != NULL && z->next->val < n->val) {
-      z = z->next;
-    }
-    ~>
-    n->next = z->next;
-    z->next = n;
-    .Statements
+          whileImpl ( cast ( bool , cast ( bool , cast ( class .listNode
+                           , cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("z")) ) )
+                           . next ) != null :: nullType ) && cast ( bool , cast (
+                          int , cast ( class .listNode , cast ( class .listNode ,
+                          cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("z")) ) ) .
+                          next ) ) . val ) < cast ( int , cast ( class .listNode ,
+                          cast ( class .listNode , 'ExprName(String2Id("n")) ) ) . val ) ) ) , { cast (
+                          class .listNode , ('ExprName(String2Id("z")) = cast ( class .listNode , cast (
+                          class .listNode , cast ( class .listNode , 'ExprName(String2Id("z")) ) ) . next ))::AssignExp
+                          ) ; })
+          ~> cast ( class .listNode , ((cast ( class .listNode ,
+                          cast ( class .listNode , 'ExprName(String2Id("n")) ) ) . next) = cast ( class
+                          .listNode , cast ( class .listNode , cast ( class
+                          .listNode , 'ExprName(String2Id("z")) ) ) . next ))::AssignExp ) ; cast ( class .listNode , ((
+                          cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("z")) ) ) .
+                          next) = cast ( class .listNode , 'ExprName(String2Id("n")) ))::AssignExp ) ;
   =>
     .K
   ...</k>
-  <env>... (.Map => ?_:Map)
+  <env>
                 String2Id("x") |-> _
                 String2Id("n") |-> LN:Int
                 String2Id("y") |-> LY:Int
                 String2Id("z") |-> LZ:Int
-        ...</env>
+  </env>
     <holds> .Map </holds>
               ...
               </thread>
@@ -103,8 +117,8 @@ rule [insertion-sort-loop-inv2]:
                 <store>... (.Map => ?_:Map)
                 LY |-> Y:RawRefVal :: class String2Id(".listNode")
                 LZ |-> (objectRef(Z:Int, class String2Id(".listNode")) => ?_:RawRefVal) :: class String2Id(".listNode")
-                LZ |-> objectRef(N:Int, class String2Id(".listNode")) :: class String2Id(".listNode")
-                  ...</store>
+                LN |-> objectRef(N:Int, class String2Id(".listNode")) :: class String2Id(".listNode")
+               ... </store>
         <storeMetadata> ... (.Map => ?_:Map)
           LN |-> LocalLocMetadata
           LY |-> LocalLocMetadata
@@ -113,7 +127,7 @@ rule [insertion-sort-loop-inv2]:
         <busy> .Set </busy>
         <nextLoc> I:Int => ?_:Int </nextLoc>
 
-   <objectStore>... (.Bag => ?_:Bag)
+   <objectStore>...
     (<object>
                                  <objectId>
                                      Z
@@ -208,7 +222,7 @@ rule [insertion-sort-func-spec]:
   <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
   <busy> .Set </busy>
   <nextLoc> I:Int => ?_:Int </nextLoc>
-    <objectStore>... (lseg(X1, null)(A1:List) => lseg(?X2, null)(?A2:List)) (.Bag => ?_:Bag)...</objectStore>
+    <objectStore>... (lseg(X1, null)(A1:List) => lseg(?X2, null)(?A2:List)) ...</objectStore>
 ensures sorted(?A2) andBool list2set(A1) ==K list2set(?A2)
 
 endmodule

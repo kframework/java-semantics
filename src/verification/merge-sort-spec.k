@@ -51,7 +51,7 @@ rule [mergesort-loop-inv1]:
         <busy> .Set </busy>
         <nextLoc> I:Int => ?_:Int </nextLoc>
 
-          <objectStore>... (.Bag => ?_:Bag)
+          <objectStore>...
      (lseg(X, null)(A:List)
      lseg(objectRef(Y1, class String2Id(".listNode")), null)(B1:List)
      lseg(objectRef(Z1, class String2Id(".listNode")), null)(C1:List)
@@ -116,7 +116,7 @@ rule [mergesort-loop-inv2]:
         <busy> .Set </busy>
         <nextLoc> I:Int => ?_:Int </nextLoc>
 
-  <objectStore>... (.Bag => ?_:Bag)
+  <objectStore>...
     (<object>
                                         <objectId>
                                             P
@@ -182,7 +182,7 @@ rule [merge-sort-func-spec]:
   <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
   <busy> .Set </busy>
   <nextLoc> I:Int => ?_:Int </nextLoc>
-    <objectStore>... (lseg(X1, null)(A1:List) => lseg(?X2, null)(?A2:List)) (.Bag => ?_:Bag)...</objectStore>
+    <objectStore>... (lseg(X1, null)(A1:List) => lseg(?X2, null)(?A2:List)) ...</objectStore>
 ensures sorted(?A2) andBool list2set(A1) ==K list2set(?A2)
 
 endmodule
