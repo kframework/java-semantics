@@ -45,8 +45,9 @@ syntax String ::= javaDouble2String(Float)  [function]
 
                 //the 4 args are: nextDown, nextUp, candidate1, candidate2
                 //At first, the candidate1 is transformed back to float and compare with its
-                //neighbors, if ok then return it, owise return the candidate2
-                | chooseFromCandidateDoubleStr2(Float, Float, String, String) [function]
+                //neighbors, if ok then return it, owise tries the candidate2, then candidate3...
+                | chooseFromCandidateDoubleStr2(Float, Float, String, String, String) [function]
+                | chooseFromCandidateDoubleStr3(Float, Float, String, String) [function]
 
                 | check0(String, Bool) [function]
 
@@ -72,7 +73,8 @@ when (Fl >=Float Low andBool Fl <Float High) orBool
 rule javaDouble2StringAux(_, 0.0, _) => "0.0"
 rule javaDouble2StringAux(_, --Float 0.0, _) => "-0.0"
 
-rule javaDouble2StringAux(Low:Float, Fl:Float, High:Float) => "ScientificNotation" [owise]
+//The other double numbers should be printed in "ScientificNotation".
+rule javaDouble2StringAux(Low:Float, Fl:Float, High:Float) => Float2String(Fl, "%Re") [owise]
 
 
 rule chooseFromCandidateDoubleStr0(F0:Float, F1:Float, F2:Float) =>
@@ -80,14 +82,23 @@ rule chooseFromCandidateDoubleStr0(F0:Float, F1:Float, F2:Float) =>
 
 rule chooseFromCandidateDoubleStr1(Lower:Float, Cur:Float, Higher:Float, N:Int) =>
     chooseFromCandidateDoubleStr2(Lower, Higher,
+                            Float2String(Cur, "%." +String Int2String(N -Int 1) +String "Rg"),
                             Float2String(Cur, "%." +String Int2String(N) +String "Rg"),
                             Float2String(Cur, "%." +String Int2String(N +Int 1) +String "Rg"))
 
 
-rule chooseFromCandidateDoubleStr2(Lower:Float, Higher:Float, Cand1:String, Cand2:String) => Cand1
+rule chooseFromCandidateDoubleStr2(Lower:Float, Higher:Float, Cand1:String, Cand2:String,
+Cand3:String) => Cand1
 when isDiffFl(Lower, Cand1, Higher)
 
-rule chooseFromCandidateDoubleStr2(Lower:Float, Higher:Float, Cand1:String, Cand2:String) => Cand2
+rule chooseFromCandidateDoubleStr2(Lower:Float, Higher:Float, Cand1:String, Cand2:String,
+Cand3:String) => chooseFromCandidateDoubleStr3(Lower:Float, Higher:Float, Cand2, Cand3)
+[owise]
+
+rule chooseFromCandidateDoubleStr3(Lower:Float, Higher:Float, Cand2:String, Cand3:String) => Cand2
+when isDiffFl(Lower, Cand2, Higher)
+
+rule chooseFromCandidateDoubleStr3(Lower:Float, Higher:Float, Cand2:String, Cand3:String) => Cand3
 [owise]
 
 /*@ Converts all possible Java values into String. Used mostly for printing and String + operator.
@@ -102,6 +113,24 @@ rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
 
 rule toString(Fl:Float :: _) => javaDouble2String(Fl)
+//toString(isDiffFl(nextDown(0.017), "0.017000000000000001", nextUp(0.017)))
+
+//javaDouble2String(Fl)
+/*
+"0.017 in hex str: " +String
+Float2String(0.017, "%Re") +String ";\n0.017 in 18 digits:" +String Float2String(0.017, "%.18Rf")
+ +String ";\n0.017's next down:" +String Float2String(nextDown(0.017), "%.18Rf")
+ +String ";\n0.017's next up:" +String Float2String(nextUp(0.017), "%.18Rf")
+ +String ";\n0.017 my out: " +String javaDouble2String(0.017)
+ +String ";\nNumOfDigitsPreserved is " +String Int2String(numOfDigitsPreserved(0.017))
+ +String ";\nString2Float: " +String Float2String(String2Float("0.017000000000000001"))
+ +String ";\nString2Float: " +String Float2String(String2Float("1.7000000000000001e-02"))
+ +String ";\nString of nextUp: " +String Float2String(String2Float("0.017000000000000005"))
+ +String "\n=? "
+ //when (( (nextDown(0.017)) =/=Float (String2Float("0.017000000000000001")) ))
+ // (( (nextUp(0.017)) =/=Float (String2Float("0.017000000000000001")) ))
+*/
+
 //java: 9.0E-4
 /*
 Float2String(0.0009, "%Re") +String ";\t" +String Float2String(0.0009, "%.15Re")

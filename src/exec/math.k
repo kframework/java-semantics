@@ -100,7 +100,7 @@ rule numOfDigitsPreserved2(F0:String, F1:String, F2:String)
                          getFractionalPart(F2))
 
 rule numOfDigitsPreserved3(F0:String, F1:String, F2:String)
-    => maxInt(diffFromPos(F0, F1), diffFromPos(F1, F2))
+    => minInt(17, maxInt(diffFromPos(F0, F1), diffFromPos(F1, F2)))
 
 
 
