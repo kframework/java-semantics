@@ -30,7 +30,11 @@ http://docs.oracle.com/javase/7/docs/api/java/lang/Double.html#toString(double)
     distinguishable, then Candidate 1 will be returned as the string representation of the
     target double value, otherwise, Candidate 2 will be returned.
 */
-syntax String ::= javaDouble2String(Float)  [function]
+syntax String ::= //add special checks: if the output is an int, then add ".0" at the end
+                  javaDouble2String(Float)   [function]
+                | javaDouble2String1(Float)  [function]
+                | javaDouble2StringCheck(String)  [function]
+
                    //The three args are lower bound low, target float, upper bound high,
                    //If the absolute value of the target float is inside the range [low,high),
         //then it will be printed in decimal format, owise, scientific notation will be used.
@@ -38,11 +42,11 @@ syntax String ::= javaDouble2String(Float)  [function]
                 | check0(String, Bool) [function]
 
 
-rule javaDouble2String(DoubleNegInf) => "-Infinity"
-rule javaDouble2String(DoublePosInf) => "Infinity"
-rule javaDouble2String(DoubleNaN) => "NaN"
+rule javaDouble2String1(DoubleNegInf) => "-Infinity"
+rule javaDouble2String1(DoublePosInf) => "Infinity"
+rule javaDouble2String1(DoubleNaN) => "NaN"
 
-rule javaDouble2String(Fl:Float) => javaDouble2StringAux(10.0^Float(-3.0), Fl, 10.0^Float(7.0))
+rule javaDouble2String1(Fl:Float) => javaDouble2StringAux(10.0^Float(-3.0), Fl, 10.0^Float(7.0))
 [owise]
 
 rule javaDouble2StringAux(Low:Float, Fl:Float, High:Float) =>
@@ -55,6 +59,14 @@ rule javaDouble2StringAux(_, --Float 0.0, _) => "-0.0"
 
 //The other double numbers should be printed in "ScientificNotation".
 rule javaDouble2StringAux(Low:Float, Fl:Float, High:Float) => Float2String(Fl, "%Re") [owise]
+
+rule javaDouble2String(Fl:Float) => javaDouble2StringCheck(javaDouble2String1(Fl))
+
+rule javaDouble2StringCheck(Fl:String) => Fl
+when findChar(Fl, ".", 0) >=Int 0
+
+rule javaDouble2StringCheck(Fl:String) => Fl +String ".0"
+[owise]
 
 /*@ Converts all possible Java values into String. Used mostly for printing and String + operator.
     Conversion for other value forms is defined in other modules.
@@ -72,13 +84,13 @@ rule toString(Fl:Float :: _) => javaDouble2String(Fl)
 //Float2String(Fl, "%Re") +String ";\n" +String Float2String(Fl, "%.18Rf")
 // +String ";\nnextDown: " +String Float2String(nextDown(Fl), "%.18Rf")
 // +String ";\nnextUp: " +String Float2String(nextUp(Fl), "%.18Rf")
-// +String ";\nmy: " +String javaDouble2String(Fl)
+// +String ";\nmy: " +String javaDouble2String1(Fl)
 
 //toString(isDiffFl(nextDown(7.0 /Float 1.2), "5.83333333333333", nextUp(7.0 /Float 1.2)))
 //
 //toString(isDiffFl(nextDown(0.017), "0.017000000000000001", nextUp(0.017)))
 
-//javaDouble2String(Fl)
+//javaDouble2String1(Fl)
 
 //java: 9.0E-4
 /*
@@ -87,7 +99,7 @@ Float2String(0.0009, "%Re") +String ";\t" +String Float2String(0.0009, "%.15Re")
   +String ";\t" +String Float2String(0.0009, "%.17Re")
   +String ";\n" +String  chooseFromCandidateDoubleStr0(nextDown(0.0009), 0.0009, nextUp(0.0009))
 */
-//javaDouble2String(Fl)
+//javaDouble2String1(Fl)
 
 
 rule toString(true::_) => "true"
