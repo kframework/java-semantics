@@ -120,6 +120,8 @@ rule ok2PrintFloat(F:Float, N:Int) => inTheRange(nextDown(F), Float2String(F,
 
 rule numOfDigitsPreserved(Fl:Float) => numOfDigitsPreserved2(Fl, 17)
 
+rule numOfDigitsPreserved2(Fl:Float, 0) => 0
+
 rule numOfDigitsPreserved2(Fl:Float, N:Int) => numOfDigitsPreserved2(Fl, N -Int 1)
  when ok2PrintFloat(Fl, N)
 
