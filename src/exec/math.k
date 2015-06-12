@@ -13,8 +13,10 @@ rule DoubleNegInf => minusInfinity(53, 11)
 rule DoublePosInf => plusInfinity(53, 11)
 rule DoubleNaN => fpNaN(53, 11)
 
-syntax Float ::= nextUp(Float) [function]
-syntax Float ::= nextDown(Float) [function]
+syntax Float ::= nextUpPos(Float) [function]
+               | nextUp(Float)     [function]
+syntax Float ::= nextDownPos(Float) [function]
+               | nextDown(Float)     [function]
 
 //FFFFFFFFFFFFF is eq to 4503599627370495
 //auxiliary functions for computing ajacent double values.
@@ -59,16 +61,28 @@ when notBool (Significand ==Int 0)
 //build the hex string of a float, given its significand's string and exponent.
 //syntax String ::= buildFloatHexStr(String, Int) [function]
 
-rule nextUp(DoubleNaN) => DoubleNaN
-rule nextUp(DoublePosInf) => DoublePosInf
-rule nextUp(0.0) => DoubleMinVal
-rule nextUp(Fl:Float) => incF0(Base2String(uvalueMInt(significandFloat(Fl)), 16),
+rule nextUp(Fl:Float) => --Float nextDownPos(Fl)
+when signFloat(Fl)
+
+rule nextUp(Fl:Float) => nextUpPos(Fl)
+[owise]
+
+rule nextUpPos(DoubleNaN) => DoubleNaN
+rule nextUpPos(DoublePosInf) => DoublePosInf
+rule nextUpPos(0.0) => DoubleMinVal
+rule nextUpPos(Fl:Float) => incF0(Base2String(uvalueMInt(significandFloat(Fl)), 16),
                             exponentFloat(Fl)) [owise]
 
-rule nextDown(DoubleNaN) => DoubleNaN
-rule nextDown(DoubleNegInf) => DoubleNegInf
-rule nextDown(0.0) => --Float DoubleMinVal
-rule nextDown(Fl:Float) => decF0(Base2String(uvalueMInt(significandFloat(Fl)), 16),
+rule nextDown(Fl:Float) => --Float nextUpPos(Fl)
+when signFloat(Fl)
+
+rule nextDown(Fl:Float) => nextDownPos(Fl)
+[owise]
+
+rule nextDownPos(DoubleNaN) => DoubleNaN
+rule nextDownPos(DoubleNegInf) => DoubleNegInf
+rule nextDownPos(0.0) => --Float DoubleMinVal
+rule nextDownPos(Fl:Float) => decF0(Base2String(uvalueMInt(significandFloat(Fl)), 16),
                            exponentFloat(Fl)) [owise]
 
 

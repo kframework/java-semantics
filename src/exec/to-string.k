@@ -69,8 +69,13 @@ rule toString(I:Int :: T:Type) => Int2String(I)
 
 rule toString(Fl:Float :: _) => javaDouble2String(Fl)
 
-//toString(isDiffFl(nextDown(7.0 /Float 1.2), "5.83333333333333", nextUp(7.0 /Float 1.2)))
+//Float2String(Fl, "%Re") +String ";\n" +String Float2String(Fl, "%.18Rf")
+// +String ";\nnextDown: " +String Float2String(nextDown(Fl), "%.18Rf")
+// +String ";\nnextUp: " +String Float2String(nextUp(Fl), "%.18Rf")
+// +String ";\nmy: " +String javaDouble2String(Fl)
 
+//toString(isDiffFl(nextDown(7.0 /Float 1.2), "5.83333333333333", nextUp(7.0 /Float 1.2)))
+//
 //toString(isDiffFl(nextDown(0.017), "0.017000000000000001", nextUp(0.017)))
 
 //javaDouble2String(Fl)
