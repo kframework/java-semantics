@@ -105,6 +105,8 @@ syntax Bool ::= inTheRange2(Float, Float, Float)  [function]
 //has the property:  nextDown(F) < F' < nextUp(F)
 syntax Bool ::= ok2PrintFloat(Float, Int) [function]
 
+syntax Bool ::= ok2PrintFloatStr(Float, String, Float)  [function]
+
 rule inTheRange(F1:Float, F2:String, F3:Float) => inTheRange2(F1, String2Float(F2), F3)
 
 rule inTheRange2(F1:Float, F2:Float, F3:Float) => true
@@ -113,17 +115,19 @@ when F1 <Float F2 andBool F2 <Float F3
 rule inTheRange2(F1:Float, F2:Float, F3:Float) => false
 [owise]
 
-rule ok2PrintFloat(F:Float, N:Int) => inTheRange(nextDown(F), Float2String(F,
-            "%." +String Int2String(N) +String "Rg") , nextUp(F))
+rule ok2PrintFloat(F:Float, N:Int) => ok2PrintFloatStr(nextDown(F), Float2String(F,
+            "%." +String Int2String(N) +String "Rg"), nextUp(F))
 
-
+//it is ok to print if it is in the interval (nextDown, nextUp) and it is not in scientific
+//notation : no "e+" or "e-" symbol inside...
+rule ok2PrintFloatStr(F1:Float, F2:String, F3:Float) =>
+    inTheRange(F1, F2, F3) andBool findString(F2, "e+", 0) <Int 0 andBool findString(F2, "e-", 0)
+    <Int 0
 
 rule numOfDigitsPreserved(Fl:Float) => numOfDigitsPreserved2(Fl, 17)
 
-rule numOfDigitsPreserved2(Fl:Float, 0) => 0
-
 rule numOfDigitsPreserved2(Fl:Float, N:Int) => numOfDigitsPreserved2(Fl, N -Int 1)
- when ok2PrintFloat(Fl, N)
+ when ok2PrintFloat(Fl, N) andBool N >=Int 1
 
 rule numOfDigitsPreserved2(Fl:Float, N:Int) => N +Int 1
 [owise]
