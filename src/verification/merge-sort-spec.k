@@ -6,29 +6,31 @@ rule [mergesort-loop-inv1]:
   <threads>
          <thread>
   <k>
-    while (x != NULL) {
-      struct listNode* t;
-
-      t = x;
-      x = x->next;
-      t->next = y;
-      y = t;
-
-      if (x != NULL) {
-        t = x;
-        x = x->next;
-        t->next = z;
-        z = t;
-      }
-    }
+    whileImpl ( cast ( bool , cast ( class .listNode , 'ExprName(String2Id("x")) ) != null :: nullType ) , { .AnnoVarModList class .listNode String2Id("t") ;
+                       cast ( class .listNode , ('ExprName(String2Id("t")) = cast ( class .listNode , 'ExprName(String2Id("x")) ))::AssignExp ) ;
+                       cast ( class .listNode , ('ExprName(String2Id("x")) = cast ( class .listNode ,
+                       cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("x")) ) ) .
+                       next ))::AssignExp ) ;
+                      cast ( class .listNode , ((cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("t")) ) ) . next) =
+                      cast ( class .listNode , 'ExprName(String2Id("y")) ))::AssignExp ) ;
+                      cast ( class .listNode , ('ExprName(String2Id("y")) = cast ( class .listNode , 'ExprName(String2Id("t")) ))::AssignExp ) ;
+                      if ( cast ( bool , cast ( class .listNode , 'ExprName(String2Id("x")) ) != null :: nullType ) ) {
+                      cast ( class .listNode , ('ExprName(String2Id("t")) = cast ( class .listNode , 'ExprName(String2Id("x")) ))::AssignExp ) ;
+                      cast ( class .listNode , ('ExprName(String2Id("x")) = cast ( class .listNode , cast
+                       ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("x")) ) ) . next
+                       ))::AssignExp ) ;
+                      cast ( class .listNode , ((cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("t")) ) ) . next) =
+                      cast ( class .listNode , 'ExprName(String2Id("z")) ))::AssignExp ) ;
+                      cast ( class .listNode , ('ExprName(String2Id("z")) = cast (
+                      class .listNode , 'ExprName(String2Id("t")) ))::AssignExp ) ; } } )
   =>
     .K
   ...</k>
-  <env>... (.Map => ?_:Map)
+  <env>...
                 String2Id("x") |-> LX:Int
                 String2Id("y") |-> LY:Int
                 String2Id("z") |-> LZ:Int
-        ...</env>
+  ...</env>
     <holds> .Map </holds>
               ...
               </thread>
@@ -39,7 +41,7 @@ rule [mergesort-loop-inv1]:
               <program> .K </program>
                <globalPhase> ExecutionPhase </globalPhase>
                 <store>... (.Map => ?_:Map)
-                LX |-> ( X:RawRefVal => null ) :: class String2Id(".listNode")
+              LX |-> ( X:RawRefVal => null ) :: class String2Id(".listNode")
               LY |-> objectRef((Y1:Int => ?Y2:Int), class String2Id(".listNode")) :: class String2Id(".listNode")
               LZ |-> objectRef((Z1:Int => ?Z2:Int), class String2Id(".listNode")) :: class String2Id(".listNode")
     ...</store>
@@ -58,33 +60,42 @@ rule [mergesort-loop-inv1]:
      =>
      lseg(objectRef(?Y2, class String2Id(".listNode")), null)(?B2:List)
      lseg(objectRef(?Z2, class String2Id(".listNode")), null)(?C2:List))
- ...</objectStore>
+...</objectStore>
 ensures list2set(A) U list2set(B1) U list2set(C1) ==K list2set(?B2) U list2set(?C2)
 
 rule [mergesort-loop-inv2]:
   <threads>
        <thread>
   <k>
-    while (y != NULL && z != NULL) {
-      if (y->val < z->val) {
-        p->next = y;
-        y = y->next;
-      }
-      else {
-        p->next = z;
-        z = z->next;
-      }
-
-      p = p->next;
-    }
+    whileImpl ( cast ( bool , cast ( bool , cast (
+                      class .listNode , 'ExprName(String2Id("y")) ) != null :: nullType ) && cast ( bool
+                       , cast ( class .listNode , 'ExprName(String2Id("z")) ) != null :: nullType ) ) ,
+                      { if ( cast ( bool , cast ( int , cast ( class .listNode ,
+                       cast ( class .listNode , 'ExprName(String2Id("y")) ) ) . val ) < cast ( int ,
+                      cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("z")) ) ) .
+                      val ) ) ) { cast ( class .listNode , ((cast ( class
+                      .listNode , cast ( class .listNode , 'ExprName(String2Id("p")) ) ) . next) = cast
+                      ( class .listNode , 'ExprName(String2Id("y")) ))::AssignExp ) ; cast ( class .listNode , ('ExprName(String2Id("y")) =
+                      cast ( class .listNode , cast ( class .listNode , cast (
+                      class .listNode , 'ExprName(String2Id("y")) ) ) . next ))::AssignExp ) ; } else { cast ( class
+                       .listNode , ((cast ( class .listNode , cast ( class
+                      .listNode , 'ExprName(String2Id("p")) ) ) . next) = cast ( class .listNode , 'ExprName(String2Id("z")) ))::AssignExp )
+                       ; cast ( class .listNode , ('ExprName(String2Id("z")) = cast ( class .listNode ,
+                      cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("z")) ) ) .
+                      next ))::AssignExp ) ; } cast ( class .listNode , ('ExprName(String2Id("p")) = cast ( class
+                      .listNode , cast ( class .listNode , cast ( class
+                      .listNode , 'ExprName(String2Id("p")) ) ) . next ))::AssignExp ) ; })
     ~>
-    if (y != NULL)
-      p->next = y;
-    else
-      p->next = z;
-    S:Statement Ss:Statements
+     'BlockStmList(if ( cast ( bool , cast (
+                       class .listNode , 'ExprName(String2Id("y")) ) != null :: nullType ) ) cast (
+                      class .listNode , ((cast ( class .listNode , cast ( class
+                      .listNode , 'ExprName(String2Id("p")) ) ) . next) = cast ( class .listNode , 'ExprName(String2Id("y")) ))::AssignExp )
+                       ; else cast ( class .listNode , ((cast ( class .listNode ,
+                       cast ( class .listNode , 'ExprName(String2Id("p")) ) ) . next) = cast ( class
+                      .listNode , 'ExprName(String2Id("z")) ))::AssignExp ) ;
+    ,,'BlockStmList(S:BlockStmt,, Ss:BlockStmList))
   =>
-    S Ss
+    'BlockStmList(S,, Ss)
   ...</k>
   <env>... (.Map => ?_:Map)
                 String2Id("x") |-> LX:Int
@@ -102,8 +113,8 @@ rule [mergesort-loop-inv2]:
               <program> .K </program>
                <globalPhase> ExecutionPhase </globalPhase>
                 <store>... (.Map => ?_:Map)
-                LX |-> X:RawRefVal :: class String2Id(".listNode")
-              LP |-> (objectRef(P:Int, class String2Id(".listNode")) => ?_: RawRefVal) :: class String2Id(".listNode")
+              LX |-> X:RawRefVal :: class String2Id(".listNode")
+              LP |-> (objectRef(P:Int, class String2Id(".listNode")) => ?_:RawRefVal) :: class String2Id(".listNode")
               LY |-> (Y:RawRefVal => ?_:RawRefVal) :: class String2Id(".listNode")
               LZ |-> (Z:RawRefVal => ?_:RawRefVal) :: class String2Id(".listNode")
     ...</store>
@@ -149,12 +160,12 @@ rule [mergesort-loop-inv2]:
                                            </layer>
                                        </object>
 
-     lseg(X, objectRef(P:Int, class String2Id(".listNode")))(A1:List)
+     lseg(X, objectRef(P, class String2Id(".listNode")))(A1:List)
      lseg(Y, null)(B:List)
      lseg(Z, null)(C:List)
      =>
      lseg(X, null)(?A2:List))
- ...</objectStore>
+...</objectStore>
 requires sorted(A1 ListItem(V)) andBool sorted(B) andBool sorted(C)
   andBool list2set(A1) U {V} <=IntSet list2set(B) U list2set(C)
   andBool V >=Int -2147483648 andBool V <=Int 2147483647
