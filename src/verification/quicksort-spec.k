@@ -106,20 +106,22 @@ rule [quick-loop-inv]:
   <threads>
        <thread>
   <k>
-    while(x != NULL) {
-      struct listNode* t;
-
-      t = x;
-      x = x->next;
-      if (t->val < p->val) {
-        t->next = y;
-        y = t;
-      }
-      else {
-        t->next = z;
-        z = t;
-      }
-    }
+    whileImpl ( cast ( bool , cast ( class .listNode , 'ExprName(String2Id("x")) ) !=
+                      null :: nullType ) , { .AnnoVarModList class .listNode String2Id("t") ;
+                       cast ( class .listNode , ('ExprName(String2Id("t")) = cast ( class .listNode , 'ExprName(String2Id("x")) ))::AssignExp
+                       ) ; cast ( class .listNode , ('ExprName(String2Id("x")) = cast ( class .listNode ,
+                       cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("x")) ) ) .
+                       next ))::AssignExp ) ; if ( cast ( bool , cast ( int , cast ( class
+                      .listNode , cast ( class .listNode , 'ExprName(String2Id("t")) ) ) . val ) < cast
+                      ( int , cast ( class .listNode , cast ( class .listNode ,
+                      'ExprName(String2Id("p")) ) ) . val ) ) ) { cast ( class .listNode , ((cast ( class
+                       .listNode , cast ( class .listNode , 'ExprName(String2Id("t")) ) ) . next) = cast
+                       ( class .listNode , 'ExprName(String2Id("y")) ))::AssignExp ) ; cast ( class .listNode , ('ExprName(String2Id("y")) =
+                      cast ( class .listNode , 'ExprName(String2Id("t")) ))::AssignExp ) ; } else { cast ( class
+                      .listNode , ((cast ( class .listNode , cast ( class
+                      .listNode , 'ExprName(String2Id("t")) ) ) . next) = cast ( class .listNode , 'ExprName(String2Id("z")) ))::AssignExp )
+                       ; cast ( class .listNode , ('ExprName(String2Id("z")) = cast ( class .listNode , 'ExprName(String2Id("t"))
+                       ))::AssignExp ) ; } } )
   =>
     .K
   ...</k>
