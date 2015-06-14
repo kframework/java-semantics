@@ -209,4 +209,7 @@ rule 'ArrayType(T:Type) => arrayOf T                            [anywhere]
 rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK                [anywhere]
 
 rule isBlock('Block(_)) => true
+
+syntax HeatedInterfaceTypeList ::= List{ClassType, ","}          [klabel('InterfaceTypeList), strict]
+syntax InterfaceTypeList ::= HeatedInterfaceTypeList
 endmodule

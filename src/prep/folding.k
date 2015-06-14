@@ -56,7 +56,7 @@ rule [folding-ImplementsDec]:
       _:KLabel(
         'ClassDecHead(
           _:K,, _:K,, _:K,, _:K,,
-          'Some('ImplementsDec(IL:HeatedInterfaceTypeList => BaseInterface, IL))
+          'Some('ImplementsDec(IL:HeatedInterfaceTypeList => (BaseInterface, IL):HeatedInterfaceTypeList))
         ),,
         _
       )
