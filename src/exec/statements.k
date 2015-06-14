@@ -9,7 +9,6 @@ module STATEMENTS
 
 //@ \subsection{isStmt}
 rule isStmt('For(_)) => true    //first argument
-rule isStmt('Block(_)) => true
 
 //@ \subsection{Call of main method}
 

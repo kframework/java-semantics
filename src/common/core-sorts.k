@@ -194,20 +194,6 @@ syntax LocMetadata ::= "LocalLocMetadata"   [latex(\terminal{Local})]
                      | "FieldLocMetadata"   [latex(\terminal{Field})]
 
 //Denis' syntax
-syntax MethodInvokeExp ::= K "." MethodName "(" Exps ")"   [klabel('MethodImpl)]
-/*need context here since sometimes Id is the second argument.
-difference between
-syntax MethodName ::= Id    and
-syntax MethodName ::= Id [klabel('MethodName)]
-*/
-rule isMethodInvokeExp('MethodImpl(_)) => true
-context 'MethodImpl(HOLE,,_:K,,_:K)
-context 'MethodImpl(_:KResult,,_:K,,HOLE)
-
-syntax ClassInstanceCreationExp ::= "new" ClassType "(" Exps ")"
-                                  | Exp "." "new" ClassOrName "(" Exps ")"      [seqstrict(1,3)]
-
-//Denis' syntax
 syntax ClassOrName ::= Id | ClassType
 //Denis' syntax
 syntax ClassType ::= "class" Id | "noClass"                     [latex({\dotCt{K}})]
@@ -221,4 +207,9 @@ syntax RefType ::= ClassType | "nullType" | "arrayOf" Type
 rule 'ArrayType(T:Type) => arrayOf T                            [anywhere]
 
 rule 'ClassOrInterfaceType(TypeK:K,, _) => TypeK                [anywhere]
+
+rule isBlock('Block(_)) => true
+
+syntax HeatedInterfaceTypeList ::= List{ClassType, ","}          [klabel('InterfaceTypeList), strict]
+syntax InterfaceTypeList ::= HeatedInterfaceTypeList
 endmodule

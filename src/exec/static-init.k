@@ -2,6 +2,7 @@ module STATIC-INIT
     imports CORE-SORTS
     imports CORE-CLASSES          //for objectClass
     imports CORE-EXEC             //for restoreMethContext
+    imports SYNTAX-CONVERSIONS
 
 /*@ Triggers static initialization of a class.
 

@@ -154,6 +154,18 @@ rule removeMapItemsByValue(Key:K, Value:K, Remains:Map, V:K, M:Map) => removeMap
 when Value =/=K V
 rule removeMapItemsByValue(.Map, V:K, M:Map) => M
 
+//todo how to realise non-determinism: remove an arbitrary item with that value
+syntax KItem ::= removeOneMapItemByValue (Map,K)             [function]
+               | removeOneMapItemByValue (Map,K,Map)         [function]
+               | removeOneMapItemByValue (K,K,Map,K,Map)     [function]
+
+rule removeOneMapItemByValue(M:Map, V:K) => removeOneMapItemByValue(M, V, .Map)
+rule removeOneMapItemByValue((Key:K |-> Value:K) Remains:Map, V:K, M:Map) => removeOneMapItemByValue(Key, Value, Remains, V, M)
+rule removeOneMapItemByValue(Key:K, V, Remains:Map, V:K, M:Map) => Remains M
+rule removeOneMapItemByValue(Key:K, Value:K, Remains:Map, V:K, M:Map) => removeOneMapItemByValue(Remains, V, M (Key |-> Value))
+when Value =/=K V
+rule removeOneMapItemByValue(.Map, V:K, M:Map) => M
+
 //@ Find map items by partial key, not used now
 syntax KItem ::= mapItemsByPartialKey (Map,K)             [function]
                | mapItemsByPartialKey (Map,K,Map)         [function]
@@ -218,6 +230,10 @@ rule addElementToParamsEnd((Hd:Param, Tl:Params), P:Param) => Hd,addElementToPar
 syntax ClassBodyDecList ::= addElementToClassBodyDecListEnd (ClassBodyDecList, ClassBodyDec) [function]
 rule addElementToClassBodyDecListEnd(.ClassBodyDecList, P:K) => 'ClassBodyDecList(P,, .ClassBodyDecList)
 rule addElementToClassBodyDecListEnd('ClassBodyDecList(Hd:K,,Tl:K), P:K) => 'ClassBodyDecList(Hd,, addElementToClassBodyDecListEnd(Tl,P))
+
+syntax BlockStmList ::= addElementToBlockStmListEnd (BlockStmList, BlockStmt) [function]
+rule addElementToBlockStmListEnd(.BlockStmList, P:K) => 'BlockStmList(P,, .BlockStmList)
+rule addElementToBlockStmListEnd('BlockStmList(Hd:K,,Tl:K), P:K) => 'BlockStmList(Hd,, addElementToBlockStmListEnd(Tl,P))
 
 syntax Exps ::= addElementToExpsEnd (Exps, Exp) [function]
 rule addElementToExpsEnd(.Exps, P:Exp) => P,.Exps

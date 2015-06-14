@@ -32,7 +32,7 @@ rule [folding-start]:
                 'None(.KList),,
                 //JDK comp: #if BaseClass ==K noClass #then 'None(_) #else 'Some('SuperDec( BaseClass )) #fi
                 'Some('SuperDec( BaseClass )),,
-                'Some('ImplementsDec( [.KList] )) //processed by [fold-implements-dec]
+                'Some('ImplementsDec( .HeatedInterfaceTypeList )) //processed by [fold-implements-dec]
               ),,
               'ClassBody( [
                   StaticFields,,
@@ -56,7 +56,7 @@ rule [folding-ImplementsDec]:
       _:KLabel(
         'ClassDecHead(
           _:K,, _:K,, _:K,, _:K,,
-          'Some('ImplementsDec([_,, (.KList => BaseInterface)]))
+          'Some('ImplementsDec(IL:HeatedInterfaceTypeList => (BaseInterface, IL):HeatedInterfaceTypeList))
         ),,
         _
       )
