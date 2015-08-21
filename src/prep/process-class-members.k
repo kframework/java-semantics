@@ -401,7 +401,7 @@ rule [FieldDec-Instance]:
     <k> 'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X:Id),, .VarDecList)) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <instanceFields> [_,, ( .KList => 'FieldDec(.AnnoFieldModList,, T,, 'VarDecList('VarDec(X:Id),, .VarDecList)) )] </instanceFields>
+    <instanceFields> C:ClassBodyDecList => addElementToClassBodyDecListEnd(C, 'FieldDec(.AnnoFieldModList,, T,, 'VarDecList('VarDec(X:Id),, .VarDecList)) ) </instanceFields>
 when
     getContextType(Modifiers) ==K instanceCT
         [structural]
@@ -433,7 +433,8 @@ rule [FieldDec-Static]:
     <k> 'FieldDec(Modifiers:AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X:Id),, .VarDecList)) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <staticFields> [_,, ( .KList => 'FieldDec('AnnoFieldModList('Static(.KList),, .AnnoFieldModList),, T,, 'VarDecList('VarDec(X),, .VarDecList)) )] </staticFields>
+    <staticFields> C:ClassBodyDecList =>
+    addElementToClassBodyDecListEnd(C, 'FieldDec('AnnoFieldModList('Static(.KList),, .AnnoFieldModList),, T,, 'VarDecList('VarDec(X),, .VarDecList)) ) </staticFields>
 when
     getContextType(Modifiers) ==K staticCT
         [structural]
@@ -443,7 +444,7 @@ rule [StaticInit-Save]:
     <k> 'StaticInit(K:K) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <staticInit> [_,,(.KList => K)] </staticInit>
+    <staticInit> C:ClassBodyDecList => addElementToClassBodyDecListEnd(C, K) </staticInit>
         [structural]
 
 

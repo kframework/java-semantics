@@ -45,35 +45,4 @@ syntax Params                    ::= List{Param, ","}                [klabel('Fo
 context 'FormalParamList(HOLE,,_) [result(Param)]
 context 'FormalParamList(_,,HOLE) [result(Params)]
 
-//todo remove below: highly unlikely needed:
-syntax UserList     ::= BlockStmList
-                      | SwitchGroupList
-                      | SwitchLabelList
-                      | InterfaceTypeList
-                      | ExceptionTypeList
-                      | IdList
-                      | TypeDecList
-                      | VarDecList
-                      | ImportDecList
-                      | ActualTypeArgList
-                      | ClassOrInterfaceTypeList
-                      | TypeParamList
-                      | AbstractMethodModList
-                      | AnnoAbstractMethodModList
-                      | AnnoMethodModList
-                      | AnnoVarModList
-                      | AnnoClassModList
-                      | AnnoConstrModList
-                      | AnnoConstantModList
-                      | AnnoFieldModList
-                      | AnnoInterfaceModList
-                      | AnnoList
-                      | AnnoElemDecList
-                      | InterfaceMemberDecList
-                      | ElemValPairList
-                      | ElemValList
-                      | StringPartList
-                      | EnumConstList
-                      | ClassBodyDecList
-
 endmodule

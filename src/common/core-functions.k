@@ -231,6 +231,11 @@ syntax ClassBodyDecList ::= addElementToClassBodyDecListEnd (ClassBodyDecList, C
 rule addElementToClassBodyDecListEnd(.ClassBodyDecList, P:K) => 'ClassBodyDecList(P,, .ClassBodyDecList)
 rule addElementToClassBodyDecListEnd('ClassBodyDecList(Hd:K,,Tl:K), P:K) => 'ClassBodyDecList(Hd,, addElementToClassBodyDecListEnd(Tl,P))
 
+syntax ClassBodyDecList ::= appendClassBodyDecList(ClassBodyDecList, ClassBodyDecList) [function]
+rule appendClassBodyDecList(AExps:ClassBodyDecList, (Hd:ClassBodyDec Tl:ClassBodyDecList)) =>
+     appendClassBodyDecList(addElementToClassBodyDecListEnd(AExps, Hd), Tl)
+rule appendClassBodyDecList(AExps:ClassBodyDecList, .ClassBodyDecList) => AExps
+
 syntax BlockStmList ::= addElementToBlockStmListEnd (BlockStmList, BlockStmt) [function]
 rule addElementToBlockStmListEnd(.BlockStmList, P:K) => 'BlockStmList(P,, .BlockStmList)
 rule addElementToBlockStmListEnd('BlockStmList(Hd:K,,Tl:K), P:K) => 'BlockStmList(Hd,, addElementToBlockStmListEnd(Tl,P))
@@ -239,7 +244,7 @@ syntax Exps ::= addElementToExpsEnd (Exps, Exp) [function]
 rule addElementToExpsEnd(.Exps, P:Exp) => P,.Exps
 rule addElementToExpsEnd((Hd:Exp, Tl:Exps), P:Exp) => Hd,addElementToExpsEnd(Tl,P)
 
-syntax Exps ::= appendExps(Exps,Exps) [function]
+syntax Exps ::= appendExps(Exps, Exps) [function]
 rule appendExps(AExps:Exps, (Hd:Exp, Tl:Exps)) => appendExps(addElementToExpsEnd(AExps, Hd), Tl)
 rule appendExps(AExps:Exps, .Exps) => AExps
 

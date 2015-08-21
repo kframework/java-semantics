@@ -63,8 +63,8 @@ rule [staticInit]:
     <tid> TId:Int </tid>
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
-    <staticFields> StaticFields:KListWrap </staticFields>
-    <staticInit> StaticInit:KListWrap </staticInit>
+    <staticFields> StaticFields:ClassBodyDecList </staticFields>
+    <staticInit> StaticInit:ClassBodyDecList </staticInit>
     <staticInitStatus> StaticUninitialized => StaticInitializing(TId) </staticInitStatus>
 
 rule [staticInit-already-initialized-discard]:

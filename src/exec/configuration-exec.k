@@ -196,14 +196,14 @@ configuration
           <br/>
 
           //[...,, 'LocalVarDec(_),, ...] - Instance field declarations. Used during object instantiation.
-          <instanceFields color="Indigo"> [.KList] </instanceFields>
+          <instanceFields color="Indigo"> .ClassBodyDecList </instanceFields>
 
           //[...,, 'FieldDec('Static(_),,T,,_),, ...] - Static field declarations. Used during class instantiation.
-          <staticFields color="DarkSlateGray"> [.KList] </staticFields>
+          <staticFields color="DarkSlateGray"> .ClassBodyDecList </staticFields>
 
           //The sequence of static initializers (that also includes field initializers)
           //see static-init.k for more details.
-          <staticInit color="DarkSlateGray"> [.KList] </staticInit>
+          <staticInit color="DarkSlateGray"> .ClassBodyDecList </staticInit>
 
           <br/>
           <br/>
