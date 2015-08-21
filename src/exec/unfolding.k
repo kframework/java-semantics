@@ -133,7 +133,7 @@ rule [unfolding-class-members-StaticInit-classMetaType-extends]:
           'Some('ImplementsDec( _ ))
         ),,
         'ClassBody(
-            ( 'StaticInit('Block(StaticInit:ClassBodyDecList)) Rest:ClassBodyDecList => Rest )
+            ( 'StaticInit('Block(StaticInit:BlockStmList)) Rest:ClassBodyDecList => Rest )
         )
       )
     </folded>

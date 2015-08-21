@@ -361,7 +361,7 @@ configuration
 
           //The sequence of static initializers (that also includes field initializers)
           //see static-init.k for more details.
-          <staticInit color="DarkSlateGray"> .ClassBodyDecList </staticInit>
+          <staticInit color="DarkSlateGray"> .BlockStmList </staticInit>
 
           //The map of compile-time constant fields. We consider compile-time constants only final static fields
           //initialized with a literal expression.

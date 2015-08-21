@@ -203,7 +203,7 @@ configuration
 
           //The sequence of static initializers (that also includes field initializers)
           //see static-init.k for more details.
-          <staticInit color="DarkSlateGray"> .ClassBodyDecList </staticInit>
+          <staticInit color="DarkSlateGray"> .BlockStmList </staticInit>
 
           <br/>
           <br/>

@@ -64,7 +64,7 @@ rule [staticInit]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
     <staticFields> StaticFields:ClassBodyDecList </staticFields>
-    <staticInit> StaticInit:ClassBodyDecList </staticInit>
+    <staticInit> StaticInit:BlockStmList </staticInit>
     <staticInitStatus> StaticUninitialized => StaticInitializing(TId) </staticInitStatus>
 
 rule [staticInit-already-initialized-discard]:

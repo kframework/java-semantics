@@ -20,7 +20,7 @@ rule [folding-start]:
     ( <extends> BaseClass:ClassType </extends> => .Bag)
     ( <instanceFields> InstanceFields:ClassBodyDecList </instanceFields> => .Bag)
     ( <staticFields> StaticFields:ClassBodyDecList </staticFields> => .Bag)
-    ( <staticInit> StaticInit:ClassBodyDecList </staticInit> => .Bag)
+    ( <staticInit> StaticInit:BlockStmList </staticInit> => .Bag)
     <folded>
       .K => getClassDecLabel(MetaType)
             (
@@ -47,7 +47,6 @@ syntax KLabel ::= getClassDecLabel ( ClassMetaType ) [function]
 rule getClassDecLabel ( classCMT ) => 'ClassDec
 rule getClassDecLabel ( interfaceCMT ) => 'InterfaceDec
 
-//todo change the folding and unfolding usage of KListWrap in ImplemetsList (retrieve from and put back to set implTrans)
 rule [folding-ImplementsDec]:
     <k> foldingPhase </k>
     <classType> Class:ClassType </classType>
@@ -61,7 +60,7 @@ rule [folding-ImplementsDec]:
         _
       )
     </folded>
-//[Acc,CT] is a pair of info, not AnnoMethodModList todo add an syntax?
+
 rule [folding-MethodDec]:
     <k> foldingPhase </k>
     <classType> Class:ClassType </classType>
@@ -80,7 +79,7 @@ rule [folding-MethodDec]:
       _:KLabel(
         'ClassDecHead(_),,
         'ClassBody(
-          C:ClassBodyDecList => addElementToClassBodyDecListEnd(C, 'MethodDec(
+          C:K => addElementToClassBodyDecListEnd(C, 'MethodDec(
                       'MethodDecHead(
                         accCT(Acc, CT),,
                         'None(.KList),,//don't know what should be here
@@ -139,7 +138,7 @@ rule [folding-class-fold-inner]:
       <folded>
         _:KLabel(
           'ClassDecHead(_),,
-          'ClassBody( C:ClassBodyDecList => addElementToClassBodyDecListEnd(C, ClassDec) )
+          'ClassBody( C:K => addElementToClassBodyDecListEnd(C, ClassDec) )
         )
       </folded>
       <classPhase> FoldedCPhase </classPhase>
