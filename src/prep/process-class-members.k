@@ -96,9 +96,6 @@ rule [processType]:
       ...
     </class>
 
-rule 'ClassBodyDecList(Hd:K,,Tl:K) => Hd ~> Tl
-rule .ClassBodyDecList => .
-
 rule 'InterfaceMemberDecList(Hd:K,,Tl:K) => Hd ~> Tl
 rule .InterfaceMemberDecList => .
 

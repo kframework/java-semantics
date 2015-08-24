@@ -33,7 +33,7 @@ rule [staticInit]:
                        // because during base class initialization those fields might be accessed.
         staticInit(BaseClass),,
         'Try(
-            StaticInit,,
+            {StaticInit},,
 
             //catch clause of 'Try todo ugly format
 

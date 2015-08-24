@@ -286,6 +286,9 @@ syntax KListWrap ::= "[" KList "]" [klabel('KListWrap), latex(\terminal{[} {#1} 
 rule [S1:K,, Stmts:KList] => S1 ~> [Stmts]        [structural]
 rule [.KList] => .K                               [structural]
 
+rule 'ClassBodyDecList(Hd:K,,Tl:K) => Hd ~> Tl
+rule .ClassBodyDecList => .
+
 //@ A wrapper over an arbitrary KList, wrapper being of type KResult.
 syntax KRListWrap ::= "kr" "[" KList "]"          [latex(\terminal{kr[} {#1} \terminal{]})]
 syntax MKR ::= KRListWrap

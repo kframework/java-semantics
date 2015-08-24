@@ -45,7 +45,7 @@ rule [unfolding-class-unfold-inner]:
       <folded>
         _:KLabel(
           'ClassDecHead(_),,
-          'ClassBody( ( ClassDecKL:KLabel(ClassDecKs:KList) Tl:ClassBodyDecList => Tl ) )
+          'ClassBody( (ClassDecKL:KLabel(ClassDecKs:KList)):>ClassBodyDec Tl:>ClassBodyDecList => Tl )
         )
       </folded>
 
@@ -98,7 +98,7 @@ rule [unfolding-class-inherit-methods-object-and-interfaces]:
 rule [unfolding-class-members-staticFields]:
     <k> unfoldingPhase </k>
     <classType> Class:ClassType </classType>
-    <staticFields> C:ClassBodyDecList => addElementToClassBodyDecListEnd(C, StaticField) </staticFields>
+    <staticFields> C:>ClassBodyDecList => addElementToClassBodyDecListEnd(C, (static T X;)) </staticFields>
     <folded>
       KL:KLabel(
         'ClassDecHead(
@@ -109,13 +109,11 @@ rule [unfolding-class-members-staticFields]:
           'Some('ImplementsDec( _ ))
         ),,
         'ClassBody(
-            ( StaticField:ClassBodyDec Rest:ClassBodyDecList => Rest)
+            ( (static T:Type X:VarDec;) Rest:>ClassBodyDecList => Rest)
         )
       )
     </folded>
     <classPhase> UnfoldingStartedCPhase </classPhase>
-when
-    containsStaticInit(Rest)
 
 rule [unfolding-class-members-StaticInit-classMetaType-extends]:
     <k> unfoldingPhase </k>
@@ -133,7 +131,7 @@ rule [unfolding-class-members-StaticInit-classMetaType-extends]:
           'Some('ImplementsDec( _ ))
         ),,
         'ClassBody(
-            ( 'StaticInit('Block(StaticInit:BlockStmList)) Rest:ClassBodyDecList => Rest )
+            ( 'StaticInit('Block(StaticInit:BlockStmList)) Rest:>ClassBodyDecList => Rest )
         )
       )
     </folded>
@@ -142,7 +140,7 @@ rule [unfolding-class-members-StaticInit-classMetaType-extends]:
 rule [unfolding-class-members-instanceFields]:
     <k> unfoldingPhase </k>
     <classType> Class:ClassType </classType>
-    <instanceFields> C:ClassBodyDecList => addElementToClassBodyDecListEnd(C, InstanceField) </instanceFields>
+    <instanceFields> C:>ClassBodyDecList => addElementToClassBodyDecListEnd(C, (.AnnoFieldModList T X;)) </instanceFields>
     <folded>
       KL:KLabel(
         'ClassDecHead(
@@ -153,23 +151,15 @@ rule [unfolding-class-members-instanceFields]:
           'Some('ImplementsDec( _ ))
         ),,
         'ClassBody(
-            (InstanceField:ClassBodyDec Rest:ClassBodyDecList => Rest)
+            ( (.AnnoFieldModList T:Type X:VarDec;) Rest:>ClassBodyDecList => Rest)
          )
       )
     </folded>
     <classPhase> UnfoldingStartedCPhase </classPhase>
-when
-    (notBool containsStaticInit(Rest)) andBool getKLabel(InstanceField) =/=KLabel 'MethodDec
 
 syntax KItem ::= getClassMetaType ( KLabel )
 rule getClassMetaType('ClassDec) => classCMT            [anywhere]
 rule getClassMetaType('InterfaceDec) => interfaceCMT    [anywhere]
-
-// True if given List contains a 'StaticInit(\_) term
-syntax KItem ::= containsStaticInit(  ClassBodyDecList )  [function]
-rule containsStaticInit('StaticInit(_) _:ClassBodyDecList) => true
-rule containsStaticInit(.ClassBodyDecList) => false
-rule containsStaticInit(Hd:ClassBodyDec Rest:ClassBodyDecList) => containsStaticInit(Rest) [owise]
 
 rule [unfolding-ImplementsDec]:
     <k> unfoldingPhase </k>
@@ -205,7 +195,7 @@ rule [unfolding-MethodDec]:
     <folded>
       _:KLabel(
         'ClassDecHead(_),,
-        'ClassBody(
+        'ClassBody((
           'MethodDec(
             'MethodDecHead(
               accCT(Acc:AccessMode, CT:ContextType),,
@@ -216,7 +206,7 @@ rule [unfolding-MethodDec]:
               'None(.KList) //don't know what should be here
             ),,
             MethodBody:K
-        ) Tl:ClassBodyDecList => Tl )
+        ) Tl:>ClassBodyDecList => Tl ))
       )
     </folded>
     <classPhase> UnfoldingStartedCPhase </classPhase>
