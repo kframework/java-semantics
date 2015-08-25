@@ -1,19 +1,110 @@
+require "math.k"
+
 module TO-STRING
     imports CORE-SORTS
     imports CORE-FUNCTIONS
     imports AUX-STRINGS
     imports SYNTAX-CONVERSIONS
+    imports JAVA-MATH
+
+
+
+/*@
+The algorithm for printing a Java's double value is based on the description of Javadoc of Double.
+http://docs.oracle.com/javase/7/docs/api/java/lang/Double.html#toString(double)
+ 1. Given a Java's double value, compute its nextDown and nextUp (two adjacent double values)
+ 2. Print them using format Float2String(Fl, "%.18Rf")
+    18 digits should be enough, cause In java, there are at most 17 digits after decimal point
+    being printed.
+ 3. Get the position after which the target double can be distinguished from its neighbors.
+ 4. There are two candidate string representation. Suppose the position computed by last step
+    is N, then the two candidate string are:
+     Candidate1: Float2String(TargetFl, "%." +String Int2String(N) +String "Rg")
+     Candidate2: Float2String(TargetFl, "%." +String Int2String(N +Int 1) +String "Rg")
+
+    In most cases, Candidate1 is the right one, but occasionaly, e.g. the number 7 % 1.2, the
+    Candidate 1 will become the same as its left-neighbor's string representation, i.e. "1"
+
+ 5. Additional check is performed to decide which candidate to use: the Candidate 1 will be
+    parsed back to float and comared with its left and right neighbors. If they are
+    distinguishable, then Candidate 1 will be returned as the string representation of the
+    target double value, otherwise, Candidate 2 will be returned.
+*/
+syntax String ::= javaDouble2String(Float)   [function]
+                | javaDouble2StringWithCheck(Float)  [function]
+                | addDot0AtTheEnd(String)  [function]
+
+                   //The three args are lower bound low, target float, upper bound high,
+                   //If the absolute value of the target float is inside the range [low,high),
+        //then it will be printed in decimal format, owise, scientific notation will be used.
+                | javaDouble2StringAux(Float, Float, Float)  [function]
+
+
+rule javaDouble2String(DoubleNegInf) => "-Infinity"
+rule javaDouble2String(DoublePosInf) => "Infinity"
+rule javaDouble2String(DoubleNaN) => "NaN"
+
+rule javaDouble2String(Fl:Float) => javaDouble2StringAux(10.0^Float(-3.0), Fl, 10.0^Float(7.0))
+[owise]
+
+rule javaDouble2StringAux(Low:Float, Fl:Float, High:Float) =>
+Float2String(Fl, "%." +String Int2String(numOfDigitsPreserved(Fl)) +String "Rg")
+when (Fl >=Float Low andBool Fl <Float High) orBool
+     (Fl <Float --Float Low andBool Fl >=Float --Float High)
+
+rule javaDouble2StringAux(_, 0.0, _) => "0.0"
+rule javaDouble2StringAux(_, --Float 0.0, _) => "-0.0"
+
+//The other double numbers should be printed in "ScientificNotation".
+rule javaDouble2StringAux(Low:Float, Fl:Float, High:Float) => Float2String(Fl, "%Re") [owise]
+
+rule javaDouble2StringWithCheck(Fl:Float) => addDot0AtTheEnd(javaDouble2String(Fl))
+
+rule addDot0AtTheEnd(Fl:String) => Fl
+when findChar(Fl, ".", 0) >=Int 0
+
+rule addDot0AtTheEnd(Fl:String) => Fl +String ".0"
+[owise]
 
 /*@ Converts all possible Java values into String. Used mostly for printing and String + operator.
     Conversion for other value forms is defined in other modules.
 */
+
 syntax Exp ::= toString ( K )   [strict]
 
 rule toString(Str:String :: _) => Str
 rule toString(I:Int :: char) => chrChar(I)
 rule toString(I:Int :: T:Type) => Int2String(I)
     when T =/=K char
-rule toString(Fl:Float :: _) => Float2String(Fl)
+
+rule toString(Fl:Float :: _) => javaDouble2StringWithCheck(Fl)
+
+//"\n.1Rg: " +String Float2String(Fl, "%.1Rg")
+//+String "\n.2Rg: " +String Float2String(Fl, "%.2Rg")
+//+String "\n.15Rg: " +String Float2String(Fl, "%.15Rg")
+//+String "\nSignificand: " +String Base2String(uvalueMInt(significandFloat(Fl)), 16)
+//javaDouble2String(Fl)
+
+//%.0Rg may print the number in scientific notation unexpectedly!
+//Float2String(Fl)
+//+String "\n.15Rg: " +String Float2String(Fl, "%.15Rg")
+//+String "\nMy: " +String javaDouble2String(Fl)
+//+String "\n.0Rg: " +String Float2String(Fl, "%.0Rg")
+//javaDouble2String(Fl)
+
+//Float2String(Fl, "%Re") +String ";\n" +String Float2String(Fl, "%.18Rf")
+// +String ";\nnextDown: " +String Float2String(nextDown(Fl), "%.18Rf")
+// +String ";\nnextUp: " +String Float2String(nextUp(Fl), "%.18Rf")
+// +String ";\nmy: " +String javaDouble2String(Fl)
+
+//java: 9.0E-4
+/*
+Float2String(0.0009, "%Re") +String ";\t" +String Float2String(0.0009, "%.15Re")
+ +String ";\t" +String Float2String(0.0009, "%.16Re")
+  +String ";\t" +String Float2String(0.0009, "%.17Re")
+  +String ";\n" +String  chooseFromCandidateDoubleStr0(nextDown(0.0009), 0.0009, nextUp(0.0009))
+*/
+
 rule toString(true::_) => "true"
 rule toString(false::_) => "false"
 rule toString(null::_) => "null"
