@@ -98,27 +98,27 @@ syntax KItem ::=  elabLookup (
                 Set //A set of interfaces under search
               )
 
-syntax KItem ::= foundInstance ( Id, KListWrap )    [function]
+syntax KItem ::= foundInstance ( Id, ClassBodyDecList )    [function]
 
-rule foundInstance(X:Id, ['FieldDec(_,, T:Type,, 'VarDecList('VarDec(X),, .VarDecList)),,_]) => true
-rule foundInstance(X:Id, [Hd:K,, Tl:KList]) => foundInstance(X, [Tl])   [owise]
-rule foundInstance(X:Id, [.KList]) => false
+rule foundInstance(X:Id, 'FieldDec(_,, T:Type,, 'VarDecList('VarDec(X),, .VarDecList)) _:ClassBodyDecList) => true
+rule foundInstance(X:Id, Hd:ClassBodyDec Tl:ClassBodyDecList) => foundInstance(X, Tl)   [owise]
+rule foundInstance(X:Id, .ClassBodyDecList) => false
 
-syntax KItem ::= foundStatic ( Id, KListWrap )      [function]
+syntax KItem ::= foundStatic ( Id, ClassBodyDecList )      [function]
 
-rule foundStatic(X:Id, ['FieldDec(static .AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X),, .VarDecList)),,_]) => true
-rule foundStatic(X:Id, [Hd:K,, Tl:KList]) => foundStatic(X, [Tl])   [owise]
-rule foundStatic(X:Id, [.KList]) => false
+rule foundStatic(X:Id, 'FieldDec(static .AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X),, .VarDecList)) _:ClassBodyDecList) => true
+rule foundStatic(X:Id, Hd:ClassBodyDec Tl:ClassBodyDecList) => foundStatic(X, Tl)   [owise]
+rule foundStatic(X:Id, .ClassBodyDecList) => false
 
-syntax Type ::= getInstanceType ( Id, KListWrap )    [function]
+syntax Type ::= getInstanceType ( Id, ClassBodyDecList )    [function]
 
-rule getInstanceType(X:Id, ['FieldDec(_,, T:Type,, 'VarDecList('VarDec(X),, .VarDecList)),,_]) => T
-rule getInstanceType(X:Id, [Hd:K,, Tl:KList]) => getInstanceType(X, [Tl])   [owise]
+rule getInstanceType(X:Id, 'FieldDec(_,, T:Type,, 'VarDecList('VarDec(X),, .VarDecList)) _:ClassBodyDecList) => T
+rule getInstanceType(X:Id, Hd:ClassBodyDec Tl:ClassBodyDecList) => getInstanceType(X, Tl)   [owise]
 
-syntax Type ::= getStaticType ( Id, KListWrap )      [function]
+syntax Type ::= getStaticType ( Id, ClassBodyDecList )      [function]
 
-rule getStaticType(X:Id, ['FieldDec(static .AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X),, .VarDecList)),,_]) => T
-rule getStaticType(X:Id, [Hd:K,, Tl:KList]) => getStaticType(X, [Tl])   [owise]
+rule getStaticType(X:Id, 'FieldDec(static .AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X),, .VarDecList)) _:ClassBodyDecList) => T
+rule getStaticType(X:Id, Hd:ClassBodyDec Tl:ClassBodyDecList) => getStaticType(X, Tl)   [owise]
 
 
 rule [elabLookup-Found-instance]:
@@ -150,12 +150,12 @@ rule [elabLookup-NextClass]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
     <implements> BaseInterfaces:Set </implements>
-    <instanceFields> [InstanceVarDecs:KList] </instanceFields>
-    <staticFields> [StaticVarDecs:KList] </staticFields>
+    <instanceFields> InstanceVarDecs:ClassBodyDecList </instanceFields>
+    <staticFields> StaticVarDecs:ClassBodyDecList </staticFields>
     <constantEnv> ConstantEnv:Map </constantEnv>
 when
-    notBool ( nameInVarDecs(X, [InstanceVarDecs]) ==K true
-              orBool nameInVarDecs(X, [StaticVarDecs]) ==K true
+    notBool ( nameInVarDecs(X, InstanceVarDecs) ==K true
+              orBool nameInVarDecs(X, StaticVarDecs) ==K true
               orBool (X in keys (ConstantEnv))
     )
 
@@ -171,14 +171,14 @@ rule [elabLookup-Set-NotFound]:
 
 syntax KItem ::=  nameInVarDecs(
                 Id,       //Target name
-                KListWrap //The list of variable declarations, each of the form
+                ClassBodyDecList //The list of variable declarations, each of the form
                           //  'LocalVarDec(.K,, T:Type,, ['VarDec(X)])
               )
               [function]
 
-rule nameInVarDecs(X:Id, [_:KLabel(.K,, T:Type,, 'VarDecList('VarDec(X),, .VarDecList)),, _]) => true
-rule nameInVarDecs(X:Id, [_:K,, Tl:KList]) => nameInVarDecs(X,[Tl]) [owise]
-rule nameInVarDecs(X:Id, [.KList]) => false
+rule nameInVarDecs(X:Id, _:KLabel(_,, T:Type,, 'VarDecList('VarDec(X),, .VarDecList)) _:ClassBodyDecList) => true
+rule nameInVarDecs(X:Id, _:ClassBodyDec Tl:ClassBodyDecList) => nameInVarDecs(X, Tl) [owise]
+rule nameInVarDecs(X:Id, .ClassBodyDecList) => false
 
 rule [elabEnd-This]:
     <k> elabEnd('This(.KList) => 'QThis(Class)) ...</k>

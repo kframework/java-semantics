@@ -199,7 +199,7 @@ rule [localEnvObjectBuild]:
             AccessibleLocalEnv
          )
       ~> appendToElabBuffer(elab(
-            'LocalVarDec('None(.KList),, LocalEnvClass,, 'VarDecList('VarDec(
+            'LocalVarDec(.AnnoVarModList,, LocalEnvClass,, 'VarDecList('VarDec(
               generateLocalEnvVarName(LocalEnvClass),,
               'NewInstance('None(.KList),, LocalEnvClass,, .Exps,, 'None(.KList))
             ),, .VarDecList))
@@ -264,7 +264,8 @@ rule [localClassAugmentFields]:
     <k> localClassAugmentFields(LocalClass:ClassType, LocalEnvClass:ClassType) => .K ...</k>
     <classType> LocalClass </classType>
     <instanceFields>
-      [_,, ( .KList => 'FieldDec(.AnnoFieldModList,, LocalEnvClass,, 'VarDecList('VarDec(String2Id("$local_env")),, .VarDecList)) ) ]
+      C:ClassBodyDecList =>
+      addElementToClassBodyDecListEnd(C, 'FieldDec(.AnnoFieldModList,, LocalEnvClass,, 'VarDecList('VarDec(String2Id("$local_env")),, .VarDecList)) )
     </instanceFields>
 
 syntax KItem ::=  localClassAugmentConsParams (

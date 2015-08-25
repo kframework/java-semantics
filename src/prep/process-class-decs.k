@@ -67,9 +67,6 @@ syntax KItem ::=  resolveBases (
                 K           //Implements clauses
               ) [strict(2,3)]
 
-syntax HeatedInterfaceTypeList ::= List{ClassType,","} [klabel('InterfaceTypeList), strict]
-syntax InterfaceTypeList ::= HeatedInterfaceTypeList
-
 rule [resolveBases]:
     <k> resolveBases(Class:ClassType, BaseClass:ClassType, ImplTypes:HeatedInterfaceTypeList) => . ...</k>
     <classType> Class </classType>
