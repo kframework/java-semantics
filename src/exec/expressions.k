@@ -174,6 +174,30 @@ rule loc(L:Int) :: T:Type &= Exp2:K => loc(L)::T = cast(T, lookup(L, T) & Exp2)
 rule loc(L:Int) :: T:Type ^= Exp2:K => loc(L)::T = cast(T, lookup(L, T) ^ Exp2)
 rule loc(L:Int) :: T:Type |= Exp2:K => loc(L)::T = cast(T, lookup(L, T) | Exp2)
 
+rule [Field-instance-assignment]:
+     <k> fieldloc(OId:Int, TargetClass:ClassType, X:Id) :: T:Type = V:RawVal :: T =>  V::T ... </k>
+     <objectId> OId </objectId>
+     <layerClass> TargetClass </layerClass>
+     <layerEnv> ... X |-> (_ => V) :: T ... </layerEnv>
+
+//rule [Field-static-assignment]:
+//     <k> fieldloc(TargetClass:ClassType, X:Id) :: T:Type = V:RawVal :: T =>  V::T ... </k>
+//     <classType> TargetClass </classType>
+//     <staticEnv>... X |-> (_ => V) :: T ...</staticEnv>
+     
+//todo repitition
+rule F:FieldLoc :: T:Type *= Exp2 => F::T = cast(T, fieldlookup(F) * Exp2)
+rule F:FieldLoc :: T:Type /= Exp2 => F::T = cast(T, fieldlookup(F) / Exp2)
+rule F:FieldLoc :: T:Type %= Exp2 => F::T = cast(T, fieldlookup(F) % Exp2)
+rule F:FieldLoc :: T:Type += Exp2 => F::T = cast(T, fieldlookup(F) + Exp2)
+rule F:FieldLoc :: T:Type -= Exp2 => F::T = cast(T, fieldlookup(F) - Exp2)
+rule F:FieldLoc :: T:Type <<= Exp2 => F::T = cast(T, fieldlookup(F) << Exp2)
+rule F:FieldLoc :: T:Type >>= Exp2 => F::T = cast(T, fieldlookup(F) >> Exp2)
+rule F:FieldLoc :: T:Type >>>= Exp2 => F::T = cast(T, fieldlookup(F) >>> Exp2)
+rule F:FieldLoc :: T:Type &= Exp2 => F::T = cast(T, fieldlookup(F) & Exp2)
+rule F:FieldLoc :: T:Type ^= Exp2 => F::T = cast(T, fieldlookup(F) ^ Exp2)
+rule F:FieldLoc :: T:Type |= Exp2 => F::T = cast(T, fieldlookup(F) | Exp2)
+
 /*@ \subsection{primitive types cast} */
 
 //@ The type of RV could either be NumericType or tempType. This rule matches both.
@@ -253,7 +277,7 @@ syntax KItem ::=  store (
 
 //@ Synchronization checkpoint have to be before the actual assignment, like for lookup.
 rule [store]:
-    store(L:Int, V:RawVal :: T:Type) => fieldAccessCheckpoint(L) ~> storeImpl(L, V::T)
+    store(L:Int, V:RawVal :: T:Type) => storeImpl(L, V::T)
 
 syntax KItem ::=  storeImpl (
                 Int,  //OL - the store location

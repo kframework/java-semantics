@@ -25,8 +25,7 @@ when (N >=Int 0) andBool (N <Int M)
 
 rule [lookup-array-location]:
     <k>
-      lookup(L:Int, T1:Type)
-      => fieldAccessCheckpoint(L) ~> subtype(T2, T1) ~> true? ~> (V::T1)
+      lookup(L:Int, T1:Type) => subtype(T2, T1) ~> true? ~> (V::T1)
       ...
     </k>
     <store>... L |-> V:RawVal ::elem T2:Type ...</store>

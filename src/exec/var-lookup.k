@@ -74,39 +74,22 @@ context lvalue('Field(HOLE,, _))
 
 rule [Field-instance]:
     <k>
-      'Field(
-        objectRef(OId:Int, _ ) :: TargetClass:ClassType,,
-        X:Id
-      ) => L
+      'Field(objectRef(OId:Int, _ ) :: TargetClass:ClassType,, X:Id) => TV
       ...
     </k>
     <objectId> OId </objectId>
     <layerClass> TargetClass </layerClass>
-    <layerEnv>... X |-> L ...</layerEnv>
+    <layerEnv>... X |-> TV:TypedVal ...</layerEnv>
 
 rule [lvalue-Field-instance]:
     <k>
-      lvalue('Field(
-        objectRef(OId:Int, _ ) :: TargetClass:ClassType,,
-        X:Id
-      )) => fieldloc(OId, TargetClass, X) :: T
+      lvalue('Field(objectRef(OId:Int, _ ) :: TargetClass:ClassType,, X:Id))
+      => fieldloc(OId, TargetClass, X) :: T
       ...
     </k>
     <objectId> OId </objectId>
     <layerClass> TargetClass </layerClass>
     <layerEnv>... X |-> _ :: T:Type ...</layerEnv>
-
-rule [Field-instance-assignment]:
-     <k> fieldloc(OId:Int, TargetClass:ClassType, X:Id) :: T:Type = V:RawVal :: T =>  V::T ... </k>
-     <objectId> OId </objectId>
-     <layerClass> TargetClass </layerClass>
-     <layerEnv> ... X |-> (_ => V) :: T ... </layerEnv>
-
-rule [Field-instance-plus-assignment]:
-     <k> fieldloc(OId:Int, TargetClass:ClassType, X:Id)::T:Type += Exp2 => fieldloc(OId, TargetClass, X)::T = cast(T, (V::T) + Exp2) ... </k>
-     <objectId> OId </objectId>
-     <layerClass> TargetClass </layerClass>
-     <layerEnv> ... X |-> V :: T ... </layerEnv>
 
 rule [Field-instance-OfNull]:
     'Field(null::_,, _) => throw new classNullPointerException(null::classString);
@@ -186,8 +169,7 @@ syntax Exp ::= lookup (
 
 rule [lookup-Location]:
     <k>
-      lookup(L:Int, T1:Type)
-      => fieldAccessCheckpoint(L) ~> subtype(T2, T1) ~> true? ~> (V::T1)
+      lookup(L:Int, T1:Type) => subtype(T2, T1) ~> true? ~> (V::T1)
       ...
     </k>
     <store>... L |-> V:RawVal :: T2:Type ...</store>
@@ -195,16 +177,13 @@ rule [lookup-Location]:
 rule lvalue(lookup(L:Int, T:Type)) => loc(L)::T
         [structural]
 
-// Auxiliary structure designed to make field access rules transitions, but local variables not
-syntax KItem ::= fieldAccessCheckpoint ( Int )
+syntax Exp ::= fieldlookup ( FieldLoc )
 
-rule [fieldAccessCheckpoint-Local]:
-    <k> fieldAccessCheckpoint(L:Int) => . ...</k>
-    <storeMetadata>... L |-> LocalLocMetadata ...</storeMetadata>
-
-rule [fieldAccessCheckpoint-Field]:
-    <k> fieldAccessCheckpoint(L:Int) => . ...</k>
-    <storeMetadata>... L |-> FieldLocMetadata ...</storeMetadata>
-         [transition-threading]
+rule [lookup-fieldloc]:
+     <k> fieldlookup(fieldloc(OId:Int, TargetClass:ClassType, X:Id)) => (V::T) ... </k>
+     <objectId> OId </objectId>
+     <layerClass> TargetClass </layerClass>
+     <layerEnv> ... X |-> V :: T ... </layerEnv>
+     [transition-threading]
 
 endmodule

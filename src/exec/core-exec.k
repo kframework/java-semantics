@@ -20,7 +20,9 @@ rule [restoreMethContext]:
 
 /*@ \subsection{lvalue and loc syntax} */
 
-syntax KItem ::= lvalue ( K )
-syntax RawVal ::= loc ( Int ) | fieldloc (K, K, K)
+syntax KItem ::= lvalue ( K ) //lvalue of sth evaluates to location (loc/fieldloc) :: Type
+syntax RawVal ::= loc ( Int ) | FieldLoc
+syntax FieldLoc ::= fieldloc (Int, ClassType, Id) //instance
+                  | fieldloc (ClassType, Id)      //static
 
 endmodule
