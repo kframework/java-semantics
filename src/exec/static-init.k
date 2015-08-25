@@ -28,28 +28,19 @@ syntax KItem ::=  staticInit (
 rule [staticInit]:
     <k>
       staticInit(Class:ClassType)
-      => [
-        StaticFields,, //Static fields have to be allocated before base class is statically initialized,
+      =>
+        StaticFields ~> //Static fields have to be allocated before base class is statically initialized,
                        // because during base class initialization those fields might be accessed.
-        staticInit(BaseClass),,
-        'Try(
-            {StaticInit},,
-
-            //catch clause of 'Try todo ugly format
-
+        staticInit(BaseClass) ~>
+        try
+            {StaticInit}
                 catch(.AnnoVarModList classObject String2Id("e"))
                 {throw new (class String2Id("java.lang.ExceptionInInitializerError")) ((classObject) String2Id("e"):>Id);}
-                .CatchClauses
+        finally //Although snytactically should followed by block, the env swapping semantics of block is not desired here
+            (  restoreMethContext(MethContext)
+               staticInitDone(Class)
+            ):>Block
 
-            ,,
-
-            //finally clause of 'Try
-            [
-              restoreMethContext(MethContext),,
-              staticInitDone(Class)
-            ]
-        )
-      ]
       ...
     </k>
 
@@ -90,7 +81,7 @@ rule [staticInit-empty]:
 /*@ Triggers the last step of static initialization:
 static init status transitions from StaticInitializing to StaticInitialized.
 */
-syntax KItem ::=  staticInitDone (
+syntax Stmt ::=  staticInitDone (
                 ClassType // The class whose initialization just finished
               )
 
@@ -104,7 +95,7 @@ rule [staticInitDone]:
     <staticInitStatus> StaticInitializing(TId) => StaticInitialized </staticInitStatus>
 
 rule [FieldDec-static]:
-    <k> 'FieldDec(static .AnnoFieldModList,, T:Type,, 'VarDecList('VarDec(X:Id),, .VarDecList)) => . ...</k>
+    <k> static .AnnoFieldModList T:Type ('VarDec(X:Id), .VarDecList); => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticEnv> Env:Map => Env[X <- L] </staticEnv>
