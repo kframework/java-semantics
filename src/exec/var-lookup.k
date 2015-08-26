@@ -113,27 +113,20 @@ syntax KItem ::= staticFieldLookup ( ClassType , Id )
 
 rule [staticFieldLookup]:
     <k>
-      staticFieldLookup(
-        TargetClass:ClassType,
-        X:Id
-      )
-      => typedLookup(L)
+      staticFieldLookup(TargetClass:ClassType, X:Id) => TV
       ...
     </k>
     <classType> TargetClass </classType>
-    <staticEnv>... X |-> L:Int ...</staticEnv>
+    <staticEnv>... X |-> TV:TypedVal ...</staticEnv>
 
 rule [lvalue-Field-static]:
     <k>
-      lvalue(staticFieldLookup(
-        TargetClass:ClassType,
-        X:Id
-      ))
-      => lvalue(typedLookup(L))
+      lvalue(staticFieldLookup(TargetClass:ClassType, X:Id))
+      => fieldloc(TargetClass, X) :: T
       ...
     </k>
     <classType> TargetClass </classType>
-    <staticEnv>... X |-> L:Int ...</staticEnv>
+    <staticEnv>... X |-> _ :: T:Type ...</staticEnv>
 
 /*@ \subsection{lvalue and loc} */
 
@@ -179,11 +172,17 @@ rule lvalue(lookup(L:Int, T:Type)) => loc(L)::T
 
 syntax Exp ::= fieldlookup ( FieldLoc )
 
-rule [lookup-fieldloc]:
+rule [lookup-fieldloc-instance]:
      <k> fieldlookup(fieldloc(OId:Int, TargetClass:ClassType, X:Id)) => (V::T) ... </k>
      <objectId> OId </objectId>
      <layerClass> TargetClass </layerClass>
      <layerEnv> ... X |-> V :: T ... </layerEnv>
+     [transition-threading]
+
+rule [lookup-fieldloc-static]:
+     <k> fieldlookup(fieldloc(TargetClass:ClassType, X:Id)) => (V::T) ... </k>
+     <classType> TargetClass </classType>
+     <staticEnv>... X |-> V :: T ...</staticEnv>
      [transition-threading]
 
 endmodule

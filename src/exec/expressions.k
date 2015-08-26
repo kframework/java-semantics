@@ -180,10 +180,10 @@ rule [Field-instance-assignment]:
      <layerClass> TargetClass </layerClass>
      <layerEnv> ... X |-> (_ => V) :: T ... </layerEnv>
 
-//rule [Field-static-assignment]:
-//     <k> fieldloc(TargetClass:ClassType, X:Id) :: T:Type = V:RawVal :: T =>  V::T ... </k>
-//     <classType> TargetClass </classType>
-//     <staticEnv>... X |-> (_ => V) :: T ...</staticEnv>
+rule [Field-static-assignment]:
+     <k> fieldloc(TargetClass:ClassType, X:Id) :: T:Type = V:RawVal :: T =>  V::T ... </k>
+     <classType> TargetClass </classType>
+     <staticEnv>... X |-> (_ => V) :: T ...</staticEnv>
      
 //todo repitition
 rule F:FieldLoc :: T:Type *= Exp2 => F::T = cast(T, fieldlookup(F) * Exp2)
