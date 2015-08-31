@@ -1,7 +1,7 @@
 /*
 array.clone interaction with array polymorphism.
   - (RE[]) Object[] RE[].clone()
-  - (RE[]) Object RE[].clone() - not possible vecause Object.clone() is protected.
+  - (RE[]) Object RE[].clone() - not possible because Object.clone() is protected.
   Case when object type is not the actual array type - it is another array
       or just Object. Important for semantics of this method.
     We just check that what is returned can be cast to the runtime clone result type.
