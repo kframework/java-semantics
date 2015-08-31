@@ -140,7 +140,7 @@ syntax ObjectRef ::=  objectRef (
 */
 syntax ArrayRef ::=   arrayRef (
                         Type,  // Type of the array
-                        Int,   // Location of the first element
+                        Int,   // arrayId
                         Int    // Length
                       )
 

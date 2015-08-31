@@ -19,16 +19,17 @@ context lvalue('ArrayAccess(_:KResult,,HOLE))
 
 rule [ArrayAccess-to-lookup]:
     (arrayRef(_, L:Int, M:Int) :: arrayOf T:Type [N:Int::_])
-    => lookup(L +Int N, T)
+    => lookup(aeloc(L, N), T)
 when (N >=Int 0) andBool (N <Int M)
         [structural, anywhere]
 
-rule [lookup-array-location]:
-    <k>
-      lookup(L:Int, T1:Type) => subtype(T2, T1) ~> true? ~> (V::T1)
-      ...
-    </k>
-    <store>... L |-> V:RawVal ::elem T2:Type ...</store>
+rule [ArrayElem-lookup]:
+        <k>
+    lookup(aeloc(L, N), T1:Type) => subtype(T2, T1) ~> true? ~> (V::T1)
+          ...
+        </k>
+        <arrayId> L </arrayId>
+        <arraystore>... N |-> V:RawVal ::elem T2:Type ...</arraystore>
 
 rule [ArrayAccess-to-ArrayIndexOutOfBoundsException]:
     arrayRef(_,_,M:Int) :: _ [N:Int::_]
@@ -122,42 +123,42 @@ rule [allocAndInitArray-MultiDim-desugar]:
 rule [allocAndInitArray]:
     <k>
       allocAndInitArray(T:Type, [NI:Int::_] .DimInts, InitExp:K)
-      => allocArray(NI, T) ~> initArray(LI +Int 1, NI, InitExp)
-         ~> arrayRef( arrayOf T, LI +Int 1, NI) :: arrayOf T
+      => allocArray(LI, NI, T) ~> initArray(LI, NI, InitExp)
+         ~> arrayRef( arrayOf T, LI, NI) :: arrayOf T
       ...
     </k>
     <nextLoc> LI:Int => LI +Int 1 </nextLoc>
+        (.Bag =>  <array>
+                    <arrayId> LI </arrayId>
+                    <arrayType> arrayOf T </arrayType>
+                    <arraystore> .Map </arraystore>
+                  </array>
+        )
 
-//@ Maximum of two numbers
-syntax KItem ::=  max ( Int, Int )          [function]
-rule max(I1:Int, I2:Int) => #if I1 >=Int I2
-                              #then I1
-                              #else I2
-                            #fi
 
 /*@ Allocates the given number of elements in the store of the given Type. Used by array instantiation logic.
 */
 syntax KItem ::=  allocArray (
+                Int,  //arrayId
                 Int,  //The number of elements to allocate
                 Type  //The type of each element
               )
 
 rule [allocArray]:
-    <k> allocArray(N:Int => N -Int 1, T:Type) ...</k>
-    <store>... .Map => LI |-> (undefined :: elem T) ...</store>
-    <storeMetadata>... .Map => LI |-> FieldLocMetadata ...</storeMetadata>
-    <nextLoc> LI:Int => LI +Int 1 </nextLoc>
+    <k> allocArray(L:Int, N:Int => N -Int 1, T:Type) ...</k>
+    <arrayId> L </arrayId>
+    <arraystore>... .Map => (N -Int 1) |-> (undefined :: elem T) ...</arraystore>
 when
     N >Int 0
 
-rule allocArray(0, _) => .K       [structural]
+rule allocArray(_, 0, _) => .K       [structural]
 
 /*@ Assign to each store location in the given range the value represented by the 3-rd argument. This value might be
   freshly computed for each element, and might alter another locations in the store, as is the case for multidim arrays.
   This procedure don't change the element type in the store.
 */
 syntax KItem ::=  initArray (
-                Int,    // The location of the first element
+                Int,    // arrayId
                 Int,    // The number of elements
                 K       /* Expression used to initialize each location. Is evaluated for each location
                            separately, could be an array creation expression if this is just a
@@ -166,7 +167,7 @@ syntax KItem ::=  initArray (
 
 rule [initArray]:
     initArray(OL:Int, N:Int, InitExp:K)
-    => store(OL, InitExp) ~> initArray(OL +Int 1, N -Int 1, InitExp)
+    => store(aeloc(OL, N -Int 1), InitExp) ~> initArray(OL, N -Int 1, InitExp)
 when
     N >Int 0
         [structural]
@@ -174,16 +175,16 @@ when
 rule initArray(_, 0, _) => .K       [structural]
 
 //@ \subsection{Array element assignment}
+rule [store-array-elem]:
+    <k> store(aeloc(LI:Int, L:Int), V:RawVal :: T:Type) => . ...</k>
+    <arrayId> LI </arrayId>
+    <arraystore>... L |-> (_ => V) :: elem T:Type ...</arraystore>
 
-rule [storeImpl-array-elem]:
-    <k> storeImpl(L:Int, V:RawVal :: T:Type) => . ...</k>
-    <store>... L |-> (_ => V) :: elem T:Type ...</store>
-
-rule [storeImpl-array-location-check-type]:
+rule [store-array-location-check-type]:
     <k>
-      storeImpl(L:Int, V:RawVal::T:Type)
+      store(aeloc(LI:Int, L:Int), V:RawVal::T:Type)
       =>  ifAux(subtype(typeOf(V), StoreType),
-             storeImpl(L, V::StoreType),
+             store(aeloc(LI, L), V::StoreType),
              throw new class String2Id("java.lang.ArrayStoreException") (
                 //the ArrayStoreException argument is the assigned object type
                 (V::T .((String2Id("getClass")):>MethodName) (.TypedVals)) .((String2Id("getName")):>MethodName) (.TypedVals)
@@ -191,7 +192,8 @@ rule [storeImpl-array-location-check-type]:
           )
       ...
     </k>
-    <store>... L |-> _ :: elem StoreType:Type ...</store>
+    <arrayId> LI </arrayId>
+    <arraystore>... L |-> _ :: elem StoreType:Type ...</arraystore>
 when
     T =/=K StoreType
 
@@ -206,28 +208,28 @@ syntax KItem ::=  arrayInitAlloc (
 
 rule [arrayInitAlloc]:
     arrayInitAlloc(arrayRef(T:Type, L:Int, Len:Int)::T, {InitContent:VarInits})
-    => arrayInitImpl(T, L, {InitContent}) ~> arrayRef(T, L, Len)::T
+    => arrayInitImpl(T, aeloc(L, 0), {InitContent}) ~> arrayRef(T, L, Len)::T
 
 syntax KItem ::=  arrayInitImpl (
                 Type,     //T - array type, used by inner ArrayInit's
-                Int,      //L - location of first element in store
+                ArrayElemLoc,      //L - location of first element in store
                 ArrayInit //InitContent - list of initialization expressions
               )
 
 rule [arrayInitImpl-not-ArrayInit]:
-    ( . => store(L, E) )
+    ( . => store(aeloc(L, Index), E) )
     ~> arrayInitImpl(
                     _,
-                    (L:Int => L +Int 1),
+                    aeloc(L, (Index:Int => Index +Int 1)),
                     ({E:Exp, Remaining:VarInits} => {Remaining})
        )
 
 
 rule [arrayInitImpl-inner-ArrayInit-desugar]:
-    ( . => store(L, (new arrayOf T .Dims A)) )
+    ( . => store(aeloc(L, Index), (new arrayOf T .Dims A)) )
     ~> arrayInitImpl(
           arrayOf arrayOf T:Type,
-          (L:Int => L +Int 1),
+          aeloc(L, (Index:Int => Index +Int 1)),
           ({A:ArrayInit, Remaining:VarInits} => {Remaining} )
        )
 

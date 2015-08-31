@@ -150,6 +150,9 @@ syntax LHS ::= TypedVal
 
 rule [Assign]:
     loc(L:Int) :: ResT:Type = V:RawVal :: ResT => store(L, V::ResT) ~> V::ResT
+//todo remove one
+rule [Assign-ae]:
+    L:ArrayElemLoc :: ResT:Type = V:RawVal :: ResT => store(L, V::ResT) ~> V::ResT
 
 /*@ Desugars compound assign into the underlying operator + assign.
 
@@ -269,13 +272,19 @@ rule     (KR:KResult => .) ~> (HOLE => KR)--
 rule [lvalue-Throw-desugar]:
     lvalue( throw E:Exp; ) => throw E;
         [structural]
-
+//todo remove
 syntax KItem ::=  store (
                 Int,  //OL - the store location
                 K     //evaluates to TypedVal - the value to be stored
               ) [strict(2)]
 
-//@ Synchronization checkpoint have to be before the actual assignment, like for lookup.
+              syntax KItem ::=  store (
+                              Loc,  //OL - the store location
+                              K     //evaluates to TypedVal - the value to be stored
+                            ) [strict(2)]
+
+
+//@ Synchronization checkpoint have to be before the actual assignment, like for lookup. todo remove storeImpl
 rule [store]:
     store(L:Int, V:RawVal :: T:Type) => storeImpl(L, V::T)
 
