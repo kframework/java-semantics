@@ -108,12 +108,12 @@ rule _:Float :: _:FloatType == (I:Int::_:IntType => Int2Float(I,53,11)::float)
 rule _:Float :: _:FloatType != (I:Int::_:IntType => Int2Float(I,53,11)::float)
 
 // ++E
-rule /* ++loc(L) => loc(L) = lookup(L) + 1 */
-  (++ loc(L:Int)::NT:NumericType):PrefixPostfixExp => loc(L)::NT += rightTypedNumber(1,NT)
+rule /* ++L => L = lookup(L) + 1 */
+  (++ L:Loc :: NT:NumericType):PrefixPostfixExp => L::NT += rightTypedNumber(1,NT)
 
 // --E
-rule /* --loc(L) => loc(L) = lookup(L) - 1 */
-  (-- loc(L:Int)::NT:NumericType):PrefixPostfixExp => loc(L)::NT -= rightTypedNumber(1,NT)
+rule /* --L => L = lookup(L) - 1 */
+  (-- L:Loc :: NT:NumericType):PrefixPostfixExp => L::NT -= rightTypedNumber(1,NT)
 
 rule /* ! B    */ ! B:Bool :: bool => (notBool B) :: bool
 rule /* ~ I    */ ~ I:Int :: _ => (~Int I) :: tempType
@@ -123,12 +123,12 @@ rule /* - I    */ - I:Int :: _ => (0 -Int I) :: tempType
 rule /* - F    */ - F:Float :: _ => (Int2Float(0,53,11) -Float F) :: tempType
 
 // E++
-rule /* loc(L)++ => (loc(L) = lookup(L) + 1) - 1 */
-   loc(L:Int) :: NT:NumericType ++ =>  (++ loc(L)::NT):PrefixPostfixExp - rightTypedNumber(1,NT)
+rule /* L++ => (L = lookup(L) + 1) - 1 */
+   L:Loc :: NT:NumericType ++ => (++ L::NT):PrefixPostfixExp - rightTypedNumber(1,NT)
 
 // E--
-rule /* loc(L)-- => (loc(L) = lookup(L) - 1) + 1 */
-  loc(L:Int) :: NT:NumericType -- => (-- loc(L)::NT):PrefixPostfixExp + rightTypedNumber(1,NT)
+rule /* L-- => (L = lookup(L) - 1) + 1 */
+   L:Loc :: NT:NumericType -- => (-- L::NT):PrefixPostfixExp + rightTypedNumber(1,NT)
 
 /*@ Computes a TypedVal where value representation is of correct numeric type:
 Int when NT is IntType, Float when NT is FloatType*/
@@ -149,10 +149,7 @@ context (_:KResult = HOLE)<:AssignExp
 syntax LHS ::= TypedVal
 
 rule [Assign]:
-    loc(L:Int) :: ResT:Type = V:RawVal :: ResT => store(L, V::ResT) ~> V::ResT
-//todo remove one
-rule [Assign-ae]:
-    L:ArrayElemLoc :: ResT:Type = V:RawVal :: ResT => store(L, V::ResT) ~> V::ResT
+    L:Loc :: ResT:Type = V:RawVal :: ResT => store(L, V::ResT) ~> V::ResT
 
 /*@ Desugars compound assign into the underlying operator + assign.
 
@@ -165,41 +162,17 @@ rule [Assign-ae]:
   - if operator LHS expression has side effects, we would end up with the side effect twice.
   - Example: v[i++] += 1*/
 
-rule loc(L:Int) :: T:Type *= Exp2:K => loc(L)::T = cast(T, lookup(L, T) * Exp2)
-rule loc(L:Int) :: T:Type /= Exp2:K => loc(L)::T = cast(T, lookup(L, T) / Exp2)
-rule loc(L:Int) :: T:Type %= Exp2:K => loc(L)::T = cast(T, lookup(L, T) % Exp2)
-rule loc(L:Int) :: T:Type += Exp2:K => loc(L)::T = cast(T, lookup(L, T) + Exp2)
-rule loc(L:Int) :: T:Type -= Exp2:K => loc(L)::T = cast(T, lookup(L, T) - Exp2)
-rule loc(L:Int) :: T:Type <<= Exp2:K => loc(L)::T = cast(T, lookup(L, T) << Exp2)
-rule loc(L:Int) :: T:Type >>= Exp2:K => loc(L)::T = cast(T, lookup(L, T) >> Exp2)
-rule loc(L:Int) :: T:Type >>>= Exp2:K => loc(L)::T = cast(T, lookup(L, T) >>> Exp2)
-rule loc(L:Int) :: T:Type &= Exp2:K => loc(L)::T = cast(T, lookup(L, T) & Exp2)
-rule loc(L:Int) :: T:Type ^= Exp2:K => loc(L)::T = cast(T, lookup(L, T) ^ Exp2)
-rule loc(L:Int) :: T:Type |= Exp2:K => loc(L)::T = cast(T, lookup(L, T) | Exp2)
-
-rule [Field-instance-assignment]:
-     <k> fieldloc(OId:Int, TargetClass:ClassType, X:Id) :: T:Type = V:RawVal :: T =>  V::T ... </k>
-     <objectId> OId </objectId>
-     <layerClass> TargetClass </layerClass>
-     <layerEnv> ... X |-> (_ => V) :: T ... </layerEnv>
-
-rule [Field-static-assignment]:
-     <k> fieldloc(TargetClass:ClassType, X:Id) :: T:Type = V:RawVal :: T =>  V::T ... </k>
-     <classType> TargetClass </classType>
-     <staticEnv>... X |-> (_ => V) :: T ...</staticEnv>
-     
-//todo repitition
-rule F:FieldLoc :: T:Type *= Exp2 => F::T = cast(T, fieldlookup(F) * Exp2)
-rule F:FieldLoc :: T:Type /= Exp2 => F::T = cast(T, fieldlookup(F) / Exp2)
-rule F:FieldLoc :: T:Type %= Exp2 => F::T = cast(T, fieldlookup(F) % Exp2)
-rule F:FieldLoc :: T:Type += Exp2 => F::T = cast(T, fieldlookup(F) + Exp2)
-rule F:FieldLoc :: T:Type -= Exp2 => F::T = cast(T, fieldlookup(F) - Exp2)
-rule F:FieldLoc :: T:Type <<= Exp2 => F::T = cast(T, fieldlookup(F) << Exp2)
-rule F:FieldLoc :: T:Type >>= Exp2 => F::T = cast(T, fieldlookup(F) >> Exp2)
-rule F:FieldLoc :: T:Type >>>= Exp2 => F::T = cast(T, fieldlookup(F) >>> Exp2)
-rule F:FieldLoc :: T:Type &= Exp2 => F::T = cast(T, fieldlookup(F) & Exp2)
-rule F:FieldLoc :: T:Type ^= Exp2 => F::T = cast(T, fieldlookup(F) ^ Exp2)
-rule F:FieldLoc :: T:Type |= Exp2 => F::T = cast(T, fieldlookup(F) | Exp2)
+rule L:Loc :: T:Type *= Exp2:K => L::T = cast(T, lookup(L, T) * Exp2)
+rule L:Loc :: T:Type /= Exp2:K => L::T = cast(T, lookup(L, T) / Exp2)
+rule L:Loc :: T:Type %= Exp2:K => L::T = cast(T, lookup(L, T) % Exp2)
+rule L:Loc :: T:Type += Exp2:K => L::T = cast(T, lookup(L, T) + Exp2)
+rule L:Loc :: T:Type -= Exp2:K => L::T = cast(T, lookup(L, T) - Exp2)
+rule L:Loc :: T:Type <<= Exp2:K => L::T = cast(T, lookup(L, T) << Exp2)
+rule L:Loc :: T:Type >>= Exp2:K => L::T = cast(T, lookup(L, T) >> Exp2)
+rule L:Loc :: T:Type >>>= Exp2:K => L::T = cast(T, lookup(L, T) >>> Exp2)
+rule L:Loc :: T:Type &= Exp2:K => L::T = cast(T, lookup(L, T) & Exp2)
+rule L:Loc :: T:Type ^= Exp2:K => L::T = cast(T, lookup(L, T) ^ Exp2)
+rule L:Loc :: T:Type |= Exp2:K => L::T = cast(T, lookup(L, T) | Exp2)
 
 /*@ \subsection{primitive types cast} */
 
@@ -272,31 +245,27 @@ rule     (KR:KResult => .) ~> (HOLE => KR)--
 rule [lvalue-Throw-desugar]:
     lvalue( throw E:Exp; ) => throw E;
         [structural]
-//todo remove
+
 syntax KItem ::=  store (
-                Int,  //OL - the store location
+                Loc,  
                 K     //evaluates to TypedVal - the value to be stored
               ) [strict(2)]
 
-              syntax KItem ::=  store (
-                              Loc,  //OL - the store location
-                              K     //evaluates to TypedVal - the value to be stored
-                            ) [strict(2)]
-
-
-//@ Synchronization checkpoint have to be before the actual assignment, like for lookup. todo remove storeImpl
-rule [store]:
-    store(L:Int, V:RawVal :: T:Type) => storeImpl(L, V::T)
-
-syntax KItem ::=  storeImpl (
-                Int,  //OL - the store location
-                K     //TypedVal - the value to be stored
-              )
-
-rule [storeImpl]:
-    <k> storeImpl(L:Int, V:RawVal :: T:Type) => . ...</k>
+rule [loc-store]:
+    <k> store(loc(L:Int), V:RawVal :: T:Type) => . ...</k>
     <store>... L |-> (_ => V) :: T ...</store>
+    
+rule [field-instance-store]:
+     <k> store(fieldloc(OId:Int, TargetClass:ClassType, X:Id), V:RawVal :: T:Type) => . ... </k>
+     <objectId> OId </objectId>
+     <layerClass> TargetClass </layerClass>
+     <layerEnv> ... X |-> (_ => V) :: T ... </layerEnv>
 
+rule [field-static-store]:
+     <k> store(fieldloc(TargetClass:ClassType, X:Id), V:RawVal :: T:Type) => . ... </k>
+     <classType> TargetClass </classType>
+     <staticEnv>... X |-> (_ => V) :: T ...</staticEnv>
+     
 /*@ \subsection{auxiliary terms produced during elaboration} */
 
 rule stmtAndExp(Stmt:K, Exp:K) => Stmt ~> Exp

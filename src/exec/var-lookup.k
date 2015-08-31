@@ -134,7 +134,7 @@ rule [lvalue-Field-static]:
 syntax KItem ::= typedLookup ( Int )
 
 rule [typedLookup]:
-    <k> typedLookup(L:Int) => lookup(L, T) ...</k>
+    <k> typedLookup(L:Int) => lookup(loc(L), T) ...</k>
     <store>... L |-> _::T:Type ...</store>
 
 rule [lvalue-typedLookup]:
@@ -155,40 +155,28 @@ rule [lvalue-typedLoc]:
   May be wrapped inside lvalue. If lookup is unwrapped, it evaluates to TypedVal - the store value,
   of the type T - the second lookup argument. If lookup is wrapped into lvalue, it evaluates to loc(OL)::T.
 */
-//todo remove
 syntax Exp ::= lookup (
-                    Int,  //OL - the store location to lookup
+                    Loc,  //OL - the store location to lookup
                     Type  // T - the compile-time type of the resulting value
                   )
 
-                  syntax Exp ::= lookup (
-                                      Loc,  //OL - the store location to lookup
-                                      Type  // T - the compile-time type of the resulting value
-                                    )
-
-rule [lookup-Location]:
-    <k>
-      lookup(L:Int, T1:Type) => subtype(T2, T1) ~> true? ~> (V::T1)
-      ...
-    </k>
-    <store>... L |-> V:RawVal :: T2:Type ...</store>
-
-rule lvalue(lookup(L:Int, T:Type)) => loc(L)::T     [structural]
 rule lvalue(lookup(L:Loc, T:Type)) => L::T          [structural]
 
-syntax Exp ::= fieldlookup ( FieldLoc )
+rule [lookup-loc]:
+     <k> lookup(loc(L:Int), T1:Type) => subtype(T2, T1) ~> true? ~> (V::T1) ... </k>
+     <store>... L |-> V:RawVal :: T2:Type ...</store>
 
 rule [lookup-fieldloc-instance]:
-     <k> fieldlookup(fieldloc(OId:Int, TargetClass:ClassType, X:Id)) => (V::T) ... </k>
+     <k> lookup(fieldloc(OId:Int, TargetClass:ClassType, X:Id), T1:Type) => subtype(T2, T1) ~> true? ~> (V::T1) ... </k>
      <objectId> OId </objectId>
      <layerClass> TargetClass </layerClass>
-     <layerEnv> ... X |-> V :: T ... </layerEnv>
+     <layerEnv> ... X |-> V:RawVal :: T2:Type ... </layerEnv>
      [transition-threading]
 
 rule [lookup-fieldloc-static]:
-     <k> fieldlookup(fieldloc(TargetClass:ClassType, X:Id)) => (V::T) ... </k>
+     <k> lookup(fieldloc(TargetClass:ClassType, X:Id), T1:Type) => subtype(T2, T1) ~> true? ~> (V::T1) ... </k>
      <classType> TargetClass </classType>
-     <staticEnv>... X |-> V :: T ...</staticEnv>
+     <staticEnv>... X |-> V:RawVal :: T2:Type ...</staticEnv>
      [transition-threading]
 
 endmodule
