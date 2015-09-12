@@ -232,9 +232,9 @@ rule addElementToClassBodyDecListEnd(.ClassBodyDecList, P:K) => 'ClassBodyDecLis
 rule addElementToClassBodyDecListEnd('ClassBodyDecList(Hd:K,,Tl:K), P:K) => 'ClassBodyDecList(Hd,, addElementToClassBodyDecListEnd(Tl,P))
 
 syntax ClassBodyDecList ::= appendClassBodyDecList(ClassBodyDecList, ClassBodyDecList) [function]
-rule appendClassBodyDecList(AExps:ClassBodyDecList, (Hd:ClassBodyDec Tl:ClassBodyDecList)) =>
-     appendClassBodyDecList(addElementToClassBodyDecListEnd(AExps, Hd), Tl)
-rule appendClassBodyDecList(AExps:ClassBodyDecList, .ClassBodyDecList) => AExps
+rule appendClassBodyDecList(CBDs:ClassBodyDecList, (Hd:ClassBodyDec Tl:ClassBodyDecList)) =>
+     appendClassBodyDecList(addElementToClassBodyDecListEnd(CBDs, Hd), Tl)
+rule appendClassBodyDecList(CBDs:ClassBodyDecList, .ClassBodyDecList) => CBDs
 
 syntax BlockStmList ::= addElementToBlockStmListEnd (BlockStmList, BlockStmt) [function]
 rule addElementToBlockStmListEnd(.BlockStmList, P:K) => 'BlockStmList(P,, .BlockStmList)
