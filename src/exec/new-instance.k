@@ -182,7 +182,7 @@ rule [create]:
     </k>
     <classType> Class </classType>
     <extends> BaseClass </extends>
-    <instanceFields> FieldDecs </instanceFields>
+    <instanceFields> FieldDecs:ClassBodyDecList </instanceFields>
         [structural]
 
 rule [create-empty-discard]:

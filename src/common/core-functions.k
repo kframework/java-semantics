@@ -231,6 +231,11 @@ syntax ClassBodyDecList ::= addElementToClassBodyDecListEnd (ClassBodyDecList, C
 rule addElementToClassBodyDecListEnd(.ClassBodyDecList, P:K) => 'ClassBodyDecList(P,, .ClassBodyDecList)
 rule addElementToClassBodyDecListEnd('ClassBodyDecList(Hd:K,,Tl:K), P:K) => 'ClassBodyDecList(Hd,, addElementToClassBodyDecListEnd(Tl,P))
 
+syntax ClassBodyDecList ::= appendClassBodyDecList(ClassBodyDecList, ClassBodyDecList) [function]
+rule appendClassBodyDecList(CBDs:ClassBodyDecList, (Hd:ClassBodyDec Tl:ClassBodyDecList)) =>
+     appendClassBodyDecList(addElementToClassBodyDecListEnd(CBDs, Hd), Tl)
+rule appendClassBodyDecList(CBDs:ClassBodyDecList, .ClassBodyDecList) => CBDs
+
 syntax BlockStmList ::= addElementToBlockStmListEnd (BlockStmList, BlockStmt) [function]
 rule addElementToBlockStmListEnd(.BlockStmList, P:K) => 'BlockStmList(P,, .BlockStmList)
 rule addElementToBlockStmListEnd('BlockStmList(Hd:K,,Tl:K), P:K) => 'BlockStmList(Hd,, addElementToBlockStmListEnd(Tl,P))
@@ -239,7 +244,7 @@ syntax Exps ::= addElementToExpsEnd (Exps, Exp) [function]
 rule addElementToExpsEnd(.Exps, P:Exp) => P,.Exps
 rule addElementToExpsEnd((Hd:Exp, Tl:Exps), P:Exp) => Hd,addElementToExpsEnd(Tl,P)
 
-syntax Exps ::= appendExps(Exps,Exps) [function]
+syntax Exps ::= appendExps(Exps, Exps) [function]
 rule appendExps(AExps:Exps, (Hd:Exp, Tl:Exps)) => appendExps(addElementToExpsEnd(AExps, Hd), Tl)
 rule appendExps(AExps:Exps, .Exps) => AExps
 
@@ -280,6 +285,9 @@ syntax KListWrap ::= "[" KList "]" [klabel('KListWrap), latex(\terminal{[} {#1} 
 //@ Sequence of terms and of any other statements. The first term is moved to the top of computation.
 rule [S1:K,, Stmts:KList] => S1 ~> [Stmts]        [structural]
 rule [.KList] => .K                               [structural]
+
+rule 'ClassBodyDecList(Hd:K,,Tl:K) => Hd ~> Tl
+rule .ClassBodyDecList => .
 
 //@ A wrapper over an arbitrary KList, wrapper being of type KResult.
 syntax KRListWrap ::= "kr" "[" KList "]"          [latex(\terminal{kr[} {#1} \terminal{]})]

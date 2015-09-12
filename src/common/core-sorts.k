@@ -95,6 +95,7 @@ syntax MKR ::= Signature
 /*@ The member accessibility context of the current method - either static or instance.*/
 syntax ContextType ::=  "staticCT"    [latex(\terminal{static})]
                       | "instanceCT"  [latex(\terminal{instance})]
+
 syntax MKR ::= ContextType
 
 //@ \subsection{Values}
@@ -161,6 +162,7 @@ syntax MKR ::= TypedVal | Type
 syntax AccessMode ::= Public | Protected  | Private | "package"
 syntax MKR ::= AccessMode
 
+syntax AnnoMethodModList ::= accCT(AccessMode, ContextType)
 /*@ Types of routines represented by a method closure*/
 syntax MethodMetaType ::= "methodMMT" | "constructorMMT"
 
