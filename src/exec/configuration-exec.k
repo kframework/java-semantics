@@ -290,6 +290,14 @@ configuration
         </object>
       </objectStore>
 
+      <arrayStore color="Cyan" map="" >
+              <array color="Cyan" multiplicity="*">
+                <arrayId color="Cyan" key="" > .K </arrayId>
+                <arrayType color="Cyan"> .K </arrayType>
+                <arraystore color="Cyan"> .Map </arraystore>
+              </array>
+      </arrayStore>
+
       <br/>
       <br/>
 

@@ -15,6 +15,7 @@ rule [InstanceOf]:
     =>  (V =/=K null) && subtype(typeOf(V), RT2)
 
 /*@ \subsection{Cast} */
+rule cast(RT:RefType, V:RawVal :: RT) => V::RT
 rule [cast-RefType]:
     cast(RT1:RefType, V:RawVal :: RT2:RefType)
     =>  ifAux ( subtype(typeOf(V), RT1) ,
@@ -24,5 +25,6 @@ rule [cast-RefType]:
             (toString(typeOf(V)) + " cannot be cast to ") + toString(RT1)
           );
         )
+when RT1 =/=K RT2
 
 endmodule

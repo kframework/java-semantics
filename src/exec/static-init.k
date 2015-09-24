@@ -98,9 +98,6 @@ rule [FieldDec-static]:
     <k> static .AnnoFieldModList T:Type ('VarDec(X:Id), .VarDecList); => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <staticEnv> Env:Map => Env[X <- L] </staticEnv>
-    <store>... .Map => L |-> default(T) ...</store>
-    <storeMetadata>... .Map => L |-> FieldLocMetadata ...</storeMetadata>
-    <nextLoc> L:Int => L +Int 1 </nextLoc>
+    <staticEnv> Env:Map => Env[X <- default(T)] </staticEnv>
 
 endmodule

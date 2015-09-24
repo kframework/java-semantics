@@ -253,10 +253,7 @@ module NEW-INSTANCE-REST
 
 rule [FieldDec-instance]:
     <k> 'FieldDec(.AnnoFieldModList,, T:Type,,'VarDecList('VarDec(X:Id),, .VarDecList)) => . ...</k>
-    <env> Env:Map => Env[X <- L] </env>
-    <store>... .Map => L |-> default(T) ...</store>
-    <storeMetadata>... .Map => L |-> FieldLocMetadata ...</storeMetadata>
-    <nextLoc> L:Int => L +Int 1 </nextLoc>
+    <env> Env:Map => Env[X <- default(T) ] </env>
 
 //@\subsection{Execution of QSuperConstrInv, AltConstrInv}
 

@@ -228,33 +228,22 @@ syntax KItem ::=  arrayCopy (
               )
               [strict(2)]
 
-rule arrayCopy(arrayRef(T:Type, L1:Int, Len:Int)::_, arrayRef(T, L2:Int, Len)::_)
-    => storeCopy(L1, L2, Len) ~> arrayRef(T,L2:Int,Len)
-
-//@Copy a sequence of store values from one place to another.
-syntax KItem ::=  storeCopy (
-                Int, //source address in store
-                Int, //destination address in store
-                Int  //amount of elements to copy
-              )
-
-rule [storeCopy]:
-    <k>
-      storeCopy(L1:Int, L2:Int, Len:Int) => storeCopy(L1 +Int 1, L2 +Int 1, Len -Int 1)
+rule [arrayCopy]:
+   <k>
+      arrayCopy(arrayRef(T:Type, L1:Int, Len:Int)::_, arrayRef(T, L2:Int, Len)::_)
+      => arrayRef(T, L2, Len)
       ...
-    </k>
-    <store>
-      ...
-      L1 |-> K:K
-      //...
-      L2 |-> (_ => K)
-      ...
-    </store>
-when
-    Len >Int 0
-
-rule [storeCopy-discard]:
-    storeCopy(_, _, 0) => .
+   </k>
+   <array>
+       <arrayId> L1 </arrayId>
+       <arraystore> M1:Map </arraystore>
+       ...
+   </array>
+   <array>
+       <arrayId> L2 </arrayId>
+       <arraystore> _ => M1 </arraystore>
+       ...
+   </array>
 
 //@\subsection{Class literal - <Class>.class}
 

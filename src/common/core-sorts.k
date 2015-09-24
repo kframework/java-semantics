@@ -129,7 +129,7 @@ syntax ObjectRef ::=  objectRef (
                         Int,      //OL - object location
                         ClassType //LowestClass - the lowest class where we are allowed to search for method
                                   // implementation, or actual object class if there are no restrictions.
-                      )
+                      ) [smtlib(smt_object_ref)]
 
 /*@ The arrayRef has the following structure:
 \begin{itemize}
@@ -140,7 +140,7 @@ syntax ObjectRef ::=  objectRef (
 */
 syntax ArrayRef ::=   arrayRef (
                         Type,  // Type of the array
-                        Int,   // Location of the first element
+                        Int,   // arrayId
                         Int    // Length
                       )
 
@@ -198,7 +198,7 @@ syntax LocMetadata ::= "LocalLocMetadata"   [latex(\terminal{Local})]
 //Denis' syntax
 syntax ClassOrName ::= Id | ClassType
 //Denis' syntax
-syntax ClassType ::= "class" Id | "noClass"                     [latex({\dotCt{K}})]
+syntax ClassType ::= "class" Id [smtlib(smt_classtype)] | "noClass"                     [latex({\dotCt{K}})]
 
 /* Denis' syntax: A reference type is either a class type, an array type, the null type or a String type.
 The null type is specified by the JLS although inaccessible to the programmer. String objects and

@@ -74,27 +74,22 @@ context lvalue('Field(HOLE,, _))
 
 rule [Field-instance]:
     <k>
-      'Field(
-        objectRef(OId:Int, _ ) :: TargetClass:ClassType,,
-        X:Id
-      ) => typedLookup(L)
+      'Field(objectRef(OId:Int, _ ) :: TargetClass:ClassType,, X:Id) => TV
       ...
     </k>
     <objectId> OId </objectId>
     <layerClass> TargetClass </layerClass>
-    <layerEnv>... X |-> L:Int ...</layerEnv>
+    <layerEnv>... X |-> TV:TypedVal ...</layerEnv>
 
 rule [lvalue-Field-instance]:
     <k>
-      lvalue('Field(
-        objectRef(OId:Int, _ ) :: TargetClass:ClassType,,
-        X:Id
-      )) => lvalue(typedLookup(L))
+      lvalue('Field(objectRef(OId:Int, _ ) :: TargetClass:ClassType,, X:Id))
+      => fieldloc(OId, TargetClass, X) :: T
       ...
     </k>
     <objectId> OId </objectId>
     <layerClass> TargetClass </layerClass>
-    <layerEnv>... X |-> L:Int ...</layerEnv>
+    <layerEnv>... X |-> _ :: T:Type ...</layerEnv>
 
 rule [Field-instance-OfNull]:
     'Field(null::_,, _) => throw new classNullPointerException(null::classString);
@@ -118,27 +113,20 @@ syntax KItem ::= staticFieldLookup ( ClassType , Id )
 
 rule [staticFieldLookup]:
     <k>
-      staticFieldLookup(
-        TargetClass:ClassType,
-        X:Id
-      )
-      => typedLookup(L)
+      staticFieldLookup(TargetClass:ClassType, X:Id) => TV
       ...
     </k>
     <classType> TargetClass </classType>
-    <staticEnv>... X |-> L:Int ...</staticEnv>
+    <staticEnv>... X |-> TV:TypedVal ...</staticEnv>
 
 rule [lvalue-Field-static]:
     <k>
-      lvalue(staticFieldLookup(
-        TargetClass:ClassType,
-        X:Id
-      ))
-      => lvalue(typedLookup(L))
+      lvalue(staticFieldLookup(TargetClass:ClassType, X:Id))
+      => fieldloc(TargetClass, X) :: T
       ...
     </k>
     <classType> TargetClass </classType>
-    <staticEnv>... X |-> L:Int ...</staticEnv>
+    <staticEnv>... X |-> _ :: T:Type ...</staticEnv>
 
 /*@ \subsection{lvalue and loc} */
 
@@ -146,7 +134,7 @@ rule [lvalue-Field-static]:
 syntax KItem ::= typedLookup ( Int )
 
 rule [typedLookup]:
-    <k> typedLookup(L:Int) => lookup(L, T) ...</k>
+    <k> typedLookup(L:Int) => lookup(loc(L), T) ...</k>
     <store>... L |-> _::T:Type ...</store>
 
 rule [lvalue-typedLookup]:
@@ -168,31 +156,27 @@ rule [lvalue-typedLoc]:
   of the type T - the second lookup argument. If lookup is wrapped into lvalue, it evaluates to loc(OL)::T.
 */
 syntax Exp ::= lookup (
-                    Int,  //OL - the store location to lookup
+                    Loc,  //OL - the store location to lookup
                     Type  // T - the compile-time type of the resulting value
                   )
 
-rule [lookup-Location]:
-    <k>
-      lookup(L:Int, T1:Type)
-      => fieldAccessCheckpoint(L) ~> subtype(T2, T1) ~> true? ~> (V::T1)
-      ...
-    </k>
-    <store>... L |-> V:RawVal :: T2:Type ...</store>
+rule lvalue(lookup(L:Loc, T:Type)) => L::T          [structural]
 
-rule lvalue(lookup(L:Int, T:Type)) => loc(L)::T
-        [structural]
+rule [lookup-loc]:
+     <k> lookup(loc(L:Int), T1:Type) => subtype(T2, T1) ~> true? ~> (V::T1) ... </k>
+     <store>... L |-> V:RawVal :: T2:Type ...</store>
 
-// Auxiliary structure designed to make field access rules transitions, but local variables not
-syntax KItem ::= fieldAccessCheckpoint ( Int )
+rule [lookup-fieldloc-instance]:
+     <k> lookup(fieldloc(OId:Int, TargetClass:ClassType, X:Id), T1:Type) => subtype(T2, T1) ~> true? ~> (V::T1) ... </k>
+     <objectId> OId </objectId>
+     <layerClass> TargetClass </layerClass>
+     <layerEnv> ... X |-> V:RawVal :: T2:Type ... </layerEnv>
+     [transition-threading]
 
-rule [fieldAccessCheckpoint-Local]:
-    <k> fieldAccessCheckpoint(L:Int) => . ...</k>
-    <storeMetadata>... L |-> LocalLocMetadata ...</storeMetadata>
-
-rule [fieldAccessCheckpoint-Field]:
-    <k> fieldAccessCheckpoint(L:Int) => . ...</k>
-    <storeMetadata>... L |-> FieldLocMetadata ...</storeMetadata>
-         [transition-threading]
+rule [lookup-fieldloc-static]:
+     <k> lookup(fieldloc(TargetClass:ClassType, X:Id), T1:Type) => subtype(T2, T1) ~> true? ~> (V::T1) ... </k>
+     <classType> TargetClass </classType>
+     <staticEnv>... X |-> V:RawVal :: T2:Type ...</staticEnv>
+     [transition-threading]
 
 endmodule
