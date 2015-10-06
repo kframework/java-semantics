@@ -170,7 +170,6 @@ rule [qualified-new-instance]:
           <crntClass> noClass </crntClass>
           <location> L </location>
     </methodContext>
-    <storeMetadata>... .Map => L |-> LocalLocMetadata ...</storeMetadata>
 
 syntax KItem ::=  create ( ClassType )
 
