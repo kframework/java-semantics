@@ -49,10 +49,6 @@ rule [bubble-sort-loop-inv1]:
             LX |-> X:RawRefVal :: class String2Id(".listNode")
             LC |-> (C:Bool => ?_:Bool) :: bool
             ...</store>
-                <storeMetadata> ... (.Map => ?_:Map)
-                  LX |-> LocalLocMetadata
-                  LC |-> LocalLocMetadata
-                   ... </storeMetadata>
                 <busy> .Set </busy>
                 <nextLoc> I:Int => ?_:Int </nextLoc>
       <objectStore>...
@@ -109,11 +105,6 @@ rule [bubble-sort-loop-inv2]:
         LY |-> (objectRef(Y:Int, class String2Id(".listNode")) => objectRef(?_:Int, class String2Id(".listNode"))) :: class String2Id(".listNode")
         LC |-> (C1:Bool => ?C2:Bool) :: bool
         ...</store>
-            <storeMetadata> ... (.Map => ?_:Map)
-              LX |-> LocalLocMetadata
-              LY |-> LocalLocMetadata
-              LC |-> LocalLocMetadata
-               ... </storeMetadata>
             <busy> .Set </busy>
             <nextLoc> I:Int => ?_:Int </nextLoc>
   <objectStore>...
@@ -174,7 +165,6 @@ rule [bubble-sort-func-spec]:
   <program> .K </program>
    <globalPhase> ExecutionPhase </globalPhase>
     <store>... .Map => ?_:Map ...</store>
-  <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
   <busy> .Set </busy>
   <nextLoc> I:Int => ?_:Int </nextLoc>
     <objectStore>... (lseg(X1, null)(A1:List) => lseg(?X2, null)(?A2:List)) ...</objectStore>

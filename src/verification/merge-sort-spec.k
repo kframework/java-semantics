@@ -45,11 +45,6 @@ rule [mergesort-loop-inv1]:
               LY |-> objectRef((Y1:Int => ?Y2:Int), class String2Id(".listNode")) :: class String2Id(".listNode")
               LZ |-> objectRef((Z1:Int => ?Z2:Int), class String2Id(".listNode")) :: class String2Id(".listNode")
     ...</store>
-        <storeMetadata> ... (.Map => ?_:Map)
-          LX |-> LocalLocMetadata
-          LY |-> LocalLocMetadata
-          LZ |-> LocalLocMetadata
-           ... </storeMetadata>
         <busy> .Set </busy>
         <nextLoc> I:Int => ?_:Int </nextLoc>
 
@@ -118,12 +113,6 @@ rule [mergesort-loop-inv2]:
               LY |-> (Y:RawRefVal => ?_:RawRefVal) :: class String2Id(".listNode")
               LZ |-> (Z:RawRefVal => ?_:RawRefVal) :: class String2Id(".listNode")
     ...</store>
-        <storeMetadata> ... (.Map => ?_:Map)
-          LX |-> LocalLocMetadata
-          LP |-> LocalLocMetadata
-          LY |-> LocalLocMetadata
-          LZ |-> LocalLocMetadata
-           ... </storeMetadata>
         <busy> .Set </busy>
         <nextLoc> I:Int => ?_:Int </nextLoc>
 
@@ -190,7 +179,6 @@ rule [merge-sort-func-spec]:
   <program> .K </program>
    <globalPhase> ExecutionPhase </globalPhase>
     <store>... .Map => ?_:Map ...</store>
-  <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
   <busy> .Set </busy>
   <nextLoc> I:Int => ?_:Int </nextLoc>
     <objectStore>... (lseg(X1, null)(A1:List) => lseg(?X2, null)(?A2:List)) ...</objectStore>

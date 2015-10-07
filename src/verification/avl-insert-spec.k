@@ -21,7 +21,6 @@ rule
   <program> .K </program>
    <globalPhase> ExecutionPhase </globalPhase>
     <store>... .Map => ?_:Map ...</store>
-  <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
   <busy> .Set </busy>
   <nextLoc> I:Int => ?_:Int </nextLoc>
   requires X >=Int -2147483648 andBool X <=Int 2147483647 andBool Y >=Int -2147483648 andBool Y <=Int 2147483647
@@ -44,7 +43,6 @@ rule
   <program> .K </program>
    <globalPhase> ExecutionPhase </globalPhase>
     <store>... .Map => ?_:Map ...</store>
-  <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
   <busy> .Set </busy>
   <nextLoc> I:Int => ?_:Int </nextLoc>
   <objectStore>... htree(TP)(T:Tree) ...</objectStore>
@@ -69,7 +67,6 @@ rule
   <program> .K </program>
    <globalPhase> ExecutionPhase </globalPhase>
     <store>... .Map => ?_:Map ...</store>
-  <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
   <busy> .Set </busy>
   <nextLoc> I0:Int => ?_:Int </nextLoc>
   <objectStore>... <object>
@@ -130,7 +127,6 @@ rule
 <program> .K </program>
 <globalPhase> ExecutionPhase </globalPhase>
   <store>... .Map => ?_:Map ...</store>
-<storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
 <busy> .Set </busy>
 <nextLoc> I:Int => ?_:Int </nextLoc>
 

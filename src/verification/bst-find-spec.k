@@ -23,7 +23,6 @@ rule
 <program> .K </program>
  <globalPhase> ExecutionPhase </globalPhase>
   <store>... .Map => ?_:Map ...</store>
-<storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
 <busy> .Set </busy>
 <nextLoc> I:Int => ?_:Int </nextLoc>
 

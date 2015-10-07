@@ -60,10 +60,6 @@ rule [insertion-sort-loop-inv1]:
                       LX |-> ( X:RawRefVal => null ) :: class String2Id(".listNode")
                       LY |-> (Y1:RawRefVal => ?Y2:RawRefVal) :: class String2Id(".listNode")
             ...</store>
-            <storeMetadata> ... (.Map => ?_:Map)
-                    LX |-> LocalLocMetadata
-                    LY |-> LocalLocMetadata
-            ... </storeMetadata>
                   <busy> .Set </busy>
                   <nextLoc> I:Int => ?_:Int </nextLoc>
 
@@ -119,11 +115,6 @@ rule [insertion-sort-loop-inv2]:
                 LZ |-> (objectRef(Z:Int, class String2Id(".listNode")) => ?_:RawRefVal) :: class String2Id(".listNode")
                 LN |-> objectRef(N:Int, class String2Id(".listNode")) :: class String2Id(".listNode")
                ... </store>
-        <storeMetadata> ... (.Map => ?_:Map)
-          LN |-> LocalLocMetadata
-          LY |-> LocalLocMetadata
-          LZ |-> LocalLocMetadata
-           ... </storeMetadata>
         <busy> .Set </busy>
         <nextLoc> I:Int => ?_:Int </nextLoc>
 
@@ -219,7 +210,6 @@ rule [insertion-sort-func-spec]:
   <program> .K </program>
    <globalPhase> ExecutionPhase </globalPhase>
     <store>... .Map => ?_:Map ...</store>
-  <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
   <busy> .Set </busy>
   <nextLoc> I:Int => ?_:Int </nextLoc>
     <objectStore>... (lseg(X1, null)(A1:List) => lseg(?X2, null)(?A2:List)) ...</objectStore>

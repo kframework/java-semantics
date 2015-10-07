@@ -38,10 +38,6 @@ rule [loop-inv]:
             P1 |-> (LP1:RawRefVal => null):: class String2Id(".listNode")
             P2 |-> (LP2:RawRefVal => ?LP2:RawRefVal) :: class String2Id(".listNode")
                 ...</store>
-          <storeMetadata> ... (.Map => ?_:Map)
-            P1 |-> LocalLocMetadata
-            P2 |-> LocalLocMetadata
-             ... </storeMetadata>
           <busy> .Set </busy>
           <nextLoc> I:Int => ?_:Int </nextLoc>
 
@@ -68,7 +64,6 @@ rule [func-spec]:
   <program> .K </program>
   <globalPhase> ExecutionPhase </globalPhase>
   <store>... .Map => ?_:Map ...</store>
-  <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
   <busy> .Set </busy>
   <nextLoc> I:Int => ?_:Int </nextLoc>
   <objectStore>... (list(LP)(A:List) => list(?LP)(rev(A))) (.Bag => ?_:Bag)...</objectStore>
