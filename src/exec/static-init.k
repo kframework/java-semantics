@@ -99,5 +99,6 @@ rule [FieldDec-static]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticEnv> Env:Map => Env[X <- default(T)] </staticEnv>
+    <globalPhase> ExecutionPhase </globalPhase>
 
 endmodule

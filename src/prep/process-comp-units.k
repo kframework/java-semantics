@@ -28,8 +28,8 @@ process declarations in a less-restricted order.
 
 rule [ProcCompUnitsPhase-start]:
     <k> . => Program </k>
-    (<program> Program:K </program> => .)
-     <globalPhase> ProcTypeNamesPhase => ProcCompUnitsPhase  </globalPhase>
+    <program> Program:K => . </program>
+    <globalPhase> ProcTypeNamesPhase => ProcCompUnitsPhase </globalPhase>
 
 //ImpDecs will be processed in the module PROCESS-IMPORTS
 rule [CompilationUnit]:

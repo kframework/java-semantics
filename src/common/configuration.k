@@ -191,7 +191,7 @@ configuration
 
           //[...,, 'LocalVarDec(_),, ...] - Instance field declarations. Used during object instantiation.
           <instanceFields color="Indigo"> .ClassBodyDecList </instanceFields>
-	  <instanceInit color="Indigo"> .BlockStmList </instanceInit>
+	      <instanceInit color="Indigo"> .BlockStmList </instanceInit>
 
           //[...,, 'FieldDec('Static(_),,T,,_),, ...] - Static field declarations. Used during class instantiation.
           <staticFields color="DarkSlateGray"> .ClassBodyDecList </staticFields>
@@ -216,13 +216,6 @@ configuration
           //will be attached to more external classes.
           //Used during elaboration phase only.
           <enclosingLocalEnv color="Teal"> .Map </enclosingLocalEnv>
-
-          <br/>
-          <br/>
-          //Class Phase Folding
-
-          //The whole class folded back into a 'ClassDec(...) node
-          <folded color="Teal"> .K </folded>
 
           <br/>
           <br/>

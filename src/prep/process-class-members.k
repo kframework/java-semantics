@@ -389,6 +389,7 @@ rule [FieldDec-Instance]:
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <instanceFields> C:ClassBodyDecList => addElementToClassBodyDecListEnd(C, 'FieldDec(.AnnoFieldModList,, T,, 'VarDecList('VarDec(X:Id),, .VarDecList)) ) </instanceFields>
+    <globalPhase> ProcClassMembersPhase </globalPhase>
 when
     getContextType(Modifiers) ==K instanceCT
         [structural]
@@ -422,6 +423,7 @@ rule [FieldDec-Static]:
     <classType> Class </classType>
     <staticFields> C:ClassBodyDecList =>
     addElementToClassBodyDecListEnd(C, 'FieldDec('AnnoFieldModList('Static(.KList),, .AnnoFieldModList),, T,, 'VarDecList('VarDec(X),, .VarDecList)) ) </staticFields>
+    <globalPhase> ProcClassMembersPhase </globalPhase>
 when
     getContextType(Modifiers) ==K staticCT
         [structural]
