@@ -15,6 +15,13 @@ The initial configuration contains the initial program in cells <k> and <program
 /*@ \subsection{Compilation units}*/
 
 // 'CompilationUnit('Some('PackageDec(_,, Pack:PackageId)),, _)
+rule [start]:
+        <threads>
+          . => <thread> <k> Program </k> ...</thread>
+        </threads>
+        <program> Program:K </program>
+    <globalPhase> ProcTypeNamesPhase </globalPhase>
+
 rule [CompilationUnit-DefaultPackage-Desugar]:
     'CompilationUnit(
       ( 'None(_) => 'Some('PackageDec(.AnnoList,, 'PackageName( .IdList ))) ),,

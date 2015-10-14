@@ -14,6 +14,8 @@ rule isStmt('For(_)) => true    //first argument
 
 //For now main class may only be placed in the default package.
 rule [ExecutionPhase-Start]:
+    <threads>
+    <thread>
     <k>
       //K-AST for new <MainClass>().main(new String[0]);
       . =>  getClassType(packageId(String2Id("")), String2Id(MainClassS))
@@ -24,8 +26,10 @@ rule [ExecutionPhase-Start]:
               (( new classString ([0] .DimExps)  .Dims), .Exps );
     </k>
     <env> .Map </env>
+    ...</thread>
+    </threads>
     <mainClass> ListItem(MainClassS:String) </mainClass>
-    <globalPhase> UnfoldingPhase => ExecutionPhase  </globalPhase>
+    <globalPhase> ElaborationPhase => ExecutionPhase  </globalPhase>
 
 
 

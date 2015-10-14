@@ -57,14 +57,6 @@ syntax GlobalPhase ::=
   */
   | "ElaborationPhase"
 
-  /* Folds the <class> cells into a preprocessed Java program. The last step of elaboration semantics.
-  */
-  | "FoldingPhase"
-
-  /* Unfolds each class from its preprocessed 'ClassDec or 'InterfaceDec form back into a <class> cell.
-  */
-  | "UnfoldingPhase"
-
   /* When all preprocessing / elaboration phases are finished, the actual execution begins.
   */
   | "ExecutionPhase"

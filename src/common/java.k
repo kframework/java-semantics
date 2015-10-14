@@ -1,0 +1,82 @@
+require "configuration.k"
+require "core-sorts.k"
+require "core-functions.k"
+require "core-classes.k"
+require "aux-strings.k"
+require "primitive-types.k"
+require "subtyping.k"
+require "java-syntax.k"
+
+require "../prep/core-preprocessing.k"
+require "../prep/process-type-names.k"
+require "../prep/process-comp-units.k"
+require "../prep/process-imports.k"
+require "../prep/process-class-decs.k"
+require "../prep/process-class-members.k"
+require "../prep/elaboration-categories.k"
+require "../prep/elaboration-core.k"
+require "../prep/elaboration-top-blocks.k"
+require "../prep/elaboration-statements.k"
+require "../prep/elaboration-expressions.k"
+require "../prep/elaboration-vars.k"
+require "../prep/elaboration-method-invoke.k"
+require "../prep/elaboration-new-instance.k"
+require "../prep/elaboration-arrays.k"
+require "../prep/elaboration-types.k"
+require "../prep/literals.k"
+require "../prep/process-local-classes.k"
+require "../prep/process-anonymous-classes.k"
+
+require "../exec/core-exec.k"
+require "../exec/syntax-conversions.k"
+require "../exec/to-string.k"
+require "../exec/expressions.k"
+require "../exec/expressions-classes.k"
+require "../exec/statements.k"
+require "../exec/arrays.k"
+require "../exec/static-init.k"
+require "../exec/new-instance.k"
+require "../exec/var-lookup.k"
+require "../exec/method-invoke.k"
+require "../exec/api-core.k"
+require "../exec/api-threads.k"
+
+module JAVA
+    imports CONFIGURATION
+    imports CORE-SORTS
+    imports AUX-STRINGS
+    imports PRIMITIVE-TYPES
+    imports SUBTYPING
+
+    imports JAVA-SYNTAX
+
+    imports PROCESS-TYPE-NAMES
+    imports PROCESS-COMP-UNITS
+    imports PROCESS-IMPORTS
+    imports PROCESS-CLASS-DECS
+    imports PROCESS-CLASS-MEMBERS
+    imports ELABORATION-TOP-BLOCKS
+    imports ELABORATION-STATEMENTS
+    imports ELABORATION-EXPRESSIONS
+    imports ELABORATION-VARS
+    imports ELABORATION-METHOD-INVOKE
+    imports ELABORATION-NEW-INSTANCE
+    imports ELABORATION-ARRAYS
+    imports ELABORATION-TYPES
+    imports PROCESS-LOCAL-CLASSES
+    imports PROCESS-ANONYMOUS-CLASSES
+    imports LITERALS
+
+    imports EXPRESSIONS
+    imports EXPRESSIONS-CLASSES
+    imports STATEMENTS
+    imports ARRAYS
+    imports STATIC-INIT
+    imports NEW-INSTANCE
+    imports NEW-INSTANCE-REST
+    imports VAR-LOOKUP
+    imports METHOD-INVOKE
+    imports METHOD-INVOKE-REST
+    imports API-CORE
+    imports API-THREADS
+endmodule
