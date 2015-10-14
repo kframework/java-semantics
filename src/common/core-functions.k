@@ -258,6 +258,23 @@ rule getSimpleName(class ClassId:Id)
       rfindString(Id2String(ClassId), ".", lengthString(Id2String(ClassId))) +Int 1
     ))
 
+/*
+Tests if a method declared in class BaseC with access mode Acc is overridden by a method
+  with the same signature declared in a subclass SubC.
+
+The method is overridden if either:
+  - Acc is protected or public
+  - Acc is package and BaseC and SubC are declared in the same package (JLS \S6.6)
+*/
+syntax KItem ::=  isOverridden (
+                ClassType,  //BaseC
+                AccessMode, //BaseAcc
+                ClassType   //SubC
+              )
+
+rule isOverridden(_, public,    _) => true
+rule isOverridden(_, protected, _) => true
+
 /*@ \subsection{Identifiers}*/
 
 // 'Id(Str:String)

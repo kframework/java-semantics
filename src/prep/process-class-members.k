@@ -181,16 +181,6 @@ rule [isInheritable]:
     <classType> Class </classType>
     <extends> BaseClass:ClassType </extends>
 
-//A copy of isOverridden from METHOD-INVOKE
-syntax KItem ::=  isOverridden (
-                ClassType,  //BaseC
-                AccessMode, //BaseAcc
-                ClassType   //SubC
-              )
-
-rule isOverridden(_, public,    _) => true
-rule isOverridden(_, protected, _) => true
-
 // Object class cannot match this rule since it has public access mode
 rule isOverridden(BaseC:ClassType, package, SubC:ClassType)
     => eqAux(getPackage(getTopLevel(BaseC)), getPackage(getTopLevel(SubC)))

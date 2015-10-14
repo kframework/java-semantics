@@ -589,23 +589,6 @@ rule [lookupPackageMethod-new-method]:
       ...
     </class>
 
-/*
-Tests if a method declared in class BaseC with access mode Acc is overridden by a method
-  with the same signature declared in a subclass SubC.
-
-The method is overridden if either:
-  - Acc is protected or public
-  - Acc is package and BaseC and SubC are declared in the same package (JLS \S6.6)
-*/
-syntax KItem ::=  isOverridden (
-                ClassType,  //BaseC
-                AccessMode, //BaseAcc
-                ClassType   //SubC
-              )
-
-rule isOverridden(_, public,    _) => true
-rule isOverridden(_, protected, _) => true
-
 // Object class cannot match this rule since it has public access mode
 rule isOverridden(BaseC:ClassType, package, SubC:ClassType)
     => eqAux(getPackage(getTopLevel(BaseC)) , getPackage(getTopLevel(SubC)))

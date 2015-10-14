@@ -31,8 +31,6 @@ rule [ExecutionPhase-Start]:
     <mainClass> ListItem(MainClassS:String) </mainClass>
     <globalPhase> ElaborationPhase => ExecutionPhase  </globalPhase>
 
-
-
 //@ \subsection{Blocks} JLS \$14.2
 
 rule [Block]:
