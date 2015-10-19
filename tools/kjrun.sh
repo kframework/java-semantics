@@ -50,9 +50,6 @@ function setSearchPattern() {
   fi
 }
 
-#If true then we have to run preprocessing semantics first
-PREP_FIRST=true
-
 TIME=true
 
 # OS-dependent choice of timeout
@@ -63,11 +60,7 @@ fi
 TIMEOUT=$((120 * $TIMEOUT_FACTOR))
 SEARCH_TIMEOUT_FACTOR=2
 
-MODE=run-exec
-PREP_OUTPUT=kast
-OUTPUT=pretty
-PREP_INPUT=java
-INPUT=kast
+INPUT=java
 
 # Pattern example: "<T> <out> OUT:List </out> _</T>"
 PATTERN=""
@@ -83,15 +76,7 @@ CLEAN=false
 #If true then we display the built command in kjrun and aux-kjrun
 VERBOSE=false
 
-#If true then don't show any messages besides the actual output
-SILENT=false
-
 CMD_SUFFIX=""
-COUNT_CMD_SUFFIX="| grep \"Solution\" | wc -l"
-PREP_AST_CMD_SUFFIX="| sed 's/\s*\([[:graph:]].*[[:graph:]]\)\s*/\1/g'"
-PREP_AST_CMD_SUFFIX="$PREP_AST_CMD_SUFFIX | tr -d '\n'"
-PREP_AST_CMD_SUFFIX="$PREP_AST_CMD_SUFFIX | sed -r 's/.*<program>//g' | sed -r 's/<\/program>.*//g'"
-PREP_AST_CMD_SUFFIX="$PREP_AST_CMD_SUFFIX | sed 's/KListWrap/ListWrap/g'"
 
 while [[ ${1:0:1} == - ]]; do
   PARAM=`echo $1 | awk -F= '{print $1}'`
@@ -104,31 +89,7 @@ while [[ ${1:0:1} == - ]]; do
       usage
       exit
       ;;
-    "--prep-ast")
-      PREP_FIRST=false
-      MODE=run-prep-ast
-      CMD_SUFFIX=${PREP_AST_CMD_SUFFIX}
-      OUTPUT=kast
-      INPUT=java
-      TIME=false
-      TIMEOUT=0
-
-      ;;
-    "--prep-pretty")
-      PREP_FIRST=false
-      MODE=run-prep-config
-      INPUT=java
-      ;;
-    "--prep-raw")
-      PREP_FIRST=false
-      MODE=run-prep-config
-      OUTPUT=kast
-      INPUT=java
-      ;;
-    "--exec-pretty")
-      PREP_FIRST=false
-      MODE=run-exec
-      ;;
+ 
     "--split") #everything default
       ;;
     "--split-cached")
@@ -136,26 +97,12 @@ while [[ ${1:0:1} == - ]]; do
       TIMEOUT=0
       PREP_INPUT=kast-cache
       OUTPUT=none
-      SILENT=true
       ;;
     "--split-none")
       PREP_INPUT=kast-cache
       OUTPUT=none
       ;;
-    "--search")
-      TIMEOUT=$(($TIMEOUT * $SEARCH_TIMEOUT_FACTOR))
-      MODE=search
-      setSearchPattern
-      ;;
-    "--search-cached")
-      TIME=false
-      TIMEOUT=0
-      PREP_INPUT=kast-cache
-      MODE=search
-      CMD_SUFFIX=${COUNT_CMD_SUFFIX}
-      SILENT=true
-      setSearchPattern
-      ;;
+
     "--debug")
       TIME=false
       TIMEOUT=0
@@ -172,7 +119,6 @@ while [[ ${1:0:1} == - ]]; do
       PREP_INPUT=kast-cache
       MODE=symbolic
       CMD_SUFFIX=${COUNT_CMD_SUFFIX}
-      SILENT=true
       setSearchPattern
       ;;
 
@@ -212,48 +158,39 @@ if [[ ${JAVA_FILE} == "" ]]; then
 fi
 
 BASE_JAVA_FILE=`basename ${JAVA_FILE}`  #simple file/dir name
-PKAST_FILE=`echo "$BASE_JAVA_FILE" | sed 's#/*$##'` # remove trailing slashes, important if JAVA_FILE is dir
-PKAST_FILE=${PKAST_FILE}.pkast
+MAIN_CLASS=`echo "$BASE_JAVA_FILE" | cut -d'.' -f1` #simple file minus extension
+TOOLS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+WORK_DIR="$(pwd)"
 
+SEMANTICS_DIR=$(cross-path-native.sh ${TOOLS_DIR}/../src/common)
 
-#Actual execution
-if [[ ${SILENT} == false ]]; then
-  echo "preprocess:"
+# OS-dependent selection of krun.
+if !(( $TIME == false )); then
+ KRUN_CMD="time"
 fi
 
-if [[ ${PREP_FIRST} == true ]]; then
-  if [ ! -e ${PKAST_FILE} ]; then
-    CMD="aux-kjrun.sh --time=${TIME} --timeout=${TIMEOUT} --mode=run-prep-ast --output=${PREP_OUTPUT} \
-      --cmd-suffix=\"${PREP_AST_CMD_SUFFIX}\" \
-      --input=${PREP_INPUT} --verbose=${VERBOSE} ${JAVA_FILE} > ${PKAST_FILE}"
-    if [[ ${VERBOSE} == true ]]; then
-      echo "PREP cmd:"
-      echo ${CMD}
-      echo
-    fi
-    eval ${CMD}
-  fi
-else
-  PKAST_FILE=${JAVA_FILE}
+KRUN_CMD="$KRUN_CMD timeout $TIMEOUT"
+
+KRUN_CMD="$KRUN_CMD $(cross-k.sh krun)"
+
+KRUN_CMD="$KRUN_CMD --directory \"$SEMANTICS_DIR\""
+
+if (( $OUTPUT == "none" )); then
+KRUN_CMD="$KRUN_CMD --output none"	
 fi
 
-if [[ ${SILENT} == false ]]; then
-  echo
-  echo "execute:"
-  echo
-fi
+KRUN_CMD="$KRUN_CMD --symbolic-execution -w none"
 
-CMD="aux-kjrun.sh --time=${TIME} --timeout=${TIMEOUT} --mode=${MODE} --output=${OUTPUT} --input=${INPUT} \
-  --pattern=\"${PATTERN}\" --ltlmc=\"${LTLMC}\" --config=\"${CONFIG}\" \
-  --verbose=${VERBOSE} --cmd-suffix=\"${CMD_SUFFIX}\" ${PKAST_FILE}"
-if [[ ${VERBOSE} == true ]]; then
-  echo "EXEC cmd:"
-  echo ${CMD}
-  echo
-fi
+KRUN_CMD="$KRUN_CMD --parser \"$(cross-sh.sh kj-parse-aggreg.sh)\""
+
+KRUN_CMD="$KRUN_CMD -cMainClass=\"ListItem(\\\"$MAIN_CLASS\\\")\""
+
+KRUN_CMD="$KRUN_CMD -cDissolveAllExceptOut=\"true\""
+
+KRUN_CMD="$KRUN_CMD $JAVA_FILE"
 
 # Actual command evaluation
-eval ${CMD}
+eval ${KRUN_CMD}
 
 if [[ ${CLEAN} == true ]]; then
   rm -rf *.kast
