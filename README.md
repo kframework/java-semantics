@@ -1,11 +1,10 @@
-## Installation
+## For User: Installation, Compile, Run and Test
 
 In order to use Java Semantics you need the following prerequisites:
 
-- A computer with at least 1GB of memory
-- Linux, OSX or Windows + Cygwin. Installation instructions below are written for Linux.
-- Java 8 or later, added to PATH.
-- K Framework (See <http://kframework.org>). The directory k-framework/dist/bin should be added to $PATH. We are using K 3.6, and we will soon set up tests to ensure every new version of K support our semantics, currently, this commit of K is tested: 839b8d723827f7255b18f62ccdf08437c7a61b2a.
+- Linux.
+- Java 8 or later (K Framework installation might require more updated Java version).
+- K Framework (See <http://kframework.org>). The bin directory should be added to PATH. 
 
 Installation process:
 
@@ -14,6 +13,11 @@ $ cd ~
 $ git clone --depth=1 https://github.com/kframework/java-semantics.git
 $ chmod +x java-semantics/tools/*
 $ export PATH=$PATH:~/java-semantics/tools
+```
+
+Before executing programs, you need to compile java-semantics first:
+
+```
 $ cd java-semantics/src
 $ kjkompile.sh
 ```
@@ -32,6 +36,19 @@ $ kjtest.sh --t1 ../tests/01_smoke_tests/
 
 This tool executes each program in the given directory with both Java Semantics and JDK and compares the results.
   Testing result is summarized in test-results.xml.
+
+## For Developer: Kompile and Krun
+Instead of using kjkompile.sh and krun.sh, developers want to interact with kompile and krun directly.
+
+Kompile:
+
+```
+$ cd java-semantics/src
+$ kompile -v --debug -d exec exec/java-exec.k 
+$ kompile -v --debug -d prep prep/java-prep.k
+```
+
+Krun:
 
 ## Other docs
 Directory docs contains two technical reports: the complete documented semantics of module METHOD_INVOKE and
