@@ -49,6 +49,15 @@ $ kompile -v --debug -d prep prep/java-prep.k
 ```
 
 Krun:
+To debug prep semantics:
+```
+$ krun --directory "/home/java-semantics/src/prep" --parser "kj-parse-aggreg.sh" --symbolic-execution ../tests/01_smoke_tests/helloWorld.java
+```
+
+To debug exec semantics (once you have correct pkast file):
+```
+$ krun --directory "/home/java-semantics/src/exec" -cMainClass="ListItem(\"helloWorld\")" -cDissolveAllExceptOut="true" --parser "cat" --symbolic-execution helloWorld.java.pkast
+```
 
 ## Other docs
 Directory docs contains two technical reports: the complete documented semantics of module METHOD_INVOKE and
