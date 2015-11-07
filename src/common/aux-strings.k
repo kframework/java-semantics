@@ -1,4 +1,6 @@
+require "domains.k"
 module AUX-STRINGS
+  imports DOMAINS-SYNTAX
 /*@ Auxiliary constructs related to Strings. Extension to string.k.*/
 
 //@Retain the first Count chars in the string

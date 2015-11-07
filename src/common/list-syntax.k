@@ -34,7 +34,6 @@ syntax ClassBodyDecList          ::= List{ClassBodyDec, ""}          [klabel('Cl
 syntax BlockStmList              ::= List{BlockStmt, ""}             [klabel('BlockStmList)]
 syntax SwitchGroupList           ::= List{SwitchGroup, ""}           [klabel('SwitchGroupList)]
 syntax SwitchLabelList           ::= List{SwitchLabel, ""}           [klabel('SwitchLabelList)]
-
 syntax Exps                      ::= List{Exp, ","}                  [klabel('ExprList), seqstrict]
 syntax Dims                      ::= List{Dim,""}                    [klabel('DimList)]
 syntax DimExps                   ::= List{DimExp,""}                 [klabel('DimExprList), strict]
@@ -45,4 +44,40 @@ syntax Params                    ::= List{Param, ","}                [klabel('Fo
 context 'FormalParamList(HOLE,,_) [result(Param)]
 context 'FormalParamList(_,,HOLE) [result(Params)]
 
+
+syntax InterfaceType
+syntax ExceptionType
+syntax Id
+syntax TypeDec
+syntax VarDec
+syntax ImportDec
+syntax ActualTypeArg
+syntax ClassOrInterfaceType
+syntax TypeParam
+syntax AbstractMethodMod
+syntax AnnoAbstractMethodMod
+syntax AnnoMethodMod
+syntax AnnoVarMod
+syntax AnnoClassMod
+syntax AnnoConstrMod
+syntax AnnoConstantMod
+syntax AnnoFieldMod
+syntax AnnoInterfaceMod
+syntax Anno
+syntax AnnoElemDec
+syntax InterfaceMemberDec
+syntax ElemValPair
+syntax ElemVal
+syntax StringPart
+syntax EnumConst
+syntax ClassBodyDec
+syntax BlockStmt
+syntax SwitchGroup
+syntax SwitchLabel
+syntax Exp
+syntax Dim
+syntax DimExp
+syntax VarInit
+syntax CatchClause
+syntax Param
 endmodule

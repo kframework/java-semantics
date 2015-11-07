@@ -1,4 +1,6 @@
+require "domains.k"
 module LEXICAL-SYNTAX
+  imports FLOAT-SYNTAX
 //@ \subsection{Comments.sdf}
 //no need to define because K provides fixed layout
 
