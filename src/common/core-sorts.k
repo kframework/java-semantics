@@ -144,7 +144,10 @@ syntax ArrayRef ::=   arrayRef (
                         Int    // Length
                       )
 
-syntax RawRefVal ::= ObjectRef | ArrayRef | String | NullLiteral
+syntax RawRefVal ::= ObjectRef   [smt-sort-flatten]
+                   | ArrayRef
+                   | String
+                   | NullLiteral [smt-sort-flatten]
 
 /*@ A typed value is a pair of of a raw value and a type. Anywhere during execution we will evaluated typed expressions
     into typed values, never into raw values alone.
