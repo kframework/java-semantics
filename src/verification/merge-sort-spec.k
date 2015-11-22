@@ -6,7 +6,7 @@ rule [mergesort-loop-inv1]:
   <threads>
          <thread>
   <k>
-    whileImpl ( cast ( bool , cast ( class .listNode , 'ExprName(String2Id("x")) ) != null :: nullType ) , { .AnnoVarModList class .listNode String2Id("t") ;
+    while ( cast ( bool , cast ( class .listNode , 'ExprName(String2Id("x")) ) != null :: nullType ) ) { .AnnoVarModList class .listNode String2Id("t") ;
                        cast ( class .listNode , ('ExprName(String2Id("t")) = cast ( class .listNode , 'ExprName(String2Id("x")) ))::AssignExp ) ;
                        cast ( class .listNode , ('ExprName(String2Id("x")) = cast ( class .listNode ,
                        cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("x")) ) ) .
@@ -22,7 +22,7 @@ rule [mergesort-loop-inv1]:
                       cast ( class .listNode , ((cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("t")) ) ) . next) =
                       cast ( class .listNode , 'ExprName(String2Id("z")) ))::AssignExp ) ;
                       cast ( class .listNode , ('ExprName(String2Id("z")) = cast (
-                      class .listNode , 'ExprName(String2Id("t")) ))::AssignExp ) ; } } )
+                      class .listNode , 'ExprName(String2Id("t")) ))::AssignExp ) ; } }
   =>
     .K
   ...</k>
@@ -62,9 +62,9 @@ rule [mergesort-loop-inv2]:
   <threads>
        <thread>
   <k>
-    whileImpl ( cast ( bool , cast ( bool , cast (
+    while ( cast ( bool , cast ( bool , cast (
                       class .listNode , 'ExprName(String2Id("y")) ) != null :: nullType ) && cast ( bool
-                       , cast ( class .listNode , 'ExprName(String2Id("z")) ) != null :: nullType ) ) ,
+                       , cast ( class .listNode , 'ExprName(String2Id("z")) ) != null :: nullType ) ) )
                       { if ( cast ( bool , cast ( int , cast ( class .listNode ,
                        cast ( class .listNode , 'ExprName(String2Id("y")) ) ) . val ) < cast ( int ,
                       cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("z")) ) ) .
@@ -79,7 +79,7 @@ rule [mergesort-loop-inv2]:
                       cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("z")) ) ) .
                       next ))::AssignExp ) ; } cast ( class .listNode , ('ExprName(String2Id("p")) = cast ( class
                       .listNode , cast ( class .listNode , cast ( class
-                      .listNode , 'ExprName(String2Id("p")) ) ) . next ))::AssignExp ) ; })
+                      .listNode , 'ExprName(String2Id("p")) ) ) . next ))::AssignExp ) ; }
     ~>
      'BlockStmList(if ( cast ( bool , cast (
                        class .listNode , 'ExprName(String2Id("y")) ) != null :: nullType ) ) cast (

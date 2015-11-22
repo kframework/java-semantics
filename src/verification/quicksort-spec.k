@@ -7,11 +7,11 @@ rule [append-loop-inv]:
   <threads>
     <thread>
   <k>
-                    whileImpl ( cast ( bool , cast ( class String2Id(".listNode") , cast (
+                    while ( cast ( bool , cast ( class String2Id(".listNode") , cast (
                       class String2Id(".listNode") , cast ( class String2Id(".listNode") , 'ExprName(String2Id("p")) ) ) . String2Id("next") )
-                      != null :: nullType ) , { cast ( class String2Id(".listNode") , ('ExprName(String2Id("p")) =
+                      != null :: nullType ) ) { cast ( class String2Id(".listNode") , ('ExprName(String2Id("p")) =
                       cast ( class String2Id(".listNode") , cast ( class String2Id(".listNode") , cast (
-                      class String2Id(".listNode") , 'ExprName(String2Id("p")) ) ) . String2Id("next") ))::AssignExp ) ; } )
+                      class String2Id(".listNode") , 'ExprName(String2Id("p")) ) ) . String2Id("next") ))::AssignExp ) ; }
   =>
     .K
   ...</k>
@@ -101,8 +101,8 @@ rule [quick-loop-inv]:
   <threads>
        <thread>
   <k>
-    whileImpl ( cast ( bool , cast ( class .listNode , 'ExprName(String2Id("x")) ) !=
-                      null :: nullType ) , { .AnnoVarModList class .listNode String2Id("t") ;
+    while ( cast ( bool , cast ( class .listNode , 'ExprName(String2Id("x")) ) !=
+                      null :: nullType ) ) { .AnnoVarModList class .listNode String2Id("t") ;
                        cast ( class .listNode , ('ExprName(String2Id("t")) = cast ( class .listNode , 'ExprName(String2Id("x")) ))::AssignExp
                        ) ; cast ( class .listNode , ('ExprName(String2Id("x")) = cast ( class .listNode ,
                        cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("x")) ) ) .
@@ -116,7 +116,7 @@ rule [quick-loop-inv]:
                       .listNode , ((cast ( class .listNode , cast ( class
                       .listNode , 'ExprName(String2Id("t")) ) ) . next) = cast ( class .listNode , 'ExprName(String2Id("z")) ))::AssignExp )
                        ; cast ( class .listNode , ('ExprName(String2Id("z")) = cast ( class .listNode , 'ExprName(String2Id("t"))
-                       ))::AssignExp ) ; } } )
+                       ))::AssignExp ) ; } }
   =>
     .K
   ...</k>

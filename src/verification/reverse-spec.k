@@ -6,8 +6,8 @@ rule [loop-inv]:
   <threads>
       <thread>
   <k>
-                    whileImpl ( cast ( bool , cast ( class String2Id(".listNode") , 'ExprName(String2Id("x")) ) !=
-                      null :: nullType ) , { .AnnoVarModList class String2Id(".listNode") String2Id("y") ;
+                    while ( cast ( bool , cast ( class String2Id(".listNode") , 'ExprName(String2Id("x")) ) !=
+                      null :: nullType ) ) { .AnnoVarModList class String2Id(".listNode") String2Id("y") ;
                       cast ( class String2Id(".listNode") , ('ExprName(String2Id("y")) =
                       cast ( class String2Id(".listNode") , cast ( class String2Id(".listNode") ,
                       cast ( class String2Id(".listNode") , 'ExprName(String2Id("x")) ) ) . String2Id("next") ))::AssignExp ) ;
@@ -17,7 +17,7 @@ rule [loop-inv]:
                       cast ( class String2Id(".listNode") , ('ExprName(String2Id("p")) =
                       cast ( class String2Id(".listNode") , 'ExprName(String2Id("x")) ))::AssignExp ) ;
                       cast ( class String2Id(".listNode") , ('ExprName(String2Id("x")) =
-                      cast ( class String2Id(".listNode") , 'ExprName(String2Id("y")) ))::AssignExp ) ; } )
+                      cast ( class String2Id(".listNode") , 'ExprName(String2Id("y")) ))::AssignExp ) ; }
   =>
     .K
   ...</k>

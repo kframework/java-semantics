@@ -6,10 +6,10 @@ rule
 <threads>
 <thread>
   <k>
- whileImpl ( cast ( bool , cast ( int , 'ExprName(String2Id("n")) ) > 0 :: int ) , {
+ while ( cast ( bool , cast ( int , 'ExprName(String2Id("n")) ) > 0 :: int ) ) {
                   cast ( int , ('ExprName(String2Id("s")) = cast ( int , cast ( int , 'ExprName(String2Id("s")) ) + cast (
                   int , 'ExprName(String2Id("n")) ) ))::AssignExp ) ; cast ( int , ('ExprName(String2Id("n")) = cast ( int , cast ( int ,
-                   'ExprName(String2Id("n")) ) - 1 :: int ))::AssignExp ) ; } )
+                   'ExprName(String2Id("n")) ) - 1 :: int ))::AssignExp ) ; } 
   =>
     .K
   ...</k>

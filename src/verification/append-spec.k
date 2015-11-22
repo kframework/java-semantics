@@ -6,11 +6,11 @@ rule [loop-inv]:
   <threads>
     <thread>
   <k>
-                    whileImpl ( cast ( bool , cast ( class String2Id(".listNode") , cast (
+                    while ( cast ( bool , cast ( class String2Id(".listNode") , cast (
                       class String2Id(".listNode") , cast ( class String2Id(".listNode") , 'ExprName(String2Id("p")) ) ) . String2Id("next") )
-                      != null :: nullType ) , { cast ( class String2Id(".listNode") , ('ExprName(String2Id("p")) =
+                      != null :: nullType ) ) { cast ( class String2Id(".listNode") , ('ExprName(String2Id("p")) =
                       cast ( class String2Id(".listNode") , cast ( class String2Id(".listNode") , cast (
-                      class String2Id(".listNode") , 'ExprName(String2Id("p")) ) ) . String2Id("next") ))::AssignExp ) ; } )
+                      class String2Id(".listNode") , 'ExprName(String2Id("p")) ) ) . String2Id("next") ))::AssignExp ) ; }
   =>
     .K
   ...</k>
