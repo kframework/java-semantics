@@ -27,6 +27,3 @@ rule
 requires X >=Int -2147483648 andBool X <=Int 2147483647 andBool Y >=Int -2147483648 andBool Y <=Int 2147483647
 
 endmodule
-
-
-
