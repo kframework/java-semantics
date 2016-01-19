@@ -5,6 +5,7 @@ In order to use Java Semantics you need the following prerequisites:
 - Linux.
 - Java 8 or later (K Framework installation might require more updated Java version).
 - K Framework (See <http://kframework.org>). The bin directory should be added to PATH. 
+(Currently K is upgrading, please use this version of K https://github.com/kframework/k/tree/javaCompatible)
 
 Installation process:
 
