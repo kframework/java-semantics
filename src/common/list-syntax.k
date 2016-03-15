@@ -5,6 +5,43 @@ module LIST-SYNTAX
  already defined before, because there is no automatic refactor for rename, and also those
  defined are used in semantic rules, we leave them unchanged.*/
 
+syntax InterfaceType
+syntax ExceptionType
+syntax Id
+syntax TypeDec
+syntax VarDec
+syntax ImportDec
+syntax ActualTypeArg
+syntax ClassOrInterfaceType
+syntax TypeParam
+syntax AbstractMethodMod
+syntax AnnoAbstractMethodMod
+syntax AnnoMethodMod
+syntax AnnoVarMod
+syntax AnnoClassMod
+syntax AnnoConstrMod
+syntax AnnoConstantMod
+syntax AnnoFieldMod
+syntax AnnoInterfaceMod
+syntax Anno
+syntax AnnoElemDec
+syntax InterfaceMemberDec
+syntax ElemValPair
+syntax ElemVal
+syntax StringPart
+syntax EnumConst
+syntax ClassBodyDec
+syntax BlockStmt
+syntax SwitchGroup
+syntax SwitchLabel
+syntax Exp
+syntax Dim
+syntax DimExp
+syntax VarInit
+syntax CatchClause
+syntax Param
+
+
 syntax InterfaceTypeList         ::= List{InterfaceType,","}         [klabel('InterfaceTypeList), strict]
 syntax ExceptionTypeList         ::= List{ExceptionType,","}         [klabel('ExceptionTypeList)]
 syntax IdList                    ::= List{Id,"."}                    [klabel('IdList)]
