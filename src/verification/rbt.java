@@ -11,29 +11,29 @@ public class rbt {
         this.left = null;
         this.right = null;
     }
-    
-    // Basics
 
-    static rbt make_node(int v)
-    {
-        rbt node = new rbt (v);
-        return node;
+    public static void main(String[] args) {
+        rbt node1 = new rbt (0);
+        rbt node2 = new rbt (0);
+        rbt node3 = new rbt (0);
+        node1.left = node2;
+        node1.right = node3;
     }
 
     static int color(rbt t)
     {
-        return t ? t.color : 1; // BLACK
+        return t != null ? t.color : 1; // BLACK
     }
 
     static int find_min(rbt t)
     {
-        if (t.left === null)
+        if (t.left == null)
             return t.value;
         else
             return find_min(t.left);
     }
 
-    static rbt left_rotate(x)
+    static rbt left_rotate(rbt x)
     {
         rbt y = x.right;
         x.right = y.left;
@@ -41,7 +41,7 @@ public class rbt {
         return y;
     }
 
-    static rbt right_rotate(x)
+    static rbt right_rotate(rbt x)
     {
         rbt y = x.left;
         x.left = y.right;
@@ -53,9 +53,9 @@ public class rbt {
 
     static boolean find(int v, rbt t)
     {
-        if (t === null)
+        if (t == null)
             return false;
-        else if (v === t.value)
+        else if (v == t.value)
             return true;
         else if (v < t.value)
             return find(v, t.left);
@@ -69,7 +69,7 @@ public class rbt {
     static rbt insert_aux(int value, rbt tree)
     {
         if (tree == null) {
-            return make_node(value);
+            return new rbt(value);
         }
         if (value < tree.value) {
             tree.left = insert_aux(value, tree.left);
