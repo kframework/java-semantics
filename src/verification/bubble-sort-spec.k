@@ -6,7 +6,7 @@ rule [bubble-sort-loop-inv1]:
    <threads>
         <thread>
   <k>
-  whileImpl ( cast ( bool , 'ExprName(String2Id("change")) ) , { .AnnoVarModList class .listNode String2Id("y") ;
+  while ( cast ( bool , 'ExprName(String2Id("change")) ) ) { .AnnoVarModList class .listNode String2Id("y") ;
   cast ( bool , ('ExprName(String2Id("change")) = false :: bool)::AssignExp ) ; cast ( class .listNode , ('ExprName(String2Id("y")) = cast (
                     class .listNode , 'ExprName(String2Id("x")) ))::AssignExp ) ; while ( cast ( bool , cast (
                     class .listNode , cast ( class .listNode , cast ( class
@@ -28,7 +28,7 @@ rule [bubble-sort-loop-inv1]:
                     .listNode , 'ExprName(String2Id("y")) ) ) . next ) ) . val) = cast ( int , 'ExprName(String2Id("temp")) ))::AssignExp
                     ) ; } cast ( class .listNode , ('ExprName(String2Id("y")) = cast ( class .listNode
                     , cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("y")) ) )
-                    . next ))::AssignExp ) ; } } )
+                    . next ))::AssignExp ) ; } }
   =>
     .K
   ...</k>
@@ -49,10 +49,6 @@ rule [bubble-sort-loop-inv1]:
             LX |-> X:RawRefVal :: class String2Id(".listNode")
             LC |-> (C:Bool => ?_:Bool) :: bool
             ...</store>
-                <storeMetadata> ... (.Map => ?_:Map)
-                  LX |-> LocalLocMetadata
-                  LC |-> LocalLocMetadata
-                   ... </storeMetadata>
                 <busy> .Set </busy>
                 <nextLoc> I:Int => ?_:Int </nextLoc>
       <objectStore>...
@@ -67,8 +63,8 @@ rule [bubble-sort-loop-inv2]:
   <threads>
       <thread>
   <k>
-    whileImpl ( cast ( bool , cast (class .listNode , cast ( class .listNode , cast ( class
-                        .listNode , 'ExprName(String2Id("y")) ) ) . next ) != null :: nullType ) , { if (
+    while ( cast ( bool , cast (class .listNode , cast ( class .listNode , cast ( class
+                        .listNode , 'ExprName(String2Id("y")) ) ) . next ) != null :: nullType ) ) { if (
                         cast ( bool , cast ( int , cast ( class .listNode , cast (
                          class .listNode , 'ExprName(String2Id("y")) ) ) . val ) > cast ( int , cast (
                         class .listNode , cast ( class .listNode , cast ( class
@@ -85,7 +81,7 @@ rule [bubble-sort-loop-inv2]:
                         .listNode , 'ExprName(String2Id("y")) ) ) . next ) ) . val) = cast ( int , 'ExprName(String2Id("temp")) ))::AssignExp
                         ) ; } cast ( class .listNode , ('ExprName(String2Id("y")) = cast ( class .listNode
                         , cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("y")) ) )
-                        . next ))::AssignExp ) ; } )
+                        . next ))::AssignExp ) ; }
   =>
     .K
   ...</k>
@@ -109,11 +105,6 @@ rule [bubble-sort-loop-inv2]:
         LY |-> (objectRef(Y:Int, class String2Id(".listNode")) => objectRef(?_:Int, class String2Id(".listNode"))) :: class String2Id(".listNode")
         LC |-> (C1:Bool => ?C2:Bool) :: bool
         ...</store>
-            <storeMetadata> ... (.Map => ?_:Map)
-              LX |-> LocalLocMetadata
-              LY |-> LocalLocMetadata
-              LC |-> LocalLocMetadata
-               ... </storeMetadata>
             <busy> .Set </busy>
             <nextLoc> I:Int => ?_:Int </nextLoc>
   <objectStore>...
@@ -174,7 +165,6 @@ rule [bubble-sort-func-spec]:
   <program> .K </program>
    <globalPhase> ExecutionPhase </globalPhase>
     <store>... .Map => ?_:Map ...</store>
-  <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
   <busy> .Set </busy>
   <nextLoc> I:Int => ?_:Int </nextLoc>
     <objectStore>... (lseg(X1, null)(A1:List) => lseg(?X2, null)(?A2:List)) ...</objectStore>

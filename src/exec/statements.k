@@ -62,7 +62,6 @@ rule [LocalVarDec]:
     <k> T:Type X:Id; => . ...</k>
     <env> Env:Map => Env[X <- L] </env>
     <store>... .Map => (L |-> default(T)) ...</store>
-    <storeMetadata>... .Map => (L |-> LocalLocMetadata) ...</storeMetadata>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
 
 //@ \subsection{Empty statement} JLS \$14.6
@@ -181,19 +180,11 @@ rule [switchEnd-Discard]:
 //@ \subsection{While statement} and loop infrastructure.
 
 rule [while]:
-    while(E:Exp)S:K => whileImpl(E, S)                              [structural]
-
-syntax KItem ::=  whileImpl (
-                K,  // E - test expression. In For loop, it is UpdClause ~> testExp
-                K   // S - while body
-              )
-
-rule [whileImpl]:
-    whileImpl(E:K, S:K) => ifAux(E, S ~> whileImpl(E, S), .K)           [structural]
+    while (E:K) S:K => ifAux(E, S ~> while (E) S, .K)           [structural]
 
 //@ \subsection{Do statement}
 rule [do-while]:
-    do S:K while(E:Exp); => S ~> whileImpl(E, S)                     [structural]
+    do S:K while (E:Exp); => S ~> while (E) S                     [structural]
 
 //@ \subsection{For statement}
 //wrapper of certain clauses of for statement, adds ; to cast expressions
@@ -219,12 +210,11 @@ rule [For-ThirdArgRed]:
     for(_:>Exps;_;(UpdExps:Exps => stm(UpdExps))) _:K
     when notBool ( getKLabel(UpdExps) ==KLabel 'stm )                       [structural]
 
+//update right before TestExp because FOR continue still updates counter even if the rest of code is ignored in while
 rule [For]:
     for(InitClause:>Exps; 'Some(TestExp); stm(UpdClause:Exps)) S:K
-    => 'Block(InitClause
-    ~> ifAux(TestExp, ('Block(S) ~> whileImpl(stm(UpdClause) ~> TestExp, S)), .))
+    => 'Block(InitClause ~> ifAux(TestExp, (S ~> while (stm(UpdClause) ~> TestExp) S), .))
     when getKLabel(InitClause) ==KLabel 'stm orBool getKLabel(InitClause) ==KLabel 'BlockStmList   [structural]
-//todo ugly format
 
 rule ifAux(stm(S:Exps) ~> B:K, S1, S2 ) => stm(S) ~> ifAux(B, S1, S2)
 
@@ -242,23 +232,20 @@ rule [StackConsumerStmt-RestoreEnv]:
 //@ \subsection{Break statement}
 
 rule [Break-UnlabeledPropagate]:
-   // 'Break('None(_)) ~> (KL:KLabel(_) => .)
     break 'None(_); ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
-    andBool KL =/=KLabel 'whileImpl
+    andBool KL =/=KLabel 'While
     andBool KL =/=KLabel 'switchEnd
 
 rule [Break-Unlabeled]:
-    //'Break('None(_)) ~> KL:KLabel(_) => .
     break 'None(_); ~> KL:KLabel(_) => .
 when
-           KL ==KLabel 'whileImpl
+           KL ==KLabel 'While
     orBool KL ==KLabel 'switchEnd
 
 rule [Break-LabeledPropagate]:
-   // 'Break('Some(X:Id)) ~> (KL:KLabel(_) => .)
     break 'Some(X:Id); ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
@@ -266,43 +253,36 @@ when
     andBool KL =/=KLabel 'labeledImpl
 
 rule [BreakLabeledNotMatch]:
-    //'Break('Some(X1:Id)) ~> (labeledImpl(X2:Id) => .)
     break 'Some(X1:Id); ~> (labeledImpl(X2:Id) => .)
 when
     X1 =/=K X2
 
 rule [Break-LabeledMatch]:
-    //'Break('Some(X:Id)) ~> labeledImpl(X:Id) => .
     break 'Some(X:Id); ~> labeledImpl(X:Id) => .
 
 //@ \subsection{Continue statement}
 
 rule [Continue-Propagate]:
-//    'Continue(_) ~> (KL:KLabel(_) => .)
     continue _; ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
-    andBool KL =/=KLabel 'whileImpl
+    andBool KL =/=KLabel 'While
 
 rule [Continue-Unlabeled]:
-//    ('Continue('None(_)) => .) ~> whileImpl(_,_)
-   (continue 'None(_); => .) ~> whileImpl(_,_)
+   (continue 'None(_); => .) ~> while (_:K) _:K
 
 rule [Continue-LabeledMeetsWhile]:
     <k>
-//      (. => getWhileLabel(Rest)) ~> 'Continue('Some(X:Id)) ~> whileImpl(_,_) ~> Rest:K
-      (. => getWhileLabel(Rest)) ~> continue 'Some(X:Id); ~> whileImpl(_,_) ~> Rest:K
+      (. => getWhileLabel(Rest)) ~> continue 'Some(X:Id); ~> while (_:K) _:K  ~> Rest:K
     </k>
 
 rule [Continue-LabeledNotMatch]:
-//    (whileLabel(LabelK:K) => .) ~> 'Continue('Some(X:Id)) ~> (whileImpl(_,_) => .)
-    (whileLabel(LabelK:K) => .) ~> continue 'Some(X:Id); ~> (whileImpl(_,_) => .)
+    (whileLabel(LabelK:K) => .) ~> continue 'Some(X:Id); ~> (while (_:K) _:K  => .)
 when
     LabelK =/=K X
 
 rule [Continue-LabeledMatch]:
-//    whileLabel(X) ~> 'Continue('Some(X:Id)) => .
     whileLabel(X) ~> continue 'Some(X:Id); => .
 
 /*@ Auxiliary constructs used in the semantics of continue.

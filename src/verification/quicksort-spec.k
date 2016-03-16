@@ -7,11 +7,11 @@ rule [append-loop-inv]:
   <threads>
     <thread>
   <k>
-                    whileImpl ( cast ( bool , cast ( class String2Id(".listNode") , cast (
+                    while ( cast ( bool , cast ( class String2Id(".listNode") , cast (
                       class String2Id(".listNode") , cast ( class String2Id(".listNode") , 'ExprName(String2Id("p")) ) ) . String2Id("next") )
-                      != null :: nullType ) , { cast ( class String2Id(".listNode") , ('ExprName(String2Id("p")) =
+                      != null :: nullType ) ) { cast ( class String2Id(".listNode") , ('ExprName(String2Id("p")) =
                       cast ( class String2Id(".listNode") , cast ( class String2Id(".listNode") , cast (
-                      class String2Id(".listNode") , 'ExprName(String2Id("p")) ) ) . String2Id("next") ))::AssignExp ) ; } )
+                      class String2Id(".listNode") , 'ExprName(String2Id("p")) ) ) . String2Id("next") ))::AssignExp ) ; }
   =>
     .K
   ...</k>
@@ -32,10 +32,6 @@ rule [append-loop-inv]:
       LX |-> X:RawRefVal :: class String2Id(".listNode")
       LP |-> (objectRef(P1:Int, class String2Id(".listNode")) => objectRef(?P2:Int, class String2Id(".listNode"))) :: class String2Id(".listNode")
           ...</store>
-    <storeMetadata> ... (.Map => ?_:Map)
-      LX |-> LocalLocMetadata
-      LP |-> LocalLocMetadata
-       ... </storeMetadata>
     <busy> .Set </busy>
     <nextLoc> I:Int => ?_:Int </nextLoc>
 
@@ -96,7 +92,6 @@ rule [append-func-spec]:
   <program> .K </program>
    <globalPhase> ExecutionPhase </globalPhase>
     <store>... .Map => ?_:Map ...</store>
-  <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
   <busy> .Set </busy>
   <nextLoc> I:Int => ?_:Int </nextLoc>
 
@@ -106,8 +101,8 @@ rule [quick-loop-inv]:
   <threads>
        <thread>
   <k>
-    whileImpl ( cast ( bool , cast ( class .listNode , 'ExprName(String2Id("x")) ) !=
-                      null :: nullType ) , { .AnnoVarModList class .listNode String2Id("t") ;
+    while ( cast ( bool , cast ( class .listNode , 'ExprName(String2Id("x")) ) !=
+                      null :: nullType ) ) { .AnnoVarModList class .listNode String2Id("t") ;
                        cast ( class .listNode , ('ExprName(String2Id("t")) = cast ( class .listNode , 'ExprName(String2Id("x")) ))::AssignExp
                        ) ; cast ( class .listNode , ('ExprName(String2Id("x")) = cast ( class .listNode ,
                        cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("x")) ) ) .
@@ -121,7 +116,7 @@ rule [quick-loop-inv]:
                       .listNode , ((cast ( class .listNode , cast ( class
                       .listNode , 'ExprName(String2Id("t")) ) ) . next) = cast ( class .listNode , 'ExprName(String2Id("z")) ))::AssignExp )
                        ; cast ( class .listNode , ('ExprName(String2Id("z")) = cast ( class .listNode , 'ExprName(String2Id("t"))
-                       ))::AssignExp ) ; } } )
+                       ))::AssignExp ) ; } }
   =>
     .K
   ...</k>
@@ -146,12 +141,6 @@ rule [quick-loop-inv]:
             LY |-> (Y1:RawRefVal => ?Y2:RawRefVal) :: class String2Id(".listNode")
             LZ |-> (Z1:RawRefVal => ?Z2:RawRefVal) :: class String2Id(".listNode")
   ...</store>
-      <storeMetadata> ... (.Map => ?_:Map)
-        LX |-> LocalLocMetadata
-        LP |-> LocalLocMetadata
-        LY |-> LocalLocMetadata
-        LZ |-> LocalLocMetadata
-         ... </storeMetadata>
       <busy> .Set </busy>
       <nextLoc> I:Int => ?_:Int </nextLoc>
 
@@ -217,7 +206,6 @@ rule [quicksort-func-spec]:
   <program> .K </program>
    <globalPhase> ExecutionPhase </globalPhase>
     <store>... .Map => ?_:Map ...</store>
-  <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
   <busy> .Set </busy>
   <nextLoc> I:Int => ?_:Int </nextLoc>
     <objectStore>... (lseg(X1, null)(A1:List) => lseg(?X2, null)(?A2:List)) ...</objectStore>

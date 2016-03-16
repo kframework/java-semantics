@@ -248,11 +248,6 @@ configuration
       //Execution memory. Map[Location:Int->Value:TypedVal]. Both local vars and heap vars are stored here.
       <store color="DarkCyan"> .Map </store>
 
-      //The type of each location - whether it is LocalAttr or FieldAttr. Relevant only for multi-threading
-      //model checking
-      //Map[Location:Int -> LocMetadata].
-      <storeMetadata color="DarkCyan"> .Map </storeMetadata>
-
       //Counter for next location to be used in the cell <store>.
       <nextLoc color="DarkCyan"> 0 </nextLoc>
 

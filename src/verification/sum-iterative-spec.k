@@ -6,10 +6,10 @@ rule
 <threads>
 <thread>
   <k>
- whileImpl ( cast ( bool , cast ( int , 'ExprName(String2Id("n")) ) > 0 :: int ) , {
+ while ( cast ( bool , cast ( int , 'ExprName(String2Id("n")) ) > 0 :: int ) ) {
                   cast ( int , ('ExprName(String2Id("s")) = cast ( int , cast ( int , 'ExprName(String2Id("s")) ) + cast (
                   int , 'ExprName(String2Id("n")) ) ))::AssignExp ) ; cast ( int , ('ExprName(String2Id("n")) = cast ( int , cast ( int ,
-                   'ExprName(String2Id("n")) ) - 1 :: int ))::AssignExp ) ; } )
+                   'ExprName(String2Id("n")) ) - 1 :: int ))::AssignExp ) ; } 
   =>
     .K
   ...</k>
@@ -30,10 +30,6 @@ rule
         P1 |-> (N:Int => 0) :: int
         P2 |-> (S:Int => S +Int ((N +Int 1) *Int N /Int 2)) :: int
     ...</store>
-  <storeMetadata> ... (.Map => ?_:Map)
-   P1 |-> LocalLocMetadata
-   P2 |-> LocalLocMetadata
-   ... </storeMetadata>
   <busy> .Set </busy>
   <nextLoc> I:Int => ?_:Int </nextLoc>
 requires N >=Int 0 andBool N <=Int 200 andBool S >=Int 0 andBool S +Int ((N +Int 1) *Int N /Int 2) <=Int 2147483647
@@ -56,7 +52,6 @@ rule
   <program> .K </program>
    <globalPhase> ExecutionPhase </globalPhase>
     <store>... .Map => ?_:Map ...</store>
-  <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
   <busy> .Set </busy>
   <nextLoc> I:Int => ?_:Int </nextLoc>
 requires N >=Int 0 andBool N <=Int 200

@@ -6,7 +6,7 @@ rule [mergesort-loop-inv1]:
   <threads>
          <thread>
   <k>
-    whileImpl ( cast ( bool , cast ( class .listNode , 'ExprName(String2Id("x")) ) != null :: nullType ) , { .AnnoVarModList class .listNode String2Id("t") ;
+    while ( cast ( bool , cast ( class .listNode , 'ExprName(String2Id("x")) ) != null :: nullType ) ) { .AnnoVarModList class .listNode String2Id("t") ;
                        cast ( class .listNode , ('ExprName(String2Id("t")) = cast ( class .listNode , 'ExprName(String2Id("x")) ))::AssignExp ) ;
                        cast ( class .listNode , ('ExprName(String2Id("x")) = cast ( class .listNode ,
                        cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("x")) ) ) .
@@ -22,7 +22,7 @@ rule [mergesort-loop-inv1]:
                       cast ( class .listNode , ((cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("t")) ) ) . next) =
                       cast ( class .listNode , 'ExprName(String2Id("z")) ))::AssignExp ) ;
                       cast ( class .listNode , ('ExprName(String2Id("z")) = cast (
-                      class .listNode , 'ExprName(String2Id("t")) ))::AssignExp ) ; } } )
+                      class .listNode , 'ExprName(String2Id("t")) ))::AssignExp ) ; } }
   =>
     .K
   ...</k>
@@ -45,11 +45,6 @@ rule [mergesort-loop-inv1]:
               LY |-> objectRef((Y1:Int => ?Y2:Int), class String2Id(".listNode")) :: class String2Id(".listNode")
               LZ |-> objectRef((Z1:Int => ?Z2:Int), class String2Id(".listNode")) :: class String2Id(".listNode")
     ...</store>
-        <storeMetadata> ... (.Map => ?_:Map)
-          LX |-> LocalLocMetadata
-          LY |-> LocalLocMetadata
-          LZ |-> LocalLocMetadata
-           ... </storeMetadata>
         <busy> .Set </busy>
         <nextLoc> I:Int => ?_:Int </nextLoc>
 
@@ -67,9 +62,9 @@ rule [mergesort-loop-inv2]:
   <threads>
        <thread>
   <k>
-    whileImpl ( cast ( bool , cast ( bool , cast (
+    while ( cast ( bool , cast ( bool , cast (
                       class .listNode , 'ExprName(String2Id("y")) ) != null :: nullType ) && cast ( bool
-                       , cast ( class .listNode , 'ExprName(String2Id("z")) ) != null :: nullType ) ) ,
+                       , cast ( class .listNode , 'ExprName(String2Id("z")) ) != null :: nullType ) ) )
                       { if ( cast ( bool , cast ( int , cast ( class .listNode ,
                        cast ( class .listNode , 'ExprName(String2Id("y")) ) ) . val ) < cast ( int ,
                       cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("z")) ) ) .
@@ -84,7 +79,7 @@ rule [mergesort-loop-inv2]:
                       cast ( class .listNode , cast ( class .listNode , 'ExprName(String2Id("z")) ) ) .
                       next ))::AssignExp ) ; } cast ( class .listNode , ('ExprName(String2Id("p")) = cast ( class
                       .listNode , cast ( class .listNode , cast ( class
-                      .listNode , 'ExprName(String2Id("p")) ) ) . next ))::AssignExp ) ; })
+                      .listNode , 'ExprName(String2Id("p")) ) ) . next ))::AssignExp ) ; }
     ~>
      'BlockStmList(if ( cast ( bool , cast (
                        class .listNode , 'ExprName(String2Id("y")) ) != null :: nullType ) ) cast (
@@ -118,12 +113,6 @@ rule [mergesort-loop-inv2]:
               LY |-> (Y:RawRefVal => ?_:RawRefVal) :: class String2Id(".listNode")
               LZ |-> (Z:RawRefVal => ?_:RawRefVal) :: class String2Id(".listNode")
     ...</store>
-        <storeMetadata> ... (.Map => ?_:Map)
-          LX |-> LocalLocMetadata
-          LP |-> LocalLocMetadata
-          LY |-> LocalLocMetadata
-          LZ |-> LocalLocMetadata
-           ... </storeMetadata>
         <busy> .Set </busy>
         <nextLoc> I:Int => ?_:Int </nextLoc>
 
@@ -190,7 +179,6 @@ rule [merge-sort-func-spec]:
   <program> .K </program>
    <globalPhase> ExecutionPhase </globalPhase>
     <store>... .Map => ?_:Map ...</store>
-  <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
   <busy> .Set </busy>
   <nextLoc> I:Int => ?_:Int </nextLoc>
     <objectStore>... (lseg(X1, null)(A1:List) => lseg(?X2, null)(?A2:List)) ...</objectStore>

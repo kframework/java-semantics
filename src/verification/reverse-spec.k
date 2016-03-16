@@ -6,8 +6,8 @@ rule [loop-inv]:
   <threads>
       <thread>
   <k>
-                    whileImpl ( cast ( bool , cast ( class String2Id(".listNode") , 'ExprName(String2Id("x")) ) !=
-                      null :: nullType ) , { .AnnoVarModList class String2Id(".listNode") String2Id("y") ;
+                    while ( cast ( bool , cast ( class String2Id(".listNode") , 'ExprName(String2Id("x")) ) !=
+                      null :: nullType ) ) { .AnnoVarModList class String2Id(".listNode") String2Id("y") ;
                       cast ( class String2Id(".listNode") , ('ExprName(String2Id("y")) =
                       cast ( class String2Id(".listNode") , cast ( class String2Id(".listNode") ,
                       cast ( class String2Id(".listNode") , 'ExprName(String2Id("x")) ) ) . String2Id("next") ))::AssignExp ) ;
@@ -17,7 +17,7 @@ rule [loop-inv]:
                       cast ( class String2Id(".listNode") , ('ExprName(String2Id("p")) =
                       cast ( class String2Id(".listNode") , 'ExprName(String2Id("x")) ))::AssignExp ) ;
                       cast ( class String2Id(".listNode") , ('ExprName(String2Id("x")) =
-                      cast ( class String2Id(".listNode") , 'ExprName(String2Id("y")) ))::AssignExp ) ; } )
+                      cast ( class String2Id(".listNode") , 'ExprName(String2Id("y")) ))::AssignExp ) ; }
   =>
     .K
   ...</k>
@@ -38,10 +38,6 @@ rule [loop-inv]:
             P1 |-> (LP1:RawRefVal => null):: class String2Id(".listNode")
             P2 |-> (LP2:RawRefVal => ?LP2:RawRefVal) :: class String2Id(".listNode")
                 ...</store>
-          <storeMetadata> ... (.Map => ?_:Map)
-            P1 |-> LocalLocMetadata
-            P2 |-> LocalLocMetadata
-             ... </storeMetadata>
           <busy> .Set </busy>
           <nextLoc> I:Int => ?_:Int </nextLoc>
 
@@ -68,7 +64,6 @@ rule [func-spec]:
   <program> .K </program>
   <globalPhase> ExecutionPhase </globalPhase>
   <store>... .Map => ?_:Map ...</store>
-  <storeMetadata> ... .Map => ?_:Map ... </storeMetadata>
   <busy> .Set </busy>
   <nextLoc> I:Int => ?_:Int </nextLoc>
   <objectStore>... (list(LP)(A:List) => list(?LP)(rev(A))) (.Bag => ?_:Bag)...</objectStore>

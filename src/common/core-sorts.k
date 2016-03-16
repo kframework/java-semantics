@@ -194,10 +194,6 @@ syntax Types ::=  types (
                   )
 syntax MKR ::= Types
 
-//Location type of each store location - either local variable or field
-syntax LocMetadata ::= "LocalLocMetadata"   [latex(\terminal{Local})]
-                     | "FieldLocMetadata"   [latex(\terminal{Field})]
-
 //Denis' syntax
 syntax ClassOrName ::= Id | ClassType
 //Denis' syntax
