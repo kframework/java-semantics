@@ -54,7 +54,7 @@ module RBT-PATTERN
                        </layerClass>
                        <layerEnv>
                            String2Id("value") |-> I :: int
-                           String2Id("color") |-> ctree_color(cnode(I, Cl, TL, TR)) :: int
+                           String2Id("color") |-> Cl :: int
                            String2Id("left")  |-> ?PL:RawRefVal :: C
                            String2Id("right") |-> ?PR:RawRefVal :: C
                        </layerEnv>
