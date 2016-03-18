@@ -13,11 +13,12 @@ public class rbt {
     }
 
     public static void main(String[] args) {
-        rbt node1 = new rbt (0);
-        rbt node2 = new rbt (0);
-        rbt node3 = new rbt (0);
+        rbt node1 = new rbt (2);
+        rbt node2 = new rbt (1);
+        rbt node3 = new rbt (3);
         node1.left = node2;
         node1.right = node3;
+        insert_aux(5, node1);
     }
 
     static int color(rbt t)
@@ -165,7 +166,7 @@ public class rbt {
             }
         }
         return tree;
-    }
+    }gi
 
     static rbt right_remove_fixup(ref ctx, rbt tree)
     {
