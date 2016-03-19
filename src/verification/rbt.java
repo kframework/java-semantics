@@ -18,7 +18,25 @@ public class rbt {
         rbt node3 = new rbt (3);
         node1.left = node2;
         node1.right = node3;
-        insert_aux(5, node1);
+        printTree(node1);
+        System.out.println("\n");
+        printTree(insert(6, node1));
+        System.out.println("\n");
+        printTree(remove(3, node1));
+        System.out.println("\n");
+        ref ctx = new ref();
+        ctx.fixed = 0;
+        printTree(remove_aux(ctx, 1, node1));
+
+    }
+
+    static void printTree(rbt nr) {
+        if (nr != null)
+        {
+            System.out.print(nr.value +",");
+            printTree(nr.left);
+            printTree(nr.right);
+        }
     }
 
     static int color(rbt t)
@@ -166,7 +184,7 @@ public class rbt {
             }
         }
         return tree;
-    }gi
+    }
 
     static rbt right_remove_fixup(ref ctx, rbt tree)
     {
